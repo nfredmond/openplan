@@ -5,6 +5,7 @@ import { formatReviewWorkbook } from "@/lib/export/review-workbook-layout";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
+import { ENGAGEMENT_REVIEW_STATES, countContributionsByReviewState, engagementReviewStateLabel } from "./review-counts";
 import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
 import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 import { decisionSynthesisReport, decisionSynthesisExportRows, decisionSynthesisCoverageFields, decisionSynthesisEventFields, decisionSynthesisMemberFields } from "./decision-synthesis-export";
@@ -200,7 +201,8 @@ function campaignResponseSourcesText(snapshot: EngagementReviewSnapshot, ids: un
 export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, checksum: string, photos: Map<string,Buffer> = new Map()): string {
   const questionSummary = campaignQuestionSummary(snapshot);
   const missing = snapshot.items.filter((row) => !row.configuration_version_id).length;
-  const counts = ["pending","flagged","approved","rejected"].map((state) => `<tr><th>${state === 'approved' ? 'Approved' : state === 'rejected' ? 'Withheld' : state}</th><td>${snapshot.items.filter((row)=>row.status===state).length}</td></tr>`).join('');
+  const byState = countContributionsByReviewState(snapshot.items);
+  const counts = ENGAGEMENT_REVIEW_STATES.map((state) => `<tr><th>${engagementReviewStateLabel(state)}</th><td>${byState[state]}</td></tr>`).join('');
   const context = snapshot.definitions.find((row) => row.id === snapshot.campaign.configurationVersionId)?.definition.campaign;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(snapshot.campaign.title)} engagement review</title><style>
   @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>

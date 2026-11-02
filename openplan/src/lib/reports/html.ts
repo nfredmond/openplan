@@ -19,6 +19,7 @@ import {
 } from "@/lib/reports/engagement";
 import { DEMOGRAPHIC_DIMENSIONS } from "@/lib/engagement/demographics";
 import { JOINT_READING_LABELS } from "@/lib/engagement/joint-representativeness";
+import type { ReportTraceDecision, ReportTraceResponse, ReportTraceSource } from "@/lib/reports/engagement-trace";
 import {
   buildEvidenceChainSummary,
   type EvidenceChainSummary,
@@ -875,6 +876,104 @@ function engagementJointRepresentativenessMarkup(data: EngagementMarkupContext):
     <ul class="record-list">${joint.limits.map((limit) => `<li>${esc(limit)}</li>`).join("")}</ul>
     <p>${esc(joint.dimension.rationale)}</p>
     <p class="meta">${esc(joint.caveat)}</p>
+  </div>`;
+}
+
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+function traceSourceMarkup(source: ReportTraceSource): string {
+  if (source.kind === "approved") {
+    return `<li>${esc(source.title?.trim() || "Untitled contribution")} <span class="meta">(${esc(source.id)})</span></li>`;
+  }
+  if (source.kind === "withheld") {
+    return `<li>A contribution not approved for release <span class="meta">(${esc(source.id)}, ${esc(source.status ?? "status not recorded")}). Its words are left out of this packet.</span></li>`;
+  }
+  return `<li>A contribution no longer in this campaign's records <span class="meta">(${esc(source.id)})</span></li>`;
+}
+
+function traceThemeMarkup(themes: ReportTraceDecision["themes"]): string {
+  if (themes.state === "not_captured") return "Staff review theme not captured in this earlier link format; unknown, not none.";
+  if (themes.state === "unreadable") return "Staff review theme could not be read; unknown, not none.";
+  if (themes.rows.length === 0) return "No staff review theme was linked when this decision link was saved.";
+  return themes.rows
+    .map((theme) =>
+      theme.kind === "linked"
+        ? `Staff review theme: ${esc(theme.label)} (approved revision ${theme.revision})`
+        : `Staff review theme link withdrawn: ${esc(theme.label)}`
+    )
+    .join("<br />");
+}
+
+function traceDecisionMarkup(decision: ReportTraceDecision): string {
+  const state = decision.withdrawn
+    ? "Link withdrawn"
+    : decision.sourceState === "changed"
+      ? "The response or its sources changed after the last saved action"
+      : decision.sourceState === "unavailable"
+        ? "The current response or sources could not be compared"
+        : "Unchanged since the last saved action";
+  return `<li>
+    <strong>${esc(decision.title)}</strong> · ${esc(titleize(decision.status))} · ${esc(decision.projectName)}${
+      decision.onLinkedProject ? "" : " <span class=\"meta\">(as retained; the decision is no longer on a linked project)</span>"
+    }
+    <br /><span class="meta">Link record ${esc(decision.linkId)} · ${esc(decision.operations.join(", "))} · last saved ${esc(formatDateTime(decision.lastActionAt))} · ${esc(state)}</span>
+    <br /><span class="meta">${traceThemeMarkup(decision.themes)}</span>
+  </li>`;
+}
+
+function traceResponseMarkup(response: ReportTraceResponse, decisionReadFailed: boolean): string {
+  const decisions = response.decisions === null || decisionReadFailed
+    ? `<p class="meta">Decision links unknown: the read failed.</p>`
+    : response.decisions.length > 0
+      ? `<ul class="record-list">${response.decisions.map(traceDecisionMarkup).join("")}</ul>`
+      : `<p class="meta">No decision link recorded.</p>`;
+  return `<article style="margin-top: 12px;">
+    <h4>${esc(response.themeTitle)}</h4>
+    <p class="meta">Response ${esc(response.id)} · Published ${esc(response.publishedAt ? formatDateTime(response.publishedAt) : "time not recorded")}</p>
+    <p><strong>You said:</strong> ${esc(response.youSaid)}</p>
+    <p><strong>We did:</strong> ${esc(response.weDid)}</p>
+    <p><strong>Answers ${plural(response.sources.length, "contribution", "contributions")}</strong></p>
+    ${response.sources.length > 0 ? `<ul class="record-list">${response.sources.map(traceSourceMarkup).join("")}</ul>` : ""}
+    <p><strong>Decision</strong></p>
+    ${decisions}
+  </article>`;
+}
+
+/**
+ * The comment-to-decision trace. A failed read prints as unknown with its
+ * cause, never as none. Withheld comments, names and review notes stay out.
+ */
+function engagementTraceMarkup(data: EngagementMarkupContext): string {
+  const trace = data.engagement?.trace;
+  if (!trace || trace.state !== "loaded") return "";
+  const { counts } = trace;
+  const responseCount = counts.publishedResponses === null
+    ? "Published staff responses unknown"
+    : plural(counts.publishedResponses, "published staff response", "published staff responses");
+  const actionCount = counts.decisionLinkActions === null
+    ? "decision-link actions unknown"
+    : plural(counts.decisionLinkActions, "decision-link action", "decision-link actions");
+  const failures = [
+    trace.responseReadError
+      ? `<p><strong>Staff responses could not be read.</strong> They are unknown here, not zero. Reported cause: ${esc(trace.responseReadError)}</p>`
+      : "",
+    trace.decisionReadError
+      ? `<p><strong>Decision links could not be read.</strong> They are unknown here, not none. Reported cause: ${esc(trace.decisionReadError)}</p>`
+      : "",
+  ].join("");
+  const responses = trace.responses === null
+    ? ""
+    : trace.responses.length > 0
+      ? trace.responses.map((response) => traceResponseMarkup(response, trace.decisionReadError !== null)).join("")
+      : `<p class="empty">No staff response has been published for this campaign.</p>`;
+  return `<div style="margin-top: 18px;">
+    <h3>From comment to decision</h3>
+    <p>${plural(counts.contributions, "contribution", "contributions")}: ${counts.byState.approved} approved, ${counts.byState.rejected} withheld, ${counts.byState.pending} pending, ${counts.byState.flagged} flagged. ${responseCount}. ${actionCount} (links, refreshes and withdrawals).</p>
+    <p class="meta">Counted as in the internal engagement review files. Withheld comments, names, review notes and demographics are left out of this packet.</p>
+    ${failures}
+    ${responses}
   </div>`;
 }
 
@@ -1906,6 +2005,7 @@ function engagementSummaryMarkup(data: EngagementMarkupContext): string {
         }</p>
       </div>
     </div>
+    ${engagementTraceMarkup(data)}
     ${engagementSynthesisMarkup(data)}
     ${engagementHotspotsMarkup(data)}
     ${engagementRepresentativenessMarkup(data)}

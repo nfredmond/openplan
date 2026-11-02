@@ -41,6 +41,16 @@ participation heat map and the extent preview in GIS layer import. A Mapbox key
 still selects Mapbox and its styles. Without a key the mission map has no
 satellite background and says so, and the Aerial index map uses your one style
 in light and dark mode. Rebuild after setting the variable.
+**Project packets trace comments to decisions (KI-2026-11-02-010):** a
+packet's engagement section now lists each published staff response for the
+linked campaign, the contributions it answers, its staff review theme and the
+project decision it is linked to, with the link record ID and saved actions.
+Its contribution, response and decision-link counts match the internal
+engagement review files. A response or decision-link read that fails prints as
+unknown with its cause. Withheld comments, names, review notes and
+demographics stay out of the packet. Regenerate a packet to pick this up. No
+migration.
+
 **Engagement case fixes (KI-2026-11-02-011 to -016):** a rejected comment with
 no category no longer holds a campaign's handoff readiness or tells staff to
 categorize it, and new handoff packets no longer call reporting incomplete
