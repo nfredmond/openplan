@@ -48,19 +48,26 @@ export function validateSafetySeedSource(rows: SeedSourceRows): SafetyPlanSnapsh
   return snapshot;
 }
 
+/** End a source sentence with exactly one period, whatever the source wrote. */
+function sentence(text: string | null | undefined): string {
+  const trimmed = (text ?? "").trim();
+  if (!trimmed) return "";
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
 /** Plain text preserves unknown values and candidate status without inferring money or effectiveness. */
 export function buildSs4aSafetyDrafts(snapshot: SafetyPlanSnapshot, projectName: string) {
   const { draft } = snapshot;
   const crash = draft.crashSummary.kind === "present"
-    ? [`${draft.crashSummary.sourceLabel}; years ${draft.crashSummary.years}.`, ...draft.crashSummary.figures.map((f) => `${f.label}: ${f.value === null ? `not measured or unavailable. ${f.absentBecause}` : f.value}.`), draft.crashSummary.sourceLine, ...draft.crashSummary.caveats].join("\n\n")
+    ? [`${draft.crashSummary.sourceLabel}; years ${draft.crashSummary.years}.`, ...draft.crashSummary.figures.map((f) => f.value === null ? `${f.label}: not measured or unavailable. ${sentence(f.absentBecause)}` : `${f.label}: ${f.value}.`), draft.crashSummary.sourceLine, ...draft.crashSummary.caveats].join("\n\n")
     : draft.crashSummary.reason;
   const network = draft.network.kind === "computed"
     ? [draft.network.measureLabel, draft.network.method, draft.network.coverage, `Network years: ${draft.network.years}.`, draft.network.sourceLine,
-      ...draft.network.rows.map((r) => `${r.label}: rank ${r.rank}${r.tied ? " (tied)" : ""}; crashes ${r.crashCount}; fatal crashes ${r.fatalCrashCount}; serious-injury crashes ${r.seriousInjuryCrashCount ?? "not measured"}; length ${r.lengthMiles ?? "not measured"} miles; crashes per mile ${r.crashesPerMile ?? "not measured"}.`)].join("\n\n")
+      ...draft.network.rows.map((r) => `${r.label}: rank ${r.rank}${r.tied ? " (tied)" : ""}; crashes ${r.crashCount}; fatal crashes ${r.fatalCrashCount}; serious-injury crashes ${r.seriousInjuryCrashCount ?? "not measured"}; length ${r.lengthMiles === null ? "not measured" : `${r.lengthMiles} miles`}; crashes per mile ${r.crashesPerMile ?? "not measured"}.`)].join("\n\n")
     : draft.network.reason;
   const treatments = draft.treatments.length ? draft.treatments.map((t) =>
     `${t.segmentLabel} (${t.rank === null ? "unranked; not in the frozen ranked network" : `network rank ${t.rank}, not a project priority`}). Candidate countermeasures:\n${t.countermeasures.map((c) => `${c.name}: ${c.addresses} Crash types: ${c.crashTypes.join(", ")}. ${c.cmfNote} Source: ${c.sourceUrl}`).join("\n")}`).join("\n\n") : "No candidate countermeasures are recorded in this snapshot. This does not establish that the agency has none.";
-  const gaps = draft.components.map((c) => `${c.component} (${c.status} in this Safety draft): ${c.gap}`).join("\n\n");
+  const gaps = draft.components.map((c) => `${c.component} (${c.status === "partial" ? "partly covered" : "not covered"} in this Safety draft): ${c.gap}`).join("\n\n");
   const header = [`Working draft for ${projectName}.`, SAFETY_SEED_CAVEAT, draft.draftNotice,
     `Source report: /reports/${snapshot.reportId}#artifact-${snapshot.artifactId}`,
     `Source artifact: /api/reports/${snapshot.reportId}/artifacts/${snapshot.artifactId}/download`,
