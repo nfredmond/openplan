@@ -75,10 +75,14 @@ import {
 } from "@/lib/rtp/extraction/provenance-queries";
 import { ExtractionProvenanceCitation } from "@/components/rtp/extraction-provenance-chip";
 import { formatMoney } from "@/lib/money/format";
+import { keepLinksInsideWorkspace } from "@/lib/rtp/link-workspace-scope";
 
-/** The columns the gate needs, and every one of them is rendered below. */
+/**
+ * The columns the gate needs. `workspace_id` scopes the project-link read; the
+ * rest are rendered below.
+ */
 const CYCLE_COLUMNS =
-  "id, title, status, geography_label, horizon_start_year, horizon_end_year, summary, " +
+  "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, summary, " +
   "public_review_open_at, public_review_close_at, financial_basis_year, annual_inflation_rate";
 
 /**
@@ -95,7 +99,7 @@ const CYCLE_COLUMNS =
  * the fiscal engine already says when it does not know one.
  */
 const CYCLE_COLUMNS_BEFORE_FINANCIAL_ELEMENT =
-  "id, title, status, geography_label, horizon_start_year, horizon_end_year, summary, " +
+  "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, summary, " +
   "public_review_open_at, public_review_close_at";
 
 /**
@@ -107,9 +111,10 @@ const CYCLE_COLUMNS_BEFORE_FINANCIAL_ELEMENT =
 const CHAPTER_COLUMNS =
   "id, chapter_key, title, section_type, status, summary, content_markdown, sort_order, required";
 
+/** `projects.workspace_id` is read so a project from another workspace can be dropped. */
 const LINK_COLUMNS =
   "id, portfolio_role, priority_rationale, horizon_band_id, estimated_cost, cost_basis_year, " +
-  "projects(id, name, summary)";
+  "projects(id, workspace_id, name, summary)";
 
 /**
  * A deadline stated in an unnamed time zone is a deadline a resident can miss.
@@ -141,6 +146,7 @@ function formatInstant(value: string | null): string | null {
 
 type CycleRow = {
   id: string;
+  workspace_id: string;
   title: string;
   status: string;
   geography_label: string | null;
@@ -165,7 +171,7 @@ type ChapterRow = {
   required: boolean;
 };
 
-type ProjectRef = { id: string; name: string; summary: string | null };
+type ProjectRef = { id: string; workspace_id: string | null; name: string; summary: string | null };
 
 type LinkRow = {
   id: string;
@@ -526,7 +532,15 @@ export default async function PublicRtpDocumentPage({
       .eq("rtp_cycle_id", cycle.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase.from("project_rtp_cycle_links").select(LINK_COLUMNS).eq("rtp_cycle_id", cycle.id),
+    // Scoped to the cycle's workspace as well as its id: the database does not
+    // yet refuse a link row whose workspace differs from its cycle's
+    // (KI-2026-11-02-053), and the sibling summary page has carried this scope
+    // since 2026-08-16.
+    supabase
+      .from("project_rtp_cycle_links")
+      .select(LINK_COLUMNS)
+      .eq("rtp_cycle_id", cycle.id)
+      .eq("workspace_id", cycle.workspace_id),
   ]);
 
   const chaptersFailed = reads.check("the chapters of this plan", chaptersResult);
@@ -535,7 +549,12 @@ export default async function PublicRtpDocumentPage({
   // `as unknown as` because the embedded `projects(...)` join makes supabase-js
   // infer `GenericStringError[]` for the whole row; the clients here are
   // deliberately untyped, so query results are cast (see CLAUDE.md).
-  const links = (linksResult.data ?? []) as unknown as LinkRow[];
+  // A link this workspace made to another workspace's project is dropped here,
+  // so that project's name, summary and cost are neither published nor counted.
+  const links = keepLinksInsideWorkspace(
+    (linksResult.data ?? []) as unknown as LinkRow[],
+    cycle.workspace_id
+  ).rows;
 
   // The shared loader, not a private copy of the same three reads — the export,
   // the board packet and this page must not drift in how they map a NUMERIC
