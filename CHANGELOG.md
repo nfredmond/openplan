@@ -79,6 +79,23 @@ and a read stopped by the allowance answers 429 and keeps nothing.
 Engagement scans and drafts that use the free fallback are no longer
 counted. No migration.
 
+**Atomic AI usage reservation and export hashes (KI-2026-10-12-014):** apply
+`20261102110000_reserve_ai_usage.sql` and
+`20261102110100_application_export_custody.sql` before deploying this change.
+The first adds `reserve_ai_usage`, which counts a workspace's AI usage and
+records the call in one transaction under the workspace lock the SQL
+dispatchers already take, so requests sent at the same time can no longer pass
+the 20-call window together. Only the service role can call it. If the function
+is missing, a call paid by the deployment's shared key is refused and the error
+names the migration; a workspace's own key keeps the earlier unlocked count.
+The second adds nullable `sha256` and `appendix_manifest_json` columns to
+`funding_opportunity_application_exports`. Application exports now store the
+PDF's SHA-256 and, for SS4A, the appendix manifest; the export list and the
+document library show the hash. Older exports show none. Until the second
+migration is applied, application export and the export list answer 503 naming
+it, and the document library reports grant application exports as waiting on a
+migration.
+
 **Engagement counts above 1,000 comments:** the database API returns at most
 1,000 rows per request and reports no error when it stops. Several screens and
 records read a campaign's comments in one request, so a campaign above 1,000
@@ -169,8 +186,9 @@ names its source record, date and stored hash. Missing, unreadable and
 deselected appendices are listed, never dropped. Planners choose appendices
 before export; all are on by default. The map is drawn only when the stored
 crash records and cached road lines reproduce the frozen ranking exactly. The
-export response and audit log carry the PDF's SHA-256; the export record does
-not store it yet. No migration is needed.
+export response and audit log carry the PDF's SHA-256. The appendices need no
+migration; storing the hash on the export record does (see "Atomic AI usage
+reservation and export hashes").
 
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep

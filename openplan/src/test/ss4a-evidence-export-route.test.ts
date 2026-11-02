@@ -183,6 +183,18 @@ describe("SS4A application export with evidence appendices", () => {
     expect(body.sha256).toBe(createHash("sha256").update(PDF_BYTES).digest("hex"));
     expect(mockAudit.info).toHaveBeenCalledWith("application_exported", expect.objectContaining({ sha256: body.sha256 }));
 
+    // Custody on the register row (migration 20261102110100): the same hash and
+    // manifest the response carries, after a probe for the columns.
+    const [inserted] = callsFor("funding_opportunity_application_exports", "insert")[0] as [Record<string, unknown>];
+    expect(inserted.sha256).toBe(body.sha256);
+    expect(inserted.appendix_manifest_json).toEqual(body.appendices);
+    expect(inserted.appendix_manifest_json).toHaveLength(5);
+    expect(callsFor("funding_opportunity_application_exports", "select")).toEqual([
+      ["id, sha256, appendix_manifest_json"],
+      ["id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json"],
+    ]);
+    expect(callsFor("funding_opportunity_application_exports", "eq")).toEqual([["opportunity_id", EVIDENCE_IDS.opportunity]]);
+
     // Projections, as literals: the columns the appendices print, from the
     // project's own records. A dropped column must fail here, not hide behind
     // a shared constant.
@@ -252,12 +264,29 @@ describe("SS4A application export with evidence appendices", () => {
     expect(callsFor("funding_opportunity_application_exports", "insert")).toEqual([]);
   });
 
+  it.each([
+    "column funding_opportunity_application_exports.sha256 does not exist",
+    "Could not find the 'appendix_manifest_json' column of 'funding_opportunity_application_exports' in the schema cache",
+  ])("answers 503 naming the custody migration, before rendering or storing, when the database lacks the columns: %s", async (message) => {
+    tables.funding_opportunity_application_exports = () => ({ data: null, error: { message, code: "42703" } });
+    const response = await exportApplication(post(), context);
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20261102110100_application_export_custody");
+    expect(renderReportPdfMock).not.toHaveBeenCalled();
+    expect(uploadMock).not.toHaveBeenCalled();
+    expect(callsFor("funding_opportunity_application_exports", "insert")).toEqual([]);
+  });
+
   it("leaves a non-SS4A application without evidence appendices", async () => {
     tables.funding_opportunity_application_sections = () => ({ data: [{ ...sections[0], section_key: "custom-scope", source: "custom" }], error: null });
     tables.funding_opportunity_section_drafts = () => ({ data: [], error: null, count: 0 });
     const response = await exportApplication(post(), context);
     expect(response.status).toBe(201);
     expect(renderReportPdfMock.mock.calls[0][0]).not.toContain("Evidence appendices");
-    expect((await response.json()).appendices).toBeNull();
+    const body = await response.json();
+    expect(body.appendices).toBeNull();
+    const [inserted] = callsFor("funding_opportunity_application_exports", "insert")[0] as [Record<string, unknown>];
+    expect(inserted).toMatchObject({ sha256: body.sha256, appendix_manifest_json: null });
+    expect(inserted.sha256).toMatch(/^[0-9a-f]{64}$/);
   });
 });
