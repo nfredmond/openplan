@@ -20,6 +20,49 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**County search without a Census key:** county search and county boundaries
+now come from the Census TIGERweb Counties layer, the same keyless service
+cities, CDPs, towns, tribal areas and metro areas already used. An install
+without `CENSUS_API_KEY` can search and pick counties and county equivalents:
+Louisiana parishes, Alaska boroughs and census areas, Virginia independent
+cities, Puerto Rico municipios, DC, Connecticut planning regions and the Island
+Areas. Same-named counties are ordered by 2020 Census population, also from
+TIGERweb; a Connecticut planning region has no 2020 count and ranks after
+counties that have one. A picked county's saved label now keeps its full name
+("Falls Church city, VA", not "Falls Church, VA"). The place search no longer
+looks up the workspace's Integration keys, since nothing it reads needs one.
+Census tract demographics, ACS corridor demographics and model zone attributes
+still need a Census key.
+
+**Every map draws without a Mapbox key (KI-2026-10-12-026):** with
+`NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` set and no Mapbox key, MapLibre now also
+draws the Aerial index map, the aerial mission map, the mission area editor,
+the flight plan editor, the traffic volume and model agreement maps, the
+participation heat map and the extent preview in GIS layer import. A Mapbox key
+still selects Mapbox and its styles. Without a key the mission map has no
+satellite background and says so, and the Aerial index map uses your one style
+in light and dark mode. Rebuild after setting the variable.
+
+**Project packets trace comments to decisions (KI-2026-11-02-010):** a
+packet's engagement section now lists each published staff response for the
+linked campaign, the contributions it answers, its staff review theme and the
+project decision it is linked to, with the link record ID and saved actions.
+Its contribution, response and decision-link counts match the internal
+engagement review files. A response or decision-link read that fails prints as
+unknown with its cause. Withheld comments, names, review notes and
+demographics stay out of the packet. Regenerate a packet to pick this up. No
+migration.
+
+**Engagement case fixes (KI-2026-11-02-011 to -016):** a rejected comment with
+no category no longer holds a campaign's handoff readiness or tells staff to
+categorize it, and new handoff packets no longer call reporting incomplete
+because of it. On the public page, sending a comment moves focus to the
+confirmation so screen readers announce it, the view buttons report which view
+is open, and a comment repeats its original topic only when the topic has since
+changed. Engagement review PDFs name each response's sources by register number
+and title and say whether the response is published. Six build notes were
+removed from staff pages. No migration.
+
 **Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
 acquisition now keeps only crashes whose point lies inside the study area's
 polygon (the project's stored place, a picked place, or a drawn area), not every

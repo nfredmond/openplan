@@ -5,7 +5,8 @@ type EngagementModerationQueue = {
 
 type EngagementCountsLike = {
   totalItems: number;
-  uncategorizedItems: number;
+  /** Uncategorized items that are not withheld; withheld items need no category. */
+  uncategorizedItemsNeedingCategory: number;
   moderationQueue: EngagementModerationQueue;
   appendixReadiness?: {
     appendixReadyCount: number;
@@ -154,13 +155,13 @@ export function getEngagementHandoffReadiness(
     {
       id: "categorization",
       label: "Items categorized",
-      passed: counts.totalItems === 0 || counts.uncategorizedItems === 0,
+      passed: counts.totalItems === 0 || counts.uncategorizedItemsNeedingCategory === 0,
       detail:
         counts.totalItems === 0
           ? "No intake items have been submitted yet; categorization is not blocking setup review."
-          : counts.uncategorizedItems === 0
-            ? "All submitted items have category assignments for matrix and appendix grouping."
-            : `${counts.uncategorizedItems} item${counts.uncategorizedItems === 1 ? " still needs" : "s still need"} a category before final matrix handoff.`,
+          : counts.uncategorizedItemsNeedingCategory === 0
+            ? "Every item a report can include has a category. Withheld items need none."
+            : `${counts.uncategorizedItemsNeedingCategory} item${counts.uncategorizedItemsNeedingCategory === 1 ? " still needs" : "s still need"} a category before final matrix handoff.`,
     },
     {
       id: "review_queue",
@@ -248,8 +249,8 @@ export function getEngagementHandoffReadiness(
     nextAction = "Link the campaign to the correct project so report creation and planning traceability stay intact.";
   } else if (categoryCount === 0) {
     nextAction = "Add at least one category so incoming items can be classified before handoff.";
-  } else if (counts.uncategorizedItems > 0) {
-    nextAction = `Categorize the ${counts.uncategorizedItems} uncategorized item${counts.uncategorizedItems === 1 ? "" : "s"} before final report matrix handoff.`;
+  } else if (counts.uncategorizedItemsNeedingCategory > 0) {
+    nextAction = `Categorize the ${counts.uncategorizedItemsNeedingCategory} uncategorized item${counts.uncategorizedItemsNeedingCategory === 1 ? "" : "s"} before final report matrix handoff.`;
   } else if (counts.moderationQueue.actionableCount > 0) {
     nextAction = `Resolve the ${counts.moderationQueue.actionableCount} pending or flagged moderation item${counts.moderationQueue.actionableCount === 1 ? "" : "s"} before calling this packet ready.`;
   } else if (appendixReadiness.duplicateReviewCount > 0) {

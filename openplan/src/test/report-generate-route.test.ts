@@ -25,6 +25,8 @@ import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 import { pagingFake } from "./helpers/paging-fake";
+import decisionLinkNative from "./fixtures/decision-link-native.json";
+import { address as traceAddress, row as traceDecisionRow } from "./fixtures/engagement/decision-synthesis";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import { createHash } from "node:crypto";
 import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
@@ -4208,8 +4210,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
 
   describe("a campaign with more comments than the server returns in one response", () => {
     const CAMPAIGN_ID = "99999999-9999-4999-8999-999999999999";
+    // `title` names an approved contribution in the comment-to-decision trace.
     const ITEM_COLUMNS =
-      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
+      "id, campaign_id, category_id, title, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
 
     // 1,234 comments: past PostgREST's 1,000-row cap, so a read that stops
     // after one request counts 1,000 and reports no error.
@@ -4360,6 +4363,134 @@ describe("POST /api/reports/[reportId]/generate", () => {
       );
       expect(artifactsInsertMock).not.toHaveBeenCalled();
       expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("a packet traces a contribution to its response, theme and decision (KI-2026-11-02-010)", () => {
+    const CROSSING = "d90d2cdc-483f-45c7-83d1-d403c5ba75c6";
+    const BILLING = "c0fa4477-9d37-4d75-bccc-1630e2b28ab8";
+    const traceItems = [
+      { id: CROSSING, campaign_id: traceAddress.campaignId, category_id: "category-1", title: "Near misses crossing Fifth at Cedar", status: "approved",
+        source_type: "public", latitude: null, longitude: null, moderation_notes: null, created_at: "2026-11-02T07:01:00Z", updated_at: "2026-11-02T07:10:00Z" },
+      { id: BILLING, campaign_id: traceAddress.campaignId, category_id: null, title: "Utility billing question", status: "rejected",
+        source_type: "public", latitude: null, longitude: null, moderation_notes: "SYNTHETIC off-topic reason", created_at: "2026-11-02T07:05:00Z", updated_at: "2026-11-02T07:12:00Z" },
+    ];
+    const published = {
+      id: traceAddress.responseId, campaign_id: traceAddress.campaignId, category_id: null, theme_title: "Walking safety on Fifth Avenue",
+      you_said: "SYNTHETIC crossings feel unsafe", we_did: "SYNTHETIC crosswalk proposed", status: "published", ai_assisted: false,
+      source_item_ids: [CROSSING], sort_order: 0, published_at: "2026-11-02T07:24:46Z", created_at: "2026-11-02T07:20:00Z", updated_at: "2026-11-02T07:24:46Z",
+    };
+
+    function decisionLinksPacket() {
+      const saved = traceDecisionRow();
+      return { ...structuredClone(decisionLinkNative.initial), campaignId: traceAddress.campaignId, workspaceId: traceAddress.workspaceId,
+        entries: [saved], entryCount: 1,
+        current: [{ linkId: saved.id, sourceState: "unchanged", currentContextSha256: saved.context_sha256, unavailableReason: null }], currentCount: 1 };
+    }
+
+    function answerTraceReads(responses: { data: unknown; error: unknown }) {
+      rpcMock.mockImplementation(async (name: string) => {
+        if (name === "read_engagement_response_snapshot") return responses;
+        if (name === "read_engagement_decision_links") return { data: decisionLinksPacket(), error: null };
+        return { data: [], error: null };
+      });
+    }
+
+    function projectPacketCitingTheCampaign() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111", workspace_id: traceAddress.workspaceId,
+          project_id: "44444444-4444-4444-8444-444444444444", rtp_cycle_id: null, title: "Engagement Handoff Packet",
+          summary: null, report_type: "project_status", status: "draft", created_at: "2026-11-02T08:00:00.000Z", generated_at: null, metadata_json: {},
+        },
+        error: null,
+      });
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [{ id: "section-1", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 0,
+          config_json: { campaignId: traceAddress.campaignId } }],
+        error: null,
+      });
+      engagementCampaignMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: traceAddress.campaignId, title: "Fifth Avenue listening", summary: null, status: "active", engagement_type: "map_feedback",
+          share_token: null, updated_at: "2026-11-02T08:00:00.000Z", demographics_enabled: false },
+        error: null,
+      });
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: traceItems, error: null });
+    }
+
+    async function generatedHtml() {
+      const response = await postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+      expect(response.status).toBe(200);
+      const html = String(artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent ?? "");
+      return html.replace(/<[^>]+>/g, " ").replace(/&#39;/g, "'").replace(/\s+/g, " ");
+    }
+
+    it("prints the response, the contribution it answers and the decision link in the project packet", async () => {
+      projectPacketCitingTheCampaign();
+      answerTraceReads({ data: { campaignId: traceAddress.campaignId, publishedOnly: false, count: 1, entries: [published] }, error: null });
+
+      const text = await generatedHtml();
+      const saved = traceDecisionRow();
+
+      expect(rpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: traceAddress.campaignId, p_published_only: false });
+      expect(rpcMock).toHaveBeenCalledWith("read_engagement_decision_links", { p_campaign: traceAddress.campaignId });
+      expect(engagementItemsSelectMock).toHaveBeenCalledWith(
+        "id, campaign_id, category_id, title, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+      );
+      expect(text).toContain("2 contributions: 1 approved, 1 withheld, 0 pending, 0 flagged. 1 published staff response. 1 decision-link action");
+      expect(text).toContain(`Walking safety on Fifth Avenue Response ${traceAddress.responseId}`);
+      expect(text).toContain(`Answers 1 contribution Near misses crossing Fifth at Cedar (${CROSSING})`);
+      expect(text).toContain(`SYNTHETIC decision · Proposed · SYNTHETIC linked project`);
+      expect(text).toContain(`Link record ${saved.id} · link`);
+      expect(text).not.toContain("Utility billing question");
+      expect(text).not.toContain("SYNTHETIC off-topic reason");
+    });
+
+    it("prints the same trace in a packet that targets the campaign itself", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111", workspace_id: traceAddress.workspaceId, project_id: null, rtp_cycle_id: null,
+          engagement_campaign_id: traceAddress.campaignId, title: "Campaign packet", summary: null, report_type: "project_status",
+          status: "draft", created_at: "2026-11-02T08:00:00.000Z",
+        },
+        error: null,
+      });
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [{ id: "section-1", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 0, config_json: {} }],
+        error: null,
+      });
+      reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+      engagementCampaignMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: traceAddress.campaignId, workspace_id: traceAddress.workspaceId, title: "Fifth Avenue listening", summary: null, status: "active",
+          engagement_type: "map_feedback", share_token: null, updated_at: "2026-11-02T08:00:00.000Z", demographics_enabled: false },
+        error: null,
+      });
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: traceItems, error: null });
+      answerTraceReads({ data: { campaignId: traceAddress.campaignId, publishedOnly: false, count: 1, entries: [published] }, error: null });
+
+      const text = await generatedHtml();
+
+      expect(rpcMock).toHaveBeenCalledWith("read_engagement_decision_links", { p_campaign: traceAddress.campaignId });
+      expect(text).toContain(`Answers 1 contribution Near misses crossing Fifth at Cedar (${CROSSING})`);
+      expect(text).toContain(`Link record ${traceDecisionRow().id} · link`);
+    });
+
+    it("still generates, and says the responses are unknown, when the response read fails", async () => {
+      projectPacketCitingTheCampaign();
+      answerTraceReads({ data: null, error: { message: "permission denied for function read_engagement_response_snapshot", code: "42501" } });
+
+      const text = await generatedHtml();
+
+      expect(text).toContain("Staff responses could not be read. They are unknown here, not zero. Reported cause: permission denied for function read_engagement_response_snapshot");
+      expect(text).not.toContain("No staff response has been published");
+      expect(text).not.toContain("Walking safety on Fifth Avenue");
     });
   });
 

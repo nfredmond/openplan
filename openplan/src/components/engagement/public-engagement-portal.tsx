@@ -239,6 +239,9 @@ function PortalTabButton({
       onClick={onClick}
       disabled={!ready}
       aria-busy={!ready}
+      // Which view is open was shown only by an underline; say it to assistive
+      // technology too.
+      aria-pressed={active}
       className={cn(
         "inline-flex min-h-11 items-center gap-2 border-b-2 px-1 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
         active
@@ -469,6 +472,10 @@ export function PublicEngagementPortal({
     return map;
   }, [categories]);
 
+  // The label each topic has now, as the agency wrote it. A comment's
+  // received-under definition is worth printing only when it differs.
+  const categorySourceLabelMap = useMemo(() => new Map(categories.map((category) => [category.id, category.label])), [categories]);
+
   const categoryColorMap = useMemo(() => {
     const map = new Map<string, string | null>();
     for (const category of categories) {
@@ -561,7 +568,7 @@ export function PublicEngagementPortal({
                   <OperatorText as="span" value={categoryText} translator={translator} compact />
                 </span>
               ) : null}
-              {item.historicalCategoryLabel ? <span lang="en" className="public-inline-label">Category definition in original form: <span dir="auto">{item.historicalCategoryLabel}</span></span> : null}
+              {item.historicalCategoryLabel && item.historicalCategoryLabel !== (item.categoryId ? categorySourceLabelMap.get(item.categoryId) : undefined) ? <span lang="en" className="public-inline-label">Category definition in original form: <span dir="auto">{item.historicalCategoryLabel}</span></span> : null}
               {itemIsLocated(item) ? (
                 <span className="inline-flex items-center gap-1">
                   <MapPinned className="h-3 w-3" aria-hidden="true" />

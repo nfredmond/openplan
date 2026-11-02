@@ -261,6 +261,17 @@ export function PortalSubmissionForm({
   const restoreStage = useRef(place.source === "stage" ? place.onRestoreGeometry : undefined);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+  // Send unmounts the form, and the focused button with it. Without a new focus
+  // target the browser drops focus to <body> and a screen reader announces
+  // nothing, so a resident cannot tell the comment arrived. Only a send made on
+  // this page moves focus; a receipt restored on reload leaves focus alone.
+  const receivedHeadingRef = useRef<HTMLHeadingElement>(null);
+  const [focusReceipt, setFocusReceipt] = useState(false);
+  useEffect(() => {
+    if (!submitted || !focusReceipt) return;
+    receivedHeadingRef.current?.focus();
+    setFocusReceipt(false);
+  }, [submitted, focusReceipt]);
 
   useEffect(() => {
     if (previewMode) return;
@@ -512,6 +523,7 @@ export function PortalSubmissionForm({
     if (result.ok) {
       setReceipt({ submissionId: result.submissionId, receivedAt: result.receivedAt });
       setSubmitted(true);
+      setFocusReceipt(true);
       return;
     }
 
@@ -545,7 +557,7 @@ export function PortalSubmissionForm({
     return (
       <div className={cn("space-y-3 p-5 text-center", className)} data-testid="portal-sidebar-received">
         <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">{t("portal.received")}</h2>
+        <h2 ref={receivedHeadingRef} tabIndex={-1} className="text-lg font-semibold text-foreground focus:outline-none">{t("portal.received")}</h2>
         <p className="text-sm text-muted-foreground">{t("portal.reviewNotice")}</p>
         {/* The one promise the agency must not let a resident infer wrongly:
             being read is not the same as being written back to. */}

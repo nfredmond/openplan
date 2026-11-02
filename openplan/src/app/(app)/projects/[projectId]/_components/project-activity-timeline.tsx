@@ -24,9 +24,6 @@ export function ProjectActivityTimeline({ timelineItems, deliverableReadState = 
           </span>
           <div className="module-section-heading">
             <h2 className="module-section-title">Everything happening in one feed</h2>
-            <p className="module-section-description">
-              The feed is intentionally tighter than the page intro: type first, timestamp second, short read after that.
-            </p>
           </div>
         </div>
       </div>

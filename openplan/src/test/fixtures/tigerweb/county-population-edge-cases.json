@@ -1,0 +1,147 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/82/query?where=GEOID%20IN%20%28%2702020%27%2C%2702050%27%2C%2702110%27%2C%2702185%27%2C%2705143%27%2C%2706057%27%2C%2709110%27%2C%2711001%27%2C%2713245%27%2C%2716041%27%2C%2722071%27%2C%2724043%27%2C%2735045%27%2C%2736073%27%2C%2739049%27%2C%2739167%27%2C%2741067%27%2C%2742125%27%2C%2750019%27%2C%2751159%27%2C%2751760%27%2C%2755057%27%2C%2766010%27%2C%2772127%27%29&outFields=GEOID,POP100&returnGeometry=false&orderByFields=GEOID&f=json",
+ "trimmed": "Field metadata removed. Same 24 GEOIDs; 09110 (a Connecticut planning region) is absent because the 2020 vintage still has Connecticut's old counties.",
+ "response": {
+  "features": [
+   {
+    "attributes": {
+     "GEOID": "02020",
+     "POP100": 291247
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "02050",
+     "POP100": 18666
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "02110",
+     "POP100": 32255
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "02185",
+     "POP100": 11031
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "05143",
+     "POP100": 245871
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "06057",
+     "POP100": 102241
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "11001",
+     "POP100": 689545
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "13245",
+     "POP100": 206607
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "16041",
+     "POP100": 14194
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "22071",
+     "POP100": 383997
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "24043",
+     "POP100": 154705
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "35045",
+     "POP100": 121661
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "36073",
+     "POP100": 40343
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39049",
+     "POP100": 1323807
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39167",
+     "POP100": 59771
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "41067",
+     "POP100": 600372
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "42125",
+     "POP100": 209349
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "50019",
+     "POP100": 27393
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "51159",
+     "POP100": 8923
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "51760",
+     "POP100": 226610
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "55057",
+     "POP100": 26718
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "66010",
+     "POP100": 153836
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "72127",
+     "POP100": 342259
+    }
+   }
+  ]
+ }
+}

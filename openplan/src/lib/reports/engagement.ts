@@ -1,5 +1,6 @@
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import type { HotspotAnalysis } from "@/lib/engagement/hotspots";
+import type { ReportEngagementTrace } from "@/lib/reports/engagement-trace";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import {
   DEMOGRAPHICS_SCREENING_CAVEAT,
@@ -46,6 +47,8 @@ export type ReportEngagementItemRecord = {
   id: string;
   campaign_id: string;
   category_id: string | null;
+  /** Read so the comment-to-decision trace can name an approved contribution a response answers. */
+  title?: string | null;
   status: string | null;
   source_type: string | null;
   latitude: number | null;
@@ -78,6 +81,12 @@ export type ReportEngagementSummary = {
   joint: JointRepresentativeness | null;
   /** Cached E1 comment synthesis (themes/sentiment + export-gated narrative). */
   synthesis: ReportEngagementSynthesis | null;
+  /**
+   * Published responses, the contributions they answer, their staff review
+   * theme and linked decisions. `not_loaded` renders nothing: a caller that did
+   * not read them may not say there are none.
+   */
+  trace: ReportEngagementTrace;
 };
 
 /**
@@ -315,6 +324,7 @@ export function buildReportEngagementSummary({
   representativeness = null,
   selfReported = { state: "not_loaded" },
   synthesis = null,
+  trace = { state: "not_loaded" },
 }: {
   campaign: ReportEngagementCampaignRecord | null;
   categories: ReportEngagementCategoryRecord[];
@@ -328,6 +338,7 @@ export function buildReportEngagementSummary({
    */
   selfReported?: SelfReportedDemographicsSource;
   synthesis?: ReportEngagementSynthesis | null;
+  trace?: ReportEngagementTrace;
 }): ReportEngagementSummary | null {
   if (!campaign) {
     return null;
@@ -350,6 +361,7 @@ export function buildReportEngagementSummary({
     selfReported: buildReportEngagementSelfReported(selfReported),
     joint: joint && jointReadingIsPresentable(joint) ? joint : null,
     synthesis,
+    trace,
   };
 }
 

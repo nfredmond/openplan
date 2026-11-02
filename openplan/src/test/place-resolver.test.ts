@@ -346,7 +346,7 @@ describe("searchPlaces", () => {
     searchUsCountiesMock.mockResolvedValue({
       items: [],
       availability: "unavailable",
-      unavailableReason: "County search needs a US Census API key, which this deployment has not configured.",
+      unavailableReason: "The US Census TIGERweb county layer did not respond, so county names could not be searched.",
     });
     // fetchJsonWithRetry answers null for a timeout, a non-OK status, or a body
     // that would not parse — it does not throw, which is how this stayed hidden.
@@ -359,8 +359,8 @@ describe("searchPlaces", () => {
     expect(outcome.unavailableKinds).toEqual(
       expect.arrayContaining(["county", "city", "cdp", "metro", "micro", "cousub", "aiannh"])
     );
-    // The knowable, actionable cause wins over a generic outage message.
-    expect(outcome.unavailableReason).toMatch(/Census API key/i);
+    // The county cause, which names its layer, wins over the generic message.
+    expect(outcome.unavailableReason).toMatch(/TIGERweb county layer/);
   });
 
   it("treats a 200 that carries no features array as an unanswered layer", async () => {
@@ -381,7 +381,7 @@ describe("searchPlaces", () => {
     searchUsCountiesMock.mockResolvedValue({
       items: [],
       availability: "unavailable",
-      unavailableReason: "The US Census county catalog did not respond, so county names could not be searched.",
+      unavailableReason: "The US Census TIGERweb county layer did not respond, so county names could not be searched.",
     });
     fetchJsonWithRetryMock.mockImplementation((url: string) => {
       const { service, layer } = tigerRoute(url);
