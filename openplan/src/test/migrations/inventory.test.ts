@@ -595,6 +595,8 @@ const EXPECTED = {
   // Its transaction-entry table lives in a private schema outside this scan.
   // Main's 343 relations, 329 tables and 14 views, plus the award migration's
   // four RLS tables and six views.
+  // 20261102140000 adds two trigger functions and three triggers on existing
+  // tables (RTP link workspace scope). It adds no relation, view or policy.
   relations: 353,
   tables: 333,
   views: 20,
