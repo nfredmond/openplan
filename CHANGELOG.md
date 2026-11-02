@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Dependency audit:** qs 6.16.1, follow-redirects 1.16.2 and @hono/node-server
+2.1.3 fix advisories published October 27-30 (all development or build
+tooling). The audit step now reads `openplan/audit-exceptions.json`: it still
+fails on any advisory at any severity, unless the advisory is listed there with
+a reason and a review date and every installed copy is development-only. Two
+are listed until December 1: minimatch (no fixed release eslint 9 can use) and
+deepmerge (no fixed release). Nothing to do on upgrade.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete
