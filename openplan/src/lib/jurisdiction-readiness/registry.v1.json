@@ -1,9 +1,9 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-11-02.2",
-  "releaseVersion": "0.44.0",
-  "reviewedAt": "2026-08-28",
-  "reviewBy": "2026-09-28",
+  "registryVersion": "2026-11-02.3",
+  "releaseVersion": "0.72.0",
+  "reviewedAt": "2026-11-02",
+  "reviewBy": "2026-12-02",
   "statuses": ["supported", "partial", "unavailable", "unassessed"],
   "jobs": [
     {
@@ -68,6 +68,377 @@
       "country": "US",
       "subdivision": "PR",
       "assessmentKind": "explicit-limits-exemplar"
+    },
+    {
+      "id": "US-AL",
+      "label": "Alabama, United States",
+      "country": "US",
+      "subdivision": "AL",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-AK",
+      "label": "Alaska, United States",
+      "country": "US",
+      "subdivision": "AK",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-AZ",
+      "label": "Arizona, United States",
+      "country": "US",
+      "subdivision": "AZ",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-AR",
+      "label": "Arkansas, United States",
+      "country": "US",
+      "subdivision": "AR",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-CO",
+      "label": "Colorado, United States",
+      "country": "US",
+      "subdivision": "CO",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-CT",
+      "label": "Connecticut, United States",
+      "country": "US",
+      "subdivision": "CT",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-DE",
+      "label": "Delaware, United States",
+      "country": "US",
+      "subdivision": "DE",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-DC",
+      "label": "District of Columbia, United States",
+      "country": "US",
+      "subdivision": "DC",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-FL",
+      "label": "Florida, United States",
+      "country": "US",
+      "subdivision": "FL",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-GA",
+      "label": "Georgia, United States",
+      "country": "US",
+      "subdivision": "GA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-HI",
+      "label": "Hawaii, United States",
+      "country": "US",
+      "subdivision": "HI",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-ID",
+      "label": "Idaho, United States",
+      "country": "US",
+      "subdivision": "ID",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-IL",
+      "label": "Illinois, United States",
+      "country": "US",
+      "subdivision": "IL",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-IN",
+      "label": "Indiana, United States",
+      "country": "US",
+      "subdivision": "IN",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-IA",
+      "label": "Iowa, United States",
+      "country": "US",
+      "subdivision": "IA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-KS",
+      "label": "Kansas, United States",
+      "country": "US",
+      "subdivision": "KS",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-KY",
+      "label": "Kentucky, United States",
+      "country": "US",
+      "subdivision": "KY",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-LA",
+      "label": "Louisiana, United States",
+      "country": "US",
+      "subdivision": "LA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-ME",
+      "label": "Maine, United States",
+      "country": "US",
+      "subdivision": "ME",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MD",
+      "label": "Maryland, United States",
+      "country": "US",
+      "subdivision": "MD",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MA",
+      "label": "Massachusetts, United States",
+      "country": "US",
+      "subdivision": "MA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MI",
+      "label": "Michigan, United States",
+      "country": "US",
+      "subdivision": "MI",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MN",
+      "label": "Minnesota, United States",
+      "country": "US",
+      "subdivision": "MN",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MS",
+      "label": "Mississippi, United States",
+      "country": "US",
+      "subdivision": "MS",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MO",
+      "label": "Missouri, United States",
+      "country": "US",
+      "subdivision": "MO",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MT",
+      "label": "Montana, United States",
+      "country": "US",
+      "subdivision": "MT",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NE",
+      "label": "Nebraska, United States",
+      "country": "US",
+      "subdivision": "NE",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NV",
+      "label": "Nevada, United States",
+      "country": "US",
+      "subdivision": "NV",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NH",
+      "label": "New Hampshire, United States",
+      "country": "US",
+      "subdivision": "NH",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NJ",
+      "label": "New Jersey, United States",
+      "country": "US",
+      "subdivision": "NJ",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NM",
+      "label": "New Mexico, United States",
+      "country": "US",
+      "subdivision": "NM",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NY",
+      "label": "New York, United States",
+      "country": "US",
+      "subdivision": "NY",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-NC",
+      "label": "North Carolina, United States",
+      "country": "US",
+      "subdivision": "NC",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-ND",
+      "label": "North Dakota, United States",
+      "country": "US",
+      "subdivision": "ND",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-OH",
+      "label": "Ohio, United States",
+      "country": "US",
+      "subdivision": "OH",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-OK",
+      "label": "Oklahoma, United States",
+      "country": "US",
+      "subdivision": "OK",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-PA",
+      "label": "Pennsylvania, United States",
+      "country": "US",
+      "subdivision": "PA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-RI",
+      "label": "Rhode Island, United States",
+      "country": "US",
+      "subdivision": "RI",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-SC",
+      "label": "South Carolina, United States",
+      "country": "US",
+      "subdivision": "SC",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-SD",
+      "label": "South Dakota, United States",
+      "country": "US",
+      "subdivision": "SD",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-TN",
+      "label": "Tennessee, United States",
+      "country": "US",
+      "subdivision": "TN",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-TX",
+      "label": "Texas, United States",
+      "country": "US",
+      "subdivision": "TX",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-UT",
+      "label": "Utah, United States",
+      "country": "US",
+      "subdivision": "UT",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-VT",
+      "label": "Vermont, United States",
+      "country": "US",
+      "subdivision": "VT",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-VA",
+      "label": "Virginia, United States",
+      "country": "US",
+      "subdivision": "VA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-WA",
+      "label": "Washington, United States",
+      "country": "US",
+      "subdivision": "WA",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-WV",
+      "label": "West Virginia, United States",
+      "country": "US",
+      "subdivision": "WV",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-WI",
+      "label": "Wisconsin, United States",
+      "country": "US",
+      "subdivision": "WI",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-WY",
+      "label": "Wyoming, United States",
+      "country": "US",
+      "subdivision": "WY",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-AS",
+      "label": "American Samoa, United States",
+      "country": "US",
+      "subdivision": "AS",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-GU",
+      "label": "Guam, United States",
+      "country": "US",
+      "subdivision": "GU",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-MP",
+      "label": "Northern Mariana Islands, United States",
+      "country": "US",
+      "subdivision": "MP",
+      "assessmentKind": "code-inventory"
+    },
+    {
+      "id": "US-VI",
+      "label": "U.S. Virgin Islands, United States",
+      "country": "US",
+      "subdivision": "VI",
+      "assessmentKind": "code-inventory"
     }
   ],
   "sources": [
@@ -135,6 +506,56 @@
       "id": "land-use-plan-kind-review-20261007",
       "path": "docs/reviews/2026-10-07-land-use-authority/PLAN_KIND_RULES.md",
       "sha256": "d7639a4bea24e16706737dbb790595246ba963501633f7f7561fef2b3f4c6a46"
+    },
+    {
+      "id": "iowadot-ia-source-adapter",
+      "path": "openplan/src/lib/safety/sources/iowadot-ia.ts",
+      "sha256": "183e726cb6b79bc974c399401248a0911ae9a328e737897af62d4782f9fef13b"
+    },
+    {
+      "id": "odot-oh-source-adapter",
+      "path": "openplan/src/lib/safety/sources/odot-oh.ts",
+      "sha256": "d76e888ea9e8947b171616b5978a695035f20073157e87a6f82adeb316db2976"
+    },
+    {
+      "id": "ddot-dc-source-adapter",
+      "path": "openplan/src/lib/safety/sources/ddot-dc.ts",
+      "sha256": "d291a98ea7431065ddd531bc1697a7ee66ba1197965b3a2ee1dfaa8b1c6ee564"
+    },
+    {
+      "id": "state-injury-crash-source-review-20261101",
+      "path": "docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md",
+      "sha256": "52ae50355e8b5cde50b43de9f1f206f645214aff2d95961ecb7b65646066fce8"
+    },
+    {
+      "id": "washington-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-wa.ts",
+      "sha256": "64d3962d61d3fca331f4fe39e765ea06e9fe806c9bfba7808a95ea1eedab0c17"
+    },
+    {
+      "id": "colorado-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-co.ts",
+      "sha256": "d8099ee72f956bbda37fc9284fb78c6616ad366b8d5a9b66f4431a20e8a8bef0"
+    },
+    {
+      "id": "texas-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-tx.ts",
+      "sha256": "1b563e5dea73529f850cc7a37c41053f1913e4efe7f3794b9bb11128b0c8d612"
+    },
+    {
+      "id": "ohio-grant-adapter",
+      "path": "openplan/src/lib/grants/programs/us-oh.ts",
+      "sha256": "07791ef01b00242151c1e27ca5fcb26b4973436bae0f2d2a0b670e383d447806"
+    },
+    {
+      "id": "land-use-plan-kind-connections-20261007",
+      "path": "docs/reviews/2026-10-07-land-use-authority/PLAN_KIND_CONNECTIONS.md",
+      "sha256": "627f0d7a11be6f11e11c952af0958d96aa1de09c8e6da477fe3f37efb8ab9d2d"
+    },
+    {
+      "id": "land-use-rule-reconciliation-20261007",
+      "path": "docs/reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_ACCEPTANCE.md",
+      "sha256": "33d6c7b244b743b155fa7985dc35ff2f8c88ff8d59ff43f574356d416224ff87"
     }
   ],
   "claims": [
@@ -155,7 +576,12 @@
       "jobId": "land-use-plan",
       "status": "partial",
       "applicability": "A configured California general-plan descriptor supplies cited statewide requirements and process steps.",
-      "sourceIds": ["land-use-plan-registry", "land-use-plan-kind-review-20261007"],
+      "sourceIds": [
+        "land-use-plan-registry",
+        "land-use-plan-kind-review-20261007",
+        "land-use-plan-kind-connections-20261007",
+        "land-use-rule-reconciliation-20261007"
+      ],
       "adapterIds": ["us-ca-general-plan"],
       "authorities": [
         {
@@ -179,9 +605,9 @@
       ],
       "limitations": [
         "The descriptor is scoped, does not determine legal sufficiency, and does not replace counsel or qualified planning review.",
-        "The installed workflow still uses the general-plan checklist for specific plans. Separate specific-plan rules are prepared but are not yet connected to production routes and forms.",
+        "Since October 7, 2026, creation, content, process, freeze and adoption select rules by plan kind, so a specific plan uses its own reviewed checklist.",
         "The October 7 source review covers selected specific-plan provisions only. Earlier descriptor review dates remain unchanged; inherited duties, local overlays and complete legal applicability need further review.",
-        "Frozen versions preserve their retained rules. Earlier drafts still need explicit checklist reconciliation that preserves existing content."
+        "Frozen versions preserve their retained rules. An earlier working draft keeps its saved checklist until staff reconcile it, which adds missing current sections and keeps existing content."
       ]
     },
     {
@@ -382,6 +808,3526 @@
       "adapterIds": [],
       "authorities": [],
       "limitations": ["No Puerto Rico use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-AL/project-evidence-handoff",
+      "jurisdictionId": "US-AL",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Alabama journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-AL/land-use-plan",
+      "jurisdictionId": "US-AL",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Alabama statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Alabama requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-AL/safety-analysis",
+      "jurisdictionId": "US-AL",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Alabama fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Alabama crash source with injury severity. The November 1, 2026 state source review rated Alabama not usable: ALDOT releases no crash-level data to the public, and approved access forbids disclosure."
+      ]
+    },
+    {
+      "id": "US-AL/grants-and-reimbursement",
+      "jurisdictionId": "US-AL",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Alabama program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Alabama."]
+    },
+    {
+      "id": "US-AL/model-validation-evidence",
+      "jurisdictionId": "US-AL",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Alabama geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Alabama use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-AK/project-evidence-handoff",
+      "jurisdictionId": "US-AK",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Alaska journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-AK/land-use-plan",
+      "jurisdictionId": "US-AK",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Alaska statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Alaska requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-AK/safety-analysis",
+      "jurisdictionId": "US-AK",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Alaska fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Alaska crash source with injury severity. The November 1, 2026 state source review rated Alaska usable with limits: Openly licensed crash rows, but no coordinates and no KABCO split."
+      ]
+    },
+    {
+      "id": "US-AK/grants-and-reimbursement",
+      "jurisdictionId": "US-AK",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Alaska program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Alaska."]
+    },
+    {
+      "id": "US-AK/model-validation-evidence",
+      "jurisdictionId": "US-AK",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Alaska geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Alaska use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-AZ/project-evidence-handoff",
+      "jurisdictionId": "US-AZ",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Arizona journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-AZ/land-use-plan",
+      "jurisdictionId": "US-AZ",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Arizona statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Arizona requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-AZ/safety-analysis",
+      "jurisdictionId": "US-AZ",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Arizona fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Arizona crash source with injury severity. The November 1, 2026 state source review rated Arizona not usable: Crash-level data requires an approved agreement; ADOT's public layers are 2012-2016 subsets."
+      ]
+    },
+    {
+      "id": "US-AZ/grants-and-reimbursement",
+      "jurisdictionId": "US-AZ",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Arizona program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Arizona."]
+    },
+    {
+      "id": "US-AZ/model-validation-evidence",
+      "jurisdictionId": "US-AZ",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Arizona geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Arizona use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-AR/project-evidence-handoff",
+      "jurisdictionId": "US-AR",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Arkansas journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-AR/land-use-plan",
+      "jurisdictionId": "US-AR",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Arkansas statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Arkansas requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-AR/safety-analysis",
+      "jurisdictionId": "US-AR",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Arkansas fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Arkansas crash source with injury severity. The November 1, 2026 state source review rated Arkansas usable with limits: Public KABCO points, but no open license and a not-an-official-record disclaimer."
+      ]
+    },
+    {
+      "id": "US-AR/grants-and-reimbursement",
+      "jurisdictionId": "US-AR",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Arkansas program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Arkansas."]
+    },
+    {
+      "id": "US-AR/model-validation-evidence",
+      "jurisdictionId": "US-AR",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Arkansas geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Arkansas use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-CO/project-evidence-handoff",
+      "jurisdictionId": "US-CO",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Colorado journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-CO/land-use-plan",
+      "jurisdictionId": "US-CO",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Colorado statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Colorado requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-CO/safety-analysis",
+      "jurisdictionId": "US-CO",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Colorado fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Colorado crash source with injury severity. The November 1, 2026 state source review rated Colorado usable with limits: Queryable points for 2022 only, with no license."
+      ]
+    },
+    {
+      "id": "US-CO/grants-and-reimbursement",
+      "jurisdictionId": "US-CO",
+      "jobId": "grants-and-reimbursement",
+      "status": "partial",
+      "applicability": "Federal and Colorado program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "colorado-grant-adapter"],
+      "adapterIds": ["us-federal", "us-co"],
+      "authorities": [
+        {
+          "kind": "program_catalog",
+          "label": "Multimodal Transportation and Mitigation Options Fund",
+          "agency": "Colorado Department of Transportation",
+          "url": "https://www.codot.gov/programs/planning/grants/mmof-local"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "Colorado Safe Routes to School",
+          "agency": "Colorado Department of Transportation",
+          "url": "https://www.codot.gov/programs/bikeped/saferoutes"
+        }
+      ],
+      "limitations": [
+        "The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.",
+        "OpenPlan ships no Colorado reimbursement procedure profile; the generic federal-aid profile applies as a disclosed interim default."
+      ]
+    },
+    {
+      "id": "US-CO/model-validation-evidence",
+      "jurisdictionId": "US-CO",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Colorado geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Colorado use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-CT/project-evidence-handoff",
+      "jurisdictionId": "US-CT",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Connecticut journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-CT/land-use-plan",
+      "jurisdictionId": "US-CT",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Connecticut statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Connecticut requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-CT/safety-analysis",
+      "jurisdictionId": "US-CT",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Connecticut fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Connecticut crash source with injury severity. The November 1, 2026 state source review rated Connecticut usable with limits: Statewide KABCO points with live bbox queries, but no reuse license."
+      ]
+    },
+    {
+      "id": "US-CT/grants-and-reimbursement",
+      "jurisdictionId": "US-CT",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Connecticut program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Connecticut."]
+    },
+    {
+      "id": "US-CT/model-validation-evidence",
+      "jurisdictionId": "US-CT",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Connecticut geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Connecticut use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-DE/project-evidence-handoff",
+      "jurisdictionId": "US-DE",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Delaware journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-DE/land-use-plan",
+      "jurisdictionId": "US-DE",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Delaware statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Delaware requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-DE/safety-analysis",
+      "jurisdictionId": "US-DE",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Delaware fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Delaware crash source with injury severity. The November 1, 2026 state source review rated Delaware usable with limits: Geocoded and queryable, but no serious-injury split and no explicit license."
+      ]
+    },
+    {
+      "id": "US-DE/grants-and-reimbursement",
+      "jurisdictionId": "US-DE",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Delaware program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Delaware."]
+    },
+    {
+      "id": "US-DE/model-validation-evidence",
+      "jurisdictionId": "US-DE",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Delaware geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Delaware use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-DC/project-evidence-handoff",
+      "jurisdictionId": "US-DC",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no District of Columbia journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-DC/land-use-plan",
+      "jurisdictionId": "US-DC",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured District of Columbia statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a District of Columbia requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-DC/safety-analysis",
+      "jurisdictionId": "US-DC",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "DDOT's published crash layer supplies located District of Columbia crashes with fatal, major and minor injury counts for live reads and corridor runs. FARS supplies the fatal-only records a Safety acquisition stores, for 2010 through 2024.",
+      "sourceIds": [
+        "crash-source-registry",
+        "ddot-dc-source-adapter",
+        "fars-source-adapter",
+        "state-injury-crash-source-review-20261101"
+      ],
+      "adapterIds": ["ddot-dc", "fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        },
+        {
+          "kind": "data_source",
+          "label": "Crashes in DC",
+          "agency": "District Department of Transportation",
+          "url": "https://opendata.dc.gov/datasets/70392a096a8e431381f1f692aaa06afd"
+        }
+      ],
+      "limitations": [
+        "The DDOT crash layer is read live and not stored: safety_crashes does not admit its source id, so a Safety acquisition in the District of Columbia still stores fatal-only FARS records.",
+        "DDOT licenses the layer under CC BY 4.0. Years are report years, not crash years. Crashes without a location are not published, and minor injury is not split into B and C."
+      ]
+    },
+    {
+      "id": "US-DC/grants-and-reimbursement",
+      "jurisdictionId": "US-DC",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No District of Columbia program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in the District of Columbia."]
+    },
+    {
+      "id": "US-DC/model-validation-evidence",
+      "jurisdictionId": "US-DC",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no District of Columbia geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No District of Columbia use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-FL/project-evidence-handoff",
+      "jurisdictionId": "US-FL",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Florida journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-FL/land-use-plan",
+      "jurisdictionId": "US-FL",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Florida statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Florida requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-FL/safety-analysis",
+      "jurisdictionId": "US-FL",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Florida fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Florida crash source with injury severity. The November 1, 2026 state source review rated Florida usable with limits: Public KABCO points complete only through 2019, under FDOT-purpose use language."
+      ]
+    },
+    {
+      "id": "US-FL/grants-and-reimbursement",
+      "jurisdictionId": "US-FL",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Florida program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Florida."]
+    },
+    {
+      "id": "US-FL/model-validation-evidence",
+      "jurisdictionId": "US-FL",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Florida geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Florida use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-GA/project-evidence-handoff",
+      "jurisdictionId": "US-GA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Georgia journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-GA/land-use-plan",
+      "jurisdictionId": "US-GA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Georgia statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Georgia requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-GA/safety-analysis",
+      "jurisdictionId": "US-GA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Georgia fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Georgia crash source with injury severity. The November 1, 2026 state source review rated Georgia not usable: Only an interactive dashboard is public; crash-level data needs a request."
+      ]
+    },
+    {
+      "id": "US-GA/grants-and-reimbursement",
+      "jurisdictionId": "US-GA",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Georgia program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Georgia."]
+    },
+    {
+      "id": "US-GA/model-validation-evidence",
+      "jurisdictionId": "US-GA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Georgia geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Georgia use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-HI/project-evidence-handoff",
+      "jurisdictionId": "US-HI",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Hawaii journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-HI/land-use-plan",
+      "jurisdictionId": "US-HI",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Hawaii statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Hawaii requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-HI/safety-analysis",
+      "jurisdictionId": "US-HI",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Hawaii fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Hawaii crash source with injury severity. The November 1, 2026 state source review rated Hawaii usable with limits: Public points, but severity is an undocumented major-injury flag and there is no license."
+      ]
+    },
+    {
+      "id": "US-HI/grants-and-reimbursement",
+      "jurisdictionId": "US-HI",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Hawaii program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Hawaii."]
+    },
+    {
+      "id": "US-HI/model-validation-evidence",
+      "jurisdictionId": "US-HI",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Hawaii geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Hawaii use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-ID/project-evidence-handoff",
+      "jurisdictionId": "US-ID",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Idaho journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-ID/land-use-plan",
+      "jurisdictionId": "US-ID",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Idaho statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Idaho requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-ID/safety-analysis",
+      "jurisdictionId": "US-ID",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Idaho fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Idaho crash source with injury severity. The November 1, 2026 state source review rated Idaho usable with limits: Full KABCO points, but no reuse license and nothing after 2023."
+      ]
+    },
+    {
+      "id": "US-ID/grants-and-reimbursement",
+      "jurisdictionId": "US-ID",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Idaho program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Idaho."]
+    },
+    {
+      "id": "US-ID/model-validation-evidence",
+      "jurisdictionId": "US-ID",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Idaho geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Idaho use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-IL/project-evidence-handoff",
+      "jurisdictionId": "US-IL",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Illinois journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-IL/land-use-plan",
+      "jurisdictionId": "US-IL",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Illinois statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Illinois requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-IL/safety-analysis",
+      "jurisdictionId": "US-IL",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Illinois fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Illinois crash source with injury severity. The November 1, 2026 state source review rated Illinois usable with limits: KABCO points with envelope queries, but no license or reuse terms."
+      ]
+    },
+    {
+      "id": "US-IL/grants-and-reimbursement",
+      "jurisdictionId": "US-IL",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Illinois program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Illinois."]
+    },
+    {
+      "id": "US-IL/model-validation-evidence",
+      "jurisdictionId": "US-IL",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Illinois geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Illinois use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-IN/project-evidence-handoff",
+      "jurisdictionId": "US-IN",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Indiana journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-IN/land-use-plan",
+      "jurisdictionId": "US-IN",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Indiana statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Indiana requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-IN/safety-analysis",
+      "jurisdictionId": "US-IN",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Indiana fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Indiana crash source with injury severity. The November 1, 2026 state source review rated Indiana not usable: No free crash-level dataset; requests carry a vendor fee."
+      ]
+    },
+    {
+      "id": "US-IN/grants-and-reimbursement",
+      "jurisdictionId": "US-IN",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Indiana program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Indiana."]
+    },
+    {
+      "id": "US-IN/model-validation-evidence",
+      "jurisdictionId": "US-IN",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Indiana geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Indiana use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-IA/project-evidence-handoff",
+      "jurisdictionId": "US-IA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Iowa journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-IA/land-use-plan",
+      "jurisdictionId": "US-IA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Iowa statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Iowa requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-IA/safety-analysis",
+      "jurisdictionId": "US-IA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "Iowa DOT's published crash layer supplies located Iowa crashes with Iowa DOT's own crash severity for live reads and corridor runs. FARS supplies the fatal-only records a Safety acquisition stores, for 2010 through 2024.",
+      "sourceIds": [
+        "crash-source-registry",
+        "iowadot-ia-source-adapter",
+        "fars-source-adapter",
+        "state-injury-crash-source-review-20261101"
+      ],
+      "adapterIds": ["iowadot-ia", "fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        },
+        {
+          "kind": "data_source",
+          "label": "Iowa DOT Crash Data layer",
+          "agency": "Iowa Department of Transportation",
+          "url": "https://gis.iowadot.gov/agshost/rest/services/Traffic_Safety/Crash_Data/FeatureServer/0"
+        }
+      ],
+      "limitations": [
+        "The Iowa DOT crash layer is read live and not stored: safety_crashes does not admit its source id, so a Safety acquisition in Iowa still stores fatal-only FARS records.",
+        "Iowa DOT licenses the layer under CC BY 4.0. Crashes Iowa DOT could not locate are excluded, and the layer is a rolling ten-year window with no published cutoff (2015 to 2026 when checked on November 1, 2026)."
+      ]
+    },
+    {
+      "id": "US-IA/grants-and-reimbursement",
+      "jurisdictionId": "US-IA",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Iowa program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Iowa."]
+    },
+    {
+      "id": "US-IA/model-validation-evidence",
+      "jurisdictionId": "US-IA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Iowa geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Iowa use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-KS/project-evidence-handoff",
+      "jurisdictionId": "US-KS",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Kansas journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-KS/land-use-plan",
+      "jurisdictionId": "US-KS",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Kansas statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Kansas requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-KS/safety-analysis",
+      "jurisdictionId": "US-KS",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Kansas fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Kansas crash source with injury severity. The November 1, 2026 state source review rated Kansas usable with limits: KABCO-equivalent points, but the linked reuse terms could not be read."
+      ]
+    },
+    {
+      "id": "US-KS/grants-and-reimbursement",
+      "jurisdictionId": "US-KS",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Kansas program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Kansas."]
+    },
+    {
+      "id": "US-KS/model-validation-evidence",
+      "jurisdictionId": "US-KS",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Kansas geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Kansas use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-KY/project-evidence-handoff",
+      "jurisdictionId": "US-KY",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Kentucky journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-KY/land-use-plan",
+      "jurisdictionId": "US-KY",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Kentucky statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Kentucky requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-KY/safety-analysis",
+      "jurisdictionId": "US-KY",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Kentucky fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Kentucky crash source with injury severity. The November 1, 2026 state source review rated Kentucky not usable: KABCO data exists only behind a form with no API, under an all-rights-reserved notice."
+      ]
+    },
+    {
+      "id": "US-KY/grants-and-reimbursement",
+      "jurisdictionId": "US-KY",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Kentucky program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Kentucky."]
+    },
+    {
+      "id": "US-KY/model-validation-evidence",
+      "jurisdictionId": "US-KY",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Kentucky geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Kentucky use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-LA/project-evidence-handoff",
+      "jurisdictionId": "US-LA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Louisiana journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-LA/land-use-plan",
+      "jurisdictionId": "US-LA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Louisiana statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Louisiana requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-LA/safety-analysis",
+      "jurisdictionId": "US-LA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Louisiana fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Louisiana crash source with injury severity. The November 1, 2026 state source review rated Louisiana not usable: Request-only for roadway owners, with DOTD review of work products."
+      ]
+    },
+    {
+      "id": "US-LA/grants-and-reimbursement",
+      "jurisdictionId": "US-LA",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Louisiana program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Louisiana."]
+    },
+    {
+      "id": "US-LA/model-validation-evidence",
+      "jurisdictionId": "US-LA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Louisiana geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Louisiana use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-ME/project-evidence-handoff",
+      "jurisdictionId": "US-ME",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Maine journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-ME/land-use-plan",
+      "jurisdictionId": "US-ME",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Maine statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Maine requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-ME/safety-analysis",
+      "jurisdictionId": "US-ME",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Maine fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Maine crash source with injury severity. The November 1, 2026 state source review rated Maine usable with limits: KABCO points with live bbox queries, but no license and a service named Test_View."
+      ]
+    },
+    {
+      "id": "US-ME/grants-and-reimbursement",
+      "jurisdictionId": "US-ME",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Maine program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Maine."]
+    },
+    {
+      "id": "US-ME/model-validation-evidence",
+      "jurisdictionId": "US-ME",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Maine geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Maine use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MD/project-evidence-handoff",
+      "jurisdictionId": "US-MD",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Maryland journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MD/land-use-plan",
+      "jurisdictionId": "US-MD",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Maryland statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Maryland requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MD/safety-analysis",
+      "jurisdictionId": "US-MD",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Maryland fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Maryland crash source with injury severity. The November 1, 2026 state source review rated Maryland not usable: The open-data dataset is behind a login and the dashboards are manual."
+      ]
+    },
+    {
+      "id": "US-MD/grants-and-reimbursement",
+      "jurisdictionId": "US-MD",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Maryland program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Maryland."]
+    },
+    {
+      "id": "US-MD/model-validation-evidence",
+      "jurisdictionId": "US-MD",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Maryland geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Maryland use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MA/project-evidence-handoff",
+      "jurisdictionId": "US-MA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Massachusetts journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MA/land-use-plan",
+      "jurisdictionId": "US-MA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Massachusetts statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Massachusetts requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MA/safety-analysis",
+      "jurisdictionId": "US-MA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Massachusetts fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Massachusetts crash source with injury severity. The November 1, 2026 state source review rated Massachusetts usable with limits: KABCO points, but no license, and MassDOT warns against analyzing open years."
+      ]
+    },
+    {
+      "id": "US-MA/grants-and-reimbursement",
+      "jurisdictionId": "US-MA",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Massachusetts program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Massachusetts."]
+    },
+    {
+      "id": "US-MA/model-validation-evidence",
+      "jurisdictionId": "US-MA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Massachusetts geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Massachusetts use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MI/project-evidence-handoff",
+      "jurisdictionId": "US-MI",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Michigan journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MI/land-use-plan",
+      "jurisdictionId": "US-MI",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Michigan statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Michigan requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MI/safety-analysis",
+      "jurisdictionId": "US-MI",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Michigan fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Michigan crash source with injury severity. The November 1, 2026 state source review rated Michigan not usable: All-crash data is restricted to unaltered noncommercial use; the open layer is a non-motorized subset ending in 2021."
+      ]
+    },
+    {
+      "id": "US-MI/grants-and-reimbursement",
+      "jurisdictionId": "US-MI",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Michigan program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Michigan."]
+    },
+    {
+      "id": "US-MI/model-validation-evidence",
+      "jurisdictionId": "US-MI",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Michigan geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Michigan use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MN/project-evidence-handoff",
+      "jurisdictionId": "US-MN",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Minnesota journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MN/land-use-plan",
+      "jurisdictionId": "US-MN",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Minnesota statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Minnesota requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MN/safety-analysis",
+      "jurisdictionId": "US-MN",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Minnesota fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Minnesota crash source with injury severity. The November 1, 2026 state source review rated Minnesota not usable: Crash-level access is limited to registered professionals."
+      ]
+    },
+    {
+      "id": "US-MN/grants-and-reimbursement",
+      "jurisdictionId": "US-MN",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Minnesota program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Minnesota."]
+    },
+    {
+      "id": "US-MN/model-validation-evidence",
+      "jurisdictionId": "US-MN",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Minnesota geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Minnesota use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MS/project-evidence-handoff",
+      "jurisdictionId": "US-MS",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Mississippi journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MS/land-use-plan",
+      "jurisdictionId": "US-MS",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Mississippi statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Mississippi requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MS/safety-analysis",
+      "jurisdictionId": "US-MS",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Mississippi fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Mississippi crash source with injury severity. The November 1, 2026 state source review rated Mississippi usable with limits: Free geocoded rows, but bulk XLSX only, crash severity needs a person join, and no license."
+      ]
+    },
+    {
+      "id": "US-MS/grants-and-reimbursement",
+      "jurisdictionId": "US-MS",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Mississippi program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Mississippi."]
+    },
+    {
+      "id": "US-MS/model-validation-evidence",
+      "jurisdictionId": "US-MS",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Mississippi geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Mississippi use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MO/project-evidence-handoff",
+      "jurisdictionId": "US-MO",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Missouri journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MO/land-use-plan",
+      "jurisdictionId": "US-MO",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Missouri statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Missouri requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MO/safety-analysis",
+      "jurisdictionId": "US-MO",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Missouri fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Missouri crash source with injury severity. The November 1, 2026 state source review rated Missouri usable with limits: Points with fatal, injury and PDO, but an app backend with no license and incomplete recent years."
+      ]
+    },
+    {
+      "id": "US-MO/grants-and-reimbursement",
+      "jurisdictionId": "US-MO",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Missouri program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Missouri."]
+    },
+    {
+      "id": "US-MO/model-validation-evidence",
+      "jurisdictionId": "US-MO",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Missouri geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Missouri use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MT/project-evidence-handoff",
+      "jurisdictionId": "US-MT",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Montana journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MT/land-use-plan",
+      "jurisdictionId": "US-MT",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Montana statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Montana requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MT/safety-analysis",
+      "jurisdictionId": "US-MT",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Montana fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Montana crash source with injury severity. The November 1, 2026 state source review rated Montana usable with limits: Current KABCO points, but only an as-is, planning-only disclaimer."
+      ]
+    },
+    {
+      "id": "US-MT/grants-and-reimbursement",
+      "jurisdictionId": "US-MT",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Montana program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Montana."]
+    },
+    {
+      "id": "US-MT/model-validation-evidence",
+      "jurisdictionId": "US-MT",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Montana geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Montana use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NE/project-evidence-handoff",
+      "jurisdictionId": "US-NE",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Nebraska journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NE/land-use-plan",
+      "jurisdictionId": "US-NE",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Nebraska statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Nebraska requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NE/safety-analysis",
+      "jurisdictionId": "US-NE",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Nebraska fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Nebraska crash source with injury severity. The November 1, 2026 state source review rated Nebraska not usable: No published API or bulk download."
+      ]
+    },
+    {
+      "id": "US-NE/grants-and-reimbursement",
+      "jurisdictionId": "US-NE",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Nebraska program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Nebraska."]
+    },
+    {
+      "id": "US-NE/model-validation-evidence",
+      "jurisdictionId": "US-NE",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Nebraska geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Nebraska use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NV/project-evidence-handoff",
+      "jurisdictionId": "US-NV",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Nevada journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NV/land-use-plan",
+      "jurisdictionId": "US-NV",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Nevada statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Nevada requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NV/safety-analysis",
+      "jurisdictionId": "US-NV",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Nevada fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Nevada crash source with injury severity. The November 1, 2026 state source review rated Nevada not usable: Both open crash services answered 'not started' on 2026-11-01 and the TrafficSafety folder lists no crash service; current access is a request form."
+      ]
+    },
+    {
+      "id": "US-NV/grants-and-reimbursement",
+      "jurisdictionId": "US-NV",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Nevada program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Nevada."]
+    },
+    {
+      "id": "US-NV/model-validation-evidence",
+      "jurisdictionId": "US-NV",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Nevada geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Nevada use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NH/project-evidence-handoff",
+      "jurisdictionId": "US-NH",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no New Hampshire journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NH/land-use-plan",
+      "jurisdictionId": "US-NH",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured New Hampshire statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a New Hampshire requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NH/safety-analysis",
+      "jurisdictionId": "US-NH",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies New Hampshire fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no New Hampshire crash source with injury severity. The November 1, 2026 state source review rated New Hampshire unknown: No published crash-level dataset found, but the DOT site blocked the check."
+      ]
+    },
+    {
+      "id": "US-NH/grants-and-reimbursement",
+      "jurisdictionId": "US-NH",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No New Hampshire program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in New Hampshire."]
+    },
+    {
+      "id": "US-NH/model-validation-evidence",
+      "jurisdictionId": "US-NH",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no New Hampshire geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No New Hampshire use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NJ/project-evidence-handoff",
+      "jurisdictionId": "US-NJ",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no New Jersey journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NJ/land-use-plan",
+      "jurisdictionId": "US-NJ",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured New Jersey statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a New Jersey requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NJ/safety-analysis",
+      "jurisdictionId": "US-NJ",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies New Jersey fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no New Jersey crash source with injury severity. The November 1, 2026 state source review rated New Jersey usable with limits: Free geocoded bulk files, but F/I/P only, no API, no license, nothing after 2022."
+      ]
+    },
+    {
+      "id": "US-NJ/grants-and-reimbursement",
+      "jurisdictionId": "US-NJ",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No New Jersey program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in New Jersey."]
+    },
+    {
+      "id": "US-NJ/model-validation-evidence",
+      "jurisdictionId": "US-NJ",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no New Jersey geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No New Jersey use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NM/project-evidence-handoff",
+      "jurisdictionId": "US-NM",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no New Mexico journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NM/land-use-plan",
+      "jurisdictionId": "US-NM",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured New Mexico statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a New Mexico requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NM/safety-analysis",
+      "jurisdictionId": "US-NM",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies New Mexico fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no New Mexico crash source with injury severity. The November 1, 2026 state source review rated New Mexico not usable: Crash-level data is request-only."
+      ]
+    },
+    {
+      "id": "US-NM/grants-and-reimbursement",
+      "jurisdictionId": "US-NM",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No New Mexico program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in New Mexico."]
+    },
+    {
+      "id": "US-NM/model-validation-evidence",
+      "jurisdictionId": "US-NM",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no New Mexico geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No New Mexico use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NY/project-evidence-handoff",
+      "jurisdictionId": "US-NY",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no New York journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NY/land-use-plan",
+      "jurisdictionId": "US-NY",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured New York statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a New York requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NY/safety-analysis",
+      "jurisdictionId": "US-NY",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies New York fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no New York crash source with injury severity. The November 1, 2026 state source review rated New York usable with limits: Free crash rows, but no coordinates and no serious-injury split."
+      ]
+    },
+    {
+      "id": "US-NY/grants-and-reimbursement",
+      "jurisdictionId": "US-NY",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No New York program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in New York."]
+    },
+    {
+      "id": "US-NY/model-validation-evidence",
+      "jurisdictionId": "US-NY",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no New York geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No New York use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-NC/project-evidence-handoff",
+      "jurisdictionId": "US-NC",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no North Carolina journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-NC/land-use-plan",
+      "jurisdictionId": "US-NC",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured North Carolina statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a North Carolina requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-NC/safety-analysis",
+      "jurisdictionId": "US-NC",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies North Carolina fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no North Carolina crash source with injury severity. The November 1, 2026 state source review rated North Carolina usable with limits: Points hold only K and A, the full KABCO table has no coordinates, and there is no open license."
+      ]
+    },
+    {
+      "id": "US-NC/grants-and-reimbursement",
+      "jurisdictionId": "US-NC",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No North Carolina program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in North Carolina."]
+    },
+    {
+      "id": "US-NC/model-validation-evidence",
+      "jurisdictionId": "US-NC",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no North Carolina geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No North Carolina use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-ND/project-evidence-handoff",
+      "jurisdictionId": "US-ND",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no North Dakota journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-ND/land-use-plan",
+      "jurisdictionId": "US-ND",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured North Dakota statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a North Dakota requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-ND/safety-analysis",
+      "jurisdictionId": "US-ND",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies North Dakota fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no North Dakota crash source with injury severity. The November 1, 2026 state source review rated North Dakota unknown: Only an aggregate PDF was verified; access to crash rows is unknown."
+      ]
+    },
+    {
+      "id": "US-ND/grants-and-reimbursement",
+      "jurisdictionId": "US-ND",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No North Dakota program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in North Dakota."]
+    },
+    {
+      "id": "US-ND/model-validation-evidence",
+      "jurisdictionId": "US-ND",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no North Dakota geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No North Dakota use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-OH/project-evidence-handoff",
+      "jurisdictionId": "US-OH",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Ohio journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-OH/land-use-plan",
+      "jurisdictionId": "US-OH",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Ohio statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Ohio requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-OH/safety-analysis",
+      "jurisdictionId": "US-OH",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "Ohio DOT's published crash layer supplies located Ohio crashes with ODOT's five-level crash severity for live reads and corridor runs. FARS supplies the fatal-only records a Safety acquisition stores, for 2010 through 2024.",
+      "sourceIds": [
+        "crash-source-registry",
+        "odot-oh-source-adapter",
+        "fars-source-adapter",
+        "state-injury-crash-source-review-20261101"
+      ],
+      "adapterIds": ["odot-oh", "fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        },
+        {
+          "kind": "data_source",
+          "label": "TIMS crash location services",
+          "agency": "Ohio Department of Transportation",
+          "url": "https://tims.dot.state.oh.us/ags/rest/services/Safety"
+        }
+      ],
+      "limitations": [
+        "The Ohio DOT crash layer is read live and not stored: safety_crashes does not admit its source id, so a Safety acquisition in Ohio still stores fatal-only FARS records.",
+        "ODOT deems the data public information and names no open license. The layers carry no day-of-month crash date and no casualty counts, and hold only the years ODOT publishes (2021 to 2025 when checked on November 1, 2026)."
+      ]
+    },
+    {
+      "id": "US-OH/grants-and-reimbursement",
+      "jurisdictionId": "US-OH",
+      "jobId": "grants-and-reimbursement",
+      "status": "partial",
+      "applicability": "Federal and Ohio program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "ohio-grant-adapter"],
+      "adapterIds": ["us-federal", "us-oh"],
+      "authorities": [
+        {
+          "kind": "program_catalog",
+          "label": "2026 Safe Routes to School guidance",
+          "agency": "Ohio Department of Transportation",
+          "url": "https://dam.assets.ohio.gov/image/upload/transportation.ohio.gov/safety/srts/2026SRTSGuidance.pdf"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "State Capital Improvement and Local Transportation Improvement Programs",
+          "agency": "Ohio Public Works Commission",
+          "url": "https://www.publicworks.ohio.gov/"
+        }
+      ],
+      "limitations": [
+        "The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.",
+        "OpenPlan ships no Ohio reimbursement procedure profile; the generic federal-aid profile applies as a disclosed interim default."
+      ]
+    },
+    {
+      "id": "US-OH/model-validation-evidence",
+      "jurisdictionId": "US-OH",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Ohio geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Ohio use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-OK/project-evidence-handoff",
+      "jurisdictionId": "US-OK",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Oklahoma journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-OK/land-use-plan",
+      "jurisdictionId": "US-OK",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Oklahoma statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Oklahoma requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-OK/safety-analysis",
+      "jurisdictionId": "US-OK",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Oklahoma fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Oklahoma crash source with injury severity. The November 1, 2026 state source review rated Oklahoma usable with limits: Fatal and injury crashes only, latest full year 2021, and no stated terms."
+      ]
+    },
+    {
+      "id": "US-OK/grants-and-reimbursement",
+      "jurisdictionId": "US-OK",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Oklahoma program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Oklahoma."]
+    },
+    {
+      "id": "US-OK/model-validation-evidence",
+      "jurisdictionId": "US-OK",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Oklahoma geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Oklahoma use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-PA/project-evidence-handoff",
+      "jurisdictionId": "US-PA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Pennsylvania journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-PA/land-use-plan",
+      "jurisdictionId": "US-PA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Pennsylvania statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Pennsylvania requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-PA/safety-analysis",
+      "jurisdictionId": "US-PA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Pennsylvania fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Pennsylvania crash source with injury severity. The November 1, 2026 state source review rated Pennsylvania usable with limits: Geocoded KABCO bulk files, but no live area API and no license."
+      ]
+    },
+    {
+      "id": "US-PA/grants-and-reimbursement",
+      "jurisdictionId": "US-PA",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Pennsylvania program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Pennsylvania."]
+    },
+    {
+      "id": "US-PA/model-validation-evidence",
+      "jurisdictionId": "US-PA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Pennsylvania geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Pennsylvania use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-RI/project-evidence-handoff",
+      "jurisdictionId": "US-RI",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Rhode Island journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-RI/land-use-plan",
+      "jurisdictionId": "US-RI",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Rhode Island statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Rhode Island requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-RI/safety-analysis",
+      "jurisdictionId": "US-RI",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Rhode Island fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Rhode Island crash source with injury severity. The November 1, 2026 state source review rated Rhode Island not usable: No published portal or API; access is by records request."
+      ]
+    },
+    {
+      "id": "US-RI/grants-and-reimbursement",
+      "jurisdictionId": "US-RI",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Rhode Island program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Rhode Island."]
+    },
+    {
+      "id": "US-RI/model-validation-evidence",
+      "jurisdictionId": "US-RI",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Rhode Island geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Rhode Island use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-SC/project-evidence-handoff",
+      "jurisdictionId": "US-SC",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no South Carolina journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-SC/land-use-plan",
+      "jurisdictionId": "US-SC",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured South Carolina statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a South Carolina requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-SC/safety-analysis",
+      "jurisdictionId": "US-SC",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies South Carolina fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no South Carolina crash source with injury severity. The November 1, 2026 state source review rated South Carolina not usable: The licensed view is empty and the populated layers need a token."
+      ]
+    },
+    {
+      "id": "US-SC/grants-and-reimbursement",
+      "jurisdictionId": "US-SC",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No South Carolina program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in South Carolina."]
+    },
+    {
+      "id": "US-SC/model-validation-evidence",
+      "jurisdictionId": "US-SC",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no South Carolina geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No South Carolina use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-SD/project-evidence-handoff",
+      "jurisdictionId": "US-SD",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no South Dakota journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-SD/land-use-plan",
+      "jurisdictionId": "US-SD",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured South Dakota statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a South Dakota requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-SD/safety-analysis",
+      "jurisdictionId": "US-SD",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies South Dakota fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no South Dakota crash source with injury severity. The November 1, 2026 state source review rated South Dakota usable with limits: KABCO-equivalent points, but no license and about five years kept."
+      ]
+    },
+    {
+      "id": "US-SD/grants-and-reimbursement",
+      "jurisdictionId": "US-SD",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No South Dakota program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in South Dakota."]
+    },
+    {
+      "id": "US-SD/model-validation-evidence",
+      "jurisdictionId": "US-SD",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no South Dakota geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No South Dakota use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-TN/project-evidence-handoff",
+      "jurisdictionId": "US-TN",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Tennessee journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-TN/land-use-plan",
+      "jurisdictionId": "US-TN",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Tennessee statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Tennessee requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-TN/safety-analysis",
+      "jurisdictionId": "US-TN",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Tennessee fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Tennessee crash source with injury severity. The November 1, 2026 state source review rated Tennessee usable with limits: KABCO points in a static snapshot with no license."
+      ]
+    },
+    {
+      "id": "US-TN/grants-and-reimbursement",
+      "jurisdictionId": "US-TN",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Tennessee program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Tennessee."]
+    },
+    {
+      "id": "US-TN/model-validation-evidence",
+      "jurisdictionId": "US-TN",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Tennessee geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Tennessee use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-TX/project-evidence-handoff",
+      "jurisdictionId": "US-TX",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Texas journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-TX/land-use-plan",
+      "jurisdictionId": "US-TX",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Texas statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": [
+        "OpenPlan cannot provide a Texas requirements checklist or adoption-law claim.",
+        "The land-use registry's Texas comprehensive-plan descriptor is a neutrality fixture, not a configured legal bundle, and planners cannot select it."
+      ]
+    },
+    {
+      "id": "US-TX/safety-analysis",
+      "jurisdictionId": "US-TX",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Texas fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Texas crash source with injury severity. The November 1, 2026 state source review rated Texas usable with limits: Free KABCO data with coordinates, but no REST API and no stated license."
+      ]
+    },
+    {
+      "id": "US-TX/grants-and-reimbursement",
+      "jurisdictionId": "US-TX",
+      "jobId": "grants-and-reimbursement",
+      "status": "partial",
+      "applicability": "Federal and Texas program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "texas-grant-adapter"],
+      "adapterIds": ["us-federal", "us-tx"],
+      "authorities": [
+        {
+          "kind": "program_catalog",
+          "label": "Bicycle and pedestrian local federal funding programs",
+          "agency": "Texas Department of Transportation",
+          "url": "https://www.txdot.gov/business/grants-and-funding/bicycle-pedestrian-local-federal-funding-programs.html"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "Public transportation grants",
+          "agency": "Texas Department of Transportation",
+          "url": "https://www.txdot.gov/business/grants-and-funding/public-transportation-grants.html"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "Traffic Safety eGrants",
+          "agency": "Texas Department of Transportation",
+          "url": "https://www.txdot.gov/business/grants-and-funding/traffic-safety-egrants.html"
+        }
+      ],
+      "limitations": [
+        "The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.",
+        "OpenPlan ships no Texas reimbursement procedure profile; the generic federal-aid profile applies as a disclosed interim default."
+      ]
+    },
+    {
+      "id": "US-TX/model-validation-evidence",
+      "jurisdictionId": "US-TX",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Texas geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Texas use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-UT/project-evidence-handoff",
+      "jurisdictionId": "US-UT",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Utah journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-UT/land-use-plan",
+      "jurisdictionId": "US-UT",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Utah statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Utah requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-UT/safety-analysis",
+      "jurisdictionId": "US-UT",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Utah fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Utah crash source with injury severity. The November 1, 2026 state source review rated Utah usable with limits: Full KABCO points, but no reuse license and the feed stopped in August 2025."
+      ]
+    },
+    {
+      "id": "US-UT/grants-and-reimbursement",
+      "jurisdictionId": "US-UT",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Utah program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Utah."]
+    },
+    {
+      "id": "US-UT/model-validation-evidence",
+      "jurisdictionId": "US-UT",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Utah geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Utah use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-VT/project-evidence-handoff",
+      "jurisdictionId": "US-VT",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Vermont journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-VT/land-use-plan",
+      "jurisdictionId": "US-VT",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Vermont statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Vermont requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-VT/safety-analysis",
+      "jurisdictionId": "US-VT",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Vermont fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Vermont crash source with injury severity. The November 1, 2026 state source review rated Vermont usable with limits: Current points, but no serious-injury split and no license."
+      ]
+    },
+    {
+      "id": "US-VT/grants-and-reimbursement",
+      "jurisdictionId": "US-VT",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Vermont program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Vermont."]
+    },
+    {
+      "id": "US-VT/model-validation-evidence",
+      "jurisdictionId": "US-VT",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Vermont geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Vermont use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-VA/project-evidence-handoff",
+      "jurisdictionId": "US-VA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Virginia journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-VA/land-use-plan",
+      "jurisdictionId": "US-VA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Virginia statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Virginia requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-VA/safety-analysis",
+      "jurisdictionId": "US-VA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Virginia fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Virginia crash source with injury severity. The November 1, 2026 state source review rated Virginia usable with limits: A complete KABCO point layer, but its terms limit use to Commonwealth business."
+      ]
+    },
+    {
+      "id": "US-VA/grants-and-reimbursement",
+      "jurisdictionId": "US-VA",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Virginia program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Virginia."]
+    },
+    {
+      "id": "US-VA/model-validation-evidence",
+      "jurisdictionId": "US-VA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Virginia geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Virginia use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-WA/project-evidence-handoff",
+      "jurisdictionId": "US-WA",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Washington journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-WA/land-use-plan",
+      "jurisdictionId": "US-WA",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Washington statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": [
+        "OpenPlan cannot provide a Washington requirements checklist or adoption-law claim.",
+        "The land-use registry's Washington comprehensive-plan descriptor is a neutrality fixture, not a configured legal bundle, and planners cannot select it."
+      ]
+    },
+    {
+      "id": "US-WA/safety-analysis",
+      "jurisdictionId": "US-WA",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Washington fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Washington crash source with injury severity. The November 1, 2026 state source review rated Washington unknown: WSDOT is summary-only, and the State Patrol tool that may offer record downloads could not be reached."
+      ]
+    },
+    {
+      "id": "US-WA/grants-and-reimbursement",
+      "jurisdictionId": "US-WA",
+      "jobId": "grants-and-reimbursement",
+      "status": "partial",
+      "applicability": "Federal and Washington program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "washington-grant-adapter"],
+      "adapterIds": ["us-federal", "us-wa"],
+      "authorities": [
+        {
+          "kind": "program_catalog",
+          "label": "Transportation Improvement Board grant programs",
+          "agency": "Washington State Transportation Improvement Board",
+          "url": "https://www.tib.wa.gov/grants/grants.cfm"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "Pedestrian and Bicyclist Program",
+          "agency": "Washington State Department of Transportation",
+          "url": "https://wsdot.wa.gov/business-wsdot/support-local-programs/funding-programs/active-transportation-funding-programs/pedestrian-bicycle-program"
+        },
+        {
+          "kind": "program_catalog",
+          "label": "Freight Mobility Six-Year Investment Program",
+          "agency": "Washington State Freight Mobility Strategic Investment Board",
+          "url": "https://fmsib.wa.gov/six-year-investment-program/current-funding-opportunities"
+        }
+      ],
+      "limitations": [
+        "The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.",
+        "OpenPlan ships no Washington reimbursement procedure profile; the generic federal-aid profile applies as a disclosed interim default."
+      ]
+    },
+    {
+      "id": "US-WA/model-validation-evidence",
+      "jurisdictionId": "US-WA",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Washington geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Washington use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-WV/project-evidence-handoff",
+      "jurisdictionId": "US-WV",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no West Virginia journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-WV/land-use-plan",
+      "jurisdictionId": "US-WV",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured West Virginia statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a West Virginia requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-WV/safety-analysis",
+      "jurisdictionId": "US-WV",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies West Virginia fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no West Virginia crash source with injury severity. The November 1, 2026 state source review rated West Virginia unknown: No public source found and the official page returned 404."
+      ]
+    },
+    {
+      "id": "US-WV/grants-and-reimbursement",
+      "jurisdictionId": "US-WV",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No West Virginia program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in West Virginia."]
+    },
+    {
+      "id": "US-WV/model-validation-evidence",
+      "jurisdictionId": "US-WV",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no West Virginia geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No West Virginia use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-WI/project-evidence-handoff",
+      "jurisdictionId": "US-WI",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Wisconsin journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-WI/land-use-plan",
+      "jurisdictionId": "US-WI",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Wisconsin statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Wisconsin requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-WI/safety-analysis",
+      "jurisdictionId": "US-WI",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Wisconsin fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Wisconsin crash source with injury severity. The November 1, 2026 state source review rated Wisconsin usable with limits: KABCO rows with coordinates, but bulk only, no license, and the newest file is 2022."
+      ]
+    },
+    {
+      "id": "US-WI/grants-and-reimbursement",
+      "jurisdictionId": "US-WI",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Wisconsin program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Wisconsin."]
+    },
+    {
+      "id": "US-WI/model-validation-evidence",
+      "jurisdictionId": "US-WI",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Wisconsin geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Wisconsin use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-WY/project-evidence-handoff",
+      "jurisdictionId": "US-WY",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Wyoming journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-WY/land-use-plan",
+      "jurisdictionId": "US-WY",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Wyoming statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Wyoming requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-WY/safety-analysis",
+      "jurisdictionId": "US-WY",
+      "jobId": "safety-analysis",
+      "status": "partial",
+      "applicability": "FARS supplies Wyoming fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "adapterIds": ["fars-national"],
+      "authorities": [
+        {
+          "kind": "data_source",
+          "label": "Fatality Analysis Reporting System",
+          "agency": "National Highway Traffic Safety Administration",
+          "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        }
+      ],
+      "limitations": [
+        "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
+        "OpenPlan reads no Wyoming crash source with injury severity. The November 1, 2026 state source review rated Wyoming not usable: Only yearly totals are public."
+      ]
+    },
+    {
+      "id": "US-WY/grants-and-reimbursement",
+      "jurisdictionId": "US-WY",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Wyoming program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Wyoming."]
+    },
+    {
+      "id": "US-WY/model-validation-evidence",
+      "jurisdictionId": "US-WY",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Wyoming geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Wyoming use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-AS/project-evidence-handoff",
+      "jurisdictionId": "US-AS",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no American Samoa journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-AS/land-use-plan",
+      "jurisdictionId": "US-AS",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured American Samoa statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a American Samoa requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-AS/safety-analysis",
+      "jurisdictionId": "US-AS",
+      "jobId": "safety-analysis",
+      "status": "unavailable",
+      "applicability": "No registered crash source serves American Samoa. The FARS adapter reads NHTSA's National file, which covers the 50 states and the District of Columbia, and its separate Puerto Rico file.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["OpenPlan reports a American Samoa study area as out of crash-source coverage, never as zero crashes."]
+    },
+    {
+      "id": "US-AS/grants-and-reimbursement",
+      "jurisdictionId": "US-AS",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No American Samoa program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in American Samoa."]
+    },
+    {
+      "id": "US-AS/model-validation-evidence",
+      "jurisdictionId": "US-AS",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no American Samoa geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No American Samoa use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-GU/project-evidence-handoff",
+      "jurisdictionId": "US-GU",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Guam journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-GU/land-use-plan",
+      "jurisdictionId": "US-GU",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Guam statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Guam requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-GU/safety-analysis",
+      "jurisdictionId": "US-GU",
+      "jobId": "safety-analysis",
+      "status": "unavailable",
+      "applicability": "No registered crash source serves Guam. The FARS adapter reads NHTSA's National file, which covers the 50 states and the District of Columbia, and its separate Puerto Rico file.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["OpenPlan reports a Guam study area as out of crash-source coverage, never as zero crashes."]
+    },
+    {
+      "id": "US-GU/grants-and-reimbursement",
+      "jurisdictionId": "US-GU",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Guam program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Guam."]
+    },
+    {
+      "id": "US-GU/model-validation-evidence",
+      "jurisdictionId": "US-GU",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Guam geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Guam use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-MP/project-evidence-handoff",
+      "jurisdictionId": "US-MP",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Northern Mariana Islands journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-MP/land-use-plan",
+      "jurisdictionId": "US-MP",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured Northern Mariana Islands statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a Northern Mariana Islands requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-MP/safety-analysis",
+      "jurisdictionId": "US-MP",
+      "jobId": "safety-analysis",
+      "status": "unavailable",
+      "applicability": "No registered crash source serves the Northern Mariana Islands. The FARS adapter reads NHTSA's National file, which covers the 50 states and the District of Columbia, and its separate Puerto Rico file.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["OpenPlan reports a Northern Mariana Islands study area as out of crash-source coverage, never as zero crashes."]
+    },
+    {
+      "id": "US-MP/grants-and-reimbursement",
+      "jurisdictionId": "US-MP",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No Northern Mariana Islands program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in the Northern Mariana Islands."]
+    },
+    {
+      "id": "US-MP/model-validation-evidence",
+      "jurisdictionId": "US-MP",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no Northern Mariana Islands geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No Northern Mariana Islands use-specific model validation assessment is available."]
+    },
+    {
+      "id": "US-VI/project-evidence-handoff",
+      "jurisdictionId": "US-VI",
+      "jobId": "project-evidence-handoff",
+      "status": "unassessed",
+      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no U.S. Virgin Islands journey is retained as evidence.",
+      "sourceIds": ["project-handoff-proof-v037"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
+    },
+    {
+      "id": "US-VI/land-use-plan",
+      "jurisdictionId": "US-VI",
+      "jobId": "land-use-plan",
+      "status": "unavailable",
+      "applicability": "The neutral versioning and review workflow exists, but OpenPlan has no configured U.S. Virgin Islands statutory plan bundle.",
+      "sourceIds": ["land-use-plan-registry"],
+      "adapterIds": ["local-unconfigured"],
+      "authorities": [],
+      "limitations": ["OpenPlan cannot provide a U.S. Virgin Islands requirements checklist or adoption-law claim."]
+    },
+    {
+      "id": "US-VI/safety-analysis",
+      "jurisdictionId": "US-VI",
+      "jobId": "safety-analysis",
+      "status": "unavailable",
+      "applicability": "No registered crash source serves the U.S. Virgin Islands. The FARS adapter reads NHTSA's National file, which covers the 50 states and the District of Columbia, and its separate Puerto Rico file.",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["OpenPlan reports a U.S. Virgin Islands study area as out of crash-source coverage, never as zero crashes."]
+    },
+    {
+      "id": "US-VI/grants-and-reimbursement",
+      "jurisdictionId": "US-VI",
+      "jobId": "grants-and-reimbursement",
+      "status": "unavailable",
+      "applicability": "No U.S. Virgin Islands program bundle or reimbursement profile is registered.",
+      "sourceIds": ["grant-program-registry"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in the U.S. Virgin Islands."]
+    },
+    {
+      "id": "US-VI/model-validation-evidence",
+      "jurisdictionId": "US-VI",
+      "jobId": "model-validation-evidence",
+      "status": "unavailable",
+      "applicability": "The v0.41 comparable-observation development registry has no U.S. Virgin Islands geography.",
+      "sourceIds": ["comparable-observation-proof-v041"],
+      "adapterIds": [],
+      "authorities": [],
+      "limitations": ["No U.S. Virgin Islands use-specific model validation assessment is available."]
     }
   ]
 }

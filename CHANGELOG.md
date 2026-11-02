@@ -20,6 +20,21 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**"Can OpenPlan do this here?" answers for every state, DC and territory:**
+the jurisdiction support panel now has an entry for all 50 states, DC,
+American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.
+Virgin Islands, reviewed November 2, 2026 (registry 2026-11-02.3, review by
+December 2). Each job shows what the code does there: the crash sources the
+safety registry serves (FARS fatal-only in most states; Iowa, Ohio and DC
+state layers read live and not stored; no source in the four territories
+without FARS), the state grant bundle where one exists (Washington, Colorado,
+Texas and Ohio added), no configured land-use bundle outside California, and no
+model validation outside California. Project handoff reads "Not assessed here"
+in the 53 newly listed places, because no journey there is retained as
+evidence. California's land-use entry now says specific plans use their own
+checklist, which has been true since October 7. The direction check fails if
+any of the 56 entries is missing.
+
 **County search without a Census key:** county search and county boundaries
 now come from the Census TIGERweb Counties layer, the same keyless service
 cities, CDPs, towns, tribal areas and metro areas already used. An install
