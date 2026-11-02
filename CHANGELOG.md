@@ -33,6 +33,7 @@ counties that have one. A picked county's saved label now keeps its full name
 looks up the workspace's Integration keys, since nothing it reads needs one.
 Census tract demographics, ACS corridor demographics and model zone attributes
 still need a Census key.
+
 **Every map draws without a Mapbox key (KI-2026-10-12-026):** with
 `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` set and no Mapbox key, MapLibre now also
 draws the Aerial index map, the aerial mission map, the mission area editor,
@@ -41,6 +42,7 @@ participation heat map and the extent preview in GIS layer import. A Mapbox key
 still selects Mapbox and its styles. Without a key the mission map has no
 satellite background and says so, and the Aerial index map uses your one style
 in light and dark mode. Rebuild after setting the variable.
+
 **Project packets trace comments to decisions (KI-2026-11-02-010):** a
 packet's engagement section now lists each published staff response for the
 linked campaign, the contributions it answers, its staff review theme and the
@@ -60,6 +62,7 @@ is open, and a comment repeats its original topic only when the topic has since
 changed. Engagement review PDFs name each response's sources by register number
 and title and say whether the response is published. Six build notes were
 removed from staff pages. No migration.
+
 **Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
 acquisition now keeps only crashes whose point lies inside the study area's
 polygon (the project's stored place, a picked place, or a drawn area), not every
