@@ -757,6 +757,23 @@ describe("/api/analysis crash state", () => {
     expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
   });
 
+  it("accepts a picked town's 10-digit GEOID and uses its state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "cousub", geoid: "3203190000", label: "Town, NV", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "cousub", geoid: "3203190000" } })).toEqual(["32"]);
+  });
+
+  it("accepts a picked tribal area's GEOID and gives it no state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "aiannh", geoid: "2430R", label: "Navajo Nation Reservation, AZ-NM-UT", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "aiannh", geoid: "2430R" } })).toBeNull();
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("aiannh", "2430R");
+  });
+
+  it("refuses a GEOID that is not that kind's format", async () => {
+    const response = await postAnalysis(analysisRequest({ ...VALID_BODY, place: { kind: "aiannh", geoid: "06113" } }));
+    expect(response.status).toBe(400);
+    expect(fetchCrashesForStudyAreaMock).not.toHaveBeenCalled();
+  });
+
   it("refuses a metro area's state, because a metro code names no state", async () => {
     resolvePlaceBoundaryMock.mockResolvedValue({ kind: "metro", geoid: "39900", label: "Reno, NV", bbox: CORRIDOR_BBOX });
     expect(await crashStateFor({ place: { kind: "metro", geoid: "39900" } })).toBeNull();

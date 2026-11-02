@@ -396,6 +396,30 @@ describe("POST /api/safety/crashes/ingest derives the study area's state", () =>
     expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: null }));
   });
 
+  it("accepts town and tribal-area GEOIDs: a town keeps its state, a tribal area has none", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValueOnce({ kind: "cousub", geoid: "3203190000", label: "Town", bbox: BBOX });
+    const town = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "cousub", geoid: "3203190000" } })
+    );
+    expect(town.status).not.toBe(400);
+    expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: ["32"] }));
+
+    resolvePlaceBoundaryMock.mockResolvedValueOnce({ kind: "aiannh", geoid: "2430R", label: "Navajo Nation", bbox: BBOX });
+    const tribal = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "aiannh", geoid: "2430R" } })
+    );
+    expect(tribal.status).not.toBe(400);
+    expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: null }));
+  });
+
+  it("refuses a GEOID that is not that kind's format", async () => {
+    const response = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "cousub", geoid: "32031" } })
+    );
+    expect(response.status).toBe(400);
+    expect(ingestMock).not.toHaveBeenCalled();
+  });
+
   it("passes null when no place identity is supplied at all", async () => {
     await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
     expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();

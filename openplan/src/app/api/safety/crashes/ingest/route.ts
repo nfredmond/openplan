@@ -10,7 +10,7 @@ import {
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { studyAreaBboxesMatch } from "@/lib/models/study-area";
-import { placeKindSchema } from "@/lib/api/place-geographies";
+import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
 import { crashStatesFromPlaceOfRecord, crashStatesOfConfirmedPlace } from "@/lib/safety/study-area-states";
 
 // Paging a county-scale crash extract exceeds the default budget.
@@ -72,7 +72,7 @@ const ingestSchema = z.object({
    * the route re-resolves it and uses its state only when the resolved
    * boundary has this same bbox. The client never supplies a state.
    */
-  place: z.object({ kind: placeKindSchema, geoid: z.string().regex(/^\d{5,7}$/) }).optional(),
+  place: z.object({ kind: placeKindSchema, geoid: placeGeoidStringSchema }).superRefine(refinePlaceReference).optional(),
 });
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {

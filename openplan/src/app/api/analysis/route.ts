@@ -38,7 +38,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
-import { placeKindSchema } from "@/lib/api/place-geographies";
+import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
 import {
   crashStatesFromMatchingPlaceOfRecord,
   crashStatesOfConfirmedPlace,
@@ -89,7 +89,7 @@ const analysisRequestSchema = z.object({
    * identity: the route re-resolves it and uses its state only when the
    * resolved boundary has the corridor's bbox. The client never supplies a state.
    */
-  place: z.object({ kind: placeKindSchema, geoid: z.string().regex(/^\d{5,7}$/) }).optional(),
+  place: z.object({ kind: placeKindSchema, geoid: placeGeoidStringSchema }).superRefine(refinePlaceReference).optional(),
 });
 
 type CorridorGeoJSON = z.infer<typeof polygonSchema> | z.infer<typeof multiPolygonSchema>;
