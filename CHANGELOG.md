@@ -24,6 +24,10 @@ stable enough to promise smooth upgrades indefinitely.
 the plan document page now reads project links only from the plan's own workspace,
 and both public plan pages drop a link whose project belongs to another workspace
 from the project lists, the financial summary and the map. No migration.
+**Safety page: ranking retry, project warning and labeled totals (KI-2026-09-05-027, KI-2026-08-31-015, KI-2026-08-31-014):** when the crash-location ranking fails while the totals load, "Try the ranking again" asks for the ranking alone (`/api/safety/crashes?part=ksi_concentrations`) for the same acquisition, and the failure sentence stays until a ranking arrives. Retrieving with no project chosen now says first that the crashes cannot go into a report, and New report offers the chosen project's crash acquisitions as evidence. The fatal-or-serious headline and the high-injury network total each name their area and filters, with one line reconciling them. Nothing to do on upgrade; no migration.
+**Safety starts beside the navigation rail (KI-2026-11-02-024):** on a desktop the
+Safety page no longer runs under the 60px rail, so the active-project banner and
+the map's left edge are fully visible.
 
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,

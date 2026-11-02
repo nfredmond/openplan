@@ -7,6 +7,7 @@ import {
   describeHighInjuryNetworkMethod,
   describeHighInjuryNetworkUnavailable,
   describeHighInjuryNetworkYears,
+  highInjuryNetworkCrashWord,
   highInjuryNetworkMeasureLabel,
   type HighInjuryNetwork,
   type HighInjuryNetworkSegment,
@@ -35,6 +36,19 @@ type Props = {
   /** Undefined before the first load; null when no acquisition is in context. */
   network: HighInjuryNetwork | null | undefined;
   sourceLabel: string | null;
+  /**
+   * What bounds the acquisition's crashes ("place boundary", "bounding
+   * rectangle, ..."), named in this panel's own total so it never borrows the
+   * headline's scope.
+   */
+  areaScope?: string | null;
+  /**
+   * The page's fatal-or-serious headline total, under every filter. When it is
+   * on screen beside this panel's total, one line says why the two differ.
+   */
+  filteredKsiTotal?: number | null;
+  /** The shared serious-injury statement for these crashes. */
+  seriousInjuryStatement?: string | null;
   showOnMap: boolean;
   onShowOnMapChange: (show: boolean) => void;
   onFocusSegment: (segment: HighInjuryNetworkSegment) => void;
@@ -74,6 +88,9 @@ function initialSelections(
 export function HighInjuryNetworkPanel({
   network,
   sourceLabel,
+  areaScope = null,
+  filteredKsiTotal = null,
+  seriousInjuryStatement = null,
   showOnMap,
   onShowOnMapChange,
   onFocusSegment,
@@ -155,6 +172,24 @@ export function HighInjuryNetworkPanel({
         </label>
       </div>
       <p className="text-xs font-medium" data-testid="safety-hin-measure">{measure}</p>
+      {/* THIS PANEL'S OWN TOTAL, WITH ITS SCOPE IN THE LABEL (KI-2026-08-31-014).
+          It counts every crash of the ranked severities in the requested
+          years, whatever the page's other filters say, so it can differ from
+          the headline above. Where both are on screen, the next line says why. */}
+      <p className="text-xs" data-testid="safety-hin-total">
+        <span className="font-medium">
+          {network.crashesConsidered.toLocaleString("en-US")} {highInjuryNetworkCrashWord(network.basis)} considered
+        </span>{" "}
+        ({areaScope ? `${areaScope} · ` : ""}years below · other filters not applied)
+      </p>
+      {filteredKsiTotal !== null && network.basis === "ksi" ? (
+        <p className="text-xs text-muted-foreground" data-testid="safety-hin-reconciliation">
+          {filteredKsiTotal === network.crashesConsidered
+            ? `The total above counts the same ${filteredKsiTotal.toLocaleString("en-US")} crashes.`
+            : `The total above (${filteredKsiTotal.toLocaleString("en-US")}) applies all your filters; this one (${network.crashesConsidered.toLocaleString("en-US")}) applies only the year filter.`}
+          {seriousInjuryStatement ? ` ${seriousInjuryStatement}` : ""}
+        </p>
+      ) : null}
       {comparisonReport && ingestId ? <Link className="text-xs underline" href={`/reports/${comparisonReport.id}?safetyComparison=1&safetyIngestId=${encodeURIComponent(ingestId)}`}>
         Review No Build, alternatives and applicability in this report
       </Link> : <Link className="text-xs underline" href="/reports">Choose or create a project-status report for Safety comparison</Link>}
