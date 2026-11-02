@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { stripSourceComments } from "@/test/helpers/source-text";
 
 /**
  * THE PAGE STARTS WHERE THE RAIL STOPS.
@@ -37,7 +38,7 @@ type Rule = { media: string; selector: string; body: string };
 
 /** Flat list of style rules with the @media prelude that encloses each one. */
 function readRules(css: string): Rule[] {
-  const source = css.replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "));
+  const source = stripSourceComments(css);
   const rules: Rule[] = [];
   const mediaStack: string[] = [];
   let cursor = 0;
