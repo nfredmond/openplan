@@ -3,6 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const generateTextMock = vi.fn();
 // The caller's AI usage reservation (reserveAiUsage in the route).
 const reserveUsage = vi.fn(async (_call: { model: string }) => {});
+// vi.clearAllMocks() keeps a mockRejectedValue, so a refusal set by one test
+// would refuse every later test in shuffled order. Every test starts admitted.
+beforeEach(() => {
+  reserveUsage.mockImplementation(async () => {});
+});
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
   wrapLanguageModel: ({ model }: { model: unknown }) => model,
