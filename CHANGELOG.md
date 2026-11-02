@@ -118,6 +118,15 @@ internal files. It prints the project's recorded summary and planning-level
 estimate instead of "to be provided", and names the crash source, years and
 retrieval date behind the safety score. The ATP panel no longer runs past its
 border on a phone.
+**My Work lists stale evidence:** the "Waiting on a person" section now lists
+report packets the Reports page would ask you to refresh, and packets a newer
+model run flagged, each linked to the report's change review. It also lists SS4A
+applications whose seeded Safety evidence changed after the seed (new crash
+records, a changed project place, or a different linked project), linked to the
+application, and seeds that cannot be checked, such as seeds made before
+November 2. Archived reports and awarded or archived applications are left out.
+A failed read is named on the page instead of shown as an empty list. No
+migration is needed.
 
 **My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
 the "Waiting on a person" section now lists model runs that were interrupted

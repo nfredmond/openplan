@@ -1,3 +1,5 @@
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
 /**
  * A PLANNER MAY NOT BE HANDED A DATABASE ERROR OR AN ENV VAR THEY CANNOT SET.
  *

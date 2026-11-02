@@ -65,15 +65,54 @@ const RELATIONS: Record<string, Record<string, { fk: string; parent: string }>> 
   engagement_campaigns: { projects: { fk: "project_id", parent: "projects" } },
   program_work_program_reviews: { programs: { fk: "program_id", parent: "programs" } },
   aerial_processing_jobs: { aerial_missions: { fk: "mission_id", parent: "aerial_missions" } },
+  reports: {
+    rtp_cycles: { fk: "rtp_cycle_id", parent: "rtp_cycles" },
+    projects: { fk: "project_id", parent: "projects" },
+    engagement_campaigns: { fk: "engagement_campaign_id", parent: "engagement_campaigns" },
+    land_use_plans: { fk: "land_use_plan_id", parent: "land_use_plans" },
+  },
+  funding_opportunity_safety_seeds: {
+    funding_opportunities: { fk: "opportunity_id", parent: "funding_opportunities" },
+    report_artifacts: { fk: "artifact_id", parent: "report_artifacts" },
+  },
 };
 
 /**
- * To-many embeds, written `alias:child_table(...)` in a select. PostgREST
- * returns the matching child rows as an array, projected to the listed columns.
+ * To-many embeds, written `alias:child_table(...)` or `child_table!fk(...)` in a
+ * select. PostgREST returns the matching child rows as an array, projected to
+ * the listed columns, ordered and limited per parent by `referencedTable`.
  */
 const CHILD_RELATIONS: Record<string, Record<string, { fk: string }>> = {
   model_runs: { model_run_stages: { fk: "run_id" } },
+  reports: { report_artifacts: { fk: "report_id" } },
 };
+
+/** PostgREST's `max_rows` on this deployment: a longer answer is cut, with no error. */
+export const FAKE_POSTGREST_MAX_ROWS = 1000;
+
+type OrderKey = { column: string; ascending: boolean };
+/** Per-embed ordering and limit, keyed by the referenced table name. */
+type ChildShaping = Record<string, { orders: OrderKey[]; limit: number | null }>;
+
+function sortRows(rows: Row[], orders: readonly OrderKey[]): Row[] {
+  if (orders.length === 0) return rows;
+  return [...rows].sort((a, b) => {
+    for (const { column, ascending } of orders) {
+      const compared = String(a[column] ?? "").localeCompare(String(b[column] ?? ""));
+      if (compared !== 0) return ascending ? compared : -compared;
+    }
+    return 0;
+  });
+}
+
+function childRows(db: Db, table: string, name: string, row: Row, nodes: SelectNode[], shaping: ChildShaping): Row[] | null {
+  const child = CHILD_RELATIONS[table]?.[name];
+  if (!child) return null;
+  const shape = shaping[name] ?? { orders: [], limit: null };
+  const matched = sortRows((db[name] ?? []).filter((candidate) => candidate[child.fk] === row.id), shape.orders);
+  const limited = shape.limit === null ? matched : matched.slice(0, shape.limit);
+  return limited.map((candidate) => projectRow(db, name, candidate, nodes, new Set(), shaping) as Row);
+}
 
 type SelectNode =
   | { kind: "column"; name: string }
@@ -137,7 +176,8 @@ function projectRow(
   table: string,
   row: Row,
   nodes: SelectNode[],
-  nulledEmbeds: ReadonlySet<string>
+  nulledEmbeds: ReadonlySet<string>,
+  shaping: ChildShaping = {}
 ): Row | typeof DROP {
   const out: Row = {};
   for (const node of nodes) {
@@ -158,6 +198,11 @@ function projectRow(
         .map((candidate) => projectRow(db, childTable, candidate, node.children, new Set()));
       continue;
     }
+    const children = childRows(db, table, node.name, row, node.children, shaping);
+    if (children) {
+      out[node.name] = children;
+      continue;
+    }
     const parent = lookupParent(db, table, node.name, row);
     if (!parent) {
       if (node.inner) return DROP;
@@ -165,7 +210,7 @@ function projectRow(
       continue;
     }
     const relation = RELATIONS[table][node.name];
-    const sub = projectRow(db, relation.parent, parent, node.children, new Set());
+    const sub = projectRow(db, relation.parent, parent, node.children, new Set(), shaping);
     if (sub === DROP) {
       if (node.inner) return DROP;
       out[node.name] = null;
@@ -234,8 +279,10 @@ function runQuery(
   table: string,
   select: string,
   filters: Filter[],
-  order: { column: string; ascending: boolean } | null,
-  limitCount: number | null
+  orders: readonly OrderKey[],
+  limitCount: number | null,
+  range: { from: number; to: number } | null = null,
+  shaping: ChildShaping = {}
 ): Row[] {
   const nodes = parseSelect(select);
   const kept: Row[] = [];
@@ -310,21 +357,15 @@ function runQuery(
       nulled.add(filter.path[0]);
     }
     if (dropped) continue;
-    const projected = projectRow(db, table, row, nodes, nulled);
+    const projected = projectRow(db, table, row, nodes, nulled, shaping);
     if (projected === DROP) continue;
     kept.push(projected);
   }
 
-  let rows = kept;
-  if (order) {
-    const { column, ascending } = order;
-    rows = [...rows].sort((a, b) => {
-      const compared = String(a[column] ?? "").localeCompare(String(b[column] ?? ""));
-      return ascending ? compared : -compared;
-    });
-  }
+  let rows = sortRows(kept, orders);
+  if (range) rows = rows.slice(range.from, range.to + 1);
   if (limitCount !== null) rows = rows.slice(0, limitCount);
-  return rows;
+  return rows.slice(0, FAKE_POSTGREST_MAX_ROWS);
 }
 
 /** Model the three security-invoker views without replacing their base history. */
@@ -356,8 +397,10 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
           const ops: Array<{ verb: string; args: unknown[] }> = [];
           queries.push({ table, ops });
           const filters: Filter[] = [];
-          let order: { column: string; ascending: boolean } | null = null;
+          const orders: OrderKey[] = [];
           let limitCount: number | null = null;
+          let range: { from: number; to: number } | null = null;
+          const shaping: ChildShaping = {};
           const builder = {
             eq(column: string, value: unknown) {
               ops.push({ verb: "eq", args: [column, value] });
@@ -416,22 +459,37 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
               filters.push({ kind: "range", column, op: "lte", value });
               return builder;
             },
-            order(column: string, options?: { ascending?: boolean }) {
+            order(column: string, options?: { ascending?: boolean; referencedTable?: string }) {
               ops.push({ verb: "order", args: [column, options] });
-              order = { column, ascending: options?.ascending === true };
+              const key = { column, ascending: options?.ascending === true };
+              if (options?.referencedTable) {
+                const shape = (shaping[options.referencedTable] ??= { orders: [], limit: null });
+                shape.orders.push(key);
+              } else {
+                orders.push(key);
+              }
               return builder;
             },
-            limit(count: number) {
-              ops.push({ verb: "limit", args: [count] });
+            limit(count: number, options?: { referencedTable?: string }) {
+              ops.push({ verb: "limit", args: [count, options] });
+              if (options?.referencedTable) {
+                (shaping[options.referencedTable] ??= { orders: [], limit: null }).limit = count;
+                return builder;
+              }
               limitCount = count;
               limits[table] = count;
+              return builder;
+            },
+            range(from: number, to: number) {
+              ops.push({ verb: "range", args: [from, to] });
+              range = { from, to };
               return builder;
             },
             then<T>(resolve: (result: FakeResult) => T, reject?: (reason: unknown) => T): Promise<T> {
               const failure = failures[table];
               const result: FakeResult = failure
                 ? { data: null, error: { message: failure } }
-                : { data: runQuery(withAwardCalendarViews(db), table, select, filters, order, limitCount), error: null };
+                : { data: runQuery(withAwardCalendarViews(db), table, select, filters, orders, limitCount, range, shaping), error: null };
               return Promise.resolve(result).then(resolve, reject);
             },
           };

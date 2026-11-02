@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 
 import { RUN_STALE_THRESHOLD_MS } from "@/lib/models/run-liveness";
 import { DEFAULT_AERIAL_PROCESSING_SILENCE_MINUTES } from "@/lib/aerial/catalog";

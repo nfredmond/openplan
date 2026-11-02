@@ -1,3 +1,5 @@
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
 import React from "react";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";

@@ -1172,7 +1172,7 @@ const PURSUED_DECISION_STATE = "pursue";
  * A `closed` status stays readable, because a pursued call that closed with no
  * recorded submission is exactly the missed deadline this source exists for.
  */
-const PURSUIT_ENDED_OPPORTUNITY_STATUSES: readonly string[] = ["archived", "awarded"];
+export const PURSUIT_ENDED_OPPORTUNITY_STATUSES: readonly string[] = ["archived", "awarded"];
 
 const grantApplicationDueSource: MyWorkSource = {
   id: "grant_application_due",
