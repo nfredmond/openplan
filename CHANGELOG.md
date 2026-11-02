@@ -20,6 +20,21 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
+fatal or serious-injury crash in the window can now save its safety action plan
+from the high-injury network ("Save plan with no ranked segments"), so the
+report gets its action plan section and the SS4A application can be seeded from
+it. The action plan section no longer claims attached countermeasures when there
+are none. Tracking a catalog program from Grants opened for a project links the
+new opportunity to that project. Crash filter chips no longer print "(0)" beside
+a severity that is switched off or a facet the source does not record. The
+project page names the workspace's home geography when the project has no study
+area. Workspace health now reports `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` as a
+partial map configuration (most maps draw; the backdrop, aerial and model maps
+need a Mapbox token) and offers it when neither is set. Still open: crash
+acquisitions above about 100 crashes fail to store (needs a migration), and
+acquisitions use the place's bounding rectangle. No migration.
+
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
 It removes a staged aerial, Knowledge Base or transit upload whose complete step

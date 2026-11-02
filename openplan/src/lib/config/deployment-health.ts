@@ -116,6 +116,12 @@ export type DeploymentHealthFacts = {
     hasValidToken: boolean;
     /** A token was set but is not a public token — e.g. a secret `sk.` key. */
     hasInvalidToken: boolean;
+    /**
+     * `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` names a loadable MapLibre style, so
+     * the maps built on `lib/maps/map-engine.ts` draw without a Mapbox key.
+     * Optional so older fact builders read as "no open style".
+     */
+    hasOpenStyle?: boolean;
   };
   censusApiKeyPresent: boolean;
   anthropicApiKeyPresent: boolean;
@@ -181,14 +187,28 @@ function mapboxCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     };
   }
 
+  // The key-free path. Only the maps built on the shared engine choose it, so
+  // this is a partial answer, not a pass: the others still need a token.
+  if (facts.mapbox.hasOpenStyle) {
+    return {
+      key: "mapbox",
+      label: "Maps",
+      status: "warn",
+      detail:
+        "No Mapbox token is configured. Most maps, including Safety, Explore, project and engagement maps, draw from the open map style this deployment names. The workspace backdrop, aerial and model maps stay empty.",
+      remedy:
+        "For maps on every page, whoever operates this deployment can add a Mapbox token. For the operator: set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token, then redeploy. Public variables are inlined at build time.",
+    };
+  }
+
   return {
     key: "mapbox",
     label: "Maps",
     status: "fail",
     detail:
-      "No Mapbox token is configured, so every map renders blank — including the shell backdrop, Explore, Safety, and engagement maps.",
+      "No Mapbox token and no open map style are configured, so no map draws. Safety, project and engagement pages show a notice in its place.",
     remedy:
-      "Maps come back once whoever operates this deployment adds a Mapbox token — a free account covers normal planning use, and nothing about your data or your area is missing. For the operator: set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (the legacy name NEXT_PUBLIC_MAPBOX_TOKEN is also accepted), then redeploy — public variables are inlined at build time.",
+      "Maps come back once whoever operates this deployment adds a Mapbox token or names an open map style. Nothing about your data or your area is missing. For the operator: set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (the legacy name NEXT_PUBLIC_MAPBOX_TOKEN is also accepted), or, with no account, set NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL to a public MapLibre style such as https://tiles.openfreemap.org/styles/liberty (most maps; the workspace backdrop, aerial and model maps still need a token; see docs/SELF_HOSTING.md). Then redeploy. Public variables are inlined at build time.",
   };
 }
 

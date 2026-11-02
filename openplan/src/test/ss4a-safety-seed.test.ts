@@ -61,12 +61,28 @@ describe("Safety snapshot and deterministic SS4A seed", () => {
     expect(safety).toContain("CMF");
     expect(safety).not.toMatch(/CMF [0-9]+\.[0-9]+/);
     expect(safety).toContain("Snapshot component gaps, not findings of agency absence");
+    // Plain sentences for a reviewer: no doubled periods, no unit on a missing
+    // length, no internal status codes.
+    expect(safety).not.toMatch(/\.\.(\s|$)/);
+    expect(safety).not.toContain("not measured miles");
+    expect(safety).not.toMatch(/not_covered|\(partial in/);
     const full = buildSafetySeedPreview(safetySeedFixture("kabco_full")).sections.find((s) => s.section_key === "safety-problem-and-impact")!.draft_markdown;
     expect(full).toContain("Serious-injury crashes: 0");
     const budget = preview.sections.find((s) => s.section_key === "budget-narrative")!.draft_markdown;
     expect(budget).toContain("No amounts, costs, currency or benefits have been inferred");
     expect(budget).not.toMatch(/\$\d|USD|80%|20%/);
     expect(preview).toEqual(buildSafetySeedPreview(rows));
+  });
+  it("states a grid square's missing length without a unit", () => {
+    const rows = safetySeedFixture(); const snapshot = validateSafetySeedSource(rows);
+    const gridded = structuredClone(snapshot);
+    gridded.draft.network = {
+      kind: "computed", measureLabel: "Fatal crashes per half-mile square (fatal crashes only)", method: "Grid.", coverage: "1 of 1.", years: "Requested crash years: 2024", sourceLine: "Source: Recorded crash source.",
+      rows: [{ rank: 1, tied: false, segmentId: "grid:1:2", label: "Half-mile square at 40.1, -115.2", lengthMiles: null, crashCount: 1, fatalCrashCount: 1, seriousInjuryCrashCount: null, crashesPerMile: null, countermeasureNames: [] }],
+    };
+    const safety = buildSs4aSafetyDrafts(gridded, rows.project.name).find((s) => s.section_key === "safety-problem-and-impact")!.draft_markdown;
+    expect(safety).toContain("length not measured; crashes per mile not measured.");
+    expect(safety).not.toContain("not measured miles");
   });
   it("binds source revisions, every prior draft and concurrent final text without modifying either", () => {
     const rows = safetySeedFixture(); const before = structuredClone(rows);
