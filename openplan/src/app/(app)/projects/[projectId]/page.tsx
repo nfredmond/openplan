@@ -1,6 +1,5 @@
 import { currentModelResultRows } from "@/lib/models/attempt-output-read";
-import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
-import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
+import { evaluateProjectOverviewPacketFreshness, latestArtifactByReport } from "@/lib/reports/packet-freshness-rules";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -863,12 +862,7 @@ export default async function ProjectDetailPage({
         .in("id", linkedReportRunIds)
     : { data: [], error: null };
   const linkedRuns = laneRows(reads, "model runs linked to this project", linkedRunsResult) as Array<{ id: string; created_at: string }>;
-  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const artifact of reportArtifactLane.rows as ReportArtifactRow[]) {
-    if (!latestArtifactByReportId.has(artifact.report_id)) {
-      latestArtifactByReportId.set(artifact.report_id, artifact);
-    }
-  }
+  const latestArtifactByReportId = latestArtifactByReport(reportArtifactLane.rows as ReportArtifactRow[]);
 
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
@@ -887,8 +881,12 @@ export default async function ProjectDetailPage({
 
       return {
         ...report,
-        packetFreshness: resolveReportPacketRowFreshness(report, latestArtifactByReportId.get(report.id),
-          reportJurisdictionState(latestArtifactByReportId.get(report.id)?.metadata_json, project)),
+        // The Project page's freshness rule, shared with the loader module.
+        packetFreshness: evaluateProjectOverviewPacketFreshness({
+          report,
+          latestArtifact: latestArtifactByReportId.get(report.id),
+          project,
+        }),
 
         comparisonAggregate,
         comparisonDigest,

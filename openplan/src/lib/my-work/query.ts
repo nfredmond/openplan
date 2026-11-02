@@ -39,6 +39,7 @@ import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { parseSortableDate, sortDeadlineItemsBy } from "@/lib/work/deadlines";
 
 import { MY_WORK_SOURCES, type MyWorkSource } from "./sources";
+import { MY_WORK_LOADER_SOURCES, type MyWorkLoaderOutcome, type MyWorkLoaderSource } from "./stale-evidence";
 import {
   DEFAULT_MY_WORK_SCOPE,
   MY_WORK_BLOCK_IDS,
@@ -199,8 +200,25 @@ const MY_WORK_DATED_BLOCKS: readonly MyWorkBlockId[] = ["deadlines", "workspace_
 
 /** Sources by id, for callers that need a source's label or group. */
 export const MY_WORK_SOURCES_BY_ID = Object.fromEntries(
-  MY_WORK_SOURCES.map((source) => [source.id, source])
-) as Record<MyWorkSourceId, MyWorkSource>;
+  [...MY_WORK_SOURCES, ...MY_WORK_LOADER_SOURCES].map((source) => [source.id, source])
+) as Record<MyWorkSourceId, MyWorkSource | MyWorkLoaderSource>;
+
+/** A loader source's read; a thrown loader is a failed read, not an empty source. */
+async function readLoaderSource(
+  supabase: unknown,
+  source: MyWorkLoaderSource,
+  context: { workspaceId: string; limitPerSource: number }
+): Promise<MyWorkLoaderOutcome> {
+  try {
+    return await source.load(supabase, context);
+  } catch (error) {
+    return {
+      items: [],
+      rowsRead: 0,
+      failures: [{ label: source.readLabel, message: error instanceof Error ? error.message : "read threw", pending: false }],
+    };
+  }
+}
 
 /**
  * The column date bounds apply to, or null for a source with no due dates.
@@ -451,6 +469,13 @@ export async function loadMyWork(
   const sources = options.datedOnly
     ? MY_WORK_SOURCES.filter((source) => dueDateColumn(source) !== null)
     : MY_WORK_SOURCES;
+  // The loader sources are undated, so a read of dated work skips them.
+  const loaderSources = options.datedOnly ? [] : MY_WORK_LOADER_SOURCES;
+  const loaderOutcomesRead = Promise.all(
+    loaderSources.map((source) =>
+      readLoaderSource(supabase, source, { workspaceId: options.workspaceId, limitPerSource })
+    )
+  );
   const outcomes = await Promise.all(
     sources.map((source) =>
       readSource(client, source, {
@@ -483,6 +508,20 @@ export async function loadMyWork(
     const rows = pending || failed ? [] : ((result.data ?? []) as Array<Record<string, unknown>>);
     rowsRead[source.id] = rows.length;
     collected.push(...source.toItems(rows, { now, limitPerSource, timeZone }));
+    perSource[source.id] = { count: 0, pending, failed };
+  });
+
+  const loaderOutcomes = await loaderOutcomesRead;
+  loaderSources.forEach((source, index) => {
+    const outcome = loaderOutcomes[index];
+    // A pending migration is named by the page, not counted as an outage.
+    const pending = outcome.failures.length > 0 && outcome.failures.every((entry) => entry.pending);
+    let failed = false;
+    for (const entry of outcome.failures) {
+      if (!entry.pending && reads.check(entry.label, { error: { message: entry.message } })) failed = true;
+    }
+    rowsRead[source.id] = outcome.rowsRead;
+    collected.push(...outcome.items);
     perSource[source.id] = { count: 0, pending, failed };
   });
 
