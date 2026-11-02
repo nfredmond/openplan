@@ -98,6 +98,13 @@ const querySchema = z.object({
   yearFrom: z.coerce.number().int().min(1900).max(2100).optional(),
   yearTo: z.coerce.number().int().min(1900).max(2100).optional(),
   limit: z.coerce.number().int().min(1).max(MAX_LIMIT).optional(),
+  /**
+   * Answer one part of the response instead of all of it. Only the crash-
+   * location ranking can be asked for alone: it is the part a transient
+   * upstream failure can drop while the totals load (KI-2026-09-05-027), and
+   * the page retries it without another acquisition or a full reload.
+   */
+  part: z.literal("ksi_concentrations").optional(),
 });
 
 /**
@@ -411,25 +418,122 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Built once and awaited by whichever branch below runs. A PostgREST
+    // request is lazy, so building it here sends nothing on its own.
+    const concentrationRequest = supabase.rpc("safety_ksi_concentrations_for_ingests", {
+      p_workspace_id: query.workspaceId,
+      p_min_lon: query.minLon,
+      p_min_lat: query.minLat,
+      p_max_lon: query.maxLon,
+      p_max_lat: query.maxLat,
+      p_project_id: query.projectId ?? null,
+      p_severities: [...CRASH_KSI_SEVERITIES],
+      p_radius_meters: 150,
+      p_min_points: 2,
+      p_result_limit: 10,
+      p_ingest_ids: [activeIngestId],
+    });
+
+    /**
+     * The ranking with each concentration's nearest named road. When the
+     * project has no cached road lines, US TIGER/Line roads are read for the
+     * ranked points and cached, which also gives the high-injury network its
+     * road lines. Null when the ranking itself could not be read.
+     */
+    const rankConcentrations = async (
+      concentrationResult: Awaited<typeof concentrationRequest>
+    ) => {
+      const parsedKsiConcentrations = concentrationResult.error
+        ? null
+        : readSafetyKsiConcentrations(concentrationResult.data);
+      if (
+        retainedCrashRoadProvider([acquisition], [activeIngestId]) === "us-census-tiger-line"
+        && parsedKsiConcentrations
+        && parsedKsiConcentrations.length > 0
+        && roadContext !== null
+        && roadContext.length === 0
+      ) {
+        const tigerContext = await loadUsTigerRoadContext(parsedKsiConcentrations);
+        roadContext = tigerContext.roads;
+        roadContextCoverageLimit = tigerContext.coverageLimit;
+        if (networkRoads !== null && networkRoads.length === 0) networkRoads = tigerContext.roads;
+        if (query.projectId && tigerContext.roads.length > 0) {
+          try {
+            const serviceSupabase = createServiceRoleClient();
+            const { error: cacheError } = await serviceSupabase
+              .from("safety_road_context_features")
+              .upsert(
+                tigerContext.roads.map((road) => ({
+                  workspace_id: query.workspaceId,
+                  project_id: query.projectId,
+                  country_code: "US",
+                  source_id: road.sourceId,
+                  source_label: road.sourceLabel,
+                  source_vintage: road.vintage,
+                  source_feature_id: road.id,
+                  road_name: road.name,
+                  geometry_geojson: road.geometry,
+                })),
+                { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" },
+              );
+            if (cacheError) throw cacheError;
+          } catch (cacheError) {
+            audit.warn("safety_road_context_cache_write_failed", {
+              workspaceId: query.workspaceId,
+              projectId: query.projectId,
+              error: cacheError instanceof Error ? cacheError.message : "unknown",
+            });
+          }
+        }
+      }
+      if (concentrationResult.error) {
+        audit.warn("safety_ksi_concentrations_unavailable", {
+          workspaceId: query.workspaceId,
+          part: query.part ?? "all",
+          error: concentrationResult.error.message,
+        });
+      }
+      return parsedKsiConcentrations?.map((concentration) => ({
+        ...concentration,
+        roadIdentity: matchSafetyRoadIdentity(
+          concentration.longitude,
+          concentration.latitude,
+          roadContext ?? []
+        ),
+      })) ?? null;
+    };
+
+    // THE RANKING ALONE. No rows, totals, tract burden or high-injury network
+    // are read, so a retry costs one ranking query and cannot change a figure
+    // already on the page. A failure is an error status, never an empty list:
+    // an empty ranking means no two severe crashes were close together.
+    if (query.part === "ksi_concentrations") {
+      const ksiConcentrations = await rankConcentrations(await concentrationRequest);
+      if (ksiConcentrations === null) {
+        return NextResponse.json(
+          { error: "The crash-location ranking could not be read.", ksiConcentrations: null },
+          { status: 503 }
+        );
+      }
+      audit.info("safety_ksi_concentrations_loaded", {
+        workspaceId: query.workspaceId,
+        part: query.part,
+        count: ksiConcentrations.length,
+        durationMs: Date.now() - startedAt,
+      });
+      return NextResponse.json(
+        { part: query.part, ksiConcentrations, roadContext, roadContextCoverageLimit },
+        { status: 200 }
+      );
+    }
+
     const [countResult, rowsResult, bandResults, concentrationResult, equityResult] = await Promise.all([
       applyFilters(supabase.from("safety_crashes").select("id", { count: "exact", head: true })),
       applyFilters(supabase.from("safety_crashes").select(CRASH_QUERY_PROJECTION))
         .order("collision_date", { ascending: false, nullsFirst: false })
         .limit(limit),
       Promise.all(CRASH_SEVERITY_BANDS.map((band) => countBand(band))),
-      supabase.rpc("safety_ksi_concentrations_for_ingests", {
-        p_workspace_id: query.workspaceId,
-        p_min_lon: query.minLon,
-        p_min_lat: query.minLat,
-        p_max_lon: query.maxLon,
-        p_max_lat: query.maxLat,
-        p_project_id: query.projectId ?? null,
-        p_severities: [...CRASH_KSI_SEVERITIES],
-        p_radius_meters: 150,
-        p_min_points: 2,
-        p_result_limit: 10,
-        p_ingest_ids: [activeIngestId],
-      }),
+      concentrationRequest,
       supabase.rpc("safety_ksi_tract_burden_for_ingests", {
         p_workspace_id: query.workspaceId,
         p_min_lon: query.minLon,
@@ -491,63 +595,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const parsedKsiConcentrations = concentrationResult.error
-      ? null
-      : readSafetyKsiConcentrations(concentrationResult.data);
-    if (
-      retainedCrashRoadProvider([acquisition], [activeIngestId]) === "us-census-tiger-line"
-      && parsedKsiConcentrations
-      && parsedKsiConcentrations.length > 0
-      && roadContext !== null
-      && roadContext.length === 0
-    ) {
-      const tigerContext = await loadUsTigerRoadContext(parsedKsiConcentrations);
-      roadContext = tigerContext.roads;
-      roadContextCoverageLimit = tigerContext.coverageLimit;
-      if (networkRoads !== null && networkRoads.length === 0) networkRoads = tigerContext.roads;
-      if (query.projectId && tigerContext.roads.length > 0) {
-        try {
-          const serviceSupabase = createServiceRoleClient();
-          const { error: cacheError } = await serviceSupabase
-            .from("safety_road_context_features")
-            .upsert(
-              tigerContext.roads.map((road) => ({
-                workspace_id: query.workspaceId,
-                project_id: query.projectId,
-                country_code: "US",
-                source_id: road.sourceId,
-                source_label: road.sourceLabel,
-                source_vintage: road.vintage,
-                source_feature_id: road.id,
-                road_name: road.name,
-                geometry_geojson: road.geometry,
-              })),
-              { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" },
-            );
-          if (cacheError) throw cacheError;
-        } catch (cacheError) {
-          audit.warn("safety_road_context_cache_write_failed", {
-            workspaceId: query.workspaceId,
-            projectId: query.projectId,
-            error: cacheError instanceof Error ? cacheError.message : "unknown",
-          });
-        }
-      }
-    }
-    const ksiConcentrations = parsedKsiConcentrations?.map((concentration) => ({
-      ...concentration,
-      roadIdentity: matchSafetyRoadIdentity(
-        concentration.longitude,
-        concentration.latitude,
-        roadContext ?? []
-      ),
-    })) ?? null;
-    if (concentrationResult.error) {
-      audit.warn("safety_ksi_concentrations_unavailable", {
-        workspaceId: query.workspaceId,
-        error: concentrationResult.error.message,
-      });
-    }
+    const ksiConcentrations = await rankConcentrations(concentrationResult);
     const ksiEquityTracts = equityResult.error
       ? null
       : readSafetyKsiEquityTracts(equityResult.data);

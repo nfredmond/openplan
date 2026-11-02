@@ -590,9 +590,14 @@ export function computeHighInjuryNetwork(input: {
   };
 }
 
+/** What the network counts, in the words its figures are printed with. */
+export function highInjuryNetworkCrashWord(basis: HighInjuryNetworkBasis): string {
+  return basis === "ksi" ? "fatal or serious-injury crashes" : "fatal crashes";
+}
+
 /** Plain coverage sentence: what was placed, what was listed, what was left out. */
 export function describeHighInjuryNetworkCoverage(network: Extract<HighInjuryNetwork, { status: "computed" }>): string {
-  const crashWord = network.basis === "ksi" ? "fatal or serious-injury crashes" : "fatal crashes";
+  const crashWord = highInjuryNetworkCrashWord(network.basis);
   const periodCaveat = " Requested years filter stored crashes; they do not establish complete observation coverage or an annual denominator. Unavailable years are not zero-crash observations.";
   if (network.crashesConsidered === 0) {
     return `No ${crashWord} are recorded here for these years. That is not a finding that the roads are safe.${periodCaveat}`;

@@ -51,7 +51,17 @@ const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 const safetyIngestOrderMock = vi.fn();
 const safetyIngestInMock = vi.fn(() => ({ order: safetyIngestOrderMock }));
 const safetyIngestEqMock = vi.fn(() => ({ in: safetyIngestInMock }));
-const safetyIngestSelectMock = vi.fn(() => ({ eq: safetyIngestEqMock }));
+// The new-report flow's crash evidence read (KI-2026-08-31-015) is a second
+// query on the same table, told apart by its projection.
+const safetyEvidenceLimitMock = vi.fn();
+const safetyEvidenceChain = {
+  eq: vi.fn(() => safetyEvidenceChain),
+  not: vi.fn(() => safetyEvidenceChain),
+  order: vi.fn(() => ({ limit: safetyEvidenceLimitMock })),
+};
+const safetyIngestSelectMock = vi.fn((projection: string) =>
+  projection === "project_id, created_at" ? { eq: safetyIngestEqMock } : safetyEvidenceChain
+);
 
 const fromMock = vi.fn((table: string) => {
   if (table === "reports") {
@@ -356,6 +366,7 @@ describe("ReportsPage", () => {
     });
 
     safetyIngestOrderMock.mockResolvedValue({ data: [], error: null });
+    safetyEvidenceLimitMock.mockResolvedValue({ data: [], error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -908,5 +919,43 @@ describe("ReportsPage", () => {
 
     expect(screen.queryByText(/This page could not read/i)).toBeNull();
     expect(reportCreatorMock).toHaveBeenCalledWith(expect.objectContaining({ projectsUnreadable: false }));
+  });
+
+  // KI-2026-08-31-015: the new-report flow can choose a project's Safety
+  // evidence. The read must be ready, project-attached acquisitions only, and
+  // its projection must carry the project id the options are grouped by.
+  it("hands the creator each project's ready crash acquisitions", async () => {
+    safetyEvidenceLimitMock.mockResolvedValue({
+      data: [
+        { id: "ingest-2", project_id: "project-1", source_label: "Statewide crash file", created_at: "2026-10-20T00:00:00Z", crash_count: 40, geocoded_count: 38 },
+        { id: "ingest-1", project_id: "project-1", source_label: null, created_at: "2026-10-01T00:00:00Z", crash_count: 12, geocoded_count: 12 },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(safetyIngestSelectMock).toHaveBeenCalledWith(
+      "id, project_id, source_label, created_at, crash_count, geocoded_count"
+    );
+    expect(safetyEvidenceChain.eq).toHaveBeenCalledWith("status", "ready");
+    expect(safetyEvidenceChain.not).toHaveBeenCalledWith("project_id", "is", null);
+    expect(reportCreatorMock).toHaveBeenCalledWith(expect.objectContaining({
+      safetyIngestOptionsByProject: {
+        "project-1": [
+          { id: "ingest-2", sourceLabel: "Statewide crash file", createdAt: "2026-10-20T00:00:00Z", crashCount: 40, geocodedCount: 38 },
+          { id: "ingest-1", sourceLabel: "Crash acquisition", createdAt: "2026-10-01T00:00:00Z", crashCount: 12, geocodedCount: 12 },
+        ],
+      },
+    }));
+  });
+
+  it("names a failed crash evidence read instead of offering no evidence silently", async () => {
+    safetyEvidenceLimitMock.mockResolvedValue({ data: null, error: { message: "permission denied for table safety_crash_ingests" } });
+
+    await renderPage();
+
+    expect(screen.getByText(/could not read project crash evidence offered to new reports/i)).toBeInTheDocument();
+    expect(reportCreatorMock).toHaveBeenCalledWith(expect.objectContaining({ safetyIngestOptionsByProject: {} }));
   });
 });

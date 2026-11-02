@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety page: ranking retry, project warning and labeled totals (KI-2026-09-05-027, KI-2026-08-31-015, KI-2026-08-31-014):** when the crash-location ranking fails while the totals load, "Try the ranking again" asks for the ranking alone (`/api/safety/crashes?part=ksi_concentrations`) for the same acquisition, and the failure sentence stays until a ranking arrives. Retrieving with no project chosen now says first that the crashes cannot go into a report, and New report offers the chosen project's crash acquisitions as evidence. The fatal-or-serious headline and the high-injury network total each name their area and filters, with one line reconciling them. Nothing to do on upgrade; no migration.
+
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
 American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.
