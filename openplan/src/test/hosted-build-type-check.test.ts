@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import nextConfig from "../../next.config";
 
 const root = path.resolve(__dirname, "../..");
 const config = readFileSync(path.join(root, "next.config.ts"), "utf8");
@@ -21,5 +22,30 @@ describe("type checking when the hosted builder skips it", () => {
     expect(scripts.build).toMatch(/next build/);
     expect(ci).toContain("npm run qa:gate");
     expect(ci).not.toMatch(/^\s*VERCEL:\s*["']?1/m);
+  });
+});
+
+describe("webpack's persistent cache on the hosted builder", () => {
+  afterEach(() => vi.unstubAllEnvs());
+  const run = (dev: boolean) => {
+    const config = { cache: { type: "filesystem" } } as Record<string, unknown>;
+    const webpack = nextConfig.webpack as unknown as (c: Record<string, unknown>, o: { dev: boolean }) => Record<string, unknown>;
+    return webpack(config, { dev }).cache;
+  };
+
+  it("compiles a Vercel production build without the restored cache", () => {
+    vi.stubEnv("VERCEL", "1");
+    expect(run(false)).toBe(false);
+  });
+
+  it("keeps the webpack build worker on, which a custom webpack hook would otherwise disable", () => {
+    expect(nextConfig.experimental?.webpackBuildWorker).toBe(true);
+  });
+
+  it("keeps the cache for local, CI and development builds", () => {
+    vi.stubEnv("VERCEL", "");
+    expect(run(false)).toEqual({ type: "filesystem" });
+    vi.stubEnv("VERCEL", "1");
+    expect(run(true)).toEqual({ type: "filesystem" });
   });
 });
