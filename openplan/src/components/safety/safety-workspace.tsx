@@ -22,7 +22,11 @@ import {
   CRASH_SEVERITY_LEGEND_ORDER,
 } from "@/lib/cartographic/crash-severity-palette";
 import { parseCorridorText, summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
-import { describeCrashStudyArea, readCrashStudyAreaCoverage } from "@/lib/safety/crash-study-area";
+import {
+  crashAreaBasisLabel,
+  describeCrashStudyArea,
+  readCrashStudyAreaCoverage,
+} from "@/lib/safety/crash-study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
 import { describeCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
@@ -31,7 +35,10 @@ import { describeCrashPublicationEvidence } from "@/lib/safety/publication-evide
 // measure ends up defined in three files and changed in one.
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
 import { SAFETY_KSI_COVERAGE_UNAVAILABLE } from "@/lib/safety/crash-evidence";
-import { separatesSeriousInjuries } from "@/lib/safety/serious-injury-availability";
+import {
+  separatesSeriousInjuries,
+  seriousInjuryAvailabilityForRecord,
+} from "@/lib/safety/serious-injury-availability";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap, safetyWorkspaceGisAnchorLayerId } from "./safety-crash-map";
 import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
@@ -568,8 +575,39 @@ export function SafetyWorkspace({
     [place]
   );
 
+  /**
+   * The crash query for the current area, project, acquisition and filters.
+   * The full load and the ranking retry both build from this, so a retry asks
+   * about the same acquisition the totals on screen came from.
+   */
+  const buildCrashQueryParams = useCallback(() => {
+    if (!bbox) return null;
+    const params = new URLSearchParams({
+      workspaceId,
+      minLon: String(bbox.minLon),
+      minLat: String(bbox.minLat),
+      maxLon: String(bbox.maxLon),
+      maxLat: String(bbox.maxLat),
+    });
+    if (projectId) params.set("projectId", projectId);
+    // The coverage banner describes one acquisition, so every point and
+    // every exact count beside it must come from that same acquisition.
+    // Without this id, overlapping county and project pulls were added
+    // together while the banner named only the newest pull.
+    if (ingest?.id) params.set("ingestId", ingest.id);
+    // PlaceBoundaryResponse is produced only by the registered US Census
+    // resolver. Drawn or uploaded geometry carries no country assertion, so
+    // it does not activate the US-only road adapter.
+    if (place) params.set("roadContextCountry", "US");
+    // Serialized from the same declaration the route parses back, so a facet
+    // cannot be sent under a name the route does not read.
+    for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
+    return params;
+  }, [workspaceId, filters, bbox, projectId, place, ingest?.id]);
+
   const loadCrashes = useCallback(async (signal: AbortSignal) => {
-    if (!bbox || (ingestsReadFailed && !ingest?.id)) {
+    const params = buildCrashQueryParams();
+    if (!params || (ingestsReadFailed && !ingest?.id)) {
       setResponse(null);
       setLoading(false);
       return;
@@ -578,27 +616,6 @@ export function SafetyWorkspace({
     setResponse(null);
     setError(null);
     try {
-      const params = new URLSearchParams({
-        workspaceId,
-        minLon: String(bbox.minLon),
-        minLat: String(bbox.minLat),
-        maxLon: String(bbox.maxLon),
-        maxLat: String(bbox.maxLat),
-      });
-      if (projectId) params.set("projectId", projectId);
-      // The coverage banner describes one acquisition, so every point and
-      // every exact count beside it must come from that same acquisition.
-      // Without this id, overlapping county and project pulls were added
-      // together while the banner named only the newest pull.
-      if (ingest?.id) params.set("ingestId", ingest.id);
-      // PlaceBoundaryResponse is produced only by the registered US Census
-      // resolver. Drawn or uploaded geometry carries no country assertion, so
-      // it does not activate the US-only road adapter.
-      if (place) params.set("roadContextCountry", "US");
-      // Serialized from the same declaration the route parses back, so a facet
-      // cannot be sent under a name the route does not read.
-      for (const [key, value] of crashFilterSearchParams(filters)) params.set(key, value);
-
       const res = await fetch(`/api/safety/crashes?${params.toString()}`, { signal });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -611,13 +628,76 @@ export function SafetyWorkspace({
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [workspaceId, filters, bbox, projectId, place, ingest?.id, ingestsReadFailed]);
+  }, [buildCrashQueryParams, ingest?.id, ingestsReadFailed]);
 
   useEffect(() => {
     const controller = new AbortController();
     void loadCrashes(controller.signal);
     return () => controller.abort();
   }, [loadCrashes]);
+
+  /**
+   * ═══ RETRYING THE CRASH-LOCATION RANKING ALONE (KI-2026-09-05-027) ═══
+   *
+   * A transient upstream failure can drop the ranking while the points and
+   * totals load. Retrieving crashes again used to be the only way back, which
+   * is a new acquisition for a read that failed once. The retry asks the route
+   * for the ranking only, and the failure sentence stays on screen until a
+   * ranking actually arrives: an in-flight, failed or malformed retry never
+   * becomes an empty list, because an empty list reads as "no concentrations".
+   *
+   * A ranking is merged only into the response it was requested for. If the
+   * planner moves the area or a filter while it is in flight, the page has
+   * already started a new full load, and the late ranking is dropped.
+   */
+  // Tied to the response it is for, so a new load starts with no retry state.
+  const [rankingRetry, setRankingRetry] = useState<{
+    target: SafetyCrashQueryResponse | null;
+    state: "retrying" | "failed";
+  } | null>(null);
+  const rankingRetryState =
+    rankingRetry && rankingRetry.target === response ? rankingRetry.state : "idle";
+  const rankingRetryAbortRef = useRef<AbortController | null>(null);
+  useEffect(() => () => rankingRetryAbortRef.current?.abort(), []);
+
+  const retryKsiRanking = useCallback(async () => {
+    const target = response;
+    const params = buildCrashQueryParams();
+    if (!target || !params) return;
+    params.set("part", "ksi_concentrations");
+    rankingRetryAbortRef.current?.abort();
+    const controller = new AbortController();
+    rankingRetryAbortRef.current = controller;
+    setRankingRetry({ target, state: "retrying" });
+    try {
+      const res = await fetch(`/api/safety/crashes?${params.toString()}`, { signal: controller.signal });
+      const body = res.ok
+        ? ((await res.json().catch(() => null)) as Partial<SafetyCrashQueryResponse> | null)
+        : null;
+      if (controller.signal.aborted) return;
+      const ranking = Array.isArray(body?.ksiConcentrations) ? body.ksiConcentrations : null;
+      if (!ranking) {
+        setRankingRetry({ target, state: "failed" });
+        return;
+      }
+      setResponse((current) =>
+        current === target
+          ? {
+              ...current,
+              ksiConcentrations: ranking,
+              // Read with the ranking: the nearest-road matches come from it.
+              ...(body?.roadContext !== undefined ? { roadContext: body.roadContext } : {}),
+              ...(typeof body?.roadContextCoverageLimit === "string"
+                ? { roadContextCoverageLimit: body.roadContextCoverageLimit }
+                : {}),
+            }
+          : current
+      );
+      setRankingRetry(null);
+    } catch {
+      if (!controller.signal.aborted) setRankingRetry({ target, state: "failed" });
+    }
+  }, [response, buildCrashQueryParams]);
 
   // The rolling window every crash lane asks for, from the one shared helper.
   // It was a hardcoded `[2025, 2024, 2023, 2022, 2021]` here — already stale
@@ -919,6 +999,32 @@ export function SafetyWorkspace({
     }
     return total;
   }, [studyAreaSeverityTotals, activeCompleteness]);
+
+  /**
+   * What bounds the stored acquisition's counts, for the labels of both
+   * fatal-or-serious totals: the place boundary, a drawn boundary, or only the
+   * rectangle around the area. From the acquisition's own record, so an older
+   * rectangle-only pull is never labelled with a boundary it was not clipped to.
+   */
+  const crashAreaScope = useMemo(() => {
+    const label = crashAreaBasisLabel(ingest?.studyArea ?? readCrashStudyAreaCoverage(null));
+    return label.charAt(0).toLowerCase() + label.slice(1);
+  }, [ingest?.studyArea]);
+
+  /**
+   * How these crashes' serious injuries were counted, from the one shared
+   * statement every Safety, corridor and report surface prints.
+   */
+  const seriousInjuryStatement = useMemo(
+    () =>
+      ingest
+        ? seriousInjuryAvailabilityForRecord({
+            sourceId: ingest.sourceId,
+            severityCompleteness: ingest.severityCompleteness,
+          }).statement
+        : null,
+    [ingest]
+  );
 
   /**
    * Collisions in the WHOLE study area the source never classified.
@@ -1246,6 +1352,14 @@ export function SafetyWorkspace({
                 {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
               </button>
             </div>
+            {/* Said before the press (KI-2026-08-31-015): an acquisition is
+                attached to a project when it is made, and only a project's
+                acquisitions can be chosen as report evidence. */}
+            {projectId === "" && !ingesting ? (
+              <p className="mt-2 text-xs text-muted-foreground" data-testid="safety-no-project-warning">
+                Without a project, these crashes cannot go into a report.
+              </p>
+            ) : null}
             {ingesting ? (
               <p className="mt-2 text-xs text-muted-foreground" role="status" aria-live="polite">
                 The source is still working ({ingestElapsedSeconds}s elapsed). Large areas can take
@@ -1480,13 +1594,16 @@ export function SafetyWorkspace({
                 elsewhere on the page is a number that will be quoted alone. */}
             {ksiTotal !== null && (
               <div data-testid="safety-ksi-headline" className="flex flex-col gap-1">
+                {/* THE SCOPE IS PART OF THE LABEL (KI-2026-08-31-014). The
+                    high-injury network below states a second fatal-or-serious
+                    total over a different scope; each says its own. */}
                 <p>
-                  <span className="font-medium">
-                    {ksiTotal.toLocaleString("en-US")} fatal or serious-injury crashes
+                  <span className="font-medium" data-testid="safety-ksi-headline-label">
+                    <span>{ksiTotal.toLocaleString("en-US")} fatal or serious-injury {ksiTotal === 1 ? "crash" : "crashes"}</span>{" "}
+                    <span>({crashAreaScope} · all your filters)</span>
                   </span>{" "}
                   <span className="text-muted-foreground">
-                    across the whole area you picked, with these filters. This counts crash
-                    records by their most severe reported outcome, not people killed or injured.
+                    Crash records by their most severe reported outcome, not people killed or injured.
                   </span>
                 </p>
                 {response && (
@@ -1556,10 +1673,29 @@ export function SafetyWorkspace({
                 </ol>
               </section>
             ) : response?.ksiConcentrations === null ? (
-              <p className="text-muted-foreground">
-                OpenPlan could not rank severe-crash concentrations for this area. The crash points
-                and totals above still loaded; this location ranking did not.
-              </p>
+              <div className="flex flex-col gap-1" data-testid="safety-ksi-ranking-unavailable">
+                <p className="text-muted-foreground">
+                  OpenPlan could not rank severe-crash concentrations for this area. The crash points
+                  and totals above still loaded; this location ranking did not.
+                </p>
+                {/* No retry for a missing or incomplete acquisition: the ranking
+                    would fail the same way, and the custody warning says why. */}
+                {!response.custodyWarning && (
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => void retryKsiRanking()}
+                      disabled={rankingRetryState === "retrying"}
+                      className="rounded-md border px-2 py-1 font-semibold"
+                    >
+                      {rankingRetryState === "retrying" ? "Trying again…" : "Try the ranking again"}
+                    </button>
+                    {rankingRetryState === "failed" && (
+                      <span role="status" className="text-muted-foreground">Still unavailable.</span>
+                    )}
+                  </div>
+                )}
+              </div>
             ) : response && Array.isArray(response.ksiConcentrations) && response.ksiConcentrations.length === 0 ? (
               <p className="text-muted-foreground">
                 No pair of stored fatal or serious-injury crashes fell within the 150-meter
@@ -1611,6 +1747,11 @@ export function SafetyWorkspace({
                 key={`${ingest.id}:${projectId}`}
                 network={response.highInjuryNetwork}
                 sourceLabel={ingest.sourceLabel}
+                areaScope={crashAreaScope}
+                // The headline's total, so the panel can reconcile its own
+                // with it. Null whenever the headline is not on screen.
+                filteredKsiTotal={ksiTotal}
+                seriousInjuryStatement={seriousInjuryStatement}
                 showOnMap={showHighInjuryNetwork}
                 onShowOnMapChange={setShowHighInjuryNetwork}
                 onFocusSegment={(segment) => {

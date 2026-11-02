@@ -53,6 +53,7 @@ import {
 } from "@/lib/reports/catalog";
 import { selectInitialPlanningProjectId } from "@/lib/projects/planning-context";
 import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
+import type { ReportSafetyIngestOption } from "@/lib/reports/safety-evidence-selection";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 type ProjectOption = {
@@ -182,6 +183,8 @@ type ReportFlowValues = {
   summary: string;
   modelingCountyRunId: string;
   runIds: string[];
+  /** A ready crash acquisition of the chosen project, or "" for none. */
+  safetyIngestId: string;
 };
 
 export function ReportCreator({
@@ -191,6 +194,7 @@ export function ReportCreator({
   reportGuidanceByProject = {},
   initialProjectId,
   projectsUnreadable = false,
+  safetyIngestOptionsByProject = {},
 }: {
   projects: ProjectOption[];
   runs: RunOption[];
@@ -199,6 +203,8 @@ export function ReportCreator({
   initialProjectId?: string | null;
   /** The project list failed to load. An empty `projects` then means "unknown", not "none". */
   projectsUnreadable?: boolean;
+  /** Each project's ready crash acquisitions, newest first. */
+  safetyIngestOptionsByProject?: Record<string, ReportSafetyIngestOption[]>;
 }) {
   const router = useRouter();
   const selectedInitialProjectId = selectInitialPlanningProjectId(projects, initialProjectId, "first");
@@ -216,6 +222,7 @@ export function ReportCreator({
       ),
       runIds: [],
       guidedSnapshotId: null,
+      safetyIngestId: "",
     }),
     [initialProject, modelingCountyRuns]
   );
@@ -240,6 +247,8 @@ export function ReportCreator({
     flow.setValues({
       projectId: nextProjectId,
       guidedSnapshotId: null,
+      // An acquisition belongs to one project, so it never follows a move.
+      safetyIngestId: "",
       runIds: flow.values.runIds.filter((runId) =>
         runs.some((run) => run.id === runId && (!workspaceId || run.workspace_id === workspaceId))
       ),
@@ -383,6 +392,8 @@ export function ReportCreator({
           { name: "modelingCountyRunId", label: "Modeling evidence" },
           { name: "guidedSnapshotId", label: "Saved guided comparison" },
           { name: "runIds", label: "Linked analysis runs" },
+          // `safetyIngestId` is not declared: its control renders only when
+          // the project has crash evidence, and the field is never required.
         ],
         render: (flowState) => {
           const project = projectFor(flowState.values);
@@ -410,8 +421,51 @@ export function ReportCreator({
             );
           }
 
+          const safetyOptions = project ? safetyIngestOptionsByProject[project.id] ?? [] : [];
+
           return (
             <>
+              {/* SAFETY EVIDENCE (KI-2026-08-31-015). Only acquisitions made
+                  for this project are offered, the same ones the report's own
+                  evidence control lists. */}
+              {project ? (
+                <div className="space-y-2" data-testid="report-creator-safety-evidence">
+                  {safetyOptions.length > 0 ? (
+                    <>
+                      <label
+                        htmlFor={flowState.fieldProps("safetyIngestId").id}
+                        className="text-compact font-semibold"
+                      >
+                        Crash evidence
+                      </label>
+                      <select {...flowState.text("safetyIngestId")} className={SELECT_CLASS}>
+                        <option value="">Do not include crash evidence</option>
+                        {safetyOptions.map((option) => (
+                          <option key={option.id} value={option.id}>
+                            {option.sourceLabel} · {option.crashCount.toLocaleString("en-US")} reported ·{" "}
+                            {new Date(option.createdAt).toLocaleDateString("en-US")}
+                          </option>
+                        ))}
+                      </select>
+                      {flowState.values.safetyIngestId ? (
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          The report opens with this crash pull selected. Save it there before generating.
+                        </p>
+                      ) : null}
+                    </>
+                  ) : (
+                    <p className="text-xs leading-relaxed text-muted-foreground">
+                      No crash data is attached to this project.{" "}
+                      <Link
+                        href={`/safety?projectId=${encodeURIComponent(project.id)}`}
+                        className="underline underline-offset-2"
+                      >
+                        Retrieve it in Safety
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              ) : null}
               <GuidedComparisonPicker
                 fieldProps={flowState.fieldProps("guidedSnapshotId")}
                 projectId={project?.id ?? null} disabled={!project || flowState.values.reportType !== "analysis_summary"}
@@ -560,7 +614,21 @@ export function ReportCreator({
 
       // After the await, so the sheet closes before the page moves under it.
       router.refresh();
-      router.push(withPlanningContext(`/reports/${payload.reportId}`, values.projectId));
+      // The crash acquisition is carried to the report's own evidence control,
+      // which saves it with the rest of the report's choices.
+      const safetyIngestId = (safetyIngestOptionsByProject[values.projectId] ?? []).some(
+        (option) => option.id === values.safetyIngestId
+      )
+        ? values.safetyIngestId
+        : "";
+      router.push(
+        withPlanningContext(
+          safetyIngestId
+            ? `/reports/${payload.reportId}?safetyIngestId=${encodeURIComponent(safetyIngestId)}#report-controls`
+            : `/reports/${payload.reportId}`,
+          values.projectId
+        )
+      );
     },
   });
 
