@@ -106,7 +106,8 @@ describe("Safety snapshot and deterministic SS4A seed", () => {
     const html = buildGrantApplicationHtml({ opportunity: { id: rows.opportunity.id, title: "SS4A", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null }, programTitle: null, sections: [{ section, provenance: { origin: "safety_seed_operator_edited", model: null, groundedSentenceCount: null, totalSentenceCount: null, finalizedBy: seedId(99), finalizedAt: null, safetySeed: provenance } }], attachments: [attachment], generatedAt: snapshot.generatedAt, safetySeedHistory: [provenance] });
     expect(html).toContain("Code-built Safety seed, operator-edited"); expect(html).toContain("1 required attachment(s) outstanding");
     expect(html).toContain(provenance.snapshotHash); expect(html).toContain(provenance.acquisitionId);
-    expect(html).toContain(SAFETY_SEED_CAVEAT); expect(html).toContain("Missing coverage is not zero");
+    expect(html).toContain(SAFETY_SEED_CAVEAT); expect(html).toContain("a fatal-or-serious-injury crash count cannot be derived from it");
+    expect(html.split("This source is a fatality census").length - 1).toBe(1);
     expect(attachment.status).toBe("missing");
   });
 });

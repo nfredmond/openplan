@@ -123,7 +123,10 @@ export function buildSs4aSafetyDrafts(snapshot: SafetyPlanSnapshot, projectName:
     "budget-narrative": "[OPERATOR: Enter the approved cost estimate, currency, estimate date, methods, funding sources and match. This snapshot records no typed budget facts. No amounts, costs, currency or benefits have been inferred.]",
   };
   const provenance: SafetySeedProvenance = { kind: "openplan.ss4a-safety-seed.v1", artifactId: snapshot.artifactId, reportId: snapshot.reportId, acquisitionId: String(snapshot.acquisition.id), snapshotHash: snapshot.hash,
-    caveat: SAFETY_SEED_CAVEAT, sourceCaveats: [draft.draftNotice, ...(draft.crashSummary.kind === "present" ? [...draft.crashSummary.caveats, ...draft.crashSummary.figures.flatMap((f) => f.value === null && f.absentBecause ? [f.absentBecause] : [])] : [draft.crashSummary.reason]), draft.network.kind === "computed" ? draft.network.coverage : draft.network.reason, gaps, draft.componentSourceLine, draft.countermeasureSourceLine] };
+    caveat: SAFETY_SEED_CAVEAT,
+    // Two missing figures can share the serious-injury statement the crash
+    // caveats already carry; a sentence is listed once.
+    sourceCaveats: [...new Set([draft.draftNotice, ...(draft.crashSummary.kind === "present" ? [...draft.crashSummary.caveats, ...draft.crashSummary.figures.flatMap((f) => f.value === null && f.absentBecause ? [f.absentBecause] : [])] : [draft.crashSummary.reason]), draft.network.kind === "computed" ? draft.network.coverage : draft.network.reason, gaps, draft.componentSourceLine, draft.countermeasureSourceLine])] };
   return SS4A_SECTION_KEYS.map((key) => ({ section_key: key, draft_markdown: `${header}\n\n${bodies[key]}\n\nSnapshot component gaps, not findings of agency absence:\n\n${gaps}\n\n${draft.componentSourceLine}\n\nSource qualifications:\n\n${provenance.sourceCaveats.join("\n\n")}`, provenance }));
 }
 
