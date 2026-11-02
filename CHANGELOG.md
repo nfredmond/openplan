@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Public plan pages publish only their own workspace's projects (KI-2026-11-02-053):**
+the plan document page now reads project links only from the plan's own workspace,
+and both public plan pages drop a link whose project belongs to another workspace
+from the project lists, the financial summary and the map. No migration.
+
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
 American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.

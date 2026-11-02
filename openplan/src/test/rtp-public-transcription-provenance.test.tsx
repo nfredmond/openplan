@@ -106,6 +106,7 @@ function seed() {
   tableData = {
     rtp_cycles: {
       id: PLAN_ID,
+      workspace_id: "workspace-1",
       title: "Example Region RTP 2050",
       status: "public_review",
       geography_label: "Example Region",
@@ -126,7 +127,13 @@ function seed() {
         horizon_band_id: "band-near",
         estimated_cost: "12400000",
         cost_basis_year: 2023,
-        projects: { id: "project-1", name: "Main Street Complete Street", status: null, summary: null },
+        projects: {
+          id: "project-1",
+          workspace_id: "workspace-1",
+          name: "Main Street Complete Street",
+          status: null,
+          summary: null,
+        },
       },
     ],
     rtp_horizon_bands: [
