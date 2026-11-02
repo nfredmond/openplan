@@ -44,6 +44,7 @@ import type { StudyAreaBbox } from "@/lib/models/study-area";
 import {
   boundaryAreaSquareMiles,
   clipCrashRecordsToBoundary,
+  crashCountsForStudyArea,
   describeCrashStudyArea,
   type CrashStudyAreaCoverage,
   type CrashStudyBoundary,
@@ -177,7 +178,7 @@ function unconfirmedStateNote(crashes: Pick<CrashSummaryCore, "studyAreaStates">
 
 /** Which area the counts describe, when the run recorded it. Empty otherwise. */
 function studyAreaNote(crashes: Pick<CrashSummaryCore, "studyArea" | "truncated">): string {
-  return crashes.studyArea ? ` ${describeCrashStudyArea(crashes.studyArea, crashes.truncated)}` : "";
+  return crashes.studyArea ? ` ${describeCrashStudyArea(crashes.studyArea)}` : "";
 }
 
 /** A summary before its own disclosure is attached. */
@@ -309,7 +310,9 @@ export function summarizeCrashFetch(
   // than the rectangle's.
   const clipped = boundary === undefined ? null : clipCrashRecordsToBoundary(fetched.records, bbox, boundary);
   const records = clipped ? clipped.records : fetched.records;
-  const outside = clipped?.studyArea.outsideBoundaryCount ?? 0;
+  const counts = clipped
+    ? crashCountsForStudyArea(clipped, { ...fetched, retrievedCount: fetched.records.length })
+    : null;
   let totalFatalCrashes = 0;
   let totalFatalities = 0;
   let pedestrianFatalities = 0;
@@ -376,10 +379,10 @@ export function summarizeCrashFetch(
     crashesPerSquareMile: Math.round((densityCount / annualBasis / area) * 10) / 10,
     crashDensityBasis: fatalOnly ? "fatal_only" : "injury_and_fatal",
     unclassifiedCrashes,
-    reportedTotal: Math.max(0, fetched.matchedTotal - outside),
-    mappedTotal: Math.max(0, fetched.geocodedTotal - outside),
+    reportedTotal: counts ? counts.reported : fetched.matchedTotal,
+    mappedTotal: counts ? counts.mappable : fetched.geocodedTotal,
     truncated: fetched.truncated,
-    ...(clipped ? { studyArea: clipped.studyArea } : {}),
+    ...(counts ? { studyArea: counts.studyArea } : {}),
     points,
     checkedSources: [adapter.id],
     unavailableReason: null,

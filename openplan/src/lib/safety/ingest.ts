@@ -40,6 +40,7 @@ import { resolveCrashSource, type CrashStudyAreaStates } from "./sources/registr
 import type { CrashPartyRecord, CrashRecord, CrashSourceAdapter } from "./sources/types";
 import {
   clipCrashRecordsToBoundary,
+  crashCountsForStudyArea,
   withCrashStudyAreaCoverage,
   type CrashStudyAreaCoverage,
   type CrashStudyBoundary,
@@ -239,11 +240,6 @@ export type IngestCrashesResult = {
 
 /** Dimension coverage plus the acquisition's study-area entry. */
 type CrashAcquisitionCoverage = CrashDimensionCoverage & { study_area: CrashStudyAreaCoverage };
-
-/** A count with the crashes outside the boundary taken out, never below zero. */
-function insideBoundary(total: number, studyArea: CrashStudyAreaCoverage): number {
-  return Math.max(0, total - (studyArea.outsideBoundaryCount ?? 0));
-}
 
 function toIngestRow(params: {
   workspaceId: string;
@@ -551,6 +547,10 @@ export async function ingestCrashesForStudyArea(
     if (live.kind === "read_only") {
       const clipped = clipCrashRecordsToBoundary(dedupeRecords(live.fetched.records), params.bbox, params.boundary);
       const records = clipped.records;
+      const counts = crashCountsForStudyArea(clipped, {
+        ...live.fetched,
+        retrievedCount: live.fetched.records.length,
+      });
       return {
         ingestId: null,
         status: "read_only",
@@ -558,8 +558,8 @@ export async function ingestCrashesForStudyArea(
         sourceLabel: live.adapter.label,
         attribution: live.adapter.attribution,
         coverageState: live.adapter.coverageState,
-        crashCount: insideBoundary(live.fetched.matchedTotal, clipped.studyArea),
-        geocodedCount: insideBoundary(live.fetched.geocodedTotal, clipped.studyArea),
+        crashCount: counts.reported,
+        geocodedCount: counts.mappable,
         // Nothing was written, and the field that says so is the count itself —
         // not a flag a caller might forget to read.
         storedCount: 0,
@@ -578,9 +578,9 @@ export async function ingestCrashesForStudyArea(
         involvementBasis: "crash_flags",
         dimensionCoverage: withCrashStudyAreaCoverage(
           buildDimensionCoverage(live.adapter.dimensions, live.fetched.unmappedByDimension),
-          clipped.studyArea
+          counts.studyArea
         ),
-        studyArea: clipped.studyArea,
+        studyArea: counts.studyArea,
         crashes: toLiveCrashCollection(records, live.adapter.id),
         checkedSources: live.checked,
         error: null,
@@ -731,7 +731,10 @@ export async function ingestCrashesForStudyArea(
     // Boundary first: every later step (the KSI join, the person rows, the
     // stored rows and their counts) then describes only crashes in the area.
     const clipped = clipCrashRecordsToBoundary(dedupeRecords(fetched.records), params.bbox, params.boundary);
-    const studyArea = clipped.studyArea;
+    // Counted here: the KSI join and person rows change severity and flags but
+    // never which crashes are in the area.
+    const counts = crashCountsForStudyArea(clipped, { ...fetched, retrievedCount: fetched.records.length });
+    const studyArea = counts.studyArea;
     let records = clipped.records;
 
     // KSI upgrade. Only CCRS has the injured-person table, and only when the
@@ -834,8 +837,8 @@ export async function ingestCrashesForStudyArea(
       buildDimensionCoverage(adapter.dimensions, fetched.unmappedByDimension),
       studyArea
     );
-    const crashCount = insideBoundary(fetched.matchedTotal, studyArea);
-    const geocodedCount = insideBoundary(fetched.geocodedTotal, studyArea);
+    const crashCount = counts.reported;
+    const geocodedCount = counts.mappable;
 
     const { error: finalizeError } = await params.service
       .from("safety_crash_ingests")

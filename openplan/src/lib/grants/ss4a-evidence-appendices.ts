@@ -33,7 +33,12 @@ import { buildEngagementFactClaims, type ProjectEngagementEvidence } from "@/lib
 import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
-import { crashAreaBasisLabel, describeCrashStudyArea, readCrashStudyAreaCoverage } from "@/lib/safety/crash-study-area";
+import {
+  crashAreaBasisLabel,
+  crashBoundaryCountLabel,
+  describeCrashStudyArea,
+  readCrashStudyAreaCoverage,
+} from "@/lib/safety/crash-study-area";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 import {
@@ -293,7 +298,8 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
   // Read from the acquisition the snapshot froze, so a packet generated
   // before the boundary check still says its counts are by rectangle.
   const studyArea = readCrashStudyAreaCoverage(acquisition.dimension_coverage);
-  const areaSentence = describeCrashStudyArea(studyArea, acquisition.truncated === true);
+  const areaSentence = describeCrashStudyArea(studyArea);
+  const boundaryCounts = crashBoundaryCountLabel(studyArea);
 
   return {
     ...shell(key, index),
@@ -308,6 +314,10 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
       { label: "Crash area", value: crashAreaBasisLabel(studyArea) },
       ...(studyArea.outsideBoundaryCount !== null
         ? [{ label: "Crashes outside the boundary, left out", value: studyArea.outsideBoundaryCount.toLocaleString("en-US") }]
+        : []),
+      ...(boundaryCounts ? [{ label: "Boundary counts", value: boundaryCounts }] : []),
+      ...(studyArea.rectangleReportedCount !== null
+        ? [{ label: "Crashes reported in the bounding rectangle", value: studyArea.rectangleReportedCount.toLocaleString("en-US") }]
         : []),
       { label: "Crashes reported", value: stored(acquisition.crash_count) },
       { label: "Crashes geocoded", value: stored(acquisition.geocoded_count) },

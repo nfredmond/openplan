@@ -16,6 +16,7 @@ import {
   boundaryAreaSquareMiles,
   clipCrashRecordsToBoundary,
   crashAreaBasisLabel,
+  crashCountsForStudyArea,
   describeCrashStudyArea,
   readCrashStudyAreaCoverage,
 } from "@/lib/safety/crash-study-area";
@@ -76,6 +77,9 @@ describe("clipCrashRecordsToBoundary", () => {
       boundarySource: "project_place",
       outsideBoundaryCount: 9,
       boundaryUnreadable: false,
+      rectangleReportedCount: null,
+      rectangleMappableCount: null,
+      countsAreLowerBound: false,
     });
     // The only injury crash in the rectangle is outside the city limits.
     expect(result.records.some((kept) => kept.severity === "injury")).toBe(false);
@@ -133,6 +137,9 @@ describe("clipCrashRecordsToBoundary", () => {
       boundarySource: null,
       outsideBoundaryCount: null,
       boundaryUnreadable: false,
+      rectangleReportedCount: null,
+      rectangleMappableCount: null,
+      countsAreLowerBound: false,
     });
   });
 
@@ -147,6 +154,108 @@ describe("clipCrashRecordsToBoundary", () => {
   });
 });
 
+/**
+ * Codex P2 on PR #416: with retrieval cut short, the crashes found outside cover
+ * only retrieved records, so subtracting them from the rectangle total counts
+ * every unretrieved crash as inside. Rectangle 100, cap 1, the one retrieved
+ * crash outside: the boundary count is 0 and marked a lower bound, never 99.
+ */
+const ONE_OUTSIDE = record({ externalId: "outside-1", latitude: fixture.alturas.crashes[1].latitude, longitude: fixture.alturas.crashes[1].longitude });
+const ALTURAS_BOUNDARY = { geometry: fixture.alturas.geometry, source: "project_place" as const };
+
+describe("a truncated retrieval with a boundary (rectangle 100, cap 1, the one retrieved crash outside)", () => {
+  it("counts the retrieved crashes inside, marks a lower bound and keeps the rectangle totals apart", () => {
+    const clipped = clipCrashRecordsToBoundary([ONE_OUTSIDE], ALTURAS_BBOX, ALTURAS_BOUNDARY);
+    const counts = crashCountsForStudyArea(clipped, { matchedTotal: 100, geocodedTotal: 100, truncated: true, retrievedCount: 1 });
+    expect(counts.reported).toBe(0);
+    expect(counts.mappable).toBe(0);
+    expect(counts.studyArea).toMatchObject({
+      outsideBoundaryCount: 1,
+      rectangleReportedCount: 100,
+      rectangleMappableCount: 100,
+      countsAreLowerBound: true,
+    });
+  });
+
+  it("treats fewer retrieved records than the source counts as cut short, even without the flag", () => {
+    const clipped = clipCrashRecordsToBoundary([ONE_OUTSIDE], ALTURAS_BBOX, ALTURAS_BOUNDARY);
+    const counts = crashCountsForStudyArea(clipped, { matchedTotal: 100, geocodedTotal: 100, truncated: false, retrievedCount: 1 });
+    expect(counts.reported).toBe(0);
+    expect(counts.studyArea.countsAreLowerBound).toBe(true);
+  });
+
+  it("says the counts are a lower bound and names the rectangle total", () => {
+    const clipped = clipCrashRecordsToBoundary([ONE_OUTSIDE], ALTURAS_BBOX, ALTURAS_BOUNDARY);
+    const { studyArea } = crashCountsForStudyArea(clipped, { matchedTotal: 100, geocodedTotal: 100, truncated: true, retrievedCount: 1 });
+    expect(describeCrashStudyArea(studyArea)).toBe(
+      "Crashes are counted inside the place boundary. Retrieval stopped before every crash in its bounding rectangle came back, so these counts are a lower bound made only of retrieved crashes inside the boundary. 1 crash retrieved outside the boundary is left out. Crashes not retrieved were not checked against the boundary. The source reports 100 crashes in the bounding rectangle."
+    );
+  });
+
+  it("stores 0, not 99, on the acquisition", async () => {
+    const { ccrsAdapter } = await import("@/lib/safety/sources/ccrs");
+    const spy = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue({
+      records: [ONE_OUTSIDE], matchedTotal: 100, geocodedTotal: 100, yearsCovered: [2025], truncated: true,
+    });
+    const service = fakeService();
+    try {
+      const result = await ingestCrashesForStudyArea({
+        service: service as never, workspaceId: "ws-1", bbox: ALTURAS_BBOX, stateFips: ["06"], years: [2025],
+        boundary: ALTURAS_BOUNDARY, maxRecords: 1, enrichSeriousInjury: false, includeParties: false,
+      });
+      expect(result.crashCount).toBe(0);
+      expect(result.geocodedCount).toBe(0);
+      expect(service.updates.at(-1)).toMatchObject({
+        crash_count: 0,
+        geocoded_count: 0,
+        stored_count: 0,
+        truncated: true,
+        dimension_coverage: expect.objectContaining({
+          study_area: expect.objectContaining({ rectangleReportedCount: 100, countsAreLowerBound: true }),
+        }),
+      });
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it("returns 0, not 99, from a live read", async () => {
+    const { farsAdapter } = await import("@/lib/safety/sources/fars");
+    const persistable = farsAdapter.persistable;
+    farsAdapter.persistable = false;
+    const spy = vi.spyOn(farsAdapter, "fetch").mockResolvedValue({
+      records: [{ ...ONE_OUTSIDE, severity: "fatal", killedCount: 1 }], matchedTotal: 100, geocodedTotal: 100, yearsCovered: [2023], truncated: true,
+    });
+    try {
+      const result = await ingestCrashesForStudyArea({
+        service: fakeService() as never, workspaceId: "ws-1", bbox: ALTURAS_BBOX, stateFips: null, years: [2023],
+        boundary: ALTURAS_BOUNDARY, maxRecords: 1,
+      });
+      expect(result.status).toBe("read_only");
+      expect(result.crashCount).toBe(0);
+      expect(result.geocodedCount).toBe(0);
+      expect(result.studyArea?.countsAreLowerBound).toBe(true);
+    } finally {
+      spy.mockRestore();
+      farsAdapter.persistable = persistable;
+    }
+  });
+
+  it("gives the corridor scorecard 0, not 99", async () => {
+    const { ccrsAdapter } = await import("@/lib/safety/sources/ccrs");
+    const summary = summarizeCrashFetch(
+      ccrsAdapter,
+      { records: [ONE_OUTSIDE], matchedTotal: 100, geocodedTotal: 100, yearsCovered: [2025], truncated: true },
+      ALTURAS_BBOX,
+      [2025],
+      ALTURAS_BOUNDARY
+    );
+    expect(summary.reportedTotal).toBe(0);
+    expect(summary.mappedTotal).toBe(0);
+    expect(summary.studyArea?.countsAreLowerBound).toBe(true);
+  });
+});
+
 describe("the study-area entry and its sentences", () => {
   it("reads an acquisition with no entry as counted by rectangle, never as the boundary", () => {
     expect(readCrashStudyAreaCoverage(null).basis).toBe("bounding_rectangle");
@@ -154,9 +263,16 @@ describe("the study-area entry and its sentences", () => {
     expect(readCrashStudyAreaCoverage({ study_area: { basis: "place_boundary" } }).basis).toBe("bounding_rectangle");
     expect(
       readCrashStudyAreaCoverage({
-        study_area: { basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 3, boundaryUnreadable: false },
+        study_area: { basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 3, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false },
       })
-    ).toEqual({ basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 3, boundaryUnreadable: false });
+    ).toEqual({ basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 3, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false });
+  });
+
+  it("reads a boundary entry with no completeness flag as a lower bound, never as complete", () => {
+    const entry = readCrashStudyAreaCoverage({
+      study_area: { basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 3, boundaryUnreadable: false },
+    });
+    expect(entry.countsAreLowerBound).toBe(true);
   });
 
   it("names the rectangle as not the place boundary", () => {
@@ -168,7 +284,7 @@ describe("the study-area entry and its sentences", () => {
   });
 
   it("says how many crashes the boundary left out", () => {
-    const boundary = { basis: "place_boundary" as const, boundarySource: "project_place" as const, outsideBoundaryCount: 9, boundaryUnreadable: false };
+    const boundary = { basis: "place_boundary" as const, boundarySource: "project_place" as const, outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false };
     expect(describeCrashStudyArea(boundary)).toBe(
       "Crashes are counted inside the place boundary. 9 crashes inside its bounding rectangle but outside the boundary are left out."
     );
@@ -259,9 +375,10 @@ describe("ingestCrashesForStudyArea with a boundary", () => {
         geocoded_count: 2,
         stored_count: 2,
         dimension_coverage: expect.objectContaining({
-          study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false },
+          study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false },
         }),
       });
+      expect(result.studyArea?.countsAreLowerBound).toBe(false);
     } finally {
       spy.mockRestore();
     }
@@ -379,7 +496,7 @@ describe("the crash evidence every report and packet prints", () => {
 
   it("names the boundary and the crashes it left out", () => {
     const evidence = buildSafetyCrashEvidence(
-      evidenceIngest({ study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false } }),
+      evidenceIngest({ study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false } }),
       { severity, role: null }
     );
     expect(evidence.caveats).toContain(
