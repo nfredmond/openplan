@@ -331,10 +331,12 @@ describe("GET /api/map-features/crashes", () => {
   // The fixture pairs a state with a rectangle that is not that state's, so the
   // two rules disagree and the test shows which one decides. Under the old
   // rectangle rule this bbox overlapped CCRS's envelope and read "covered".
+  // The U.S. Virgin Islands stand in for a state no adapter reads; Puerto Rico
+  // did until FARS began reading its separate file.
   it("decides coverage by the stated area's state, not by its rectangle", async () => {
     asMember();
     workspaceMaybeSingleMock.mockResolvedValue({
-      data: { ...COVERED_WORKSPACE_ROW, home_country_code: "US", home_subdivision_code: "PR" },
+      data: { ...COVERED_WORKSPACE_ROW, home_country_code: "US", home_subdivision_code: "VI" },
       error: null,
     });
     const outOfState = (await (await getCrashes(bareRequest())).json()) as CrashPayload;
