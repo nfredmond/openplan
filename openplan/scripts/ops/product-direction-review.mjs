@@ -3,7 +3,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateCapabilityEvidence } from "./capability-evidence.mjs";
 
@@ -643,8 +643,8 @@ function runPacket() {
     .split("\n")
     .slice(0, 12)
     .join(", ");
-  const pages = countFiles(resolve(APP_ROOT, "src/app"), (path) => path.endsWith("/page.tsx"));
-  const routes = countFiles(resolve(APP_ROOT, "src/app/api"), (path) => path.endsWith("/route.ts"));
+  const pages = countFiles(resolve(APP_ROOT, "src/app"), (path) => basename(path) === "page.tsx");
+  const routes = countFiles(resolve(APP_ROOT, "src/app/api"), (path) => basename(path) === "route.ts");
   const migrations = countFiles(
     resolve(APP_ROOT, "supabase/migrations"),
     (path) => path.endsWith(".sql"),
