@@ -3,8 +3,10 @@ import { SAFETY_PLAN_PERSISTENCE_SELECT } from "@/lib/reports/safety-plan-persis
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
-import { buildSafetySeedPreview, SS4A_ARTIFACT_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_SECTION_PROJECTION } from "@/lib/grants/ss4a-safety-seed";
+import { buildSafetySeedPreview, SS4A_ACQUISITION_PROJECTION, SS4A_ARTIFACT_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_SECTION_PROJECTION } from "@/lib/grants/ss4a-safety-seed";
 import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
+import { PROJECT_PLACE_SCOPE_COLUMNS } from "@/lib/projects/project-place";
+import { SAFETY_SNAPSHOT_V1_ACQUISITION_PROJECTION } from "@/lib/reports/safety-plan-snapshot";
 import { comparisonFixture, rehashComparison } from "./fixtures/safety/comparison";
 import { buildSafetyComparisonSnapshot } from "@/lib/reports/safety-comparison-snapshot";
 import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
@@ -125,7 +127,12 @@ describe("Safety seed preview and atomic apply dispatch", () => {
     expect(response.status).toBe(200);
     const payload = await response.json(); expect(payload.preview.sections).toHaveLength(6);
     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).not.toHaveBeenCalled();
-    for (const [table, projection] of Object.entries({ projects: SS4A_PROJECT_PROJECTION, reports: SS4A_REPORT_PROJECTION, report_artifacts: SS4A_ARTIFACT_PROJECTION, funding_opportunity_application_sections: SS4A_SECTION_PROJECTION, safety_crash_ingests: SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION, report_safety_snapshot_persistence: SAFETY_PLAN_PERSISTENCE_SELECT })) expect(tables[table].select).toHaveBeenCalledWith(projection);
+    for (const [table, projection] of Object.entries({ projects: SS4A_PROJECT_PROJECTION, reports: SS4A_REPORT_PROJECTION, report_artifacts: SS4A_ARTIFACT_PROJECTION, funding_opportunity_application_sections: SS4A_SECTION_PROJECTION, safety_crash_ingests: SS4A_ACQUISITION_PROJECTION, report_safety_snapshot_persistence: SAFETY_PLAN_PERSISTENCE_SELECT })) expect(tables[table].select).toHaveBeenCalledWith(projection);
+    // The fence and the place are compared, so they must be read.
+    expect(SS4A_ACQUISITION_PROJECTION).toBe(`${SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION}, evidence_revision`);
+    expect(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION).toBe(SAFETY_SNAPSHOT_V1_ACQUISITION_PROJECTION);
+    expect(SS4A_PROJECT_PROJECTION).toBe(`id, workspace_id, name, updated_at, ${PROJECT_PLACE_SCOPE_COLUMNS}`);
+    expect(PROJECT_PLACE_SCOPE_COLUMNS).toContain("place_set_at"); expect(PROJECT_PLACE_SCOPE_COLUMNS).not.toContain("place_geometry_geojson");
     expect(tables.report_artifacts.eq).toHaveBeenCalledWith("id", rows.artifact.id);
     expect(tables.report_safety_snapshot_persistence.select).toHaveBeenCalledWith("artifact_id, workspace_id, project_id, report_id, schema_version, snapshot_hash, source_project_updated_at, persisted_project_updated_at, source_report_updated_at, report_updated_at");
     expect(tables.report_safety_snapshot_persistence.eq).toHaveBeenCalledWith("artifact_id", rows.artifact.id);
@@ -135,6 +142,22 @@ describe("Safety seed preview and atomic apply dispatch", () => {
     expect(tables.funding_opportunity_section_drafts.select).toHaveBeenCalledWith("id, section_id", { count: "exact" });
     expect(tables.funding_opportunity_section_drafts.limit).toHaveBeenCalledWith(1001);
     expect(mocks.access).toHaveBeenCalledWith(expect.anything(), rows.opportunity.id, seedId(99), "programs.write");
+  });
+  // KI-2026-11-02-022: the order generate report, log the opportunity, seed.
+  it("seeds a fenced report after logging the opportunity moved the project revision, and refuses after a crash write", async () => {
+    rows = safetySeedFixture("fatal_only", { fenced: true });
+    rows.project.updated_at = "2026-10-18T12:05:00.000001+00:00";
+    install();
+    const preview = await call({ operation: "preview", artifactId: rows.artifact.id });
+    expect(preview.status).toBe(200);
+    const { previewHash } = (await preview.json()).preview;
+    expect((await call({ operation: "apply", artifactId: rows.artifact.id, previewHash })).status).toBe(200);
+    // The RPC rechecks the fence and place it was given under its lock.
+    const sent = mocks.rpc.mock.calls[0][1].p_rows;
+    expect(sent.acquisition.evidence_revision).toBe(7); expect(sent.project.place_set_at).toBe(rows.project.place_set_at);
+    rows.acquisition.evidence_revision = 8; install();
+    const refused = await call({ operation: "preview", artifactId: rows.artifact.id });
+    expect(refused.status).toBe(422); expect((await refused.json()).error).toMatch(/crash records or project place/);
   });
   it("refuses custody for another snapshot rather than trusting returned query rows", async () => {
     tables.report_safety_snapshot_persistence = chain({ data: { ...rows.persistence, snapshot_hash: "0".repeat(64) }, error: null });

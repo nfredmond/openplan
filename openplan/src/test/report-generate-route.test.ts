@@ -6,8 +6,8 @@ vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
   verifyGuidedComparisonReport: (...args: unknown[]) => verifyGuidedReportMock(...args),
 }));
 import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
-import { safetySeedFixture } from "./fixtures/grants/safety-seed";
-import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { safetySeedFixture, SEED_PROJECT_PLACE } from "./fixtures/grants/safety-seed";
+import { readSafetyPlanSnapshot, safetyProjectPlaceHash, SAFETY_PLAN_FENCE_INGEST_SELECT } from "@/lib/reports/safety-plan-snapshot";
 import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
 import type { HighInjuryNetworkCrashQuery } from "@/lib/safety/high-injury-network-loader";
 import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
@@ -1571,7 +1571,16 @@ describe("POST /api/reports/[reportId]/generate", () => {
       return query;
     });
     const member = await createClientMock();
-    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect } : fromMock(table) });
+    // The evidence fence read is scoped to the plan's acquisition. Every other
+    // ingest read keeps the shared mock.
+    const fenceEq = vi.fn((_column: string, _value: string) => fenceQuery);
+    const fenceQuery = { eq: fenceEq, maybeSingle: vi.fn(async () => ({ data: { id: fixture.acquisition.id, evidence_revision: 41 }, error: null })) };
+    const ingestSelect = vi.fn((columns: string) => columns === SAFETY_PLAN_FENCE_INGEST_SELECT ? fenceQuery
+      : (safetyIngestSelectMock as unknown as (columns: string) => unknown)(columns));
+    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect }
+      : table === "safety_crash_ingests" ? { select: ingestSelect } : fromMock(table) });
+    const projectRow = { ...(await projectMaybeSingleMock()).data, ...SEED_PROJECT_PLACE, place_geometry_geojson: null };
+    projectMaybeSingleMock.mockResolvedValue({ data: projectRow, error: null });
     const acquisition: typeof fixture.acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
       years_requested: requestedYears, crash_count: crashRows.length, geocoded_count: crashRows.length, stored_count: crashRows.length };
     safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
@@ -1609,6 +1618,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect(snapshot).not.toBeNull(); expect(snapshot.draft).toEqual(builder.mock.results.at(-1)!.value);
       expect(snapshot.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
       expect(snapshot.acquisition.years_requested).toEqual(requestedYears);
+      expect(snapshot.evidenceFence).toEqual({ acquisitionEvidenceRevision: "41", projectPlaceHash: safetyProjectPlaceHash(SEED_PROJECT_PLACE) });
+      expect(ingestSelect).toHaveBeenCalledWith("id, evidence_revision");
+      expect(fenceEq.mock.calls).toEqual([["workspace_id", workspaceId], ["project_id", projectId], ["id", acquisition.id]]);
       if (selectedYears === null) {
         expect(crashSelect).not.toHaveBeenCalled();
         expect(snapshot.draft.network).toMatchObject({ kind: "unavailable", reason: expect.stringContaining("Requested crash years are missing") });
@@ -1631,14 +1643,22 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }
       expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
       const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
-        project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt },
+        project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt, ...SEED_PROJECT_PLACE },
         report: { ...fixture.report, id: reportId, project_id: projectId, workspace_id: workspaceId, updated_at: result.reportUpdatedAt },
-        artifact: result.artifact, acquisition, persistence: result.persistence,
+        artifact: result.artifact, acquisition: { ...acquisition, evidence_revision: 41 }, persistence: result.persistence,
         sections: fixture.sections.map((section) => ({ ...section, workspace_id: workspaceId })) };
       expect(buildSafetySeedPreview(rows).sections).toHaveLength(6);
+      // KI-2026-11-02-022: a write outside Safety (logging the linked
+      // opportunity) moves the project revision and must not refuse the seed.
       rows.project.updated_at = "2026-10-18T12:00:03.000004+00:00";
-      rows.project.name = "Genuine later source edit";
-      expect(() => buildSafetySeedPreview(rows)).toThrow(/custody.*stale/);
+      rows.project.name = "Renamed after generation";
+      expect(buildSafetySeedPreview(rows).sections).toHaveLength(6);
+      // A crash, party or acquisition write moves the evidence revision.
+      rows.acquisition = { ...rows.acquisition, evidence_revision: 42 };
+      expect(() => buildSafetySeedPreview(rows)).toThrow(/crash records or project place/);
+      rows.acquisition = { ...rows.acquisition, evidence_revision: 41 };
+      rows.project = { ...rows.project, place_label: "Moved place", place_set_at: "2026-10-18T12:00:04+00:00" };
+      expect(() => buildSafetySeedPreview(rows)).toThrow(/crash records or project place/);
       expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
       expect(serviceArtifactsInsertMock, "Safety insertion stays inside its persistence RPC").not.toHaveBeenCalled();
       expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));

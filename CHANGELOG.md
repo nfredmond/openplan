@@ -35,6 +35,17 @@ need a Mapbox token) and offers it when neither is set. Still open: crash
 acquisitions above about 100 crashes fail to store (needs a migration), and
 acquisitions use the place's bounding rectangle. No migration.
 
+**SS4A seed after logging the opportunity (KI-2026-11-02-022):** logging or
+exporting the SS4A funding opportunity no longer makes the Safety report look
+stale to "Seed from Safety plan". New Safety reports record the crash
+acquisition's evidence revision and the project's place when they are
+generated, and the seed compares those instead of the project's last-updated
+time. A new crash, party or acquisition write, or a change to the project's
+place, still refuses the seed until the report is regenerated. Safety reports
+generated before this change keep the old check: regenerate one once to use the
+new one. The benefit-cost analysis place review still treats any project write
+as a change (needs a migration). No migration.
+
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
 It removes a staged aerial, Knowledge Base or transit upload whose complete step
