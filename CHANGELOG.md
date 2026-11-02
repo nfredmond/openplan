@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**ATP application PDF carries its evidence (KI-2026-11-02-044, 045, 047):** an
+application set up from the ATP template now exports with evidence appendices
+drawn from the linked project's saved records: the ATP screening packet
+(program facts marked `[VERIFY]` with the CTC's ATP page, and OpenPlan screening
+scores or "Not recorded"), the latest crash acquisition, the planning-level
+estimate, engagement, disadvantaged-community and equity inputs, and the
+benefit-cost summary. A record the project lacks is listed as missing. The
+export panel offers the same choice of appendices it offers for SS4A. Every
+application PDF now names the person who finalized each section by their
+workspace email, or says the person is not on record, instead of printing a
+user id; lists only the standing caveats for evidence it includes; and prints
+times in the workspace time zone. No migration.
+
 **ATP report states what it knows (KI-2026-11-02-040 to 042):** the ATP report
 downloaded from an ATP application now cites SB 535 to Health and Safety Code
 §39711, calls its numbers OpenPlan screening scores rather than CTC scoring

@@ -12,9 +12,11 @@ import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-ori
  *  - Missing required attachments stamp the document DRAFT prominently; they
  *    do not block assembly, because an operator legitimately packages a work
  *    in progress — but the reader must never mistake it for submittable.
- *  - The standing evidence caveats travel on the cover verbatim, and every
- *    section's provenance (origin, model, grounding verdict, who finalized it
- *    and when) is disclosed in an appendix.
+ *  - The standing evidence caveats travel on the cover verbatim, for the
+ *    evidence the document actually carries (`applicableStandingCaveats`), and
+ *    every section's provenance (origin, model, grounding verdict, who
+ *    finalized it and when) is disclosed in an appendix.
+ *  - Every time prints on the workspace calendar with its zone named.
  */
 
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
@@ -25,9 +27,24 @@ import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { ApplicationAttachmentRow, ApplicationSectionRow } from "@/lib/grants/application";
 import { formatMoney } from "@/lib/money/format";
-import { ss4aEvidenceAppendicesMarkup, type Ss4aAppendix } from "@/lib/grants/ss4a-evidence-appendices";
+import {
+  evidenceAppendicesMarkup,
+  type EvidenceAppendix,
+  type EvidenceAppendixFrame,
+} from "@/lib/grants/evidence-appendices";
+import { SS4A_APPENDIX_FRAME } from "@/lib/grants/ss4a-evidence-appendices";
+import {
+  formatRecordedMoment,
+  timeZoneInputLabel,
+  UTC_TIME_ZONE,
+  type WorkspaceCalendar,
+} from "@/lib/time/workspace-calendar";
 
-/** The standing caveat lines every packaged application carries on its cover. */
+/**
+ * The standing caveat lines a packaged application can carry on its cover, in
+ * cover order. `applicableStandingCaveats` picks the ones whose evidence the
+ * document includes.
+ */
 export const APPLICATION_EXPORT_STANDING_CAVEATS: readonly string[] = [
   GRANT_MODELING_PLANNING_CAVEAT,
   BCA_NARRATIVE_CAVEAT,
@@ -51,14 +68,21 @@ export type GrantApplicationSectionProvenance = {
   groundedSentenceCount: number | null;
   totalSentenceCount: number | null;
   /**
-   * The finalizing workspace member's id — an honest identifier, not a name
-   * lookup — sourced from the section's finalized_by EVENT column (never
-   * updated_by, which any later touch overwrites). For sections finalized
-   * before finalizer tracking existed, this carries the disclosure string
-   * "finalized before finalizer tracking; not recorded" instead of a guess.
+   * Who finalized the section, as the document prints it: the workspace
+   * member's name from `loadFinalizerNames`, or that module's sentence when
+   * the person is not on record. Never a user id. Sourced from the section's
+   * finalized_by EVENT column (never updated_by, which any later touch
+   * overwrites). For sections finalized before finalizer tracking existed,
+   * this carries the disclosure "finalized before finalizer tracking; not
+   * recorded" instead of a guess.
    */
   finalizedBy: string | null;
   finalizedAt: string | null;
+  /**
+   * The draft text the section was finalized from, when it came from an AI
+   * draft. Read only to find which evidence caveats the draft carried.
+   */
+  sourceDraftText?: string | null;
 };
 
 export type GrantApplicationExportSection = {
@@ -85,8 +109,12 @@ export type GrantApplicationExportData = {
   attachments: ApplicationAttachmentRow[];
   generatedAt: string;
   safetySeedHistory?: SafetySeedProvenance[];
-  /** SS4A applications only: every evidence appendix, including missing and omitted ones. */
-  evidenceAppendices?: Ss4aAppendix[];
+  /** Programs that declare appendices only: every evidence appendix, including missing and omitted ones. */
+  evidenceAppendices?: EvidenceAppendix[];
+  /** How the program's appendices open. Defaults to the SS4A wording. */
+  evidenceAppendixFrame?: EvidenceAppendixFrame;
+  /** The workspace calendar every time prints on. Absent means UTC, said out loud. */
+  calendar?: WorkspaceCalendar;
 };
 
 /** The document label per pursuit kind, used in the title and cover eyebrow. */
@@ -126,14 +154,17 @@ function esc(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function formatDateTime(value: string | null | undefined): string {
+const UTC_CALENDAR: WorkspaceCalendar = { timeZone: UTC_TIME_ZONE, source: "utc_fallback" };
+
+/**
+ * A stored time on the workspace calendar, its zone named: "September 29,
+ * 2026 at 17:00 (America/Los_Angeles)", or "(UTC, no workspace time zone set)"
+ * when the workspace has none. A date-only value prints as the day. A value
+ * that does not read as a time prints as stored.
+ */
+function formatDateTime(value: string | null | undefined, calendar: WorkspaceCalendar): string {
   if (!value) return "Not set";
-  const parsed = new Date(value);
-  // Locale pinned to en-US so the packaged document renders identically on
-  // every server, matching the report helpers (reports/catalog.ts
-  // formatDateTime), which format in the server's timezone without a
-  // timezone pin.
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
+  return formatRecordedMoment(value, calendar.timeZone, timeZoneInputLabel(calendar)) ?? value;
 }
 
 function formatAmount(value: number | string | null | undefined): string {
@@ -191,8 +222,41 @@ const DOCUMENT_STYLES = `
       .table-scroll { overflow-x: auto; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }`;
 
+/**
+ * The standing caveats whose evidence this document carries, in cover order.
+ *
+ * A caveat applies when an included appendix holds that evidence (benefit-cost,
+ * engagement), when a section's final text or the AI draft it came from quotes
+ * the caveat (drafts must quote it whenever they use that evidence), or, for
+ * the Safety seed caveat, when a section came from a Safety seed. A caveat for
+ * evidence the document does not use is left off.
+ */
+export function applicableStandingCaveats(data: GrantApplicationExportData): string[] {
+  const texts = data.sections.flatMap(({ section, provenance }) =>
+    section.status === "final" && section.final_markdown
+      ? [section.final_markdown, provenance.sourceDraftText ?? ""]
+      : []
+  );
+  const quoted = (caveat: string) => texts.some((text) => text.includes(caveat));
+  const included = new Set(
+    (data.evidenceAppendices ?? []).filter((appendix) => appendix.status === "included").map((appendix) => appendix.key)
+  );
+  const seeded =
+    (data.safetySeedHistory?.length ?? 0) > 0 || data.sections.some((entry) => entry.provenance.safetySeed);
+  const applies: Record<string, boolean> = {
+    [GRANT_MODELING_PLANNING_CAVEAT]: quoted(GRANT_MODELING_PLANNING_CAVEAT),
+    [BCA_NARRATIVE_CAVEAT]: included.has("bca") || quoted(BCA_NARRATIVE_CAVEAT),
+    [ENGAGEMENT_NARRATIVE_CAVEAT]: included.has("engagement") || quoted(ENGAGEMENT_NARRATIVE_CAVEAT),
+    [KB_NARRATIVE_CAVEAT]: quoted(KB_NARRATIVE_CAVEAT),
+    [SAFETY_SEED_CAVEAT]: seeded,
+  };
+  return APPLICATION_EXPORT_STANDING_CAVEATS.filter((caveat) => applies[caveat]);
+}
+
 function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount: number): string {
   const { opportunity } = data;
+  const calendar = data.calendar ?? UTC_CALENDAR;
+  const caveats = applicableStandingCaveats(data);
   const isProposal = opportunity.pursuit_kind === "proposal";
   const finalCount = data.sections.filter((entry) => entry.section.status === "final").length;
 
@@ -200,16 +264,16 @@ function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount:
     ? `
       <div><dt>Issuing agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
       <div><dt>Solicitation number</dt><dd>${esc(opportunity.solicitation_number ?? "Not set")}</dd></div>
-      <div><dt>Proposals due</dt><dd>${esc(formatDateTime(opportunity.closes_at))}</dd></div>
+      <div><dt>Proposals due</dt><dd>${esc(formatDateTime(opportunity.closes_at, calendar))}</dd></div>
       <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
-      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt))}</dd></div>`
+      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt, calendar))}</dd></div>`
     : `
       <div><dt>Funder / agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
       <div><dt>Program</dt><dd>${esc(data.programTitle ?? "Not linked")}</dd></div>
       <div><dt>Expected award</dt><dd>${esc(formatAmount(opportunity.expected_award_amount))}</dd></div>
-      <div><dt>Closes</dt><dd>${esc(formatDateTime(opportunity.closes_at))}</dd></div>
+      <div><dt>Closes</dt><dd>${esc(formatDateTime(opportunity.closes_at, calendar))}</dd></div>
       <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
-      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt))}</dd></div>`;
+      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt, calendar))}</dd></div>`;
 
   return `<header class="hero">
     <span class="eyebrow">OpenPlan Grants — ${esc(applicationExportPacketLabel(opportunity.pursuit_kind))}</span>
@@ -227,13 +291,17 @@ function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount:
         ? `<div class="draft-stamp">DRAFT — ${outstandingRequiredCount} required attachment(s) outstanding</div>`
         : ""
     }
-    <div class="warning-box">
-      <strong>Standing caveats.</strong> Where this application cites OpenPlan-assembled evidence,
-      the following boundaries apply verbatim:
+    ${
+      caveats.length > 0
+        ? `<div class="warning-box">
+      <strong>Standing caveats.</strong> This application cites OpenPlan-assembled evidence,
+      and the following boundaries apply verbatim:
       <ul>
-        ${APPLICATION_EXPORT_STANDING_CAVEATS.map((caveat) => `<li>${esc(caveat)}</li>`).join("\n        ")}
+        ${caveats.map((caveat) => `<li>${esc(caveat)}</li>`).join("\n        ")}
       </ul>
-    </div>
+    </div>`
+        : ""
+    }
   </header>`;
 }
 
@@ -296,7 +364,7 @@ function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[]): st
   </section>`;
 }
 
-function provenanceMarkup(sections: readonly GrantApplicationExportSection[]): string {
+function provenanceMarkup(sections: readonly GrantApplicationExportSection[], calendar: WorkspaceCalendar): string {
   return `<section id="provenance-appendix">
     <h2 class="section-title">Provenance appendix</h2>
     <p>How each section's text came to be, disclosed per section. AI drafts are writing support
@@ -320,7 +388,7 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[]): s
           <td>${esc(provenance.model ?? "—")}</td>
           <td>${esc(grounding)}</td>
           <td>${esc(provenance.finalizedBy ?? "—")}</td>
-          <td>${esc(provenance.finalizedAt ? formatDateTime(provenance.finalizedAt) : "—")}</td>
+          <td>${esc(provenance.finalizedAt ? formatDateTime(provenance.finalizedAt, calendar) : "—")}</td>
         </tr>`;
           })
           .join("\n        ")}
@@ -349,8 +417,8 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
       ${coverMarkup({ ...data, sections: orderedSections }, outstandingRequiredCount)}
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
       ${attachmentsMarkup(data.attachments)}
-      ${ss4aEvidenceAppendicesMarkup(data.evidenceAppendices)}
-      ${provenanceMarkup(orderedSections)}
+      ${evidenceAppendicesMarkup(data.evidenceAppendices, data.evidenceAppendixFrame ?? SS4A_APPENDIX_FRAME)}
+      ${provenanceMarkup(orderedSections, data.calendar ?? UTC_CALENDAR)}
       ${safetySeedHistoryMarkup(data.safetySeedHistory ?? orderedSections.flatMap((entry) => entry.provenance.safetySeed ? [entry.provenance.safetySeed] : []))}
     </main>
   </body>

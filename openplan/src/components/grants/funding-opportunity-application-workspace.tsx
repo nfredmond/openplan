@@ -34,7 +34,7 @@ import { identifySeededCatalogKey, isAtpApplication } from "@/lib/grants/atp-pac
 import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel";
 import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
 import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
-import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
+import { evidenceAppendixProgramFor } from "@/lib/grants/evidence-appendix-keys";
 
 /**
  * The application workspace for one funding opportunity: initialize from a
@@ -215,9 +215,8 @@ export function FundingOpportunityApplicationWorkspace({
     outstandingRequiredCount: number;
     sha256: string | null;
   } | null>(null);
-  const [appendixSelection, setAppendixSelection] = useState<ReadonlySet<Ss4aAppendixKey>>(
-    () => new Set(SS4A_APPENDIX_KEYS)
-  );
+  // Appendices the planner turned off; every declared appendix is on by default.
+  const [deselectedAppendices, setDeselectedAppendices] = useState<ReadonlySet<string>>(() => new Set());
 
   const catalogTemplateOptions = useMemo(
     () =>
@@ -491,7 +490,9 @@ export function FundingOpportunityApplicationWorkspace({
     }
   }
 
-  const isSs4aApplication = pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a";
+  const seededCatalogKey = pursuitKind === "grant" ? identifySeededCatalogKey(sections) : null;
+  const isSs4aApplication = seededCatalogKey === "ss4a";
+  const appendixProgram = evidenceAppendixProgramFor(seededCatalogKey);
 
   async function handleExport() {
     setIsExporting(true);
@@ -501,11 +502,11 @@ export function FundingOpportunityApplicationWorkspace({
     try {
       const response = await fetch(
         `/api/funding-opportunities/${opportunityId}/application/export`,
-        isSs4aApplication
+        appendixProgram
           ? {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ appendices: SS4A_APPENDIX_KEYS.filter((key) => appendixSelection.has(key)) }),
+              body: JSON.stringify({ appendices: appendixProgram.keys.filter((key) => !deselectedAppendices.has(key)) }),
             }
           : { method: "POST" }
       );
@@ -755,25 +756,25 @@ export function FundingOpportunityApplicationWorkspace({
                     item), the attachment checklist, and a provenance appendix into one PDF.
                     Missing required attachments stamp the document DRAFT; they never disappear.
                   </p>
-                  {isSs4aApplication ? (
+                  {appendixProgram ? (
                     <fieldset className="mt-2" data-testid="export-appendices">
                       <legend className="text-xs font-semibold text-foreground/80">Evidence appendices</legend>
                       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                        {SS4A_APPENDIX_KEYS.map((key) => (
+                        {appendixProgram.keys.map((key) => (
                           <label key={key} className="flex items-center gap-1.5 text-xs">
                             <input
                               type="checkbox"
-                              checked={appendixSelection.has(key)}
+                              checked={!deselectedAppendices.has(key)}
                               onChange={(event) =>
-                                setAppendixSelection((current) => {
+                                setDeselectedAppendices((current) => {
                                   const next = new Set(current);
-                                  if (event.target.checked) next.add(key);
-                                  else next.delete(key);
+                                  if (event.target.checked) next.delete(key);
+                                  else next.add(key);
                                   return next;
                                 })
                               }
                             />
-                            {SS4A_APPENDIX_TITLES[key]}
+                            {appendixProgram.titles[key]}
                           </label>
                         ))}
                       </div>
