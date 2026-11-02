@@ -9,8 +9,10 @@ export const dynamic = "force-dynamic";
 /**
  * Cron sweep that reaps stale model runs across ALL workspaces — the
  * no-viewer safety net for the reconcile-on-read that runs in the model page
- * loader. A run whose worker crashed (or was never claimed) is flipped to a
- * truthful `failed` state so run history never lies.
+ * loader. Only a stale queued run that no worker ever started is flipped to
+ * `failed`. The reaper RPC refuses running, attempt-managed or previously
+ * started work (migration 20261016000022); a crashed worker's run needs
+ * explicit recovery, and the heartbeat lease marks its stage interrupted.
  *
  * Auth: Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` when the
  * CRON_SECRET env var is set. We require it — without the secret the route is

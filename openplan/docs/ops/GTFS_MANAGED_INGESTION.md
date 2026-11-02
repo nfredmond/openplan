@@ -1,6 +1,6 @@
 # Retained transit import operation
 
-This is an opt-in development candidate. Migrations `20261016000028` through `20261016000031` are unreleased. Leave `OPENPLAN_GTFS_MANAGED_INGESTION` unset or `0` until the selected installation has those migrations, private file persistence and an installed polling worker. Enabling the switch changes URL, catalog, ZIP and refresh imports to retained requests. It is operational configuration, with no paid entitlement.
+This is an opt-in development candidate. Migrations `20261016000028` through `20261016000031` ship in v0.69.0 (2026-10-19) and later. Leave `OPENPLAN_GTFS_MANAGED_INGESTION` unset or `0` until the selected installation has those migrations, private file persistence and an installed polling worker. Enabling the switch changes URL, catalog, ZIP and refresh imports to retained requests. It is operational configuration, with no paid entitlement.
 
 Apply migrations 28 through 31 before deploying this candidate app, even when managed admission is disabled. The existing ingest reaper calls `public.reconcile_gtfs_storage_cleanup`, which migration 28 introduces. Coordinate schema-first rollout with the installation owner. An existing hosted supervisor does not commission the separate GTFS queue.
 
