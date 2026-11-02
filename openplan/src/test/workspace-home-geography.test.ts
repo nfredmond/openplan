@@ -184,6 +184,14 @@ describe("home geography — TIGERweb adapter", () => {
     expect(subdivisionCodeFromTigerwebGeoid("micro", "16220")).toBeNull();
   });
 
+  it("reads a town's state from its GEOID but never a tribal area's", () => {
+    expect(subdivisionCodeFromTigerwebGeoid("cousub", "2501735215")).toBe("MA");
+    // "2430R" is the Navajo Nation (AZ, NM, UT); "0825R" lies in California
+    // alone, and is still not filed under California's rules.
+    expect(subdivisionCodeFromTigerwebGeoid("aiannh", "2430R")).toBeNull();
+    expect(subdivisionCodeFromTigerwebGeoid("aiannh", "0825R")).toBeNull();
+  });
+
   it("builds a persistable row from a resolved boundary", () => {
     const boundary: PlaceBoundaryResponse = {
       kind: "county",
@@ -422,6 +430,76 @@ describe("/api/workspaces/home-geography", () => {
     expect(
       (await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "OH" }))).status
     ).toBe(400);
+  });
+
+  it("checks each kind's own GEOID format", async () => {
+    for (const [kind, geoid] of [
+      ["aiannh", "2430"],
+      ["aiannh", "24300"],
+      ["cousub", "3912581"],
+      ["cousub", "39125815360"],
+      ["county", "2430R"],
+      ["city", "2501735215"],
+      ["metro", "4090"],
+    ]) {
+      const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind, geoid }));
+      expect(res.status, `${kind} ${geoid}`).toBe(400);
+    }
+    expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
+  });
+
+  it("sets a multi-state tribal area as home without naming one state", async () => {
+    const navajo = {
+      kind: "aiannh",
+      geoid: "2430R",
+      label: "Navajo Nation Reservation, AZ-NM-UT",
+      geojson: { type: "Polygon", coordinates: [[[-111.9, 35.1], [-107.5, 35.1], [-107.5, 37.1], [-111.9, 35.1]]] },
+      bbox: { minLon: -111.9, minLat: 35.1, maxLon: -107.5, maxLat: 37.1 },
+    };
+    resolvePlaceBoundaryMock.mockResolvedValue(navajo);
+    serviceUpdateMaybeSingleMock.mockResolvedValue({
+      data: geography({
+        home_geography_kind: "aiannh",
+        home_geography_ref: "2430R",
+        home_geography_label: navajo.label,
+        home_subdivision_code: null,
+      }),
+      error: null,
+    });
+
+    const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "aiannh", geoid: "2430R" }));
+
+    expect(res.status).toBe(200);
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("aiannh", "2430R");
+    const written = serviceUpdateMock.mock.calls[0][0] as WorkspaceHomeGeography;
+    expect(written).toMatchObject({
+      home_geography_kind: "aiannh",
+      home_geography_ref: "2430R",
+      home_country_code: "US",
+      home_subdivision_code: null,
+    });
+    // With no state, it matches the nationwide federal-aid floor, not a state's pack.
+    expect(written).toMatchObject({
+      stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+      stage_gate_template_selection: "jurisdiction_matched",
+    });
+    expect(tractIngestMock).not.toHaveBeenCalled();
+  });
+
+  it("sets a town or township as home with its state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "cousub",
+      geoid: "2501735215",
+      label: "Lexington town, Middlesex County, MA",
+      geojson: { type: "Polygon", coordinates: [[[-71.3, 42.4], [-71.2, 42.4], [-71.2, 42.5], [-71.3, 42.4]]] },
+      bbox: { minLon: -71.3, minLat: 42.4, maxLon: -71.2, maxLat: 42.5 },
+    });
+    const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "cousub", geoid: "2501735215" }));
+    expect(res.status).toBe(200);
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("cousub", "2501735215");
+    const written = serviceUpdateMock.mock.calls[0][0] as WorkspaceHomeGeography;
+    expect(written).toMatchObject({ home_geography_kind: "cousub", home_subdivision_code: "MA" });
+    expect(tractIngestMock).not.toHaveBeenCalled();
   });
 
   it("fails closed when the boundary cannot be resolved", async () => {

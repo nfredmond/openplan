@@ -1,0 +1,51 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/22/query?where=GEOID%3D%272501735215%27&outFields=GEOID%2CNAME%2CBASENAME%2CSTATE%2CCOUNTY&returnGeometry=true&outSR=4326&geometryPrecision=4&maxAllowableOffset=0.01&f=geojson",
+ "trimmed": "Generalized at capture (maxAllowableOffset=0.01 degrees, 4 decimals) to keep the fixture small; the resolver itself asks for full detail. Properties unchanged.",
+ "response": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "geometry": {
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        -71.2727,
+        42.4597
+       ],
+       [
+        -71.2672,
+        42.4244
+       ],
+       [
+        -71.2113,
+        42.4061
+       ],
+       [
+        -71.1779,
+        42.4402
+       ],
+       [
+        -71.2409,
+        42.49
+       ],
+       [
+        -71.2727,
+        42.4597
+       ]
+      ]
+     ]
+    },
+    "properties": {
+     "GEOID": "2501735215",
+     "NAME": "Lexington town",
+     "BASENAME": "Lexington",
+     "STATE": "25",
+     "COUNTY": "017"
+    }
+   }
+  ]
+ }
+}

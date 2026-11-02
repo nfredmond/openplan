@@ -7,7 +7,13 @@ import {
   PROJECT_PLACE_SCOPE_COLUMNS, placeOfRecordFromProject, projectPlaceReference,
   type ProjectPlaceRow,
 } from "@/lib/projects/project-place";
-import { projectJurisdictionSchema, readProjectJurisdiction } from "@/lib/projects/project-jurisdiction";
+import {
+  parseTigerwebJurisdictionReference,
+  projectJurisdictionSchema,
+  readProjectJurisdiction,
+  type ProjectJurisdiction,
+} from "@/lib/projects/project-jurisdiction";
+import { placeKindSchema, type PlaceKind } from "@/lib/api/place-geographies";
 import { TIGERWEB_GEOGRAPHY_SOURCE } from "@/lib/workspaces/home-geography";
 import { canonicalBcaJson } from "./canonical";
 
@@ -62,6 +68,56 @@ export const bcaProjectPlaceSchema = z.object({
   })) ctx.addIssue({ code: "custom", message: "The retained project place reference is invalid." });
 });
 export type BcaProjectPlace = z.infer<typeof bcaProjectPlaceSchema>;
+
+/**
+ * TIGERweb place kinds the installed BCA snapshot guard accepts.
+ *
+ * `guard_project_bca_place_insert` and `valid_bca_snapshot_jurisdiction`
+ * (20261023190200_bca_project_place_snapshot.sql) list these five kinds and a
+ * 5-7 digit GEOID. Tribal areas (`aiannh`) and towns or townships (`cousub`)
+ * came later, so the database refuses a snapshot that carries one, in the
+ * project place or in a server-resolved jurisdiction entry. This reader says
+ * so before the insert instead of letting it fail as a generic error.
+ * Widening the guard needs a migration; until then this list stays at five,
+ * and `bca-project-place-migration.test.ts` holds the two in step.
+ */
+export const BCA_SNAPSHOT_TIGERWEB_PLACE_KINDS = [
+  "county",
+  "city",
+  "cdp",
+  "metro",
+  "micro",
+] as const satisfies readonly PlaceKind[];
+
+const BCA_UNSUPPORTED_PLACE_KIND_MESSAGE =
+  "A benefit-cost analysis cannot yet record a project whose area or jurisdiction is a tribal area or a town or township. Existing analyses are unchanged.";
+
+function bcaSnapshotAcceptsKind(kind: string | null): boolean {
+  return (BCA_SNAPSHOT_TIGERWEB_PLACE_KINDS as readonly string[]).includes(kind ?? "");
+}
+
+/**
+ * True when the place or any resolved jurisdiction entry uses a real resolver
+ * kind the guard refuses. A kind the resolver does not know at all is not this
+ * case: it stays malformed and is reported as invalid.
+ */
+function carriesKindOutsideBcaGuard(
+  place: { source: string | null; kind: string | null },
+  jurisdiction: ProjectJurisdiction | null
+): boolean {
+  if (
+    place.source === TIGERWEB_GEOGRAPHY_SOURCE &&
+    placeKindSchema.safeParse(place.kind).success &&
+    !bcaSnapshotAcceptsKind(place.kind)
+  ) {
+    return true;
+  }
+  return (jurisdiction?.entries ?? []).some((entry) => {
+    if (entry.identity !== "server_resolved") return false;
+    const resolved = parseTigerwebJurisdictionReference(entry.reference);
+    return resolved !== null && !bcaSnapshotAcceptsKind(resolved.kind);
+  });
+}
 export type BcaProjectPlaceRead = { status: "available"; snapshot: BcaProjectPlace }
   | { status: "unavailable" | "invalid"; message: string };
 
@@ -84,6 +140,8 @@ export function readBcaProjectPlace(projectId: string, row: Partial<ProjectPlace
     const jurisdiction = readProjectJurisdiction(row);
     if (canonicalBcaJson(jurisdiction) !== canonicalBcaJson(row.jurisdiction_context))
       return { status: "invalid", message: "The saved project jurisdiction changes under its strict reader. Review the project context before binding a new analysis." };
+    if (carriesKindOutsideBcaGuard(place, jurisdiction))
+      return { status: "unavailable", message: BCA_UNSUPPORTED_PLACE_KIND_MESSAGE };
     const parsed = bcaProjectPlaceSchema.safeParse({
       projectId, projectUpdatedAt: row.updated_at, placeSetAt: row.place_set_at,
       status: placeStatus(place.source),

@@ -1,0 +1,46 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/22/query?where=UPPER%28BASENAME%29+LIKE+UPPER%28%27Washington%25%27%29+AND+STATE%3D%2739%27+AND+%28FUNCSTAT+NOT+IN+%28%27S%27%2C%27F%27%29+AND+LSADC%3C%3E%2725%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CSTATE%2CCOUNTY&returnGeometry=false&orderByFields=BASENAME&resultRecordCount=4&f=json",
+ "trimmed": "Field metadata removed; record count capped at 4 at capture.",
+ "response": {
+  "features": [
+   {
+    "attributes": {
+     "GEOID": "3912581536",
+     "NAME": "Washington township",
+     "BASENAME": "Washington",
+     "STATE": "39",
+     "COUNTY": "125"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "3914981620",
+     "NAME": "Washington township",
+     "BASENAME": "Washington",
+     "STATE": "39",
+     "COUNTY": "149"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "3902981158",
+     "NAME": "Washington township",
+     "BASENAME": "Washington",
+     "STATE": "39",
+     "COUNTY": "029"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "3914381592",
+     "NAME": "Washington township",
+     "BASENAME": "Washington",
+     "STATE": "39",
+     "COUNTY": "143"
+    }
+   }
+  ],
+  "exceededTransferLimit": true
+ }
+}

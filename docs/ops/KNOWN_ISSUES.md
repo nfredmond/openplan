@@ -664,3 +664,9 @@ published v0.70 limitation. R8, R21 and R22 evidence remains retained at its
 original scope. Compiler/build and browser evidence remain unexecuted here.
 Root still owns the later identified-build journey and acceptance disposition.
 Private packet: `pr355-readiness-failure-mixed-state-repair-20261022-23`.
+
+## Tribal areas and towns as places, November 1, 2026
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-01-001 | High, any place | The place search and every place reference (home geography, project area, campaign area, plan area, project jurisdiction) accepted only counties, incorporated places, CDPs and metro or micro areas, with one 5-7 digit GEOID check. A tribal government could not pick its reservation or other American Indian, Alaska Native or Native Hawaiian area, and a New England town or Midwest township could not be found. | Fixed in code on the November 1 branch: two new kinds, tribal area (`aiannh`, nine TIGERweb AIANNH layers, GEOID such as `2430R`) and town or township (`cousub`, 10-digit GEOID), each with its own GEOID check. A tribal area records no state, even when it lies in one state: its states stay in its label, and readiness, grants and stage gates treat its state as not established. Towns record their state. Still open: a benefit-cost analysis refuses a project whose place or resolved jurisdiction is either new kind until a migration widens `guard_project_bca_place_insert` and `valid_bca_snapshot_jurisdiction` (20261023190200); the model-run tract check reports either kind as coverage unknown; tribal areas have no population ranking; no browser journey yet. | `src/lib/api/place-geographies.ts`; `src/lib/geographies/place-resolver.ts`; `src/lib/bca/workbench/project-place.ts`; `src/test/place-resolver-tribal-and-township.test.ts`; fixtures in `src/test/fixtures/tigerweb/` |
