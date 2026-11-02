@@ -42,6 +42,7 @@ export function GrantsOpportunityRegistrySection({
   engagementEvidenceByProjectId,
   decisionCommandCallout,
   focusedOpportunityNarrativeDraft = null,
+  projectLinkOptions = null,
 }: {
   filteredOpportunities: NormalizedOpportunity[];
   opportunitiesCount: number;
@@ -56,6 +57,8 @@ export function GrantsOpportunityRegistrySection({
   engagementEvidenceByProjectId: Map<string, ProjectEngagementEvidence>;
   decisionCommandCallout: ReactNode | null;
   focusedOpportunityNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
+  /** Workspace projects for the link control; null when the caller may not write grants. */
+  projectLinkOptions?: Array<{ id: string; name: string }> | null;
 }) {
   return (
     <article className="module-section-surface">
@@ -194,6 +197,7 @@ export function GrantsOpportunityRegistrySection({
               latestNarrativeDraft={
                 opportunity.id === activeFocusedOpportunityId ? focusedOpportunityNarrativeDraft : null
               }
+              projectLinkOptions={projectLinkOptions}
             />
           ))}
         </div>
