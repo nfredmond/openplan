@@ -31,6 +31,10 @@
     {
       "path": "/api/cron/sweep-engagement-photos",
       "schedule": "30 10 * * *"
+    },
+    {
+      "path": "/api/cron/sweep-staged-uploads",
+      "schedule": "47 11 * * *"
     }
   ],
   "git": {
