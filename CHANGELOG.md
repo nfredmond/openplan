@@ -108,10 +108,17 @@ not from a bounding-box rectangle. Study areas in Nevada and in border counties 
 Arizona, Idaho, Oregon and Utah used to query California's CCRS and store no
 crashes; they now get NHTSA FARS, labeled fatal-only. California places still get
 CCRS. A drawn area, a metro area or an unconfirmed place gets FARS only, never
-CCRS; pick a county or city to get a state crash file. Puerto Rico is out of
-coverage: the FARS file OpenPlan reads does not include it. Acquisitions saved
-before this change keep the source they recorded; re-run an affected study area
-to replace an empty CCRS pull.
+CCRS; pick a county or city to get a state crash file. Puerto Rico has its own
+FARS file; see the next entry. Acquisitions saved before this change keep the
+source they recorded; re-run an affected study area to replace an empty CCRS
+pull.
+
+**Puerto Rico fatal crashes:** Safety and the corridor scorecard now read NHTSA's
+separate Puerto Rico FARS file, so a Puerto Rico study area gets fatal crashes
+again, labeled fatal-only, for 2020 through 2024. NHTSA's Puerto Rico files for
+2010 through 2019 have no crash locations, so those years show as not answered,
+not as zero. The readiness panel now marks Puerto Rico safety analysis partial.
+No action is needed to deploy.
 
 **Corridor crash figures follow the state too:** the Explore corridor scorecard now
 chooses its crash source by the same state rule as Safety. A corridor picked as a

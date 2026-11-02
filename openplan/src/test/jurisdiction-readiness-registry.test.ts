@@ -67,11 +67,13 @@ describe("jurisdiction readiness registry", () => {
     expect(reports).toHaveLength(JURISDICTION_READINESS_REGISTRY.jobs.length);
     expect(reports.every((report) => report.status !== "unassessed")).toBe(true);
     expect(reports.find((report) => report.job.id === "land-use-plan")?.status).toBe("unavailable");
-    // FARS publishes Puerto Rico in a file the adapter does not read, so no
-    // crash source covers it; the claim says so instead of promising coverage.
+    // FARS reads NHTSA's separate Puerto Rico file, fatal-only and only from
+    // 2020, when that file starts carrying coordinates.
     const safety = reports.find((report) => report.job.id === "safety-analysis");
-    expect(safety?.status).toBe("unavailable");
-    expect(safety?.applicability).toMatch(/separate FARS file/i);
+    expect(safety?.status).toBe("partial");
+    expect(safety?.applicability).toMatch(/2020 through 2024/);
+    expect(safety?.limitations.join(" ")).toMatch(/fatal-only/i);
+    expect(safety?.limitations.join(" ")).toMatch(/2010 through 2019 carry no crash coordinates/);
   });
 
   it("does not omit evidence or adapter lineage from a configured claim", () => {
