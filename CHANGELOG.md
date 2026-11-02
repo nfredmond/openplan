@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
+is not a UUID, now shows the not-found page instead of "could not be read" with
+the database's `invalid input syntax for type uuid` message. 22 record pages and
+the API routes that reached the database with such an ID now refuse it before
+querying (each route family keeps its own 400 or 404). Valid IDs behave as
+before, and a read that really fails still says so. No migration.
 **Public plan pages publish only their own workspace's projects (KI-2026-11-02-053):**
 the plan document page now reads project links only from the plan's own workspace,
 and both public plan pages drop a link whose project belongs to another workspace

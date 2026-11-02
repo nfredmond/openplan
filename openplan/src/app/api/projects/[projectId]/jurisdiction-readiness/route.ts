@@ -4,6 +4,7 @@ import { buildProjectJurisdictionReadinessPayload, buildProjectJurisdictionReadi
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/uuid";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,7 @@ export async function GET(
 ) {
   const audit = createApiAuditLogger("projects.jurisdiction_readiness.read", request);
   const { projectId } = await params;
+  if (!isUuid(projectId)) return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

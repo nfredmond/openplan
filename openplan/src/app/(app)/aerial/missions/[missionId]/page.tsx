@@ -55,6 +55,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
+import { isUuid } from "@/lib/uuid";
 
 type PackageRow = {
   id: string;
@@ -98,6 +99,7 @@ type AerialMissionDetailPageProps = {
 
 export default async function AerialMissionDetailPage({ params, searchParams }: AerialMissionDetailPageProps) {
   const { missionId } = await params;
+  if (!isUuid(missionId)) notFound();
   const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {

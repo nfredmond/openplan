@@ -29,7 +29,7 @@ vi.mock('@/components/engagement/engagement-review-files', () => ({
 }));
 
 type Result = { data: unknown; error: { message: string } | null };
-const report = { id: 'report-1', workspace_id: 'workspace-1', engagement_campaign_id: 'campaign-1', title: 'Saved consultation', summary: null, status: 'draft', generated_at: null };
+const report = { id: '72000000-0000-4000-8000-000000000001', workspace_id: 'workspace-1', engagement_campaign_id: 'campaign-1', title: 'Saved consultation', summary: null, status: 'draft', generated_at: null };
 let rows: Record<string, Result>;
 let queries: Array<{ table: string; columns: string; filters: Array<[string, unknown]> }>;
 const client = {

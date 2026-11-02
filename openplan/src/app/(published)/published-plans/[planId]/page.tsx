@@ -5,6 +5,7 @@ import { describeDescriptorCustody } from "@/lib/land-use-plans/descriptor-snaps
 import { PublicDesignationMap } from "@/components/land-use-plans/public-designation-map";
 import { describePlanSourceReview } from "@/lib/land-use-plans/source-review";
 import { LandUsePlanPublicContext } from "@/components/land-use-plans/land-use-plan-public-context";
+import { isUuid } from "@/lib/uuid";
 
 export const metadata = {
   title: "Published land use plan",
@@ -31,6 +32,7 @@ function ContentBranch({ node, nodes, depth = 0, ancestors = new Set<string>() }
 
 export default async function PublishedLandUsePlanPage({ params }: { params: Promise<{ planId: string }> }) {
   const { planId } = await params;
+  if (!isUuid(planId)) notFound();
   const result = await loadPublishedLandUsePlanPacket(planId);
   if (!result.ok && result.reason === "not_found") notFound();
   if (!result.ok) {

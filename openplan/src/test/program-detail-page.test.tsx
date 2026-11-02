@@ -279,7 +279,7 @@ type ProgramTab = "overview" | "funding" | "linked" | "edit";
 async function renderPage(tab?: ProgramTab) {
   render(
     await ProgramDetailPage({
-      params: Promise.resolve({ programId: "program-1" }),
+      params: Promise.resolve({ programId: "73000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
@@ -301,7 +301,7 @@ describe("ProgramDetailPage", () => {
 
     programMaybeSingleMock.mockResolvedValue({
       data: {
-        id: "program-1",
+        id: "73000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "2027 RTIP",
@@ -645,7 +645,7 @@ describe("ProgramDetailPage", () => {
 
       expect(screen.getByRole("link", { name: /Measure fund/ })).toHaveAttribute(
         "href",
-        "/programs/program-1/measure"
+        "/programs/73000000-0000-4000-8000-000000000001/measure"
       );
     });
 
@@ -690,8 +690,8 @@ describe("ProgramDetailPage", () => {
       await renderPage("overview");
 
       const [prepare, report] = workProgramLinks();
-      expect(prepare).toHaveAttribute("href", "/programs/program-1/work-program");
-      expect(report).toHaveAttribute("href", "/programs/program-1/work-program#actual-work");
+      expect(prepare).toHaveAttribute("href", "/programs/73000000-0000-4000-8000-000000000001/work-program");
+      expect(report).toHaveAttribute("href", "/programs/73000000-0000-4000-8000-000000000001/work-program#actual-work");
       expect(screen.getByText("Overall Work Program (OWP/UPWP)")).toBeInTheDocument();
       expect(workProgramRecordSelectMock).not.toHaveBeenCalled();
     });
@@ -704,7 +704,7 @@ describe("ProgramDetailPage", () => {
       // One row is enough to know, from each of the three tables, for this program.
       for (const table of Object.keys(workProgramRecordLimitMocks) as WorkProgramRecordTable[]) {
         expect(workProgramRecordSelectMock).toHaveBeenCalledWith(table, "id");
-        expect(workProgramRecordEqMock).toHaveBeenCalledWith(table, "program_id", "program-1");
+        expect(workProgramRecordEqMock).toHaveBeenCalledWith(table, "program_id", "73000000-0000-4000-8000-000000000001");
         expect(workProgramRecordLimitMocks[table]).toHaveBeenCalledWith(1);
       }
     });
@@ -717,7 +717,7 @@ describe("ProgramDetailPage", () => {
         await renderPage("overview");
 
         const [prepare, report] = workProgramLinks();
-        expect(prepare).toHaveAttribute("href", "/programs/program-1/work-program");
+        expect(prepare).toHaveAttribute("href", "/programs/73000000-0000-4000-8000-000000000001/work-program");
         expect(report).toBeInTheDocument();
       },
     );
