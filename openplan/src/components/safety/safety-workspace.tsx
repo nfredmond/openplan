@@ -636,6 +636,9 @@ export function SafetyWorkspace({
           years,
           ...(countyCode === null ? {} : { countyCode }),
           ...(projectId === "" ? {} : { projectId }),
+          // The picked place's identity, so the server can confirm its state
+          // and choose that state's crash source. The bbox alone cannot.
+          ...(place ? { place: { kind: place.kind, geoid: place.geoid } } : {}),
         }),
       });
       const body = await res.json();
@@ -763,7 +766,7 @@ export function SafetyWorkspace({
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, bbox, countyCode, projectId, years]);
+  }, [workspaceId, bbox, countyCode, projectId, years, place]);
 
   // Every acquisition and response belongs to the area it was retrieved for
   // and to no other. Keep the matching server-provided acquisition on initial

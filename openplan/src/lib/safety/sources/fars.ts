@@ -5,8 +5,15 @@
  * a national adapter the corridor scorecard would report "no crash source" for
  * every study area outside one state, which is not a product. FARS is the one
  * crash census that exists for the whole reporting geography: every crash on a
- * public road that killed someone within 30 days, 50 states + DC + Puerto Rico,
- * published by NHTSA with no key and no licence restriction.
+ * public road that killed someone within 30 days, published by NHTSA with no
+ * key and no licence restriction.
+ *
+ * WHICH STATES THIS ADAPTER READS: the 50 states and DC. NHTSA publishes Puerto
+ * Rico in a separate annual file (`{year}/Puerto Rico/`), and this adapter reads
+ * only the National file. Checked 2026-11-01 against the 2023 files: the
+ * National accident table carries 51 distinct STATE values (the 50 states and
+ * DC) and no Puerto Rico rows; the Puerto Rico table carries only STATE 43.
+ * So Puerto Rico is out of coverage here until an adapter reads that file.
  *
  * WHAT IT IS NOT. FARS is FATAL ONLY. It carries no injury crashes, no
  * property-damage crashes, and therefore no KSI denominator. That is why this
@@ -47,6 +54,7 @@
 import { parse as parseCsv } from "csv-parse/sync";
 import JSZip from "jszip";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import { STATE_FIPS_TO_USPS } from "@/lib/geographies/state-fips";
 import { CRASH_LEVEL_ONLY_DIMENSION_SUPPORT } from "@/lib/safety/vocabulary";
 import {
   CrashSourceUnavailableError,
@@ -105,9 +113,17 @@ const FARS_ENVELOPES: readonly StudyAreaBbox[] = [
   { minLon: 172.0, maxLon: 180.0, minLat: 50.5, maxLat: 53.5 },
   // Hawaii
   { minLon: -160.3, maxLon: -154.7, minLat: 18.9, maxLat: 22.3 },
-  // Puerto Rico
-  { minLon: -67.4, maxLon: -65.2, minLat: 17.8, maxLat: 18.6 },
+  // No Puerto Rico envelope: see the header. The National file has no Puerto
+  // Rico rows, so claiming the island would turn "not read" into "no deaths".
 ];
+
+/**
+ * The state FIPS codes in the National file: the 50 states and DC. Their codes
+ * are exactly the ones at or below 56; territory codes start at 60.
+ */
+const FARS_NATIONAL_FILE_STATE_FIPS: readonly string[] = Object.keys(STATE_FIPS_TO_USPS).filter(
+  (fips) => Number.parseInt(fips, 10) <= 56
+);
 
 function overlaps(a: StudyAreaBbox, b: StudyAreaBbox): boolean {
   return a.minLon <= b.maxLon && a.maxLon >= b.minLon && a.minLat <= b.maxLat && a.maxLat >= b.minLat;
@@ -413,6 +429,7 @@ export const farsAdapter: CrashSourceAdapter = {
   earliestYear: FARS_EARLIEST_YEAR,
   persistable: true,
   roadContextProvider: "us-census-tiger-line",
+  servesStateFips: FARS_NATIONAL_FILE_STATE_FIPS,
   covers: coversFarsGeography,
   fetch: fetchFarsCrashes,
 };

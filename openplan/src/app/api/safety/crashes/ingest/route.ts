@@ -10,6 +10,9 @@ import {
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { studyAreaBboxesMatch } from "@/lib/models/study-area";
+import { placeKindSchema } from "@/lib/api/place-geographies";
+import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
+import { crashStatesFromPlaceOfRecord, crashStatesFromTigerwebPlace } from "@/lib/safety/study-area-states";
 
 // Paging a county-scale crash extract exceeds the default budget.
 export const runtime = "nodejs";
@@ -18,6 +21,8 @@ export const maxDuration = 60;
 /** Hard ceiling regardless of what the caller asks for. */
 const MAX_RECORDS_CEILING = 50_000;
 type ProjectStudyAreaBounds = {
+  place_country_code?: string | null;
+  place_subdivision_code?: string | null;
   place_min_lon: number | null;
   place_min_lat: number | null;
   place_max_lon: number | null;
@@ -63,7 +68,32 @@ const ingestSchema = z.object({
   /** Source-specific subdivision code, validated by the adapter that uses it. */
   countyCode: z.number().int().positive().optional(),
   maxRecords: z.number().int().min(1).max(MAX_RECORDS_CEILING).optional(),
+  /**
+   * The picked place this bbox came from, when there is one. Only an identity:
+   * the route re-resolves it and uses its state only when the resolved
+   * boundary has this same bbox. The client never supplies a state.
+   */
+  place: z.object({ kind: placeKindSchema, geoid: z.string().regex(/^\d{5,7}$/) }).optional(),
 });
+
+/**
+ * The states of a picked place, or null when the place cannot be confirmed to
+ * be this study area. A resolver outage also returns null, which lets only the
+ * national source answer instead of failing the request.
+ */
+async function statesOfPickedPlace(
+  place: { kind: z.infer<typeof placeKindSchema>; geoid: string },
+  bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number },
+): Promise<string[] | null> {
+  try {
+    const boundary = await resolvePlaceBoundary(place.kind, place.geoid);
+    if (!boundary || boundary.kind !== place.kind || boundary.geoid !== place.geoid) return null;
+    if (!studyAreaBboxesMatch(bbox, boundary.bbox)) return null;
+    return crashStatesFromTigerwebPlace(place.kind, place.geoid);
+  } catch {
+    return null;
+  }
+}
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
   if (result.kind === "schema_pending") {
@@ -147,10 +177,15 @@ export async function POST(request: NextRequest) {
     // the Knowledge Base upload route. RLS would hide a foreign project anyway;
     // the explicit check turns that into an honest 404 instead of a silent
     // null link.
+    // The study area's states choose the crash source. They come from an
+    // identity the server holds or re-resolves, never from the bbox.
+    let stateFips: string[] | null = null;
     if (parsed.data.projectId) {
       const { data: project, error: projectError } = await supabase
         .from("projects")
-        .select("id, place_min_lon, place_min_lat, place_max_lon, place_max_lat")
+        .select(
+          "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat"
+        )
         .eq("id", parsed.data.projectId)
         .eq("workspace_id", parsed.data.workspaceId)
         .maybeSingle();
@@ -169,6 +204,13 @@ export async function POST(request: NextRequest) {
           { status: 409 },
         );
       }
+      const projectPlace = project as ProjectStudyAreaBounds;
+      stateFips = crashStatesFromPlaceOfRecord({
+        countryCode: projectPlace.place_country_code,
+        subdivisionCode: projectPlace.place_subdivision_code,
+      });
+    } else if (parsed.data.place) {
+      stateFips = await statesOfPickedPlace(parsed.data.place, bbox);
     }
 
     audit.info("safety_crash_ingest_started", {
@@ -176,6 +218,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       years: parsed.data.years,
       countyCode: parsed.data.countyCode ?? null,
+      stateFips,
     });
 
     const result = await ingestCrashesForStudyArea({
@@ -183,6 +226,7 @@ export async function POST(request: NextRequest) {
       workspaceId: parsed.data.workspaceId,
       projectId: parsed.data.projectId ?? null,
       bbox,
+      stateFips,
       years: parsed.data.years,
       countyCode: parsed.data.countyCode,
       maxRecords: parsed.data.maxRecords,

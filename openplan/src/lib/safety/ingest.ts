@@ -36,7 +36,7 @@ import type { SafetyCrashCollection, SafetyCrashFeature } from "./client-types";
 import { readCrashesForStudyArea, type CrashSourceIdentity } from "./read-only-lane";
 import { CCRS_SOURCE_ID } from "./sources/ccrs";
 import { fetchSeriousInjuryCollisionIds } from "./sources/ccrs-injury";
-import { resolveCrashSource } from "./sources/registry";
+import { resolveCrashSource, type CrashStudyAreaStates } from "./sources/registry";
 import type { CrashPartyRecord, CrashRecord, CrashSourceAdapter } from "./sources/types";
 
 /** Rows written per upsert batch — keeps each PostgREST call modest. */
@@ -89,6 +89,14 @@ export type IngestCrashesParams = {
   workspaceId: string;
   projectId?: string | null;
   bbox: StudyAreaBbox;
+  /**
+   * The study area's state FIPS codes, from its place identity (the linked
+   * project's place, or a picked place the route re-resolved). This chooses
+   * the source. Absent or null means the identity does not establish a state,
+   * and then only a national source may answer: a bbox that overlaps the
+   * California rectangle is not evidence that the area is in California.
+   */
+  stateFips?: CrashStudyAreaStates;
   years: number[];
   countyCode?: number;
   maxRecords?: number;
@@ -460,7 +468,7 @@ export function dedupeRecords(records: CrashRecord[]): CrashRecord[] {
 export async function ingestCrashesForStudyArea(
   params: IngestCrashesParams
 ): Promise<IngestCrashesResult> {
-  const resolution = resolveCrashSource(params.bbox);
+  const resolution = resolveCrashSource({ bbox: params.bbox, stateFips: params.stateFips }, "ingest");
   const mayStore = params.mayStore ?? true;
 
   // A caller that may not write is refused BEFORE any storable path runs, and
@@ -496,13 +504,14 @@ export async function ingestCrashesForStudyArea(
 
   // NO STORABLE SOURCE COVERS THIS AREA — which is NOT the same thing as no
   // source covering it, and treating the two as one is what made the Safety
-  // module useless outside California. `resolveCrashSource(bbox, "ingest")`
+  // module useless outside California. `resolveCrashSource(area, "ingest")`
   // filters the registry down to adapters `safety_crashes.source_id` will
   // admit; anything else is invisible to it, however well it covers the place.
   // So consult the READ path before claiming a coverage gap.
   if (resolution.kind === "out_of_coverage") {
     const live = await readCrashesForStudyArea({
       bbox: params.bbox,
+      stateFips: params.stateFips,
       years: params.years,
       maxRecords: params.maxRecords,
       signal: params.signal,

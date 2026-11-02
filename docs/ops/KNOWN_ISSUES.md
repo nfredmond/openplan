@@ -93,6 +93,26 @@ records the exact path and pending correction design. The creation-provider
 assumption also remains open. The October 12 findings above remain the historical
 baseline; KI-025 and M1 are not closed.
 
+## Wrong state's sources, November 1, 2026
+
+The November 1 product-direction review found these by reading code; this lane
+re-verified each against `main` at `d4ca416` before fixing it. Paths are under
+`openplan/`. Row IDs may be renumbered at merge if another lane used them.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-01-021 | High, unknown shown as zero | Saving or reading crashes chose the first source whose rectangle overlapped the bbox. The CCRS rectangle covers every Nevada county and border counties in Arizona, Idaho, Oregon and Utah (37 counties in the 2024 Census county file), so those study areas asked California's CCRS, stored no crashes and never asked FARS. | Fixed on branch `work/wrong-state-sources-20261102`, November 1: the source is chosen by the study area's state, taken from the linked project's place or a picked place the server re-resolves. California still gets CCRS; the 49 other states and DC get FARS, labeled fatal-only. An unknown state (drawn area, metro area, no place) gets only the national source, never CCRS. Open: the corridor scorecard (`fetchCrashesForBbox`) still merges by rectangle and per-record state and can label a zero-result Nevada corridor with CCRS; a drawn or metro area inside California now gets fatal-only FARS until the planner picks a county or city. | `src/lib/safety/sources/registry.ts` (`crashSourcesForStudyArea`); `src/app/api/safety/crashes/ingest/route.ts`; `src/test/us-jurisdiction-source-table.test.ts` fails on `d4ca416` for AZ, ID, NV, OR, UT and PR |
+| KI-2026-11-01-022 | Medium, wrong state's law | Every county run page rendered the CEQA §15064.3 screening panel, whatever state the run's county is in. | Fixed on the same branch, November 1: the panel renders only when the VMT framework registry covers the run's own county FIPS state, which today is California. Outside California the page shows nothing CEQA-specific. A run whose row cannot be read shows no CEQA panel; the page still reports the read failure. | `src/lib/models/county-run-vmt-framework.ts`; `src/app/(app)/county-runs/[countyRunId]/page.tsx`; `src/test/county-models-pages-disclose-failed-reads.test.tsx` |
+| KI-2026-11-01-023 | Medium, unknown shown as zero | The FARS adapter claimed Puerto Rico but reads only NHTSA's National file, which has no Puerto Rico rows (checked November 1 against the 2023 files: 51 STATE values in National, Puerto Rico published separately as STATE 43). A Puerto Rico study area got zero fatal crashes. | Fixed on the same branch, November 1: FARS declares the 50 states and DC and no longer claims Puerto Rico, which is now out of coverage; the jurisdiction readiness registry now marks Puerto Rico safety analysis unavailable (registry 2026-11-01.1, re-pinned). Open: no adapter reads the Puerto Rico file or any other territory's crashes. | `src/lib/safety/sources/fars.ts` (`FARS_NATIONAL_FILE_STATE_FIPS`); `src/test/safety-crash-sources.test.ts` |
+
+Also fixed on the branch, without KI rows: the California LAPM reimbursement
+profile named "Caltrans D3 Local Assistance" for every California workspace and
+the project record composer showed it as the placeholder in every state; both
+are now district-neutral, because the repository has no sourced county-to-district
+table. Two engagement templates told residents "This is a demonstration" in
+their suggested public description; the registry test now refuses demonstration
+or test wording in any resident-facing template field.
+
 ## ActivitySim container owner loss, October 8, 2026
 
 The [container custody case](../reviews/2026-10-08-model-custody-metadata/ACTIVITYSIM_CONTAINER_CUSTODY.md)

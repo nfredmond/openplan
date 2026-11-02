@@ -44,7 +44,9 @@ export const US_CA_LAPM_REIMBURSEMENT_PROFILE: ReimbursementProfileDescriptor = 
     },
   ],
   defaultPostureId: "deferred_exact_forms",
-  submittedToHint: "Caltrans D3 Local Assistance",
+  // District-neutral on purpose: the district depends on where the project is,
+  // and OpenPlan holds no sourced county-to-district table.
+  submittedToHint: "Caltrans District Local Assistance",
   // OpenPlan does not yet generate the exact LAPM exhibit/form packet; the
   // profile says so about itself instead of every binding claiming it.
   formPackStatus: "deferred_exact_forms",
