@@ -99,7 +99,8 @@ describe("the recurring product-direction review", () => {
     writeFileSync(preload, `const fs = require('node:fs'); const read = fs.readFileSync;
       fs.readFileSync = function(file, ...args) {
         const value = read.call(this, file, ...args);
-        if (String(file).includes('/docs/reviews/product-direction/') && String(file).endsWith('.md')) {
+        const name = String(file).split(require('node:path').sep).join('/');
+        if (name.includes('/docs/reviews/product-direction/') && name.endsWith('.md')) {
           return String(value).replace(/current_release: v\\d+\\.\\d+\\.\\d+/, 'current_release: ${reviewedRelease}');
         }
         return value;

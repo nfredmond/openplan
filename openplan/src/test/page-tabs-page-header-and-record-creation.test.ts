@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { PROJECT_RECORD_COMPOSER_TYPES } from "@/components/projects/project-record-composer";
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
+import { posixRelative } from "./helpers/posix-path";
 import { stripSourceComments } from "./helpers/source-text";
 
 /**
@@ -105,9 +106,9 @@ describe("a tabbed page names itself on every tab", () => {
       // in a component that only one tab renders. Nothing in the page file can
       // see that, so the whole route directory is swept.
       const offenders = filesInRoute(path.join(SRC, page.routeDir))
-        .filter((file) => path.relative(SRC, file) !== page.stripFile)
+        .filter((file) => posixRelative(SRC, file) !== page.stripFile)
         .filter((file) => /<h1[\s>]/.test(stripSourceComments(readFileSync(file, "utf8"))))
-        .map((file) => path.relative(SRC, file));
+        .map((file) => posixRelative(SRC, file));
 
       expect(
         offenders,

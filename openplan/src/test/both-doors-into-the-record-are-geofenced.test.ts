@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { posixRelative } from "./helpers/posix-path";
 
 /**
  * A RULE ENFORCED ON ONE OF TWO DOORS IS NOT A RULE — IT IS A CLAIM.
@@ -74,7 +75,7 @@ function routeFiles(dir: string): string[] {
 
 describe("both doors into the record are geofenced", () => {
   const routes = routeFiles(PUBLIC_ROUTES_DIR).map((file) => ({
-    file: path.relative(APP, file),
+    file: posixRelative(APP, file),
     source: readFileSync(file, "utf8"),
   }));
 

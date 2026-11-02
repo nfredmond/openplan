@@ -23,6 +23,7 @@ import path from "node:path";
 import ts from "typescript";
 import { describe, expect, it } from "vitest";
 
+import { posixRelative } from "./helpers/posix-path";
 import { stripSourceComments } from "./helpers/source-text";
 
 const SRC = path.resolve(__dirname, "..");
@@ -52,7 +53,7 @@ function parse(file: string) {
   const text = stripSourceComments(raw);
   return {
     text,
-    rel: path.relative(SRC, file),
+    rel: posixRelative(SRC, file),
     source: ts.createSourceFile(file, raw, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX),
   };
 }

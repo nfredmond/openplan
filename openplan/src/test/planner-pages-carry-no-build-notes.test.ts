@@ -2,6 +2,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { posixRelative } from "@/test/helpers/posix-path";
 import { stripSourceComments } from "@/test/helpers/source-text";
 
 /*
@@ -221,13 +222,13 @@ function operatorVocabularyIn(source: string): Array<{ rule: string; text: strin
   return found;
 }
 
-const relative = (file: string) => path.relative(process.cwd(), file);
+const relative = (file: string) => posixRelative(process.cwd(), file);
 
 const files = [...ROOTS.flatMap(sourceFiles), ...RENDERED_LIB_FILES].filter(
   (file) => !ALLOWED_FILES.has(relative(file)) && !file.includes(`${path.sep}test${path.sep}`)
 );
 
-const plannerFiles = files.filter((file) => !relative(file).startsWith(path.join("src", "app", "api") + path.sep));
+const plannerFiles = files.filter((file) => !relative(file).startsWith("src/app/api/"));
 
 describe("planner pages carry no build notes", () => {
   it("reads a meaningful number of files", () => {

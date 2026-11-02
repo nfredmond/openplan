@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { posixRelative } from "./helpers/posix-path";
 import { stripSourceComments } from "./helpers/source-text";
 import { shippedSourceFiles } from "./page-tabs-guard-source";
 import { BasisValueEditor } from "@/components/measures/basis-value-editor";
@@ -133,7 +134,7 @@ describe("the amendment prefill and the orphan warning are actually handed to th
       // both directions.
       const source = stripSourceComments(readFileSync(file, "utf8"));
       for (const match of source.matchAll(/<MeasureFundSetup(\s[^>]*?)\/?>/g)) {
-        found.push({ file: path.relative(process.cwd(), file), attributes: match[1] });
+        found.push({ file: posixRelative(process.cwd(), file), attributes: match[1] });
       }
     }
     return found;
