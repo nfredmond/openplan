@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -63,7 +64,7 @@ vi.mock("@/lib/grants/pursuit", async () => {
   };
 });
 
-import { POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
+import { GET as listExports, POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
 import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportunityId]/application/export/[exportId]/download/route";
 
@@ -424,6 +425,11 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(inserted.id).toBe((storagePath as string).split("/")[2].replace(".pdf", ""));
 
     const body = await response.json();
+    // The register row carries the stored bytes' hash; no appendix manifest
+    // outside SS4A.
+    expect(inserted.sha256).toBe(createHash("sha256").update(bytes as Buffer).digest("hex"));
+    expect(inserted.sha256).toBe(body.sha256);
+    expect(inserted.appendix_manifest_json).toBeNull();
     expect(body.export).toMatchObject({ id: EXPORT_ID, pdf_engine: "builtin" });
     expect(body.engineDisclosure).toContain("built-in PDF writer");
 
@@ -635,6 +641,34 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(response.status).toBe(503);
     expect((await response.json()).error).toContain("20260727000016_application_section_finalizer");
     expect(renderReportPdfMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/funding-opportunities/[opportunityId]/application/export", () => {
+  const listContext = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+  const listRequest = () =>
+    new NextRequest(`http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application/export`, { method: "GET" });
+
+  it("lists each export with its stored hash and appendix manifest", async () => {
+    const row = { ...exportRowResult, sha256: "a".repeat(64), appendix_manifest_json: null };
+    const listChain = makeQuery({ data: [row], error: null });
+    installTables({ funding_opportunity_application_exports: () => listChain });
+    const response = await listExports(listRequest(), listContext);
+    expect(response.status).toBe(200);
+    expect((await response.json()).exports[0].sha256).toBe("a".repeat(64));
+    expect(listChain.select).toHaveBeenCalledWith(
+      "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json"
+    );
+  });
+
+  it("answers 503 naming the custody migration when the columns are missing", async () => {
+    installTables({
+      funding_opportunity_application_exports: () =>
+        makeQuery({ data: null, error: { message: "column funding_opportunity_application_exports.sha256 does not exist", code: "42703" } }),
+    });
+    const response = await listExports(listRequest(), listContext);
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20261102110100_application_export_custody");
   });
 });
 

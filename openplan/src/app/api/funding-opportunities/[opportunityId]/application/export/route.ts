@@ -15,10 +15,12 @@ import { renderReportPdf } from "@/lib/reports/pdf";
 import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import {
   APPLICATION_ATTACHMENT_SELECT,
+  APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR,
   APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
   APPLICATION_PENDING_SCHEMA_ERROR,
   APPLICATION_SECTION_PROVENANCE_SELECT,
   looksLikePendingAssemblySchema,
+  looksLikePendingExportCustodySchema,
   looksLikePendingFinalizerSchema,
   parseApplicationAttachmentRow,
   parseApplicationSectionRow,
@@ -44,7 +46,8 @@ import {
  * Package this opportunity's application into one PDF: cover + every section
  * (final text, or a disclosed outstanding-item block) + attachment checklist +
  * provenance appendix — rendered through the one report PDF pipeline, stored
- * in the grant-application-exports bucket, and registered append-only.
+ * in the grant-application-exports bucket, and registered append-only with the
+ * PDF's SHA-256 and, for SS4A, the evidence appendix manifest.
  *
  * The grounding gate here is DEFENSE IN DEPTH on top of the finalize gate: a
  * section finalized UNEDITED from a stored AI draft whose grounding does not
@@ -65,7 +68,11 @@ const EXPORT_BUCKET = "grant-application-exports";
 
 // Not exported: Next.js route files may only export route handlers/config.
 const APPLICATION_EXPORT_SELECT =
-  "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at";
+  "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json";
+
+// The custody columns (migration 20261102110100), probed before anything is
+// rendered or stored.
+const APPLICATION_EXPORT_CUSTODY_PROBE = "id, sha256, appendix_manifest_json";
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -428,6 +435,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       evidenceAppendices,
     });
 
+    // The register row records the PDF's hash and appendix manifest. Ask for
+    // those columns before rendering or storing anything, so a database behind
+    // the custody migration refuses here, naming it, instead of after the PDF
+    // is uploaded. Any other probe error recurs at the insert below and is
+    // handled there.
+    const custodyProbe = await supabase
+      .from("funding_opportunity_application_exports")
+      .select(APPLICATION_EXPORT_CUSTODY_PROBE)
+      .eq("opportunity_id", opportunity.id)
+      .limit(1);
+    if (looksLikePendingExportCustodySchema(custodyProbe.error?.message)) {
+      return NextResponse.json({ error: APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR }, { status: 503 });
+    }
+
     const pdf = await renderReportPdf(html, {
       title: `${opportunityTitle} — ${packetLabel}`,
       generatedAt,
@@ -485,6 +506,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         pdf_engine: pdf.engine,
         page_count: pdf.pageCount,
         generated_by: user.id,
+        sha256,
+        appendix_manifest_json: appendixSummary,
       })
       .select(APPLICATION_EXPORT_SELECT)
       .single();
@@ -586,6 +609,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (exportsError) {
       if (looksLikePendingAssemblySchema(exportsError.message)) {
         return NextResponse.json({ error: APPLICATION_PENDING_SCHEMA_ERROR }, { status: 503 });
+      }
+      if (looksLikePendingExportCustodySchema(exportsError.message)) {
+        return NextResponse.json({ error: APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR }, { status: 503 });
       }
       audit.error("application_exports_list_failed", {
         opportunityId: access.opportunity.id,

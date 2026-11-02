@@ -198,8 +198,13 @@ const reportArtifactsSource: DocumentLibrarySource = {
 
 // ---------------------------------------------------------------------------
 // 3. Grant application exports — workspace_id on the row; project via the
-// opportunity. storage_path is member-INSERTable and is NOT selected.
+// opportunity. storage_path is member-INSERTable and is NOT selected. sha256
+// (migration 20261102110100) is the stored PDF's hash as the export route
+// computed it; NULL on older exports, which then show no hash.
 // ---------------------------------------------------------------------------
+
+/** Enough of a SHA-256 to compare by eye; the full value is on the export record. */
+const EXPORT_HASH_PREFIX_LENGTH = 16;
 
 const grantExportsSource: DocumentLibrarySource = {
   id: "grant_application_exports",
@@ -207,7 +212,7 @@ const grantExportsSource: DocumentLibrarySource = {
   readLabel: "grant application exports",
   table: "funding_opportunity_application_exports",
   select:
-    "id, opportunity_id, page_count, generated_at, funding_opportunities!inner(project_id, title)",
+    "id, opportunity_id, page_count, generated_at, sha256, funding_opportunities!inner(project_id, title)",
   workspaceFilterColumn: "workspace_id",
   projectFilterColumn: "funding_opportunities.project_id",
   orderColumn: "generated_at",
@@ -216,6 +221,11 @@ const grantExportsSource: DocumentLibrarySource = {
   toEntry: (row) => {
     const opportunity = embedded(row.funding_opportunities);
     const pageCount = asNumber(row.page_count);
+    const sha256 = asString(row.sha256);
+    const detail = [
+      pageCount !== null ? `${pageCount} page${pageCount === 1 ? "" : "s"}` : null,
+      sha256 ? `SHA-256 ${sha256.slice(0, EXPORT_HASH_PREFIX_LENGTH)}…` : null,
+    ].filter((part): part is string => part !== null);
     return {
       sourceId: "grant_application_exports",
       id: String(row.id),
@@ -226,7 +236,7 @@ const grantExportsSource: DocumentLibrarySource = {
       hasBytes: true,
       downloadHref: `/api/funding-opportunities/${row.opportunity_id}/application/export/${row.id}/download`,
       badge: { label: "Application PDF", tone: "neutral" },
-      detail: pageCount !== null ? `${pageCount} page${pageCount === 1 ? "" : "s"}` : null,
+      detail: detail.length > 0 ? detail.join(", ") : null,
       groundable: false,
     };
   },

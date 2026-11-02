@@ -387,6 +387,7 @@ function buildDb(): Db {
         opportunity_id: "opp-a",
         page_count: 12,
         generated_at: "2026-08-03T10:00:00Z",
+        sha256: "f4fb7857f274333009098f395252d2e8a6ed2e4281d03f563cd0705cc7cf8dcc",
       },
       {
         id: "exp-decoy",
@@ -812,6 +813,19 @@ describe("loadDocumentLibrary", () => {
     expect(label).toContain(String(result.limitPerSource));
     expect(label).toContain("each source");
     expect(label.toLowerCase()).not.toContain("newest overall");
+  });
+
+  it("shows the stored PDF hash on an application export, and nothing for an export made before it was recorded", async () => {
+    const { client, selects } = createFakeSupabase(buildDb());
+    const result = await loadDocumentLibrary(client, { workspaceId: WS_A, sources: ["grant_application_exports"] });
+    // The fake projects only selected columns, so this fails if sha256 leaves the select.
+    expect(result.entries.find((entry) => entry.id === "exp-a")?.detail).toBe("12 pages, SHA-256 f4fb7857f2743330…");
+    expect(selects.funding_opportunity_application_exports).toContain("sha256");
+
+    const source = DOCUMENT_LIBRARY_SOURCES.find((candidate) => candidate.id === "grant_application_exports")!;
+    const legacy = source.toEntry({ id: "exp-old", opportunity_id: "opp-a", page_count: 1, generated_at: "2026-08-01T00:00:00Z", sha256: null,
+      funding_opportunities: { project_id: PROJ_1, title: "ATP Cycle 7" } });
+    expect(legacy.detail).toBe("1 page");
   });
 
   it("never selects the untrusted or member-writable path columns from the two risky sources", () => {
