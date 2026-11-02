@@ -108,6 +108,29 @@ describe("ATP scoring packet panel", () => {
     expect(fetchMock).toHaveBeenCalledWith(PACKET_URL);
   });
 
+  it("reloads the scores when the opportunity's linked project changes", async () => {
+    // A project linked from the opportunity card refreshes the page's server
+    // data; the panel must not keep showing the unlinked answer it loaded first.
+    const sectionKeys = ["project-narrative", "need-and-safety", "disadvantaged-communities", "budget-narrative"];
+    let linked = false;
+    fetchMock.mockImplementation(async (url: string) =>
+      url === PACKET_URL
+        ? jsonResponse(200, linked ? PACKET : { packet: null, missing: "project", scoreRun: null })
+        : jsonResponse(200, applicationPayload(sectionKeys))
+    );
+    const view = render(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} linkedProjectId={null} />);
+    fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
+    await screen.findByRole("link", { name: "Link a project" });
+
+    linked = true;
+    view.rerender(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} linkedProjectId="p-main" />);
+
+    const panel = await screen.findByTestId("atp-scoring-packet");
+    await waitFor(() => expect(within(panel).getByText("Main Street safe routes")).toBeInTheDocument());
+    expect(within(panel).queryByRole("link", { name: "Link a project" })).toBeNull();
+    expect(fetchMock.mock.calls.filter(([url]) => url === PACKET_URL)).toHaveLength(2);
+  });
+
   it("shows no packet and makes no packet request on another program's application", async () => {
     // Washington's WSDOT pedestrian and bicycle program shares need-and-safety with ATP.
     await openWith(["project-description", "need-and-safety", "active-transportation-demand", "budget-and-cost-estimate"]);

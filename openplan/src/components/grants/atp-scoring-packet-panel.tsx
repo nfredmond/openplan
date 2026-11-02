@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import type { AtpGrantResult, AtpProjectApplication } from "@/lib/planner-pack/types";
+import { projectLinkAnchorId } from "@/lib/grants/opportunity-project-link";
 
 /**
  * The ATP scoring packet, read-only, on an application seeded from the ATP
@@ -174,7 +175,12 @@ export function AtpScoringPacketPanel({ opportunityId }: { opportunityId: string
         </p>
       ) : null}
       {payload?.missing === "project" ? (
-        <p className="text-muted-foreground">Link a project to this opportunity to see its ATP scores.</p>
+        <p className="text-muted-foreground">
+          <a className="font-semibold text-[color:var(--pine)] underline" href={`#${projectLinkAnchorId(opportunityId)}`}>
+            Link a project
+          </a>{" "}
+          to see its ATP scores.
+        </p>
       ) : null}
       {packet ? (
         <div className="space-y-3 rounded-xl border border-border/70 bg-background/70 px-3 py-3">

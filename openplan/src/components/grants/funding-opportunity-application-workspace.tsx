@@ -169,10 +169,13 @@ function formatDate(value: string | null): string {
 export function FundingOpportunityApplicationWorkspace({
   opportunityId,
   pursuitKind = "grant",
+  linkedProjectId = null,
 }: {
   opportunityId: string;
   /** Drives the per-kind copy; the server decides seeding independently. */
   pursuitKind?: "grant" | "proposal";
+  /** The opportunity's linked project. A change reloads the ATP scores. */
+  linkedProjectId?: string | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -647,7 +650,7 @@ export function FundingOpportunityApplicationWorkspace({
                 </p>
               ) : null}
 
-              {showAtpPacket ? <AtpScoringPacketPanel opportunityId={opportunityId} /> : null}
+              {showAtpPacket ? <AtpScoringPacketPanel key={linkedProjectId ?? "unlinked"} opportunityId={opportunityId} /> : null}
               {isSs4aApplication ? (
                 <SafetyPlanSeedPanel opportunityId={opportunityId} onApplied={loadApplication} />
               ) : null}

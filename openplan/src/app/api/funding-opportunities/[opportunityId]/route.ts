@@ -16,6 +16,10 @@ import {
   FUNDING_OPPORTUNITY_DECISION_OPTIONS,
   FUNDING_OPPORTUNITY_STATUS_OPTIONS,
 } from "@/lib/programs/catalog";
+import {
+  checkOpportunityProjectLinkChange,
+  describeOpportunityProjectLinkRefusal,
+} from "@/lib/grants/opportunity-project-link";
 
 const FUNDING_OPPORTUNITY_STATUSES = FUNDING_OPPORTUNITY_STATUS_OPTIONS.map((option) => option.value) as [
   string,
@@ -25,6 +29,9 @@ const FUNDING_OPPORTUNITY_DECISIONS = FUNDING_OPPORTUNITY_DECISION_OPTIONS.map((
   string,
   ...string[],
 ];
+
+const FUNDING_OPPORTUNITY_PROJECTION =
+  "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at";
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -47,6 +54,8 @@ const patchFundingOpportunitySchema = z
     decisionRationale: z.union([z.string().trim().max(4000), z.null()]).optional(),
     decidedAt: z.union([z.string().datetime(), z.null()]).optional(),
     summary: z.union([z.string().trim().max(4000), z.null()]).optional(),
+    // Null unlinks. See opportunity-project-link.ts for when a change is refused.
+    projectId: z.union([z.string().uuid(), z.null()]).optional(),
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field must be updated",
@@ -138,7 +147,68 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    const currentProjectId = access.opportunity.project_id ?? null;
+    const projectLinkChange =
+      parsed.data.projectId !== undefined && parsed.data.projectId !== currentProjectId
+        ? { from: currentProjectId, to: parsed.data.projectId }
+        : null;
+
+    if (projectLinkChange?.to) {
+      // Read through the caller's client: a project in a workspace they cannot
+      // see comes back absent, and one they can see in another workspace comes
+      // back with the wrong workspace_id. Both get the same 404, so the answer
+      // never confirms that another workspace's project exists.
+      const { data: project, error: projectError } = await supabase
+        .from("projects")
+        .select("id, workspace_id")
+        .eq("id", projectLinkChange.to)
+        .maybeSingle();
+
+      if (projectError) {
+        audit.error("funding_opportunity_project_lookup_failed", {
+          opportunityId: access.opportunity.id,
+          projectId: projectLinkChange.to,
+          message: projectError.message,
+          code: projectError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify linked project" }, { status: 500 });
+      }
+
+      if (!project || project.workspace_id !== access.opportunity.workspace_id) {
+        return NextResponse.json({ error: "Project not found in this workspace" }, { status: 404 });
+      }
+    }
+
+    if (projectLinkChange) {
+      const linkCheck = await checkOpportunityProjectLinkChange(supabase, access.opportunity, projectLinkChange.to);
+      if (linkCheck.kind === "failed") {
+        audit.error("funding_opportunity_project_link_check_failed", {
+          opportunityId: access.opportunity.id,
+          table: linkCheck.table,
+          message: linkCheck.message,
+        });
+        return NextResponse.json({ error: "Failed to check what depends on this opportunity's project" }, { status: 500 });
+      }
+      if (linkCheck.kind === "refused") {
+        audit.warn("funding_opportunity_project_link_refused", {
+          opportunityId: access.opportunity.id,
+          fromProjectId: projectLinkChange.from,
+          toProjectId: projectLinkChange.to,
+          blockers: linkCheck.blockers,
+        });
+        return NextResponse.json(
+          {
+            error: "The project link was not changed",
+            details: describeOpportunityProjectLinkRefusal(linkCheck.blockers),
+            blockers: linkCheck.blockers,
+          },
+          { status: 409 }
+        );
+      }
+    }
+
     const updates: Record<string, string | number | null> = {};
+    if (projectLinkChange) updates.project_id = projectLinkChange.to;
 
     if (parsed.data.title !== undefined) updates.title = parsed.data.title.trim();
     if (parsed.data.status !== undefined) updates.opportunity_status = parsed.data.status;
@@ -187,14 +257,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
     const runUpdate = async () => {
-      const { data, error } = await supabase
-        .from("funding_opportunities")
-        .update(updates)
-        .eq("id", access.opportunity!.id)
-        .select(
-          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, created_at, updated_at"
-        )
-        .single();
+      // Compare and set: the dependency check above read the link it is
+      // changing, so a project change only lands if that link is unchanged.
+      const { data, error } = projectLinkChange
+        ? await supabase
+            .from("funding_opportunities")
+            .update(updates)
+            .eq("id", access.opportunity!.id)
+            .filter("project_id", projectLinkChange.from === null ? "is" : "eq", projectLinkChange.from)
+            .select(FUNDING_OPPORTUNITY_PROJECTION)
+            .single()
+        : await supabase
+            .from("funding_opportunities")
+            .update(updates)
+            .eq("id", access.opportunity!.id)
+            .select(FUNDING_OPPORTUNITY_PROJECTION)
+            .single();
 
       if (isWriteFailure(error)) {
         throw new Error(error?.message ?? "funding_opportunity_update_failed");
@@ -224,6 +302,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           )
         : await runUpdate();
     } catch (updateErr) {
+      if (updateErr instanceof FundingOpportunityUpdateMatchedNoRows && projectLinkChange) {
+        // The compare-and-set on project_id is the likelier reason here: someone
+        // changed the link after this request read it. Say so only if a re-read
+        // shows it; otherwise fall through to the database-refusal answer.
+        const { data: current, error: rereadError } = await supabase
+          .from("funding_opportunities")
+          .select("id, project_id")
+          .eq("id", access.opportunity.id)
+          .maybeSingle();
+        if (!rereadError && current && (current.project_id ?? null) !== projectLinkChange.from) {
+          return NextResponse.json(
+            { error: "The project link changed while you were saving. Reload and try again." },
+            { status: 409 }
+          );
+        }
+      }
       if (updateErr instanceof FundingOpportunityUpdateMatchedNoRows) {
         // `loadFundingOpportunityAccess` read this exact opportunity row through
         // the caller's own client and the write-access gate passed, so a write
@@ -249,6 +343,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       opportunityId: access.opportunity.id,
       userId: user.id,
       workspaceId: access.opportunity.workspace_id,
+      ...(projectLinkChange ? { fromProjectId: projectLinkChange.from, toProjectId: projectLinkChange.to } : {}),
       durationMs: Date.now() - startedAt,
     });
 

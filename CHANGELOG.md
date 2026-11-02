@@ -72,6 +72,14 @@ IPv6 addresses no longer match, so IPv6 connections start their limits again
 once, on deploy. The sign-up email cap is a Supabase Auth setting, not app
 code; [self hosting](openplan/docs/SELF_HOSTING.md#limits-on-public-signup-and-public-input)
 describes it. No migration.
+**Link a project to a tracked grant (KI-2026-11-02-043):** a funding opportunity
+tracked from the Grants catalog without a project can now be linked from its
+card on the Grants page, and the ATP panel's "Link a project" goes there. The
+project must be in the opportunity's workspace, and viewers cannot change it.
+Once an application section is final, a draft, export, Safety seed, map package
+or award exists, the link no longer changes; track a new opportunity for the
+other project. The database does not yet enforce these rules on its own.
+
 **ATP report states what it knows (KI-2026-11-02-040 to 042):** the ATP report
 downloaded from an ATP application now cites SB 535 to Health and Safety Code
 §39711, calls its numbers OpenPlan screening scores rather than CTC scoring
