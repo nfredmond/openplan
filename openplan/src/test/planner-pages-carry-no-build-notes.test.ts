@@ -71,6 +71,15 @@ const BUILD_NOTES: ReadonlyArray<{ pattern: RegExp; why: string }> = [
   { pattern: /\bNext (?:domain|output)\b/, why: "the roadmap panel removed on October 10, 2026" },
   { pattern: /\bno longer just\b/i, why: "a changelog line about the build, not the planner's work" },
   { pattern: /\bNext layer buildout\b/i, why: "the Corridor Analysis code roadmap removed on October 13, 2026" },
+  // November 2, 2026 engagement journey: "V1 is about routable review
+  // structure" under the category form, "This stays lightweight in V1" on
+  // scenarios, and "The feed is intentionally tighter than the page intro" on
+  // the project record. Each describes how the page was designed.
+  { pattern: /\bV1\b/, why: "a release scope is how the product was planned, not the planner's work" },
+  {
+    pattern: /\b(?:this|it|the (?:feed|page|panel|section)) (?:is|stays) (?:intentionally|deliberately|lightweight|metadata-first)\b|\bstays lightweight\b/i,
+    why: "a sentence about the page's own design is a note to other developers",
+  },
 ];
 
 /**

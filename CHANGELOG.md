@@ -41,6 +41,15 @@ participation heat map and the extent preview in GIS layer import. A Mapbox key
 still selects Mapbox and its styles. Without a key the mission map has no
 satellite background and says so, and the Aerial index map uses your one style
 in light and dark mode. Rebuild after setting the variable.
+**Engagement case fixes (KI-2026-11-02-011 to -016):** a rejected comment with
+no category no longer holds a campaign's handoff readiness or tells staff to
+categorize it, and new handoff packets no longer call reporting incomplete
+because of it. On the public page, sending a comment moves focus to the
+confirmation so screen readers announce it, the view buttons report which view
+is open, and a comment repeats its original topic only when the topic has since
+changed. Engagement review PDFs name each response's sources by register number
+and title and say whether the response is published. Six build notes were
+removed from staff pages. No migration.
 
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.

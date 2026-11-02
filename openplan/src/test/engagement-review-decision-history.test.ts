@@ -28,6 +28,22 @@ describe("private decision history in engagement exports", () => {
     expect(saved.decisionLinks?.[1].context_text).toBe(native.withdrawn.entries[1].context_text);
     expect(saved.decisionLinks?.[0].context.decision.rationale).toBe("SYNTHETIC private rationale");
   });
+  it("names a response's sources by their register number and says whether it is published", async () => {
+    const item = (id: string, title: string | null) => ({ id, status: "approved", title, body: `SYNTHETIC ${id}`, created_at: "2026-11-02T07:00:00Z", source_type: "public", configuration_version_id: null, category_id: null });
+    const ids = ["d90d2cdc-483f-45c7-83d1-d403c5ba75c6", "6c08172a-8174-4c75-8501-7e2847dd97f0", "c0fa4477-9d37-4d75-bccc-1630e2b28ab8"];
+    const saved = await parse({
+      ...legacy, scope: "public",
+      items: [item(ids[0], "Near misses crossing Fifth at Cedar"), item(ids[1], null)],
+      responses: [
+        { id: "a836888c-f732-445e-a122-ec64b615b2cb", theme_title: "Walking safety", you_said: "SYNTHETIC", we_did: "SYNTHETIC", source_item_ids: [ids[1], ids[0], ids[2]], published_at: "2026-11-02T07:24:46Z" },
+        { id: "b836888c-f732-445e-a122-ec64b615b2cb", theme_title: "Draft", you_said: "SYNTHETIC", we_did: "", source_item_ids: [], published_at: null },
+      ],
+    });
+    const html = buildCampaignReviewHtml(saved, "test");
+    expect(html).toContain(`Published 2026-11-02T07:24:46Z<br>Answers contribution 2, Untitled contribution (${ids[1]}); contribution 1, Near misses crossing Fifth at Cedar (${ids[0]}); ${ids[2]} (not in this selection)`);
+    expect(html).toContain("Not published<br>Answers No contributions recorded");
+    expect(html).not.toContain("Sources [");
+  });
   it("keeps legacy internal and public snapshots readable without inventing zero history", async () => {
     const internal = await parse(legacy);
     expect(buildCampaignReviewHtml(internal, "test")).toContain("missing evidence, not a count of zero");

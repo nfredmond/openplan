@@ -19,6 +19,17 @@ describe("summarizeEngagementItems", () => {
     expect(summary.sourceSummaries.find(source => source.sourceType === "public")).toMatchObject({ geolocatedCount: 3, nonGeolocatedCount: 5 });
   });
 
+  it("counts a withheld uncategorized comment as uncategorized but not as needing a category", () => {
+    const summary = summarizeEngagementItems([{ id: "category", label: "Crossings" }], [
+      { id: "a", campaign_id: "campaign", category_id: "category", status: "approved", source_type: "public" },
+      { id: "b", campaign_id: "campaign", category_id: null, status: "rejected", source_type: "public" },
+      { id: "c", campaign_id: "campaign", category_id: null, status: "pending", source_type: "public" },
+      { id: "d", campaign_id: "campaign", category_id: null, status: "approved", source_type: "public" },
+    ]);
+    expect(summary.uncategorizedItems).toBe(3);
+    expect(summary.uncategorizedItemsNeedingCategory).toBe(2);
+  });
+
   it("computes source, moderation, geography, and recent activity analytics", () => {
     const summary = summarizeEngagementItems(
       [

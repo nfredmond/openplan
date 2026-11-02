@@ -878,9 +878,6 @@ export function ScenarioEntryRegistry({
         <div className="module-section-header">
           <div className="module-section-heading">
             <h2 className="module-section-title">Readiness and blockers</h2>
-            <p className="module-section-description">
-              This stays lightweight in V1: enough structure to explain readiness, evidence posture, and why a comparison is blocked.
-            </p>
           </div>
         </div>
 

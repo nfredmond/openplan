@@ -258,8 +258,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
         <div className="module-section-heading">
           <h2 className="module-section-title">Plan record workflow</h2>
           <p className="module-section-description">
-            Update the formal record and what it is linked to, in place. This stays metadata-first and intentionally
-            avoids chapter editing.
+            Update the formal record and what it is linked to, in place.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">

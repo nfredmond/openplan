@@ -427,6 +427,33 @@ describe("PublicEngagementPortal", () => {
     expect(screen.getByAltText("Photo attached to this community comment")).toBeInTheDocument();
   });
 
+  it("tells assistive technology which view is open, not only by an underline", () => {
+    renderPortal({ approvedItems: APPROVED_ITEMS });
+    const submit = screen.getByRole("button", { name: /^Add a comment/ });
+    const comments = screen.getByRole("button", { name: /^Comments/ });
+    expect(submit).toHaveAttribute("aria-pressed", "true");
+    expect(comments).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(comments);
+    expect(screen.getByRole("button", { name: /^Comments/ })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /^Add a comment/ })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("prints a comment's original topic definition only when the topic has since changed", () => {
+    const category = categoryFrom(emptyPortalTranslationIndex("en"), { label: "Crossing safety" });
+    const [unchanged, renamed] = APPROVED_ITEMS;
+    renderPortal({
+      acceptingSubmissions: false,
+      categories: [category],
+      approvedItems: [
+        { ...unchanged, categoryId: category.id, historicalCategoryLabel: "Crossing safety" },
+        { ...renamed, categoryId: category.id, historicalCategoryLabel: "Crossings" },
+      ],
+    });
+    const lines = screen.getAllByText(/Category definition in original form/);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toHaveTextContent("Category definition in original form: Crossings");
+  });
+
   it("sorts the feedback list by most supported when selected", () => {
     renderPortal({ acceptingSubmissions: false, approvedItems: APPROVED_ITEMS });
 

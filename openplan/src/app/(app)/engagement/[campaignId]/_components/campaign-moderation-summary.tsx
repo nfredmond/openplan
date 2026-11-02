@@ -66,7 +66,7 @@ export function CampaignModerationSummary({
           <p className="module-summary-label">Report status</p>
           <p className="module-summary-value">{handoffReadiness.completeCount}/{handoffReadiness.totalChecks}</p>
           <p className="module-summary-detail">
-            {handoffReadiness.label}. {counts.statusCounts.approved} approved, {counts.uncategorizedItems} still need category assignment.
+            {handoffReadiness.label}. {counts.statusCounts.approved} approved, {counts.uncategorizedItemsNeedingCategory} still need category assignment.
           </p>
         </div>
       </div>

@@ -62,7 +62,7 @@ export function EngagementCategoryCreator({ campaignId }: { campaignId: string }
           <p className="module-section-label">Categories</p>
           <h2 className="module-section-title">Add intake categories</h2>
           <p className="module-section-description">
-            Keep the taxonomy light. V1 is about routable review structure, not exhaustive survey logic.
+            Topics residents can choose and staff use to sort comments.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-emerald-500/12 text-emerald-700 dark:text-emerald-300">

@@ -24,7 +24,7 @@ import { EngagementReportCreateButton } from "@/components/engagement/engagement
 
 const sharedCampaignProps = {
   campaign: { id: "shared-campaign", title: "Shared listening", summary: null, status: "active", engagement_type: "comment_collection", project_id: "lead", created_at: "2026-09-01", updated_at: "2026-09-06" },
-  counts: { moderationQueue: { actionableCount: 0, readyForHandoffCount: 1 }, uncategorizedItems: 0, totalItems: 1 },
+  counts: { moderationQueue: { actionableCount: 0, readyForHandoffCount: 1 }, uncategorizedItems: 0, uncategorizedItemsNeedingCategory: 0, totalItems: 1 },
   coveredProjects: [{ id: "lead", name: "Lead project" }, { id: "covered", name: "Covered project" }],
 };
 
@@ -52,6 +52,28 @@ describe("EngagementReportCreateButton", () => {
       campaignId: "shared-campaign", provenance: { campaign: { id: "shared-campaign", projectId: "lead" } },
     });
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/reports/report-covered"));
+  });
+
+  it("does not tell the packet a withheld comment still needs a category", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reportId: "report-withheld" }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    // One uncategorized item exists, and it was rejected (withheld from every report).
+    render(<EngagementReportCreateButton {...sharedCampaignProps} counts={{ ...sharedCampaignProps.counts, uncategorizedItems: 1, uncategorizedItemsNeedingCategory: 0, totalItems: 2 }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Create handoff report" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body.summary).not.toMatch(/still need category assignment/);
+    expect(body.summary).toContain("Every item a report can include has a category.");
+  });
+
+  it("names only the reportable uncategorized items in the packet summary", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ reportId: "report-open" }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EngagementReportCreateButton {...sharedCampaignProps} counts={{ ...sharedCampaignProps.counts, uncategorizedItems: 3, uncategorizedItemsNeedingCategory: 2, totalItems: 4 }} />);
+    fireEvent.click(screen.getByRole("button", { name: "Create handoff report" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1].body));
+    expect(body.summary).toContain("2 items still need category assignment before downstream reporting is complete.");
   });
 
   it("withholds creation when the selected project leaves the refreshed coverage set", () => {
@@ -108,6 +130,7 @@ describe("EngagementReportCreateButton", () => {
             readyForHandoffCount: 11,
           },
           uncategorizedItems: 2,
+          uncategorizedItemsNeedingCategory: 2,
           totalItems: 18,
         }}
       />
@@ -141,6 +164,7 @@ describe("EngagementReportCreateButton", () => {
             readyForHandoffCount: 11,
           },
           uncategorizedItems: 2,
+          uncategorizedItemsNeedingCategory: 2,
           totalItems: 18,
         }}
         existingReportGuidance={{
@@ -189,6 +213,7 @@ describe("EngagementReportCreateButton", () => {
             readyForHandoffCount: 5,
           },
           uncategorizedItems: 0,
+          uncategorizedItemsNeedingCategory: 0,
           totalItems: 9,
         }}
       />
@@ -251,6 +276,7 @@ describe("EngagementReportCreateButton", () => {
             readyForHandoffCount: 11,
           },
           uncategorizedItems: 2,
+          uncategorizedItemsNeedingCategory: 2,
           totalItems: 18,
         }}
       />
