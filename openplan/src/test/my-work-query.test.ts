@@ -299,6 +299,37 @@ describe("my work — the union read", () => {
     expect(selects.legacy_calendar_funding_awards.split(",").map(x => x.trim())).toContain("closure_basis");
   });
 
+  describe("a closed award's obligation date (KI-2026-10-12-015)", () => {
+    // `a-spent` is fully spent with an obligation date of Aug 9, two days
+    // before NOW. Only its recorded closure time varies between these cases.
+    async function closedAward(closedAt: string | null) {
+      const db = buildDb();
+      const award = db.funding_awards.find(row => row.id === "a-spent")!;
+      award.closure_basis = "earned_coverage";
+      award.closed_at = closedAt;
+      const { result, selects } = await load({ db, scope: "all_projects" });
+      return { item: result.items.find(row => row.id === "a-spent"), selects };
+    }
+
+    it("is not work when the award was recorded closed before the date", async () => {
+      const { item, selects } = await closedAward("2026-08-08T23:59:00Z");
+      expect(item).toBeUndefined();
+      expect(selects.legacy_calendar_funding_awards.split(",").map(x => x.trim())).toContain("closed_at");
+    });
+
+    it("stays a past-due record when the award was recorded closed after the date", async () => {
+      const { item } = await closedAward("2026-08-10T00:00:00Z");
+      expect(item).toMatchObject({ isOverdue: true, dueOn: "2026-08-09T00:00:00Z", badge: { label: "Obligation date passed", tone: "warning" } });
+      expect(item?.detail).toContain("Recorded closed on or after the obligation date");
+    });
+
+    it("stays a past-due record when no closure date is recorded", async () => {
+      const { item } = await closedAward(null);
+      expect(item).toMatchObject({ isOverdue: true, badge: { label: "Obligation date passed", tone: "warning" } });
+      expect(item?.detail).toContain("No closure date is recorded");
+    });
+  });
+
   it("reports each source's own count after de-duplication", async () => {
     const { result } = await load();
 

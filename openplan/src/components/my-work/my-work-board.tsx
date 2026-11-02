@@ -94,7 +94,7 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
   deadlines: ["deliverables", "milestones", "submittals", "land_use_plan_actions", "contract_tasks"],
   undated: ["issues", "land_use_plan_actions", "contract_tasks"],
   blocked_projects: ["stage_gate_holds"],
-  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
+  needs_review: ["engagement_moderation", "failed_model_runs", "stalled_model_runs", "failed_county_runs", "aerial_processing", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
   workspace_deadlines: ["grant_decisions", "grant_application_due", "award_obligations", "invoice_windows"],
 };
 
@@ -109,6 +109,9 @@ const NEEDS_REVIEW_SOURCE_LABELS: Record<string, string> = {
   contract_pending_reviews:"contract approvals and accounting or invoice reviews",
   engagement_moderation: "comments to moderate",
   failed_model_runs: "failed model runs",
+  stalled_model_runs: "running model runs",
+  failed_county_runs: "county runs",
+  aerial_processing: "aerial processing jobs",
   narrative_drafts: "narrative drafts awaiting review",
   decision_package_reviews: "decision packages awaiting review or replacement",
 };
@@ -347,8 +350,9 @@ export function MyWorkBoard({
         ) : blocks.needs_review.length === 0 ? (
           <p className="module-empty-state">
             No items are listed in this review section: no comment is pending moderation, no model run failed
-            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days, no drafted narrative is awaiting a
-            decision, and no contract approval, remaining-work update, accounting import or invoice review is pending.
+            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days or stopped, no county run or aerial processing job
+            failed, no drafted narrative is awaiting a decision, and no contract approval, remaining-work update,
+            accounting import or invoice review is pending.
           </p>
         ) : null}
       </article>

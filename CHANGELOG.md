@@ -81,6 +81,15 @@ internal files. It prints the project's recorded summary and planning-level
 estimate instead of "to be provided", and names the crash source, years and
 retrieval date behind the safety score. The ATP panel no longer runs past its
 border on a phone.
+**My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
+the "Waiting on a person" section now lists model runs that were interrupted
+or stopped reporting for more than 45 minutes, failed county runs, and aerial
+processing jobs whose latest attempt failed or went silent past the mission
+page's reporting window. Each item links to the page where the job is re-run.
+A funding award recorded closed before its obligation date no longer appears
+in My Work or the daily digest. A closed award recorded closed on or after
+that date, or with no closure date, stays listed for review and is marked past
+due once the date passes. No migration is needed.
 
 **Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
 acquisition now keeps only crashes whose point lies inside the study area's
