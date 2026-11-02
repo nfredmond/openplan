@@ -154,7 +154,7 @@ export function clipCrashRecordsToBoundary<T extends { latitude: number; longitu
  * rectangle totals.
  *
  * With only a rectangle, the counts are the source's totals. With a boundary
- * and every mappable crash retrieved, the crashes found outside are taken off
+ * and the source's mappable count fully retrieved, the crashes found outside are taken off
  * the totals; crashes with no point stay in the reported total because the
  * source placed them by its own area filter, not by a point. With a boundary
  * and retrieval cut short (the source says so, or fewer records came back than
