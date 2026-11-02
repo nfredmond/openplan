@@ -15,8 +15,8 @@
  *     distinct STATE values and no Puerto Rico rows.
  *   - the Puerto Rico file (`{year}/Puerto Rico/`): Puerto Rico only.
  * A study area reads the file whose envelope it overlaps, so a Puerto Rico
- * county never downloads the 30 MB National archive and a Nevada county never
- * reads Puerto Rico. One adapter, not two, because both files are the same
+ * county never downloads the 30 MB National archive and a study area in any
+ * state never reads Puerto Rico. One adapter, not two, because both files are the same
  * census under the same NHTSA program, codebook and release, and because
  * `safety_crashes.source_id` admits only `fars-national`: a sibling adapter
  * with its own id could not be stored without widening that CHECK.
