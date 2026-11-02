@@ -64,6 +64,15 @@ const RELATIONS: Record<string, Record<string, { fk: string; parent: string }>> 
   },
   engagement_campaigns: { projects: { fk: "project_id", parent: "projects" } },
   program_work_program_reviews: { programs: { fk: "program_id", parent: "programs" } },
+  aerial_processing_jobs: { aerial_missions: { fk: "mission_id", parent: "aerial_missions" } },
+};
+
+/**
+ * To-many embeds, written `alias:child_table(...)` in a select. PostgREST
+ * returns the matching child rows as an array, projected to the listed columns.
+ */
+const CHILD_RELATIONS: Record<string, Record<string, { fk: string }>> = {
+  model_runs: { model_run_stages: { fk: "run_id" } },
 };
 
 type SelectNode =
@@ -138,6 +147,15 @@ function projectRow(
     }
     if (nulledEmbeds.has(node.name)) {
       out[node.name] = null;
+      continue;
+    }
+    if (node.name.includes(":")) {
+      const [alias, childTable] = node.name.split(":");
+      const child = CHILD_RELATIONS[table]?.[childTable];
+      if (!child) throw new Error(`fake has no child relation ${table} -> ${childTable}`);
+      out[alias] = (db[childTable] ?? [])
+        .filter((candidate) => candidate[child.fk] === row.id)
+        .map((candidate) => projectRow(db, childTable, candidate, node.children, new Set()));
       continue;
     }
     const parent = lookupParent(db, table, node.name, row);

@@ -1,4 +1,4 @@
-import { fundingAwardObligationReview } from "@/lib/programs/catalog";
+import { fundingAwardObligationStanding } from "@/lib/programs/catalog";
 /**
  * MY WORK's source descriptors — one entry per table that can put something on
  * a planner's week, each declaring exactly how it is read and how its rows
@@ -31,7 +31,13 @@ import { fundingAwardObligationReview } from "@/lib/programs/catalog";
  * vocabulary change lands in one place.
  */
 
+import {
+  resolveAerialProcessingSilenceMinutes,
+  summarizeAerialProcessingJob,
+} from "@/lib/aerial/catalog";
 import { ENGAGEMENT_ITEM_ACTIONABLE_STATUSES } from "@/lib/engagement/catalog";
+import { classifyRunLiveness, stalenessMessage } from "@/lib/models/run-liveness";
+import { isInterruptedModelRun } from "@/lib/models/run-status";
 import {
   isClosingSoonFundingOpportunity,
   isOverdueFundingDecision,
@@ -650,6 +656,185 @@ const failedModelRunsSource: MyWorkSource = {
       }),
 };
 
+// ── 7b–7d. Jobs that stopped (2026-11-02) ──────────────────────────────────
+//
+// Each source reuses the owning module's own definition of "stopped". None
+// writes anything: the model page and the cron reaper still move a stale run to
+// `failed`, and a planner re-runs from the linked page. A job kind with no
+// stall definition in its module is shown only once it has failed.
+
+/** The model run status a worker holds while it runs (20260317000025). */
+const RUNNING_RUN_STATUS = "running";
+
+const stalledModelRunsSource: MyWorkSource = {
+  id: "stalled_model_runs",
+  label: "Stopped model runs",
+  readLabel: "running model runs",
+  block: "needs_review",
+  table: "model_runs",
+  select:
+    "id, model_id, run_title, status, engine_key, created_at, started_at, updated_at, stages:model_run_stages(status, started_at, completed_at, updated_at, error_message)",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  // Least recent progress first: the longest-silent run is the likeliest stop.
+  orderColumn: "updated_at",
+  orderAscending: true,
+  staticFilters: [{ kind: "eq", column: "status", value: RUNNING_RUN_STATUS }],
+  toItems: (rows, { now }) =>
+    rows.flatMap((row) => {
+      const stages = Array.isArray(row.stages) ? (row.stages as Array<Record<string, unknown>>) : [];
+      const run = {
+        status: asString(row.status) ?? "",
+        created_at: asString(row.created_at),
+        started_at: asString(row.started_at),
+        updated_at: asString(row.updated_at),
+        stages: stages.map((stage) => ({
+          status: asString(stage.status) ?? "",
+          started_at: asString(stage.started_at),
+          completed_at: asString(stage.completed_at),
+          updated_at: asString(stage.updated_at),
+          error_message: asString(stage.error_message),
+        })),
+      };
+      const interrupted = isInterruptedModelRun(run);
+      // Only running runs are read, so the queued branch, which needs every
+      // workspace's runs to judge whether the worker is alive, never applies.
+      const liveness = classifyRunLiveness(run, now.getTime(), { workerLikelyAlive: true });
+      if (!interrupted && liveness !== "stale_running") return [];
+      const stageError = run.stages.find((stage) => stage.status === "running" && stage.error_message)?.error_message ?? null;
+      return [{
+        sourceId: "stalled_model_runs",
+        block: "needs_review",
+        id: String(row.id),
+        title: asString(row.run_title) ?? "(untitled run)",
+        projectId: null,
+        projectName: null,
+        dueOn: null,
+        isOverdue: false,
+        ownerLabel: null,
+        badge: interrupted
+          ? { label: "Run interrupted", tone: "warning" }
+          : { label: "Run stopped reporting", tone: "warning" },
+        detail: [
+          humanizeStatus(asString(row.engine_key)),
+          interrupted ? stageError : stalenessMessage(liveness),
+        ].filter(Boolean).join(" · "),
+        href: modelHref(asString(row.model_id)),
+        dedupKey: null,
+      } satisfies MyWorkItem];
+    }),
+};
+
+/** The county run state a failed dispatch or worker attempt leaves (20260824000005). */
+const FAILED_COUNTY_RUN_STATUS = "failed";
+
+const failedCountyRunsSource: MyWorkSource = {
+  id: "failed_county_runs",
+  label: "Failed county runs",
+  readLabel: "county runs",
+  block: "needs_review",
+  table: "county_runs",
+  // One row per county run; enqueue_status is its current attempt, so a re-run
+  // replaces the failure. The codebase has no stall threshold for county runs,
+  // so a silent `running` row is not called stopped here.
+  select: "id, run_name, geography_label, enqueue_status, worker_dispatch_error, updated_at",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "updated_at",
+  orderAscending: false,
+  staticFilters: [{ kind: "eq", column: "enqueue_status", value: FAILED_COUNTY_RUN_STATUS }],
+  toItems: (rows, { timeZone }) =>
+    rows.map((row) => ({
+      sourceId: "failed_county_runs",
+      block: "needs_review",
+      id: String(row.id),
+      title: asString(row.run_name) ?? "(unnamed county run)",
+      projectId: null,
+      projectName: null,
+      dueOn: null,
+      isOverdue: false,
+      ownerLabel: null,
+      badge: { label: "County run failed", tone: "danger" },
+      detail: [
+        asString(row.geography_label),
+        asString(row.updated_at) ? `failed ${formatWorkDeadlineDate(asString(row.updated_at), timeZone)}` : null,
+        asString(row.worker_dispatch_error) ?? "No cause recorded. Open the run to see how far it got.",
+      ].filter(Boolean).join(" · "),
+      href: `/county-runs/${String(row.id)}`,
+      dedupKey: null,
+    } satisfies MyWorkItem)),
+};
+
+/**
+ * The latest processing job per mission, so a failure that a later job
+ * replaced is not listed. Rows arrive newest first, as in `collapseToHeldGates`.
+ */
+function latestJobPerMission(rows: Array<Record<string, unknown>>): Array<Record<string, unknown>> {
+  const latest = new Map<string, Record<string, unknown>>();
+  for (const row of rows) {
+    const missionId = asString(row.mission_id);
+    if (missionId && !latest.has(missionId)) latest.set(missionId, row);
+  }
+  return [...latest.values()];
+}
+
+const aerialProcessingSource: MyWorkSource = {
+  id: "aerial_processing",
+  label: "Aerial processing",
+  readLabel: "aerial processing jobs",
+  block: "needs_review",
+  table: "aerial_processing_jobs",
+  select:
+    "id, mission_id, project_id, status, progress, message, dispatch_error, last_callback_at, created_at, aerial_missions(id, title)",
+  // This table carries its own workspace_id (20260721000001).
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "created_at",
+  orderAscending: false,
+  staticFilters: [],
+  // Job history, not only failures: the latest job per mission decides.
+  readLimit: (limitPerSource) => Math.max(limitPerSource * 10, 200),
+  toItems: (rows, { now, limitPerSource }) => {
+    // The mission page's own reporting window.
+    const silenceMinutes = resolveAerialProcessingSilenceMinutes(process.env.OPENPLAN_AERIAL_PROCESSING_SILENCE_MINUTES);
+    return latestJobPerMission(rows)
+      .flatMap((row) => {
+        const summary = summarizeAerialProcessingJob(
+          {
+            status: asString(row.status) ?? "",
+            progress: (row.progress ?? null) as number | string | null,
+            message: asString(row.message),
+            dispatch_error: asString(row.dispatch_error),
+            last_callback_at: asString(row.last_callback_at),
+            created_at: asString(row.created_at),
+          },
+          { now, silenceMinutes },
+        );
+        if (summary.liveness !== "failed" && summary.liveness !== "silent") return [];
+        const mission = embedded(row.aerial_missions);
+        const missionId = asString(row.mission_id);
+        return [{
+          sourceId: "aerial_processing",
+          block: "needs_review",
+          id: String(row.id),
+          title: asString(mission?.title) ?? "(untitled mission)",
+          projectId: asString(row.project_id),
+          projectName: null,
+          dueOn: null,
+          isOverdue: false,
+          ownerLabel: null,
+          badge: summary.liveness === "failed"
+            ? { label: summary.status === "dispatch_failed" ? "Processing never started" : "Processing failed", tone: "danger" }
+            : { label: "Processing stopped reporting", tone: "warning" },
+          detail: summary.liveness === "failed" ? summary.failureDetail : summary.livenessDetail,
+          href: missionId ? `/aerial/missions/${missionId}` : "/aerial",
+          dedupKey: null,
+        } satisfies MyWorkItem];
+      })
+      .slice(0, limitPerSource);
+  },
+};
+
 const narrativeDraftsSource: MyWorkSource = {
   id: "narrative_drafts",
   label: "Drafts awaiting review",
@@ -1033,7 +1218,7 @@ const awardObligationsSource: MyWorkSource = {
   block: "workspace_deadlines",
   table: "legacy_calendar_funding_awards",
   select:
-    "id, project_id, title, obligation_due_at, spending_status, closure_basis, risk_flag, projects!inner(id, name)",
+    "id, project_id, title, obligation_due_at, spending_status, closure_basis, closed_at, risk_flag, projects!inner(id, name)",
   workspaceFilterColumn: "workspace_id",
   assigneeColumn: null,
   orderColumn: "obligation_due_at",
@@ -1043,13 +1228,24 @@ const awardObligationsSource: MyWorkSource = {
     { kind: "notNull", column: "obligation_due_at" },
   ],
   toItems: (rows, { now, timeZone }) =>
-    rows.map((row) => {
+    rows.flatMap((row) => {
       const project = embedded(row.projects);
       const dueOn = asString(row.obligation_due_at);
-      const overdue = isDeadlinePast(dueOn, now);
       const risk = asString(row.risk_flag);
-      const review = fundingAwardObligationReview(asString(row.spending_status), asString(row.closure_basis));
-      return {
+      // The digest applies the same rule (`fundingAwardObligationStanding`).
+      const standing = fundingAwardObligationStanding(
+        {
+          spendingStatus: asString(row.spending_status),
+          closureBasis: asString(row.closure_basis),
+          closedAt: asString(row.closed_at),
+          obligationDueAt: dueOn,
+        },
+        now,
+      );
+      if (standing.state === "closed_before_deadline") return [];
+      const overdue = standing.pastDue;
+      const review = standing.state === "review" ? standing.sentence : null;
+      return [{
         sourceId: "award_obligations",
         block: "workspace_deadlines",
         id: String(row.id),
@@ -1059,7 +1255,9 @@ const awardObligationsSource: MyWorkSource = {
         dueOn,
         isOverdue: overdue,
         ownerLabel: null,
-        badge: review ? { label: "Review obligation", tone: "warning" } : deadlineBadge("Obligation", overdue),
+        badge: review
+          ? { label: overdue ? "Obligation date passed" : "Review obligation", tone: "warning" }
+          : deadlineBadge("Obligation", overdue),
         detail: [
           review ? `Recorded obligation deadline ${formatWorkDeadlineDate(dueOn, timeZone)}. ${review}` : `Funds must be obligated by ${formatWorkDeadlineDate(dueOn, timeZone)}`,
           risk && risk !== "none" ? `risk flag: ${risk}` : null,
@@ -1069,7 +1267,7 @@ const awardObligationsSource: MyWorkSource = {
         href: projectHref(asString(row.project_id), "project-funding-opportunities"),
         // A milestone cannot replace the closure evidence warning.
         dedupKey: review ? null : `award:${String(row.id)}`,
-      } satisfies MyWorkItem;
+      } satisfies MyWorkItem];
     }),
 };
 
@@ -1141,6 +1339,9 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   stageGateHoldsSource,
   engagementModerationSource,
   failedModelRunsSource,
+  stalledModelRunsSource,
+  failedCountyRunsSource,
+  aerialProcessingSource,
   narrativeDraftsSource,
   decisionPackageReviewsSource,
   landUsePlanActionsSource,
