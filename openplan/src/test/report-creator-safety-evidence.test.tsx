@@ -72,8 +72,11 @@ describe("ReportCreator Safety evidence", () => {
 
     const select = screen.getByLabelText("Crash evidence");
     expect(select).toHaveValue("");
+    // With nothing chosen there is nothing for "opens with ... selected" to name.
+    expect(screen.queryByText(/opens with this crash pull selected/)).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: /Statewide crash file · 40 reported/ })).toBeInTheDocument();
     fireEvent.change(select, { target: { value: "ingest-1" } });
+    expect(screen.getByText(/opens with this crash pull selected/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /create report/i }));
 
     await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));

@@ -447,9 +447,11 @@ export function ReportCreator({
                           </option>
                         ))}
                       </select>
-                      <p className="text-xs leading-relaxed text-muted-foreground">
-                        The report opens with it selected. Save it there before generating.
-                      </p>
+                      {flowState.values.safetyIngestId ? (
+                        <p className="text-xs leading-relaxed text-muted-foreground">
+                          The report opens with this crash pull selected. Save it there before generating.
+                        </p>
+                      ) : null}
                     </>
                   ) : (
                     <p className="text-xs leading-relaxed text-muted-foreground">

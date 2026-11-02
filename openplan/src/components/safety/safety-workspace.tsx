@@ -1599,7 +1599,7 @@ export function SafetyWorkspace({
                     total over a different scope; each says its own. */}
                 <p>
                   <span className="font-medium" data-testid="safety-ksi-headline-label">
-                    <span>{ksiTotal.toLocaleString("en-US")} fatal or serious-injury crashes</span>{" "}
+                    <span>{ksiTotal.toLocaleString("en-US")} fatal or serious-injury {ksiTotal === 1 ? "crash" : "crashes"}</span>{" "}
                     <span>({crashAreaScope} · all your filters)</span>
                   </span>{" "}
                   <span className="text-muted-foreground">
