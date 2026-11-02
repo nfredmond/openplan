@@ -10,16 +10,14 @@ import {
 } from "@/lib/cartographic/traffic-volume-classes";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
-// Both accepted env names, resolved through the shared helper — see the note in
-// safety-crash-map.tsx. Reading one name while the rest of the app reads either
-// makes token configuration silently partial.
-const MAPBOX_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+// The shared engine choice: Mapbox with a public key (either env name), else
+// MapLibre with the operator's open style, else the notice below.
+const MAP_ENGINE = deploymentMapEngine();
 
 // The assignment network is fetched asynchronously, so the map has to exist
 // before its extent is known. It opens on the shared neutral view and then
@@ -69,6 +67,8 @@ export function TrafficVolumeMap({
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // The browser could not start the map library (no WebGL), or MapLibre never arrived.
+  const [cannotStart, setCannotStart] = useState(false);
   const [stats, setStats] = useState<{
     totalLinks: number;
     /** Links that existed before the route kept only the busiest ones. */
@@ -88,143 +88,156 @@ export function TrafficVolumeMap({
       return;
     }
 
-    if (!MAPBOX_TOKEN) {
-      setError("Mapbox token not configured");
+    // No engine: the notice below replaces the map.
+    if (MAP_ENGINE.kind === "none") return;
+
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/dark-v11") as string,
+        center: CONTINENTAL_US_CENTER,
+        zoom: INITIAL_ZOOM,
+        attributionControl: false,
+      });
+
+      mapRef.current = map;
+      // This map can be built inside a closed tab, where its container has no
+      // size. Re-measure when the tab opens.
+      const stopSizing = keepMapSizedToContainer(map, container);
+
+      map.addControl(new gl.NavigationControl(), "top-right");
+      // The style's own sources are credited: Mapbox and OpenStreetMap on a key,
+      // whatever the operator's style declares on MapLibre.
+      map.addControl(
+        new gl.AttributionControl({ compact: true }),
+        "bottom-right"
+      );
+
+      // Bound at construction, so it cannot miss the event.
+      map.on("load", async () => {
+        try {
+          const res = await fetch(geojsonUrl);
+          if (!res.ok) throw new Error(`Failed to load volume data: ${res.status}`);
+          const geojson = await res.json();
+
+          const maxVol = geojson.metadata?.maxVolume ?? 5000;
+          const available = Number(geojson.metadata?.linksAvailable);
+          setStats({
+            totalLinks: geojson.features?.length ?? 0,
+            linksAvailable: Number.isFinite(available) ? available : null,
+            maxVolume: maxVol,
+          });
+
+          map.addSource("traffic-volumes", {
+            type: "geojson",
+            data: geojson,
+          });
+
+          // Frame the network that actually loaded. Without this the results
+          // map would sit at whatever view it was constructed with, which for
+          // any network outside that view means the run renders off-screen and
+          // reads as "no results".
+          const bounds = new gl.LngLatBounds();
+          for (const feature of (geojson.features ?? []) as Array<{ geometry?: { coordinates?: unknown } }>) {
+            extendBoundsWithCoordinates(bounds, feature.geometry?.coordinates);
+          }
+          if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, { padding: NETWORK_FIT_PADDING, duration: 0 });
+          }
+
+          // Shadow/glow layer for depth
+          map.addLayer({
+            id: "traffic-volumes-glow",
+            type: "line",
+            source: "traffic-volumes",
+            paint: {
+              "line-color": "#000",
+              // Two pixels wider than the line, at every class.
+              "line-width": ["+", trafficVolumeWidth(), 2],
+              "line-opacity": 0.3,
+              "line-blur": 3,
+            },
+          });
+
+          // Main volume layer
+          map.addLayer({
+            id: "traffic-volumes-line",
+            type: "line",
+            source: "traffic-volumes",
+            paint: {
+              "line-color": trafficVolumeColor(),
+              "line-width": trafficVolumeWidth(),
+              "line-opacity": 0.85,
+            },
+            layout: {
+              "line-cap": "round",
+              "line-join": "round",
+            },
+          });
+
+          // Hover interaction
+          const popup = new gl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            maxWidth: "280px",
+          });
+
+          map.on("mouseenter", "traffic-volumes-line", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+
+          map.on("mouseleave", "traffic-volumes-line", () => {
+            map.getCanvas().style.cursor = "";
+            popup.remove();
+          });
+
+          map.on("mousemove", "traffic-volumes-line", (e) => {
+            if (!e.features?.[0]) return;
+            const props = e.features[0].properties ?? {};
+            const name = props.name || props.link_type || "Road segment";
+
+            popup
+              .setLngLat(e.lngLat)
+              .setHTML(
+                `<div style="font-family:system-ui;font-size:13px;line-height:1.5">
+                  <strong>${name}</strong><br/>
+                  <span style="color:${trafficVolumeClass(Number(props.pce_tot)).color}">●</span> Volume: <strong>${Number(props.pce_tot).toLocaleString("en-US")}</strong> PCE/day<br/>
+                  <span style="font-size:11px;color:#888">
+                    AB: ${Number(props.pce_ab).toLocaleString("en-US")} · BA: ${Number(props.pce_ba).toLocaleString("en-US")}<br/>
+                    V/C: ${props.voc_max} · Delay: ${props.delay_factor}x
+                  </span>
+                </div>`
+              )
+              .addTo(map);
+          });
+
+          setLoading(false);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Failed to load data");
+          setLoading(false);
+        }
+      });
+
+      return () => {
+        stopSizing();
+        map.remove();
+        mapRef.current = null;
+      };
+    }, () => {
+      setCannotStart(true);
       setLoading(false);
-      return;
-    }
-
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-
-    const map = new mapboxgl.Map({
-      container,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: CONTINENTAL_US_CENTER,
-      zoom: INITIAL_ZOOM,
-      attributionControl: false,
     });
-
-    mapRef.current = map;
-    // This map can be built inside a closed tab, where its container has no
-    // size. Re-measure when the tab opens.
-    const stopSizing = keepMapSizedToContainer(map, container);
-
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.addControl(
-      new mapboxgl.AttributionControl({ compact: true }),
-      "bottom-right"
-    );
-
-    map.on("load", async () => {
-      try {
-        const res = await fetch(geojsonUrl);
-        if (!res.ok) throw new Error(`Failed to load volume data: ${res.status}`);
-        const geojson = await res.json();
-
-        const maxVol = geojson.metadata?.maxVolume ?? 5000;
-        const available = Number(geojson.metadata?.linksAvailable);
-        setStats({
-          totalLinks: geojson.features?.length ?? 0,
-          linksAvailable: Number.isFinite(available) ? available : null,
-          maxVolume: maxVol,
-        });
-
-        map.addSource("traffic-volumes", {
-          type: "geojson",
-          data: geojson,
-        });
-
-        // Frame the network that actually loaded. Without this the results
-        // map would sit at whatever view it was constructed with, which for
-        // any network outside that view means the run renders off-screen and
-        // reads as "no results".
-        const bounds = new mapboxgl.LngLatBounds();
-        for (const feature of (geojson.features ?? []) as Array<{ geometry?: { coordinates?: unknown } }>) {
-          extendBoundsWithCoordinates(bounds, feature.geometry?.coordinates);
-        }
-        if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, { padding: NETWORK_FIT_PADDING, duration: 0 });
-        }
-
-        // Shadow/glow layer for depth
-        map.addLayer({
-          id: "traffic-volumes-glow",
-          type: "line",
-          source: "traffic-volumes",
-          paint: {
-            "line-color": "#000",
-            // Two pixels wider than the line, at every class.
-            "line-width": ["+", trafficVolumeWidth(), 2],
-            "line-opacity": 0.3,
-            "line-blur": 3,
-          },
-        });
-
-        // Main volume layer
-        map.addLayer({
-          id: "traffic-volumes-line",
-          type: "line",
-          source: "traffic-volumes",
-          paint: {
-            "line-color": trafficVolumeColor(),
-            "line-width": trafficVolumeWidth(),
-            "line-opacity": 0.85,
-          },
-          layout: {
-            "line-cap": "round",
-            "line-join": "round",
-          },
-        });
-
-        // Hover interaction
-        const popup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          maxWidth: "280px",
-        });
-
-        map.on("mouseenter", "traffic-volumes-line", () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-
-        map.on("mouseleave", "traffic-volumes-line", () => {
-          map.getCanvas().style.cursor = "";
-          popup.remove();
-        });
-
-        map.on("mousemove", "traffic-volumes-line", (e) => {
-          if (!e.features?.[0]) return;
-          const props = e.features[0].properties ?? {};
-          const name = props.name || props.link_type || "Road segment";
-
-          popup
-            .setLngLat(e.lngLat)
-            .setHTML(
-              `<div style="font-family:system-ui;font-size:13px;line-height:1.5">
-                <strong>${name}</strong><br/>
-                <span style="color:${trafficVolumeClass(Number(props.pce_tot)).color}">●</span> Volume: <strong>${Number(props.pce_tot).toLocaleString("en-US")}</strong> PCE/day<br/>
-                <span style="font-size:11px;color:#888">
-                  AB: ${Number(props.pce_ab).toLocaleString("en-US")} · BA: ${Number(props.pce_ba).toLocaleString("en-US")}<br/>
-                  V/C: ${props.voc_max} · Delay: ${props.delay_factor}x
-                </span>
-              </div>`
-            )
-            .addTo(map);
-        });
-
-        setLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load data");
-        setLoading(false);
-      }
-    });
-
-    return () => {
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-    };
   }, [geojsonUrl]);
+
+  if (MAP_ENGINE.kind === "none" || cannotStart) {
+    return (
+      <MapUnavailableNotice
+        title="The traffic volume map can't be drawn here"
+        cause={cannotStart ? "cannot_start" : "not_set_up"}
+        unusableToken={MAP_ENGINE.kind === "none" && MAP_ENGINE.unusableToken}
+      />
+    );
+  }
 
   return (
     <div className="relative rounded-[0.5rem] border border-border/70 overflow-hidden bg-zinc-900">

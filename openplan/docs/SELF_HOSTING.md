@@ -30,13 +30,11 @@ public address does not change the CLI stack's status.
 The free reference path uses an existing Linux computer and
 [Docker Engine](https://docs.docker.com/engine/). Docker Desktop has separate
 terms: [government entities require a paid subscription](https://docs.docker.com/subscription-billing/desktop-license/).
-No paid provider is provisioned by these instructions. The public engagement
-map, the Safety crash map, Corridor Analysis, the engagement drawing and
-response maps, and the published land use designation map can use a configured
-MapLibre style without a Mapbox key. The RTP project map has a source candidate
-for the same configuration, pending runtime and browser validation. Other map
-surfaces still use Mapbox. See the map configuration below. This does not
-establish a complete no-egress installation.
+No paid provider is provisioned by these instructions. Every OpenPlan map can
+use a configured MapLibre style without a Mapbox key; a few Mapbox-only
+features (place search, the background picker and satellite imagery) are off
+without one. See the map configuration below. This does not establish a
+complete no-egress installation.
 
 OpenPlan's target remains core planning work throughout all 50 states and DC,
 with California the deepest implementation and separately validated AequilibraE
@@ -434,11 +432,25 @@ With no Mapbox key, these maps are drawn by MapLibre from a style you choose:
 - the published land use designation map on published plans, plan reviews and
   land use reports;
 - the RTP cycle project map on staff cycle pages and `/plan/<shareToken>`
-  (source candidate; runtime and browser validation pending).
+  (source candidate; runtime and browser validation pending);
+- the saved project map on project pages;
+- the shell map on the Aerial index, the aerial mission map, the mission area
+  editor and the flight plan editor;
+- the traffic volume and model agreement maps on model runs;
+- the participation heat map in campaign analysis;
+- the extent preview in GIS layer import, drawn on a small fixed map because
+  MapLibre has no static image service.
 
 October 19 source checks pass 44 focused RTP tests and strict scoped lint.
 The tests use map doubles. Browser behavior, emitted worker/CSS assets, WebGL
 and provider operation remain unverified.
+
+The maps added on November 2 (Aerial, flight plan, traffic volume, model
+agreement, participation heat map and GIS import preview) pass focused tests
+with map doubles. In a development build with no Mapbox key and the OpenFreeMap
+Liberty style, the heat map and the GIS import preview drew with their credits
+at 1440px and 390px. The other maps in that group have not been opened in a
+browser.
 
 Set `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` and rebuild, since `NEXT_PUBLIC_*`
 values are fixed at build time. A Mapbox key, when set, takes precedence. Each
@@ -457,10 +469,11 @@ What still needs a Mapbox key:
 - The background picker (streets, satellite, terrain), on the public map and on
   Safety. Its backgrounds are Mapbox styles. Without a key there is no picker
   and the map uses your one style.
-- The shell map on the Aerial index, the Aerial mission maps and flight plan
-  editor, the traffic volume and model agreement maps, the participation heat
-  map, and the static preview in GIS layer import. The RTP candidate above
-  remains pending validation.
+- Satellite imagery under the aerial mission map. Without a key the imagery
+  sits on your style, and the map says it has no satellite background.
+- Separate light and dark backgrounds on the Aerial index shell map. Your style
+  is used in both modes.
+- Transit cluster counts on the shell map, when your style serves no fonts.
 
 On Corridor Analysis your style is used in both light and dark mode; with a key
 the map follows the page's mode. Labels for uploaded workspace layers and land

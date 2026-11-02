@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,13 +14,11 @@ import {
   type AoiSeedSource,
 } from "@/lib/aerial/aoi-seed";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
 import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+/** Mapbox with a public key, else MapLibre with the operator's open style. */
+const MAP_ENGINE = deploymentMapEngine();
 
 /** Zoom for an existing AOI's first paint, before fitBounds frames its ring. */
 const EXISTING_AOI_ZOOM = 10;
@@ -67,6 +66,8 @@ export function MissionAoiEditor({
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  // The browser could not start the map library (no WebGL), or MapLibre never arrived.
+  const [cannotStart, setCannotStart] = useState(false);
   const [vertices, setVertices] = useState<[number, number][]>(() =>
     initialPolygon && initialPolygon.coordinates[0]
       ? dropClosingVertex(initialPolygon.coordinates[0])
@@ -204,99 +205,100 @@ export function MissionAoiEditor({
   };
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
-
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    const container = mapContainerRef.current;
+    if (!container || mapRef.current || MAP_ENGINE.kind === "none") return;
 
     // An existing AOI seeds the first paint (the load handler then fits to its
     // bbox); a mission without one opens neutral rather than on a guess.
     const center = initialPolygon ? polygonCenter(initialPolygon.coordinates[0] ?? []) : null;
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: center ?? CONTINENTAL_US_CENTER,
-      zoom: center ? EXISTING_AOI_ZOOM : NEUTRAL_ZOOM,
-      attributionControl: false,
-    });
-
-    // The wrapping <div> is the single keyboard widget; pan/zoom comes from
-    // our handler so there is no duplicate tab stop or double-handled key.
-    map.keyboard.disable();
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    // Mapbox and OpenStreetMap require visible attribution on every map.
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
-
-    map.on("load", () => {
-      const canvas = map.getCanvas();
-      canvas.setAttribute("tabindex", "-1");
-      canvas.setAttribute("aria-hidden", "true");
-
-      // The shape as it stands NOW, through the refs. An existing AOI is in
-      // state from the first render, and the update effect below cannot draw it
-      // before this source exists; drawing an empty preview here left a saved
-      // area off the map until the planner changed it.
-      map.addSource("aoi-preview", {
-        type: "geojson",
-        data: buildPreviewFeatureCollection(verticesRef.current, statusRef.current),
-      });
-      map.addLayer({
-        id: "aoi-preview-fill",
-        type: "fill",
-        source: "aoi-preview",
-        paint: { "fill-color": "#38bdf8", "fill-opacity": 0.2 },
-        filter: ["==", ["geometry-type"], "Polygon"],
-      });
-      map.addLayer({
-        id: "aoi-preview-outline",
-        type: "line",
-        source: "aoi-preview",
-        paint: { "line-color": "#38bdf8", "line-width": 2 },
-      });
-      map.addLayer({
-        id: "aoi-preview-points",
-        type: "circle",
-        source: "aoi-preview",
-        paint: {
-          "circle-radius": 4,
-          "circle-color": "#38bdf8",
-          "circle-stroke-color": "#0f172a",
-          "circle-stroke-width": 1.5,
-        },
-        filter: ["==", ["geometry-type"], "Point"],
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/dark-v11") as string,
+        center: center ?? CONTINENTAL_US_CENTER,
+        zoom: center ? EXISTING_AOI_ZOOM : NEUTRAL_ZOOM,
+        attributionControl: false,
       });
 
-      if (initialPolygon && initialPolygon.coordinates[0]) {
-        const bbox = polygonBbox(initialPolygon.coordinates[0]);
-        if (bbox) {
-          map.fitBounds(bbox, { padding: 48, duration: 0 });
+      // The wrapping <div> is the single keyboard widget; pan/zoom comes from
+      // our handler so there is no duplicate tab stop or double-handled key.
+      map.keyboard.disable();
+      map.addControl(new gl.NavigationControl({ showCompass: false }), "top-right");
+      // Mapbox, OpenStreetMap and any open style's sources require visible attribution.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+
+      map.on("load", () => {
+        const canvas = map.getCanvas();
+        canvas.setAttribute("tabindex", "-1");
+        canvas.setAttribute("aria-hidden", "true");
+
+        // The shape as it stands NOW, through the refs. An existing AOI is in
+        // state from the first render, and the update effect below cannot draw it
+        // before this source exists; drawing an empty preview here left a saved
+        // area off the map until the planner changed it.
+        map.addSource("aoi-preview", {
+          type: "geojson",
+          data: buildPreviewFeatureCollection(verticesRef.current, statusRef.current),
+        });
+        map.addLayer({
+          id: "aoi-preview-fill",
+          type: "fill",
+          source: "aoi-preview",
+          paint: { "fill-color": "#38bdf8", "fill-opacity": 0.2 },
+          filter: ["==", ["geometry-type"], "Polygon"],
+        });
+        map.addLayer({
+          id: "aoi-preview-outline",
+          type: "line",
+          source: "aoi-preview",
+          paint: { "line-color": "#38bdf8", "line-width": 2 },
+        });
+        map.addLayer({
+          id: "aoi-preview-points",
+          type: "circle",
+          source: "aoi-preview",
+          paint: {
+            "circle-radius": 4,
+            "circle-color": "#38bdf8",
+            "circle-stroke-color": "#0f172a",
+            "circle-stroke-width": 1.5,
+          },
+          filter: ["==", ["geometry-type"], "Point"],
+        });
+
+        if (initialPolygon && initialPolygon.coordinates[0]) {
+          const bbox = polygonBbox(initialPolygon.coordinates[0]);
+          if (bbox) {
+            map.fitBounds(bbox, { padding: 48, duration: 0 });
+          }
         }
-      }
-    });
+      });
 
-    map.on("click", (event) => {
-      commitVertex([
-        Number(event.lngLat.lng.toFixed(6)),
-        Number(event.lngLat.lat.toFixed(6)),
-      ]);
-    });
+      map.on("click", (event) => {
+        commitVertex([
+          Number(event.lngLat.lng.toFixed(6)),
+          Number(event.lngLat.lat.toFixed(6)),
+        ]);
+      });
 
-    map.on("dblclick", (event) => {
-      event.preventDefault();
-      closePolygon();
-    });
+      map.on("dblclick", (event) => {
+        event.preventDefault();
+        closePolygon();
+      });
 
-    map.on("contextmenu", (event) => {
-      event.preventDefault();
-      undo();
-    });
+      map.on("contextmenu", (event) => {
+        event.preventDefault();
+        undo();
+      });
 
-    mapRef.current = map;
+      mapRef.current = map;
 
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
+      return () => {
+        map.remove();
+        mapRef.current = null;
+      };
+    }, () => setCannotStart(true));
     // Handlers read state via refs, so a single registration is safe.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -412,9 +414,13 @@ export function MissionAoiEditor({
     }
   };
 
-  if (!MAPBOX_ACCESS_TOKEN) {
+  if (MAP_ENGINE.kind === "none" || cannotStart) {
     return (
-      <MapUnavailableNotice title="The mission area can't be drawn here" />
+      <MapUnavailableNotice
+        title="The mission area can't be drawn here"
+        cause={cannotStart ? "cannot_start" : "not_set_up"}
+        unusableToken={MAP_ENGINE.kind === "none" && MAP_ENGINE.unusableToken}
+      />
     );
   }
 

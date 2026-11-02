@@ -6,7 +6,7 @@
  * TWO LAYERS, EACH WITH A TOGGLE AND A STATED ABSENCE:
  *
  *   * The ORTHOMOSAIC PREVIEW: a worker-produced PNG held in OpenPlan's own
- *     custody, drawn as a Mapbox image source at the WGS84 bounds the worker
+ *     custody, drawn as an image source at the WGS84 bounds the worker
  *     read from the GeoTIFF's own tags. The server loader
  *     (`lib/aerial/ortho-preview.ts`) decided whether one may be drawn; this
  *     component receives EITHER a preview or the loader's refusal sentence and
@@ -19,8 +19,9 @@
  * it is empty; a failed fetch renders as a failure, never as "no photos"; a
  * bounds rectangle is re-validated HERE before the layer mounts, because a map
  * that draws whatever it is handed will eventually paint an image over a
- * continent; and a deployment with no Mapbox key is told its key is missing
- * rather than shown a blank box.
+ * continent; and a deployment with no map engine is told so rather than shown
+ * a blank box. Without a Mapbox key the map draws on the operator's open
+ * style, which has no satellite imagery, and says so.
  *
  * MEASUREMENT IS DEFERRED, and the card says so where a user would look for
  * it: the preview is a rendering for orientation, and measuring belongs in GIS
@@ -30,26 +31,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { Map as MapIcon } from "lucide-react";
 
-import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
 import { extractArtifactGeoref } from "@/lib/aerial/artifact-custody";
 import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
 import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { useAerialOrthoLayers } from "@/components/cartographic/aerial-ortho-layer-context";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
-
-const HAS_UNUSABLE_MAPBOX_TOKEN =
-  hasInvalidPublicMapboxToken(
-    process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-    process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-  ) && !MAPBOX_ACCESS_TOKEN;
+/**
+ * Mapbox with a public key, else MapLibre with the operator's open style. The
+ * satellite background is a Mapbox style, so on MapLibre the imagery sits on
+ * the operator's street style and the map says so.
+ */
+const MAP_ENGINE = deploymentMapEngine();
+const MAPBOX_SATELLITE_STYLE = "mapbox://styles/mapbox/satellite-streets-v12";
 
 const ORTHO_SOURCE_ID = "aerial-mission-ortho-preview";
 const ORTHO_LAYER_ID = "aerial-mission-ortho-preview-layer";
@@ -169,6 +168,17 @@ export function photoPointsFromImageryPayload(payload: unknown): {
   return { points, withoutLocation };
 }
 
+function photoFeatureCollection(points: PhotoPoint[]): GeoJSON.FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: points.map((point) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [point.lon, point.lat] },
+      properties: { filename: point.filename ?? "" },
+    })),
+  };
+}
+
 /**
  * The preview's bounds, re-validated with the same shared validator the
  * callback used, or null. Exported so a test can prove a hostile rectangle is
@@ -252,144 +262,141 @@ export function AerialMissionMap({
     containerRef.current = node;
   }, []);
 
+  // What the map draws, read when its style lands rather than when the effect
+  // ran. MapLibre arrives a moment after the effect, and Mapbox's `load` can
+  // follow a photo read that finished first; either way the map draws what is
+  // on the page now, not what was there when it was built.
+  const latestDrawRef = useRef({ area, bounds, preview, photoPoints, showOrtho, showPhotos, showArea });
   useEffect(() => {
-    if (!MAPBOX_ACCESS_TOKEN) return;
+    latestDrawRef.current = { area, bounds, preview, photoPoints, showOrtho, showPhotos, showArea };
+  }, [area, bounds, preview, photoPoints, showOrtho, showPhotos, showArea]);
+
+  useEffect(() => {
+    if (MAP_ENGINE.kind === "none") return;
     if (!hasSomethingToDraw) return;
     const container = containerRef.current;
     if (!container || mapRef.current) return;
+    const style = styleForEngine(MAP_ENGINE, MAPBOX_SATELLITE_STYLE);
+    if (!style) return;
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
-    let map: mapboxgl.Map;
-    try {
-      map = new mapboxgl.Map({
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
         container,
-        style: "mapbox://styles/mapbox/satellite-streets-v12",
+        style,
         attributionControl: false,
       });
-    } catch {
-      setMapStartupFailed(true);
-      return;
-    }
 
-    mapRef.current = map;
-    // The mission page's Map tab sizes this canvas to the window, so it changes
-    // size with the window; and it sits in a tab, which the guard requires.
-    const stopSizing = keepMapSizedToContainer(map, container);
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+      mapRef.current = map;
+      // The mission page's Map tab sizes this canvas to the window, so it changes
+      // size with the window; and it sits in a tab, which the guard requires.
+      const stopSizing = keepMapSizedToContainer(map, container);
+      map.addControl(new gl.NavigationControl({ showCompass: false }), "top-right");
+      // The style's own sources are credited: Mapbox and OpenStreetMap on a key,
+      // whatever the operator's style declares on MapLibre.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
 
-    map.on("load", () => {
-      styleLoadedRef.current = true;
+      // Bound at construction, so it cannot miss the event.
+      map.on("load", () => {
+        const { area, bounds, preview, photoPoints, showOrtho, showPhotos, showArea } = latestDrawRef.current;
+        const visibility = (shown: boolean) => (shown ? "visible" : "none");
 
-      if (area) {
-        map.addSource(AREA_SOURCE_ID, {
-          type: "geojson",
-          data: { type: "Feature", geometry: area, properties: {} } as GeoJSON.Feature,
-        });
-        // The fill goes under any imagery so it never tints the orthomosaic.
+        if (area) {
+          map.addSource(AREA_SOURCE_ID, {
+            type: "geojson",
+            data: { type: "Feature", geometry: area, properties: {} } as GeoJSON.Feature,
+          });
+          // The fill goes under any imagery so it never tints the orthomosaic.
+          map.addLayer({
+            id: AREA_FILL_LAYER_ID,
+            type: "fill",
+            source: AREA_SOURCE_ID,
+            layout: { visibility: visibility(showArea) },
+            paint: { "fill-color": AREA_COLOR, "fill-opacity": 0.12 },
+          });
+        }
+
+        if (bounds && preview) {
+          const [west, south, east, north] = bounds;
+          map.addSource(ORTHO_SOURCE_ID, {
+            type: "image",
+            url: preview.url,
+            coordinates: [
+              [west, north],
+              [east, north],
+              [east, south],
+              [west, south],
+            ],
+          });
+          map.addLayer({
+            id: ORTHO_LAYER_ID,
+            type: "raster",
+            source: ORTHO_SOURCE_ID,
+            layout: { visibility: visibility(showOrtho) },
+            paint: { "raster-opacity": 0.92, "raster-fade-duration": 0 },
+          });
+        }
+
+        if (area) {
+          // The outline goes over the imagery, so the area reads on top of it.
+          map.addLayer({
+            id: AREA_LINE_LAYER_ID,
+            type: "line",
+            source: AREA_SOURCE_ID,
+            layout: { visibility: visibility(showArea) },
+            paint: { "line-color": AREA_COLOR, "line-width": 2 },
+          });
+        }
+
+        map.addSource(PHOTOS_SOURCE_ID, { type: "geojson", data: photoFeatureCollection(photoPoints) });
         map.addLayer({
-          id: AREA_FILL_LAYER_ID,
-          type: "fill",
-          source: AREA_SOURCE_ID,
-          paint: { "fill-color": AREA_COLOR, "fill-opacity": 0.12 },
+          id: PHOTOS_LAYER_ID,
+          type: "circle",
+          source: PHOTOS_SOURCE_ID,
+          layout: { visibility: visibility(showPhotos) },
+          paint: {
+            "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 16, 6],
+            "circle-color": PHOTO_DOT_COLOR,
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 1,
+            "circle-opacity": 0.9,
+          },
         });
-      }
+        styleLoadedRef.current = true;
 
-      if (bounds) {
-        const [west, south, east, north] = bounds;
-        map.addSource(ORTHO_SOURCE_ID, {
-          type: "image",
-          url: preview!.url,
-          coordinates: [
-            [west, north],
-            [east, north],
-            [east, south],
-            [west, south],
-          ],
-        });
-        map.addLayer({
-          id: ORTHO_LAYER_ID,
-          type: "raster",
-          source: ORTHO_SOURCE_ID,
-          paint: { "raster-opacity": 0.92, "raster-fade-duration": 0 },
-        });
-      }
-
-      if (area) {
-        // The outline goes over the imagery, so the area reads on top of it.
-        map.addLayer({
-          id: AREA_LINE_LAYER_ID,
-          type: "line",
-          source: AREA_SOURCE_ID,
-          paint: { "line-color": AREA_COLOR, "line-width": 2 },
-        });
-      }
-
-      map.addSource(PHOTOS_SOURCE_ID, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: photoPoints.map((point) => ({
-            type: "Feature",
-            geometry: { type: "Point", coordinates: [point.lon, point.lat] },
-            properties: { filename: point.filename ?? "" },
-          })),
-        } as GeoJSON.FeatureCollection,
+        // Frame the mission's own evidence: the ortho if placed, else its photos,
+        // and its area to fly either way. Never a place constant: everything
+        // framed here came from this mission.
+        const fit = new gl.LngLatBounds();
+        if (bounds) {
+          fit.extend([bounds[0], bounds[1]]);
+          fit.extend([bounds[2], bounds[3]]);
+        } else {
+          for (const point of photoPoints) fit.extend([point.lon, point.lat]);
+        }
+        for (const [lon, lat] of area?.coordinates[0] ?? []) fit.extend([lon, lat]);
+        if (!fit.isEmpty()) {
+          map.fitBounds(fit, { padding: 48, maxZoom: 18, duration: 0 });
+        }
       });
-      map.addLayer({
-        id: PHOTOS_LAYER_ID,
-        type: "circle",
-        source: PHOTOS_SOURCE_ID,
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 16, 6],
-          "circle-color": PHOTO_DOT_COLOR,
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 1,
-          "circle-opacity": 0.9,
-        },
-      });
 
-      // Frame the mission's own evidence: the ortho if placed, else its photos,
-      // and its area to fly either way. Never a place constant: everything
-      // framed here came from this mission.
-      const fit = new mapboxgl.LngLatBounds();
-      if (bounds) {
-        fit.extend([bounds[0], bounds[1]]);
-        fit.extend([bounds[2], bounds[3]]);
-      } else {
-        for (const point of photoPoints) fit.extend([point.lon, point.lat]);
-      }
-      for (const [lon, lat] of area?.coordinates[0] ?? []) fit.extend([lon, lat]);
-      if (!fit.isEmpty()) {
-        map.fitBounds(fit, { padding: 48, maxZoom: 18, duration: 0 });
-      }
-    });
-
-    return () => {
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-      styleLoadedRef.current = false;
-    };
+      return () => {
+        stopSizing();
+        map.remove();
+        mapRef.current = null;
+        styleLoadedRef.current = false;
+      };
+    }, () => setMapStartupFailed(true));
     // Rebuild only when whether-there-is-anything-to-draw flips; new photo data
     // rides in through the source-update effect below without a teardown.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasSomethingToDraw]);
 
-  // Carry later-arriving photo points into the live map.
+  // Carry later-arriving photo points into the live map. Before `load` there is
+  // no source, and the load handler draws from the ref instead.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !styleLoadedRef.current) return;
     const source = map.getSource(PHOTOS_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
-    source?.setData({
-      type: "FeatureCollection",
-      features: photoPoints.map((point) => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [point.lon, point.lat] },
-        properties: { filename: point.filename ?? "" },
-      })),
-    } as GeoJSON.FeatureCollection);
+    source?.setData(photoFeatureCollection(photoPoints));
   }, [photoPoints]);
 
   // Layer toggles — visibility only, never a data refetch.
@@ -450,8 +457,8 @@ export function AerialMissionMap({
         </ul>
       ) : null}
 
-      {!MAPBOX_ACCESS_TOKEN ? (
-        <MapUnavailableNotice unusableToken={HAS_UNUSABLE_MAPBOX_TOKEN}>
+      {MAP_ENGINE.kind === "none" ? (
+        <MapUnavailableNotice unusableToken={MAP_ENGINE.unusableToken}>
           {bounds ? (
             <p className="mt-1.5">
               This mission has a placed orthomosaic preview that would be drawn. Nothing about the
@@ -472,7 +479,7 @@ export function AerialMissionMap({
         <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">The map could not start in this browser</p>
           <p className="mt-1.5">
-            Mapbox needs WebGL. The mission&apos;s imagery is still available from the imagery panel
+            The map needs WebGL. The mission&apos;s imagery is still available from the imagery panel
             and the processing jobs list.
           </p>
         </div>
@@ -485,6 +492,10 @@ export function AerialMissionMap({
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        {/* The open style is a street map; satellite imagery is a Mapbox style. */}
+        {MAP_ENGINE.kind === "maplibre" && hasSomethingToDraw && !mapStartupFailed ? (
+          <span data-testid="aerial-mission-map-no-satellite">No satellite background on this installation.</span>
+        ) : null}
         {area ? (
           <label className="flex items-center gap-1.5">
             <input type="checkbox" checked={showArea} onChange={(event) => setShowArea(event.target.checked)} />

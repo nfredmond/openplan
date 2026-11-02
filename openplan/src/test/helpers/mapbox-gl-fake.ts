@@ -427,6 +427,20 @@ export class FakeMapboxMap {
     this.panByCalls.push(offset);
   }
 
+  /** Every `setPaintProperty` call, in order, so a test can read the last one. */
+  readonly paintPropertyCalls: Array<{ layerId: string; name: string; value: unknown }> = [];
+
+  setPaintProperty(layerId: string, name: string, value: unknown): void {
+    this.paintPropertyCalls.push({ layerId, name, value });
+  }
+
+  /** Writes into the registered layer's `layout`, where a test reads it back. */
+  setLayoutProperty(layerId: string, name: string, value: unknown): void {
+    const layer = this.layers.find((entry) => entry.id === layerId);
+    if (!layer) throw new Error(`The layer '${layerId}' does not exist in the map's style.`);
+    layer.spec = { ...layer.spec, layout: { ...(layer.spec.layout as Record<string, unknown> | undefined), [name]: value } };
+  }
+
   zoomIn(): void {}
   zoomOut(): void {}
   resize(): void {}
