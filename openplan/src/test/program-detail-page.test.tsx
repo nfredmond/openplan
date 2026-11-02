@@ -2,6 +2,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { pagingFake } from "./helpers/paging-fake";
+
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
   throw new Error("notFound");
@@ -93,6 +95,14 @@ const campaignsEqMock = vi.fn((column: string) => {
   throw new Error(`Unexpected engagement_campaigns eq column: ${column}`);
 });
 const campaignsSelectMock = vi.fn(() => ({ eq: campaignsEqMock, in: campaignsInMock }));
+
+// Paged, through a fake that slices like PostgREST and holds its 1,000-row cap.
+const engagementItemsFixtureMock = vi.fn();
+const engagementItemsPaging = pagingFake(() => engagementItemsFixtureMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 const fundingOpportunitiesProgramOrderMock = vi.fn();
 const fundingOpportunitiesWorkspaceOrderMock = vi.fn();
@@ -203,6 +213,9 @@ const fromMock = vi.fn((table: string) => {
   if (table === "model_links") {
     return { select: modelLinksSelectMock };
   }
+  if (table === "engagement_items") {
+    return { select: engagementItemsSelectMock };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -275,6 +288,8 @@ async function renderPage(tab?: ProgramTab) {
 describe("ProgramDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    engagementItemsPaging.reset();
+    engagementItemsFixtureMock.mockResolvedValue({ data: [], error: null });
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -389,6 +404,42 @@ describe("ProgramDetailPage", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The campaign's
+    comments were read in one request, so 1,234 approved comments showed as
+    1,000 and the 7 pending ones, which sort last, as none.
+  */
+  it("counts every comment on a linked campaign past the 1,000-row cap", async () => {
+    campaignsProjectOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "campaign-1",
+          project_id: "project-1",
+          title: "Corridor survey",
+          summary: null,
+          status: "active",
+          engagement_type: "comment_collection",
+          updated_at: "2026-03-28T20:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    engagementItemsFixtureMock.mockResolvedValue({
+      data: [
+        ...Array.from({ length: 1234 }, () => ({ campaign_id: "campaign-1", status: "approved" })),
+        ...Array.from({ length: 7 }, () => ({ campaign_id: "campaign-1", status: "pending" })),
+      ],
+      error: null,
+    });
+
+    await renderPage("linked");
+
+    expect(screen.getByText("1234 approved items")).toBeInTheDocument();
+    expect(screen.getByText("7 pending items")).toBeInTheDocument();
+    expect(engagementItemsPaging.calls[0]).toEqual(["select", "campaign_id, status"]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", ["campaign-1"]]);
   });
 
   it("keeps artifact-backed linked reports in refresh posture when report generated_at is null", async () => {

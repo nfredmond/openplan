@@ -3,6 +3,10 @@ import {pathToFileURL} from "node:url";
 import {resolve} from "node:path";
 import nextEnv from "@next/env";
 
+// The CLI package's own Node entry, run with this Node. The node_modules/.bin
+// shim is a shell script on Windows, which execFileSync cannot start.
+const SUPABASE_CLI=resolve("node_modules/supabase/dist/supabase.js");
+
 /** Refuse a different local stack before the first schema mutation. Never print status credentials.
  * @param {{apiUrl?: string, workdir?: string, run: (args: string[], privateOutput: boolean) => string | null}} input
  */
@@ -17,6 +21,6 @@ export function syncLocalDatabase({apiUrl,workdir,run}) {
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
   try {
     nextEnv.loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production");
-    syncLocalDatabase({apiUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,workdir:process.env.OPENPLAN_SUPABASE_WORKDIR,run:(args,privateOutput)=>execFileSync(resolve("node_modules/.bin/supabase"),args,{encoding:"utf8",stdio:privateOutput?["ignore","pipe","pipe"]:"inherit"})});
+    syncLocalDatabase({apiUrl:process.env.NEXT_PUBLIC_SUPABASE_URL,workdir:process.env.OPENPLAN_SUPABASE_WORKDIR,run:(args,privateOutput)=>execFileSync(process.execPath,[SUPABASE_CLI,...args],{encoding:"utf8",stdio:privateOutput?["ignore","pipe","pipe"]:"inherit"})});
   } catch(error) {console.error(error instanceof Error&&error.message.startsWith("Database mismatch:")?error.message:"Local migration sync refused. Check the application database and OPENPLAN_SUPABASE_WORKDIR; status credentials were withheld.");process.exitCode=1;}
 }

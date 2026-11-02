@@ -393,7 +393,7 @@ export function ProjectRecordComposer({
           </GuidedFlowRow>
           <div className="grid gap-4 sm:grid-cols-2">
             <GuidedFlowRow flow={flow} name="submittalAgency" label="Who reviews it?">
-              <Input {...flow.text("submittalAgency")} placeholder="Caltrans D3 Local Assistance" />
+              <Input {...flow.text("submittalAgency")} placeholder="Agency or office" />
             </GuidedFlowRow>
             <GuidedFlowRow flow={flow} name="submittalReferenceNumber" label="Their reference number">
               <Input {...flow.text("submittalReferenceNumber")} placeholder="INV-7 / EX-10-A" />

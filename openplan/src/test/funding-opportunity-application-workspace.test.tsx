@@ -1,5 +1,5 @@
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
-import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
+import { buildSafetySeedPreview, SS4A_SECTION_KEYS } from "@/lib/grants/ss4a-safety-seed";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -376,5 +376,39 @@ describe("FundingOpportunityApplicationWorkspace", () => {
 
     const patchCall = recordedCalls().find((call) => call.method === "PATCH");
     expect(patchCall?.body).toEqual({ status: "in_progress" });
+  });
+
+  async function exportWith(payload: Record<string, unknown>) {
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if ((init?.method ?? "GET") === "GET") return jsonResponse(200, payload);
+      if (init?.method === "POST" && url.endsWith("/application/export")) {
+        return jsonResponse(201, { export: { id: seedId(500) }, engineDisclosure: null, isDraftStamped: false, outstandingRequiredCount: 0, sha256: "a".repeat(64) });
+      }
+      throw new Error(`Unexpected fetch: ${init?.method} ${url}`);
+    });
+    render(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} />);
+    fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
+    await screen.findByRole("button", { name: /export application packet \(pdf\)/i });
+  }
+
+  it("lets the planner choose SS4A evidence appendices, all on by default, and sends the choice", async () => {
+    const ss4aSections = SS4A_SECTION_KEYS.map((key, index) => sectionRow({ id: seedId(10 + index), section_key: key, title: key, sort_order: index }));
+    await exportWith(applicationPayload({ sections: ss4aSections, attachments: [] }));
+    const boxes = screen.getAllByRole("checkbox").filter((box) => box.closest("[data-testid='export-appendices']"));
+    expect(boxes).toHaveLength(5);
+    expect(boxes.every((box) => (box as HTMLInputElement).checked)).toBe(true);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Benefit-cost summary" }));
+    fireEvent.click(screen.getByRole("button", { name: /export application packet \(pdf\)/i }));
+    await screen.findByText(`SHA-256 ${"a".repeat(64)}`);
+    const exportCall = recordedCalls().find((call) => call.method === "POST");
+    expect(exportCall?.body).toEqual({ appendices: ["hin_map", "crash_summary", "countermeasures", "engagement"] });
+  });
+
+  it("offers no appendix choice outside SS4A and posts without a body", async () => {
+    await exportWith(applicationPayload());
+    expect(screen.queryByTestId("export-appendices")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /export application packet \(pdf\)/i }));
+    await screen.findByText(`SHA-256 ${"a".repeat(64)}`);
+    expect(recordedCalls().find((call) => call.method === "POST")?.body).toBeNull();
   });
 });

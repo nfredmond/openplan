@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-10-18.1",
+  "registryVersion": "2026-11-01.1",
   "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
@@ -84,17 +84,17 @@
     {
       "id": "crash-source-registry",
       "path": "openplan/src/lib/safety/sources/registry.ts",
-      "sha256": "32c3689d27c7992399c402bd4d87e69523c929e560a9adefe85d27e330f59d8c"
+      "sha256": "d719ff645a51f79c25dabceae0a1235b0ea0bf1fa227550ea48081a9d7d31d2f"
     },
     {
       "id": "fars-source-adapter",
       "path": "openplan/src/lib/safety/sources/fars.ts",
-      "sha256": "4d320b3d367958e1dcb19a33b9e713c110ed1cfff15df6dccb2029036feeb784"
+      "sha256": "98879cd0f4ce4dd96e6ef95ace02efd985a104095765521f95b356f32af2a59b"
     },
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "366ec452b89aca3d4748207125012fea94f427402bfd766374f8e35946e2476a"
+      "sha256": "dc7d94f1648e33dae18c96f3d9bf98d8ca0d550ff89254ace1b948136912e3c0"
     },
     {
       "id": "grant-program-registry",
@@ -328,10 +328,10 @@
       "id": "US-PR/safety-analysis",
       "jurisdictionId": "US-PR",
       "jobId": "safety-analysis",
-      "status": "partial",
-      "applicability": "FARS declares Puerto Rico fatal-crash coverage for covered project areas.",
+      "status": "unavailable",
+      "applicability": "No registered crash adapter reads Puerto Rico. NHTSA publishes Puerto Rico fatal crashes in a separate FARS file, and the FARS adapter reads only the National file, which covers the 50 states and DC.",
       "sourceIds": ["crash-source-registry", "fars-source-adapter"],
-      "adapterIds": ["fars-national"],
+      "adapterIds": [],
       "authorities": [
         {
           "kind": "data_source",
@@ -340,7 +340,7 @@
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
         }
       ],
-      "limitations": ["The adapter is fatal-only and persists retrieved crash records. It cannot support an all-severity or serious-injury claim."]
+      "limitations": ["OpenPlan cannot retrieve or store Puerto Rico crash records. Checked 2026-11-01 against the 2023 FARS files: the National accident table has no Puerto Rico rows."]
     },
     {
       "id": "US-PR/grants-and-reimbursement",

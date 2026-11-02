@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   LARGE_AREA_KM2,
   parseCorridorText,
+  placeIdentityForStudyArea,
   studyAreaBboxesMatch,
   studyAreaPrefillFromHomeGeography,
   summarizeCorridorText,
@@ -113,6 +114,34 @@ describe("studyAreaBboxesMatch", () => {
     expect(studyAreaBboxesMatch(bbox, { ...bbox, minLon: -121.3 })).toBe(false);
     expect(studyAreaBboxesMatch(bbox, null)).toBe(false);
     expect(studyAreaBboxesMatch(bbox, { ...bbox, minLat: Number.NaN })).toBe(false);
+  });
+});
+
+describe("placeIdentityForStudyArea", () => {
+  const square: { type: "Polygon"; coordinates: [number, number][][] } = {
+    type: "Polygon",
+    coordinates: [[[-120, 39], [-119, 39], [-119, 40], [-120, 40], [-120, 39]]],
+  };
+  const place = (geoid: string, bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number }) => ({
+    kind: "county" as const,
+    geoid,
+    label: null,
+    geojson: square,
+    bbox,
+  });
+
+  it("sends the identity of the place whose bbox is the area on screen", () => {
+    const stale = place("06057", { minLon: -121, minLat: 39, maxLon: -120, maxLat: 40 });
+    const current = place("32031", { minLon: -120, minLat: 39, maxLon: -119, maxLat: 40 });
+    expect(placeIdentityForStudyArea(square, [stale, current])).toEqual({ kind: "county", geoid: "32031" });
+  });
+
+  it("sends nothing for a drawn area, an edited area or no area", () => {
+    const picked = place("32031", { minLon: -120, minLat: 39, maxLon: -119, maxLat: 40 });
+    expect(placeIdentityForStudyArea(square, [null, undefined])).toBeNull();
+    const edited = { ...square, coordinates: [[[-120, 39], [-118.5, 39], [-118.5, 40], [-120, 40], [-120, 39]]] };
+    expect(placeIdentityForStudyArea(edited, [picked])).toBeNull();
+    expect(placeIdentityForStudyArea(null, [picked])).toBeNull();
   });
 });
 

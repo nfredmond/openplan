@@ -57,6 +57,8 @@ let selectCalls: Record<string, string[]> = {};
 let selectOptions: Record<string, unknown[]> = {};
 let inCalls: Record<string, unknown[][]> = {};
 
+const POSTGREST_MAX_ROWS = 1000;
+
 function makeQuery(fixture: QueryResult, table?: string) {
   let result = fixture;
   const query: Record<string, unknown> = {};
@@ -79,14 +81,20 @@ function makeQuery(fixture: QueryResult, table?: string) {
   }
   query.maybeSingle = vi.fn(async () => result);
   query.single = vi.fn(async () => result);
+  // PostgREST's `max_rows`: no response holds more than 1,000 rows, ranged or
+  // not, and the cap reports no error.
   query.then = (resolve: (value: QueryResult) => unknown, reject?: (reason: unknown) => unknown) =>
-    Promise.resolve(result).then(resolve, reject);
+    Promise.resolve(
+      result.error || !Array.isArray(result.data)
+        ? result
+        : { ...result, data: result.data.slice(0, POSTGREST_MAX_ROWS) }
+    ).then(resolve, reject);
   // A paged read asks for slices until one comes back empty, so a range answers
   // its slice. Handing back the whole result for every range would never end.
   query.range = vi.fn(async (from: number, toInclusive: number): Promise<QueryResult> =>
     result.error || !Array.isArray(result.data)
       ? result
-      : { data: result.data.slice(from, toInclusive + 1), error: null }
+      : { data: result.data.slice(from, from + Math.min(toInclusive - from + 1, POSTGREST_MAX_ROWS)), error: null }
   );
   return query;
 }
@@ -646,6 +654,41 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
       screen.getByText(/an empty moderation queue here is not a finding that nothing is waiting/i)
     ).toBeInTheDocument();
     expect(screen.getByText(/Public comments could not be read, so this is not a count of zero/i)).toBeInTheDocument();
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The cycle's
+    comments were read in one request, so 1,234 pending comments showed as
+    1,000 on the card a planner reads at closeout.
+  */
+  it("counts every pending comment on the cycle past the 1,000-row cap", async () => {
+    tableResults.engagement_campaigns = {
+      data: [{ id: "campaign-1", title: "Plan review", status: "active", engagement_type: "comment_collection", rtp_cycle_chapter_id: null, projects: null }],
+      error: null,
+    };
+    tableResults.engagement_items = {
+      data: Array.from({ length: 1234 }, (_unused, index) => ({
+        id: `item-${index}`,
+        campaign_id: "campaign-1",
+        category_id: null,
+        status: "pending",
+        source_type: "public",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-28T17:20:00.000Z",
+        updated_at: "2026-03-28T18:10:00.000Z",
+      })),
+      error: null,
+    };
+
+    await renderDetail("comments");
+
+    const card = screen.getByText("Pending comments").parentElement as HTMLElement;
+    expect(card.textContent).toContain("1234");
+    expect(selectCalls.engagement_items?.[0]).toBe(
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+    );
   });
 
   it("does not tell a planner to create a packet that a failed read simply could not see", async () => {

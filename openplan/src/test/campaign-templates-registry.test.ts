@@ -121,4 +121,26 @@ describe("campaign template registry", () => {
       expect(new Set(categoryLabels).size, `${template.id} duplicate category labels`).toBe(categoryLabels.length);
     }
   });
+
+  it("puts no demonstration or test wording where residents can read it", () => {
+    // Residents see the public description, questions, options and categories
+    // once a planner publishes. The portal and the public API also fall back to
+    // the summary when the public description is blank, so it counts too.
+    const demoWording = /\b(demo|demonstration|exercise material|test(ing)?|sample|synthetic|lorem|placeholder)\b/i;
+    for (const template of CAMPAIGN_TEMPLATES) {
+      const residentText = [
+        template.suggestedPublicDescription,
+        template.suggestedSummary,
+        ...template.categories.flatMap((category) => [category.label, category.description]),
+        ...template.questions.flatMap((question) => [
+          question.prompt,
+          question.helpText ?? "",
+          ...(question.options ?? []).map((option) => option.label),
+        ]),
+      ];
+      for (const text of residentText) {
+        expect(text, `${template.id}: "${text}"`).not.toMatch(demoWording);
+      }
+    }
+  });
 });

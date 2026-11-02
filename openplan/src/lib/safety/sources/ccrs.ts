@@ -49,6 +49,7 @@ import {
 } from "@/lib/safety/vocabulary";
 import { CCRS_CRASH_COLUMNS, CCRS_DIMENSION_SUPPORT, CCRS_VOCABULARY } from "./ccrs-vocabulary";
 import { fetchCcrsParties } from "./ccrs-parties";
+import { CALIFORNIA_STATE_FIPS } from "@/lib/safety/county-code";
 import {
   CrashSourceUnavailableError,
   type CrashFetchParams,
@@ -532,7 +533,9 @@ export const ccrsAdapter: CrashSourceAdapter = {
   roadContextProvider: "us-census-tiger-line",
   // California only — a national backstop's records in state 06 are redundant
   // with CCRS and must be dropped when the two are merged.
-  coversStateFips: ["06"],
+  coversStateFips: [CALIFORNIA_STATE_FIPS],
+  // CCRS is California's crash file and holds no other state's crashes.
+  servesStateFips: [CALIFORNIA_STATE_FIPS],
   covers: overlapsCalifornia,
   fetch: fetchCcrsCrashes,
   fetchParties: fetchCcrsParties,

@@ -200,7 +200,7 @@ const fetchCensusForCorridorMock = vi.fn();
 const bboxFromGeojsonMock = vi.fn();
 const fetchTractOverlayFeaturesMock = vi.fn();
 const fetchLODESForCorridorMock = vi.fn();
-const fetchCrashesForBboxMock = vi.fn();
+const fetchCrashesForStudyAreaMock = vi.fn();
 const fetchCrashPointFeaturesForBboxMock = vi.fn();
 const fetchTransitAccessForBboxMock = vi.fn();
 const screenEquityMock = vi.fn();
@@ -216,6 +216,13 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => mockAudit,
+}));
+
+// The AI usage meter the interpretation is counted against.
+const reserveAiUsageMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/runtime/ai-rate-limit", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/runtime/ai-rate-limit")>()),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
 }));
 
 vi.mock("@/lib/ai/interpret", () => ({
@@ -241,7 +248,7 @@ vi.mock("@/lib/data-sources/lodes", () => ({
 }));
 
 vi.mock("@/lib/data-sources/crashes", () => ({
-  fetchCrashesForBbox: (...args: unknown[]) => fetchCrashesForBboxMock(...args),
+  fetchCrashesForStudyArea: (...args: unknown[]) => fetchCrashesForStudyAreaMock(...args),
   fetchCrashPointFeaturesForBbox: (...args: unknown[]) =>
     fetchCrashPointFeaturesForBboxMock(...args),
 }));
@@ -265,6 +272,12 @@ vi.mock("@/lib/accessibility/isochrone", () => ({
 vi.mock("@/lib/ai/cost-threshold", () => ({
   buildAnalysisCostThresholdWarning: (...args: unknown[]) =>
     buildAnalysisCostThresholdWarningMock(...args),
+}));
+
+// The boundary resolver is the only network call the crash-state step makes.
+const resolvePlaceBoundaryMock = vi.fn();
+vi.mock("@/lib/geographies/place-resolver", () => ({
+  resolvePlaceBoundary: (...args: unknown[]) => resolvePlaceBoundaryMock(...args),
 }));
 
 vi.mock("@/lib/geo/corridor-geometry", () => ({
@@ -339,7 +352,7 @@ describe("/api/analysis grounding provenance contract", () => {
     fetchCensusForCorridorMock.mockResolvedValue(CENSUS_FIXTURE);
     fetchTractOverlayFeaturesMock.mockResolvedValue([]);
     fetchLODESForCorridorMock.mockResolvedValue(LODES_FIXTURE);
-    fetchCrashesForBboxMock.mockResolvedValue(CRASHES_FIXTURE);
+    fetchCrashesForStudyAreaMock.mockResolvedValue(CRASHES_FIXTURE);
     fetchCrashPointFeaturesForBboxMock.mockResolvedValue([]);
     fetchTransitAccessForBboxMock.mockResolvedValue(TRANSIT_FIXTURE);
     screenEquityMock.mockReturnValue(EQUITY_FIXTURE);
@@ -347,6 +360,24 @@ describe("/api/analysis grounding provenance contract", () => {
     classifyWalkBikeAccessMock.mockReturnValue(WALK_BIKE_FIXTURE);
     buildAnalysisCostThresholdWarningMock.mockReturnValue(null);
     generateGrantInterpretationMock.mockResolvedValue(INTERPRETATION_RESULT);
+  });
+
+  it("counts the interpretation against the workspace's staff AI allowance, tagged with this run", async () => {
+    reserveAiUsageMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { runId: string };
+
+    const options = generateGrantInterpretationMock.mock.calls[0][2] as { reserveUsage: () => Promise<unknown> };
+    expect(reserveAiUsageMock).not.toHaveBeenCalled();
+    await options.reserveUsage();
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "grant_narrative_draft",
+      eventKey: "corridor_interpretation",
+      sourceRoute: "/api/analysis",
+      metadataJson: { runId: payload.runId },
+    });
   });
 
   it("withholds ACS employment estimates and walk/bike tiers when their inputs are absent", async () => {
@@ -498,7 +529,7 @@ describe("/api/analysis records the transit measurement on the run", () => {
     fetchCensusForCorridorMock.mockResolvedValue(CENSUS_FIXTURE);
     fetchTractOverlayFeaturesMock.mockResolvedValue([]);
     fetchLODESForCorridorMock.mockResolvedValue(LODES_FIXTURE);
-    fetchCrashesForBboxMock.mockResolvedValue(CRASHES_FIXTURE);
+    fetchCrashesForStudyAreaMock.mockResolvedValue(CRASHES_FIXTURE);
     fetchCrashPointFeaturesForBboxMock.mockResolvedValue([]);
     screenEquityMock.mockReturnValue(EQUITY_FIXTURE);
     computeCorridorScoresMock.mockReturnValue(SCORES_FIXTURE);
@@ -516,7 +547,7 @@ describe("/api/analysis records the transit measurement on the run", () => {
 
   it("keeps capped crash severity counts out of the AI fact list and score", async () => {
     fetchTransitAccessForBboxMock.mockResolvedValue(TRANSIT_FIXTURE);
-    fetchCrashesForBboxMock.mockResolvedValue({
+    fetchCrashesForStudyAreaMock.mockResolvedValue({
       ...CRASHES_FIXTURE,
       observed: true,
       truncated: true,
@@ -624,7 +655,7 @@ describe("/api/analysis records the transit measurement on the run", () => {
     fetchCensusForCorridorMock.mockResolvedValue(CENSUS_FIXTURE);
     fetchTractOverlayFeaturesMock.mockResolvedValue([]);
     fetchLODESForCorridorMock.mockResolvedValue(LODES_FIXTURE);
-    fetchCrashesForBboxMock.mockResolvedValue(CRASHES_FIXTURE);
+    fetchCrashesForStudyAreaMock.mockResolvedValue(CRASHES_FIXTURE);
     fetchCrashPointFeaturesForBboxMock.mockResolvedValue([]);
     screenEquityMock.mockReturnValue(EQUITY_FIXTURE);
     computeCorridorScoresMock.mockReturnValue(SCORES_FIXTURE);
@@ -639,5 +670,156 @@ describe("/api/analysis records the transit measurement on the run", () => {
     // status is fixed by the method, so a derived value would imply a
     // distinction the method does not support.
     expect(resolveDecisionUseDisclosure(gtfs).notRecorded).toBe(false);
+  });
+});
+
+/**
+ * Which state chooses the corridor's crash source.
+ *
+ * The route may use a state only from an identity it holds or re-resolves,
+ * and only when that identity's bbox is the corridor's bbox. Anything else is
+ * null, which limits the read to the national source. Each case varies the
+ * binding so a route that hardcoded one answer would fail one of them.
+ */
+describe("/api/analysis crash state", () => {
+  const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
+  const CORRIDOR_BBOX = { minLon: -119.9, minLat: 39.4, maxLon: -119.7, maxLat: 39.6 };
+  const projectMaybeSingleMock = vi.fn();
+  const projectSelectMock = vi.fn((columns: string) => {
+    void columns;
+    return { eq: () => ({ eq: () => ({ maybeSingle: projectMaybeSingleMock }) }) };
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    createClientMock.mockResolvedValue({
+      auth: { getUser: authGetUserMock },
+      from: (table: string) => (table === "projects" ? { select: projectSelectMock } : userFromMock(table)),
+    });
+    createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: WORKSPACE_ID, role: "owner", workspaces: {} },
+      error: null,
+    });
+    runsInsertMock.mockResolvedValue({ error: null });
+    validateCorridorGeometryMock.mockReturnValue({ ok: true });
+    bboxFromGeojsonMock.mockReturnValue(CORRIDOR_BBOX);
+    fetchCensusForCorridorMock.mockResolvedValue(CENSUS_FIXTURE);
+    fetchTractOverlayFeaturesMock.mockResolvedValue([]);
+    fetchLODESForCorridorMock.mockResolvedValue(LODES_FIXTURE);
+    fetchCrashesForStudyAreaMock.mockResolvedValue(CRASHES_FIXTURE);
+    fetchTransitAccessForBboxMock.mockResolvedValue(TRANSIT_FIXTURE);
+    screenEquityMock.mockReturnValue(EQUITY_FIXTURE);
+    computeCorridorScoresMock.mockReturnValue(SCORES_FIXTURE);
+    classifyWalkBikeAccessMock.mockReturnValue(WALK_BIKE_FIXTURE);
+    buildAnalysisCostThresholdWarningMock.mockReturnValue(null);
+    generateGrantInterpretationMock.mockResolvedValue(INTERPRETATION_RESULT);
+  });
+
+  async function crashStateFor(body: Record<string, unknown>) {
+    const response = await postAnalysis(analysisRequest({ ...VALID_BODY, ...body }));
+    expect(response.status).toBe(200);
+    expect(fetchCrashesForStudyAreaMock).toHaveBeenCalledTimes(1);
+    const [area] = fetchCrashesForStudyAreaMock.mock.calls[0] as [{ bbox: unknown; stateFips: unknown }];
+    expect(area.bbox).toEqual(CORRIDOR_BBOX);
+    return area.stateFips;
+  }
+
+  it("uses a picked county's state when the server re-resolves it to this bbox", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "county", geoid: "32031", label: "Washoe County", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "county", geoid: "32031" } })).toEqual(["32"]);
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("county", "32031");
+  });
+
+  it("uses a different picked county's different state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "county", geoid: "06057", label: "Nevada County", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "county", geoid: "06057" } })).toEqual(["06"]);
+  });
+
+  it("ignores a picked place whose boundary is not this corridor", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "county",
+      geoid: "06057",
+      label: "Nevada County",
+      bbox: { ...CORRIDOR_BBOX, maxLon: -119.0 },
+    });
+    expect(await crashStateFor({ place: { kind: "county", geoid: "06057" } })).toBeNull();
+  });
+
+  it("does not trust a state when the resolver is unreachable", async () => {
+    resolvePlaceBoundaryMock.mockRejectedValue(new Error("TIGERweb down"));
+    expect(await crashStateFor({ place: { kind: "county", geoid: "06057" } })).toBeNull();
+  });
+
+  it("gives a drawn corridor with no place and no project no state", async () => {
+    expect(await crashStateFor({})).toBeNull();
+    expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts a picked town's 10-digit GEOID and uses its state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "cousub", geoid: "3203190000", label: "Town, NV", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "cousub", geoid: "3203190000" } })).toEqual(["32"]);
+  });
+
+  it("accepts a picked tribal area's GEOID and gives it no state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "aiannh", geoid: "2430R", label: "Navajo Nation Reservation, AZ-NM-UT", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "aiannh", geoid: "2430R" } })).toBeNull();
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("aiannh", "2430R");
+  });
+
+  it("refuses a GEOID that is not that kind's format", async () => {
+    const response = await postAnalysis(analysisRequest({ ...VALID_BODY, place: { kind: "aiannh", geoid: "06113" } }));
+    expect(response.status).toBe(400);
+    expect(fetchCrashesForStudyAreaMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a metro area's state, because a metro code names no state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "metro", geoid: "39900", label: "Reno, NV", bbox: CORRIDOR_BBOX });
+    expect(await crashStateFor({ place: { kind: "metro", geoid: "39900" } })).toBeNull();
+  });
+
+  it("uses the project's state when the corridor is the project's area, and selects the columns that say so", async () => {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_country_code: "US",
+        place_subdivision_code: "NV",
+        place_min_lon: CORRIDOR_BBOX.minLon,
+        place_min_lat: CORRIDOR_BBOX.minLat,
+        place_max_lon: CORRIDOR_BBOX.maxLon,
+        place_max_lat: CORRIDOR_BBOX.maxLat,
+      },
+      error: null,
+    });
+    expect(await crashStateFor({ projectId: PROJECT_ID })).toEqual(["32"]);
+    const selected = String(projectSelectMock.mock.calls[0]?.[0] ?? "").split(",").map((column) => column.trim());
+    for (const column of [
+      "place_country_code",
+      "place_subdivision_code",
+      "place_min_lon",
+      "place_min_lat",
+      "place_max_lon",
+      "place_max_lat",
+    ]) {
+      expect(selected, `project select is missing ${column}`).toContain(column);
+    }
+    expect(selected).not.toContain("place_geometry_geojson");
+  });
+
+  it("does not give a corridor drawn inside a project area the project's state", async () => {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_country_code: "US",
+        place_subdivision_code: "CA",
+        place_min_lon: -121.3,
+        place_min_lat: 39.0,
+        place_max_lon: -119.6,
+        place_max_lat: 39.7,
+      },
+      error: null,
+    });
+    expect(await crashStateFor({ projectId: PROJECT_ID })).toBeNull();
   });
 });

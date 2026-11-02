@@ -1,3 +1,4 @@
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -7,8 +8,9 @@ const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 const loadOpportunityPursuitContextMock = vi.fn();
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -42,8 +44,14 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
+// Who pays for the call, as the AI limiter sees it (the shared key unless a
+// test says otherwise). Everything else in the module is real.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 vi.mock("@/lib/grants/pursuit", async () => {
@@ -158,14 +166,16 @@ const storedDraft = {
 };
 
 describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     loadOpportunityPursuitContextMock.mockResolvedValue({
       context: {
         pursuitKind: "grant",
@@ -230,17 +240,91 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
     const body = await response.json();
     expect(body.error).toBe("section_not_ai_draftable");
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
   });
 
   it("returns 429 without a model call when the workspace AI allowance is exhausted", async () => {
-    installTables({});
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    const draftInsertChain = makeQuery({ data: storedDraft, error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(
+        makeQuery({ data: baseSectionRow, error: null }),
+        makeQuery({ data: null, error: null })
+      ),
+      funding_opportunity_section_drafts: () => draftInsertChain,
+    });
+    meter.count.mockResolvedValue({ count: 20, error: null });
 
     const response = await postSectionDraft(jsonRequest(), routeContext());
     expect(response.status).toBe(429);
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+  });
+
+  it("counts the call before making it, with this route's bucket and event keys", async () => {
+    const draftInsertChain = makeQuery({ data: storedDraft, error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(
+        makeQuery({ data: baseSectionRow, error: null }),
+        makeQuery({ data: null, error: null })
+      ),
+      funding_opportunity_section_drafts: () => draftInsertChain,
+    });
+    const response = await postSectionDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "grant_narrative_draft",
+      eventKey: "grant_section_draft",
+      sourceRoute: "/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft",
+      metadataJson: { model: "claude-opus-5-5", sectionId: SECTION_ID },
+    });
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(meter.insert.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it.each([
+    ["the usage lookup", () => meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } })],
+    ["the usage record", () => meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } })],
+  ])("makes no call when %s fails and the deployment's shared key pays", async (_label, breakMeter) => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const draftInsertChain = makeQuery({ data: storedDraft, error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(
+        makeQuery({ data: baseSectionRow, error: null }),
+        makeQuery({ data: null, error: null })
+      ),
+      funding_opportunity_section_drafts: () => draftInsertChain,
+    });
+    breakMeter();
+
+    const response = await postSectionDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(draftInsertChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("still calls the model on the workspace's own key when the usage meter fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const draftInsertChain = makeQuery({ data: storedDraft, error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(
+        makeQuery({ data: baseSectionRow, error: null }),
+        makeQuery({ data: null, error: null })
+      ),
+      funding_opportunity_section_drafts: () => draftInsertChain,
+    });
+    keySourceMock.mockReturnValue("workspace");
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+
+    const response = await postSectionDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
   });
 
   it("rejects overlong revision instructions", async () => {
@@ -291,7 +375,7 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
     if (failedTable === null) {
       expect(response.status).toBe(201);
       expect(generateTextMock).toHaveBeenCalledOnce();
-      expect(recordAiUsageEventMock).toHaveBeenCalledOnce();
+      expect(meter.insert).toHaveBeenCalledOnce();
       expect(draftInsertChain.insert).toHaveBeenCalledOnce();
       expect(statusBumpChain.update).toHaveBeenCalledOnce();
       return;
@@ -305,7 +389,7 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
       failedReads: [{ subject, message: `could not read ${failedTable}` }],
     }));
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
     expect(draftInsertChain.insert).not.toHaveBeenCalled();
     expect(statusBumpChain.update).not.toHaveBeenCalled();
   });
@@ -349,8 +433,8 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
     // A first draft moves the section into 'drafting'.
     expect(statusBumpChain.update.mock.calls[0][0]).toMatchObject({ status: "drafting" });
 
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         bucketKey: "grant_narrative_draft",
@@ -477,7 +561,7 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
     });
   });
 
-  it("returns 502 without persisting or metering when generation fails", async () => {
+  it("returns 502 without persisting when generation fails, keeping the reservation", async () => {
     const draftInsertChain = makeQuery({ data: storedDraft, error: null });
     installTables({
       funding_opportunity_application_sections: () => makeQuery({ data: baseSectionRow, error: null }),
@@ -489,6 +573,8 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
 
     expect(response.status).toBe(502);
     expect(draftInsertChain.insert).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    // The call was counted before it was made, and a failed call keeps
+    // its reservation (ai-rate-limit.ts, reserveAiUsage).
+    expect(meter.insert).toHaveBeenCalledTimes(1);
   });
 });

@@ -8,8 +8,8 @@
  *      study area, with an `safety_crash_ingests` row recording what the source
  *      reported vs. what it could geolocate. Persisted, workspace-scoped,
  *      restricted by CHECK to persistable adapters (today: CCRS).
- *   2. `fetchCrashesForBbox` (`src/lib/data-sources/crashes.ts`) — a LIVE
- *      multi-source read for one bounding box at one moment, used by the Explore
+ *   2. `fetchCrashesForStudyArea` (`src/lib/data-sources/crashes.ts`) — a LIVE
+ *      read for one study area at one moment, used by the Explore
  *      corridor scorecard and the crash points it paints. Never persisted, and
  *      allowed to use read-only adapters (FARS) the database will not store.
  *   3. The old `fars-estimate` fabricator, deleted in Wave 8.2.

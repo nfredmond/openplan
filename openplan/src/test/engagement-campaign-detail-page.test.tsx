@@ -241,6 +241,25 @@ const snapshotRpcMock = vi.fn(async (name: string, args: { p_campaign: string; p
         };
         return { data: [], error: null };
       });
+/**
+ * The page pages its set-returning RPCs (nearby crashes, near-duplicate pairs),
+ * so an RPC result must answer `.order` and `.range` as well as `await`. A range
+ * answers its slice, at most 1,000 rows, as PostgREST does.
+ */
+function pageableRpc(result: Promise<{ data: unknown; error: unknown }>) {
+  const chain = {
+    order: () => chain,
+    range: (from: number, toInclusive: number) =>
+      result.then((read) =>
+        Array.isArray(read.data)
+          ? { ...read, data: read.data.slice(from, from + Math.min(toInclusive - from + 1, 1000)) }
+          : read
+      ),
+    then: <T,>(resolve: (value: { data: unknown; error: unknown }) => T, reject?: (reason: unknown) => unknown) =>
+      result.then(resolve, reject),
+  };
+  return chain;
+}
 let surveyQuestionsReadError: { message: string } | null = null;
 
 /**
@@ -793,7 +812,8 @@ describe("EngagementCampaignDetailPage", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
-      rpc: snapshotRpcMock,
+      rpc: (name: string, args: { p_campaign: string; p_published_only: boolean }) =>
+        pageableRpc(snapshotRpcMock(name, args)),
     });
   });
 

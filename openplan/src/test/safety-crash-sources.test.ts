@@ -121,16 +121,58 @@ describe("California coverage test", () => {
 });
 
 describe("crash source registry", () => {
-  it("resolves CCRS for a California study area", () => {
-    const resolution = resolveCrashSource(NEVADA_COUNTY_BBOX);
+  // Nevada County, California (state 06) and Michigan (state 26). A Reno-area
+  // bbox in Nevada (state 32) sits inside the CCRS rectangle; that is the case
+  // the state rule exists for.
+  const RENO_BBOX = { minLon: -120.0, minLat: 39.4, maxLon: -119.6, maxLat: 39.7 };
+
+  it("resolves CCRS for a study area whose place is in California", () => {
+    const resolution = resolveCrashSource({ bbox: NEVADA_COUNTY_BBOX, stateFips: ["06"] });
     expect(resolution.kind).toBe("resolved");
     if (resolution.kind === "resolved") {
       expect(resolution.adapter.id).toBe(CCRS_SOURCE_ID);
     }
   });
 
+  it("resolves FARS for a Nevada study area even though its bbox overlaps the CCRS rectangle", () => {
+    expect(ccrsAdapter.covers(RENO_BBOX)).toBe(true);
+    const resolution = resolveCrashSource({ bbox: RENO_BBOX, stateFips: ["32"] });
+    expect(resolution.kind).toBe("resolved");
+    if (resolution.kind === "resolved") {
+      expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
+      expect(resolution.adapter.severityCompleteness).toBe("fatal_only");
+    }
+  });
+
+  it("never picks a state source when the study area's state is unknown", () => {
+    // A California bbox with no place identity: the rectangle is not evidence
+    // of the state, so only the national source may answer.
+    for (const stateFips of [undefined, null, [] as string[], ["6"]]) {
+      const resolution = resolveCrashSource({ bbox: NEVADA_COUNTY_BBOX, stateFips });
+      expect(resolution.kind).toBe("resolved");
+      if (resolution.kind === "resolved") expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
+    }
+  });
+
+  it("gives a study area spanning two states only a source that reads both", () => {
+    const resolution = resolveCrashSource({ bbox: NEVADA_COUNTY_BBOX, stateFips: ["06", "32"] });
+    expect(resolution.kind).toBe("resolved");
+    if (resolution.kind === "resolved") expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
+  });
+
+  it("reports out_of_coverage for a state no adapter reads, naming what it checked", () => {
+    const sanJuan = { minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 };
+    const resolution = resolveCrashSource({ bbox: sanJuan, stateFips: ["72"] });
+    expect(resolution.kind).toBe("out_of_coverage");
+    if (resolution.kind === "out_of_coverage") {
+      expect(resolution.checked.map((entry) => entry.id).sort()).toEqual(
+        CRASH_SOURCE_ADAPTERS.filter((adapter) => adapter.persistable).map((adapter) => adapter.id).sort()
+      );
+    }
+  });
+
   it("resolves the national observed source through the ordinary ingest lane", () => {
-    const resolution = resolveCrashSource(DETROIT_BBOX);
+    const resolution = resolveCrashSource({ bbox: DETROIT_BBOX, stateFips: ["26"] });
     expect(resolution.kind).toBe("resolved");
     if (resolution.kind === "resolved") {
       expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
@@ -139,7 +181,7 @@ describe("crash source registry", () => {
   });
 
   it("resolves FARS for the same study area on the read-only lane", () => {
-    const resolution = resolveCrashSource(DETROIT_BBOX, "read_only");
+    const resolution = resolveCrashSource({ bbox: DETROIT_BBOX, stateFips: ["26"] }, "read_only");
     expect(resolution.kind).toBe("resolved");
     if (resolution.kind === "resolved") {
       expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
@@ -148,11 +190,11 @@ describe("crash source registry", () => {
 
   it("still reports out_of_coverage outside every registered geography", () => {
     const berlin = { minLon: 13.2, minLat: 52.4, maxLon: 13.6, maxLat: 52.6 };
-    expect(resolveCrashSource(berlin, "read_only").kind).toBe("out_of_coverage");
+    expect(resolveCrashSource({ bbox: berlin }, "read_only").kind).toBe("out_of_coverage");
   });
 
   it("prefers the richer state source over the fatal-only national backstop", () => {
-    const resolution = resolveCrashSource(NEVADA_COUNTY_BBOX, "read_only");
+    const resolution = resolveCrashSource({ bbox: NEVADA_COUNTY_BBOX, stateFips: ["06"] }, "read_only");
     expect(resolution.kind).toBe("resolved");
     if (resolution.kind === "resolved") {
       expect(resolution.adapter.id).toBe(CCRS_SOURCE_ID);
@@ -503,10 +545,18 @@ describe("CCRS fetch", () => {
 describe("FARS national adapter", () => {
   it("covers the FARS reporting geography including the non-contiguous states", () => {
     expect(coversFarsGeography(DETROIT_BBOX)).toBe(true);
-    // Anchorage, Honolulu, San Juan — a CONUS-only envelope would drop all three.
+    // Anchorage and Honolulu. A CONUS-only envelope would drop both.
     expect(coversFarsGeography({ minLon: -150.0, minLat: 61.0, maxLon: -149.7, maxLat: 61.3 })).toBe(true);
     expect(coversFarsGeography({ minLon: -157.9, minLat: 21.2, maxLon: -157.8, maxLat: 21.4 })).toBe(true);
-    expect(coversFarsGeography({ minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 })).toBe(true);
+  });
+
+  it("does not claim Puerto Rico, which the National file it reads does not carry", () => {
+    // NHTSA publishes Puerto Rico in a separate annual file. Claiming the
+    // island here turned "not read" into "no fatal crashes".
+    expect(coversFarsGeography({ minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 })).toBe(false);
+    expect(farsAdapter.servesStateFips).not.toContain("72");
+    expect(farsAdapter.servesStateFips).toHaveLength(51);
+    expect(farsAdapter.servesStateFips).toContain("11");
   });
 
   it("does not claim coverage outside the reporting geography", () => {

@@ -142,12 +142,26 @@ function clientResolving(resolve: (table: string, columns: string) => ReadResult
     },
     // Knowledge Base retrieval swallows by contract; the crash-proximity read
     // does NOT, so it is dispatched by name and answered by `rpcResolver`.
-    rpc: (name: string) =>
-      Promise.resolve(
+    // The crash-proximity read pages, so its result also answers `.order` and
+    // `.range`; a range answers its slice, at most 1,000 rows, as PostgREST does.
+    rpc: (name: string) => {
+      const result = Promise.resolve(
         name === "engagement_items_with_nearby_crashes"
           ? rpcResolver(name)
           : { data: [], error: null }
-      ),
+      );
+      const chain = {
+        order: () => chain,
+        range: (from: number, toInclusive: number) =>
+          result.then((read) =>
+            Array.isArray(read.data)
+              ? { ...read, data: read.data.slice(from, from + Math.min(toInclusive - from + 1, 1000)) }
+              : read
+          ),
+        then: <T>(resolve: (value: ReadResult) => T, reject?: (reason: unknown) => unknown) => result.then(resolve, reject),
+      };
+      return chain;
+    },
   };
 }
 

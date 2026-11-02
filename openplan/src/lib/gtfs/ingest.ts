@@ -99,6 +99,7 @@ import {
 } from "./persist";
 import { gtfsCaveatContextFromVersionRow } from "./route-projections";
 import type { GtfsFailureCode, GtfsParseWarning } from "./types";
+import { checkWorkspaceStorageRoom, type WorkspaceStorageRoom } from "@/lib/workspaces/storage-quota";
 
 /* -------------------------------------------------------------------------- */
 /* Failure codes over HTTP                                                      */
@@ -128,6 +129,9 @@ import type { GtfsFailureCode, GtfsParseWarning } from "./types";
  *         and — critically — not evidence about the planner's area at all.
  *   500 — `partial_write` only. The parse succeeded and the database did not,
  *         which is the one case in this list that is genuinely OpenPlan's fault.
+ *   413 — `workspace_storage_limit`: the fetched archive does not fit under the
+ *         workspace's storage limit. When storage use could not be read the
+ *         ingest answers 503 instead (see `storageRoom` on the result).
  */
 export const GTFS_FAILURE_HTTP_STATUS: Record<GtfsFailureCode, number> = {
   too_large: 422,
@@ -144,6 +148,7 @@ export const GTFS_FAILURE_HTTP_STATUS: Record<GtfsFailureCode, number> = {
   catalog_entry_deprecated: 422,
   partial_write: 500,
   abandoned: 422,
+  workspace_storage_limit: 413,
 };
 
 /* -------------------------------------------------------------------------- */
@@ -336,7 +341,15 @@ export type GtfsIngestResult =
       versionId: string | null;
       feedId: string | null;
       createdFeed: boolean;
+      /**
+       * Present only when the workspace storage limit refused a fetched
+       * archive. Routes answer it with `workspaceStorageRefusal`, the same
+       * refusal every other upload path gives.
+       */
+      storageRoom?: Exclude<WorkspaceStorageRoom, { status: "room" }>;
     };
+
+type GtfsIngestFailure = Extract<GtfsIngestResult, { ok: false }>;
 
 /** The object key for an uploaded archive, scoped by workspace and version. */
 export function gtfsUploadObjectPath(
@@ -429,7 +442,7 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
     code: GtfsFailureCode,
     detail: string,
     storagePath: string | null
-  ): Promise<GtfsIngestResult> => {
+  ): Promise<GtfsIngestFailure> => {
     await failGtfsFeedVersion({
       service,
       versionId,
@@ -500,6 +513,20 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
         "raise the limit with OPENPLAN_GTFS_MAX_ARCHIVE_BYTES.",
       null
     );
+  }
+
+  // THE WORKSPACE STORAGE LIMIT, for a fetched archive. The upload doors
+  // check in their routes before the bytes arrive; a catalog or URL archive's
+  // size is known only now. The route already refused a workspace at its
+  // limit before fetching. This checks the actual bytes against the room
+  // left, before anything is stored: a refusal stores no object, writes no
+  // derived rows and closes the version as failed, like the size refusal above.
+  if (source.kind !== "upload") {
+    const room = await checkWorkspaceStorageRoom(service, workspaceId, byteSize);
+    if (room.status !== "room") {
+      const refused = await refuse("workspace_storage_limit", room.message, null);
+      return { ...refused, status: room.status === "full" ? 413 : 503, storageRoom: room };
+    }
   }
 
   /* ---------------------------------------------------------------------- */

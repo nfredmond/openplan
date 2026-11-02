@@ -3,11 +3,80 @@ import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 
 /**
  * A resolvable US place a user can pick as a model study area. `kind` selects the
- * TIGERweb layer used to fetch the boundary; `geoid` is the Census GEOID
- * (5 digits for county/CBSA, 7 for an incorporated place / CDP).
+ * TIGERweb layer used to fetch the boundary; `geoid` is the Census GEOID in that
+ * layer's own format (see `PLACE_GEOID_PATTERNS`).
+ *
+ * `aiannh` is an American Indian, Alaska Native or Native Hawaiian area: a
+ * reservation, off-reservation trust land, Hawaiian home land or tribal
+ * statistical area. `cousub` is a county subdivision: a New England town, a
+ * Midwest township, a borough or other minor civil division.
  */
-export const placeKindSchema = z.enum(["county", "city", "cdp", "metro", "micro"]);
+export const placeKindSchema = z.enum(["county", "city", "cdp", "metro", "micro", "aiannh", "cousub"]);
 export type PlaceKind = z.infer<typeof placeKindSchema>;
+
+/**
+ * The GEOID each kind uses in TIGERweb, checked per kind rather than by one
+ * loose length range.
+ *
+ * - county SSCCC and CBSA (metro/micro) codes are 5 digits; a CBSA code is not
+ *   state-prefixed.
+ * - incorporated places and CDPs are SSPPPPP, 7 digits.
+ * - county subdivisions are SSCCCNNNNN, 10 digits.
+ * - AIANNH areas are the 4-digit Census AIANNH code plus the component letter
+ *   TIGERweb appends: R for a reservation or statistical area, T for trust land
+ *   or a Hawaiian home land ("2430R" is the Navajo Nation Reservation, "2430T"
+ *   its off-reservation trust land). The code is not state-prefixed, and one
+ *   area can span several states.
+ *
+ * Read from each layer's `GEOID` field on tigerWMS_Current (January 1, 2026
+ * vintage) on 2026-11-01; all 867 AIANNH features in the nine layers matched
+ * the AIANNH pattern and none repeated.
+ */
+const PLACE_GEOID_PATTERNS: Record<PlaceKind, RegExp> = {
+  county: /^\d{5}$/,
+  city: /^\d{7}$/,
+  cdp: /^\d{7}$/,
+  metro: /^\d{5}$/,
+  micro: /^\d{5}$/,
+  aiannh: /^\d{4}[RT]$/,
+  cousub: /^\d{10}$/,
+};
+
+/**
+ * The GEOID in its canonical form for `kind`, or null when it is not one.
+ *
+ * Trims and uppercases only. Nothing is stripped: a value that needs repair to
+ * look like a GEOID is not a reference anyone picked.
+ */
+export function normalizePlaceGeoid(kind: PlaceKind, raw: string | null | undefined): string | null {
+  if (typeof raw !== "string") return null;
+  const geoid = raw.trim().toUpperCase();
+  return PLACE_GEOID_PATTERNS[kind].test(geoid) ? geoid : null;
+}
+
+/** Longest GEOID of any kind (a county subdivision), for a coarse bound before the kind is known. */
+const PLACE_GEOID_MAX_LENGTH = 10;
+
+/**
+ * Adds the per-kind GEOID check to any object schema carrying `kind` and
+ * `geoid`, so every route that accepts a place reference validates it the same
+ * way the resolver will.
+ */
+export function refinePlaceReference(
+  value: { kind: PlaceKind; geoid: string },
+  ctx: z.RefinementCtx
+): void {
+  if (!normalizePlaceGeoid(value.kind, value.geoid)) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["geoid"],
+      message: `That is not a GEOID for a ${PLACE_KIND_LABELS[value.kind]}.`,
+    });
+  }
+}
+
+/** A GEOID string before its kind is known: bounded, never trusted on its own. */
+export const placeGeoidStringSchema = z.string().trim().min(1).max(PLACE_GEOID_MAX_LENGTH);
 
 /**
  * Plural, planner-facing names for each kind. Lives here (not in the resolver)
@@ -20,6 +89,8 @@ export const PLACE_KIND_PLURAL_LABELS: Record<PlaceKind, string> = {
   cdp: "census-designated places",
   metro: "metro areas",
   micro: "micropolitan areas",
+  aiannh: "tribal areas",
+  cousub: "towns and townships",
 };
 
 /**
@@ -36,15 +107,20 @@ export const PLACE_KIND_LABELS: Record<PlaceKind, string> = {
   cdp: "census-designated place",
   metro: "metro area",
   micro: "micropolitan area",
+  aiannh: "tribal area",
+  cousub: "town or township",
 };
 
-export const placeSearchItemSchema = z.object({
-  kind: placeKindSchema,
-  geoid: z.string().min(5).max(7),
-  label: z.string().min(1),
-  description: z.string().min(1),
-  stateFips: z.string().nullable(),
-});
+export const placeSearchItemSchema = z
+  .object({
+    kind: placeKindSchema,
+    geoid: placeGeoidStringSchema,
+    label: z.string().min(1),
+    description: z.string().min(1),
+    /** Null when the place spans states (a CBSA, a multi-state tribal area). */
+    stateFips: z.string().nullable(),
+  })
+  .superRefine(refinePlaceReference);
 
 /**
  * A search response carries its own coverage.
@@ -71,13 +147,15 @@ export const placeBoundaryBboxSchema = z.object({
   maxLat: z.number(),
 });
 
-export const placeBoundaryResponseSchema = z.object({
-  kind: placeKindSchema,
-  geoid: z.string().min(5).max(7),
-  label: z.string().nullable(),
-  geojson: corridorGeojsonSchema,
-  bbox: placeBoundaryBboxSchema,
-});
+export const placeBoundaryResponseSchema = z
+  .object({
+    kind: placeKindSchema,
+    geoid: placeGeoidStringSchema,
+    label: z.string().nullable(),
+    geojson: corridorGeojsonSchema,
+    bbox: placeBoundaryBboxSchema,
+  })
+  .superRefine(refinePlaceReference);
 
 export type PlaceSearchItem = z.infer<typeof placeSearchItemSchema>;
 export type PlaceSearchResponse = z.infer<typeof placeSearchResponseSchema>;

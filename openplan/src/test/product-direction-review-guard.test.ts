@@ -14,11 +14,13 @@ function run(...args: string[]): string {
   });
 }
 
-function countFiles(root: string, suffix: string): number {
+// Match the file NAME, not a path suffix: a "/page.tsx" suffix never matches
+// the backslash paths resolve() returns on Windows, and an expected count of
+// zero then agrees with a packet that also counted zero.
+function countFiles(root: string, name: string): number {
   return readdirSync(root, { withFileTypes: true }).reduce((count, entry) => {
-    const path = resolve(root, entry.name);
-    if (entry.isDirectory()) return count + countFiles(path, suffix);
-    return count + Number(entry.isFile() && path.endsWith(suffix));
+    if (entry.isDirectory()) return count + countFiles(resolve(root, entry.name), name);
+    return count + Number(entry.isFile() && entry.name === name);
   }, 0);
 }
 
@@ -115,8 +117,10 @@ describe("the recurring product-direction review", () => {
 
   it("builds a fresh-context packet from the live repository state", () => {
     const packet = run("--packet");
-    const pageCount = countFiles(resolve(APP_ROOT, "src/app"), "/page.tsx");
-    const routeCount = countFiles(resolve(APP_ROOT, "src/app/api"), "/route.ts");
+    const pageCount = countFiles(resolve(APP_ROOT, "src/app"), "page.tsx");
+    const routeCount = countFiles(resolve(APP_ROOT, "src/app/api"), "route.ts");
+    expect(pageCount).toBeGreaterThan(0);
+    expect(routeCount).toBeGreaterThan(0);
 
     expect(packet).toContain("Fresh-context OpenPlan product-direction review packet");
     expect(packet).toContain(`Planner pages: ${pageCount}`);

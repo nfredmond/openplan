@@ -5,6 +5,7 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
+import { readEveryPageAsResult } from "@/lib/supabase/paged-read";
 import { fetchCensusForCorridor } from "@/lib/data-sources/census";
 import { fetchTractOverlayFeatures, type CensusTractOverlayMetrics } from "@/lib/data-sources/census-geometry";
 import {
@@ -25,8 +26,6 @@ const paramsSchema = z.object({ campaignId: z.string().uuid() });
 type RouteContext = { params: Promise<{ campaignId: string }> };
 
 type ItemRow = { id: string; latitude: number | null; longitude: number | null };
-
-const MAX_RESPONDENTS = 2000;
 
 /**
  * POST — (re)compute the spatial/ecological representativeness screening for a
@@ -64,15 +63,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     return await withWorkspaceIntegrationContext(access.campaign.workspace_id, async () => {
-      // Respondents = the campaign's approved, geolocated comments.
-      const { data: itemRows, error: itemsError } = await supabase
-        .from("engagement_items")
-        .select("id, latitude, longitude")
-        .eq("campaign_id", campaignId)
-        .eq("status", "approved")
-        .not("latitude", "is", null)
-        .not("longitude", "is", null)
-        .limit(MAX_RESPONDENTS);
+      // Respondents = the campaign's approved, geolocated comments. Every one of
+      // them: the cached screening reports `locatedRespondentCount`, and a single
+      // read stops at PostgREST's 1,000-row cap with no error. The `id` order
+      // is total, so pages cannot skip or repeat a comment.
+      const { data: itemRows, error: itemsError } = await readEveryPageAsResult<ItemRow>(
+        (from, toInclusive) =>
+          supabase
+            .from("engagement_items")
+            .select("id, latitude, longitude")
+            .eq("campaign_id", campaignId)
+            .eq("status", "approved")
+            .not("latitude", "is", null)
+            .not("longitude", "is", null)
+            .order("id", { ascending: true })
+            .range(from, toInclusive),
+        "the located comments could not be read in full"
+      );
       if (itemsError) {
         return NextResponse.json({ error: "Failed to load engagement items" }, { status: 500 });
       }

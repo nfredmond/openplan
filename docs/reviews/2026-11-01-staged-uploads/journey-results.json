@@ -1,0 +1,824 @@
+{
+  "startedAt": "2026-11-02T00:30:55.854Z",
+  "base": "http://localhost:3210",
+  "steps": [
+    {
+      "step": "identity",
+      "at": "2026-11-02T00:30:56.044Z",
+      "health": {
+        "status": "ok",
+        "deployment": {
+          "commit": "d481ccc91411",
+          "version": "0.72.0",
+          "migrations": {
+            "expected": 448,
+            "latest": "20261024200400"
+          }
+        }
+      }
+    },
+    {
+      "step": "signed-up",
+      "at": "2026-11-02T00:30:58.973Z",
+      "url": "http://localhost:3210/dashboard",
+      "workspaceRole": "owner",
+      "workspaceFound": true,
+      "screenshot": "01-dashboard.png"
+    },
+    {
+      "step": "project-created",
+      "at": "2026-11-02T00:31:00.055Z",
+      "projectId": "eb3d9685-5aa9-4fda-bbda-60afdcf189a0",
+      "screenshot": "02-project.png"
+    },
+    {
+      "step": "kb-upload large-pdf",
+      "at": "2026-11-02T00:31:01.682Z",
+      "file": "large-rtp-exhibit.pdf",
+      "fixtureBytes": 6240941,
+      "notice": "Added \"large-rtp-exhibit\".",
+      "row": {
+        "id": "5c32c733-99d3-4024-83da-5fc21ca85495",
+        "title": "large-rtp-exhibit",
+        "byte_size": 6240941,
+        "checksum": "81af95033a0c0c26d719117840f37a8539050f7be0680d9d1cd024c8a347991e",
+        "status": "stored",
+        "source_kind": "uploaded_pdf",
+        "content_type": "application/pdf",
+        "storage_ref": "storage://kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/5c32c733-99d3-4024-83da-5fc21ca85495/large-rtp-exhibit.pdf",
+        "project_id": null
+      },
+      "rowsWithThisTitle": 1,
+      "download": {
+        "status": 200,
+        "bytes": 6240941,
+        "sha256": "81af95033a0c0c26d719117840f37a8539050f7be0680d9d1cd024c8a347991e",
+        "servedHeaderSha": null
+      },
+      "checksumMatches": true,
+      "downloadMatches": true,
+      "screenshot": "kb-large-pdf.png"
+    },
+    {
+      "step": "kb-upload small-pdf",
+      "at": "2026-11-02T00:31:02.803Z",
+      "file": "small-staff-report.pdf",
+      "fixtureBytes": 33334,
+      "notice": "Added \"small-staff-report\".",
+      "row": {
+        "id": "e5fc6cd3-c438-4ecf-b32f-11062d4d3dcd",
+        "title": "small-staff-report",
+        "byte_size": 33334,
+        "checksum": "4802be099ed7b34e0cea057cae14aaee240b7d96e8a30abbbd0a7f67bbf673c6",
+        "status": "stored",
+        "source_kind": "uploaded_pdf",
+        "content_type": "application/pdf",
+        "storage_ref": "storage://kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/e5fc6cd3-c438-4ecf-b32f-11062d4d3dcd/small-staff-report.pdf",
+        "project_id": null
+      },
+      "rowsWithThisTitle": 1,
+      "download": {
+        "status": 200,
+        "bytes": 33334,
+        "sha256": "4802be099ed7b34e0cea057cae14aaee240b7d96e8a30abbbd0a7f67bbf673c6",
+        "servedHeaderSha": null
+      },
+      "checksumMatches": true,
+      "downloadMatches": true,
+      "screenshot": "kb-small-pdf.png"
+    },
+    {
+      "step": "kb-refused wrong-type",
+      "at": "2026-11-02T00:31:03.137Z",
+      "message": "Unsupported document type. Upload a PDF, Word (.docx), plain-text, or Markdown file (these are indexed for citation), or an image (JPEG/PNG/TIFF), spreadsheet (.csv/.xlsx/.xls/.ods), CAD file (.dwg/.dxf), or office document (.pptx/.ppt/.doc/.rtf/.odt/.odp) to store for reference.",
+      "staged": {
+        "listStatus": 200,
+        "objects": []
+      },
+      "screenshot": "kb-refused-wrong-type.png"
+    },
+    {
+      "step": "aerial-page",
+      "at": "2026-11-02T00:31:03.705Z",
+      "screenshot": "03-aerial.png"
+    },
+    {
+      "step": "mission-dialog",
+      "at": "2026-11-02T00:31:03.968Z",
+      "screenshot": "04-mission-dialog.png"
+    },
+    {
+      "step": "mission-created",
+      "at": "2026-11-02T00:31:05.244Z",
+      "missionId": "b3988b7e-2591-4b18-91a0-49ffc38b2a18",
+      "screenshot": "05-mission.png"
+    },
+    {
+      "step": "photos-tab",
+      "at": "2026-11-02T00:31:05.588Z",
+      "screenshot": "06-photos-tab.png"
+    },
+    {
+      "step": "aerial-upload large-jpeg",
+      "at": "2026-11-02T00:31:07.792Z",
+      "file": "large-mission-frame.jpg",
+      "fixtureBytes": 6524085,
+      "outcome": "large-mission-frame.jpg: stored.",
+      "panelCopies": 1,
+      "row": {
+        "id": "daafb093-e48d-411d-bbec-f049be960bc7",
+        "original_filename": "large-mission-frame.jpg",
+        "byte_size": 6524085,
+        "checksum_sha256": "de754699adaaf858f7633435141c8c9ff211fec4af45b32748d2c3e8745634ee",
+        "content_type": "image/jpeg",
+        "storage_path": "5b1d7ecf-d27a-4990-8961-5687f6d40848/b3988b7e-2591-4b18-91a0-49ffc38b2a18/daafb093-e48d-411d-bbec-f049be960bc7/large-mission-frame.jpg"
+      },
+      "download": {
+        "status": 200,
+        "bytes": 6524085,
+        "sha256": "de754699adaaf858f7633435141c8c9ff211fec4af45b32748d2c3e8745634ee",
+        "servedHeaderSha": null
+      },
+      "checksumMatches": true,
+      "downloadMatches": true,
+      "screenshot": "aerial-large-jpeg.png"
+    },
+    {
+      "step": "aerial-upload small-jpeg",
+      "at": "2026-11-02T00:31:08.846Z",
+      "file": "small-mission-frame.jpg",
+      "fixtureBytes": 52184,
+      "outcome": "small-mission-frame.jpg: stored.",
+      "panelCopies": 1,
+      "row": {
+        "id": "5e4c53f3-e266-4ed4-a668-023d51d39ae1",
+        "original_filename": "small-mission-frame.jpg",
+        "byte_size": 52184,
+        "checksum_sha256": "b69c3b7ecf64e426babfe0a14c5665b3f8f595decd9d89415693441ca4fa59f3",
+        "content_type": "image/jpeg",
+        "storage_path": "5b1d7ecf-d27a-4990-8961-5687f6d40848/b3988b7e-2591-4b18-91a0-49ffc38b2a18/5e4c53f3-e266-4ed4-a668-023d51d39ae1/small-mission-frame.jpg"
+      },
+      "download": {
+        "status": 200,
+        "bytes": 52184,
+        "sha256": "b69c3b7ecf64e426babfe0a14c5665b3f8f595decd9d89415693441ca4fa59f3",
+        "servedHeaderSha": null
+      },
+      "checksumMatches": true,
+      "downloadMatches": true,
+      "screenshot": "aerial-small-jpeg.png"
+    },
+    {
+      "step": "aerial-upload refused-not-a-photo",
+      "at": "2026-11-02T00:31:09.764Z",
+      "file": "not-a-photo.jpg",
+      "fixtureBytes": 37,
+      "outcome": "not-a-photo.jpg: This file is not a JPEG, PNG, or TIFF image, which are the formats photogrammetry processing can read. Nothing was stored.",
+      "panelCopies": 1,
+      "row": null,
+      "download": null,
+      "checksumMatches": null,
+      "downloadMatches": null,
+      "screenshot": "aerial-refused-not-a-photo.png"
+    },
+    {
+      "step": "aerial-refused staged listing",
+      "at": "2026-11-02T00:31:09.771Z",
+      "staged": {
+        "listStatus": 200,
+        "objects": []
+      }
+    },
+    {
+      "step": "mobile-signed-in",
+      "at": "2026-11-02T00:31:13.176Z",
+      "screenshot": "m01-dashboard.png"
+    },
+    {
+      "step": "kb-upload m-large-pdf",
+      "at": "2026-11-02T00:31:15.213Z",
+      "file": "large-rtp-exhibit-390.pdf",
+      "fixtureBytes": 5625941,
+      "notice": "Added \"large-rtp-exhibit-390\".",
+      "row": {
+        "id": "e2cd99e6-30a0-46ab-b199-f06599971567",
+        "title": "large-rtp-exhibit-390",
+        "byte_size": 5625941,
+        "checksum": "72f5611031f708ca7cf5c2c2b3e92dc89f5c74dc6ae29eb6e285aa8bd5d1c593",
+        "status": "stored",
+        "source_kind": "uploaded_pdf",
+        "content_type": "application/pdf",
+        "storage_ref": "storage://kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/e2cd99e6-30a0-46ab-b199-f06599971567/large-rtp-exhibit-390.pdf",
+        "project_id": null
+      },
+      "rowsWithThisTitle": 1,
+      "download": {
+        "status": 200,
+        "bytes": 5625941,
+        "sha256": "72f5611031f708ca7cf5c2c2b3e92dc89f5c74dc6ae29eb6e285aa8bd5d1c593",
+        "servedHeaderSha": null
+      },
+      "checksumMatches": true,
+      "downloadMatches": true,
+      "screenshot": "kb-m-large-pdf.png"
+    },
+    {
+      "step": "aerial-upload m-large-jpeg",
+      "at": "2026-11-02T00:31:18.456Z",
+      "file": "large-mission-frame-390.jpg",
+      "fixtureBytes": 5920651,
+      "outcome": "large-mission-frame-390.jpg: stored.",
+      "panelCopies": 1,
+      "row": {
+        "id": "8af7ac50-b92d-4c7c-b373-4a3d5a84a57f",
+        "original_filename": "large-mission-frame-390.jpg",
+        "byte_size": 5920651,
+        "checksum_sha256": "65976f0f553c018a7b8bf7838b8ddd05c0b79ece4a29a651b77db2d8092b0a95",
+        "content_type": "image/jpeg",
+        "storage_path": "5b1d7ecf-d27a-4990-8961-5687f6d40848/b3988b7e-2591-4b18-91a0-49ffc38b2a18/8af7ac50-b92d-4c7c-b373-4a3d5a84a57f/large-mission-frame-390.jpg"
+      },
+      "download": {
+        "status": 200,
+        "bytes": 5920651,
+        "sha256": "65976f0f553c018a7b8bf7838b8ddd05c0b79ece4a29a651b77db2d8092b0a95",
+        "servedHeaderSha": null
+      },
+      "checksumMatches": true,
+      "downloadMatches": true,
+      "screenshot": "aerial-m-large-jpeg.png"
+    },
+    {
+      "step": "final staged listing",
+      "at": "2026-11-02T00:31:18.474Z",
+      "kb": {
+        "listStatus": 200,
+        "objects": []
+      },
+      "aerial": {
+        "listStatus": 200,
+        "objects": []
+      }
+    }
+  ],
+  "network": [
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/start",
+      "status": 200,
+      "requestBytes": 158,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "large-rtp-exhibit.pdf",
+        "byteSize": 6240941,
+        "contentType": "application/pdf"
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/612b58e5-d023-4f29-97f9-8980237d8bab?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/612b58e5-d023-4f29-97f9-8980237d8bab",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/612b58e5-d023-4f29-97f9-8980237d8bab?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/complete",
+      "status": 202,
+      "requestBytes": 291,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "large-rtp-exhibit.pdf",
+        "byteSize": 6240941,
+        "contentType": "application/pdf",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/612b58e5-d023-4f29-97f9-8980237d8bab"
+      },
+      "response": {
+        "document": {
+          "id": "5c32c733-99d3-4024-83da-5fc21ca85495",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "project_id": null,
+          "title": "large-rtp-exhibit",
+          "doc_kind": "other",
+          "source_kind": "uploaded_pdf",
+          "original_filename": "large-rtp-exhibit.pdf",
+          "content_type": "application/pdf",
+          "byte_size": 6240941,
+          "storage_ref": "storage://kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/5c32c733-99d3-4024-83da-5fc21ca85495/large-rtp-exhibit.pdf",
+          "page_count": null,
+          "chunk_count": 0,
+          "char_count": null,
+          "status": "stored",
+          "extraction_error": null,
+          "extraction_source": "none",
+          "citation_label": null,
+          "created_at": "2026-11-02T00:31:01.235423+00:00",
+          "updated_at": "2026-11-02T00:31:01.235423+00:00"
+        },
+        "job": {
+          "id": "4ecbdb1e-a4a6-4956-8722-acdb52f4886e",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "document_id": "5c32c733-99d3-4024-83da-5fc21ca85495",
+          "request_id": "858be287-1917-43ff-ad95-724d19fef45b",
+          "worker_job_id": null,
+          "status": "queued",
+          "progress": null,
+          "message": null,
+          "page_count": null,
+          "pages_with_text": null,
+          "engine_name": null,
+          "engine_version": null,
+          "languages": [
+            "eng"
+          ],
+          "failure_detail": null,
+          "last_callback_id": null,
+          "last_callback_at": null,
+          "requested_by": "70e11022-1031-4a70-9feb-7c35ac50bfbf",
+          "created_at": "2026-11-02T00:31:01.247766+00:00",
+          "updated_at": "2026-11-02T00:31:01.247766+00:00",
+          "extraction_mode": "text",
+          "source_checksum": "81af95033a0c0c26d719117840f37a8539050f7be0680d9d1cd024c8a347991e",
+          "dispatch_after": "2026-11-02T00:31:01.247766+00:00",
+          "dispatch_callback_url": "http://localhost:3210/api/knowledge-base/ocr-callback",
+          "cancel_requested": false,
+          "job_kind": "extraction",
+          "lease_token": null,
+          "lease_until": null
+        },
+        "notice": "Original retained. Text extraction is queued; you can review the original while processing runs."
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/start",
+      "status": 200,
+      "requestBytes": 157,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "small-staff-report.pdf",
+        "byteSize": 33334,
+        "contentType": "application/pdf"
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/5411445e-7a81-48d4-a727-ea9cdbe42de0?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/5411445e-7a81-48d4-a727-ea9cdbe42de0",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/5411445e-7a81-48d4-a727-ea9cdbe42de0?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/complete",
+      "status": 202,
+      "requestBytes": 290,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "small-staff-report.pdf",
+        "byteSize": 33334,
+        "contentType": "application/pdf",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/5411445e-7a81-48d4-a727-ea9cdbe42de0"
+      },
+      "response": {
+        "document": {
+          "id": "e5fc6cd3-c438-4ecf-b32f-11062d4d3dcd",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "project_id": null,
+          "title": "small-staff-report",
+          "doc_kind": "other",
+          "source_kind": "uploaded_pdf",
+          "original_filename": "small-staff-report.pdf",
+          "content_type": "application/pdf",
+          "byte_size": 33334,
+          "storage_ref": "storage://kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/e5fc6cd3-c438-4ecf-b32f-11062d4d3dcd/small-staff-report.pdf",
+          "page_count": null,
+          "chunk_count": 0,
+          "char_count": null,
+          "status": "stored",
+          "extraction_error": null,
+          "extraction_source": "none",
+          "citation_label": null,
+          "created_at": "2026-11-02T00:31:02.158693+00:00",
+          "updated_at": "2026-11-02T00:31:02.158693+00:00"
+        },
+        "job": {
+          "id": "e1491ecd-0d0d-4ef2-be68-681f18647f5c",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "document_id": "e5fc6cd3-c438-4ecf-b32f-11062d4d3dcd",
+          "request_id": "29294b95-fd85-46bf-ab3a-2018830c6fc6",
+          "worker_job_id": null,
+          "status": "queued",
+          "progress": null,
+          "message": null,
+          "page_count": null,
+          "pages_with_text": null,
+          "engine_name": null,
+          "engine_version": null,
+          "languages": [
+            "eng"
+          ],
+          "failure_detail": null,
+          "last_callback_id": null,
+          "last_callback_at": null,
+          "requested_by": "70e11022-1031-4a70-9feb-7c35ac50bfbf",
+          "created_at": "2026-11-02T00:31:02.16598+00:00",
+          "updated_at": "2026-11-02T00:31:02.16598+00:00",
+          "extraction_mode": "text",
+          "source_checksum": "4802be099ed7b34e0cea057cae14aaee240b7d96e8a30abbbd0a7f67bbf673c6",
+          "dispatch_after": "2026-11-02T00:31:02.16598+00:00",
+          "dispatch_callback_url": "http://localhost:3210/api/knowledge-base/ocr-callback",
+          "cancel_requested": false,
+          "job_kind": "extraction",
+          "lease_token": null,
+          "lease_until": null
+        },
+        "notice": "Original retained. Text extraction is queued; you can review the original while processing runs."
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/start",
+      "status": 415,
+      "requestBytes": 157,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "model-runner.exe",
+        "byteSize": 37,
+        "contentType": "application/x-msdownload"
+      },
+      "response": {
+        "error": "Unsupported document type. Upload a PDF, Word (.docx), plain-text, or Markdown file (these are indexed for citation), or an image (JPEG/PNG/TIFF), spreadsheet (.csv/.xlsx/.xls/.ods), CAD file (.dwg/.dxf), or office document (.pptx/.ppt/.doc/.rtf/.odt/.odp) to store for reference."
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/start",
+      "status": 200,
+      "requestBytes": 57,
+      "request": {
+        "filename": "large-mission-frame.jpg",
+        "byteSize": 6524085
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/671056e1-9560-4301-bbc4-adcff2249d67?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/671056e1-9560-4301-bbc4-adcff2249d67",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/671056e1-9560-4301-bbc4-adcff2249d67?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/complete",
+      "status": 201,
+      "requestBytes": 190,
+      "request": {
+        "filename": "large-mission-frame.jpg",
+        "byteSize": 6524085,
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/671056e1-9560-4301-bbc4-adcff2249d67"
+      },
+      "response": {
+        "imagery": {
+          "id": "daafb093-e48d-411d-bbec-f049be960bc7",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "mission_id": "b3988b7e-2591-4b18-91a0-49ffc38b2a18",
+          "storage_bucket": "aerial-imagery",
+          "storage_path": "5b1d7ecf-d27a-4990-8961-5687f6d40848/b3988b7e-2591-4b18-91a0-49ffc38b2a18/daafb093-e48d-411d-bbec-f049be960bc7/large-mission-frame.jpg",
+          "original_filename": "large-mission-frame.jpg",
+          "byte_size": 6524085,
+          "checksum_sha256": "de754699adaaf858f7633435141c8c9ff211fec4af45b32748d2c3e8745634ee",
+          "content_type": "image/jpeg",
+          "captured_at": null,
+          "gps_lat": null,
+          "gps_lon": null,
+          "gps_altitude_m": null,
+          "camera_make": null,
+          "camera_model": null,
+          "uploaded_by": "70e11022-1031-4a70-9feb-7c35ac50bfbf",
+          "created_at": "2026-11-02T00:31:06.529683+00:00",
+          "updated_at": "2026-11-02T00:31:06.529683+00:00"
+        },
+        "deduped": false
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/start",
+      "status": 200,
+      "requestBytes": 55,
+      "request": {
+        "filename": "small-mission-frame.jpg",
+        "byteSize": 52184
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/d48198ee-483c-4ff4-9917-c33105fa2d12?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/d48198ee-483c-4ff4-9917-c33105fa2d12",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/d48198ee-483c-4ff4-9917-c33105fa2d12?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/complete",
+      "status": 201,
+      "requestBytes": 188,
+      "request": {
+        "filename": "small-mission-frame.jpg",
+        "byteSize": 52184,
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/d48198ee-483c-4ff4-9917-c33105fa2d12"
+      },
+      "response": {
+        "imagery": {
+          "id": "5e4c53f3-e266-4ed4-a668-023d51d39ae1",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "mission_id": "b3988b7e-2591-4b18-91a0-49ffc38b2a18",
+          "storage_bucket": "aerial-imagery",
+          "storage_path": "5b1d7ecf-d27a-4990-8961-5687f6d40848/b3988b7e-2591-4b18-91a0-49ffc38b2a18/5e4c53f3-e266-4ed4-a668-023d51d39ae1/small-mission-frame.jpg",
+          "original_filename": "small-mission-frame.jpg",
+          "byte_size": 52184,
+          "checksum_sha256": "b69c3b7ecf64e426babfe0a14c5665b3f8f595decd9d89415693441ca4fa59f3",
+          "content_type": "image/jpeg",
+          "captured_at": null,
+          "gps_lat": null,
+          "gps_lon": null,
+          "gps_altitude_m": null,
+          "camera_make": null,
+          "camera_model": null,
+          "uploaded_by": "70e11022-1031-4a70-9feb-7c35ac50bfbf",
+          "created_at": "2026-11-02T00:31:08.23787+00:00",
+          "updated_at": "2026-11-02T00:31:08.23787+00:00"
+        },
+        "deduped": false
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/start",
+      "status": 200,
+      "requestBytes": 44,
+      "request": {
+        "filename": "not-a-photo.jpg",
+        "byteSize": 37
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/9da4f967-e0db-4d42-af6a-e8533d530962?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/9da4f967-e0db-4d42-af6a-e8533d530962",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/9da4f967-e0db-4d42-af6a-e8533d530962?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "desktop-1440",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/complete",
+      "status": 415,
+      "requestBytes": 177,
+      "request": {
+        "filename": "not-a-photo.jpg",
+        "byteSize": 37,
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/9da4f967-e0db-4d42-af6a-e8533d530962"
+      },
+      "response": {
+        "error": "This file is not a JPEG, PNG, or TIFF image, which are the formats photogrammetry processing can read. Nothing was stored."
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/start",
+      "status": 200,
+      "requestBytes": 162,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "large-rtp-exhibit-390.pdf",
+        "byteSize": 5625941,
+        "contentType": "application/pdf"
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/027c86f0-9ce4-4b12-9e34-a3609d477aaa?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/027c86f0-9ce4-4b12-9e34-a3609d477aaa",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/027c86f0-9ce4-4b12-9e34-a3609d477aaa?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "mobile-390",
+      "method": "POST",
+      "url": "http://localhost:3210/api/knowledge-base/documents/upload/complete",
+      "status": 202,
+      "requestBytes": 295,
+      "request": {
+        "workspaceId": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+        "docKind": "other",
+        "filename": "large-rtp-exhibit-390.pdf",
+        "byteSize": 5625941,
+        "contentType": "application/pdf",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/027c86f0-9ce4-4b12-9e34-a3609d477aaa"
+      },
+      "response": {
+        "document": {
+          "id": "e2cd99e6-30a0-46ab-b199-f06599971567",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "project_id": null,
+          "title": "large-rtp-exhibit-390",
+          "doc_kind": "other",
+          "source_kind": "uploaded_pdf",
+          "original_filename": "large-rtp-exhibit-390.pdf",
+          "content_type": "application/pdf",
+          "byte_size": 5625941,
+          "storage_ref": "storage://kb-documents/5b1d7ecf-d27a-4990-8961-5687f6d40848/e2cd99e6-30a0-46ab-b199-f06599971567/large-rtp-exhibit-390.pdf",
+          "page_count": null,
+          "chunk_count": 0,
+          "char_count": null,
+          "status": "stored",
+          "extraction_error": null,
+          "extraction_source": "none",
+          "citation_label": null,
+          "created_at": "2026-11-02T00:31:14.582017+00:00",
+          "updated_at": "2026-11-02T00:31:14.582017+00:00"
+        },
+        "job": {
+          "id": "e7ebaf52-5b4d-4721-aa94-dbc974b9c0c5",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "document_id": "e2cd99e6-30a0-46ab-b199-f06599971567",
+          "request_id": "2701cbd8-1a53-412b-a1eb-305cc46cd771",
+          "worker_job_id": null,
+          "status": "queued",
+          "progress": null,
+          "message": null,
+          "page_count": null,
+          "pages_with_text": null,
+          "engine_name": null,
+          "engine_version": null,
+          "languages": [
+            "eng"
+          ],
+          "failure_detail": null,
+          "last_callback_id": null,
+          "last_callback_at": null,
+          "requested_by": "70e11022-1031-4a70-9feb-7c35ac50bfbf",
+          "created_at": "2026-11-02T00:31:14.59221+00:00",
+          "updated_at": "2026-11-02T00:31:14.59221+00:00",
+          "extraction_mode": "text",
+          "source_checksum": "72f5611031f708ca7cf5c2c2b3e92dc89f5c74dc6ae29eb6e285aa8bd5d1c593",
+          "dispatch_after": "2026-11-02T00:31:14.59221+00:00",
+          "dispatch_callback_url": "http://localhost:3210/api/knowledge-base/ocr-callback",
+          "cancel_requested": false,
+          "job_kind": "extraction",
+          "lease_token": null,
+          "lease_until": null
+        },
+        "notice": "Original retained. Text extraction is queued; you can review the original while processing runs."
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/start",
+      "status": 200,
+      "requestBytes": 61,
+      "request": {
+        "filename": "large-mission-frame-390.jpg",
+        "byteSize": 5920651
+      },
+      "response": {
+        "uploadUrl": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/bb16184f-ed94-4456-a4f8-24d292d55170?<query withheld>",
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/bb16184f-ed94-4456-a4f8-24d292d55170",
+        "contentType": "application/octet-stream"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "method": "PUT",
+      "url": "http://127.0.0.1:55321/storage/v1/object/upload/sign/aerial-imagery/5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/bb16184f-ed94-4456-a4f8-24d292d55170?<query withheld>",
+      "status": 200,
+      "requestBytes": 0,
+      "request": null,
+      "response": null
+    },
+    {
+      "viewport": "mobile-390",
+      "method": "POST",
+      "url": "http://localhost:3210/api/aerial/missions/b3988b7e-2591-4b18-91a0-49ffc38b2a18/imagery/upload/complete",
+      "status": 201,
+      "requestBytes": 194,
+      "request": {
+        "filename": "large-mission-frame-390.jpg",
+        "byteSize": 5920651,
+        "objectPath": "5b1d7ecf-d27a-4990-8961-5687f6d40848/staged/70e11022-1031-4a70-9feb-7c35ac50bfbf/bb16184f-ed94-4456-a4f8-24d292d55170"
+      },
+      "response": {
+        "imagery": {
+          "id": "8af7ac50-b92d-4c7c-b373-4a3d5a84a57f",
+          "workspace_id": "5b1d7ecf-d27a-4990-8961-5687f6d40848",
+          "mission_id": "b3988b7e-2591-4b18-91a0-49ffc38b2a18",
+          "storage_bucket": "aerial-imagery",
+          "storage_path": "5b1d7ecf-d27a-4990-8961-5687f6d40848/b3988b7e-2591-4b18-91a0-49ffc38b2a18/8af7ac50-b92d-4c7c-b373-4a3d5a84a57f/large-mission-frame-390.jpg",
+          "original_filename": "large-mission-frame-390.jpg",
+          "byte_size": 5920651,
+          "checksum_sha256": "65976f0f553c018a7b8bf7838b8ddd05c0b79ece4a29a651b77db2d8092b0a95",
+          "content_type": "image/jpeg",
+          "captured_at": null,
+          "gps_lat": null,
+          "gps_lon": null,
+          "gps_altitude_m": null,
+          "camera_make": null,
+          "camera_model": null,
+          "uploaded_by": "70e11022-1031-4a70-9feb-7c35ac50bfbf",
+          "created_at": "2026-11-02T00:31:17.691783+00:00",
+          "updated_at": "2026-11-02T00:31:17.691783+00:00"
+        },
+        "deduped": false
+      }
+    }
+  ],
+  "console": [
+    {
+      "viewport": "desktop-1440",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 415 (Unsupported Media Type)"
+    },
+    {
+      "viewport": "desktop-1440",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 415 (Unsupported Media Type)"
+    },
+    {
+      "viewport": "desktop-1440",
+      "type": "warning",
+      "text": "The resource http://localhost:3210/_next/static/media/PublicSans%5Bwght%5D-s.p.343g4259bx6y1.ttf was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "viewport": "desktop-1440",
+      "type": "warning",
+      "text": "The resource http://localhost:3210/_next/static/media/SpaceGrotesk%5Bwght%5D-s.p.3bk34495xijiu.ttf was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    },
+    {
+      "viewport": "desktop-1440",
+      "type": "warning",
+      "text": "The resource http://localhost:3210/_next/static/media/JetBrainsMono%5Bwght%5D-s.p.2zi1ojajef2ra.ttf was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally."
+    }
+  ],
+  "finishedAt": "2026-11-02T00:31:18.474Z"
+}

@@ -15,6 +15,7 @@ import {
   type PortalMessageKey,
 } from "@/lib/engagement/portal-i18n/messages";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
+import { PORTAL_CATALOG_KNOWN_STALE } from "@/lib/engagement/portal-i18n/catalogs/translated-from";
 import {
   portalMessageView,
   portalTextDisclosureView,
@@ -132,7 +133,7 @@ describe("portal locale resolution", () => {
     for (const locale of PORTAL_LOCALES) {
       const resolved = resolvePortalLocale({ requested: locale });
       expect(resolved.direction, locale).toBe(PORTAL_LOCALE_DIRECTION[locale]);
-      expect(resolved.bcp47, locale).toBe(locale);
+      expect(resolved.bcp47, locale).toBe(locale === "zh" ? "zh-Hans" : locale);
     }
   });
 
@@ -147,12 +148,16 @@ describe("portal locale resolution", () => {
     expect(arabic.bcp47).toBe("ar");
   });
 
-  it("treats a region or script subtag as the same language", () => {
+  it("treats a region subtag as the same language, and a different script as a different one", () => {
     // OpenPlan carries one Spanish. Pretending otherwise turns eleven catalogs
     // into forty.
     expect(normalizePortalLocaleTag("es-MX")).toBe("es");
     expect(normalizePortalLocaleTag("es_419")).toBe("es");
-    expect(normalizePortalLocaleTag("ZH-HANT-TW")).toBe("zh");
+    // The Chinese slot is Simplified. Traditional falls through rather than
+    // being served a script its reader asked not to get; see
+    // portal-locale-scripts.test.ts.
+    expect(normalizePortalLocaleTag("ZH-HANS-TW")).toBe("zh");
+    expect(normalizePortalLocaleTag("ZH-HANT-TW")).toBeNull();
   });
 
   it("recognises the tags browsers actually send for these languages", () => {
@@ -269,9 +274,13 @@ describe("portal message coverage", () => {
       const translator = createPortalTranslator(bundle);
       const catalog = PORTAL_MESSAGE_CATALOGS[locale] ?? {};
 
+      // A translation made from English that has since changed is not shown,
+      // so it falls back like a missing one. See
+      // portal-catalog-translations-are-current.test.ts.
+      const stale = new Set(PORTAL_CATALOG_KNOWN_STALE[locale] ?? []);
       const genuinelyMissing = ALL_MESSAGE_KEYS.filter((key) => {
         const value = catalog[key];
-        return typeof value !== "string" || value.trim().length === 0;
+        return typeof value !== "string" || value.trim().length === 0 || stale.has(key);
       });
 
       // English asking for English is not a fallback; reporting one would put a

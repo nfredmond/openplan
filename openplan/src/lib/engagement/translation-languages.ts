@@ -94,7 +94,9 @@ export const TRANSLATION_LANGUAGE_LABELS: Record<TranslationLanguage, string> = 
 export const TRANSLATION_LANGUAGE_NATIVE_LABELS: Record<TranslationLanguage, string> = {
   en: "English",
   es: "Español",
-  zh: "中文",
+  // Names the script, because the slot holds Simplified characters only. A
+  // reader of Traditional characters must not be told this is their Chinese.
+  zh: "简体中文",
   vi: "Tiếng Việt",
   tl: "Tagalog",
   ko: "한국어",
@@ -114,6 +116,43 @@ export const TRANSLATION_LANGUAGE_NATIVE_LABELS: Record<TranslationLanguage, str
   bn: "বাংলা",
   pl: "Polski",
   nv: "Diné Bizaad",
+};
+
+/**
+ * The one script each language slot is written in, as an ISO 15924 code.
+ *
+ * A language code alone does not say how its text is written. Chinese is
+ * written in Simplified or Traditional characters; Punjabi in Gurmukhi (India)
+ * or Shahmukhi, an Arabic-based script (Pakistan); Hmong in Latin letters or in
+ * Pahawh or Nyiakeng Puachue. OpenPlan carries one slot per language, so the
+ * slot has to name its script, and a reader who asks for a different script is
+ * a reader this slot does not serve. `normalizePortalLocaleTag` uses this to
+ * refuse such a request rather than show the wrong script. `pa` and `zh` are
+ * the slots where a second script has a large readership in the United States.
+ */
+export const TRANSLATION_LANGUAGE_SCRIPTS: Record<TranslationLanguage, string> = {
+  en: "Latn",
+  es: "Latn",
+  zh: "Hans",
+  vi: "Latn",
+  tl: "Latn",
+  ko: "Kore",
+  ar: "Arab",
+  hy: "Armn",
+  fa: "Arab",
+  ru: "Cyrl",
+  pa: "Guru",
+  hmn: "Latn",
+  km: "Khmr",
+  ht: "Latn",
+  pt: "Latn",
+  so: "Latn",
+  am: "Ethi",
+  fr: "Latn",
+  ur: "Arab",
+  bn: "Beng",
+  pl: "Latn",
+  nv: "Latn",
 };
 
 export function isTranslationLanguage(value: unknown): value is TranslationLanguage {

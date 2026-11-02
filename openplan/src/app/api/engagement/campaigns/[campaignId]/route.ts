@@ -9,7 +9,7 @@ import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
-import { placeKindSchema } from "@/lib/api/place-geographies";
+import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
 import {
@@ -133,12 +133,14 @@ const patchCampaignSchema = z
      */
     place: z
       .union([
-        z.object({
-          mode: z.literal("place"),
-          kind: placeKindSchema,
-          geoid: z.string().trim().min(5).max(7),
-          label: z.string().trim().min(1).max(200).optional(),
-        }),
+        z
+          .object({
+            mode: z.literal("place"),
+            kind: placeKindSchema,
+            geoid: placeGeoidStringSchema,
+            label: z.string().trim().min(1).max(200).optional(),
+          })
+          .superRefine(refinePlaceReference),
         z.object({
           mode: z.literal("drawn"),
           geometry: corridorGeojsonSchema,

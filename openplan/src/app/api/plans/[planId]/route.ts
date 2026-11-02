@@ -14,6 +14,7 @@ import {
   PLAN_TYPE_OPTIONS,
   type PlanLinkType,
 } from "@/lib/plans/catalog";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 
 const PLAN_TYPES = PLAN_TYPE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 const PLAN_STATUSES = PLAN_STATUS_OPTIONS.map((option) => option.value) as [string, ...string[]];
@@ -520,9 +521,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
       campaignIds.length
         ? detailSupabase.from("engagement_categories").select("campaign_id").in("campaign_id", campaignIds)
         : Promise.resolve({ data: [], error: null }),
-      campaignIds.length
-        ? detailSupabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
-        : Promise.resolve({ data: [], error: null }),
+      // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+      readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+        detailSupabase,
+        campaignIds,
+        CAMPAIGN_ITEM_STATUS_COLUMNS
+      ),
       linkedReportIds.length
         ? detailSupabase.from("report_runs").select("report_id").in("report_id", linkedReportIds)
         : Promise.resolve({ data: [], error: null }),

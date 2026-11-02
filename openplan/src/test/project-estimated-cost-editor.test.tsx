@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
 import type { DocumentLibraryEntry, LinkedDocumentLibraryEntry } from "@/lib/document-library/types";
+import { jsonAnswer, stagedUploadFetch } from "./helpers/staged-upload-fetch";
 
 const refresh = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
@@ -84,10 +85,14 @@ describe("ProjectEstimatedCostEditor", () => {
 
   it("stores a CSV, reviews one candidate, and applies its identity, cost, and source together", async () => {
     const documentId = "22222222-2222-4222-8222-222222222222";
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => String(input).startsWith("/api/knowledge-base/documents?")
-      ? new Response(JSON.stringify({ document: { id: documentId, title: "projects.csv" } }), { status: 201 })
-      : new Response(JSON.stringify({ project: { id: "33333333-3333-4333-8333-333333333333" } }), { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    // The CSV goes through Storage; `fetchMock` sees only the project save.
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
+      new Response(JSON.stringify({ project: { id: "33333333-3333-4333-8333-333333333333" } }), { status: 200 }));
+    const staged = stagedUploadFetch({
+      complete: () => jsonAnswer({ document: { id: documentId, title: "projects.csv" } }, 201),
+      other: fetchMock,
+    });
+    vi.stubGlobal("fetch", staged.fetch);
     render(
       <ProjectEstimatedCostEditor
         project={{
@@ -120,11 +125,22 @@ describe("ProjectEstimatedCostEditor", () => {
     expect(screen.getByLabelText("Currency")).toHaveValue("USD");
     fireEvent.click(screen.getByRole("button", { name: /Apply selected project/i }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-    const [uploadUrl, uploadRequest] = fetchMock.mock.calls[0];
-    expect(uploadUrl).toContain("workspaceId=11111111-1111-4111-8111-111111111111");
-    expect(uploadRequest?.body).toBe(file);
-    const patchRequest = fetchMock.mock.calls[1][1] as RequestInit;
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(staged.uploads).toHaveLength(1);
+    const [upload] = staged.uploads;
+    expect(upload.startUrl).toBe("/api/knowledge-base/documents/upload/start");
+    expect(upload.start).toMatchObject({
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      projectId: "33333333-3333-4333-8333-333333333333",
+      docKind: "other",
+      filename: "projects.csv",
+      byteSize: file.size,
+      contentType: "text/csv",
+    });
+    // The file itself goes only to Storage, then complete names the object.
+    expect(upload.putBody).toBe(file);
+    expect(upload.complete).toMatchObject({ ...upload.start, objectPath: "staged-object-1" });
+    const patchRequest = fetchMock.mock.calls[0][1] as RequestInit;
     expect(JSON.parse(String(patchRequest.body))).toEqual({
       name: "Example Corridor Complete Street",
       summary: "Sidewalks, lighting and crossings",
@@ -234,27 +250,31 @@ describe("ProjectEstimatedCostEditor", () => {
   });
 
   it.each(["", "0", "1e3", "12junk", "$12", "1,000", "1 000", "1.001", "1000000000000000.01", "999999999999999.99"])("reviews CSV amount %s without coercion or source-file edits", async value => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => String(input).startsWith("/api/knowledge-base/documents?")
-      ? new Response(JSON.stringify({ document: { id: savedSource.id, title: "estimate.csv" } }), { status: 201 })
-      : new Response("{}", { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response("{}", { status: 200 }));
+    const staged = stagedUploadFetch({
+      complete: () => jsonAnswer({ document: { id: savedSource.id, title: "estimate.csv" } }, 201),
+      other: fetchMock,
+    });
+    vi.stubGlobal("fetch", staged.fetch);
     render(<ProjectEstimatedCostEditor project={savedProject} canWrite documents={[]} estimateSource={{ status: "unlinked", entry: null }} />);
     const csv = `name,cost_usd\nCandidate,"${value}"`;
     const file = new File([csv], "estimate.csv", { type: "text/csv" });
     Object.defineProperty(file, "text", { value: async () => csv });
     fireEvent.change(screen.getByLabelText(/Project candidates CSV/), { target: { files: [file] } });
     await screen.findByText(/stored and indexed/);
-    expect(fetchMock.mock.calls[0][1]?.body).toBe(file);
+    expect(staged.uploads[0].putBody).toBe(file);
     fireEvent.click(screen.getByRole("button", { name: "Use this candidate" }));
     if (value === "999999999999999.99") {
       expect(screen.getByLabelText("Amount")).toHaveValue(value);
       fireEvent.click(screen.getByRole("button", { name: "Apply selected project" }));
-      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
-      expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).estimatedCost).toMatchObject({ amount: value, basisYear: null, sourceDocumentId: savedSource.id });
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+      expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).estimatedCost).toMatchObject({ amount: value, basisYear: null, sourceDocumentId: savedSource.id });
     } else {
       expect(screen.getByRole("status")).toHaveTextContent(/whole cents/);
       expect(screen.queryByRole("button", { name: "Apply selected project" })).not.toBeInTheDocument();
-      expect(fetchMock).toHaveBeenCalledOnce();
+      // Only the upload ran; nothing was saved to the project.
+      expect(staged.uploads).toHaveLength(1);
+      expect(fetchMock).not.toHaveBeenCalled();
     }
   });
 

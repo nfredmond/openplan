@@ -39,6 +39,7 @@ import {
 } from "@/lib/models/catalog";
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 
 type LinkedArtifactBase = {
   id: string;
@@ -415,9 +416,12 @@ export default async function PlanDetailPage({
     campaignIds.length
       ? supabase.from("engagement_categories").select("campaign_id").in("campaign_id", campaignIds)
       : Promise.resolve({ data: [], error: null }),
-    campaignIds.length
-      ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
-      : Promise.resolve({ data: [], error: null }),
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+      supabase,
+      campaignIds,
+      CAMPAIGN_ITEM_STATUS_COLUMNS
+    ),
     reportIds.length
       ? supabase.from("report_runs").select("report_id").in("report_id", reportIds)
       : Promise.resolve({ data: [], error: null }),

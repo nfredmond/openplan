@@ -7,6 +7,7 @@ import {
 } from "@/components/knowledge-base/knowledge-base-workspace";
 import type { KbDocumentRow } from "@/lib/knowledge-base/documents";
 import type { DocumentLibraryEntry } from "@/lib/document-library/types";
+import { jsonAnswer, stagedUploadFetch } from "./helpers/staged-upload-fetch";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
@@ -209,13 +210,12 @@ describe("KnowledgeBaseWorkspace", () => {
   it("selecting a project filters the list and attaches subsequent uploads to it", async () => {
     const filteredDoc = doc({ id: "doc-2", title: "Corridor comment letter", project_id: "proj-1" });
     const uploadedDoc = doc({ id: "doc-3", title: "Corridor NOFO", project_id: "proj-1" });
-    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
-      if (init?.method === "POST") {
-        return { ok: true, json: async () => ({ document: uploadedDoc }) };
-      }
-      return { ok: true, json: async () => ({ documents: [filteredDoc] }) };
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    const fetchMock = vi.fn().mockImplementation(async () => ({
+      ok: true,
+      json: async () => ({ documents: [filteredDoc] }),
+    }));
+    const staged = stagedUploadFetch({ complete: () => jsonAnswer({ document: uploadedDoc }, 201), other: fetchMock });
+    vi.stubGlobal("fetch", staged.fetch);
 
     render(
       <KnowledgeBaseWorkspace workspaceId="ws-1" initialDocuments={[doc()]} projects={PROJECTS} />
@@ -238,9 +238,17 @@ describe("KnowledgeBaseWorkspace", () => {
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [file] } });
     await waitFor(() => expect(screen.getByText("Corridor NOFO")).toBeInTheDocument());
-    const uploadCall = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === "POST");
-    expect(uploadCall).toBeDefined();
-    expect(String(uploadCall?.[0])).toContain("projectId=proj-1");
+    expect(staged.uploads).toHaveLength(1);
+    expect(staged.uploads[0].start).toMatchObject({
+      workspaceId: "ws-1",
+      projectId: "proj-1",
+      filename: "nofo.pdf",
+      contentType: "application/pdf",
+    });
+    expect(staged.uploads[0].putBody).toBe(file);
+    expect(staged.uploads[0].complete).toMatchObject({ projectId: "proj-1", objectPath: "staged-object-1" });
+    // Only the list reads reached the app routes; the file did not.
+    expect(fetchMock.mock.calls.every(([url]) => String(url).startsWith("/api/knowledge-base/documents?"))).toBe(true);
   });
 
   it("shows a project chip linking to the project on attached document rows", () => {

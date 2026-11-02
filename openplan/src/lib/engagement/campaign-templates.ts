@@ -89,10 +89,10 @@ export type CampaignTemplate = {
 
 export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
   {
-    id: "complete-streets", label: "Complete streets demonstration", engagementType: "map_feedback",
-    description: "Editable demonstration setup for walking, cycling, transit, accessibility and street access. Select the actual project area before publishing.",
-    suggestedSummary: "Demonstration campaign for a complete streets project. Contributions are exercise material, not observed public opinion.",
-    suggestedPublicDescription: "This is a demonstration. Mark a point, route or area where street travel could be improved, or describe the location in words. Tell us who is affected and what would help. Staff review contributions before publication.",
+    id: "complete-streets", label: "Complete streets", engagementType: "map_feedback",
+    description: "Walking, cycling, transit, accessibility and street access feedback for a street project. Select the project area and edit the public description to name the project before publishing.",
+    suggestedSummary: "Collects location-specific feedback on walking, cycling, transit access and other street uses for a complete streets project, so the project team can see where changes are needed and who they would serve.",
+    suggestedPublicDescription: "We are planning changes to make this street work better for everyone who uses it. Mark a point, route or area where travel could be improved, or describe the location in words. Tell us who is affected and what would help. The project team reviews every comment.",
     categories: [
       { label: "Walking and crossings", description: "Sidewalks, crossing locations and waiting space.", sortOrder: 10 },
       { label: "Cycling", description: "Routes, intersections and bicycle parking.", sortOrder: 20 },
@@ -105,10 +105,10 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
     ],
   },
   {
-    id: "countywide-wayfinding", label: "Countywide wayfinding demonstration", engagementType: "map_feedback",
-    description: "Editable demonstration setup for destinations, confusing junctions, route continuity and accessible signs. The planner supplies the county study area.",
-    suggestedSummary: "Demonstration campaign for countywide wayfinding. Contributions are exercise material, not observed public opinion.",
-    suggestedPublicDescription: "This is a demonstration. Show us a destination, route or area where finding your way is difficult. You can describe it in words without using the map. Explain what information is missing and which languages or accessible formats would help.",
+    id: "countywide-wayfinding", label: "Countywide wayfinding", engagementType: "map_feedback",
+    description: "Destinations, confusing junctions, route continuity and accessible signs across a county. Select the county study area and edit the public description to name the program before publishing.",
+    suggestedSummary: "Collects feedback on where people have trouble finding their way across the county, which destinations need signs, and which languages and accessible formats directions should use.",
+    suggestedPublicDescription: "We are improving the signs and directions that help people find their way around the county. Show us a destination, route or area where finding your way is difficult. You can describe it in words without using the map. Explain what information is missing and which languages or accessible formats would help. The project team reviews every comment.",
     categories: [
       { label: "Destinations", description: "Places people need to find.", sortOrder: 10 },
       { label: "Confusing junctions", description: "Places where directions are unclear.", sortOrder: 20 },

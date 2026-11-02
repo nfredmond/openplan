@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import { placeKindSchema } from "@/lib/api/place-geographies";
+import { BCA_SNAPSHOT_TIGERWEB_PLACE_KINDS } from "@/lib/bca/workbench/project-place";
 
 const original = readFileSync("supabase/migrations/20261016000001_bca_workbench_versions.sql", "utf8");
 const migration = readFileSync("supabase/migrations/20261023190200_bca_project_place_snapshot.sql", "utf8");
@@ -55,9 +56,12 @@ it("uses shared project context validation and refuses normalization while prese
   expect(migration).toContain("public.bca_snapshot_text_valid(item->>'kind', 80, true)");
   expect(migration).toContain("project.place_source IN ('drawn','uploaded_file')");
   expect(migration).toContain("IF project.place_source = 'tigerweb' AND (");
-  const adapterKinds = `ARRAY[${placeKindSchema.options.map(kind => `'${kind}'`).join(",")}]`;
+  // The guard lists the BCA reader's kinds, which are a subset of the resolver's.
+  // When a migration widens the guard, widen the reader's list with it.
+  const adapterKinds = `ARRAY[${BCA_SNAPSHOT_TIGERWEB_PLACE_KINDS.map(kind => `'${kind}'`).join(",")}]`;
   expect(migration).toContain(`resolved[1] = ANY(${adapterKinds})`);
   expect(migration).toContain(`project.place_kind <> ALL(${adapterKinds})`);
+  expect(BCA_SNAPSHOT_TIGERWEB_PLACE_KINDS.every(kind => placeKindSchema.options.includes(kind))).toBe(true);
   expect(migration).not.toMatch(/project\.place_source\s+(?:NOT\s+IN|<>\s+ALL)/);
   // Code points, as Zod 4.6 and the projects table count them; no UTF-16 surrogate surcharge.
   expect(migration).toContain("AND char_length(value) BETWEEN min_units AND max_units");

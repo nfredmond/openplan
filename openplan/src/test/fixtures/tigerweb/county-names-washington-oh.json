@@ -1,0 +1,33 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/82/query?where=GEOID+IN+%28%2739029%27%2C%2739125%27%2C%2739143%27%2C%2739149%27%29&outFields=GEOID%2CNAME&returnGeometry=false&resultRecordCount=4&f=json",
+ "trimmed": "Field metadata removed.",
+ "response": {
+  "features": [
+   {
+    "attributes": {
+     "GEOID": "39029",
+     "NAME": "Columbiana County"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39149",
+     "NAME": "Shelby County"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39125",
+     "NAME": "Paulding County"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39143",
+     "NAME": "Sandusky County"
+    }
+   }
+  ]
+ }
+}

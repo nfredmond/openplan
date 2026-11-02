@@ -18,7 +18,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
 import { reserveCensusTractIngest } from "@/lib/data-sources/census-tract-ingest-limit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { placeKindSchema } from "@/lib/api/place-geographies";
+import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
 import {
   readWorkspaceStageGateTemplateSelection,
@@ -68,16 +68,17 @@ const clearHomeGeographySchema = z.object({
   workspaceId: z.string().uuid(),
 });
 
-const setHomeGeographySchema = z.object({
-  workspaceId: z.string().uuid(),
-  /** A place the existing picker resolved: which layer, and its id in that layer. */
-  kind: placeKindSchema,
-  geoid: z
-    .string()
-    .regex(/^\d{5,7}$/, "GEOID must be 5-7 digits"),
-  /** Optional operator-facing name; falls back to the resolver's own label. */
-  label: z.string().trim().min(1).max(200).optional(),
-});
+const setHomeGeographySchema = z
+  .object({
+    workspaceId: z.string().uuid(),
+    /** A place the existing picker resolved: which layer, and its id in that layer. */
+    kind: placeKindSchema,
+    /** Checked against the kind's own GEOID format, never one shared range. */
+    geoid: placeGeoidStringSchema,
+    /** Optional operator-facing name; falls back to the resolver's own label. */
+    label: z.string().trim().min(1).max(200).optional(),
+  })
+  .superRefine(refinePlaceReference);
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
   if (result.kind === "schema_pending") {

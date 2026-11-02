@@ -30,6 +30,7 @@ import {
   type KbDocumentRow,
 } from "@/lib/knowledge-base/documents";
 import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
+import { uploadKnowledgeBaseFile } from "@/lib/knowledge-base/upload-client";
 import {
   describeKbDocumentListResult,
   isKbDocumentSort,
@@ -508,13 +509,14 @@ export function KnowledgeBaseWorkspace({
     setError(null);
     setNotice(null);
     try {
-      const params = new URLSearchParams({ workspaceId, filename: file.name, docKind });
-      if (title.trim()) params.set("title", title.trim());
-      if (projectId) params.set("projectId", projectId);
-      const response = await fetch(`/api/knowledge-base/documents?${params.toString()}`, {
-        method: "POST",
-        headers: { "content-type": file.type || "application/octet-stream" },
-        body: file,
+      // Through Storage, not as a request body: hosted functions refuse
+      // bodies over about 4.5 MB, and adopted plans run far larger.
+      const response = await uploadKnowledgeBaseFile(file, {
+        workspaceId,
+        docKind,
+        title: title.trim() || undefined,
+        projectId,
+        contentType: file.type || "application/octet-stream",
       });
       const payload = (await response.json()) as {
         document?: KbDocumentRow;

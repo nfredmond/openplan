@@ -2077,8 +2077,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const aerialSelections = readReportAerialOrthoSelections(report.metadata_json);
     // Freezing the selected aerial preview copies its PNG into this
     // workspace's report-artifacts folder before the packet itself is stored.
-    // Its size is not known here, so refuse only a workspace already at its
-    // limit; the packet's own check below counts the frozen copy.
+    // A workspace already at its limit is refused here, before the preview is
+    // read; the freeze then checks the PNG's actual byte count before copying
+    // it, and the packet's own check below counts the frozen copy.
     if (aerialSelections.length === 1) {
       const refusal = await refuseWhenReportStorageFull({
         serviceSupabase,
@@ -2099,8 +2100,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
           artifactId,
           custodyId: aerialSelections[0].custodyId,
           frozenAt: generatedAt,
+          storageRoom: (incomingBytes) => checkWorkspaceStorageRoom(serviceSupabase, report.workspace_id, incomingBytes),
         })
       : null;
+    if (frozenAerial?.status === "storage_refused") {
+      const room = frozenAerial.room;
+      audit.warn("report_artifact_storage_refused", {
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        stage: "aerial_preview",
+        status: room.status,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
     if (frozenAerial && frozenAerial.status !== "verified") {
       return NextResponse.json(
         { error: `Selected aerial evidence could not be frozen: ${frozenAerial.reason}` },
@@ -2663,6 +2676,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let artifactStoragePath: string | null = null;
     let pdfEngine: ReportPdfEngine | null = null;
+    // The frozen preview belongs to this packet alone. When the packet is not
+    // stored (storage limit, upload error, changed comparison), remove the copy
+    // so the refusal leaves nothing in the workspace's storage.
+    const frozenAerialReportId = report.id;
+    async function discardFrozenAerial(response: NextResponse): Promise<NextResponse> {
+      if (frozenAerial?.status !== "verified") return response;
+      try {
+        const removed = await serviceSupabase.storage.from(REPORT_ARTIFACT_BUCKET).remove([frozenAerial.snapshot.storagePath]);
+        if (removed.error) throw new Error(removed.error.message);
+      } catch (error) {
+        audit.error("report_aerial_preview_cleanup_failed", {
+          reportId: frozenAerialReportId,
+          storagePath: frozenAerial.snapshot.storagePath,
+          message: error instanceof Error ? error.message : "remove failed",
+        });
+      }
+      return response;
+    }
     const authorizedReportForGuidedRecheck = report;
     async function recheckGuidedBeforeStorage(): Promise<NextResponse | null> {
       if (!guidedComparison) return null;
@@ -2694,7 +2725,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const pdfBuffer = Buffer.from(rendered.bytes);
       const guidedRefusal = await recheckGuidedBeforeStorage();
-      if (guidedRefusal) return guidedRefusal;
+      if (guidedRefusal) return discardFrozenAerial(guidedRefusal);
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
       const notStored = await storeReportArtifactFile({
         serviceSupabase,
@@ -2705,12 +2736,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         bytes: pdfBuffer,
         contentType: "application/pdf",
       });
-      if (notStored) return notStored;
+      if (notStored) return discardFrozenAerial(notStored);
       artifactStoragePath = storagePath;
     } else {
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
       const guidedRefusal = await recheckGuidedBeforeStorage();
-      if (guidedRefusal) return guidedRefusal;
+      if (guidedRefusal) return discardFrozenAerial(guidedRefusal);
       // Storage bucket allowlists compare the media type literally. Charset
       // belongs on the download response, not in the stored object's type.
       const notStored = await storeReportArtifactFile({
@@ -2722,7 +2753,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         bytes: Buffer.from(exportHtml, "utf8"),
         contentType: "text/html",
       });
-      if (notStored) return notStored;
+      if (notStored) return discardFrozenAerial(notStored);
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {

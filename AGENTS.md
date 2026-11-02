@@ -101,8 +101,10 @@ Prefer the smallest clear change. Read working designs before replacing them.
 Use TypeScript/Node and Python; avoid `any` when a real type is available. A
 comment explains use and intent above a function, not every statement.
 
-Every changed test or guard needs a harmless mutation that survives and a
-targeted broken behavior that fails for the stated reason. Restore edits without
+Every changed guard, and every changed test of money, permissions, custody,
+public records or scientific claims, needs a harmless mutation that survives and
+a targeted broken behavior that fails for the stated reason. Other changed tests
+must fail against the defect they cover before the fix. Restore edits without
 `git checkout` or destructive resets in shared work. State each check's blind
 category. Fix vacuous checks; never remove a failure to manufacture green.
 Mocked database tests must assert query projections where correctness depends
@@ -185,7 +187,8 @@ or DNS to change OpenPlan. Public signup requires confirmation email.
 - **Supabase:** OpenPlan uses project `lolckycpdjsgeejsmuzl` for database, Auth and
   private Storage. It belongs to the Pro organization and uses Micro compute.
   The Nat Ford website uses a different project, `bymadqabjvtwrfbkcded`; keep them
-  separate. The dated catch-up records 405 migrations. Git deploys do not apply
+  separate. The dated catch-up recorded 405 migrations on October 11; main
+  expected 448 on November 1. Git deploys do not apply
   migrations. The agent that owns a schema change coordinates its rollout with
   the other agents through the coordination file below; no separate approval
   from Nathaniel is needed. Record the planned migration there first, then work
@@ -235,7 +238,12 @@ Release commits align changelog, package version, migrations and release-orderin
 checks; tag only when the declared evidence is satisfied. Documentation review
 does not itself declare an unfinished development candidate released.
 
-Keep expensive findings and unfinished boundaries in dated repository notes.
+Per-change evidence (commands, results, mutation tables) goes in the pull
+request body and CI artifacts. Create dated folders under `docs/reviews/` only for
+direction reviews, releases, scientific studies, incidents, and money, permission
+or custody boundaries, and do not commit raw logs or bulky JSON receipts
+(November 1, 2026 direction review). Keep expensive findings and unfinished
+boundaries in those notes or in the known-issues list.
 [Documentation index](docs/README.md) routes current authority. Preserve historical
 studies, releases and decisions; archive or supersede old plans visibly instead
 of rewriting what they found. Report errors and uncertainty promptly, in plain

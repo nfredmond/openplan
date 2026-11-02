@@ -1,9 +1,9 @@
 # OpenPlan roadmap to v1
 
 <!-- openplan-active-roadmap
-reviewed_commit: 380aad49770d856a9c4b577ccc9793baf39d3ddf
+reviewed_commit: d4ca41657304bd41b74da6b6d4665f5bb1ade32e
 current_release: v0.72.0
-review_by: 2026-11-06
+review_by: 2026-12-01
 paths:
 - AGENTS.md
 - CLAUDE.md
@@ -12,6 +12,7 @@ paths:
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 - docs/reviews/product-direction/2026-10-06-integration-review.md
+- docs/reviews/product-direction/2026-11-01-first-proven-job-review.md
 - docs/reviews/2026-10-12-two-month-review/PLAN.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
@@ -123,7 +124,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M3a | Desktop Control and demo recovery | Later, partial | [Sep 9](reviews/2026-09-09-control-main/VERIFICATION.md) | Observed acceptance |
 | M4 | Confidentiality and records | Later | Audit | Records-request design |
 | M5 | Data, GIS and analysis reuse | Later, partial | Audit | Format coverage matrix |
-| M5a | Agency file formats | Next (B1a, C9) | Audit; [PR 255, merged Oct 12](https://github.com/nfredmond/openplan/pull/255) | Move aerial uploads off the function body (rest of KI-017). Run one hosted large-feed GTFS upload, which PR 255 did not, and sweep abandoned staged objects. |
+| M5a | Agency file formats | Next (B1a, C9) | Audit; [PR 255, merged Oct 12](https://github.com/nfredmond/openplan/pull/255) | Aerial photos and Knowledge Base documents now upload through Storage too (Nov 1). Run one hosted upload above 4.5 MB through each of the three staged doors, which no PR has done, sweep abandoned staged objects, and move public engagement photos (5 MiB body) under the platform limit. |
 | M5b | Drone work (M5b.1–6) | In progress | [Oct 14 custody](reviews/2026-10-14-aerial-immutable-custody/STATUS.md); [roster recovery](reviews/2026-10-14-aerial-custody-recovery/STATUS.md); [retained access candidate](reviews/2026-10-14-artifact-access/STATUS.md); [terminal journal candidate](reviews/2026-10-14-terminal-delivery/STATUS.md); [explicit artifact HTTP candidate](reviews/2026-10-14-artifact-http/STATUS.md); [original coordinator candidate](reviews/2026-10-14-worker-coordination/STATUS.md); [original input/commit candidate](reviews/2026-10-14-original-pipeline/STATUS.md); [running progress candidate](reviews/2026-10-14-running-progress/STATUS.md); [original outcome repair candidate](reviews/2026-10-14-outcome-recovery/STATUS.md); [original scheduling candidate](reviews/2026-10-14-recovery-execution/STATUS.md); [explicit operator configuration candidate](reviews/2026-10-14-runtime-binding/STATUS.md); [explicit assembly candidate](reviews/2026-10-14-runtime-assembly/STATUS.md); [owned HTTP candidate](reviews/2026-10-14-owned-worker-service/STATUS.md); [explicit worker command candidate](reviews/2026-10-14-owned-worker-cli/STATUS.md) | Complete callback/Storage recovery, preview rendering and default worker integration (M5b.2); name the DJI controller |
 | M6 | Multimodal and safety decisions | In progress, partial (B3) | [Oct 19 input comparison](reviews/2026-10-19-safety-input-comparison/STATUS.md) | Complete systemic/project/plan Safety, qualified effects and exact-year SS4A mapping; retain geographic, observation and scientific limits. |
 | M6a | Transit, active travel and freight | Later | Audit | Transit service-plan case |
@@ -134,14 +135,14 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M8a | NEPA and CEQA review | Later | Audit | Not started |
 | M8b | Civil rights program year | Later | Audit | Not started |
 | M9a | Public map input | In progress, mostly done | [PR 196](https://github.com/nfredmond/openplan/pull/196); [PR 253, merged Oct 13](https://github.com/nfredmond/openplan/pull/253) | Add the signup bot check, which needs an operator CAPTCHA key (rest of KI-013). Close the limits PR 253 recorded: IPv6 connections are not grouped by /64, sign-up email has no installation-wide cap and photos uploaded before PR 253 are never swept. |
-| M9b | Moderate, interpret and respond | In progress, mostly done | [Oct 7](reviews/2026-10-07-synthesis-execution-queue/STAFF_RESPONSE_ACCEPTANCE.md); [PR 242, merged Oct 12](https://github.com/nfredmond/openplan/pull/242); [PR 300, merged Oct 14](https://github.com/nfredmond/openplan/pull/300) | Review the other engagement comment reads PR 242 listed for the 1,000-row cap; PR 300 pages the RTP comment record. Trace one contribution from source to theme, response and decision. |
+| M9b | Moderate, interpret and respond | In progress, mostly done | [Oct 7](reviews/2026-10-07-synthesis-execution-queue/STAFF_RESPONSE_ACCEPTANCE.md); [PR 242, merged Oct 12](https://github.com/nfredmond/openplan/pull/242); [PR 300, merged Oct 14](https://github.com/nfredmond/openplan/pull/300); [PR 392](https://github.com/nfredmond/openplan/pull/392) | PR 392 pages or counts the remaining engagement comment reads (KI-008). Show the campaign total beside the 300-comment AI close-loop sample. Trace one contribution from source to theme, response and decision. |
 | M9c | Beat Social Pinpoint, shown with people | Later | Audit | Comparative trial |
 | M9d | Statutory hearing record | Later | Audit | Not started |
 | M10 | Capital projects (M10a–d, a.1–d.2) | Later (C3) | Audit | California bridge case |
 | M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [current full configured types](reviews/2026-10-16-publication-reviewed-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, human usefulness and reminder delivery remain open. |
 | M12 | RTP update from the adopted plan | Later (C1) | Audit | Prior-RTP intake without a paid key |
 | M13 | Local tax and grant administration | Next (B5) | Audit | Recipient city role |
-| M13e | Grant discovery and applications | In progress, partial (B4) | [PR 341 catalog search, merged Oct 18](https://github.com/nfredmond/openplan/pull/341) | Verify the ATP packet. Verify catalog search on the hosted site; PR 341 has only a local desktop/390px journey. Complete SS4A seeding, retained deadline-change alerts and award-condition handoff. |
+| M13e | Grant discovery and applications | In progress, partial (B4) | [PR 341 catalog search, merged Oct 18](https://github.com/nfredmond/openplan/pull/341) | Verify the ATP packet. Verify catalog search on the hosted site; PR 341 has only a local desktop/390px journey. Complete SS4A seeding, retained deadline-change alerts and award-condition handoff. November 1: the SS4A packet export embeds Safety, BCA and engagement evidence appendices from saved records (route and render tests only); an identified-build desktop/390px export journey and a stored export checksum remain open. |
 | M13f | Agency audits | Later | Audit | Not started |
 | M14 | Procurement, both sides | Later (C4) | Audit | Agency RFP issue and receipt |
 | M15a | Hosted production recipe | In progress, mostly done | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md); [PR 254, merged Oct 12](https://github.com/nfredmond/openplan/pull/254); [PR 326, merged Oct 15](https://github.com/nfredmond/openplan/pull/326) | Turn on PR 326's migration-drift check: the Production Health workflow needs a Supabase access token and project reference, and neither is set in the repository on October 24. Then verify deep health, migration drift and error reports on the hosted site, and add cron failure alerts (KI-033). |
@@ -150,7 +151,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | S1 | Comparable model custody | In progress, partial | [Oct 8](reviews/2026-10-08-model-custody-metadata/DISPLAY_VERIFICATION.md); [Oct 23 county appendix correction](reviews/2026-10-23-s1-county-tier-custody/STATUS.md) | Review and verify the remaining KI-001 appendix correction after merged PR 244. Complete native custody ingestion and exact UI/report/assistant observation accounting. |
 | S2 | Model structure experiments | Later, partial | Audit | Experiments after S1 |
 | S2a | TimesFM forecasting research | Later | [Sep 5](reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md) | Confirm license permits research |
-| S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
+| S3 | Untouched nationwide validation | Next (November 1 review) | Audit; [PR 374 draft](https://github.com/nfredmond/openplan/pull/374) | Freeze the successor preregistration on continuous-count stations with one untouched state holdout; needs Nathaniel's decisions on partitions, sample size and thresholds |
 | G1 | Every state and organization type | Later | Audit | Confirm state order (decision 6) |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
 | A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Bespoke catalogue captures are deferred under the October 17 delivery instruction. Keep tested CLI versions, honest usage limits and the proven project task usable through ordinary CI and relevant UI checks. Generic Codex resets remain unknown without a reviewed causal binding. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
@@ -165,7 +166,30 @@ The Maps module (PR 189, "M17" in the cutover record) and the UI overhaul
 (PRs 186 to 188 and 193) have no milestone ID. [VERIFY: assign IDs at the next
 direction review.]
 
-## Next three, October 15, 2026
+## Next three, November 1, 2026
+
+Set by the [November 1 direction review](reviews/product-direction/2026-11-01-first-proven-job-review.md).
+The October 15 list below is kept as history; its open parts (Stage A operator
+settings, the first-week journeys, A0b) carry into these items or continue
+alongside them.
+
+1. **Prove the first cell: a safety action plan and SS4A application in three
+   places (M6, M13e, G1).** A rural California county, a rural Nevada county and
+   a tribal area, each from sign-up to exported plan and application PDFs at
+   desktop and 390px with an automated accessibility check, on one identified
+   main commit served by the hosted site. This includes correct crash sources by
+   state, tribal and town or township place kinds, and a per-state table test in
+   CI. Registry cells move only through a checked evidence record.
+2. **Cut the evidence cost per change (M0).** Per-change evidence lives in pull
+   requests and CI artifacts under the November 1 `AGENTS.md` rule. Done when,
+   over four weeks, lines added under `docs/reviews/` are fewer than lines added
+   to application and worker code.
+3. **Freeze the successor validation preregistration (S3).** Continuous-count
+   stations as the decisive corpus and one untouched state holdout, from the PR
+   374 draft. Needs Nathaniel's decisions on partitions, sample size and
+   thresholds. Both engines stay separate.
+
+## Next three, October 15, 2026 (superseded November 1)
 
 The October 12 list is kept in the evidence log. The original October 15 list
 uses main `1b2fefe0f0e98f99700fc77e99146fe697b43ee7`. An October 16 main-ref

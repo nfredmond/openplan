@@ -28,6 +28,120 @@ a reason and a review date and every installed copy is development-only. Two
 are listed until December 1: minimatch (no fixed release eslint 9 can use) and
 deepmerge (no fixed release). Nothing to do on upgrade.
 
+**Portal translations and scripts:** a participant page shows a catalog
+translation only while it was made from the current English. Each entry records
+a fingerprint of its English source; a mismatch shows English with the existing
+partial-translation notice, and a test fails until the translation is refreshed
+or listed as stale. Two Spanish entries ("Open for comments", "Closed for
+comments") were translated from older English and now show in English, so
+Spanish pages carry the partial-translation notice until a Spanish reader
+refreshes them. Traditional Chinese (`zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`,
+Cantonese) and Shahmukhi Punjabi (`pa-Arab`, `pa-PK`, `pnb`) requests no longer
+receive the Simplified or Gurmukhi pages; they fall through to the next
+language the reader accepts, or English. The picker names Chinese as 简体中文
+and marks it `zh-Hans`. No migration.
+
+**Storage limit and AI metering gaps (KI-2026-10-12-014):** a transit feed
+fetched from an address is now checked against the workspace's remaining
+storage at its downloaded size before it is stored; a feed that does not fit is
+refused with the same 413 storage-limit message as uploads, and its version
+closes as failed with code `workspace_storage_limit` and no stored archive. An
+aerial preview copied into a report is checked at its own size before the copy;
+when the packet itself is then refused or not stored, the copied preview is
+removed. Planner Agent API tasks paid by the deployment key now record their
+AI usage before the provider call and make no call when that record fails.
+Corridor analysis interpretations now count against the workspace's staff AI
+allowance (`grant_narrative_draft`) before the call; a used-up allowance or an
+unavailable meter ships the deterministic summary. No migration. Operators of a
+deployment with public signup must set `OPENPLAN_MONTHLY_RUN_CAP` and
+`OPENPLAN_MODELING_QUEUE_DEPTH`; both stay unlimited when unset.
+
+**AI drafts counted before the call (KI-2026-10-12-014):** grant narrative
+and section drafts, report and RTP chapter narrative drafts, RTP document
+reads, engagement close-loop drafts and moderation scans now count against
+the workspace's AI allowance before the model call. When the deployment's
+shared key pays and usage cannot be counted or recorded, the call is not
+made. A failed model call still counts. An RTP document read that the
+current five-minute allowance cannot finish is refused before it starts,
+and a read stopped by the allowance answers 429 and keeps nothing.
+Engagement scans and drafts that use the free fallback are no longer
+counted. No migration.
+
+**Engagement counts above 1,000 comments:** the database API returns at most
+1,000 rows per request and reports no error when it stops. Several screens and
+records read a campaign's comments in one request, so a campaign above 1,000
+comments showed 1,000. These now read every comment, or ask the database to
+count: plan, program and report pages and their APIs, the RTP cycle page, the
+land use plan review closing record, the representativeness screen, the
+dashboard comment chart, nearby crashes for comments, near-duplicate pairs and a
+model run's corridor comments. A read that cannot finish shows as unreadable,
+not as a lower number. Closing a land use plan review now refuses while any
+comment is pending, including one past the first 1,000. No migration.
+
+**Tribal areas and towns or townships as places:** the place search now finds
+American Indian, Alaska Native and Native Hawaiian areas (reservations, trust
+lands, Hawaiian home lands and tribal statistical areas) and county
+subdivisions (New England towns, townships, boroughs). Either can be a
+workspace home geography, a project or campaign area, a plan area or a
+resolved project jurisdiction. A tribal area records no state, because many
+cross state lines and state rules on tribal land are not a map fact; its states
+appear in its name. A town records its state. A benefit-cost analysis cannot
+yet record a project whose area or jurisdiction is either kind: the installed
+database guard lists only the earlier five kinds, and widening it needs a
+migration. No action is needed to deploy.
+
+**Crash sources follow the study area's state:** Safety now chooses a crash source
+from the state of the linked project's place or the picked county, city or CDP,
+not from a bounding-box rectangle. Study areas in Nevada and in border counties of
+Arizona, Idaho, Oregon and Utah used to query California's CCRS and store no
+crashes; they now get NHTSA FARS, labeled fatal-only. California places still get
+CCRS. A drawn area, a metro area or an unconfirmed place gets FARS only, never
+CCRS; pick a county or city to get a state crash file. Puerto Rico is out of
+coverage: the FARS file OpenPlan reads does not include it. Acquisitions saved
+before this change keep the source they recorded; re-run an affected study area
+to replace an empty CCRS pull.
+
+**Corridor crash figures follow the state too:** the Explore corridor scorecard now
+chooses its crash source by the same state rule as Safety. A corridor picked as a
+county, city or CDP, or one that matches its project's place, gets that state's
+source. A Nevada corridor now shows FARS, labeled fatal-only, instead of CCRS. A
+drawn, uploaded or metro corridor, or a run launched from a model, gets FARS only,
+and the safety line says the state was not confirmed. If CCRS cannot be reached
+for a California corridor, the run uses FARS and names CCRS as unavailable. The
+shared crash map layer also checks coverage by the workspace's stated state.
+
+**CEQA screen on county runs:** the §15064.3 screening panel now appears only on
+county runs whose county is in California.
+
+**Neutral starter text:** the California LAPM profile's "submitted to" hint and the
+project record placeholder no longer name Caltrans District 3. The complete streets
+and countywide wayfinding engagement templates no longer tell residents the
+campaign is a demonstration.
+
+**Large aerial photos and documents upload on hosted installs:** mission photos
+and Knowledge Base files (the library, work-program sources, estimated-cost CSVs
+and portfolio imports) now go from the browser straight to private Storage
+through a signed URL, as GTFS feeds already did. Vercel refuses a function
+request body above about 4.5 MB, so RTPs, agency PDFs and drone frames larger
+than that could not be added before. The per-file ceilings
+(`OPENPLAN_AERIAL_IMAGE_MAX_BYTES`, `OPENPLAN_KB_DOCUMENT_MAX_BYTES`) and the
+workspace storage limit still apply, checked once on the declared size and again
+on the stored file. No migration. The body routes still work for API clients.
+Staged files whose upload never finished stay in Storage under
+`<workspace>/staged/` until removed by hand; nothing sweeps them yet.
+
+**SS4A application evidence appendices:** the application packet export for an
+SS4A application now adds evidence appendices from the linked project's saved
+records: the high-injury network map and ranked list, the crash summary with its
+source, years and severity coverage as stored, the countermeasure table, the
+latest benefit-cost analysis with its limits, and the engagement summary. Each
+names its source record, date and stored hash. Missing, unreadable and
+deselected appendices are listed, never dropped. Planners choose appendices
+before export; all are on by default. The map is drawn only when the stored
+crash records and cached road lines reproduce the frozen ranking exactly. The
+export response and audit log carry the PDF's SHA-256; the export record does
+not store it yet. No migration is needed.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete

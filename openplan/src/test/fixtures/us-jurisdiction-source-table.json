@@ -1,0 +1,1135 @@
+{
+  "description": "One representative county per state, DC and each territory in the Census county file, with the crash source, CEQA screen and state grant bundle OpenPlan should select for it.",
+  "source": {
+    "name": "U.S. Census Bureau, 2024 Cartographic Boundary File, Counties, 1:500,000 (cb_2024_us_county_500k)",
+    "url": "https://www2.census.gov/geo/tiger/GENZ2024/shp/cb_2024_us_county_500k.zip",
+    "vintage": "2024",
+    "retrieved": "2026-11-01",
+    "crs": "NAD83 longitude/latitude (EPSG:4269), as published",
+    "bboxMethod": "GDAL/OGR envelope of each county polygon, rounded outward to 6 decimal places. The 1:500,000 file is generalized, so a bbox can differ from full-resolution TIGER/Line by a few hundred meters."
+  },
+  "selection": "For each state FIPS code in the file, the county with the lowest GEOID among counties whose bbox overlaps the CCRS coarse envelope (lon -124.6 to -114.0, lat 32.4 to 42.1); where no county overlaps it, the lowest GEOID in the state. This puts a county inside the California rectangle in every state where one exists (AZ, CA, ID, NV, OR, UT).",
+  "expectationBasis": "Written from each registry's declared coverage, not from running the code: CCRS declares state 06 only; the FARS adapter reads NHTSA's National annual file, which carries the 50 states and DC (51 STATE values in the 2023 file; Puerto Rico is published separately and is not read); the VMT significance framework registry declares US-CA only; grant program state bundles declare US-CA, US-WA, US-OR, US-CO, US-TX and US-OH. null means none registered.",
+  "rows": [
+    {
+      "stateFips": "01",
+      "usps": "AL",
+      "stateName": "Alabama",
+      "countyGeoid": "01001",
+      "countyName": "Autauga County",
+      "bbox": {
+        "minLon": -86.921196,
+        "minLat": 32.307574,
+        "maxLon": -86.411172,
+        "maxLat": 32.708213
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "02",
+      "usps": "AK",
+      "stateName": "Alaska",
+      "countyGeoid": "02013",
+      "countyName": "Aleutians East Borough",
+      "bbox": {
+        "minLon": -166.199167,
+        "minLat": 53.953959,
+        "maxLon": -158.893471,
+        "maxLat": 56.880265
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "04",
+      "usps": "AZ",
+      "stateName": "Arizona",
+      "countyGeoid": "04012",
+      "countyName": "La Paz County",
+      "bbox": {
+        "minLon": -114.731223,
+        "minLat": 33.02541,
+        "maxLon": -113.333078,
+        "maxLat": 34.319102
+      },
+      "bboxOverlapsCcrsEnvelope": true,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "05",
+      "usps": "AR",
+      "stateName": "Arkansas",
+      "countyGeoid": "05001",
+      "countyName": "Arkansas County",
+      "bbox": {
+        "minLon": -91.711675,
+        "minLat": 33.92129,
+        "maxLon": -91.052124,
+        "maxLat": 34.56805
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "06",
+      "usps": "CA",
+      "stateName": "California",
+      "countyGeoid": "06001",
+      "countyName": "Alameda County",
+      "bbox": {
+        "minLon": -122.342253,
+        "minLat": 37.454186,
+        "maxLon": -121.469214,
+        "maxLat": 37.905824
+      },
+      "bboxOverlapsCcrsEnvelope": true,
+      "expected": {
+        "ingestCrashSource": "ccrs-ca",
+        "readCrashSource": "ccrs-ca",
+        "ceqaScreen": true,
+        "stateGrantBundle": "us-ca"
+      }
+    },
+    {
+      "stateFips": "08",
+      "usps": "CO",
+      "stateName": "Colorado",
+      "countyGeoid": "08001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -105.053339,
+        "minLat": 39.73804,
+        "maxLon": -103.705701,
+        "maxLat": 40.001456
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": "us-co"
+      }
+    },
+    {
+      "stateFips": "09",
+      "usps": "CT",
+      "stateName": "Connecticut",
+      "countyGeoid": "09110",
+      "countyName": "Capitol Planning Region",
+      "bbox": {
+        "minLon": -72.953651,
+        "minLat": 41.544725,
+        "maxLon": -72.156321,
+        "maxLat": 42.03771
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "10",
+      "usps": "DE",
+      "stateName": "Delaware",
+      "countyGeoid": "10001",
+      "countyName": "Kent County",
+      "bbox": {
+        "minLon": -75.760105,
+        "minLat": 38.829859,
+        "maxLon": -75.311607,
+        "maxLat": 39.365657
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "11",
+      "usps": "DC",
+      "stateName": "District of Columbia",
+      "countyGeoid": "11001",
+      "countyName": "District of Columbia",
+      "bbox": {
+        "minLon": -77.119759,
+        "minLat": 38.791645,
+        "maxLon": -76.909395,
+        "maxLat": 38.99511
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "12",
+      "usps": "FL",
+      "stateName": "Florida",
+      "countyGeoid": "12001",
+      "countyName": "Alachua County",
+      "bbox": {
+        "minLon": -82.658554,
+        "minLat": 29.417178,
+        "maxLon": -82.049052,
+        "maxLat": 29.945254
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "13",
+      "usps": "GA",
+      "stateName": "Georgia",
+      "countyGeoid": "13001",
+      "countyName": "Appling County",
+      "bbox": {
+        "minLon": -82.550714,
+        "minLat": 31.469253,
+        "maxLon": -82.048582,
+        "maxLat": 31.966182
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "15",
+      "usps": "HI",
+      "stateName": "Hawaii",
+      "countyGeoid": "15001",
+      "countyName": "Hawaii County",
+      "bbox": {
+        "minLon": -156.061509,
+        "minLat": 18.910361,
+        "maxLon": -154.806773,
+        "maxLat": 20.268043
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "16",
+      "usps": "ID",
+      "stateName": "Idaho",
+      "countyGeoid": "16031",
+      "countyName": "Cassia County",
+      "bbox": {
+        "minLon": -114.286653,
+        "minLat": 41.988209,
+        "maxLon": -112.999965,
+        "maxLat": 42.687832
+      },
+      "bboxOverlapsCcrsEnvelope": true,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "17",
+      "usps": "IL",
+      "stateName": "Illinois",
+      "countyGeoid": "17001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -91.513079,
+        "minLat": 39.756935,
+        "maxLon": -90.911969,
+        "maxLat": 40.199926
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "18",
+      "usps": "IN",
+      "stateName": "Indiana",
+      "countyGeoid": "18001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -85.073861,
+        "minLat": 40.56824,
+        "maxLon": -84.802093,
+        "maxLat": 40.922568
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "19",
+      "usps": "IA",
+      "stateName": "Iowa",
+      "countyGeoid": "19001",
+      "countyName": "Adair County",
+      "bbox": {
+        "minLon": -94.700697,
+        "minLat": 41.157134,
+        "maxLon": -94.241304,
+        "maxLat": 41.504148
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "20",
+      "usps": "KS",
+      "stateName": "Kansas",
+      "countyGeoid": "20001",
+      "countyName": "Allen County",
+      "bbox": {
+        "minLon": -95.525499,
+        "minLat": 37.732406,
+        "maxLon": -95.077876,
+        "maxLat": 38.038446
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "21",
+      "usps": "KY",
+      "stateName": "Kentucky",
+      "countyGeoid": "21001",
+      "countyName": "Adair County",
+      "bbox": {
+        "minLon": -85.526881,
+        "minLat": 36.925069,
+        "maxLon": -85.043316,
+        "maxLat": 37.312262
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "22",
+      "usps": "LA",
+      "stateName": "Louisiana",
+      "countyGeoid": "22001",
+      "countyName": "Acadia Parish",
+      "bbox": {
+        "minLon": -92.632291,
+        "minLat": 30.049126,
+        "maxLon": -92.141509,
+        "maxLat": 30.481182
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "23",
+      "usps": "ME",
+      "stateName": "Maine",
+      "countyGeoid": "23001",
+      "countyName": "Androscoggin County",
+      "bbox": {
+        "minLon": -70.485288,
+        "minLat": 43.90671,
+        "maxLon": -69.993792,
+        "maxLat": 44.487217
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "24",
+      "usps": "MD",
+      "stateName": "Maryland",
+      "countyGeoid": "24001",
+      "countyName": "Allegany County",
+      "bbox": {
+        "minLon": -79.067559,
+        "minLat": 39.438455,
+        "maxLon": -78.313325,
+        "maxLat": 39.723043
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "25",
+      "usps": "MA",
+      "stateName": "Massachusetts",
+      "countyGeoid": "25001",
+      "countyName": "Barnstable County",
+      "bbox": {
+        "minLon": -70.687785,
+        "minLat": 41.514779,
+        "maxLon": -69.928393,
+        "maxLat": 42.082337
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "26",
+      "usps": "MI",
+      "stateName": "Michigan",
+      "countyGeoid": "26001",
+      "countyName": "Alcona County",
+      "bbox": {
+        "minLon": -83.888539,
+        "minLat": 44.508976,
+        "maxLon": -83.270288,
+        "maxLat": 44.859539
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "27",
+      "usps": "MN",
+      "stateName": "Minnesota",
+      "countyGeoid": "27001",
+      "countyName": "Aitkin County",
+      "bbox": {
+        "minLon": -93.812168,
+        "minLat": 46.153881,
+        "maxLon": -93.053712,
+        "maxLat": 47.030418
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "28",
+      "usps": "MS",
+      "stateName": "Mississippi",
+      "countyGeoid": "28001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -91.655009,
+        "minLat": 31.191139,
+        "maxLon": -91.153841,
+        "maxLat": 31.750005
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "29",
+      "usps": "MO",
+      "stateName": "Missouri",
+      "countyGeoid": "29001",
+      "countyName": "Adair County",
+      "bbox": {
+        "minLon": -92.856191,
+        "minLat": 40.036961,
+        "maxLon": -92.345064,
+        "maxLat": 40.346683
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "30",
+      "usps": "MT",
+      "stateName": "Montana",
+      "countyGeoid": "30001",
+      "countyName": "Beaverhead County",
+      "bbox": {
+        "minLon": -113.938206,
+        "minLat": 44.357962,
+        "maxLon": -111.463673,
+        "maxLat": 45.941505
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "31",
+      "usps": "NE",
+      "stateName": "Nebraska",
+      "countyGeoid": "31001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -98.724412,
+        "minLat": 40.350222,
+        "maxLon": -98.277903,
+        "maxLat": 40.698961
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "32",
+      "usps": "NV",
+      "stateName": "Nevada",
+      "countyGeoid": "32001",
+      "countyName": "Churchill County",
+      "bbox": {
+        "minLon": -119.226139,
+        "minLat": 39.073345,
+        "maxLon": -117.46134,
+        "maxLat": 40.002603
+      },
+      "bboxOverlapsCcrsEnvelope": true,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "33",
+      "usps": "NH",
+      "stateName": "New Hampshire",
+      "countyGeoid": "33001",
+      "countyName": "Belknap County",
+      "bbox": {
+        "minLon": -71.731533,
+        "minLat": 43.284994,
+        "maxLon": -71.159364,
+        "maxLat": 43.760979
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "34",
+      "usps": "NJ",
+      "stateName": "New Jersey",
+      "countyGeoid": "34001",
+      "countyName": "Atlantic County",
+      "bbox": {
+        "minLon": -74.985271,
+        "minLat": 39.288566,
+        "maxLon": -74.311918,
+        "maxLat": 39.729775
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "35",
+      "usps": "NM",
+      "stateName": "New Mexico",
+      "countyGeoid": "35001",
+      "countyName": "Bernalillo County",
+      "bbox": {
+        "minLon": -107.197244,
+        "minLat": 34.869277,
+        "maxLon": -106.149702,
+        "maxLat": 35.219459
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "36",
+      "usps": "NY",
+      "stateName": "New York",
+      "countyGeoid": "36001",
+      "countyName": "Albany County",
+      "bbox": {
+        "minLon": -74.264755,
+        "minLat": 42.407127,
+        "maxLon": -73.676762,
+        "maxLat": 42.822577
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "37",
+      "usps": "NC",
+      "stateName": "North Carolina",
+      "countyGeoid": "37001",
+      "countyName": "Alamance County",
+      "bbox": {
+        "minLon": -79.542428,
+        "minLat": 35.843303,
+        "maxLon": -79.2366,
+        "maxLat": 36.249673
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "38",
+      "usps": "ND",
+      "stateName": "North Dakota",
+      "countyGeoid": "38001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -102.995497,
+        "minLat": 45.944515,
+        "maxLon": -101.99793,
+        "maxLat": 46.283195
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "39",
+      "usps": "OH",
+      "stateName": "Ohio",
+      "countyGeoid": "39001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -83.705315,
+        "minLat": 38.596588,
+        "maxLon": -83.267066,
+        "maxLat": 39.055197
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": "us-oh"
+      }
+    },
+    {
+      "stateFips": "40",
+      "usps": "OK",
+      "stateName": "Oklahoma",
+      "countyGeoid": "40001",
+      "countyName": "Adair County",
+      "bbox": {
+        "minLon": -94.807757,
+        "minLat": 35.638328,
+        "maxLon": -94.472647,
+        "maxLat": 36.1619
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "41",
+      "usps": "OR",
+      "stateName": "Oregon",
+      "countyGeoid": "41015",
+      "countyName": "Curry County",
+      "bbox": {
+        "minLon": -124.566244,
+        "minLat": 41.995617,
+        "maxLon": -123.716492,
+        "maxLat": 42.955232
+      },
+      "bboxOverlapsCcrsEnvelope": true,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": "us-or"
+      }
+    },
+    {
+      "stateFips": "42",
+      "usps": "PA",
+      "stateName": "Pennsylvania",
+      "countyGeoid": "42001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -77.471085,
+        "minLat": 39.719829,
+        "maxLon": -76.955051,
+        "maxLat": 40.069945
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "44",
+      "usps": "RI",
+      "stateName": "Rhode Island",
+      "countyGeoid": "44001",
+      "countyName": "Bristol County",
+      "bbox": {
+        "minLon": -71.355818,
+        "minLat": 41.642595,
+        "maxLon": -71.224798,
+        "maxLat": 41.776158
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "45",
+      "usps": "SC",
+      "stateName": "South Carolina",
+      "countyGeoid": "45001",
+      "countyName": "Abbeville County",
+      "bbox": {
+        "minLon": -82.742019,
+        "minLat": 34.013924,
+        "maxLon": -82.240122,
+        "maxLat": 34.484335
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "46",
+      "usps": "SD",
+      "stateName": "South Dakota",
+      "countyGeoid": "46003",
+      "countyName": "Aurora County",
+      "bbox": {
+        "minLon": -98.807771,
+        "minLat": 43.498477,
+        "maxLon": -98.320595,
+        "maxLat": 43.937708
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "47",
+      "usps": "TN",
+      "stateName": "Tennessee",
+      "countyGeoid": "47001",
+      "countyName": "Anderson County",
+      "bbox": {
+        "minLon": -84.449881,
+        "minLat": 35.910165,
+        "maxLon": -83.941711,
+        "maxLat": 36.301779
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "48",
+      "usps": "TX",
+      "stateName": "Texas",
+      "countyGeoid": "48001",
+      "countyName": "Anderson County",
+      "bbox": {
+        "minLon": -96.06486,
+        "minLat": 31.504056,
+        "maxLon": -95.258859,
+        "maxLat": 32.084475
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": "us-tx"
+      }
+    },
+    {
+      "stateFips": "49",
+      "usps": "UT",
+      "stateName": "Utah",
+      "countyGeoid": "49001",
+      "countyName": "Beaver County",
+      "bbox": {
+        "minLon": -114.050485,
+        "minLat": 38.147419,
+        "maxLon": -112.335442,
+        "maxLat": 38.572975
+      },
+      "bboxOverlapsCcrsEnvelope": true,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "50",
+      "usps": "VT",
+      "stateName": "Vermont",
+      "countyGeoid": "50001",
+      "countyName": "Addison County",
+      "bbox": {
+        "minLon": -73.43774,
+        "minLat": 43.753181,
+        "maxLon": -72.742241,
+        "maxLat": 44.303743
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "51",
+      "usps": "VA",
+      "stateName": "Virginia",
+      "countyGeoid": "51001",
+      "countyName": "Accomack County",
+      "bbox": {
+        "minLon": -76.04653,
+        "minLat": 37.448562,
+        "maxLon": -75.242469,
+        "maxLat": 38.027028
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "53",
+      "usps": "WA",
+      "stateName": "Washington",
+      "countyGeoid": "53001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -119.369429,
+        "minLat": 46.73563,
+        "maxLon": -117.959335,
+        "maxLat": 47.261709
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": "us-wa"
+      }
+    },
+    {
+      "stateFips": "54",
+      "usps": "WV",
+      "stateName": "West Virginia",
+      "countyGeoid": "54001",
+      "countyName": "Barbour County",
+      "bbox": {
+        "minLon": -80.227173,
+        "minLat": 38.947236,
+        "maxLon": -79.808791,
+        "maxLat": 39.303215
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "55",
+      "usps": "WI",
+      "stateName": "Wisconsin",
+      "countyGeoid": "55001",
+      "countyName": "Adams County",
+      "bbox": {
+        "minLon": -90.026378,
+        "minLat": 43.641051,
+        "maxLon": -89.597162,
+        "maxLat": 44.249473
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "56",
+      "usps": "WY",
+      "stateName": "Wyoming",
+      "countyGeoid": "56001",
+      "countyName": "Albany County",
+      "bbox": {
+        "minLon": -106.322885,
+        "minLat": 40.996886,
+        "maxLon": -105.271433,
+        "maxLat": 42.433236
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": "fars-national",
+        "readCrashSource": "fars-national",
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "60",
+      "usps": "AS",
+      "stateName": "American Samoa",
+      "countyGeoid": "60010",
+      "countyName": "Eastern District",
+      "bbox": {
+        "minLon": -170.740402,
+        "minLat": -14.330248,
+        "maxLon": -170.545733,
+        "maxLat": -14.229563
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": null,
+        "readCrashSource": null,
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "66",
+      "usps": "GU",
+      "stateName": "Guam",
+      "countyGeoid": "66010",
+      "countyName": "Guam",
+      "bbox": {
+        "minLon": 144.618068,
+        "minLat": 13.234189,
+        "maxLon": 144.956712,
+        "maxLat": 13.654383
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": null,
+        "readCrashSource": null,
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "69",
+      "usps": "MP",
+      "stateName": "Commonwealth of the Northern Mariana Islands",
+      "countyGeoid": "69085",
+      "countyName": "Northern Islands Municipality",
+      "bbox": {
+        "minLon": 144.886369,
+        "minLat": 16.005393,
+        "maxLon": 146.064525,
+        "maxLat": 20.553247
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": null,
+        "readCrashSource": null,
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "72",
+      "usps": "PR",
+      "stateName": "Puerto Rico",
+      "countyGeoid": "72001",
+      "countyName": "Adjuntas Municipio",
+      "bbox": {
+        "minLon": -66.837236,
+        "minLat": 18.112008,
+        "maxLon": -66.664697,
+        "maxLat": 18.250325
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": null,
+        "readCrashSource": null,
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    },
+    {
+      "stateFips": "78",
+      "usps": "VI",
+      "stateName": "United States Virgin Islands",
+      "countyGeoid": "78010",
+      "countyName": "St. Croix Island",
+      "bbox": {
+        "minLon": -64.903564,
+        "minLat": 17.674678,
+        "maxLon": -64.565594,
+        "maxLat": 17.790172
+      },
+      "bboxOverlapsCcrsEnvelope": false,
+      "expected": {
+        "ingestCrashSource": null,
+        "readCrashSource": null,
+        "ceqaScreen": false,
+        "stateGrantBundle": null
+      }
+    }
+  ]
+}

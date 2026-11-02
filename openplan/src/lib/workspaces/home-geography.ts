@@ -369,17 +369,28 @@ export const TIGERWEB_GEOGRAPHY_SOURCE = "tigerweb";
 
 /**
  * TIGERweb kinds whose GEOID is prefixed by a state FIPS code:
- * county = SSCCC (5), place/CDP = SSPPPPP (7).
+ * county = SSCCC (5), place/CDP = SSPPPPP (7), county subdivision =
+ * SSCCCNNNNN (10).
  *
  * Metro and micro areas are CBSAs, whose 5-digit code is NOT state-prefixed —
  * CBSA 31080 is Los Angeles, and reading "31" as a state FIPS would report the
  * workspace as being in Nebraska. A CBSA can also straddle states outright, so
  * for those kinds the subdivision is genuinely unknown and stays null.
+ *
+ * AIANNH areas are left out for two reasons. Their code is not state-prefixed
+ * ("2430R", the Navajo Nation Reservation, lies in Arizona, New Mexico and
+ * Utah), so there is often no single state to name. And even a single-state
+ * reservation is not a state jurisdiction: the subdivision code is what binds
+ * state stage-gate templates, grant programs and readiness claims, and whether
+ * a state's rules apply on tribal land is a legal question for people, not a
+ * fact this adapter can derive from a map. The states an area lies in stay in
+ * its label ("Navajo Nation Reservation, AZ-NM-UT").
  */
 const STATE_PREFIXED_PLACE_KINDS: ReadonlySet<PlaceKind> = new Set<PlaceKind>([
   "county",
   "city",
   "cdp",
+  "cousub",
 ]);
 
 /**

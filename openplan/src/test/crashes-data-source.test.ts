@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildCrashSourceSnapshot,
   describeCrashSafety,
-  fetchCrashesForBbox,
+  fetchCrashesForStudyArea,
   recentCrashYears,
 } from "@/lib/data-sources/crashes";
 import { resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
@@ -14,6 +14,9 @@ import { farsArchiveResponse } from "@/test/support/fars-archive";
 const NEVADA_COUNTY_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
 const DETROIT_BBOX = { minLon: -83.2, minLat: 42.2, maxLon: -83.0, maxLat: 42.4 };
 const BERLIN_BBOX = { minLon: 13.2, minLat: 52.4, maxLon: 13.6, maxLat: 52.6 };
+// State FIPS a confirmed place would supply. Berlin has none.
+const CALIFORNIA = ["06"];
+const MICHIGAN = ["26"];
 
 const NOW = new Date("2026-07-23T00:00:00Z");
 
@@ -55,7 +58,7 @@ describe("recentCrashYears", () => {
   });
 });
 
-describe("fetchCrashesForBbox — the single crash lane", () => {
+describe("fetchCrashesForStudyArea — the single crash lane", () => {
   beforeEach(() => {
     __clearFetchJsonResponseCacheForTests();
   });
@@ -70,7 +73,7 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    const result = await fetchCrashesForBbox(BERLIN_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: BERLIN_BBOX, stateFips: null }, { now: NOW });
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(result.observed).toBe(false);
@@ -126,7 +129,7 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
     });
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    const result = await fetchCrashesForBbox(NEVADA_COUNTY_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: NEVADA_COUNTY_BBOX, stateFips: CALIFORNIA }, { now: NOW });
 
     expect(result.observed).toBe(true);
     expect(result.source).toBe("ccrs-ca");
@@ -163,7 +166,7 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
       vi.fn(async () => errorResponse(403)) as unknown as typeof fetch
     );
 
-    const result = await fetchCrashesForBbox(NEVADA_COUNTY_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: NEVADA_COUNTY_BBOX, stateFips: CALIFORNIA }, { now: NOW });
 
     expect(result.observed).toBe(false);
     expect(result.source).toBe("source-unavailable");
@@ -184,7 +187,7 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
     });
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    const result = await fetchCrashesForBbox(DETROIT_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: DETROIT_BBOX, stateFips: MICHIGAN }, { now: NOW });
 
     expect(result.observed).toBe(true);
     expect(result.source).toBe("fars-national");
@@ -211,7 +214,7 @@ describe("fetchCrashesForBbox — the single crash lane", () => {
       vi.fn(async () => errorResponse(403)) as unknown as typeof fetch
     );
 
-    const result = await fetchCrashesForBbox(DETROIT_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: DETROIT_BBOX, stateFips: MICHIGAN }, { now: NOW });
 
     expect(result.observed).toBe(false);
     expect(result.source).toBe("source-unavailable");
@@ -378,7 +381,7 @@ describe("crash density is annualised, and the year count is the divisor", () =>
     const years = [2025, 2024];
     vi.stubGlobal("fetch", ccrsFetchForYears(years, 20) as unknown as typeof fetch);
 
-    const result = await fetchCrashesForBbox(SMALL_CA_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: SMALL_CA_BBOX, stateFips: CALIFORNIA }, { now: NOW });
 
     expect(result.observed).toBe(true);
     // CCRS_PACKAGE_BODY publishes two annual resources, so two years answer.
@@ -400,7 +403,7 @@ describe("crash density is annualised, and the year count is the divisor", () =>
     const SMALL_CA_BBOX = { minLon: -121.05, minLat: 39.2, maxLon: -121.0, maxLat: 39.25 };
     vi.stubGlobal("fetch", ccrsFetchForYears([2025], 20) as unknown as typeof fetch);
 
-    const result = await fetchCrashesForBbox(SMALL_CA_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: SMALL_CA_BBOX, stateFips: CALIFORNIA }, { now: NOW });
 
     expect(result.observed).toBe(true);
     expect(result.totalInjuryCrashes).toBe(20);
@@ -455,7 +458,7 @@ describe("a fatal crash killed at least one person", () => {
     });
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    const result = await fetchCrashesForBbox(NEVADA_COUNTY_BBOX, { now: NOW });
+    const result = await fetchCrashesForStudyArea({ bbox: NEVADA_COUNTY_BBOX, stateFips: CALIFORNIA }, { now: NOW });
     // Three deaths in ONE crash: fatalities and fatal crashes are different
     // counts and must not collapse into each other.
     expect(result.totalFatalCrashes).toBe(1);
