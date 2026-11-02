@@ -41,6 +41,13 @@ import {
 } from "@/lib/safety/sources/registry";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import {
+  boundaryAreaSquareMiles,
+  clipCrashRecordsToBoundary,
+  describeCrashStudyArea,
+  type CrashStudyAreaCoverage,
+  type CrashStudyBoundary,
+} from "@/lib/safety/crash-study-area";
 import type {
   CrashFetchResult,
   CrashRecord,
@@ -126,6 +133,12 @@ export interface CrashSummary {
    */
   studyAreaStates?: string[] | null;
   /**
+   * Whether the counts are bounded by the study area's polygon or only by its
+   * rectangle, and how many crashes the polygon left out. Undefined on
+   * summaries built before the boundary check, and when no boundary was passed.
+   */
+  studyArea?: CrashStudyAreaCoverage;
+  /**
    * Richer sources for this study area that could not be reached this run,
    * when a later source in registry order did answer. The figures then come
    * from the source that answered, and the narrative says which one failed.
@@ -160,6 +173,11 @@ function unconfirmedStateNote(crashes: Pick<CrashSummaryCore, "studyAreaStates">
   return crashes.studyAreaStates === null
     ? " The study area's state was not confirmed from a picked place, so only a national crash source was read."
     : "";
+}
+
+/** Which area the counts describe, when the run recorded it. Empty otherwise. */
+function studyAreaNote(crashes: Pick<CrashSummaryCore, "studyArea" | "truncated">): string {
+  return crashes.studyArea ? ` ${describeCrashStudyArea(crashes.studyArea, crashes.truncated)}` : "";
 }
 
 /** A summary before its own disclosure is attached. */
@@ -283,8 +301,15 @@ export function summarizeCrashFetch(
   adapter: CrashSourceAdapter,
   fetched: CrashFetchResult,
   bbox: StudyAreaBbox,
-  requestedYears: number[]
+  requestedYears: number[],
+  boundary?: CrashStudyBoundary | null
 ): CrashSummaryCore {
+  // The corridor's own polygon, when it is passed: crashes outside it are left
+  // out of every tally and point, and the density divides by its area rather
+  // than the rectangle's.
+  const clipped = boundary === undefined ? null : clipCrashRecordsToBoundary(fetched.records, bbox, boundary);
+  const records = clipped ? clipped.records : fetched.records;
+  const outside = clipped?.studyArea.outsideBoundaryCount ?? 0;
   let totalFatalCrashes = 0;
   let totalFatalities = 0;
   let pedestrianFatalities = 0;
@@ -295,7 +320,7 @@ export function summarizeCrashFetch(
 
   const points: CrashPointFeature[] = [];
 
-  for (const record of fetched.records) {
+  for (const record of records) {
     // Counted, never silently skipped. These are collisions the source reported
     // and did not classify; leaving them out of every tally would make the
     // scorecard's own numbers unaccountable against `reportedTotal`.
@@ -325,7 +350,8 @@ export function summarizeCrashFetch(
   const severeInjury = adapter.severityCompleteness === "kabco_full" ? severeInjuryCrashes : null;
   const totalInjuryCrashes = fatalOnly ? null : injuryCrashes;
 
-  const area = bboxAreaSquareMiles(bbox);
+  const polygonArea = clipped?.studyArea.basis === "place_boundary" ? boundaryAreaSquareMiles(boundary?.geometry) : null;
+  const area = polygonArea ?? bboxAreaSquareMiles(bbox);
   // The years the source answered for, including years with no crash in the
   // study area. Dividing by only the years that returned a crash raised the
   // annual rate whenever a year was empty: one crash in four years read as one
@@ -350,9 +376,10 @@ export function summarizeCrashFetch(
     crashesPerSquareMile: Math.round((densityCount / annualBasis / area) * 10) / 10,
     crashDensityBasis: fatalOnly ? "fatal_only" : "injury_and_fatal",
     unclassifiedCrashes,
-    reportedTotal: fetched.matchedTotal,
-    mappedTotal: fetched.geocodedTotal,
+    reportedTotal: Math.max(0, fetched.matchedTotal - outside),
+    mappedTotal: Math.max(0, fetched.geocodedTotal - outside),
     truncated: fetched.truncated,
+    ...(clipped ? { studyArea: clipped.studyArea } : {}),
     points,
     checkedSources: [adapter.id],
     unavailableReason: null,
@@ -382,6 +409,8 @@ function withDisclosure(core: CrashSummaryCore): CrashSummary {
 export type CorridorCrashStudyArea = {
   bbox: StudyAreaBbox;
   stateFips: CrashStudyAreaStates;
+  /** The corridor's polygon. Crashes outside it are left out. */
+  boundary?: CrashStudyBoundary | null;
 };
 
 /**
@@ -428,7 +457,7 @@ export async function fetchCrashesForStudyArea(
         maxRecords: ANALYSIS_MAX_RECORDS,
         signal: options.signal,
       });
-      const core = summarizeCrashFetch(adapter, fetched, bbox, years);
+      const core = summarizeCrashFetch(adapter, fetched, bbox, years, area.boundary);
       return withDisclosure({
         ...core,
         studyAreaStates,
@@ -536,6 +565,7 @@ export function buildCrashSourceSnapshot(
       ? ` ${unavailable.map((s) => s.label).join(" and ")} could not be reached this run, so these figures come from ${crashes.sourceLabel}.`
       : "";
   const stateNote = unconfirmedStateNote(crashes);
+  const areaNote = studyAreaNote(crashes);
 
   return {
     ...shared,
@@ -547,8 +577,9 @@ export function buildCrashSourceSnapshot(
     truncated: crashes.truncated,
     ...(crashes.studyAreaStates !== undefined ? { studyAreaStates: crashes.studyAreaStates } : {}),
     ...(unavailable.length > 0 ? { unavailableSources: unavailable } : {}),
+    ...(crashes.studyArea ? { studyArea: crashes.studyArea } : {}),
     unclassifiedCrashes: crashes.unclassifiedCrashes,
-    note: `Observed crash records from ${crashes.sourceLabel}.${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${truncationNote}${unavailableNote}${stateNote}`,
+    note: `Observed crash records from ${crashes.sourceLabel}.${areaNote}${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${truncationNote}${unavailableNote}${stateNote}`,
   };
 }
 
@@ -566,7 +597,8 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
     return (
       `**Safety (${crashes.yearsQueried.length > 0 ? crashes.yearsQueried.join(", ") : "requested years"}, ${crashes.sourceLabel}):** ` +
       `${crashes.reportedTotal.toLocaleString("en-US")} crashes matched the study area, but the record extract reached OpenPlan's analysis cap. ` +
-      "Severity totals, crash density, and the safety score are withheld because the extract is incomplete."
+      "Severity totals, crash density, and the safety score are withheld because the extract is incomplete." +
+      studyAreaNote(crashes)
     );
   }
 
@@ -611,6 +643,6 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
     `${crashes.bicyclistFatalities} involving a bicyclist).${injuryNote} ${densityLabel}: ` +
-    `${crashes.crashesPerSquareMile}/sq mi/yr.${cutoffNote}${unclassifiedNote}${unavailableNote}${stateNote}`
+    `${crashes.crashesPerSquareMile}/sq mi/yr.${studyAreaNote(crashes)}${cutoffNote}${unclassifiedNote}${unavailableNote}${stateNote}`
   );
 }

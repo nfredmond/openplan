@@ -503,7 +503,12 @@ export async function POST(request: NextRequest) {
         // undefined` inside this closure, and a workspace filter that could be
         // undefined is the one thing this argument must never be.
         fetchTransitAccessForBbox(bbox, { workspaceId: parsedWorkspaceId, client: supabase }),
-        fetchCrashesForStudyArea({ bbox, stateFips: crashStateFips }),
+        // The corridor polygon bounds the crashes, not its rectangle.
+        fetchCrashesForStudyArea({
+          bbox,
+          stateFips: crashStateFips,
+          boundary: { geometry: corridorGeojson, source: parsed.data.place ? "picked_place" : "drawn_area" },
+        }),
       ]);
 
       // LODES depends on census population

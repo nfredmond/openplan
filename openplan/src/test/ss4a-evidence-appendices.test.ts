@@ -83,6 +83,38 @@ describe("SS4A evidence appendices", () => {
     expect(packetText(appendices)).toContain("Fatal crashes only. The source records only crashes in which someone was killed");
   });
 
+  it("says a packet's crashes were counted by the bounding rectangle when no boundary was applied", () => {
+    // Every acquisition stored before the boundary check has no study-area entry.
+    const crash = byKey(buildSs4aEvidenceAppendices(completeEvidenceRecords(), ALL), "crash_summary");
+    expect(factValue(crash, "Crash area")).toBe("Bounding rectangle, not the place boundary");
+    expect(factValue(crash, "Crashes outside the boundary, left out")).toBeUndefined();
+    expect(factValue(byKey(buildSs4aEvidenceAppendices(completeEvidenceRecords(), ALL), "hin_map"), "Crash area")).toBe("Bounding rectangle, not the place boundary");
+    const text = packetText(buildSs4aEvidenceAppendices(completeEvidenceRecords(), ALL));
+    expect(text).toContain("Bounding rectangle, not the place boundary");
+    expect(text).toContain("Crashes are counted inside the study area's bounding rectangle, not the place boundary, so these counts can include crashes outside the place.");
+  });
+
+  it("names the place boundary and the crashes it left out (KI-2026-11-02-021)", () => {
+    const records = completeEvidenceRecords();
+    records.safety = {
+      status: "ready",
+      snapshot: evidenceSnapshot({
+        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false } },
+      }),
+      otherSeededArtifactCount: 0,
+    };
+    const appendices = buildSs4aEvidenceAppendices(records, ALL);
+    const crash = byKey(appendices, "crash_summary");
+    expect(factValue(crash, "Crash area")).toBe("Place boundary");
+    expect(factValue(crash, "Crashes outside the boundary, left out")).toBe("9");
+    expect(factValue(byKey(appendices, "hin_map"), "Crash area")).toBe("Place boundary");
+    const text = packetText(appendices);
+    expect(text).toContain("Crashes are counted inside the place boundary. 9 crashes inside its bounding rectangle but outside the boundary are left out.");
+    expect(text).not.toContain("not the place boundary");
+    // Once, not twice: the frozen draft already carries the sentence.
+    expect(crash.notes.filter((note) => note.startsWith("Crashes are counted inside"))).toHaveLength(1);
+  });
+
   it("keeps a count the acquisition does not carry as not recorded, never zero", () => {
     const records = completeEvidenceRecords();
     records.safety = { status: "ready", snapshot: evidenceSnapshot({ crash_count: null, stored_count: null, truncated: null, severity_completeness: null }), otherSeededArtifactCount: 0 };

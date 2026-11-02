@@ -33,6 +33,7 @@ import { buildEngagementFactClaims, type ProjectEngagementEvidence } from "@/lib
 import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
+import { crashAreaBasisLabel, describeCrashStudyArea, readCrashStudyAreaCoverage } from "@/lib/safety/crash-study-area";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 import {
@@ -268,6 +269,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
       { label: "Years", value: network.years },
       { label: "Method", value: network.method },
       { label: "Coverage", value: network.coverage },
+      { label: "Crash area", value: crashAreaBasisLabel(readCrashStudyAreaCoverage(safety.snapshot.acquisition.dimension_coverage)) },
     ],
     table,
     figureSvg,
@@ -288,6 +290,10 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
   const yearsRequested = Array.isArray(acquisition.years_requested) && acquisition.years_requested.length > 0
     ? acquisition.years_requested.map(String).join(", ")
     : "Not recorded";
+  // Read from the acquisition the snapshot froze, so a packet generated
+  // before the boundary check still says its counts are by rectangle.
+  const studyArea = readCrashStudyAreaCoverage(acquisition.dimension_coverage);
+  const areaSentence = describeCrashStudyArea(studyArea, acquisition.truncated === true);
 
   return {
     ...shell(key, index),
@@ -299,6 +305,10 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
       { label: "Severity coverage", value: describeSeverityCoverage(acquisition.severity_completeness) },
       { label: "Recorded severity coverage", value: typeof acquisition.severity_completeness === "string" && acquisition.severity_completeness ? acquisition.severity_completeness : "Not recorded" },
       { label: "Years requested", value: yearsRequested },
+      { label: "Crash area", value: crashAreaBasisLabel(studyArea) },
+      ...(studyArea.outsideBoundaryCount !== null
+        ? [{ label: "Crashes outside the boundary, left out", value: studyArea.outsideBoundaryCount.toLocaleString("en-US") }]
+        : []),
       { label: "Crashes reported", value: stored(acquisition.crash_count) },
       { label: "Crashes geocoded", value: stored(acquisition.geocoded_count) },
       { label: "Crashes stored", value: stored(acquisition.stored_count) },
@@ -311,7 +321,7 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
     ],
     table: null,
     figureSvg: null,
-    notes: [...summary.caveats, summary.sourceLine],
+    notes: [...summary.caveats.filter((caveat) => caveat !== areaSentence), areaSentence, summary.sourceLine],
   };
 }
 
