@@ -94,7 +94,7 @@
     {
       "id": "odot-or-source-adapter",
       "path": "openplan/src/lib/safety/sources/odot-or.ts",
-      "sha256": "c25f542678a1fe3c13ac1bd045f306b84273ab6ea48d2a354d4a7f8920b56083"
+      "sha256": "0bbb8c7e1e0133586824f98e9660a89e8b56455bb530a190b3dba5cf38aea406"
     },
     {
       "id": "odot-or-source-vocabulary",

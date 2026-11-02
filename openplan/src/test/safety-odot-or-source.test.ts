@@ -172,6 +172,14 @@ describe("fetching Oregon crashes", () => {
     expect(result.yearsQueried).toEqual([2023]);
   });
 
+  it("treats a request for only years the layer does not hold as unavailable, never as zero crashes", async () => {
+    const { urls } = installLayer();
+    const failure = fetchOdotCrashes({ bbox, years: [2010, 2011] });
+    await expect(failure).rejects.toBeInstanceOf(CrashSourceUnavailableError);
+    await expect(failure).rejects.toThrow(/none of the requested years/);
+    expect(urls.some((url) => (url.searchParams.get("where") ?? "").startsWith("CRASH_YR_NO"))).toBe(false);
+  });
+
   it("treats an ArcGIS error body as unavailable, never as zero crashes, and names the error", async () => {
     // A stopped service answers HTTP 200 with this body; Nevada's crash layer
     // did exactly that on 2026-11-01.

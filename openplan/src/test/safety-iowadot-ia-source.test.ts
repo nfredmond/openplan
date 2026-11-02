@@ -172,6 +172,13 @@ describe("fetching Iowa crashes", () => {
     expect(result.yearsQueried).toEqual([2024]);
   });
 
+  it("treats a request for only years the layer does not hold as unavailable, never as zero crashes", async () => {
+    installLayers();
+    const failure = fetchIowaCrashes({ bbox, years: [1999, 2000] });
+    await expect(failure).rejects.toBeInstanceOf(CrashSourceUnavailableError);
+    await expect(failure).rejects.toThrow(/none of the requested years/);
+  });
+
   it("treats an ArcGIS error body as unavailable, never as zero crashes, and names the error", async () => {
     installLayers({ count: { error: { code: 500, message: "Service not started" } } });
     const failure = fetchIowaCrashes({ bbox, years: [fixture.year] });

@@ -20,7 +20,7 @@ import {
   type CrashSourceVocabularyDescriptor,
 } from "@/lib/safety/vocabulary";
 import { countArcgisCrashes, fetchArcgisCrashFeatures, type ArcgisCrashFeature } from "./arcgis-crash-query";
-import type { CrashFetchParams, CrashFetchResult, CrashRecord } from "./types";
+import { CrashSourceUnavailableError, type CrashFetchParams, type CrashFetchResult, type CrashRecord } from "./types";
 
 /** A coarse lon/lat rectangle. A rejection filter only; the state decides coverage. */
 export type CoarseBounds = { minLon: number; maxLon: number; minLat: number; maxLat: number };
@@ -153,6 +153,11 @@ export async function readStateCrashLayer<Context>(
   const years = Array.from(new Set(params.years))
     .filter((year) => Number.isInteger(year) && held.has(year))
     .sort((a, b) => b - a);
+  // A request for years the layer does not hold has no answer here. Returning
+  // an empty read would read as zero crashes, so the source is unavailable.
+  if (params.years.length > 0 && years.length === 0) {
+    throw new CrashSourceUnavailableError(plan.sourceId, noRequestedYearsHeld(plan.yearsHeld));
+  }
 
   const records: CrashRecord[] = [];
   const unmappedByDimension: Partial<Record<CrashDimension, number>> = {};
@@ -213,6 +218,12 @@ export async function readStateCrashLayer<Context>(
     truncated,
     unmappedByDimension,
   };
+}
+
+/** The refusal for a request whose years the layer does not hold. */
+export function noRequestedYearsHeld(held: readonly number[]): string {
+  if (held.length === 0) return "The crash layer holds none of the requested years";
+  return `The crash layer holds ${Math.min(...held)}-${Math.max(...held)}, none of the requested years`;
 }
 
 /** Calendar years from `first` to `last`, inclusive; empty when either is missing. */

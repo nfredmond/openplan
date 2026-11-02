@@ -50,6 +50,7 @@ import {
   type CrashWeather,
 } from "@/lib/safety/vocabulary";
 import { countArcgisCrashes, fetchArcgisCrashFeatures } from "./arcgis-crash-query";
+import { noRequestedYearsHeld } from "./state-crash-layer";
 import { ODOT_OR_CRASH_COLUMNS as COLUMNS, ODOT_OR_DIMENSION_SUPPORT, ODOT_OR_VOCABULARY } from "./odot-or-vocabulary";
 import {
   CrashSourceUnavailableError,
@@ -263,10 +264,15 @@ function whereForYear(year: number): string {
 
 export async function fetchOdotCrashes(params: CrashFetchParams): Promise<CrashFetchResult> {
   const maxRecords = params.maxRecords ?? DEFAULT_MAX_RECORDS;
-  const held = new Set(await fetchOdotYearsHeld(params.signal));
+  const yearsHeld = await fetchOdotYearsHeld(params.signal);
+  const held = new Set(yearsHeld);
   const years = Array.from(new Set(params.years))
     .filter((year) => Number.isInteger(year) && held.has(year))
     .sort((a, b) => b - a);
+  // An empty read would read as zero crashes; no held year means no answer.
+  if (params.years.length > 0 && years.length === 0) {
+    throw new CrashSourceUnavailableError(ODOT_OR_SOURCE_ID, noRequestedYearsHeld(yearsHeld));
+  }
 
   const records: CrashRecord[] = [];
   const unmappedByDimension: Partial<Record<CrashDimension, number>> = {};
