@@ -1,12 +1,12 @@
 /** Blind category: pure source/fixture checks do not execute SQL, RLS or a browser. */
 import { describe, it, expect } from "vitest";
 import { buildSafetySeedPreview, buildSs4aSafetyDrafts, validateSafetySeedSource, SS4A_SECTION_KEYS } from "@/lib/grants/ss4a-safety-seed";
-import { readSafetyPlanSnapshot, safetySeedHash } from "@/lib/reports/safety-plan-snapshot";
+import { readSafetyPlanEvidenceFence, readSafetyPlanSnapshot, safetyProjectPlaceHash, safetySeedHash, SAFETY_PLAN_FENCE_INGEST_SELECT, type SafetyPlanFenceClient } from "@/lib/reports/safety-plan-snapshot";
 import { identifySeededCatalogKey } from "@/lib/grants/atp-packet";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { readSafetySeedOrigin, SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
-import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
+import { safetySeedFixture, seedId, SEED_PROJECT_PLACE } from "./fixtures/grants/safety-seed";
 import { parseApplicationSectionRow, parseApplicationAttachmentRow } from "@/lib/grants/application";
 
 describe("Safety snapshot and deterministic SS4A seed", () => {
@@ -61,12 +61,28 @@ describe("Safety snapshot and deterministic SS4A seed", () => {
     expect(safety).toContain("CMF");
     expect(safety).not.toMatch(/CMF [0-9]+\.[0-9]+/);
     expect(safety).toContain("Snapshot component gaps, not findings of agency absence");
+    // Plain sentences for a reviewer: no doubled periods, no unit on a missing
+    // length, no internal status codes.
+    expect(safety).not.toMatch(/\.\.(\s|$)/);
+    expect(safety).not.toContain("not measured miles");
+    expect(safety).not.toMatch(/not_covered|\(partial in/);
     const full = buildSafetySeedPreview(safetySeedFixture("kabco_full")).sections.find((s) => s.section_key === "safety-problem-and-impact")!.draft_markdown;
     expect(full).toContain("Serious-injury crashes: 0");
     const budget = preview.sections.find((s) => s.section_key === "budget-narrative")!.draft_markdown;
     expect(budget).toContain("No amounts, costs, currency or benefits have been inferred");
     expect(budget).not.toMatch(/\$\d|USD|80%|20%/);
     expect(preview).toEqual(buildSafetySeedPreview(rows));
+  });
+  it("states a grid square's missing length without a unit", () => {
+    const rows = safetySeedFixture(); const snapshot = validateSafetySeedSource(rows);
+    const gridded = structuredClone(snapshot);
+    gridded.draft.network = {
+      kind: "computed", measureLabel: "Fatal crashes per half-mile square (fatal crashes only)", method: "Grid.", coverage: "1 of 1.", years: "Requested crash years: 2024", sourceLine: "Source: Recorded crash source.",
+      rows: [{ rank: 1, tied: false, segmentId: "grid:1:2", label: "Half-mile square at 40.1, -115.2", lengthMiles: null, crashCount: 1, fatalCrashCount: 1, seriousInjuryCrashCount: null, crashesPerMile: null, countermeasureNames: [] }],
+    };
+    const safety = buildSs4aSafetyDrafts(gridded, rows.project.name).find((s) => s.section_key === "safety-problem-and-impact")!.draft_markdown;
+    expect(safety).toContain("length not measured; crashes per mile not measured.");
+    expect(safety).not.toContain("not measured miles");
   });
   it("binds source revisions, every prior draft and concurrent final text without modifying either", () => {
     const rows = safetySeedFixture(); const before = structuredClone(rows);
@@ -94,3 +110,87 @@ describe("Safety snapshot and deterministic SS4A seed", () => {
     expect(attachment.status).toBe("missing");
   });
 });
+
+// KI-2026-11-02-022: logging or exporting a linked funding opportunity moves
+// projects.updated_at (an aggregate bundle revision), which made the first seed
+// after it refuse a current Safety report.
+describe("Safety seed staleness follows the Safety evidence, not every project write", () => {
+  const LATER = "2026-10-18T12:05:00.000001+00:00";
+  it("seeds a fenced report after a write outside Safety moved the project revision", () => {
+    const rows = safetySeedFixture("fatal_only", { fenced: true });
+    rows.project.updated_at = LATER; rows.project.name = "Renamed project";
+    expect(rows.persistence.persisted_project_updated_at).not.toBe(LATER);
+    expect(() => validateSafetySeedSource(rows)).not.toThrow();
+    expect(buildSafetySeedPreview(rows).sections[0].draft_markdown).toContain("Working draft for Renamed project.");
+  });
+  it.each([
+    ["a crash or party write moved the acquisition's evidence revision", (rows: ReturnType<typeof safetySeedFixture>) => { rows.acquisition.evidence_revision = 8; }],
+    ["the evidence revision was not read", (rows: ReturnType<typeof safetySeedFixture>) => { delete rows.acquisition.evidence_revision; }],
+    ["the project place changed", (rows: ReturnType<typeof safetySeedFixture>) => { rows.project.place_label = "Another city"; rows.project.place_set_at = LATER; }],
+    ["only the place timestamp changed", (rows: ReturnType<typeof safetySeedFixture>) => { rows.project.place_set_at = LATER; }],
+    ["a place column was not read", (rows: ReturnType<typeof safetySeedFixture>) => { delete rows.project.place_ref; }],
+  ])("refuses a fenced report when %s", (_label, mutate) => {
+    const rows = safetySeedFixture("fatal_only", { fenced: true });
+    mutate(rows);
+    expect(() => validateSafetySeedSource(rows)).toThrow(/crash records or project place .* changed/);
+  });
+  it("still refuses a fenced report whose frozen acquisition columns changed", () => {
+    const rows = safetySeedFixture("fatal_only", { fenced: true });
+    rows.acquisition.stored_count = 3;
+    expect(() => validateSafetySeedSource(rows)).toThrow(/Safety source changed/);
+  });
+  it("keeps the aggregate project check for a retained snapshot without a fence", () => {
+    const rows = safetySeedFixture();
+    expect(readSafetyArtifactFence(rows)).toBeUndefined();
+    expect(() => validateSafetySeedSource(rows)).not.toThrow();
+    rows.project.updated_at = LATER;
+    expect(() => validateSafetySeedSource(rows)).toThrow(/custody.*stale/);
+  });
+  it("binds the fence into the snapshot hash", () => {
+    const snapshot = validateSafetySeedSource(safetySeedFixture("fatal_only", { fenced: true }));
+    expect(snapshot.evidenceFence).toEqual({ acquisitionEvidenceRevision: "7", projectPlaceHash: safetyProjectPlaceHash(SEED_PROJECT_PLACE) });
+    expect(readSafetyPlanSnapshot({ ...snapshot, evidenceFence: { ...snapshot.evidenceFence!, acquisitionEvidenceRevision: "8" } })).toBeNull();
+    const { evidenceFence: _dropped, ...unfenced } = snapshot;
+    expect(readSafetyPlanSnapshot(unfenced)).toBeNull();
+  });
+});
+
+describe("generation reads the evidence fence", () => {
+  const ingestId = seedId(6);
+  function client(result: { data: unknown; error: unknown } | "throw") {
+    const calls: { select: string[]; eq: Array<[string, string]> } = { select: [], eq: [] };
+    const query = {
+      eq(column: string, value: string) { calls.eq.push([column, value]); return query; },
+      maybeSingle: async () => { if (result === "throw") throw new Error("connection lost"); return result; },
+    };
+    const fake: SafetyPlanFenceClient = { from: () => ({ select: (columns: string) => { calls.select.push(columns); return query; } }) };
+    return { fake, calls };
+  }
+  const input = { workspaceId: seedId(1), projectId: seedId(2), ingestId, project: SEED_PROJECT_PLACE };
+  it("records the acquisition revision and the place hash from scoped reads", async () => {
+    const { fake, calls } = client({ data: { id: ingestId, evidence_revision: 41 }, error: null });
+    expect(await readSafetyPlanEvidenceFence(fake, input)).toEqual({ acquisitionEvidenceRevision: "41", projectPlaceHash: safetyProjectPlaceHash(SEED_PROJECT_PLACE) });
+    expect(calls.select).toEqual([SAFETY_PLAN_FENCE_INGEST_SELECT]);
+    expect(SAFETY_PLAN_FENCE_INGEST_SELECT).toBe("id, evidence_revision");
+    expect(calls.eq).toEqual([["workspace_id", seedId(1)], ["project_id", seedId(2)], ["id", ingestId]]);
+  });
+  it.each([
+    ["the read failed", { data: null, error: { message: "column safety_crash_ingests.evidence_revision does not exist" } }],
+    ["the read reported an error beside a row", { data: { id: ingestId, evidence_revision: 41 }, error: { message: "partial response" } }],
+    ["another row came back", { data: { id: seedId(90), evidence_revision: 41 }, error: null }],
+    ["the revision is not a positive integer", { data: { id: ingestId, evidence_revision: 0 }, error: null }],
+    ["the connection dropped", "throw" as const],
+  ])("records no fence when %s", async (_label, result) => {
+    expect(await readSafetyPlanEvidenceFence(client(result).fake, input)).toBeNull();
+  });
+  it("records no fence when the project place was not read", async () => {
+    const { place_set_at: _omitted, ...narrow } = SEED_PROJECT_PLACE;
+    const { fake, calls } = client({ data: { id: ingestId, evidence_revision: 41 }, error: null });
+    expect(await readSafetyPlanEvidenceFence(fake, { ...input, project: narrow })).toBeNull();
+    expect(calls.select).toEqual([]);
+  });
+});
+
+function readSafetyArtifactFence(rows: ReturnType<typeof safetySeedFixture>) {
+  return readSafetyPlanSnapshot(rows.artifact.metadata_json.safetyPlanSnapshotV1)?.evidenceFence;
+}

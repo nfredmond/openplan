@@ -233,6 +233,20 @@ describe("attaching countermeasures", () => {
     expect(screen.getByRole("status").textContent).toBe("Workspace access denied");
   });
 
+  it("still saves a plan when no segment is ranked", async () => {
+    const empty = network();
+    if (empty.status !== "computed") throw new Error("fixture");
+    const props = renderPanel({ network: { ...empty, segments: [], crashesConsidered: 0, crashesPlaced: 0, listedCrashes: 0, listedMiles: 0 } });
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save plan with no ranked segments" }));
+    });
+    expect(props.saveRequest).toHaveBeenCalledWith("report-a", {
+      safetyIngestSelections: [{ ingestId: INGEST_ID }],
+      safetyActionPlan: { ingestId: INGEST_ID, attachments: [] },
+    });
+    expect(screen.getByRole("status").textContent).toBe("Saved to Plan A.");
+  });
+
   it("says where to save from when no report is reachable", () => {
     renderPanel({ reports: [] });
     expect(screen.getByTestId("safety-hin-save-unavailable").textContent).toMatch(/from a project that has a report/);

@@ -21,7 +21,8 @@ import {
   CRASH_SEVERITY_COLOR,
   CRASH_SEVERITY_LEGEND_ORDER,
 } from "@/lib/cartographic/crash-severity-palette";
-import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
+import { parseCorridorText, summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
+import { describeCrashStudyArea, readCrashStudyAreaCoverage } from "@/lib/safety/crash-study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import { recentCrashYears } from "@/lib/safety/crash-years";
 import { describeCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
@@ -277,6 +278,9 @@ export type SafetyStudyAreaSeed = {
   origin: StudyAreaOrigin;
   originLabel: string | null;
 };
+
+/** Largest drawn boundary sent with a retrieval, below the route's body limit. */
+const DRAWN_BOUNDARY_MAX_CHARS = 200_000;
 
 const EMPTY_STUDY_AREA_SEED: SafetyStudyAreaSeed = {
   corridorText: "",
@@ -622,6 +626,17 @@ export function SafetyWorkspace({
   // same registry, so they must ask it the same question.
   const years = useMemo(() => recentCrashYears(), []);
 
+  // A drawn or uploaded area has no identity the server can re-read, so its
+  // polygon travels with the request and the crashes are kept inside it. A
+  // place or project boundary is read on the server instead. A polygon too
+  // large for the request is left off, and the acquisition then says it was
+  // counted by rectangle.
+  const drawnBoundary = useMemo(() => {
+    if (place || projectId !== "") return null;
+    const geometry = parseCorridorText(corridorText);
+    return geometry && corridorText.length <= DRAWN_BOUNDARY_MAX_CHARS ? geometry : null;
+  }, [place, projectId, corridorText]);
+
   const runIngest = useCallback(async () => {
     if (!bbox) return;
     setIngesting(true);
@@ -639,6 +654,7 @@ export function SafetyWorkspace({
           // The picked place's identity, so the server can confirm its state
           // and choose that state's crash source. The bbox alone cannot.
           ...(place ? { place: { kind: place.kind, geoid: place.geoid } } : {}),
+          ...(drawnBoundary ? { boundary: drawnBoundary } : {}),
         }),
       });
       const body = await res.json();
@@ -679,6 +695,7 @@ export function SafetyWorkspace({
           // fatality census facets it cannot answer and show the empty result as
           // if it were a finding.
           dimensionCoverage: body.dimensionCoverage,
+          studyArea: readCrashStudyAreaCoverage(body.dimensionCoverage),
         });
         return;
       }
@@ -726,6 +743,7 @@ export function SafetyWorkspace({
         partyCount: typeof body.partyCount === "number" ? body.partyCount : null,
         involvementBasis:
           typeof body.involvementBasis === "string" ? body.involvementBasis : null,
+        studyArea: readCrashStudyAreaCoverage(body.dimensionCoverage),
       };
       setIngest(summary);
       setHistory((current) => [
@@ -766,7 +784,7 @@ export function SafetyWorkspace({
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, bbox, countyCode, projectId, years, place]);
+  }, [workspaceId, bbox, countyCode, projectId, years, place, drawnBoundary]);
 
   // Every acquisition and response belongs to the area it was retrieved for
   // and to no other. Keep the matching server-provided acquisition on initial
@@ -1384,6 +1402,9 @@ export function SafetyWorkspace({
                 Live read — not saved
               </span>
             </div>
+            <p className="text-muted-foreground" data-testid="safety-crash-area-basis">
+              {describeCrashStudyArea(liveRead.studyArea ?? readCrashStudyAreaCoverage(null))}
+            </p>
             <p className="text-muted-foreground">
               {COVERAGE_STATE_COPY[liveRead.coverageState] ?? liveRead.coverageState}
             </p>
@@ -1427,6 +1448,11 @@ export function SafetyWorkspace({
                 {ingest.geocodedCount.toLocaleString("en-US")} mappable
               </span>
             </div>
+            {ingest.status === "ready" && (
+              <p className="text-muted-foreground" data-testid="safety-crash-area-basis">
+                {describeCrashStudyArea(ingest.studyArea ?? readCrashStudyAreaCoverage(null))}
+              </p>
+            )}
             <p className="text-muted-foreground">
               {COVERAGE_STATE_COPY[ingest.coverageState] ?? ingest.coverageState}
             </p>

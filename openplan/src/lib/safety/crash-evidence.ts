@@ -62,6 +62,11 @@ import {
   SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT,
   describeGeocodingShortfall,
 } from "./caveats";
+import {
+  describeCrashStudyArea,
+  readCrashStudyAreaCoverage,
+  type CrashStudyAreaCoverage,
+} from "./crash-study-area";
 
 /** Counts by neutral severity band. Every band present; absent bands are true zeros. */
 export type SafetyCrashSeverityCounts = Readonly<Record<CrashSeverity, number>>;
@@ -147,6 +152,8 @@ export type SafetyCrashEvidence = {
   mappedTotal: number;
   /** `dimension_coverage`, passed through for `facetAvailability`. */
   dimensionCoverage: unknown;
+  /** Place boundary or bounding rectangle, and how many crashes the boundary left out. */
+  studyArea: CrashStudyAreaCoverage;
   citationText: string;
   /** Full-sentence disclosures for a UI surface. Always at least one. */
   caveats: string[];
@@ -265,6 +272,11 @@ export function buildSafetyCrashEvidence(
   const geocodingShortfall = describeGeocodingShortfall(ingest.crashCount, ingest.geocodedCount);
   if (geocodingShortfall) caveats.push(geocodingShortfall);
 
+  // Which area the counts describe: the place boundary, or only the rectangle
+  // around it. Every surface that prints these counts prints this beside them.
+  const studyArea = readCrashStudyAreaCoverage(ingest.dimensionCoverage);
+  caveats.push(describeCrashStudyArea(studyArea));
+
   if (unclassifiedCount !== null && unclassifiedCount > 0) {
     caveats.push(
       `${unclassifiedCount.toLocaleString("en-US")} of these collisions carry no casualty count from the source agency. ` +
@@ -333,6 +345,7 @@ export function buildSafetyCrashEvidence(
     reportedTotal: ingest.crashCount,
     mappedTotal: ingest.geocodedCount,
     dimensionCoverage: ingest.dimensionCoverage,
+    studyArea,
     publishedThrough: publication.publishedThrough,
     publishedThroughProvenance: publication.provenance,
     citationText,

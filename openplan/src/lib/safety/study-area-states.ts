@@ -62,12 +62,30 @@ export async function crashStatesOfConfirmedPlace(
   place: { kind: PlaceKind; geoid: string },
   studyAreaBbox: StudyAreaBbox
 ): Promise<string[] | null> {
+  return (await confirmCrashStudyPlace(place, studyAreaBbox)).stateFips;
+}
+
+/**
+ * A picked place's states and its resolved boundary polygon, under the same
+ * rule: both only when the re-resolved boundary has this study area's bbox.
+ * The polygon is the resolver's, never the client's, so the crashes kept are
+ * the ones inside the place the identity names.
+ */
+export async function confirmCrashStudyPlace(
+  place: { kind: PlaceKind; geoid: string },
+  studyAreaBbox: StudyAreaBbox
+): Promise<{ stateFips: string[] | null; geometry: unknown | null }> {
   try {
     const boundary = await resolvePlaceBoundary(place.kind, place.geoid);
-    if (!boundary || boundary.kind !== place.kind || boundary.geoid !== place.geoid) return null;
-    if (!studyAreaBboxesMatch(studyAreaBbox, boundary.bbox)) return null;
-    return crashStatesFromTigerwebPlace(place.kind, place.geoid);
+    if (!boundary || boundary.kind !== place.kind || boundary.geoid !== place.geoid) {
+      return { stateFips: null, geometry: null };
+    }
+    if (!studyAreaBboxesMatch(studyAreaBbox, boundary.bbox)) return { stateFips: null, geometry: null };
+    return {
+      stateFips: crashStatesFromTigerwebPlace(place.kind, place.geoid),
+      geometry: boundary.geojson ?? null,
+    };
   } catch {
-    return null;
+    return { stateFips: null, geometry: null };
   }
 }

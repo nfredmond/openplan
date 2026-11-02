@@ -1369,6 +1369,43 @@ describe("ProjectDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("names the workspace's home geography when the project has no study area", async () => {
+    workspaceSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        slug: "openplan-qa",
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        created_at: "2026-03-28T18:00:00.000Z",
+        home_geography_source: "tigerweb",
+        home_geography_kind: "place",
+        home_geography_ref: "0601640",
+        home_geography_label: "Alturas",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+        home_min_lon: -120.576,
+        home_min_lat: 41.469,
+        home_max_lon: -120.525,
+        home_max_lat: 41.506,
+      },
+      error: null,
+    });
+
+    await renderPage();
+
+    // The mocked client returns the fixture whatever columns are asked for, so
+    // the projection is the artifact under test: without the label the page
+    // said the workspace had no home geography at all.
+    const workspaceSelectCalls = workspaceSelectMock.mock.calls as unknown as Array<[string]>;
+    const workspaceColumns = String(workspaceSelectCalls[0]?.[0] ?? "");
+    expect(workspaceColumns).toContain("home_geography_label");
+    expect(workspaceColumns).toContain("home_min_lon");
+    expect(workspaceColumns).not.toContain("home_geometry_geojson");
+    expect(screen.getAllByText(/falls back to the workspace's home geography, Alturas/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/workspace has no home geography either/)).toBeNull();
+  });
+
   it("notFounds when the project is not readable (RLS blocks a non-member)", async () => {
     // A caller who is not a member of the project's workspace gets no row back
     // from the RLS-scoped select, which is the only access gate that remains.

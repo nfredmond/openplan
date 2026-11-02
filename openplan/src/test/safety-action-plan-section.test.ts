@@ -142,6 +142,27 @@ describe("the draft section", () => {
     expect(draft.draftNotice).toMatch(/not an adopted safety action plan/);
   });
 
+  it("does not claim attached countermeasures for a plan that has none", () => {
+    const empty = buildSafetyActionPlanSection({ plan: { ingestId: INGEST_ID, attachments: [] }, evidence: evidence(), network: network() });
+    const strategy = empty.components.find((component) => component.component === "Strategy and project selections");
+    expect(strategy?.status).toBe("not_covered");
+    expect(strategy?.gap).not.toMatch(/Has countermeasures attached/);
+    expect(safetyActionPlanMarkup(empty)).not.toContain("Has countermeasures attached");
+    const withTreatments = buildSafetyActionPlanSection({ plan: PLAN, evidence: evidence(), network: network() });
+    expect(withTreatments.components.find((component) => component.component === "Strategy and project selections")?.status).toBe("partial");
+  });
+
+  it("does not claim a crash summary when the summary and the network both failed to read", () => {
+    const failed = buildSafetyActionPlanSection({
+      plan: PLAN,
+      evidence: null,
+      network: { status: "unavailable", reason: "crash_read_failed", basis: "ksi" },
+    });
+    const analysis = failed.components.find((component) => component.component === "Safety analysis");
+    expect(analysis?.status).toBe("not_covered");
+    expect(analysis?.gap).not.toMatch(/Has the crash summary/);
+  });
+
   it("states a failed crash read and an unranked network instead of printing zeros", () => {
     const draft = buildSafetyActionPlanSection({
       plan: PLAN,
