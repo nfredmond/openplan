@@ -84,7 +84,7 @@
     {
       "id": "crash-source-registry",
       "path": "openplan/src/lib/safety/sources/registry.ts",
-      "sha256": "d0c18bccf33667f713ea598929aa30cd4b1f59e034e99793ed38a84d8fb71c5e"
+      "sha256": "d719ff645a51f79c25dabceae0a1235b0ea0bf1fa227550ea48081a9d7d31d2f"
     },
     {
       "id": "fars-source-adapter",

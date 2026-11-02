@@ -7,6 +7,7 @@ import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { parseCorridorText, type ResolvedStudyArea } from "@/lib/models/study-area";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import type { CorridorGeometry, HomeGeographyLoadState } from "./_types";
 
 /**
@@ -46,6 +47,8 @@ type ExploreStudyAreaPanelProps = {
   corridorGeojson: CorridorGeometry | null;
   /** Publishes a new study area, or `null` when it is cleared. */
   onCorridorChange: (geometry: CorridorGeometry | null) => void;
+  /** The place a search resolved, or `null` for a drawn or cleared area. */
+  onPlaceResolved?: (place: PlaceBoundaryResponse | null) => void;
   /**
    * What the shared precedence resolved to, from `resolveStudyArea`. Applying it
    * is the page's job; this panel only needs to recognize it so it can say where
@@ -72,6 +75,7 @@ type ExploreStudyAreaPanelProps = {
 export function ExploreStudyAreaPanel({
   corridorGeojson,
   onCorridorChange,
+  onPlaceResolved,
   studyArea,
   homeGeographyLoadState,
   openedForProject,
@@ -197,6 +201,7 @@ export function ExploreStudyAreaPanel({
           <StudyAreaPicker
             corridorText={corridorText}
             onCorridorChange={handlePickerChange}
+            onPlaceResolved={onPlaceResolved}
             // `originLabel`, not the bare place name: the resolver documents it
             // as what the planner is TOLD about where the area came from. When
             // the place has a name that name IS the label; when it does not,

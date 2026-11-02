@@ -45,7 +45,8 @@ const UNCOVERED_WORKSPACE_ROW = {
 
 const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
-const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+// Typed to receive its arguments so the home-geography projection can be read.
+const workspaceSelectMock = vi.fn((..._args: unknown[]) => ({ eq: workspaceEqMock }));
 
 const crashLimitMock = vi.fn();
 const crashOrderIdMock = vi.fn(() => ({ limit: crashLimitMock }));
@@ -325,6 +326,37 @@ describe("GET /api/map-features/crashes", () => {
     expect(payload.scopeState).toBe("covered");
     expect(payload.features).toEqual([]);
     expect(payload.acquisitionState).toBe("none");
+  });
+
+  // The fixture pairs a state with a rectangle that is not that state's, so the
+  // two rules disagree and the test shows which one decides. Under the old
+  // rectangle rule this bbox overlapped CCRS's envelope and read "covered".
+  it("decides coverage by the stated area's state, not by its rectangle", async () => {
+    asMember();
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: { ...COVERED_WORKSPACE_ROW, home_country_code: "US", home_subdivision_code: "PR" },
+      error: null,
+    });
+    const outOfState = (await (await getCrashes(bareRequest())).json()) as CrashPayload;
+    expect(outOfState.scopeState).toBe("out_of_coverage");
+
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: { ...COVERED_WORKSPACE_ROW, home_country_code: "US", home_subdivision_code: "CA" },
+      error: null,
+    });
+    const inState = (await (await getCrashes(bareRequest())).json()) as CrashPayload;
+    expect(inState.scopeState).toBe("covered");
+  });
+
+  it("reads the stated area's state alongside its extent, never its boundary", async () => {
+    asMember();
+    workspaceMaybeSingleMock.mockResolvedValue({ data: COVERED_WORKSPACE_ROW, error: null });
+    await getCrashes(bareRequest());
+    const selected = String(workspaceSelectMock.mock.calls[0]?.[0] ?? "")
+      .split(",")
+      .map((column) => column.trim());
+    expect(selected).toEqual(expect.arrayContaining(["home_country_code", "home_subdivision_code", "home_min_lon"]));
+    expect(selected).not.toContain("home_geometry_geojson");
   });
 
   it("states the coverage gap, and names the source it checked, outside the storable footprint", async () => {

@@ -11,7 +11,7 @@
  * crash source covers this study area*. For every US state except California
  * that sentence was false: `farsAdapter` is registered, it covers the whole
  * source's reporting geography, while the Explore corridor scorecard had been
- * reading it (`fetchCrashesForBbox`, `use: "read_only"`). The
+ * reading it (`fetchCrashesForStudyArea`, `use: "read_only"`). The
  * capability was complete, registered, tested — and no planner opening
  * `/safety` could reach it.
  *

@@ -96,6 +96,15 @@ coverage: the FARS file OpenPlan reads does not include it. Acquisitions saved
 before this change keep the source they recorded; re-run an affected study area
 to replace an empty CCRS pull.
 
+**Corridor crash figures follow the state too:** the Explore corridor scorecard now
+chooses its crash source by the same state rule as Safety. A corridor picked as a
+county, city or CDP, or one that matches its project's place, gets that state's
+source. A Nevada corridor now shows FARS, labeled fatal-only, instead of CCRS. A
+drawn, uploaded or metro corridor, or a run launched from a model, gets FARS only,
+and the safety line says the state was not confirmed. If CCRS cannot be reached
+for a California corridor, the run uses FARS and names CCRS as unavailable. The
+shared crash map layer also checks coverage by the workspace's stated state.
+
 **CEQA screen on county runs:** the §15064.3 screening panel now appears only on
 county runs whose county is in California.
 

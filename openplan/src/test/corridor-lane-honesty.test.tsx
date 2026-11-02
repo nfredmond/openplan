@@ -69,7 +69,7 @@ const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 const fetchCensusForCorridorMock = vi.fn();
 const fetchTractOverlayFeaturesMock = vi.fn();
 const fetchLODESForCorridorMock = vi.fn();
-const fetchCrashesForBboxMock = vi.fn();
+const fetchCrashesForStudyAreaMock = vi.fn();
 const fetchCrashPointFeaturesForBboxMock = vi.fn();
 const fetchTransitAccessForBboxMock = vi.fn();
 const resolveJustice40ForTractsMock = vi.fn();
@@ -103,7 +103,7 @@ vi.mock("@/lib/data-sources/lodes", () => ({
 
 vi.mock("@/lib/data-sources/crashes", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/data-sources/crashes")>()),
-  fetchCrashesForBbox: (...args: unknown[]) => fetchCrashesForBboxMock(...args),
+  fetchCrashesForStudyArea: (...args: unknown[]) => fetchCrashesForStudyAreaMock(...args),
   fetchCrashPointFeaturesForBbox: (...args: unknown[]) =>
     fetchCrashPointFeaturesForBboxMock(...args),
 }));
@@ -277,7 +277,7 @@ beforeEach(() => {
 
   fetchTractOverlayFeaturesMock.mockResolvedValue([]);
   fetchCrashPointFeaturesForBboxMock.mockResolvedValue([]);
-  fetchCrashesForBboxMock.mockResolvedValue(unobservedCrashes());
+  fetchCrashesForStudyAreaMock.mockResolvedValue(unobservedCrashes());
   fetchTransitAccessForBboxMock.mockResolvedValue({
     totalStops: 0,
     stopsPerSqMile: null,
