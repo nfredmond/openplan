@@ -1,0 +1,264 @@
+{
+ "description": "Responses recorded once from ODOT's TIMS Safety catalog and its 2024 crash-location layer, for adapter tests. Not refreshed; the live services will drift.",
+ "servicesUrl": "https://tims.dot.state.oh.us/ags/rest/services/Safety",
+ "layerUrl": "https://tims.dot.state.oh.us/ags/rest/services/Safety/2024_Crash_Locations/MapServer/0",
+ "capturedAt": "2026-11-01",
+ "bbox": {
+  "minLon": -82.2,
+  "minLat": 39.945,
+  "maxLon": -82.17,
+  "maxLat": 39.965
+ },
+ "year": 2024,
+ "responses": {
+  "catalog": {
+   "currentVersion": 11.5,
+   "folders": [],
+   "services": [
+    {
+     "name": "Safety/2021_Crash_Locations",
+     "type": "MapServer"
+    },
+    {
+     "name": "Safety/2022_Crash_Locations",
+     "type": "MapServer"
+    },
+    {
+     "name": "Safety/2023_Crash_Locations",
+     "type": "MapServer"
+    },
+    {
+     "name": "Safety/2024_Crash_Locations",
+     "type": "MapServer"
+    },
+    {
+     "name": "Safety/2025_Crash_Locations",
+     "type": "MapServer"
+    }
+   ]
+  },
+  "count": {
+   "count": 18
+  },
+  "features": {
+   "features": [
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245174100,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "Fatal",
+      "CRASH_TYPE_TXT": "Pedestrian"
+     },
+     "geometry": {
+      "x": -82.18461999965247,
+      "y": 39.956135999807685
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245237078,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Fixed Object"
+     },
+     "geometry": {
+      "x": -82.19747400023947,
+      "y": 39.95231800020576
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245189288,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Animal"
+     },
+     "geometry": {
+      "x": -82.19655899964725,
+      "y": 39.95248899983834
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245202992,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "Minor Injury Suspected",
+      "CRASH_TYPE_TXT": "Animal"
+     },
+     "geometry": {
+      "x": -82.17991800006308,
+      "y": 39.95608499996337
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245199423,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Animal"
+     },
+     "geometry": {
+      "x": -82.18749199985406,
+      "y": 39.95316400001241
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245069443,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Sideswipe - Passing"
+     },
+     "geometry": {
+      "x": -82.17096199969968,
+      "y": 39.95029100026298
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245089720,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "Injury Possible",
+      "CRASH_TYPE_TXT": "Rear End"
+     },
+     "geometry": {
+      "x": -82.17088100040712,
+      "y": 39.950584000298754
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245215200,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Animal"
+     },
+     "geometry": {
+      "x": -82.18179900040282,
+      "y": 39.956109999972824
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245171704,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Pedestrian"
+     },
+     "geometry": {
+      "x": -82.18461999965247,
+      "y": 39.956135999807685
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245207759,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Animal"
+     },
+     "geometry": {
+      "x": -82.18744099980044,
+      "y": 39.956165999657884
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245179840,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Overturning"
+     },
+     "geometry": {
+      "x": -82.1838820004089,
+      "y": 39.95229800032956
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245119880,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Animal"
+     },
+     "geometry": {
+      "x": -82.17272699968845,
+      "y": 39.95087100029922
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245118082,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Sideswipe - Passing"
+     },
+     "geometry": {
+      "x": -82.19473000008438,
+      "y": 39.95283400022397
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245119822,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "Minor Injury Suspected",
+      "CRASH_TYPE_TXT": "Fixed Object"
+     },
+     "geometry": {
+      "x": -82.18942699972214,
+      "y": 39.95312200030304
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245000562,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Angle"
+     },
+     "geometry": {
+      "x": -82.17615700010687,
+      "y": 39.95604600017824
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245156737,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Angle"
+     },
+     "geometry": {
+      "x": -82.17073599974387,
+      "y": 39.955983000160515
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245170601,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "Serious Injury Suspected",
+      "CRASH_TYPE_TXT": "Right Turn"
+     },
+     "geometry": {
+      "x": -82.1705549999939,
+      "y": 39.95598200032373
+     }
+    },
+    {
+     "attributes": {
+      "DOCUMENT_NBR": 20245169696,
+      "CRASH_YR": 2024,
+      "CRASH_SEVERITY_TXT": "PDO/No Injury",
+      "CRASH_TYPE_TXT": "Fixed Object"
+     },
+     "geometry": {
+      "x": -82.18757399986983,
+      "y": 39.95287000012806
+     }
+    }
+   ]
+  }
+ }
+}

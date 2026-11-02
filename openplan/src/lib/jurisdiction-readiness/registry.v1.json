@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-11-02.1",
+  "registryVersion": "2026-11-02.2",
   "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
@@ -84,7 +84,7 @@
     {
       "id": "crash-source-registry",
       "path": "openplan/src/lib/safety/sources/registry.ts",
-      "sha256": "3d695dff30c8c863d422fb2e452038da3ba54bc59ba00539beec039204e3164b"
+      "sha256": "2c8dafc287aebaf859ae81735b6dca37d4a16d2179a54d768a8d426e07248f90"
     },
     {
       "id": "fars-source-adapter",
