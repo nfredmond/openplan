@@ -337,7 +337,7 @@ describe("rollout batch classification across existing award kinds", () => {
     if (retainedKind) db.notifications.push({ ...retained });
     const result = await run();
     expect(db.reads.filter((read) => read.table === "legacy_calendar_funding_awards").map((read) => read.select)).toEqual([
-      "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, created_by",
+      "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, closed_at, created_by",
       "id, workspace_id, project_id, title, expenditure_deadline_at, spending_status, awarded_amount, match_amount, match_posture, created_by",
     ]);
     expect(result.writeError).toBeNull();

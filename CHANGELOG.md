@@ -63,6 +63,45 @@ changed. Engagement review PDFs name each response's sources by register number
 and title and say whether the response is published. Six build notes were
 removed from staff pages. No migration.
 
+**One IPv6 network is one connection for public limits (M9a):** every
+per-connection limit on public input (comments, supports, photos, survey
+responses and saved drafts, update sign-ups) now counts an IPv6 address by its
+/64 network, so a phone or script that picks a new address inside its /64 no
+longer gets fresh limits. IPv4 is counted exactly as before, and an IPv4-mapped
+IPv6 address counts as its IPv4 address. Counts already stored against single
+IPv6 addresses no longer match, so IPv6 connections start their limits again
+once, on deploy. The sign-up email cap is a Supabase Auth setting, not app
+code; [self hosting](openplan/docs/SELF_HOSTING.md#limits-on-public-signup-and-public-input)
+describes it. No migration.
+
+**Link a project to a tracked grant (KI-2026-11-02-043):** a funding opportunity
+tracked from the Grants catalog without a project can now be linked from its
+card on the Grants page, and the ATP panel's "Link a project" goes there. The
+project must be in the opportunity's workspace, and viewers cannot change it.
+Once an application section is final, a draft, export, Safety seed, map package
+or award exists, the link no longer changes; track a new opportunity for the
+other project. The database does not yet enforce these rules on its own.
+
+**ATP report states what it knows (KI-2026-11-02-040 to 042):** the ATP report
+downloaded from an ATP application now cites SB 535 to Health and Safety Code
+§39711, calls its numbers OpenPlan screening scores rather than CTC scoring
+areas, makes no disadvantaged-community eligibility claim, marks each
+cycle-dependent program fact `[VERIFY]` with the CTC's ATP page, and names no
+internal files. It prints the project's recorded summary and planning-level
+estimate instead of "to be provided", and names the crash source, years and
+retrieval date behind the safety score. The ATP panel no longer runs past its
+border on a phone.
+
+**My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
+the "Waiting on a person" section now lists model runs that were interrupted
+or stopped reporting for more than 45 minutes, failed county runs, and aerial
+processing jobs whose latest attempt failed or went silent past the mission
+page's reporting window. Each item links to the page where the job is re-run.
+A funding award recorded closed before its obligation date no longer appears
+in My Work or the daily digest. A closed award recorded closed on or after
+that date, or with no closure date, stays listed for review and is marked past
+due once the date passes. No migration is needed.
+
 **Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
 acquisition now keeps only crashes whose point lies inside the study area's
 polygon (the project's stored place, a picked place, or a drawn area), not every

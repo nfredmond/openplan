@@ -1,3 +1,5 @@
+import { isDeadlinePast } from "@/lib/work/deadlines";
+
 export const PROGRAM_TYPE_OPTIONS = [
   { value: "rtip", label: "RTIP" },
   { value: "stip", label: "STIP" },
@@ -580,11 +582,54 @@ export function buildProgramWorkflowSummary({
   };
 }
 
-/** Closure records do not establish whether a recorded obligation deadline was met. */
-export function fundingAwardObligationReview(
-  spendingStatus: string | null | undefined,
-  closureBasis: string | null | undefined,
-): string | null {
-  if (spendingStatus !== FUNDING_AWARD_CLOSED_SPENDING_STATUS) return null;
-  return `${formatFundingAwardClosureBasisLabel(closureBasis)}. Obligation timing is not established by this closure record. Review the award terms and obligation evidence.`;
+export type FundingAwardObligationStanding =
+  /** The award is open: the obligation date is an ordinary deadline. */
+  | { state: "open"; pastDue: boolean }
+  /** The award was recorded closed before the obligation date: not work. */
+  | { state: "closed_before_deadline" }
+  /** A closed award whose record cannot show the date was met. */
+  | { state: "review"; pastDue: boolean; sentence: string };
+
+/**
+ * The one rule My Work and the deadline digest use for an award's obligation
+ * date (KI-2026-10-12-015, decided 2026-11-02).
+ *
+ * A closed award is fully spent, and funds are obligated before they are spent,
+ * so an award recorded closed BEFORE its obligation date met that date. Every
+ * writer sets `closed_at` to the moment the closure is recorded (the close-out
+ * route, the PATCH route and an imported closure), which is never earlier than
+ * the real closure, so `closed_at < obligation_due_at` is a safe test.
+ *
+ * Any other closed award stays visible for review: one recorded closed on or
+ * after the date (the date passed while the award was open, as far as OpenPlan
+ * knows), and one with no recorded closure date (the 20260729000001 legacy
+ * backfill). Once its date has passed it is a past-due record. Comparing the
+ * date with today instead of with `closed_at` would hide a legacy closure until
+ * the date passed and then show it, so a missing `closed_at` never hides one.
+ */
+export function fundingAwardObligationStanding(
+  award: {
+    spendingStatus: string | null | undefined;
+    closureBasis: string | null | undefined;
+    closedAt: string | null | undefined;
+    obligationDueAt: string | null | undefined;
+  },
+  now: Date,
+): FundingAwardObligationStanding {
+  const pastDue = isDeadlinePast(award.obligationDueAt, now);
+  if (award.spendingStatus !== FUNDING_AWARD_CLOSED_SPENDING_STATUS) return { state: "open", pastDue };
+  const closedAt = award.closedAt ? Date.parse(award.closedAt) : Number.NaN;
+  const dueAt = award.obligationDueAt ? Date.parse(award.obligationDueAt) : Number.NaN;
+  if (Number.isFinite(closedAt) && Number.isFinite(dueAt) && closedAt < dueAt) {
+    return { state: "closed_before_deadline" };
+  }
+  const basis = formatFundingAwardClosureBasisLabel(award.closureBasis);
+  const when = Number.isFinite(closedAt)
+    ? "Recorded closed on or after the obligation date"
+    : "No closure date is recorded";
+  return {
+    state: "review",
+    pastDue,
+    sentence: `${basis}. ${when}. Obligation timing is not established by this closure record. Review the award terms and obligation evidence.`,
+  };
 }

@@ -94,7 +94,7 @@ describe("ATP scoring packet panel", () => {
     expect(rows).toContain("Safety64.0");
     expect(rows).toContain("Equity71.0");
     expect(rows).toContain("ClimateNot recordedOpenPlan does not compute this score.");
-    expect(rows).toContain("Total (weighted 30/25/25/20)Not recordedNeeds all four scores.");
+    expect(rows).toContain("Total (OpenPlan weights 30/25/25/20)Not recordedNeeds all four scores.");
     expect(rows).toContain("SensitivityNot recorded");
 
     const summary = within(panel).getByTestId("atp-packet-summary");
@@ -106,6 +106,29 @@ describe("ATP scoring packet panel", () => {
     const download = within(panel).getByRole("link", { name: /download atp report/i });
     expect(download).toHaveAttribute("href", `${PACKET_URL}?format=markdown`);
     expect(fetchMock).toHaveBeenCalledWith(PACKET_URL);
+  });
+
+  it("reloads the scores when the opportunity's linked project changes", async () => {
+    // A project linked from the opportunity card refreshes the page's server
+    // data; the panel must not keep showing the unlinked answer it loaded first.
+    const sectionKeys = ["project-narrative", "need-and-safety", "disadvantaged-communities", "budget-narrative"];
+    let linked = false;
+    fetchMock.mockImplementation(async (url: string) =>
+      url === PACKET_URL
+        ? jsonResponse(200, linked ? PACKET : { packet: null, missing: "project", scoreRun: null })
+        : jsonResponse(200, applicationPayload(sectionKeys))
+    );
+    const view = render(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} linkedProjectId={null} />);
+    fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
+    await screen.findByRole("link", { name: "Link a project" });
+
+    linked = true;
+    view.rerender(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} linkedProjectId="p-main" />);
+
+    const panel = await screen.findByTestId("atp-scoring-packet");
+    await waitFor(() => expect(within(panel).getByText("Main Street safe routes")).toBeInTheDocument());
+    expect(within(panel).queryByRole("link", { name: "Link a project" })).toBeNull();
+    expect(fetchMock.mock.calls.filter(([url]) => url === PACKET_URL)).toHaveLength(2);
   });
 
   it("shows no packet and makes no packet request on another program's application", async () => {

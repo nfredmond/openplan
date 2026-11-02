@@ -851,6 +851,7 @@ export default async function GrantsPage({
             latestBcaScreeningByProjectId={latestBcaScreeningByProjectId}
             engagementEvidenceByProjectId={engagementEvidenceByProjectId}
             focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}
+            projectLinkOptions={canWritePrograms ? projectOptions : null}
             decisionCommandCallout={
               leadDecisionCommand ? (
                 <GrantsQueueCallout kind="decision" command={leadDecisionCommand} />

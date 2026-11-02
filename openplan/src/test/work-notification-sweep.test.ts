@@ -701,6 +701,37 @@ describe("the daily deadline sweep", () => {
       expect(section(body, "Closed awards to review (1):")).toContain("Closed-out award, obligation deadline Aug 16, 2026");
     });
 
+    // The rule My Work uses: only the recorded closure time varies here.
+    it("sends nothing for an award recorded closed before its obligation date", async () => {
+      const { db, tables } = makeDbWithFixtures();
+      const award = tables.legacy_calendar_funding_awards.find((row) => row.id === "fa-spent")! as Record<string, unknown>;
+      award.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      award.closed_at = "2026-07-31T23:00:00.000Z";
+      await run(db);
+
+      expect(db.notifications.find((row) => row.subject_id === "fa-spent" && row.kind === "award_obligation_due")).toBeUndefined();
+      const digest = bobDigest(db);
+      expect(String(digest?.body)).not.toContain("Closed awards to review");
+      expect(digest?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days");
+    });
+
+    it("lists an award recorded closed after its passed obligation date as past due for review", async () => {
+      const { db, tables } = makeDbWithFixtures();
+      const award = tables.legacy_calendar_funding_awards.find((row) => row.id === "fa-spent")! as Record<string, unknown>;
+      award.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      award.closed_at = "2026-08-02T00:00:00.000Z";
+      await run(db);
+
+      const digest = bobDigest(db);
+      expect(digest?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days, 1 closed award to review");
+      const body = String(digest?.body);
+      expect(section(body, "Overdue (1):")).not.toContain("Closed-out award");
+      expect(section(body, "Closed awards to review (1):")).toContain("Closed-out award, obligation deadline Aug 1, 2026 (passed)");
+      const reminder = db.notifications.find((row) => row.subject_id === "fa-spent" && row.kind === "award_obligation_due");
+      expect(String(reminder?.body)).toContain("which has passed");
+      expect(String(reminder?.body)).toContain("Recorded closed on or after the obligation date");
+    });
+
     it("leaves an open award with a passed date overdue", async () => {
       const { db, tables } = makeDbWithFixtures();
       tables.legacy_calendar_funding_awards.find((row) => row.id === "fa-1")!.obligation_due_at = "2026-08-01T00:00:00.000Z";

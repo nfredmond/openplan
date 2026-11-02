@@ -10,12 +10,15 @@
  * remnant too small to tell apart gets no packet. ATP is a California program;
  * nothing here applies its rules anywhere else.
  *
- * WHERE THE NUMBERS COME FROM. `computeAtpPacket` and the renderer are used
- * unchanged. Safety and equity come from the project's latest corridor
- * analysis run, through the same presentation rule every other surface uses,
- * so a score the run withheld stays null. Climate, feasibility, the weighted
- * total and the sensitivity flag have no producer in OpenPlan and stay null.
- * No equity-lens row is passed, because OpenPlan has no SB 535, AB 1550 or
+ * WHERE THE NUMBERS COME FROM. Safety and equity come from the project's
+ * latest corridor analysis run, through the same presentation rule every
+ * other surface uses, so a score the run withheld stays null. The run's crash
+ * snapshot names the safety score's source and years. Climate, feasibility,
+ * the weighted total and the sensitivity flag have no producer in OpenPlan and
+ * stay null. The project's own summary and planning-level estimate fill the
+ * description and cost lines, so a recorded fact is never printed as "to be
+ * provided"; the estimate is formatted from its exact stored amount. No
+ * equity-lens row is passed, because OpenPlan has no SB 535, AB 1550 or
  * tribal-area source; the packet says "not recorded" for those. Nothing here
  * calls a language model.
  */
@@ -23,7 +26,8 @@
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { computeAtpPacket } from "@/lib/planner-pack/atp";
-import type { AtpGrantResult } from "@/lib/planner-pack/types";
+import type { AtpGrantResult, AtpLapmRow } from "@/lib/planner-pack/types";
+import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
 
 export const ATP_CATALOG_KEY = "atp";
 
@@ -66,7 +70,18 @@ export function isAtpApplication(sections: readonly SeededSectionFacts[]): boole
   return identifySeededCatalogKey(sections) === ATP_CATALOG_KEY;
 }
 
-export type AtpPacketProject = { id: string; name: string };
+export type AtpPacketProject = {
+  id: string;
+  name: string;
+  summary?: string | null;
+  estimated_cost_amount?: string | number | null;
+  estimated_cost_currency?: string | null;
+  estimated_cost_basis_year?: number | null;
+};
+
+/** The project columns the packet reads; the amount is read as text so its exact digits survive. */
+export const ATP_PACKET_PROJECT_SELECT =
+  "id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year";
 
 export type AtpPacketRun = {
   id: string;
@@ -82,6 +97,47 @@ export type AtpPacketView = {
   scoreRun: { id: string; title: string | null; createdAt: string | null } | null;
 };
 
+function formatYears(years: number[]): string {
+  const sorted = [...new Set(years)].sort((a, b) => a - b);
+  const contiguous = sorted.every((year, index) => index === 0 || year === sorted[index - 1] + 1);
+  if (sorted.length > 1 && contiguous) return `${sorted[0]}–${sorted[sorted.length - 1]}`;
+  return sorted.join(", ");
+}
+
+/**
+ * The crash source, years and retrieval date behind a run's safety score,
+ * read from the run's crash source snapshot. Null when the run recorded none,
+ * so the packet says the source is not recorded instead of guessing one.
+ */
+function describeSafetyScoreSource(metrics: Record<string, unknown> | null): string | null {
+  const snapshots = metrics?.sourceSnapshots;
+  if (!snapshots || typeof snapshots !== "object") return null;
+  const crashes = (snapshots as Record<string, unknown>).crashes;
+  if (!crashes || typeof crashes !== "object") return null;
+  const record = crashes as Record<string, unknown>;
+  const label = typeof record.label === "string" ? record.label.trim() : "";
+  if (!label) return null;
+  const years = Array.isArray(record.yearsQueried)
+    ? record.yearsQueried.filter((year): year is number => Number.isInteger(year))
+    : [];
+  const fetchedAt = typeof record.fetchedAt === "string" ? record.fetchedAt.slice(0, 10) : "";
+  const parts = [label, years.length > 0 ? `crash years ${formatYears(years)}` : "crash years not recorded"];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(fetchedAt)) parts.push(`retrieved ${fetchedAt}`);
+  return `${parts.join(", ")}.`;
+}
+
+/**
+ * The project's planning-level estimate, formatted from its exact stored
+ * amount and labelled for what it is. Null when none is recorded.
+ */
+function describeProjectEstimate(project: AtpPacketProject): string | null {
+  const amount = project.estimated_cost_amount;
+  const currency = project.estimated_cost_currency;
+  if (amount === null || amount === undefined || amount === "" || !currency) return null;
+  const year = project.estimated_cost_basis_year ? `, ${project.estimated_cost_basis_year} price year` : "";
+  return `${formatProjectEstimate(amount, currency)}${year}. Planning-level estimate recorded on the project, not an engineer's estimate.`;
+}
+
 /** Build the packet for one project from its latest corridor analysis run. */
 export function buildAtpPacketView(input: {
   project: AtpPacketProject;
@@ -89,6 +145,12 @@ export function buildAtpPacketView(input: {
   generatedAt?: string;
 }): AtpPacketView {
   const metrics = input.run?.metrics ?? null;
+  const summary = typeof input.project.summary === "string" ? input.project.summary.trim() : "";
+  const lapm: AtpLapmRow = {
+    project_id: input.project.id,
+    description: summary || null,
+    estimated_cost_note: describeProjectEstimate(input.project),
+  };
   const packet = computeAtpPacket(
     [
       {
@@ -100,10 +162,12 @@ export function buildAtpPacketView(input: {
         feasibility_score: null,
         total_score: null,
         sensitivity_flag: null,
+        safety_source_note: describeSafetyScoreSource(metrics),
       },
     ],
     {
       runId: input.run?.id ?? ATP_PACKET_NO_RUN_ID,
+      lapmRows: [lapm],
       generatedAt: input.generatedAt,
     }
   );
