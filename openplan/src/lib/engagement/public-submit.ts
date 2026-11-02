@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { PARTICIPANT_DEVICE_HEADER, PARTICIPANT_DEVICE_ID_PATTERN } from "@/lib/engagement/participant-device";
+import { clientConnectionKey } from "@/lib/http/client-connection";
 
 export const PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES = 10;
 export const PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES = 60;
@@ -45,12 +46,6 @@ export function normalizePublicSubmissionText(value: string | null | undefined):
   return (value ?? "").replace(/\s+/g, " ").trim();
 }
 
-export function getPublicSubmissionClientIp(request: NextRequest): string {
-  return firstHeader(request, ["x-forwarded-for", "x-real-ip", "cf-connecting-ip"])
-    ?.split(",")[0]
-    ?.trim() || "unknown";
-}
-
 export function getPublicSubmissionUserAgent(request: NextRequest): string {
   return normalizePublicSubmissionText(request.headers.get("user-agent") ?? "unknown").slice(0, 240);
 }
@@ -62,7 +57,11 @@ export function buildPublicSubmissionClientFingerprint(request: NextRequest): st
   // idempotency guard, the submission rate limit, and the photo-upload
   // limit that all key on this value. The UA is still recorded separately
   // for moderation context (user_agent column), just not trusted for identity.
-  return hashValue(`ip|${getPublicSubmissionClientIp(request)}`);
+  //
+  // The connection key is an IPv4 address as it arrived, or an IPv6 /64
+  // (since 2026-11-02); see `client-connection.ts`. The `ip|` prefix and the
+  // hash are unchanged, so stored IPv4 counts still match.
+  return hashValue(`ip|${clientConnectionKey(request)}`);
 }
 
 export function buildPublicSubmissionBodyFingerprint(input: {
