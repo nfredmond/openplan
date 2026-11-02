@@ -52,6 +52,21 @@ export type CrashStudyAreaCoverage = {
   outsideBoundaryCount: number | null;
   /** A boundary was supplied but could not be read, so the rectangle was used. */
   boundaryUnreadable: boolean;
+  /**
+   * The source's own totals for the query rectangle, kept beside the boundary
+   * counts and never mixed into them. Null when no boundary was applied (the
+   * acquisition's counts are then these totals).
+   */
+  rectangleReportedCount: number | null;
+  rectangleMappableCount: number | null;
+  /**
+   * True when retrieval stopped before every crash in the rectangle came back.
+   * The crashes never retrieved were never tested against the boundary, so the
+   * boundary counts are the retrieved crashes inside it, a lower bound. Never
+   * the rectangle total minus the retrieved crashes outside, which would count
+   * every unretrieved crash as inside.
+   */
+  countsAreLowerBound: boolean;
 };
 
 const CRASH_STUDY_AREA_COVERAGE_KEY = "study_area";
@@ -67,6 +82,9 @@ const RECTANGLE_ONLY: CrashStudyAreaCoverage = {
   boundarySource: null,
   outsideBoundaryCount: null,
   boundaryUnreadable: false,
+  rectangleReportedCount: null,
+  rectangleMappableCount: null,
+  countsAreLowerBound: false,
 };
 
 /**
@@ -124,7 +142,47 @@ export function clipCrashRecordsToBoundary<T extends { latitude: number; longitu
       boundarySource: boundary.source,
       outsideBoundaryCount: outside,
       boundaryUnreadable: false,
+      rectangleReportedCount: null,
+      rectangleMappableCount: null,
+      countsAreLowerBound: false,
     },
+  };
+}
+
+/**
+ * Reported and mappable counts for the area, from a clip and the source's
+ * rectangle totals.
+ *
+ * With only a rectangle, the counts are the source's totals. With a boundary
+ * and every mappable crash retrieved, the crashes found outside are taken off
+ * the totals; crashes with no point stay in the reported total because the
+ * source placed them by its own area filter, not by a point. With a boundary
+ * and retrieval cut short (the source says so, or fewer records came back than
+ * it counts as mappable), the unretrieved crashes were never tested, so both
+ * counts are the retrieved crashes inside the boundary and are marked a lower
+ * bound. The rectangle totals are kept separately either way.
+ */
+export function crashCountsForStudyArea(
+  clipped: { records: readonly unknown[]; studyArea: CrashStudyAreaCoverage },
+  fetched: { matchedTotal: number; geocodedTotal: number; truncated: boolean; retrievedCount: number }
+): { reported: number; mappable: number; studyArea: CrashStudyAreaCoverage } {
+  if (clipped.studyArea.basis !== "place_boundary") {
+    return { reported: fetched.matchedTotal, mappable: fetched.geocodedTotal, studyArea: clipped.studyArea };
+  }
+  const inside = clipped.records.length;
+  const outside = clipped.studyArea.outsideBoundaryCount ?? 0;
+  const cutShort = fetched.truncated || fetched.retrievedCount < fetched.geocodedTotal;
+  const studyArea: CrashStudyAreaCoverage = {
+    ...clipped.studyArea,
+    rectangleReportedCount: fetched.matchedTotal,
+    rectangleMappableCount: fetched.geocodedTotal,
+    countsAreLowerBound: cutShort,
+  };
+  if (cutShort) return { reported: inside, mappable: inside, studyArea };
+  return {
+    reported: Math.max(inside, fetched.matchedTotal - outside),
+    mappable: Math.max(inside, fetched.geocodedTotal - outside),
+    studyArea,
   };
 }
 
@@ -148,7 +206,19 @@ export function readCrashStudyAreaCoverage(dimensionCoverage: unknown): CrashStu
   if (typeof outside !== "number" || !Number.isSafeInteger(outside) || outside < 0) return RECTANGLE_ONLY;
   const source = BOUNDARY_SOURCES.find((candidate) => candidate === raw.boundarySource) ?? null;
   if (!source) return RECTANGLE_ONLY;
-  return { basis: "place_boundary", boundarySource: source, outsideBoundaryCount: outside, boundaryUnreadable: false };
+  const count = (value: unknown) =>
+    typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+  return {
+    basis: "place_boundary",
+    boundarySource: source,
+    outsideBoundaryCount: outside,
+    boundaryUnreadable: false,
+    rectangleReportedCount: count(raw.rectangleReportedCount),
+    rectangleMappableCount: count(raw.rectangleMappableCount),
+    // Anything but an explicit false is a lower bound: a count that cannot be
+    // shown complete is not presented as complete.
+    countsAreLowerBound: raw.countsAreLowerBound !== false,
+  };
 }
 
 /** The acquisition coverage with the study-area entry added. */
@@ -169,25 +239,34 @@ function crashes(count: number): string {
   return `${count.toLocaleString("en-US")} ${count === 1 ? "crash" : "crashes"}`;
 }
 
-/**
- * The sentence shown wherever the counts are shown.
- *
- * `truncated` matters only for a boundary: records past the retrieval cap were
- * never fetched, so they were never tested against it.
- */
-export function describeCrashStudyArea(studyArea: CrashStudyAreaCoverage, truncated = false): string {
+/** Short label for whether the boundary counts are complete. Null without a boundary. */
+export function crashBoundaryCountLabel(studyArea: CrashStudyAreaCoverage): string | null {
+  if (studyArea.basis !== "place_boundary") return null;
+  return studyArea.countsAreLowerBound
+    ? "Lower bound, retrieved crashes inside the boundary only"
+    : "Complete for the boundary";
+}
+
+/** The sentence shown wherever the counts are shown. */
+export function describeCrashStudyArea(studyArea: CrashStudyAreaCoverage): string {
   if (studyArea.basis === "place_boundary") {
     const outside = studyArea.outsideBoundaryCount ?? 0;
     const counted = studyArea.boundarySource === "drawn_area"
       ? "Crashes are counted inside the drawn study area boundary."
       : "Crashes are counted inside the place boundary.";
+    if (studyArea.countsAreLowerBound) {
+      const rectangle = studyArea.rectangleReportedCount;
+      return (
+        `${counted} Retrieval stopped before every crash in its bounding rectangle came back, so these counts are a lower bound made only of retrieved crashes inside the boundary.` +
+        (outside > 0 ? ` ${crashes(outside)} retrieved outside the boundary ${outside === 1 ? "is" : "are"} left out.` : "") +
+        " Crashes not retrieved were not checked against the boundary." +
+        (rectangle !== null ? ` The source reports ${crashes(rectangle)} in the bounding rectangle.` : "")
+      );
+    }
     const leftOut = outside > 0
       ? ` ${crashes(outside)} inside its bounding rectangle but outside the boundary ${outside === 1 ? "is" : "are"} left out.`
       : "";
-    const cap = truncated
-      ? " Records past the retrieval cap were not retrieved, so they were not checked against the boundary."
-      : "";
-    return `${counted}${leftOut}${cap}`;
+    return `${counted}${leftOut}`;
   }
   const lead = studyArea.boundaryUnreadable
     ? "The place boundary could not be read, so crashes are counted inside its bounding rectangle"

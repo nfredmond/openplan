@@ -275,7 +275,7 @@ export function buildSafetyCrashEvidence(
   // Which area the counts describe: the place boundary, or only the rectangle
   // around it. Every surface that prints these counts prints this beside them.
   const studyArea = readCrashStudyAreaCoverage(ingest.dimensionCoverage);
-  caveats.push(describeCrashStudyArea(studyArea, ingest.truncated));
+  caveats.push(describeCrashStudyArea(studyArea));
 
   if (unclassifiedCount !== null && unclassifiedCount > 0) {
     caveats.push(

@@ -1403,7 +1403,7 @@ export function SafetyWorkspace({
               </span>
             </div>
             <p className="text-muted-foreground" data-testid="safety-crash-area-basis">
-              {describeCrashStudyArea(liveRead.studyArea ?? readCrashStudyAreaCoverage(null), liveRead.truncated)}
+              {describeCrashStudyArea(liveRead.studyArea ?? readCrashStudyAreaCoverage(null))}
             </p>
             <p className="text-muted-foreground">
               {COVERAGE_STATE_COPY[liveRead.coverageState] ?? liveRead.coverageState}
@@ -1450,7 +1450,7 @@ export function SafetyWorkspace({
             </div>
             {ingest.status === "ready" && (
               <p className="text-muted-foreground" data-testid="safety-crash-area-basis">
-                {describeCrashStudyArea(ingest.studyArea ?? readCrashStudyAreaCoverage(null), ingest.truncated)}
+                {describeCrashStudyArea(ingest.studyArea ?? readCrashStudyAreaCoverage(null))}
               </p>
             )}
             <p className="text-muted-foreground">

@@ -576,7 +576,7 @@ describe("Safety opens on the right study area", () => {
     mountSupabase({
       projectPlace: { data: projectPlaceRow(), error: null },
       ingests: [retainedAcquisition({
-        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false } },
+        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false } },
       })],
     });
     await renderSafety({ projectId: PROJECT_ID });

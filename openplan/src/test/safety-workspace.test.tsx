@@ -1001,7 +1001,7 @@ describe("which area the Safety counts describe (KI-2026-11-02-021)", () => {
       <SafetyWorkspace
         workspaceId="ws-1"
         latestIngest={ingest({
-          studyArea: { basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 9, boundaryUnreadable: false },
+          studyArea: { basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false },
         })}
         studyArea={seededStudyArea()}
       />
@@ -1018,7 +1018,7 @@ describe("which area the Safety counts describe (KI-2026-11-02-021)", () => {
       mockCrashResponse(),
       mockIngestResponse({
         dimensionCoverage: {
-          study_area: { basis: "place_boundary", boundarySource: "drawn_area", outsideBoundaryCount: 1, boundaryUnreadable: false },
+          study_area: { basis: "place_boundary", boundarySource: "drawn_area", outsideBoundaryCount: 1, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false },
         },
       })
     );

@@ -29,8 +29,11 @@ left out is recorded with the acquisition and shown beside the counts on the
 Safety page, in the report and in the SS4A appendices. Acquisitions stored
 before this change, and areas with only a rectangle, are labeled "Bounding
 rectangle, not the place boundary"; retrieve crashes again to count by the
-boundary. The corridor scorecard also counts inside the corridor polygon and
-divides crash density by the polygon's area. No migration.
+boundary. When retrieval stops at its record cap, the counts are the retrieved
+crashes inside the boundary, labeled a lower bound, and the source's total for
+the rectangle is shown beside them. The corridor scorecard also counts inside
+the corridor polygon and divides crash density by the polygon's area. No
+migration.
 
 **First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
 fatal or serious-injury crash in the window can now save its safety action plan

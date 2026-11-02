@@ -99,7 +99,7 @@ describe("SS4A evidence appendices", () => {
     records.safety = {
       status: "ready",
       snapshot: evidenceSnapshot({
-        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false } },
+        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false } },
       }),
       otherSeededArtifactCount: 0,
     };
@@ -108,11 +108,31 @@ describe("SS4A evidence appendices", () => {
     expect(factValue(crash, "Crash area")).toBe("Place boundary");
     expect(factValue(crash, "Crashes outside the boundary, left out")).toBe("9");
     expect(factValue(byKey(appendices, "hin_map"), "Crash area")).toBe("Place boundary");
+    expect(factValue(crash, "Boundary counts")).toBe("Complete for the boundary");
+    expect(factValue(crash, "Crashes reported in the bounding rectangle")).toBe("11");
     const text = packetText(appendices);
     expect(text).toContain("Crashes are counted inside the place boundary. 9 crashes inside its bounding rectangle but outside the boundary are left out.");
     expect(text).not.toContain("not the place boundary");
     // Once, not twice: the frozen draft already carries the sentence.
     expect(crash.notes.filter((note) => note.startsWith("Crashes are counted inside"))).toHaveLength(1);
+  });
+
+  it("labels truncated boundary counts as a lower bound beside the rectangle total (Codex P2, PR #416)", () => {
+    const records = completeEvidenceRecords();
+    records.safety = {
+      status: "ready",
+      snapshot: evidenceSnapshot({
+        crash_count: 0, geocoded_count: 0, stored_count: 0, truncated: true,
+        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 1, boundaryUnreadable: false, rectangleReportedCount: 100, rectangleMappableCount: 100, countsAreLowerBound: true } },
+      }),
+      otherSeededArtifactCount: 0,
+    };
+    const appendices = buildSs4aEvidenceAppendices(records, ALL);
+    const crash = byKey(appendices, "crash_summary");
+    expect(factValue(crash, "Crashes reported")).toBe("0");
+    expect(factValue(crash, "Boundary counts")).toBe("Lower bound, retrieved crashes inside the boundary only");
+    expect(factValue(crash, "Crashes reported in the bounding rectangle")).toBe("100");
+    expect(packetText(appendices)).toContain("so these counts are a lower bound made only of retrieved crashes inside the boundary");
   });
 
   it("keeps a count the acquisition does not carry as not recorded, never zero", () => {
