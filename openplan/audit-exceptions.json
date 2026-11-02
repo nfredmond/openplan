@@ -1,0 +1,17 @@
+{
+  "about": "Advisories the dependency audit allows. scripts/ops/audit-dependencies.mjs fails on any advisory not listed here, on an exception past its reviewBy date, on an exception for a package installed for production, and on an exception npm audit no longer reports.",
+  "exceptions": [
+    {
+      "advisory": "GHSA-g3hv-75wg-m249",
+      "package": "minimatch",
+      "reviewBy": "2026-12-01",
+      "reason": "Published 2026-10-30; fixed only in minimatch 11.0.1. Every installed copy is development tooling: eslint 9, @eslint/eslintrc, @eslint/config-array and three eslint plugins need minimatch 3, which exports a function that 11 does not; @typescript-eslint and @ts-morph/common use 10.2. No 3.x or 10.x release carries the fix. The flaw is in the **/.. pattern optimization, which our own lint and knip configuration controls. Recheck for eslint and plugin releases that accept minimatch 11."
+    },
+    {
+      "advisory": "GHSA-gcqx-w48m-w2h4",
+      "package": "deepmerge",
+      "reviewBy": "2026-12-01",
+      "reason": "Low severity, published 2026-09-18, no fixed release of deepmerge exists. Installed only through the shadcn component CLI (a development dependency) and its registry package, which merge local configuration files we write. Recheck for a deepmerge release or a shadcn release that drops it."
+    }
+  ]
+}
