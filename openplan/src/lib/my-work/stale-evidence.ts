@@ -111,7 +111,12 @@ const staleSs4aSeedsSource: MyWorkLoaderSource = {
           badge: stale
             ? { label: "Safety evidence changed", tone: "warning" }
             : { label: "Safety evidence not checked", tone: "neutral" },
-          detail: [...reasons, ...(stale ? ["Regenerate the Safety report, then seed again from its new artifact."] : [])].join(" "),
+          detail: [
+            ...reasons,
+            ...(entry.latestSeedState === "stale" ? ["Regenerate the Safety report, then seed again from its new artifact."] : []),
+            // Seeding again keeps final text, so a final section from a stale seed needs finalizing again.
+            ...(entry.staleFinalSections.length > 0 ? ["Finalize those sections again from a current seed's drafts."] : []),
+          ].join(" "),
           // The application card, where the seed is previewed and applied again.
           href: `/grants?focusOpportunityId=${entry.opportunityId}#funding-opportunity-${entry.opportunityId}`,
           dedupKey: null,

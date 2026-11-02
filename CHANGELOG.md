@@ -139,9 +139,11 @@ model run flagged, each linked to the report's change review. It also lists SS4A
 applications whose seeded Safety evidence changed after the seed (new crash
 records, a changed project place, or a different linked project), linked to the
 application, and seeds that cannot be checked, such as seeds made before
-November 2. Archived reports and awarded or archived applications are left out.
-A failed read is named on the page instead of shown as an empty list. No
-migration is needed.
+November 2. Seeding again keeps final sections, so an application stays listed
+while any final section still comes from an earlier seed whose evidence changed,
+and the item names those sections. Archived reports and awarded or archived
+applications are left out. A failed read is named on the page instead of shown
+as an empty list. No migration is needed.
 
 **My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
 the "Waiting on a person" section now lists model runs that were interrupted

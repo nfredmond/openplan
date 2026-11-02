@@ -10,7 +10,9 @@ import {
 } from "@/lib/reports/packet-freshness-loader";
 import {
   SS4A_SEED_STANDING_ACQUISITION_SELECT,
+  SS4A_SEED_STANDING_DRAFT_SELECT,
   SS4A_SEED_STANDING_PROJECT_SELECT,
+  SS4A_SEED_STANDING_SECTION_SELECT,
   SS4A_SEED_STANDING_SELECT,
 } from "@/lib/grants/ss4a-seed-fence-standing";
 import { createFakeSupabase, FAKE_POSTGREST_MAX_ROWS, type Db } from "./helpers/fake-my-work-tables";
@@ -200,6 +202,8 @@ describe("the freshness projections name real columns", () => {
     ["funding_opportunity_safety_seeds", SS4A_SEED_STANDING_SELECT],
     ["projects", SS4A_SEED_STANDING_PROJECT_SELECT],
     ["safety_crash_ingests", SS4A_SEED_STANDING_ACQUISITION_SELECT],
+    ["funding_opportunity_application_sections", SS4A_SEED_STANDING_SECTION_SELECT],
+    ["funding_opportunity_section_drafts", SS4A_SEED_STANDING_DRAFT_SELECT],
   ])("%s: %s", (table, select) => {
     expect(schema.columns(table)?.size ?? 0).toBeGreaterThan(0);
     expect(unknownColumns(table, select)).toEqual([]);

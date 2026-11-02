@@ -15,6 +15,7 @@ import { BASIS_REASON, buildFreshnessDb, FRESH_P1, FRESH_P2, FRESH_P_B } from ".
 import {
   MISSING_ARTIFACT,
   mergeDb,
+  reseededWithEarlierFinals,
   seedFenceRows,
   SEED_AWARDED_OPPORTUNITY,
   SEED_OPEN_OPPORTUNITY,
@@ -88,6 +89,17 @@ describe("My Work stale evidence", () => {
       ingest.evidence_revision = 7;
     }) });
     expect(idsOf(result.items.filter((item) => item.sourceId === "stale_ss4a_seeds"))).toEqual([SEED_UNREADABLE_OPPORTUNITY]);
+  });
+
+  it("keeps a re-seeded application listed while final sections still come from the stale earlier seed", async () => {
+    const { result } = await load({ db: mergeDb(buildDb(), reseededWithEarlierFinals(WS)) });
+    const [seed] = result.items.filter((item) => item.sourceId === "stale_ss4a_seeds");
+    expect(seed).toMatchObject({ id: SEED_OPEN_OPPORTUNITY, badge: { label: "Safety evidence changed", tone: "warning" } });
+    expect(seed.detail).toBe(
+      "Project overview and Budget narrative are still final from an earlier Safety seed. " +
+      "The crash records behind the seeded Safety report changed after it was generated. " +
+      "Finalize those sections again from a current seed's drafts."
+    );
   });
 
   it("caps each source and still reports how many matched", async () => {
