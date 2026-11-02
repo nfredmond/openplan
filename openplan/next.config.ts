@@ -156,6 +156,15 @@ const nextConfig: NextConfig = {
   // heap on its own and pushed the 8 GB builder out of memory on October 23,
   // 2026. Every other build keeps it, including the CI QA gate's
   // `npm run build`, and Vercel promotes only after those checks pass.
+  // Vercel restores webpack's filesystem cache (about 1.8 GB of pack files)
+  // before compiling. Loading it pushed the 8 GB builder out of memory on
+  // November 2, 2026 (45ca54e), while the same commit built in 94 s without
+  // the cache. Vercel production builds therefore compile cold; local and CI
+  // builds keep the cache.
+  webpack: (config, { dev }) => {
+    if (!dev && process.env.VERCEL === "1") config.cache = false;
+    return config;
+  },
   typescript: {
     ignoreBuildErrors: process.env.VERCEL === "1",
   },
