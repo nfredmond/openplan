@@ -1,0 +1,435 @@
+{
+ "description": "Responses recorded once from ODOT's published crash layer, for adapter tests. Not refreshed; the live layer will drift.",
+ "layerUrl": "https://gis.odot.state.or.us/arcgis1006/rest/services/agol/OTSDE_Crash/MapServer/0",
+ "capturedAt": "2026-11-01",
+ "bbox": {
+  "minLon": -121.15,
+  "minLat": 44.61,
+  "maxLon": -121.13,
+  "maxLat": 44.625
+ },
+ "year": 2023,
+ "responses": {
+  "years": {
+   "features": [
+    {
+     "attributes": {
+      "CRASH_YR_NO": "2019",
+      "n": 50128
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_YR_NO": "2022",
+      "n": 45070
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_YR_NO": "2023",
+      "n": 46762
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_YR_NO": "2021",
+      "n": 45295
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_YR_NO": "2020",
+      "n": 38141
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_YR_NO": "2024",
+      "n": 48414
+     }
+    }
+   ]
+  },
+  "count": {
+   "count": 17
+  },
+  "features": {
+   "features": [
+    {
+     "attributes": {
+      "CRASH_ID": 1980648,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "02",
+      "CRASH_DAY_NO": "06",
+      "KABCO": "K",
+      "TOT_FATAL_CNT": 1,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 1,
+      "TOT_PED_CNT": 2,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Pedestrian",
+      "LGT_COND_LONG_DESC": "Darkness - with street lights",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.14195045976093,
+      "y": 44.619247167579644
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2025704,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "10",
+      "CRASH_DAY_NO": "17",
+      "KABCO": "A",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 1,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 1,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Rear-End",
+      "LGT_COND_LONG_DESC": "Darkness - with street lights",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13727360759076,
+      "y": 44.610672845845656
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2012344,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "04",
+      "CRASH_DAY_NO": "21",
+      "KABCO": "B",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 1,
+      "TOT_INJ_LVL_C_CNT": 1,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Rear-End",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13309904889506,
+      "y": 44.61885093027657
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2008046,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "01",
+      "CRASH_DAY_NO": "02",
+      "KABCO": "B",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 3,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Fog"
+     },
+     "geometry": {
+      "x": -121.1306096613258,
+      "y": 44.625073461576385
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2031042,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "01",
+      "CRASH_DAY_NO": "07",
+      "KABCO": "C",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 1,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Darkness - with street lights",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.1306096613258,
+      "y": 44.625073461576385
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2012343,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "04",
+      "CRASH_DAY_NO": "20",
+      "KABCO": "C",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 2,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.14325968309193,
+      "y": 44.61644977312569
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2022880,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "06",
+      "CRASH_DAY_NO": "01",
+      "KABCO": "C",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 3,
+      "TOT_PED_CNT": 1,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Rear-End",
+      "LGT_COND_LONG_DESC": "Darkness - with street lights",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13309904765426,
+      "y": 44.618850932083674
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2023984,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "06",
+      "CRASH_DAY_NO": "26",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Rear-End",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13247238985217,
+      "y": 44.620076763735305
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2036192,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "10",
+      "CRASH_DAY_NO": "18",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.1306096613258,
+      "y": 44.625073461576385
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2028076,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "07",
+      "CRASH_DAY_NO": "03",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Rear-End",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13452807054875,
+      "y": 44.616067072283066
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2013425,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "01",
+      "CRASH_DAY_NO": "02",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Rear-End",
+      "LGT_COND_LONG_DESC": "Darkness - with street lights",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13360606817427,
+      "y": 44.61786323698544
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2034948,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "09",
+      "CRASH_DAY_NO": "13",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Fixed Object or Other Object",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13400141953039,
+      "y": 44.61709305430292
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2020057,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "04",
+      "CRASH_DAY_NO": "04",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Cloudy"
+     },
+     "geometry": {
+      "x": -121.13360606817427,
+      "y": 44.61786323698544
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2039504,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "11",
+      "CRASH_DAY_NO": "25",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Fixed Object or Other Object",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.1408998148238,
+      "y": 44.62192406989705
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2036182,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "10",
+      "CRASH_DAY_NO": "21",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.13280896405384,
+      "y": 44.61941601931002
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2028121,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "07",
+      "CRASH_DAY_NO": "28",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Sideswipe - Overtaking",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Clear"
+     },
+     "geometry": {
+      "x": -121.1334609090699,
+      "y": 44.618146013428166
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_ID": 2036173,
+      "CRASH_YR_NO": "2023",
+      "CRASH_MO_NO": "10",
+      "CRASH_DAY_NO": "09",
+      "KABCO": "O",
+      "TOT_FATAL_CNT": 0,
+      "TOT_INJ_LVL_A_CNT": 0,
+      "TOT_INJ_LVL_B_CNT": 0,
+      "TOT_INJ_LVL_C_CNT": 0,
+      "TOT_PED_CNT": 0,
+      "TOT_PEDCYCL_CNT": 0,
+      "COLLIS_TYP_LONG_DESC": "Turning Movement",
+      "LGT_COND_LONG_DESC": "Daylight",
+      "WTHR_COND_LONG_DESC": "Cloudy"
+     },
+     "geometry": {
+      "x": -121.13546354479746,
+      "y": 44.61422651444078
+     }
+    }
+   ]
+  }
+ }
+}

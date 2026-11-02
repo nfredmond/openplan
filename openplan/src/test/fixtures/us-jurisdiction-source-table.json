@@ -9,7 +9,7 @@
     "bboxMethod": "GDAL/OGR envelope of each county polygon, rounded outward to 6 decimal places. The 1:500,000 file is generalized, so a bbox can differ from full-resolution TIGER/Line by a few hundred meters."
   },
   "selection": "For each state FIPS code in the file, the county with the lowest GEOID among counties whose bbox overlaps the CCRS coarse envelope (lon -124.6 to -114.0, lat 32.4 to 42.1); where no county overlaps it, the lowest GEOID in the state. This puts a county inside the California rectangle in every state where one exists (AZ, CA, ID, NV, OR, UT).",
-  "expectationBasis": "Written from each registry's declared coverage, not from running the code: CCRS declares state 06 only; the FARS adapter reads NHTSA's National annual file, which carries the 50 states and DC (51 STATE values in the 2023 file), and, since 2026-11-02, NHTSA's separate Puerto Rico annual file (STATE 43, mapped to FIPS 72); the VMT significance framework registry declares US-CA only; grant program state bundles declare US-CA, US-WA, US-OR, US-CO, US-TX and US-OH. null means none registered.",
+  "expectationBasis": "Written from each registry's declared coverage, not from running the code: CCRS declares state 06 only; the ODOT crash-layer adapter declares state 41 only and is read-only (not admitted to safety_crashes), so Oregon reads it live while an Oregon acquisition still stores FARS; the FARS adapter reads NHTSA's National annual file, which carries the 50 states and DC (51 STATE values in the 2023 file), and, since 2026-11-02, NHTSA's separate Puerto Rico annual file (STATE 43, mapped to FIPS 72); the VMT significance framework registry declares US-CA only; grant program state bundles declare US-CA, US-WA, US-OR, US-CO, US-TX and US-OH. null means none registered.",
   "rows": [
     {
       "stateFips": "01",
@@ -766,7 +766,7 @@
       "bboxOverlapsCcrsEnvelope": true,
       "expected": {
         "ingestCrashSource": "fars-national",
-        "readCrashSource": "fars-national",
+        "readCrashSource": "odot-or",
         "ceqaScreen": false,
         "stateGrantBundle": "us-or"
       }

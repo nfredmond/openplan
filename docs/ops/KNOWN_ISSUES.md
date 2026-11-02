@@ -113,6 +113,17 @@ table. Two engagement templates told residents "This is a demonstration" in
 their suggested public description; the registry test now refuses demonstration
 or test wording in any resident-facing template field.
 
+## State injury-crash data, November 2, 2026
+
+The November 1 direction review asks for open injury-crash adapters in five or
+more states. This lane checked all 50 states and DC on November 1 against
+primary sources; the [research note](../research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md)
+and its JSON registry hold one row per state. Paths are under `openplan/`.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-02-001 | High, v1 coverage gap | Outside California, Safety reads only NHTSA FARS, which is fatal-only, so a study area in another state cannot produce a killed-and-serious-injury figure for a safety action plan or an SS4A application. | Partly addressed on branch `work/state-injury-crashes-20261102`, November 2. Oregon live reads and corridor runs now read ODOT's crash layer with KABCO severity (`odot-or`). The adapter is read-only: `safety_crashes.source_id` admits only `ccrs-ca` and `fars-national`, so an Oregon Safety acquisition still stores fatal-only FARS until a migration widens that constraint (proposed in the pull request, not applied). Open: Iowa, Ohio and DC also qualify and have no adapter; 27 states publish injury data only with limits (most often no stated license); 15 are not usable, including Nevada, whose open crash services answered "not started" on November 1; NH, ND, WA and WV are unknown. Every state other than California and Oregon stays fatal-only and is labeled so. The review's falsifier (fewer than three states besides California) is not triggered: three states and DC qualify. | `src/lib/safety/sources/odot-or.ts`; `src/test/safety-odot-or-source.test.ts`; Oregon rows of `src/test/us-jurisdiction-source-table.test.ts` fail without the adapter (live read and corridor run ask FARS) |
+
 ## ActivitySim container owner loss, October 8, 2026
 
 The [container custody case](../reviews/2026-10-08-model-custody-metadata/ACTIVITYSIM_CONTAINER_CUSTODY.md)

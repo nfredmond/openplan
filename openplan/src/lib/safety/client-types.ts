@@ -310,6 +310,8 @@ export const COVERAGE_STATE_COPY: Record<string, string> = {
     "California Crash Reporting System (CCRS) — statewide California, reported collisions from 2016 onward.",
   fars_fatal_only:
     "NHTSA FARS — fatal crashes only. Injury and property-damage collisions are not included.",
+  state_injury_file:
+    "State crash file with injury severity, read from the state's published layer and not saved in this workspace. Only crashes the state located are included.",
   switrs_legacy_local:
     "Legacy SWITRS extract — a discontinued system frozen at 2025-01-08. Historical use only.",
   /**
