@@ -1126,24 +1126,16 @@ export function SafetyWorkspace({
               nothing at all when the deployment offers fewer than two
               backgrounds.
 
-              THE LEFT OFFSET CLEARS THE NAV RAIL. Since the surface runs to the
-              left edge of the window on this route, the rail no longer sits in a
-              column of its own — it floats over the map's left margin. A control
-              at `left-3` would be underneath it (the rail is z-40 in the shell,
-              this is z-10 inside a z-20 surface, so the rail wins and the picker
-              is simply gone). `--op-cart-rail-edge` is the shell's own derived
-              answer for where the collapsed rail stops; the `0px` fallback is
-              what a render outside the cartographic shell — a test, a future
-              embed — gets, and it restores the plain `left-3` position. */}
+              NO RAIL OFFSET. The page now starts beside the nav rail (see "THE
+              LEFT EDGE IS THE RAIL'S EDGE" in cartographic.css), so nothing
+              covers the map's left margin and `left-3` is clear. */}
           <div
-            className="pointer-events-none absolute top-3 z-10 flex flex-col gap-2"
+            className="pointer-events-none absolute left-3 top-3 z-10 flex flex-col gap-2"
             style={{
-              left: "calc(var(--op-cart-rail-edge, 0px) + 0.75rem)",
-              // The width has to pay for the offset AND for Mapbox's own zoom
-              // and compass stack on the right — measured 40px plus its margin.
-              // Without the second term, a 390px phone put a 15rem pill straight
-              // through the ＋/− buttons.
-              width: "min(15rem, calc(100% - var(--op-cart-rail-edge, 0px) - 4.25rem))",
+              // The width pays for Mapbox's own zoom and compass stack on the
+              // right, measured 40px plus its margin. Without it, a 390px phone
+              // put a 15rem pill straight through the ＋/− buttons.
+              width: "min(15rem, calc(100% - 4.25rem))",
             }}
           >
             <PublicBasemapPicker

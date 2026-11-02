@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety starts beside the navigation rail (KI-2026-11-02-024):** on a desktop the
+Safety page no longer runs under the 60px rail, so the active-project banner and
+the map's left edge are fully visible.
+
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
 American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.
