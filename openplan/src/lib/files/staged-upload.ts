@@ -26,10 +26,10 @@
  * exists. The complete step removes it before the final write re-checks the
  * workspace's room, so one file is never counted twice.
  *
- * WHAT IS NOT DONE HERE. Nothing sweeps a staged object whose complete call
- * never came (a closed tab, a failed PUT that left a partial object). Signed
- * upload URLs expire after two hours, so no new bytes arrive after that, but
- * the object stays until someone removes it. ROADMAP M5a carries the sweep.
+ * A STAGED OBJECT WHOSE COMPLETE CALL NEVER CAME (a closed tab, a failed PUT
+ * that left a partial object) stays after its signed upload URL expires two
+ * hours later. The daily sweep in `staged-upload-sweep.ts` removes one once it
+ * is a day old, and touches only names `isStagedUploadPath` accepts.
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -47,6 +47,15 @@ const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 function stagedPathPattern(extension: string): RegExp {
   const suffix = extension.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`^(${UUID})/staged/(${UUID})/(${UUID})${suffix}$`);
+}
+
+/**
+ * Whether `objectPath` has the shape of a staged upload in any workspace, for
+ * any user: the same grammar `isOwnStagedUploadPath` applies. The sweep uses
+ * it so it can never remove a stored object.
+ */
+export function isStagedUploadPath(objectPath: string, extension = ""): boolean {
+  return stagedPathPattern(extension).test(objectPath);
 }
 
 /** The private object key for one staged upload. */
@@ -168,7 +177,7 @@ export type StagedUploadConsumption =
  * read: there is nothing to remove, or Storage could not be asked.
  *
  * `removed` is false when Storage refused the removal. The caller logs it; the
- * object then waits for the sweep the module comment names.
+ * object then waits for the daily sweep (`staged-upload-sweep.ts`).
  */
 export async function consumeStagedUpload(
   service: StagedStorageClient,

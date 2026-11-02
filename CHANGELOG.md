@@ -20,6 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
+`/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
+It removes a staged aerial, Knowledge Base or transit upload whose complete step
+never ran (a closed tab or a failed upload) once its newest Storage timestamp is
+24 hours old, so the file stops counting against the workspace's storage. It
+removes only objects whose path matches the staged path the complete routes
+check, at most 1,000 per bucket per run, and logs its counts as
+`cron_sweep_staged_uploads_completed` or `_failed`; a failed bucket answers 500
+with the counts of what finished. Operators: it uses the existing `CRON_SECRET`.
+A self-hosted installation without Vercel Cron must add this endpoint to its
+own scheduler. No migration.
+
 **Dependency audit:** qs 6.16.1, follow-redirects 1.16.2 and @hono/node-server
 2.1.3 fix advisories published October 27-30 (all development or build
 tooling). The audit step now reads `openplan/audit-exceptions.json`: it still
@@ -85,10 +97,10 @@ subdivisions (New England towns, townships, boroughs). Either can be a
 workspace home geography, a project or campaign area, a plan area or a
 resolved project jurisdiction. A tribal area records no state, because many
 cross state lines and state rules on tribal land are not a map fact; its states
-appear in its name. A town records its state. A benefit-cost analysis cannot
-yet record a project whose area or jurisdiction is either kind: the installed
-database guard lists only the earlier five kinds, and widening it needs a
-migration. No action is needed to deploy.
+appear in its name. A town records its state. A benefit-cost analysis can
+record a project whose area or jurisdiction is either kind once
+`20261102100100_bca_tribal_and_town_place_kinds.sql` is applied (see "Stored
+state injury crashes and BCA place kinds" below).
 
 **Crash sources follow the study area's state:** Safety now chooses a crash source
 from the state of the linked project's place or the picked county, city or CDP,
@@ -96,10 +108,17 @@ not from a bounding-box rectangle. Study areas in Nevada and in border counties 
 Arizona, Idaho, Oregon and Utah used to query California's CCRS and store no
 crashes; they now get NHTSA FARS, labeled fatal-only. California places still get
 CCRS. A drawn area, a metro area or an unconfirmed place gets FARS only, never
-CCRS; pick a county or city to get a state crash file. Puerto Rico is out of
-coverage: the FARS file OpenPlan reads does not include it. Acquisitions saved
-before this change keep the source they recorded; re-run an affected study area
-to replace an empty CCRS pull.
+CCRS; pick a county or city to get a state crash file. Puerto Rico has its own
+FARS file; see the next entry. Acquisitions saved before this change keep the
+source they recorded; re-run an affected study area to replace an empty CCRS
+pull.
+
+**Puerto Rico fatal crashes:** Safety and the corridor scorecard now read NHTSA's
+separate Puerto Rico FARS file, so a Puerto Rico study area gets fatal crashes
+again, labeled fatal-only, for 2020 through 2024. NHTSA's Puerto Rico files for
+2010 through 2019 have no crash locations, so those years show as not answered,
+not as zero. The readiness panel now marks Puerto Rico safety analysis partial.
+No action is needed to deploy.
 
 **Corridor crash figures follow the state too:** the Explore corridor scorecard now
 chooses its crash source by the same state rule as Safety. A corridor picked as a
@@ -109,6 +128,47 @@ drawn, uploaded or metro corridor, or a run launched from a model, gets FARS onl
 and the safety line says the state was not confirmed. If CCRS cannot be reached
 for a California corridor, the run uses FARS and names CCRS as unavailable. The
 shared crash map layer also checks coverage by the workspace's stated state.
+
+**Oregon injury crashes:** an Oregon live crash read and an Oregon corridor run now
+read ODOT's published crash layer (Oregon Transportation Safety Data Explorer),
+which carries ODOT's own KABCO severity, so they report serious-injury and injury
+crashes instead of fatal-only FARS. Crashes ODOT could not locate are left out,
+because the layer places them at a default point. A Safety acquisition in Oregon
+stores these crashes once `20261102100000_persist_state_injury_crashes.sql` is
+applied (see below). ODOT names no open license; the attribution says so. A research
+note, `docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md`, records which
+states publish open injury-crash data (California, DC, Iowa, Ohio and Oregon
+qualify; 27 states publish with limits). No action is needed to deploy.
+
+**Iowa, Ohio and DC injury crashes:** a live crash read and a corridor run in
+Iowa, Ohio or the District of Columbia now read the state's published crash
+layer (Iowa DOT Crash Data, ODOT TIMS crash locations, DDOT Crashes in DC), so
+they report serious-injury and injury crashes instead of fatal-only FARS. Like
+Oregon, a Safety acquisition stores them once
+`20261102100000_persist_state_injury_crashes.sql` is applied (see below). Ohio's
+layer has no casualty counts or crash day; DC's years are the years crashes were
+reported; Iowa's newest year is partial.
+
+**Stored state injury crashes and BCA place kinds (KI-2026-11-02-001,
+KI-2026-11-01-001):** two migrations. Operators must apply both before
+deploying this code, in this order:
+
+- `20261102100000_persist_state_injury_crashes.sql` widens
+  `safety_crashes.source_id` to admit `odot-or`, `iowadot-ia`, `odot-oh` and
+  `ddot-dc`, and `safety_crash_ingests.coverage_state` to admit
+  `state_injury_file`. A Safety acquisition in Oregon, Iowa, Ohio or DC now
+  stores the state's crashes with KABCO severity (`kabco_full`) instead of
+  fatal-only FARS. Ohio's stored crashes keep their missing casualty counts as
+  blank, not zero. Person rows stay CCRS-only. Acquisitions saved before this
+  change keep FARS; re-run a study area to store the state file.
+- `20261102100100_bca_tribal_and_town_place_kinds.sql` lets a benefit-cost
+  analysis record a project whose place or resolved jurisdiction is a tribal
+  area or a town or township. Each GEOID is checked by its own kind's format;
+  a city or CDP reference must now be 7 digits, as the reader already
+  required.
+
+Code deployed without them fails: an acquisition in those four places fails at
+its first write, and a BCA save for those place kinds returns 409.
 
 **CEQA screen on county runs:** the §15064.3 screening panel now appears only on
 county runs whose county is in California.

@@ -63,7 +63,8 @@ async function fixture() {
     journal: async () => JSON.parse(await readFile(join(directory, "pending.json"), "utf8")) };
 }
 
-describe("synthesis CLI process recovery over HTTP", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("synthesis CLI process recovery over HTTP", () => {
   it("recovers a lost output acknowledgement in a new process without another call", async () => {
     const t = await fixture(); t.f.options.loseOutput = true;
     const first = await t.start().ended;

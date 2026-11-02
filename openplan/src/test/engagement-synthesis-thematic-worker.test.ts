@@ -8,7 +8,8 @@ import { synthesisThematicExecutionWorkerFixture } from "./fixtures/engagement/s
 const fixtures: Awaited<ReturnType<typeof synthesisThematicExecutionWorkerFixture>>[] = [];
 afterEach(async () => { for (const f of fixtures.splice(0)) await f.close(); vi.unstubAllEnvs(); });
 async function fixture(priorCount: number | "final" = 0) { const f = await synthesisThematicExecutionWorkerFixture(priorCount); fixtures.push(f); return f; }
-describe("thematic worker shared durable execution", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("thematic worker shared durable execution", () => {
   it.each([0, 2, "final"] as const)("dispatches task %s using reconstructed thematic and keeps exact response bytes", async priorCount => {
     const f = await fixture(priorCount), result = await runSynthesisThematicWorkerAttempt(f.args), pending = await f.journal();
     expect(result).toEqual({ state: "delivered", attemptId: pending.attemptId, captureSha256: pending.captureSha256 });

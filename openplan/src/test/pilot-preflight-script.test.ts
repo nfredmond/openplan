@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { npmInvocation } from "./helpers/npm-invocation";
 import {
   buildPilotPreflight,
   formatPreflight,
@@ -38,9 +39,10 @@ async function runNpmSilentPreflightJson(args: string[]) {
     stdout: string;
     stderr: string;
   }>((resolve) => {
+    const npm = npmInvocation(["--silent", "run", "ops:check-pilot-preflight", "--", ...args]);
     execFile(
-      "npm",
-      ["--silent", "run", "ops:check-pilot-preflight", "--", ...args],
+      npm.command,
+      npm.args,
       { cwd: process.cwd(), timeout: 15_000, maxBuffer: 1024 * 1024 },
       (error: ExecFileException | null, stdout, stderr) => {
         resolve({

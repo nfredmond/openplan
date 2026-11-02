@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import path from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /**
@@ -42,11 +43,16 @@ export function parseLocalSupabaseEnv(output: string): LocalSupabaseEnv {
   return env as LocalSupabaseEnv;
 }
 
+/**
+ * Runs the Supabase CLI's own entry file with the current Node. `npm` is a shell
+ * shim on Windows that `execFileSync` cannot start (ENOENT); on Linux the
+ * `.bin/supabase` link points at this same file. `sync-local-db.mjs` does the same.
+ */
 export function getLocalSupabaseEnv(): LocalSupabaseEnv {
   const workdir = process.env.OPENPLAN_SUPABASE_WORKDIR?.trim();
-  const args = ["exec", "--", "supabase", "status", "-o", "env"];
+  const args = [path.resolve(process.cwd(), "node_modules/supabase/dist/supabase.js"), "status", "-o", "env"];
   if (workdir) args.push("--workdir", workdir);
-  const output = execFileSync("npm", args, {
+  const output = execFileSync(process.execPath, args, {
     cwd: process.cwd(),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],

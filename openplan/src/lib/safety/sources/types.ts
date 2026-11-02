@@ -70,6 +70,8 @@ export type CrashSeverityCompleteness =
 export type SafetyCoverageState =
   | "ccrs_ca_statewide"
   | "fars_fatal_only"
+  /** A state's own crash file with injury severity. */
+  | "state_injury_file"
   | "switrs_legacy_local"
   | "out_of_coverage"
   | "source_unavailable";

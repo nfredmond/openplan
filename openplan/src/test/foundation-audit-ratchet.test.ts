@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
+import { posixRelative } from "./helpers/posix-path";
 
 /**
  * THE FOUNDATION AUDIT, AS A NUMBER THAT MAY ONLY IMPROVE.
@@ -899,7 +900,7 @@ function listTestFiles(): string[] {
         continue;
       }
       if (/\.test\.tsx?$/.test(entry)) {
-        out.push(full.slice(repoPath("").length).replace(/^\/+/, ""));
+        out.push(posixRelative(APP_ROOT, full));
       }
     }
   };

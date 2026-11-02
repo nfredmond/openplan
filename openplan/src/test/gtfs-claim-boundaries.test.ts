@@ -129,7 +129,8 @@ function collectSourceFiles(relativeRoot: string): string[] {
     return [];
   }
   return entries.flatMap((entry) => {
-    const relative = path.join(relativeRoot, entry);
+    // Forward slashes on every host: the roots below are matched as "src/..." prefixes.
+    const relative = path.posix.join(relativeRoot, entry);
     if (statSync(path.join(REPO_ROOT, relative)).isDirectory()) return collectSourceFiles(relative);
     return /\.tsx?$/.test(entry) ? [relative] : [];
   });

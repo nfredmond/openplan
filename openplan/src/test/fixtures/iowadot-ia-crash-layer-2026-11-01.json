@@ -1,0 +1,452 @@
+{
+ "description": "Responses recorded once from Iowa DOT's published crash and person layers, for adapter tests. Not refreshed; the live layers will drift.",
+ "layerUrl": "https://gis.iowadot.gov/agshost/rest/services/Traffic_Safety/Crash_Data/FeatureServer/0",
+ "personLayerUrl": "https://gis.iowadot.gov/agshost/rest/services/Traffic_Safety/Crash_Person_Data/FeatureServer/0",
+ "capturedAt": "2026-11-01",
+ "bbox": {
+  "minLon": -94.52,
+  "minLat": 41.665,
+  "maxLon": -94.46,
+  "maxLat": 41.695
+ },
+ "year": 2024,
+ "responses": {
+  "years": {
+   "features": [
+    {
+     "attributes": {
+      "FIRST_DATE": 1420070400000,
+      "LAST_DATE": 1793232000000
+     }
+    }
+   ]
+  },
+  "count": {
+   "count": 22
+  },
+  "features": {
+   "features": [
+    {
+     "attributes": {
+      "CRASH_KEY": 20241402609,
+      "CRASH_DATE": 1704931200000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 5,
+      "LIGHT": 1,
+      "WEATHER": 2
+     },
+     "geometry": {
+      "x": -94.50330527864462,
+      "y": 41.67724708121711
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241407470,
+      "CRASH_DATE": 1706659200000,
+      "CSEV": 1,
+      "FATALITIES": 1,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 3,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.48400575270634,
+      "y": 41.68066834909316
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241408829,
+      "CRASH_DATE": 1705536000000,
+      "CSEV": 4,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 1,
+      "WEATHER": 7
+     },
+     "geometry": {
+      "x": -94.4813041135068,
+      "y": 41.68126163109741
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241413218,
+      "CRASH_DATE": 1710720000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 5,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.50238155091942,
+      "y": 41.67730419639795
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241416653,
+      "CRASH_DATE": 1712620800000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 98,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.5034813843729,
+      "y": 41.67758703594352
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241422756,
+      "CRASH_DATE": 1715990400000,
+      "CSEV": 4,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 1,
+      "CRCOMNNR": 3,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.5023363108634,
+      "y": 41.67535931630677
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241422298,
+      "CRASH_DATE": 1715731200000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.48180712604845,
+      "y": 41.68119209775121
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241426255,
+      "CRASH_DATE": 1717545600000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 9,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.5034814544415,
+      "y": 41.68223454736269
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241425116,
+      "CRASH_DATE": 1716163200000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 77,
+      "LIGHT": 77,
+      "WEATHER": 77
+     },
+     "geometry": {
+      "x": -94.50237784536885,
+      "y": 41.68902209501771
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241427566,
+      "CRASH_DATE": 1718496000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 5,
+      "LIGHT": 1,
+      "WEATHER": 2
+     },
+     "geometry": {
+      "x": -94.50011245052917,
+      "y": 41.67633408543298
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241427861,
+      "CRASH_DATE": 1718582400000,
+      "CSEV": 2,
+      "FATALITIES": 0,
+      "MAJINJURY": 1,
+      "MININJURY": 1,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.50735836940872,
+      "y": 41.67692378013409
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241433160,
+      "CRASH_DATE": 1721347200000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 5,
+      "WEATHER": 2
+     },
+     "geometry": {
+      "x": -94.49677710020235,
+      "y": 41.67807986724367
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241430946,
+      "CRASH_DATE": 1720224000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 98,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.50331951245029,
+      "y": 41.67631018658926
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241440909,
+      "CRASH_DATE": 1725494400000,
+      "CSEV": 3,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 1,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.50186589638678,
+      "y": 41.67631118109139
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241440145,
+      "CRASH_DATE": 1725408000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 98,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.49686138463389,
+      "y": 41.668756711075915
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241449037,
+      "CRASH_DATE": 1729814400000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 5,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.50030419053668,
+      "y": 41.67631356844655
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241449913,
+      "CRASH_DATE": 1730160000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 99,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.50346922747217,
+      "y": 41.6770648000022
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241450468,
+      "CRASH_DATE": 1730419200000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 1,
+      "WEATHER": 1
+     },
+     "geometry": {
+      "x": -94.51549518618307,
+      "y": 41.694992460304384
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241451882,
+      "CRASH_DATE": 1731024000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 77,
+      "WEATHER": 77
+     },
+     "geometry": {
+      "x": -94.48405296815767,
+      "y": 41.68063171205792
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241454669,
+      "CRASH_DATE": 1732233600000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 77,
+      "WEATHER": 77
+     },
+     "geometry": {
+      "x": -94.50229564233385,
+      "y": 41.669478395595
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241459103,
+      "CRASH_DATE": 1734048000000,
+      "CSEV": 5,
+      "FATALITIES": 0,
+      "MAJINJURY": 0,
+      "MININJURY": 0,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 1,
+      "LIGHT": 77,
+      "WEATHER": 77
+     },
+     "geometry": {
+      "x": -94.46382542773368,
+      "y": 41.68083713341024
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": 20241458300,
+      "CRASH_DATE": 1733961600000,
+      "CSEV": 2,
+      "FATALITIES": 0,
+      "MAJINJURY": 1,
+      "MININJURY": 1,
+      "POSSINJURY": 0,
+      "CRCOMNNR": 2,
+      "LIGHT": 1,
+      "WEATHER": 7
+     },
+     "geometry": {
+      "x": -94.50238664167213,
+      "y": 41.6801052475011
+     }
+    }
+   ]
+  },
+  "persons": {
+   "features": [
+    {
+     "attributes": {
+      "CRASH_KEY": "20241407470",
+      "NM_TYPE": "Pedalcyclist (bicycle/tricycle/unicycle/pedal car)"
+     },
+     "geometry": {
+      "x": -94.48400575270634,
+      "y": 41.68066834909316
+     }
+    },
+    {
+     "attributes": {
+      "CRASH_KEY": "20241407470",
+      "NM_TYPE": "Pedalcyclist (bicycle/tricycle/unicycle/pedal car)"
+     },
+     "geometry": {
+      "x": -94.48400575270634,
+      "y": 41.68066834909316
+     }
+    }
+   ]
+  }
+ }
+}

@@ -20,6 +20,11 @@
  * county is re-resolved to confirm its state, exactly as the analysis route
  * does, and the scorecard summary must name the same source.
  *
+ * Since 2026-11-02 the Oregon, Iowa, Ohio and DC rows expect their state's
+ * crash layer (ODOT, Iowa DOT, Ohio DOT, DDOT), which carries injury severity,
+ * for the live read, the corridor run and the acquisition. Migration
+ * 20261102100000 admits the four source ids to `safety_crashes`.
+ *
  * Blind category: the place-to-state step is exercised for county GEOIDs only.
  * Cities, CDPs, metro areas and drawn areas are covered by the route tests in
  * safety-crashes-route.test.ts and analysis-route-grounding.test.ts. Network
@@ -31,7 +36,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import table from "./fixtures/us-jurisdiction-source-table.json";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { readCrashesForStudyArea } from "@/lib/safety/read-only-lane";
-import { resolveCrashSource } from "@/lib/safety/sources/registry";
+import { CRASH_SOURCE_ADAPTERS, resolveCrashSource } from "@/lib/safety/sources/registry";
 import { ccrsAdapter, CCRS_SOURCE_ID } from "@/lib/safety/sources/ccrs";
 import { farsAdapter } from "@/lib/safety/sources/fars";
 import type { CrashFetchResult } from "@/lib/safety/sources/types";
@@ -84,12 +89,15 @@ function fakeService() {
   };
 }
 
-let ccrsFetch: ReturnType<typeof vi.spyOn>;
-let farsFetch: ReturnType<typeof vi.spyOn>;
+/**
+ * Every registered adapter, in registry order, each with its fetch replaced,
+ * so no row can reach a live service and a new adapter is spied without an edit.
+ */
+const SPIED_ADAPTERS = CRASH_SOURCE_ADAPTERS;
+let fetchSpies: Array<ReturnType<typeof vi.spyOn>> = [];
 
 beforeEach(() => {
-  ccrsFetch = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue(EMPTY_FETCH);
-  farsFetch = vi.spyOn(farsAdapter, "fetch").mockResolvedValue(EMPTY_FETCH);
+  fetchSpies = SPIED_ADAPTERS.map((adapter) => vi.spyOn(adapter, "fetch").mockResolvedValue(EMPTY_FETCH));
 });
 
 afterEach(() => {
@@ -98,16 +106,11 @@ afterEach(() => {
 
 /** Every source asked, in registry order. */
 function askedSources(): string[] {
-  return [
-    ...(ccrsFetch.mock.calls.length > 0 ? [ccrsAdapter.id] : []),
-    ...(farsFetch.mock.calls.length > 0 ? [farsAdapter.id] : []),
-  ];
+  return SPIED_ADAPTERS.filter((_, index) => fetchSpies[index].mock.calls.length > 0).map((adapter) => adapter.id);
 }
 
 function askedSource(): string | null {
-  if (ccrsFetch.mock.calls.length > 0) return ccrsAdapter.id;
-  if (farsFetch.mock.calls.length > 0) return farsAdapter.id;
-  return null;
+  return askedSources()[0] ?? null;
 }
 
 const label = (row: Row) => `${row.usps} ${row.countyName} (${row.countyGeoid})`;
@@ -133,6 +136,19 @@ describe("the jurisdiction fixture", () => {
   });
 });
 
+/**
+ * What an acquisition records for each stored source, written from each
+ * adapter's documentation rather than read off the adapter objects.
+ */
+const STORED_SOURCE_DECLARATIONS: Record<string, { severityCompleteness: string; coverageState: string }> = {
+  "ccrs-ca": { severityCompleteness: "fatal_injury_only", coverageState: "ccrs_ca_statewide" },
+  "fars-national": { severityCompleteness: "fatal_only", coverageState: "fars_fatal_only" },
+  "odot-or": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+  "iowadot-ia": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+  "odot-oh": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+  "ddot-dc": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+};
+
 describe.each(table.rows)("$usps $countyName ($countyGeoid)", (row) => {
   const stateFips = () => crashStatesFromTigerwebPlace("county", row.countyGeoid);
 
@@ -155,10 +171,14 @@ describe.each(table.rows)("$usps $countyName ($countyGeoid)", (row) => {
       expect(result.coverageState, label(row)).toBe("out_of_coverage");
     } else {
       expect(service.ingestRows[0]?.source_id, label(row)).toBe(row.expected.ingestCrashSource);
-      // A fatality census must say so wherever it is the source.
-      const expectedCompleteness =
-        row.expected.ingestCrashSource === farsAdapter.id ? "fatal_only" : ccrsAdapter.severityCompleteness;
-      expect(result.severityCompleteness, label(row)).toBe(expectedCompleteness);
+      // Each stored source records its own severity completeness and coverage
+      // state: a fatality census says so, CCRS without the KSI join cannot
+      // separate serious injury, and a state's KABCO layer can.
+      const stored = STORED_SOURCE_DECLARATIONS[row.expected.ingestCrashSource];
+      expect(stored, label(row)).toBeDefined();
+      expect(result.severityCompleteness, label(row)).toBe(stored.severityCompleteness);
+      expect(service.ingestRows[0]?.severity_completeness, label(row)).toBe(stored.severityCompleteness);
+      expect(service.ingestRows[0]?.coverage_state, label(row)).toBe(stored.coverageState);
     }
   });
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { posixRelative } from "./helpers/posix-path";
 
 // Governance guard (mirrors model-run-kpis-reader-inventory, hardened). The survey
 // RESPONSE tables are sensitive + service-role-only. This guard enforces THREE
@@ -105,7 +106,7 @@ function analyzeRepo(): { violations: Violation[]; touchedByReader: Set<string> 
   const violations: Violation[] = [];
   let touchedByReader = new Set<string>();
   for (const fullPath of collectSourceFiles(SOURCE_ROOT)) {
-    const rel = path.relative(process.cwd(), fullPath);
+    const rel = posixRelative(process.cwd(), fullPath);
     const result = analyzeSensitiveAccess(rel, fs.readFileSync(fullPath, "utf8"));
     violations.push(...result.violations);
     if (rel === ALLOWED_READER) touchedByReader = result.touched;
@@ -169,7 +170,7 @@ describe("the survey counts function has one caller", () => {
   it("is called only from the Planner Agent engagement tool", () => {
     const callers = collectSourceFiles(SOURCE_ROOT)
       .filter((file) => fs.readFileSync(file, "utf8").includes(COUNTS_FUNCTION))
-      .map((file) => path.relative(process.cwd(), file));
+      .map((file) => posixRelative(process.cwd(), file));
     expect(callers).toEqual(COUNTS_FUNCTION_CALLERS);
   });
 });

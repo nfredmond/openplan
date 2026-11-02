@@ -161,8 +161,8 @@ describe("crash source registry", () => {
   });
 
   it("reports out_of_coverage for a state no adapter reads, naming what it checked", () => {
-    const sanJuan = { minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 };
-    const resolution = resolveCrashSource({ bbox: sanJuan, stateFips: ["72"] });
+    const stCroix = { minLon: -64.9, minLat: 17.67, maxLon: -64.56, maxLat: 17.8 };
+    const resolution = resolveCrashSource({ bbox: stCroix, stateFips: ["78"] });
     expect(resolution.kind).toBe("out_of_coverage");
     if (resolution.kind === "out_of_coverage") {
       expect(resolution.checked.map((entry) => entry.id).sort()).toEqual(
@@ -550,13 +550,18 @@ describe("FARS national adapter", () => {
     expect(coversFarsGeography({ minLon: -157.9, minLat: 21.2, maxLon: -157.8, maxLat: 21.4 })).toBe(true);
   });
 
-  it("does not claim Puerto Rico, which the National file it reads does not carry", () => {
-    // NHTSA publishes Puerto Rico in a separate annual file. Claiming the
-    // island here turned "not read" into "no fatal crashes".
-    expect(coversFarsGeography({ minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 })).toBe(false);
-    expect(farsAdapter.servesStateFips).not.toContain("72");
-    expect(farsAdapter.servesStateFips).toHaveLength(51);
+  it("claims Puerto Rico, whose separate file it reads, and no other territory", () => {
+    // NHTSA publishes Puerto Rico in its own annual file, which the adapter
+    // reads beside the National file. No other territory is in FARS.
+    expect(coversFarsGeography({ minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 })).toBe(true);
+    expect(farsAdapter.servesStateFips).toContain("72");
+    expect(farsAdapter.servesStateFips).toHaveLength(52);
     expect(farsAdapter.servesStateFips).toContain("11");
+    for (const territory of ["60", "66", "69", "78"]) {
+      expect(farsAdapter.servesStateFips).not.toContain(territory);
+    }
+    // St. Thomas, U.S. Virgin Islands, just east of Culebra.
+    expect(coversFarsGeography({ minLon: -65.09, minLat: 18.3, maxLon: -64.83, maxLat: 18.42 })).toBe(false);
   });
 
   it("does not claim coverage outside the reporting geography", () => {

@@ -72,7 +72,8 @@ async function fixture() {
   return { directory, controller, candidates, versions, claims, receipts, events, respond, fetcher, options, work, run, job };
 }
 
-describe("managed GTFS queue", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("managed GTFS queue", () => {
   it("settles a cancelled attempt without replaying its unresolved terminal command", async () => {
     const f = await fixture();
     const normal = f.respond.getMockImplementation()!;
