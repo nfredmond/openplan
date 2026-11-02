@@ -37,6 +37,7 @@ import {
 } from "@/lib/aerial/catalog";
 import { ENGAGEMENT_ITEM_ACTIONABLE_STATUSES } from "@/lib/engagement/catalog";
 import { classifyRunLiveness, stalenessMessage } from "@/lib/models/run-liveness";
+import { isWorkerExecutedRunMode } from "@/lib/models/run-modes";
 import { isInterruptedModelRun } from "@/lib/models/run-status";
 import {
   isClosingSoonFundingOpportunity,
@@ -673,7 +674,7 @@ const stalledModelRunsSource: MyWorkSource = {
   block: "needs_review",
   table: "model_runs",
   select:
-    "id, model_id, run_title, status, engine_key, created_at, started_at, updated_at, stages:model_run_stages(status, started_at, completed_at, updated_at, error_message)",
+    "id, model_id, run_title, status, engine_key, attempt_managed, created_at, started_at, updated_at, stages:model_run_stages(status, started_at, completed_at, updated_at, error_message)",
   workspaceFilterColumn: "workspace_id",
   assigneeColumn: null,
   // Least recent progress first: the longest-silent run is the likeliest stop.
@@ -682,6 +683,17 @@ const stalledModelRunsSource: MyWorkSource = {
   staticFilters: [{ kind: "eq", column: "status", value: RUNNING_RUN_STATUS }],
   toItems: (rows, { now }) =>
     rows.flatMap((row) => {
+      // A worker run enrolled as historical (20261016000018) is fenced: its
+      // status and timestamps never change, and an owner's keep-or-close
+      // decision is a separate receipt. The model page reads both through the
+      // service role (`inspect_model_recovery_status`) and checks them before
+      // liveness. The caller can read neither, so a worker run is listed only
+      // after a managed attempt claimed it (`attempt_managed`, 20261016000014).
+      // That leaves out every historical run except one claimed in the gap
+      // between those two migrations, and it also leaves out a new run on the
+      // worker's unmanaged write path. Their model pages still say whether
+      // they need a decision or have stopped.
+      if (isWorkerExecutedRunMode(asString(row.engine_key)) && row.attempt_managed !== true) return [];
       const stages = Array.isArray(row.stages) ? (row.stages as Array<Record<string, unknown>>) : [];
       const run = {
         status: asString(row.status) ?? "",

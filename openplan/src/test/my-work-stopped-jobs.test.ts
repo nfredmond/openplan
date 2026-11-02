@@ -30,19 +30,31 @@ function withJobs(): Db {
   db.model_runs.push(
     {
       id: "run-silent", workspace_id: WS_A, model_id: MODEL_A, run_title: "Silent run", status: "running",
-      engine_key: "aequilibrae", created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(RUN_STALE_MINUTES + 5),
+      engine_key: "aequilibrae", attempt_managed: true, created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(RUN_STALE_MINUTES + 5),
     },
     {
       id: "run-fresh", workspace_id: WS_A, model_id: MODEL_A, run_title: "Progressing run", status: "running",
-      engine_key: "aequilibrae", created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(RUN_STALE_MINUTES + 5),
+      engine_key: "aequilibrae", attempt_managed: true, created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(RUN_STALE_MINUTES + 5),
     },
     {
       id: "run-interrupted", workspace_id: WS_A, model_id: MODEL_A, run_title: "Interrupted run", status: "running",
-      engine_key: "activitysim", created_at: minutesBefore(30), started_at: minutesBefore(25), updated_at: minutesBefore(1),
+      engine_key: "behavioral_demand", attempt_managed: true, created_at: minutesBefore(30), started_at: minutesBefore(25), updated_at: minutesBefore(1),
+    },
+    {
+      // A historical worker run: never claimed by a managed attempt, fenced,
+      // and stale forever. An owner may already have kept or closed it; My
+      // Work cannot read that decision, so it does not list the run.
+      id: "run-historical", workspace_id: WS_A, model_id: MODEL_A, run_title: "Historical run", status: "running",
+      engine_key: "aequilibrae", attempt_managed: false, created_at: minutesBefore(9000), started_at: minutesBefore(8990), updated_at: minutesBefore(8000),
+    },
+    {
+      // An in-app engine has no recovery enrollment, so liveness alone decides.
+      id: "run-in-app", workspace_id: WS_A, model_id: MODEL_A, run_title: "In-app run", status: "running",
+      engine_key: "sketch_abm", attempt_managed: false, created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(RUN_STALE_MINUTES + 5),
     },
     {
       id: "run-decoy", workspace_id: WS_B, model_id: MODEL_A, run_title: "Other workspace run", status: "running",
-      engine_key: "aequilibrae", created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(500),
+      engine_key: "aequilibrae", attempt_managed: true, created_at: minutesBefore(600), started_at: minutesBefore(590), updated_at: minutesBefore(500),
     },
   );
   db.model_run_stages = [
@@ -87,7 +99,7 @@ describe("my work — stopped model runs", () => {
     const { result, selects } = await load({ db: withJobs() });
     const stopped = fromSource(result.items, "stalled_model_runs");
 
-    expect(idsOf(stopped).sort()).toEqual(["run-interrupted", "run-silent"]);
+    expect(idsOf(stopped).sort()).toEqual(["run-in-app", "run-interrupted", "run-silent"]);
     const interrupted = stopped.find((item) => item.id === "run-interrupted")!;
     expect(interrupted).toMatchObject({ block: "needs_review", badge: { label: "Run interrupted" }, href: `/models/${MODEL_A}` });
     // The cause is the stage's own message, never a guess.
@@ -98,10 +110,10 @@ describe("my work — stopped model runs", () => {
 
     // The stage embed carries the fields the shared rules read.
     const projection = selects.model_runs;
-    for (const column of ["status", "updated_at", "stages:model_run_stages(status, started_at, completed_at, updated_at, error_message)"]) {
+    for (const column of ["status", "engine_key", "attempt_managed", "updated_at", "stages:model_run_stages(status, started_at, completed_at, updated_at, error_message)"]) {
       expect(projection).toContain(column);
     }
-    expect(result.perSource.stalled_model_runs).toEqual({ count: 2, pending: false, failed: false });
+    expect(result.perSource.stalled_model_runs).toEqual({ count: 3, pending: false, failed: false });
   });
 
   it("moves a run across the threshold by its freshest stage heartbeat", async () => {
@@ -109,7 +121,16 @@ describe("my work — stopped model runs", () => {
     const stage = (db.model_run_stages as Array<Record<string, unknown>>).find((row) => row.id === "s1")!;
     stage.updated_at = minutesBefore(RUN_STALE_MINUTES - 5);
     const { result } = await load({ db });
-    expect(idsOf(fromSource(result.items, "stalled_model_runs"))).toEqual(["run-interrupted"]);
+    expect(idsOf(fromSource(result.items, "stalled_model_runs")).sort()).toEqual(["run-in-app", "run-interrupted"]);
+  });
+
+  it("leaves out a worker run no managed attempt claimed, which may be a resolved historical record", async () => {
+    const db = withJobs();
+    const historical = (db.model_runs as Array<Record<string, unknown>>).find((row) => row.id === "run-historical")!;
+    expect(idsOf(fromSource((await load({ db })).result.items, "stalled_model_runs"))).not.toContain("run-historical");
+    // VARY THE BINDING: the same stale row, once a managed attempt claimed it, is listed.
+    historical.attempt_managed = true;
+    expect(idsOf(fromSource((await load({ db })).result.items, "stalled_model_runs"))).toContain("run-historical");
   });
 });
 
