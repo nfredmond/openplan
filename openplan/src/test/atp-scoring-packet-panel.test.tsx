@@ -94,7 +94,7 @@ describe("ATP scoring packet panel", () => {
     expect(rows).toContain("Safety64.0");
     expect(rows).toContain("Equity71.0");
     expect(rows).toContain("ClimateNot recordedOpenPlan does not compute this score.");
-    expect(rows).toContain("Total (weighted 30/25/25/20)Not recordedNeeds all four scores.");
+    expect(rows).toContain("Total (OpenPlan weights 30/25/25/20)Not recordedNeeds all four scores.");
     expect(rows).toContain("SensitivityNot recorded");
 
     const summary = within(panel).getByTestId("atp-packet-summary");

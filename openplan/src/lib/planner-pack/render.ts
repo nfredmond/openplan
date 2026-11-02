@@ -13,8 +13,11 @@
  * basis and modeling claim tier" section of the CEQA memo — added because the
  * exported memo is the quotable artifact, and a determination that travels
  * without its jurisdiction basis and claim tier is exactly the overclaim
- * `summarizeVmtDetermination` exists to prevent on-screen. Every caveat,
- * statutory citation, and disclaimer string is otherwise preserved verbatim;
+ * `summarizeVmtDetermination` exists to prevent on-screen. The ATP packet was
+ * rewritten on 2026-11-02 for the OpenPlan route that serves it: the port
+ * named CLI files OpenPlan never writes, cited SB 535 to the wrong code and
+ * called screening scores CTC scoring areas. Every other caveat, statutory
+ * citation, and disclaimer string is otherwise preserved verbatim;
  * these memos are screening-level drafts, not determinations of record, and
  * the wording that says so must not drift.
  */
@@ -225,8 +228,20 @@ function formatPacketScore(value: number | null): string {
 }
 
 /**
+ * The CTC's own ATP page. The packet points here instead of naming a cycle,
+ * because cycles and their guidelines change and this file cannot see that.
+ */
+const ATP_CTC_PROGRAM_URL = "https://catc.ca.gov/programs/active-transportation-program";
+
+/** The visible marker every cycle-dependent program fact in the packet carries. */
+export const ATP_VERIFY_GUIDELINES =
+  `[VERIFY: confirm the cycle in effect and its scoring criteria in the CTC's current ATP guidelines, ${ATP_CTC_PROGRAM_URL}]`;
+
+/**
  * The DAC lines for one application. Without an equity-lens row the flags are
- * defaults, so they read "Not recorded" rather than "No".
+ * defaults, so they read "Not recorded" rather than "No". OpenPlan does not
+ * decide ATP eligibility: the CTC's guidelines set the qualifying criteria,
+ * and an equity-lens category is a screening fact, not that test.
  */
 function renderAtpEquityLines(app: AtpProjectApplication): string {
   if (!app.equity_recorded) {
@@ -234,22 +249,31 @@ function renderAtpEquityLines(app: AtpProjectApplication): string {
 - AB 1550 low-income: Not recorded
 - Tribal area: Not recorded
 - Benefit category: **Not recorded**
-- ATP DAC benefit bonus eligible: **Not recorded** (needs an equity lens for this project: SB 535, AB 1550 and tribal-area findings).`;
+- ATP disadvantaged-community criteria: **Not assessed.** OpenPlan does not decide ATP eligibility; the CTC's guidelines set the criteria. ${ATP_VERIFY_GUIDELINES}`;
   }
   return `- SB 535 DAC: ${yesNo(app.dac_sb535)}
 - AB 1550 low-income: ${yesNo(app.low_income_ab1550)}
 - Tribal area: ${yesNo(app.tribal_area)}
 - Benefit category: **${app.benefit_category}**
-- ATP DAC benefit bonus eligible: **${yesNo(app.atp_dac_benefit_eligible)}** (eligible when the equity lens places the project in DAC, Low-income near DAC, or Low-income categories).`;
+- Equity-lens category in the DAC, Low-income near DAC or Low-income group: **${yesNo(app.atp_dac_benefit_eligible)}** (screening fact; OpenPlan does not decide ATP eligibility). ${ATP_VERIFY_GUIDELINES}`;
+}
+
+/** A recorded, already-formatted cost wins; a bare float is the legacy path. */
+function renderAtpCostLine(app: AtpProjectApplication): string {
+  if (app.estimated_cost_note) {
+    return `- Estimated cost: **${app.estimated_cost_note}** Allocate across PA&ED / PS&E / R/W / CON per LAPM Chapter 3.`;
+  }
+  return app.estimated_cost_usd !== null
+    ? `- Estimated programmed cost: **$${formatFixedPython(app.estimated_cost_usd, 0)}** (lead agency estimate; allocate across PA&ED / PS&E / R/W / CON per LAPM Chapter 3).`
+    : "- Estimated programmed cost: _to be provided by lead agency (PA&ED, PS&E, R/W, CON)._";
 }
 
 function renderAtpApplication(app: AtpProjectApplication): string {
-  const costLine =
-    app.estimated_cost_usd !== null
-      ? `- Estimated programmed cost: **$${formatFixedPython(app.estimated_cost_usd, 0)}** (lead agency estimate; allocate across PA&ED / PS&E / R/W / CON per LAPM Chapter 3).`
-      : "- Estimated programmed cost: _to be provided by lead agency (PA&ED, PS&E, R/W, CON)._";
+  const safetySource = app.safety_source_note
+    ? `- Safety score source: ${app.safety_source_note}`
+    : "- Safety score source: not recorded in the analysis run.";
 
-  return `### \`${app.project_id}\` — ${app.name}
+  return `### ${app.name}
 
 **Application identifiers**
 
@@ -264,7 +288,7 @@ function renderAtpApplication(app: AtpProjectApplication): string {
 
 ${app.description}
 
-**Benefits (ATP scoring areas A + B)**
+**OpenPlan screening scores (not CTC scores)**
 
 | Dimension | Score |
 |---|---:|
@@ -272,18 +296,19 @@ ${app.description}
 | Equity | ${formatPacketScore(app.equity_score)} |
 | Climate | ${formatPacketScore(app.climate_score)} |
 | Feasibility | ${formatPacketScore(app.feasibility_score)} |
-| **Total (weighted 30/25/25/20)** | **${formatPacketScore(app.total_score)}** |
-| Sensitivity flag | ${app.sensitivity_flag} |
+| **Total (OpenPlan weights 30/25/25/20, not CTC points)** | **${formatPacketScore(app.total_score)}** |
+| Sensitivity flag | ${app.sensitivity_flag === "UNKNOWN" ? "Not recorded" : app.sensitivity_flag} |
 
+${safetySource}
 - CEQA §15064.3 VMT screening: ${app.ceqa_determination}
 
-**Disadvantaged-community benefit (ATP scoring area DAC)**
+**Disadvantaged-community benefit**
 
 ${renderAtpEquityLines(app)}
 
 **Scope, schedule, and budget**
 
-${costLine}
+${renderAtpCostLine(app)}
 
 - Schedule: ${app.schedule_note}
 
@@ -325,61 +350,60 @@ function renderAtpPortfolioEquityLines(summary: AtpPortfolioSummary): string {
 - Tribal-area applications: **${summary.tribal_application_count}** (AB 52 consultation trigger if any)${partial}`;
 }
 
-/** Render the ATP application packet as Markdown. */
+/**
+ * Render the ATP screening packet as Markdown.
+ *
+ * Program facts are stated only where a primary source fixes them; anything
+ * that changes by cycle carries `ATP_VERIFY_GUIDELINES`. Citations checked on
+ * November 2, 2026: SB 535 is Health and Safety Code §39711 and AB 1550 is
+ * §39713 (CalEPA, 2026 Preliminary DAC Designation); the 2027 ATP Guidelines
+ * (adopted March 19, 2026) cite Streets and Highways Code §§2382 and 2384 and
+ * say the Commission adopts the guidelines and the program of projects.
+ */
 export function renderAtpPacketMarkdown(
   result: AtpGrantResult,
   { runId, engineVersion }: RenderPlannerPackOptions
 ): string {
   const summary = result.summary;
 
-  let out = `# California ATP Application Packet — run \`${runId}\`
+  let out = `# California ATP screening packet
 
+- Corridor analysis run: \`${runId}\`
 - Engine version: \`${engineVersion}\`
 - Generated: \`${result.generated_at}\`
 - Lead agency: **${result.agency}**
-- ATP cycle: **${result.cycle}**
-- Application drafts in this packet: **${result.applications.length}**
+- ATP cycle: **${result.cycle}** ${ATP_VERIFY_GUIDELINES}
+- Projects in this packet: **${result.applications.length}**
 
 ## Scope
 
-This packet drafts one California Active Transportation Program (ATP)
-application narrative per candidate project in OpenPlan run
-\`${runId}\`. ATP is administered by the California Transportation
-Commission (CTC) under Streets & Highways Code §§2380–2383 and funds
-bicycle, pedestrian, and Safe Routes to School projects. Each draft is
-a structured outline populated with every fact OpenPlan has evidence
-for — screening scores, Caltrans LAPM programming fields, CEQA §15064.3
-VMT determinations, and SB 535 / AB 1550 / tribal equity findings — and
-explicit about sections that remain lead-agency judgment (past
-performance, detailed cost estimates, letters of support, environmental
-determination, final schedule).
+This packet lists, for each project, the OpenPlan screening evidence a
+California Active Transportation Program (ATP) application can draw on, and
+the application items that remain the lead agency's work. It is not an ATP
+application, and its scores are not CTC scores. The California
+Transportation Commission (CTC) adopts the ATP guidelines and the program
+of projects and scores the applications.
 
-## Methodology
+## Method
 
-- **Project screening scores** come from this run's \`project_scores.csv\`
-  and are mirrored in the \`project_scoring\` fact_blocks.
-- **Programming fields** (location, description, cost, schedule) are
-  lifted from \`lapm_exhibit.csv\` when the Caltrans LAPM packet has been
-  generated for the same run (\`planner-pack lapm-exhibit\`).
-- **CEQA VMT determinations** are lifted from \`ceqa_vmt.csv\` when
-  \`planner-pack ceqa-vmt\` has been run.
-- **Equity findings** (SB 535 DAC / AB 1550 / tribal) are lifted from
-  \`equity_lens.csv\` when \`planner-pack equity-lens\` has been run. ATP
-  awards bonus scoring for projects that benefit a DAC; this packet
-  labels each application as **eligible** for that bonus when the
-  equity lens places it in the \`DAC\`, \`Low-income near DAC\`, or
-  \`Low-income\` benefit category.
-- Every application below is mirrored as an \`atp_application_project\`
-  fact_block, and the portfolio summary as an \`atp_application_summary\`
-  fact_block, so downstream narrative and chat turns remain under the
-  OpenPlan citation contract.
+- **Screening scores** (safety and equity) come from the linked project's
+  latest Corridor Analysis run. A score the run withheld or never computed
+  reads "Not recorded", never 0.
+- **Climate, feasibility and the weighted total** have no source in
+  OpenPlan yet and read "Not recorded" unless a run supplied them.
+- **Programming fields** (description, location, cost, schedule) come from
+  the project record when it holds them; otherwise they are listed as items
+  for the lead agency.
+- **Equity findings** (SB 535, AB 1550, tribal area) appear only when an
+  equity lens supplied them. They are screening facts, not the ATP's
+  disadvantaged-community test.
 
 ## Portfolio summary
 
 `;
 
   if (summary !== null) {
-    out += `- Application drafts: **${summary.application_count}**
+    out += `- Projects: **${summary.application_count}**
 - Mean screening total score: **${formatPacketScore(summary.mean_total_score)}**${
       summary.mean_total_score !== null &&
       summary.scored_application_count < summary.application_count
@@ -391,7 +415,7 @@ ${renderAtpPortfolioEquityLines(summary)}
   } else {
     out += "_Portfolio summary unavailable._\n";
   }
-  out += "\n\n## Per-project application drafts\n\n";
+  out += "\n\n## Projects\n\n";
 
   for (const app of result.applications) {
     out += renderAtpApplication(app);
@@ -401,28 +425,23 @@ ${renderAtpPortfolioEquityLines(summary)}
   out += `
 ## Citations
 
-- California Streets & Highways Code §§ 2380–2383 — Active Transportation Program.
-- California Transportation Commission, *Active Transportation Program Guidelines* (latest adopted cycle).
-- California Government Code §39711 — SB 535 (De León, 2012).
-- California Health & Safety Code §39713 — AB 1550 (Gomez, 2016).
-- California Public Resources Code §21099 + CEQA Guidelines §15064.3 — transportation impact significance.
+- California Streets and Highways Code, Section 2380 and following: Active Transportation Program.
+- California Transportation Commission, *Active Transportation Program Guidelines*, ${ATP_CTC_PROGRAM_URL} ${ATP_VERIFY_GUIDELINES}
+- California Health and Safety Code §39711: SB 535 (De León, 2012).
+- California Health and Safety Code §39713: AB 1550 (Gomez, 2016).
+- California Public Resources Code §21099 + CEQA Guidelines §15064.3: transportation impact significance.
 - Caltrans *Local Assistance Procedures Manual*, Chapter 3 (Project Authorization) and Chapter 7 (Field Review).
-- California Government Code §65080 — Regional Transportation Plans.
+- California Government Code §65080: Regional Transportation Plans.
 
 ## Notes
 
 - This packet is a **screening-level draft**. It does not substitute for
   the lead agency's submitted ATP application, CTC scoring, CEQA
   determination, or AB 52 tribal consultation.
-- Every application draft above is mirrored as an
-  \`atp_application_project\` fact_block in this run's
-  \`fact_blocks.jsonl\`, and the portfolio totals as an
-  \`atp_application_summary\` fact_block, keeping downstream narrative
-  and chat turns under the OpenPlan citation contract.
 
 ---
 
-*OpenPlan Planner Pack — California ATP grant application packet.*
+*OpenPlan, California ATP screening packet.*
 `;
 
   return out;

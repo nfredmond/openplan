@@ -157,6 +157,29 @@ although `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` draws the Safety, Explore, project
 and engagement maps with no key; and the SS4A seed text printed doubled periods,
 "length not measured miles" and raw status codes.
 
+## ATP packet journey, November 2, 2026
+
+An agent-run journey on a local build (main at `7d1a196`, local Supabase, no
+Census key, no AI key) went from sign-up through a Grass Valley, California
+project with a CCRS crash acquisition, a planning-level estimate, an engagement
+campaign and a corridor analysis, to an ATP application with six sections
+finalized by hand, the ATP report download and the application PDF, at 1440
+and 390 pixels. Program facts were checked against the CTC's 2027 Active
+Transportation Program Guidelines (Cycle 8, adopted March 19, 2026), read
+November 2, 2026. Paths are under `openplan/`. Row IDs may be renumbered at
+merge if another lane used them.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-02-040 | High, wrong program facts in an export | The ATP report cited SB 535 to "Government Code §39711" (it is Health and Safety Code §39711), labeled OpenPlan's safety, equity, climate and feasibility scores "ATP scoring areas A + B" (in the 2027 guidelines A is Benefit to Disadvantaged Communities and B is Need), called DAC benefit a "bonus" decided by equity-lens categories that include AB 1550 low-income groups, and named CLI files OpenPlan never writes (`project_scores.csv`, `fact_blocks.jsonl`). | Fixed on this branch: corrected citation, "OpenPlan screening scores (not CTC scores)", no eligibility claim, a visible `[VERIFY]` with the CTC's ATP page on every cycle-dependent fact, no internal file names. The `atp_dac_benefit_eligible` field is still computed from equity-lens categories; nothing in OpenPlan supplies an equity lens today, so it always reads "Not recorded". | `src/lib/planner-pack/render.ts`; `src/test/planner-pack-atp.test.ts` |
+| KI-2026-11-02-041 | High, recorded fact shown as missing | The ATP report printed "Project description to be provided" and "Estimated programmed cost: to be provided" for a project with a recorded summary and a USD 2,850,000 planning-level estimate, gave the safety score with no crash source or years, and said "two or more screening dimensions used placeholders" when no sensitivity screen had run. | Fixed on this branch: the packet reads the project's summary and exact estimate, names the run's crash source, years and retrieval date, and says readiness is not recorded. Lead agency, cycle and location stay placeholders on purpose: the workspace is not necessarily the lead agency, and the study area is not the project limits. | `src/lib/grants/atp-packet.ts`; `src/test/grants-atp-packet-route.test.ts` |
+| KI-2026-11-02-042 | Medium, layout | At 390 pixels the ATP score table and summary ran past the panel border (table 244 px in a 210 px box). | Fixed on this branch; checked in the browser at 1440 and 390. | `src/components/grants/atp-scoring-packet-panel.tsx` |
+| KI-2026-11-02-043 | High, workflow trap | A program tracked from the Grants catalog without a project focus is saved with no project, nothing can link one later (the opportunity PATCH accepts no project), and the ATP panel then says "Link a project to this opportunity" with no control to do it. The working path is logging a new opportunity from the project's funding gap. | Open. Needs a project link control and PATCH support with a same-workspace check. Related to the first-cell journey's tracking finding above. | `src/app/api/funding-opportunities/[opportunityId]/route.ts` |
+| KI-2026-11-02-044 | Medium, funder-facing identity | The application PDF's provenance appendix prints the finalizer as a raw user UUID. | Open. | `src/lib/grants/application-html.ts` |
+| KI-2026-11-02-045 | Medium, coverage | The ATP application PDF carries none of the ATP evidence: no screening scores, CCRS facts or estimate, and no program facts. Evidence appendices exist only for SS4A. The ATP report is a separate Markdown download. | Open. | `src/app/api/funding-opportunities/[opportunityId]/application/export/route.ts` |
+| KI-2026-11-02-046 | Medium, contradictory claim | For the same place and years from CCRS, the Safety page reports 2 fatal and 12 serious-injury crashes, while the corridor analysis says suspected serious injury is not separable and reports no killed-and-serious total. | Open; the two crash paths disagree about the source's severity detail. | Safety page and corridor analysis narrative for Grass Valley, 2022 to 2025 |
+| KI-2026-11-02-047 | Low, copy | The application PDF's standing caveats list evidence types the application does not cite (benefit-cost, comment synthesis, uploaded quotes, Safety seed); its assembled time has no time zone; the ATP catalog cycle text ("Biennial statewide call") carries no date or `[VERIFY]` and calls the program "flagship"; the project page shows stage-gate ids such as `G06_DESIGN_PSE_ROW_UTILITIES_COST` and `deferred_to_v0_2`. | Open. | `src/lib/grants/application-html.ts`; `src/lib/grants/programs/us-ca.ts` |
+
 ## ActivitySim container owner loss, October 8, 2026
 
 The [container custody case](../reviews/2026-10-08-model-custody-metadata/ACTIVITYSIM_CONTAINER_CUSTODY.md)

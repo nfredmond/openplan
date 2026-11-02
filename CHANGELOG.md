@@ -20,6 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**ATP report states what it knows (KI-2026-11-02-040 to 042):** the ATP report
+downloaded from an ATP application now cites SB 535 to Health and Safety Code
+§39711, calls its numbers OpenPlan screening scores rather than CTC scoring
+areas, makes no disadvantaged-community eligibility claim, marks each
+cycle-dependent program fact `[VERIFY]` with the CTC's ATP page, and names no
+internal files. It prints the project's recorded summary and planning-level
+estimate instead of "to be provided", and names the crash source, years and
+retrieval date behind the safety score. The ATP panel no longer runs past its
+border on a phone.
+
 **Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
 acquisition now keeps only crashes whose point lies inside the study area's
 polygon (the project's stored place, a picked place, or a drawn area), not every
