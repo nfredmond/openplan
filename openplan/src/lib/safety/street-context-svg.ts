@@ -17,11 +17,27 @@ function pleasantDistance(meters: number): number {
   return (normalized >= 5 ? 5 : normalized >= 2 ? 2 : 1) * magnitude;
 }
 
-/** Deterministic, tile-free street context shared by the screen and report packet. */
+/** A ranked high-injury segment drawn over the street context. */
+export type SafetyStreetContextHighlight = {
+  rank: number;
+  geometry: { type: "LineString"; coordinates: Position[] } | { type: "Polygon"; coordinates: Position[][] };
+};
+
+function highlightPositions(highlight: SafetyStreetContextHighlight): Position[] {
+  return highlight.geometry.type === "LineString" ? highlight.geometry.coordinates : highlight.geometry.coordinates.flat();
+}
+
+/**
+ * Deterministic, tile-free street context shared by the screen and report packet.
+ * With `highlights`, the drawing fits the highlighted segments and the project
+ * area; other roads stay as context and are clipped at the frame.
+ */
 export function renderSafetyStreetContextSvg(input: {
   roads: readonly SafetyRoadContextFeature[];
   crashLocations: readonly Position[];
   projectGeometry: CorridorGeojson | null;
+  highlights?: readonly SafetyStreetContextHighlight[];
+  ariaLabel?: string;
   width?: number;
   height?: number;
 }): string | null {
@@ -29,9 +45,12 @@ export function renderSafetyStreetContextSvg(input: {
   const height = input.height ?? 430;
   const padding = 28;
   const rings = projectRings(input.projectGeometry);
+  const highlights = input.highlights ?? [];
   const positions = [
     ...rings.flat(),
-    ...input.roads.flatMap((road) => road.geometry.coordinates),
+    ...(highlights.length > 0
+      ? highlights.flatMap(highlightPositions)
+      : input.roads.flatMap((road) => road.geometry.coordinates)),
     ...input.crashLocations,
   ];
   if (positions.length === 0 || !Number.isFinite(width) || !Number.isFinite(height)
@@ -91,11 +110,29 @@ const scalePixels = scaleMeters * pixelsPerMeter;
     ? `${(scaleMeters / 1000).toLocaleString("en-US", { maximumSignificantDigits: 3 })} km`
     : `${scaleMeters.toLocaleString("en-US", { maximumSignificantDigits: 3 })} m`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Local street context" style="display:block;width:100%;height:auto;background:#fffdf8;border:1px solid #d5d7da">
+  // Context roads far outside a highlighted frame add bytes, not information.
+  const marginLon = Math.max((maxLon - startLon) * 0.25, 0.002);
+  const marginLat = Math.max((maxLat - minLat) * 0.25, 0.002);
+  const contextRoads = highlights.length === 0 ? input.roads : input.roads.filter((road) =>
+    road.geometry.coordinates.some(([lon, lat]) => {
+      const unwrapped = unwrapLon(lon);
+      return unwrapped >= startLon - marginLon && unwrapped <= maxLon + marginLon
+        && lat >= minLat - marginLat && lat <= maxLat + marginLat;
+    }));
+  const highlightMarkup = highlights.map((highlight) => {
+    const label = highlightPositions(highlight)[0];
+    const shape = highlight.geometry.type === "LineString"
+      ? `<polyline points="${points(highlight.geometry.coordinates)}" fill="none" stroke="#b42318" stroke-width="5" stroke-linecap="round"/>`
+      : highlight.geometry.coordinates.map((ring) => `<polygon points="${points(ring)}" fill="rgba(180,35,24,0.22)" stroke="#b42318" stroke-width="2"/>`).join("");
+    return `${shape}<g transform="translate(${x(label[0]).toFixed(2)} ${y(label[1]).toFixed(2)})"><circle r="9" fill="#18242d"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${Math.trunc(highlight.rank)}</text></g>`;
+  }).join("");
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${input.ariaLabel ? input.ariaLabel.replace(/[&<>"']/g, "") : "Local street context"}" style="display:block;width:100%;height:auto;background:#fffdf8;border:1px solid #d5d7da${highlights.length > 0 ? ";overflow:hidden" : ""}">
     <desc>${SAFETY_STREET_CONTEXT_PROJECTION_NOTE}</desc>
     <rect width="${width}" height="${height}" fill="#fffdf8"/>
-    ${input.roads.map((road) => `<polyline points="${points(road.geometry.coordinates)}" fill="none" stroke="#52636f" stroke-width="2.2"/>`).join("")}
+    ${contextRoads.map((road) => `<polyline points="${points(road.geometry.coordinates)}" fill="none" stroke="#52636f" stroke-width="2.2"/>`).join("")}
     ${rings.map((ring) => `<polygon points="${points(ring)}" fill="rgba(31,107,94,0.08)" stroke="#1f6b5e" stroke-width="2" stroke-dasharray="8 5"/>`).join("")}
+    ${highlightMarkup}
     ${input.crashLocations.map(([lon, lat]) => `<circle cx="${x(lon).toFixed(2)}" cy="${y(lat).toFixed(2)}" r="4" fill="#b42318" stroke="#fff" stroke-width="1.2"/>`).join("")}
     <g transform="translate(${width - 54} 30)"><text x="0" y="0" text-anchor="middle" font-size="12" font-weight="700">N</text><path d="M 0 8 L -7 26 L 0 21 L 7 26 Z" fill="#18242d"/></g>
     <g transform="translate(${padding} ${height - 14})">${scaleUsable

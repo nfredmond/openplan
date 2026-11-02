@@ -25,6 +25,7 @@ import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { ApplicationAttachmentRow, ApplicationSectionRow } from "@/lib/grants/application";
 import { formatMoney } from "@/lib/money/format";
+import { ss4aEvidenceAppendicesMarkup, type Ss4aAppendix } from "@/lib/grants/ss4a-evidence-appendices";
 
 /** The standing caveat lines every packaged application carries on its cover. */
 export const APPLICATION_EXPORT_STANDING_CAVEATS: readonly string[] = [
@@ -84,6 +85,8 @@ export type GrantApplicationExportData = {
   attachments: ApplicationAttachmentRow[];
   generatedAt: string;
   safetySeedHistory?: SafetySeedProvenance[];
+  /** SS4A applications only: every evidence appendix, including missing and omitted ones. */
+  evidenceAppendices?: Ss4aAppendix[];
 };
 
 /** The document label per pursuit kind, used in the title and cover eyebrow. */
@@ -177,7 +180,16 @@ const DOCUMENT_STYLES = `
       th { font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #6d7479; }
       .empty { color: #6d7479; font-style: italic; }
       .section-body p { line-height: 1.65; }
-      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } }`;
+      .appendix { margin-top: 20px; border-top: 1px solid rgba(19, 34, 43, 0.12); padding-top: 16px; }
+      .appendix h3 { font-size: 18px; margin-bottom: 8px; }
+      .appendix figure { margin: 12px 0; }
+      .appendix-source { font-size: 13px; color: #3c4a52; overflow-wrap: anywhere; }
+      .appendix-facts { display: grid; grid-template-columns: minmax(130px, 28%) 1fr; gap: 6px 14px; margin: 12px 0; }
+      .appendix-facts dt, .appendix-facts dd { margin: 0; }
+      .appendix-facts dd { font-size: 15px; line-height: 1.5; }
+      .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
+      .table-scroll { overflow-x: auto; }
+      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }`;
 
 function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount: number): string {
   const { opportunity } = data;
@@ -258,7 +270,7 @@ function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[]): st
 
   return `<section>
     <h2 class="section-title">Attachment checklist</h2>
-    <table>
+    <div class="table-scroll"><table>
       <thead>
         <tr><th>Attachment</th><th>Required</th><th>Status</th><th>Fulfillment</th><th>Note</th></tr>
       </thead>
@@ -280,7 +292,7 @@ function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[]): st
           })
           .join("\n        ")}
       </tbody>
-    </table>
+    </table></div>
   </section>`;
 }
 
@@ -289,7 +301,7 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[]): s
     <h2 class="section-title">Provenance appendix</h2>
     <p>How each section's text came to be, disclosed per section. AI drafts are writing support
     grounded in workspace evidence; the operator who finalized a section is the authority for it.</p>
-    <table>
+    <div class="table-scroll"><table>
       <thead>
         <tr><th>Section</th><th>Status</th><th>Origin</th><th>Model</th><th>Grounding</th><th>Finalized by</th><th>Finalized</th></tr>
       </thead>
@@ -313,7 +325,7 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[]): s
           })
           .join("\n        ")}
       </tbody>
-    </table>
+    </table></div>
   </section>`;
 }
 
@@ -337,6 +349,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
       ${coverMarkup({ ...data, sections: orderedSections }, outstandingRequiredCount)}
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
       ${attachmentsMarkup(data.attachments)}
+      ${ss4aEvidenceAppendicesMarkup(data.evidenceAppendices)}
       ${provenanceMarkup(orderedSections)}
       ${safetySeedHistoryMarkup(data.safetySeedHistory ?? orderedSections.flatMap((entry) => entry.provenance.safetySeed ? [entry.provenance.safetySeed] : []))}
     </main>

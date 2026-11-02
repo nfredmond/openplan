@@ -690,3 +690,27 @@ Private packet: `pr355-readiness-failure-mixed-state-repair-20261022-23`.
 | ID | Severity | Boundary | Current disposition | Evidence |
 |---|---|---|---|---|
 | KI-2026-11-01-001 | High, any place | The place search and every place reference (home geography, project area, campaign area, plan area, project jurisdiction) accepted only counties, incorporated places, CDPs and metro or micro areas, with one 5-7 digit GEOID check. A tribal government could not pick its reservation or other American Indian, Alaska Native or Native Hawaiian area, and a New England town or Midwest township could not be found. | Fixed in code on the November 1 branch: two new kinds, tribal area (`aiannh`, nine TIGERweb AIANNH layers, GEOID such as `2430R`) and town or township (`cousub`, 10-digit GEOID), each with its own GEOID check. A tribal area records no state, even when it lies in one state: its states stay in its label, and readiness, grants and stage gates treat its state as not established. Towns record their state. Still open: a benefit-cost analysis refuses a project whose place or resolved jurisdiction is either new kind until a migration widens `guard_project_bca_place_insert` and `valid_bca_snapshot_jurisdiction` (20261023190200); the model-run tract check reports either kind as coverage unknown; tribal areas have no population ranking; no browser journey yet. | `src/lib/api/place-geographies.ts`; `src/lib/geographies/place-resolver.ts`; `src/lib/bca/workbench/project-place.ts`; `src/test/place-resolver-tribal-and-township.test.ts`; fixtures in `src/test/fixtures/tigerweb/` |
+
+## SS4A application evidence appendices, November 1, 2026
+
+The SS4A application export now embeds evidence appendices drawn from the
+linked project's saved Safety snapshot, benefit-cost analysis and engagement
+campaign. Limits that remain open:
+
+- The export record has no checksum column. The PDF's SHA-256 is returned to
+  the planner and written to the audit log, but not stored with the export row.
+  Persisting it needs an additive migration.
+- The high-injury network map is redrawn at export from stored crash records
+  and cached road lines. It is drawn only when that recomputation matches the
+  frozen ranking exactly; otherwise the frozen table stands alone with the
+  reason. A later change to the cached road lines stops the map from drawing.
+- A deployment without a browser rendering engine uses the built-in PDF
+  writer, which drops the drawn map. The ranked table and every source line
+  remain as text.
+- Letters of support and other attachments are still listed in the checklist,
+  not embedded. The appendices name only the Safety artifact most recently
+  generated among those seeded into the application.
+- Evidence so far is route, render and component tests with mutation pairs,
+  and a rendered packet built from synthetic fixture records at desktop and
+  390px. No identified-build app journey, live RLS run or hosted export has
+  been performed.
