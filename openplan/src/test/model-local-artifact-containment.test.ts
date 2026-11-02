@@ -17,7 +17,8 @@ beforeEach(async () => {
   vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", root);
 });
 afterEach(async () => { vi.unstubAllEnvs(); await rm(root, { recursive: true, force: true }); });
-it("reads ordinary files and links contained in the same run", async () => {
+// Linux only: readPinnedLocalFile pins each directory through /proc/self/fd and refuses other hosts by design.
+it.skipIf(process.platform !== "linux")("reads ordinary files and links contained in the same run", async () => {
   await symlink(path.join(allowed, "valid.json"), path.join(allowed, "alias.json"));
   for (const name of ["valid.json", "alias.json"]) {
     const bytes = await loadArtifactBytes("local://" + path.join(allowed, name), { bucket: "run-artifacts", objectPathPrefix: "run-a/", localRoot: allowed });
@@ -36,7 +37,8 @@ it("refuses a run directory redirected to another run", async () => {
   const redirected = path.join(root, "redirected-run"); await symlink(foreign, redirected);
   await expect(readContainedLocalArtifact(path.join(redirected, "foreign.json"), redirected)).rejects.toThrow("run directory is redirected");
 });
-it("permits an explicitly configured root alias", async () => {
+// Linux only: readPinnedLocalFile pins each directory through /proc/self/fd and refuses other hosts by design.
+it.skipIf(process.platform !== "linux")("permits an explicitly configured root alias", async () => {
   const alias = root + "-alias"; await symlink(root, alias);
   try {
     vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", alias);
@@ -49,7 +51,8 @@ it("refuses a scope outside the configured worker root", async () => {
   await expect(readContainedLocalArtifact(path.join(foreign, "foreign.json"), foreign)).rejects.toThrow("escapes the worker-local root");
 });
 
-it.each(["directory", "pipe"])("refuses a %s as artifact bytes", async (kind) => {
+// Linux only: readPinnedLocalFile pins each directory through /proc/self/fd and refuses other hosts by design.
+it.skipIf(process.platform !== "linux").each(["directory", "pipe"])("refuses a %s as artifact bytes", async (kind) => {
   const target = path.join(allowed, kind);
   if (kind === "directory") await mkdir(target);
   else execFileSync("mkfifo", [target], { timeout: 5000 });

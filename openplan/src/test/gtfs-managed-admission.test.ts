@@ -89,7 +89,8 @@ async function fixture(upload = true) {
     setRemote: (value: Uint8Array | null) => { remote = value; } };
 }
 
-describe("managed GTFS admission", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("managed GTFS admission", () => {
   it("checks storage use for the original workspace with active transport cancellation", async () => {
     const f = await fixture(); expect((await f.run()).status.archiveConfirmed).toBe(true);
     expect(f.capacityQueries, "Original workspace storage RPC projection differs").toEqual([{ name: "workspace_storage_bytes", args: { p_workspace_id: id(2) }, active: true }]);
