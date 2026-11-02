@@ -404,15 +404,16 @@
       "organizationType": "fta-recipient",
       "citations": [
         { "label": "49 CFR 26.21", "url": "https://www.ecfr.gov/current/title-49/section-26.21", "readOn": "2026-11-01" },
-        { "label": "49 CFR 26.45(f)", "url": "https://www.ecfr.gov/current/title-49/section-26.45", "readOn": "2026-11-01" }
+        { "label": "49 CFR 26.45(f)", "url": "https://www.ecfr.gov/current/title-49/section-26.45", "readOn": "2026-11-01" },
+        { "label": "49 CFR 26.45(h)", "url": "https://www.ecfr.gov/current/title-49/section-26.45", "readOn": "2026-11-02" }
       ],
       "appliesTo": { "organizationTypes": ["state-dot", "fta-recipient"], "jurisdiction": { "country": "US" }, "threshold": "FHWA primary recipients and FTA Tier I recipients set goals; FTA Tier II recipients keep a reduced local program." },
-      "cadence": "Every 3 years by August 1, on the operating administration's posted schedule; uniform report data by December 1 after each fiscal year (26.11).",
-      "trigger": "Three-year goal schedule.",
+      "cadence": "Every 3 years by August 1, on the operating administration's posted schedule, except that since October 3, 2025 a recipient need not update its overall goal until the UCP covering it has completed the reevaluation in 49 CFR 26.111 (26.45(h)); uniform report data by December 1 after each fiscal year (26.11).",
+      "trigger": "Three-year goal schedule, suspended until the recipient's UCP completes its 26.111 reevaluation.",
       "deliverable": "Overall goal methodology with consultation and published notice.",
       "approver": "FHWA or FTA.",
-      "openplanHome": { "fit": "no-home", "module": null, "note": "49 CFR 26.45 was amended at 90 FR 47980 (October 3, 2025); the August 1 three-year cadence remains in the text." },
-      "verifiedOn": "2026-11-01",
+      "openplanHome": { "fit": "no-home", "module": null, "note": "49 CFR 26.45 was amended at 90 FR 47980 (October 3, 2025): paragraph (h) suspends goal updates until the covering UCP completes reevaluation; a schedule must not show a goal update due before then." },
+      "verifiedOn": "2026-11-02",
       "status": "verified"
     },
     {
