@@ -124,7 +124,8 @@ describe("ATP equity findings the lens did not record", () => {
 
     expect(markdown).toContain("- SB 535 DAC: Not recorded");
     expect(markdown).not.toMatch(/^- SB 535 DAC: No$/m);
-    expect(markdown).toContain("- ATP DAC benefit bonus eligible: **Not recorded**");
+    expect(markdown).toContain("- ATP disadvantaged-community criteria: **Not assessed.** OpenPlan does not decide ATP eligibility");
+    expect(markdown).not.toContain("bonus");
     expect(markdown).toContain("- SB 535 DAC applications: **Not recorded**");
     expect(markdown).not.toContain("**0** (0.0%)");
     const summaryBlock = atpGrantFactBlocks(result, "packet.csv").at(-1);

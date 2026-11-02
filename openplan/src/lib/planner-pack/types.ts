@@ -103,6 +103,8 @@ export type AtpScoreRow = {
   feasibility_score?: string | number | null;
   total_score?: string | number | null;
   sensitivity_flag?: string | null;
+  /** Where the safety score's crash records came from (source, years, retrieval date), when the run recorded it. */
+  safety_source_note?: string | null;
 };
 
 /** One row of the Caltrans LAPM exhibit (`lapm_exhibit.csv`), optional enrichment. */
@@ -112,6 +114,12 @@ export type AtpLapmRow = {
   description?: string | null;
   project_type?: string | null;
   estimated_cost_usd?: string | number | null;
+  /**
+   * A cost already formatted from an exact recorded amount, with its basis
+   * (for example a project's planning-level estimate). Preferred over
+   * `estimated_cost_usd`, so a recorded amount never passes through a float.
+   */
+  estimated_cost_note?: string | null;
   schedule_note?: string | null;
 };
 
@@ -147,7 +155,9 @@ export type AtpProjectApplication = {
   description: string;
   project_type: string;
   estimated_cost_usd: number | null;
+  estimated_cost_note: string | null;
   schedule_note: string;
+  safety_source_note: string | null;
   ceqa_determination: string;
   /**
    * Whether the equity lens supplied a row for this project. Without one, the

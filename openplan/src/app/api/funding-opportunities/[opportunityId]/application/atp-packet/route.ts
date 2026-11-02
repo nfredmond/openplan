@@ -8,8 +8,10 @@ import {
   looksLikePendingAssemblySchema,
 } from "@/lib/grants/application";
 import {
+  ATP_PACKET_PROJECT_SELECT,
   buildAtpPacketView,
   isAtpApplication,
+  type AtpPacketProject,
   type AtpPacketRun,
   type SeededSectionFacts,
 } from "@/lib/grants/atp-packet";
@@ -103,7 +105,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const [projectResult, runResult] = await Promise.all([
       supabase
         .from("projects")
-        .select("id, name")
+        .select(ATP_PACKET_PROJECT_SELECT)
         .eq("id", projectId)
         .eq("workspace_id", opportunity.workspace_id)
         .maybeSingle(),
@@ -125,16 +127,24 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load the project's analysis runs" }, { status: 500 });
     }
 
-    const project = projectResult.data as { id?: unknown; name?: unknown } | null;
+    const project = projectResult.data as Record<string, unknown> | null;
     if (!project || typeof project.id !== "string") {
       return NextResponse.json({ packet: null, missing: "project" });
     }
 
+    const amount = project.estimated_cost_amount;
+    const packetProject: AtpPacketProject = {
+      id: project.id,
+      name: typeof project.name === "string" ? project.name : project.id,
+      summary: typeof project.summary === "string" ? project.summary : null,
+      estimated_cost_amount: typeof amount === "string" || typeof amount === "number" ? amount : null,
+      estimated_cost_currency:
+        typeof project.estimated_cost_currency === "string" ? project.estimated_cost_currency : null,
+      estimated_cost_basis_year:
+        typeof project.estimated_cost_basis_year === "number" ? project.estimated_cost_basis_year : null,
+    };
     const runs = (runResult.data ?? []) as AtpPacketRun[];
-    const view = buildAtpPacketView({
-      project: { id: project.id, name: typeof project.name === "string" ? project.name : project.id },
-      run: runs[0] ?? null,
-    });
+    const view = buildAtpPacketView({ project: packetProject, run: runs[0] ?? null });
 
     if (wantsMarkdown) {
       const markdown = renderAtpPacketMarkdown(view.packet, {
