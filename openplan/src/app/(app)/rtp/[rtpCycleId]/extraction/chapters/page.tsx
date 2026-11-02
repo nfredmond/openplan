@@ -44,6 +44,7 @@ import {
   type TranscribedBlockChapterOption,
 } from "@/components/rtp/transcribed-chapter-block-card";
 import { TranscribedChapterDraftCard } from "@/components/rtp/transcribed-chapter-draft-card";
+import { isUuid } from "@/lib/uuid";
 
 type RouteContext = { params: Promise<{ rtpCycleId: string }> };
 
@@ -94,6 +95,7 @@ const UNTITLED_DOCUMENT = "a document in this plan's library";
 
 export default async function RtpTranscribedChaptersPage({ params }: RouteContext) {
   const { rtpCycleId } = await params;
+  if (!isUuid(rtpCycleId)) notFound();
   const supabase = await createClient();
   const {
     data: { user },

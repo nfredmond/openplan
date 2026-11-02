@@ -98,6 +98,7 @@ import type {
   TimelineItem,
   WorkspaceRow,
 } from "./_components/_types";
+import { isUuid } from "@/lib/uuid";
 
 // A pending COLUMN is a pending schema too, and looksLikePendingSchema used to
 // recognise only a pending TABLE. PostgREST answers a select naming a column the
@@ -123,6 +124,7 @@ export default async function ProjectDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { projectId } = await params;
+  if (!isUuid(projectId)) notFound();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const requestedTab = resolvedSearchParams[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();

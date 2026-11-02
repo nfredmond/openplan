@@ -54,7 +54,7 @@ const authGetUserMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const REPORT_ROW = {
-  id: "report-1",
+  id: "72000000-0000-4000-8000-000000000001",
   workspace_id: "workspace-1",
   project_id: null,
   rtp_cycle_id: "cycle-1",
@@ -210,7 +210,7 @@ vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
   useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
-  usePathname: () => "/reports/report-1",
+  usePathname: () => "/reports/72000000-0000-4000-8000-000000000001",
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -241,7 +241,7 @@ vi.mock("@/components/reports/rtp-report-section-controls", () => ({
 import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
 
 async function renderPage() {
-  render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+  render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
 }
 
 describe("the RTP branch of the report detail page does not publish a failed read as drift", () => {

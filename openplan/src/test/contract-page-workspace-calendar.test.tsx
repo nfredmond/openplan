@@ -40,7 +40,7 @@ function service() {
 }
 
 async function renderedZone(): Promise<string | null> {
-  const html = renderToStaticMarkup(await ContractPage({ params: Promise.resolve({ engagementId: "e-1" }) }));
+  const html = renderToStaticMarkup(await ContractPage({ params: Promise.resolve({ engagementId: "77000000-0000-4000-8000-000000000001" }) }));
   return /data-time-zone="([^"]*)"/.exec(html)?.[1] ?? null;
 }
 
@@ -51,7 +51,7 @@ describe("the contract page passes the workspace calendar to its forms", () => {
     mocks.access.mockReset();
     mocks.access.mockImplementation(async () => ({
       service: service(),
-      state: { engagement: { id: "e-1", workspace_id: WORKSPACE } },
+      state: { engagement: { id: "77000000-0000-4000-8000-000000000001", workspace_id: WORKSPACE } },
     }));
   });
 

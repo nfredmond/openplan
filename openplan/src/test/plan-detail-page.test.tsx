@@ -189,7 +189,7 @@ type PlanTab = "overview" | "linked" | "edit";
 async function renderPage(tab?: PlanTab) {
   render(
     await PlanDetailPage({
-      params: Promise.resolve({ planId: "plan-1" }),
+      params: Promise.resolve({ planId: "74000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
@@ -205,7 +205,7 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
 
     planMaybeSingleMock.mockResolvedValue({
       data: {
-        id: "plan-1",
+        id: "74000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "Downtown Corridor Plan",

@@ -182,7 +182,7 @@ type ScenarioTabKey = "overview" | "alternatives" | "comparisons" | "edit";
 async function renderPage(tab?: ScenarioTabKey) {
   render(
     await ScenarioSetDetailPage({
-      params: Promise.resolve({ scenarioSetId: "scenario-set-1" }),
+      params: Promise.resolve({ scenarioSetId: "75000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
@@ -202,7 +202,7 @@ describe("ScenarioSetDetailPage", () => {
 
     scenarioSetMaybeSingleMock.mockResolvedValue({
       data: {
-        id: "scenario-set-1",
+        id: "75000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "Downtown alternatives",
@@ -234,7 +234,7 @@ describe("ScenarioSetDetailPage", () => {
       data: [
         {
           id: "entry-baseline",
-          scenario_set_id: "scenario-set-1",
+          scenario_set_id: "75000000-0000-4000-8000-000000000001",
           entry_type: "baseline",
           label: "Existing conditions",
           slug: "existing-conditions",
@@ -248,7 +248,7 @@ describe("ScenarioSetDetailPage", () => {
         },
         {
           id: "entry-alt-1",
-          scenario_set_id: "scenario-set-1",
+          scenario_set_id: "75000000-0000-4000-8000-000000000001",
           entry_type: "alternative",
           label: "Protected bike package",
           slug: "protected-bike-package",

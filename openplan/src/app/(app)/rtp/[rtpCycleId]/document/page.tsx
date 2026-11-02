@@ -23,6 +23,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { isUuid } from "@/lib/uuid";
 
 /**
  * THE READING-SURFACE RULE, applied in one place instead of forty.
@@ -142,6 +143,7 @@ function slugify(value: string): string {
 
 export default async function RtpCycleDocumentPage({ params }: RouteContext) {
   const { rtpCycleId } = await params;
+  if (!isUuid(rtpCycleId)) notFound();
   const supabase = await createClient();
   const {
     data: { user },

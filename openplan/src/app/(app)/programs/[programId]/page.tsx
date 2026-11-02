@@ -55,6 +55,7 @@ import {
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { formatMoney } from "@/lib/money/format";
 import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
+import { isUuid } from "@/lib/uuid";
 
 function formatCurrency(value: number | string | null | undefined) {
   return formatMoney(Number(value ?? 0), { precision: "whole" });
@@ -199,6 +200,7 @@ export default async function ProgramDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { programId } = await params;
+  if (!isUuid(programId)) notFound();
   const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {

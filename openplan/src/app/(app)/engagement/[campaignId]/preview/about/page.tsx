@@ -11,6 +11,7 @@ import {
   portalSearchString,
   type PortalSearchParams,
 } from "@/lib/engagement/portal-search-params";
+import { isUuid } from "@/lib/uuid";
 
 /**
  * THE OTHER HALF OF THE OPERATOR PREVIEW — what is behind the resident
@@ -37,6 +38,7 @@ export default async function EngagementPortalPreviewAboutPage({
   searchParams?: Promise<PortalSearchParams>;
 }) {
   const { campaignId } = await params;
+  if (!isUuid(campaignId)) notFound();
   const resolvedSearch = searchParams ? await searchParams : undefined;
 
   const supabase = await createClient();

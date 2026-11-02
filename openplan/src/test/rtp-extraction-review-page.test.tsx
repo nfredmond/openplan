@@ -124,7 +124,7 @@ vi.mock("@/lib/workspaces/current", () => ({
 
 import RtpExtractionReviewPage from "@/app/(app)/rtp/[rtpCycleId]/extraction/page";
 
-const CYCLE_ID = "cycle-1";
+const CYCLE_ID = "76000000-0000-4000-8000-000000000002";
 const BAND_NEAR = "band-near";
 
 function readsOf(table: string): RecordedRead[] {

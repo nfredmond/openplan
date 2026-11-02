@@ -40,6 +40,7 @@ import {
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
+import { isUuid } from "@/lib/uuid";
 
 type LinkedArtifactBase = {
   id: string;
@@ -191,6 +192,7 @@ export default async function PlanDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { planId } = await params;
+  if (!isUuid(planId)) notFound();
   const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {

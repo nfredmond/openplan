@@ -42,6 +42,7 @@ import {
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 import { ScenarioLinkedReportsSection } from "./_components/scenario-linked-reports-section";
+import { isUuid } from "@/lib/uuid";
 
 type ScenarioSetRow = {
   id: string;
@@ -145,6 +146,7 @@ export default async function ScenarioSetDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { scenarioSetId } = await params;
+  if (!isUuid(scenarioSetId)) notFound();
   const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {

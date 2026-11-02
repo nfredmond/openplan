@@ -91,6 +91,7 @@ import { buildDailyIntake } from "@/lib/engagement/participation-dashboard";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
+import { isUuid } from "@/lib/uuid";
 
 type CampaignRow = {
   configuration_version_id: string | null;
@@ -157,6 +158,7 @@ export default async function EngagementCampaignDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { campaignId } = await params;
+  if (!isUuid(campaignId)) notFound();
   const query = searchParams ? await searchParams : {}; const requestedTab = query[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();
   const {
