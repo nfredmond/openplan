@@ -2,10 +2,12 @@
 #
 # ============================================================ WHAT THIS IS FOR
 #
-# OpenPlan's posture is SELF-HOST FIRST: there is no hosted worker, and there is
-# no plan for one. An agency that wants modeling runs the worker itself. That is
-# a deliberate choice, not a gap — but it only works if standing one up is a
-# button rather than a project, and until this file existed it was a project.
+# OpenPlan's posture is SELF-HOST FIRST. The OpenPlan hosted installation runs
+# its own worker on Railway (docs/ops/HOSTED_LIVE_2026-10-11.md), but a
+# self-hosted install gets no shared worker: an agency that wants modeling runs
+# the worker itself. That is a deliberate choice, not a gap. It only works if
+# standing one up is a button rather than a project, and until this file
+# existed it was a project.
 #
 # Render is the target because its Blueprint format deploys a Dockerfile from a
 # repository with no build configuration of your own, and because its free tier
