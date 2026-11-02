@@ -110,6 +110,12 @@ type EngagementCounts = {
   nonGeolocatedItems: number;
   categorizedItems: number;
   uncategorizedItems: number;
+  /**
+   * Uncategorized items a report can still include. A withheld (rejected)
+   * comment is left out of every report and handoff, so it never needs a
+   * category; counting it told planners to categorize spam before handoff.
+   */
+  uncategorizedItemsNeedingCategory: number;
   itemsWithModerationNotes: number;
   statusCounts: Record<string, number>;
   sourceCounts: Record<string, number>;
@@ -407,6 +413,7 @@ export function summarizeEngagementItems(
     nonGeolocatedItems,
     categorizedItems,
     uncategorizedItems,
+    uncategorizedItemsNeedingCategory: uncategorizedItems - uncategorizedRejectedCount,
     itemsWithModerationNotes,
     statusCounts,
     sourceCounts,

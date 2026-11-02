@@ -151,7 +151,7 @@ export function CampaignHandoffReadinessSection({
                 {projectUnreadable
                   ? "This campaign records a project id, so it is linked. The project record itself could not be read, which is why it cannot be named here — this is not an unlinked campaign."
                   : project
-                    ? project.summary || "Project context is present even when campaign reporting stays lightweight."
+                    ? project.summary || "This project has no summary yet."
                     : "Link a project when this intake should stay traceable to a planning effort rather than stand alone."}
               </p>
             </div>
@@ -198,7 +198,7 @@ export function CampaignHandoffReadinessSection({
                 <p className="module-summary-label">Categorized coverage</p>
                 <p className="module-summary-value">{counts.categorizedItems}</p>
                 <p className="module-summary-detail">
-                  {counts.uncategorizedItems} items still need classification before reporting is reliable.
+                  {counts.uncategorizedItemsNeedingCategory} items still need classification before reporting is reliable.
                 </p>
               </div>
               <div className="module-summary-card">

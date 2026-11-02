@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
+import { summarizeEngagementItems } from "@/lib/engagement/summary";
 
 describe("getEngagementHandoffReadiness", () => {
   it("marks a fully closed campaign as ready for handoff", () => {
@@ -9,7 +10,7 @@ describe("getEngagementHandoffReadiness", () => {
       categoryCount: 3,
       counts: {
         totalItems: 8,
-        uncategorizedItems: 0,
+        uncategorizedItemsNeedingCategory: 0,
         moderationQueue: {
           actionableCount: 0,
           readyForHandoffCount: 5,
@@ -23,6 +24,41 @@ describe("getEngagementHandoffReadiness", () => {
     expect(readiness.nextAction).toMatch(/credible handoff posture/i);
   });
 
+  it("does not hold handoff for a withheld comment that has no category", () => {
+    // Every report leaves withheld comments out, so a rejected, uncategorized
+    // comment (spam, off-topic) must not ask staff to categorize it.
+    const readiness = getEngagementHandoffReadiness({
+      campaignStatus: "closed",
+      projectLinked: true,
+      categoryCount: 3,
+      counts: {
+        totalItems: 6,
+        uncategorizedItemsNeedingCategory: 0,
+        moderationQueue: { actionableCount: 0, readyForHandoffCount: 5 },
+      },
+    });
+
+    expect(readiness.checks.find((check) => check.id === "categorization")).toMatchObject({ passed: true });
+    expect(readiness.nextAction).not.toMatch(/categorize/i);
+    expect(readiness.label).toBe("Ready for handoff");
+  });
+
+  it("reads a rejected, uncategorized comment from the campaign summary without asking for a category", () => {
+    const items = [
+      { id: "a", campaign_id: "c", category_id: "cat", status: "approved", source_type: "public", latitude: 48.27, longitude: -116.55 },
+      { id: "b", campaign_id: "c", category_id: null, status: "rejected", source_type: "public", body: "My water bill doubled." },
+    ];
+    const counts = summarizeEngagementItems([{ id: "cat", label: "Crossings" }], items);
+    const readiness = getEngagementHandoffReadiness({ campaignStatus: "active", projectLinked: true, categoryCount: 1, counts });
+    expect(readiness.checks.find((check) => check.id === "categorization")?.passed).toBe(true);
+    expect(readiness.nextAction).not.toMatch(/Categorize the/);
+
+    // The same comment still pending does need a category.
+    const pending = summarizeEngagementItems([{ id: "cat", label: "Crossings" }], [items[0], { ...items[1], status: "pending" }]);
+    const open = getEngagementHandoffReadiness({ campaignStatus: "active", projectLinked: true, categoryCount: 1, counts: pending });
+    expect(open.checks.find((check) => check.id === "categorization")).toMatchObject({ passed: false, detail: "1 item still needs a category before final matrix handoff." });
+  });
+
   it("marks an active but mostly complete campaign as nearly ready", () => {
     const readiness = getEngagementHandoffReadiness({
       campaignStatus: "active",
@@ -30,7 +66,7 @@ describe("getEngagementHandoffReadiness", () => {
       categoryCount: 2,
       counts: {
         totalItems: 6,
-        uncategorizedItems: 0,
+        uncategorizedItemsNeedingCategory: 0,
         moderationQueue: {
           actionableCount: 0,
           readyForHandoffCount: 2,
@@ -51,7 +87,7 @@ describe("getEngagementHandoffReadiness", () => {
       categoryCount: 0,
       counts: {
         totalItems: 3,
-        uncategorizedItems: 3,
+        uncategorizedItemsNeedingCategory: 3,
         moderationQueue: {
           actionableCount: 2,
           readyForHandoffCount: 0,
@@ -74,7 +110,7 @@ describe("getEngagementHandoffReadiness", () => {
       categoryCount: 2,
       counts: {
         totalItems: 4,
-        uncategorizedItems: 1,
+        uncategorizedItemsNeedingCategory: 1,
         moderationQueue: {
           actionableCount: 0,
           readyForHandoffCount: 3,
@@ -95,7 +131,7 @@ describe("getEngagementHandoffReadiness", () => {
       categoryCount: 2,
       counts: {
         totalItems: 5,
-        uncategorizedItems: 0,
+        uncategorizedItemsNeedingCategory: 0,
         moderationQueue: {
           actionableCount: 0,
           readyForHandoffCount: 4,
@@ -126,7 +162,7 @@ describe("getEngagementHandoffReadiness", () => {
       categoryCount: 2,
       counts: {
         totalItems: 2,
-        uncategorizedItems: 0,
+        uncategorizedItemsNeedingCategory: 0,
         moderationQueue: {
           actionableCount: 0,
           readyForHandoffCount: 2,

@@ -839,8 +839,8 @@ export default async function ScenarioSetDetailPage({
                 </div>
               </div>
               <p className="module-operator-copy">
-                Comparison readiness stays lightweight, but it is now explicit about what is attached, what assumptions are
-                recorded, and why a baseline-versus-alternative comparison is or is not ready.
+                What is attached, what assumptions are recorded, and why a baseline-versus-alternative comparison is or
+                is not ready.
               </p>
               <div className="module-operator-list">
                 <div className="module-operator-item">Baseline and alternative entries show distinct run-attachment blockers.</div>
