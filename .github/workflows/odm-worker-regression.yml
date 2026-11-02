@@ -1,8 +1,31 @@
 name: Aerial worker custody regression
+# The suites read only the aerial worker, the ops snapshot scripts, the
+# migrations, the processing contract and their own review controls, so other
+# changes skip this 50-135 minute job. The weekly run keeps unrelated drift from
+# going unchecked for long. Not a required check, so skipping never blocks merges.
 on:
   push:
     branches: [main]
-  pull_request: {}
+    paths:
+      - "workers/odm_worker/**"
+      - "openplan/scripts/ops/**"
+      - "openplan/supabase/migrations/**"
+      - "openplan/supabase/config.toml"
+      - "schemas/**"
+      - "docs/reviews/**"
+      - ".github/workflows/odm-worker-regression.yml"
+  pull_request:
+    paths:
+      - "workers/odm_worker/**"
+      - "openplan/scripts/ops/**"
+      - "openplan/supabase/migrations/**"
+      - "openplan/supabase/config.toml"
+      - "schemas/**"
+      - "docs/reviews/**"
+      - ".github/workflows/odm-worker-regression.yml"
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch: {}
 permissions:
   contents: read
 jobs:
