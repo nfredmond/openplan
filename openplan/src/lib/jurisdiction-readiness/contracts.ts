@@ -41,7 +41,8 @@ export type JurisdictionReadinessClaim = {
   id: string;
   jurisdictionId: string;
   jobId: string;
-  status: Exclude<JurisdictionReadinessStatus, "unassessed">;
+  /** "unassessed" records an examined cell explicitly; it never carries adapters or authorities. */
+  status: JurisdictionReadinessStatus;
   applicability: string;
   sourceIds: string[];
   adapterIds: string[];

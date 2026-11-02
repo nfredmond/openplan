@@ -289,6 +289,21 @@ function checkJurisdictionReadinessRegistry(descriptor) {
   }
   const jobIds = new Set(assertUniqueIds(jobs, "jurisdiction readiness jobs"));
   const jurisdictionIds = new Set(assertUniqueIds(jurisdictions, "jurisdiction readiness jurisdictions"));
+  // Every state, DC and inhabited territory needs an explicit entry, so a
+  // missing one is a failure here rather than a silent "not assessed".
+  for (const requiredId of REQUIRED_STATES_AND_TERRITORIES) {
+    if (!jurisdictionIds.has(requiredId)) {
+      fail(`jurisdiction readiness registry has no entry for ${requiredId}`);
+    }
+  }
+  for (const jurisdiction of jurisdictions) {
+    if (jurisdiction.id !== `${jurisdiction.country}-${jurisdiction.subdivision}`) {
+      fail(`jurisdiction readiness entry ${jurisdiction.id} does not match its country and subdivision`);
+    }
+    if (jurisdiction.country === "US" && !REQUIRED_STATES_AND_TERRITORIES.includes(jurisdiction.id)) {
+      fail(`jurisdiction readiness entry ${jurisdiction.id} is not a known state, DC or territory`);
+    }
+  }
   const sourceIds = new Set(assertUniqueIds(sources, "jurisdiction readiness sources"));
   assertUniqueIds(claims, "jurisdiction readiness claims");
 
@@ -305,10 +320,20 @@ function checkJurisdictionReadinessRegistry(descriptor) {
   const cells = new Set();
   const readinessAuthorityHosts = new Set([
     "catc.ca.gov",
+    "dam.assets.ohio.gov",
     "dot.ca.gov",
+    "fmsib.wa.gov",
+    "gis.iowadot.gov",
     "leginfo.legislature.ca.gov",
+    "opendata.dc.gov",
+    "tims.dot.state.oh.us",
+    "wsdot.wa.gov",
+    "www.codot.gov",
     "www.nhtsa.gov",
     "www.oregon.gov",
+    "www.publicworks.ohio.gov",
+    "www.tib.wa.gov",
+    "www.txdot.gov",
   ]);
   const readinessAuthorityKinds = new Set(["statute", "data_source", "program_catalog"]);
   for (const claim of claims) {
@@ -321,8 +346,16 @@ function checkJurisdictionReadinessRegistry(descriptor) {
     if (claim.id !== `${claim.jurisdictionId}/${claim.jobId}`) {
       fail(`jurisdiction readiness claim ${claim.id} does not match its jurisdiction and job`);
     }
-    if (!["supported", "partial", "unavailable"].includes(claim.status)) {
+    if (!allowedReadinessStatuses.includes(claim.status)) {
       fail(`jurisdiction readiness claim ${claim.id} has unsupported status ${claim.status ?? "missing"}`);
+    }
+    // An explicitly unassessed cell names what was examined, but it may not
+    // carry the adapter or authority lineage of a positive claim.
+    if (
+      claim.status === "unassessed" &&
+      ((claim.adapterIds ?? []).length > 0 || (claim.authorities ?? []).length > 0)
+    ) {
+      fail(`jurisdiction readiness claim ${claim.id} is unassessed but names adapters or authorities`);
     }
     if (!Array.isArray(claim.sourceIds) || claim.sourceIds.length === 0) {
       fail(`jurisdiction readiness claim ${claim.id} has no evidence source`);
