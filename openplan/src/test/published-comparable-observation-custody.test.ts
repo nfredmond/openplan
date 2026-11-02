@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { gzipSync } from "node:zlib";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { toPosixPath } from "./helpers/posix-path";
 
 const { readFile } = vi.hoisted(() => ({ readFile: vi.fn() }));
 vi.mock("node:fs/promises", () => ({ readFile, default: { readFile } }));
@@ -28,7 +29,8 @@ function fixture(change?: (diagnosis: Json) => void) {
   const manifest = { schema: "openplan.comparable-observation-study-result.v1", scientific_outcome: "inconclusive", model_accuracy_claim: "not made", diagnoses };
   const save = () => files.set(`${directory}/study-result.json`, Buffer.from(JSON.stringify(manifest)));
   save();
-  readFile.mockImplementation(async (filename: string, encoding?: string) => {
+  readFile.mockImplementation(async (platformName: string, encoding?: string) => {
+    const filename = toPosixPath(platformName);
     const bytes = files.get(filename.slice(filename.indexOf(directory)));
     if (!bytes) throw Object.assign(new Error("Missing synthetic file"), { code: "ENOENT" });
     return encoding ? bytes.toString("utf8") : bytes;
