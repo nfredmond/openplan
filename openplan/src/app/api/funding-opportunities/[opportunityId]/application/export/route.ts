@@ -4,9 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { identifySeededCatalogKey } from "@/lib/grants/atp-packet";
-import { SS4A_APPENDIX_KEYS, ss4aAppendixSelectionSchema, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
-import { buildSs4aEvidenceAppendices, summarizeSs4aAppendices, type Ss4aAppendix } from "@/lib/grants/ss4a-evidence-appendices";
-import { loadSs4aEvidenceRecords } from "@/lib/grants/ss4a-evidence-loader";
+import { loadFinalizerNames, type FinalizerNames } from "@/lib/grants/application-finalizers";
+import { evidenceAppendixProgramFor, evidenceAppendixSelectionSchema } from "@/lib/grants/evidence-appendix-keys";
+import { summarizeEvidenceAppendices } from "@/lib/grants/evidence-appendices";
+import { assembleEvidenceAppendices, type AssembledEvidenceAppendices } from "@/lib/grants/evidence-appendix-programs";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
@@ -55,10 +57,13 @@ import {
  * prominently instead, because packaging a work in progress is legitimate as
  * long as no reader can mistake it for submittable.
  *
- * An SS4A application also carries evidence appendices drawn from the linked
- * project's saved records. The optional JSON body `{ appendices: [...] }`
- * chooses which; no body means all of them. A deselected or missing appendix
- * is still listed in the document, never dropped.
+ * An application seeded from a program that declares evidence appendices
+ * (SS4A, California ATP; `evidence-appendix-keys.ts`) also carries appendices
+ * drawn from the linked project's saved records. The optional JSON body
+ * `{ appendices: [...] }` chooses which; no body means all of them. A
+ * deselected or missing appendix is still listed in the document, never
+ * dropped. Finalizers print as workspace members' names, and times print on
+ * the workspace calendar.
  */
 
 const EXPORT_BUCKET = "grant-application-exports";
@@ -103,12 +108,15 @@ const FINALIZER_NOT_RECORDED_DISCLOSURE =
 
 function resolveSectionProvenance(
   section: ApplicationSectionRow,
-  draft: DraftRowLite | null
+  draft: DraftRowLite | null,
+  finalizers: FinalizerNames
 ): GrantApplicationSectionProvenance {
   const finalizedAt = section.status === "final" ? section.finalized_at : null;
   const finalizedBy =
     section.status === "final"
-      ? section.finalized_by ?? FINALIZER_NOT_RECORDED_DISCLOSURE
+      ? section.finalized_by
+        ? finalizers.nameFor(section.finalized_by)
+        : FINALIZER_NOT_RECORDED_DISCLOSURE
       : null;
 
   if (!section.final_markdown) {
@@ -146,6 +154,7 @@ function resolveSectionProvenance(
     totalSentenceCount: grounding?.total_sentence_count ?? null,
     finalizedBy,
     finalizedAt,
+    sourceDraftText: draft.draft_markdown,
   };
 }
 
@@ -162,11 +171,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const body = await readJsonWithLimit(request, BODY_LIMITS.smallJson);
     if (!body.ok) return body.response;
-    const selection = body.data === null && !body.parseError ? null : ss4aAppendixSelectionSchema.safeParse(body.data);
+    const selection = body.data === null && !body.parseError ? null : evidenceAppendixSelectionSchema.safeParse(body.data);
     if (selection && !selection.success) {
       return NextResponse.json({ error: "Invalid export request" }, { status: 400 });
     }
-    const selectedAppendices = new Set<Ss4aAppendixKey>(selection ? selection.data.appendices : SS4A_APPENDIX_KEYS);
 
     const supabase = await createClient();
     const {
@@ -386,24 +394,49 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (!safetySeedHistory.some((entry) => entry.artifactId === provenance.artifactId && entry.snapshotHash === provenance.snapshotHash)) safetySeedHistory.push(provenance);
     }
 
-    // SS4A only: the evidence appendices, read from the linked project's saved
-    // records. Other programs keep the packet they had.
-    let evidenceAppendices: Ss4aAppendix[] | undefined;
-    if (pursuit.context.pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a") {
-      const records = await loadSs4aEvidenceRecords(supabase, {
+    // Every time in the document prints on the workspace calendar; a failed read is UTC, said so.
+    const calendar = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);
+
+    // The evidence appendices of a program that declares them, read from the
+    // linked project's saved records. Other programs keep the packet they had.
+    const catalogKey = pursuit.context.pursuitKind === "grant" ? identifySeededCatalogKey(sections) : null;
+    const appendixProgram = evidenceAppendixProgramFor(catalogKey);
+    let assembled: AssembledEvidenceAppendices | null = null;
+    if (appendixProgram) {
+      const requested = selection ? selection.data.appendices : appendixProgram.keys;
+      // A key another program declares is not this application's appendix.
+      if (requested.some((key) => !appendixProgram.keys.includes(key))) {
+        return NextResponse.json({ error: "Invalid export request" }, { status: 400 });
+      }
+      assembled = await assembleEvidenceAppendices(appendixProgram.catalogKey, supabase, {
         workspaceId: opportunity.workspace_id,
         projectId: typeof opportunity.project_id === "string" ? opportunity.project_id : null,
         seedHistory: safetySeedHistory,
-        selected: selectedAppendices,
+        selected: new Set(requested),
+        generatedAt,
+        timeZone: calendar.timeZone,
       });
-      evidenceAppendices = buildSs4aEvidenceAppendices(records, selectedAppendices);
+    }
+    const evidenceAppendices = assembled?.appendices;
+
+    // Finalizers print as this workspace's members, never as user ids. The
+    // roster is read with the service role behind its own membership check.
+    const finalizers = await loadFinalizerNames(
+      createServiceRoleClient(),
+      user.id,
+      opportunity.workspace_id,
+      sections.flatMap((section) => (section.status === "final" && section.finalized_by ? [section.finalized_by] : []))
+    );
+    if (!finalizers.rosterRead) {
+      audit.warn("application_export_finalizer_roster_unread", { opportunityId: opportunity.id, userId: user.id });
     }
 
     const exportSections: GrantApplicationExportSection[] = sections.map((section) => ({
       section,
       provenance: resolveSectionProvenance(
         section,
-        section.finalized_from_draft_id ? draftById.get(section.finalized_from_draft_id) ?? null : null
+        section.finalized_from_draft_id ? draftById.get(section.finalized_from_draft_id) ?? null : null,
+        finalizers
       ),
     }));
 
@@ -426,6 +459,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       attachments,
       generatedAt,
       evidenceAppendices,
+      evidenceAppendixFrame: assembled?.frame,
+      calendar,
     });
 
     const pdf = await renderReportPdf(html, {
@@ -438,7 +473,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const storagePath = `${opportunity.workspace_id}/${opportunity.id}/${exportId}.pdf`;
     const pdfBytes = Buffer.from(pdf.bytes);
     const sha256 = createHash("sha256").update(pdfBytes).digest("hex");
-    const appendixSummary = evidenceAppendices ? summarizeSs4aAppendices(evidenceAppendices) : null;
+    const appendixSummary = evidenceAppendices ? summarizeEvidenceAppendices(evidenceAppendices) : null;
 
     // Members have no direct INSERT on this bucket (migration
     // 20261017000013): the export is stored with the service role, after the

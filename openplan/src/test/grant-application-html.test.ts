@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   APPLICATION_EXPORT_STANDING_CAVEATS,
+  applicableStandingCaveats,
   buildGrantApplicationHtml,
   countOutstandingRequiredAttachments,
   type GrantApplicationExportData,
@@ -13,6 +14,7 @@ import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
 import type { ApplicationAttachmentRow, ApplicationSectionRow } from "@/lib/grants/application";
+import type { EvidenceAppendix } from "@/lib/grants/evidence-appendices";
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -52,7 +54,7 @@ function exportSection(
       model: null,
       groundedSentenceCount: null,
       totalSentenceCount: null,
-      finalizedBy: "22222222-2222-4222-8222-222222222222",
+      finalizedBy: "planner@example.gov",
       finalizedAt: "2026-07-27T02:00:00.000Z",
       ...provenance,
     },
@@ -117,22 +119,34 @@ describe("buildGrantApplicationHtml", () => {
     expect(html).toContain("Letters of support");
     expect(html).toContain("Provenance appendix");
     expect(html).toContain("Operator-authored");
-    expect(html).toContain("22222222-2222-4222-8222-222222222222");
+    // The finalizer prints as the name the route resolved, never the stored user id.
+    expect(html).toContain("planner@example.gov");
+    expect(html).not.toContain("22222222-2222-4222-8222-222222222222");
     // No external assets — a strict offline document.
     expect(html).not.toMatch(/src="http/);
     expect(html).not.toMatch(/href="http/);
   });
 
-  it("formats dates with a pinned en-US locale, independent of the server's locale", () => {
-    const html = buildGrantApplicationHtml(exportData());
+  it("prints every time on the workspace calendar with its zone named (KI-2026-11-02-047)", () => {
+    const html = buildGrantApplicationHtml(
+      exportData({ calendar: { timeZone: "America/Los_Angeles", source: "workspace_setting" } })
+    );
 
-    // en-US renders month/day/year with slashes and a 12-hour clock. An
-    // unpinned toLocaleString() would follow the server's locale instead
-    // (e.g. "30.9.2026" under de-DE). No timezone is pinned — matching the
-    // report helpers — so the day may shift with the server's timezone, but
-    // the en-US SHAPE may not.
-    expect(html).toMatch(/9\/(?:29|30)\/2026, \d{1,2}:\d{2}:\d{2}\s?[AP]M/);
-    expect(html).not.toMatch(/\d{1,2}\.\d{1,2}\.2026/);
+    // 00:00 UTC on September 30 is the evening of September 29 in Los Angeles.
+    expect(html).toContain("<dt>Closes</dt><dd>September 29, 2026 at 17:00 (America/Los_Angeles)</dd>");
+    expect(html).toContain("<dt>Assembled</dt><dd>July 26, 2026 at 20:00 (America/Los_Angeles)</dd>");
+    expect(html).toContain("<td>July 26, 2026 at 19:00 (America/Los_Angeles)</td>");
+    // No server-locale shape survives anywhere.
+    expect(html).not.toMatch(/\d{1,2}\/\d{1,2}\/2026/);
+  });
+
+  it("says UTC out loud when the workspace has no time zone, and keeps a date-only close date a day", () => {
+    const html = buildGrantApplicationHtml(
+      exportData({ opportunity: { ...exportData().opportunity, closes_at: "2026-09-30" } })
+    );
+
+    expect(html).toContain("<dt>Assembled</dt><dd>July 27, 2026 at 03:00 (UTC, no workspace time zone set)</dd>");
+    expect(html).toContain("<dt>Closes</dt><dd>September 30, 2026</dd>");
   });
 
   it("escapes hostile values instead of letting them into the markup", () => {
@@ -152,9 +166,7 @@ describe("buildGrantApplicationHtml", () => {
     expect(html).toContain("&lt;script&gt;");
   });
 
-  it("carries every standing caveat line on the cover verbatim", () => {
-    const html = buildGrantApplicationHtml(exportData());
-
+  it("keeps the standing caveats in cover order", () => {
     expect(APPLICATION_EXPORT_STANDING_CAVEATS).toEqual([
       GRANT_MODELING_PLANNING_CAVEAT,
       BCA_NARRATIVE_CAVEAT,
@@ -162,9 +174,54 @@ describe("buildGrantApplicationHtml", () => {
       KB_NARRATIVE_CAVEAT,
       SAFETY_SEED_CAVEAT,
     ]);
+  });
+
+  it("lists no standing caveat for an operator-written application that cites no OpenPlan evidence (KI-2026-11-02-047)", () => {
+    const html = buildGrantApplicationHtml(exportData());
+
+    expect(applicableStandingCaveats(exportData())).toEqual([]);
+    expect(html).not.toContain("Standing caveats.");
     for (const caveat of APPLICATION_EXPORT_STANDING_CAVEATS) {
-      expect(html).toContain(caveat);
+      expect(html).not.toContain(caveat);
     }
+  });
+
+  it("lists the caveat of each kind of evidence the document carries, verbatim and only those", () => {
+    const appendix = (key: string, status: EvidenceAppendix["status"]): EvidenceAppendix => ({
+      key, letter: "A", title: key, status, statusNote: null, source: null, facts: [], table: null, figureSvg: null, notes: [],
+    });
+    const data = exportData({
+      sections: [
+        // An AI draft quoted the modeling caveat; the operator then cut it from the final text.
+        exportSection({ final_markdown: "Edited text." }, { origin: "ai_draft_edited", sourceDraftText: `Model text. ${GRANT_MODELING_PLANNING_CAVEAT} [fact:fact_2]` }),
+        // A section that is not final contributes nothing, even if its text quotes a caveat.
+        exportSection(
+          { id: "56565656-5656-4656-8656-565656565656", status: "drafting", final_markdown: KB_NARRATIVE_CAVEAT, sort_order: 1 },
+          { origin: "none", finalizedBy: null, finalizedAt: null }
+        ),
+      ],
+      evidenceAppendices: [appendix("bca", "included"), appendix("engagement", "missing")],
+    });
+
+    expect(applicableStandingCaveats(data)).toEqual([GRANT_MODELING_PLANNING_CAVEAT, BCA_NARRATIVE_CAVEAT]);
+    const html = buildGrantApplicationHtml(data);
+    const cover = html.slice(0, html.indexOf("</header>"));
+    expect(cover).toContain("Standing caveats.");
+    expect(cover).toContain(GRANT_MODELING_PLANNING_CAVEAT);
+    expect(cover).toContain(BCA_NARRATIVE_CAVEAT);
+    expect(cover).not.toContain(ENGAGEMENT_NARRATIVE_CAVEAT);
+    expect(cover).not.toContain(KB_NARRATIVE_CAVEAT);
+    expect(cover).not.toContain(SAFETY_SEED_CAVEAT);
+
+    // Final text that quotes a caveat, and an included engagement appendix, each carry theirs.
+    expect(
+      applicableStandingCaveats(
+        exportData({
+          sections: [exportSection({ final_markdown: `Quoted. ${KB_NARRATIVE_CAVEAT}` })],
+          evidenceAppendices: [appendix("engagement", "included")],
+        })
+      )
+    ).toEqual([ENGAGEMENT_NARRATIVE_CAVEAT, KB_NARRATIVE_CAVEAT]);
   });
 
   it("stamps the document DRAFT when required attachments are outstanding", () => {

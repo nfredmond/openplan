@@ -224,7 +224,7 @@ ${
 }
 
 /** A score the run did not record reads "Not recorded", never 0.0. */
-function formatPacketScore(value: number | null): string {
+export function formatPacketScore(value: number | null): string {
   return value === null ? "Not recorded" : formatPythonFloat(value);
 }
 

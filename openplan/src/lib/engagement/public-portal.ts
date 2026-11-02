@@ -1,4 +1,4 @@
-import { calendarDayOf, UTC_TIME_ZONE, wallClockTimeOf } from "@/lib/time/workspace-calendar";
+import { formatRecordedMoment, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 
 export type PublicPortalCampaignLike = {
   status?: string | null;
@@ -58,18 +58,7 @@ export function participationDateClosure(
 
 /** "October 10, 2026 at 16:00 (America/Los_Angeles)", in the workspace calendar. Null when unreadable. */
 function recordedMoment(value: string, timeZone: string): string | null {
-  const day = calendarDayOf(value, timeZone);
-  if (!day) return null;
-  const [year, month, date] = day.split("-").map(Number);
-  // The day is already the workspace's; format it as a plain calendar day.
-  const longDay = new Intl.DateTimeFormat("en-US", {
-    timeZone: UTC_TIME_ZONE,
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(new Date(Date.UTC(year, month - 1, date)));
-  const time = wallClockTimeOf(value, timeZone);
-  return time ? `${longDay} at ${time} (${timeZone})` : longDay;
+  return formatRecordedMoment(value, timeZone);
 }
 
 export type PublicPortalReadinessCheck = {

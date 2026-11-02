@@ -87,6 +87,32 @@ export function wallClockTimeOf(value: string | null | undefined, timeZone: stri
 }
 
 /**
+ * A stored value as a planner reads it on the workspace calendar:
+ * "October 10, 2026 at 16:00 (America/Los_Angeles)". A date-only value is the
+ * day alone, never shifted. `zoneLabel` names the zone in the parentheses and
+ * defaults to the zone itself. Null for an empty, offset-less or unreadable
+ * value, so the caller decides what to print instead of a guess.
+ */
+export function formatRecordedMoment(
+  value: string | null | undefined,
+  timeZone: string,
+  zoneLabel: string = timeZone
+): string | null {
+  const day = calendarDayOf(value, timeZone);
+  if (!day) return null;
+  const [year, month, date] = day.split("-").map(Number);
+  // The day is already the workspace's; format it as a plain calendar day.
+  const longDay = new Intl.DateTimeFormat("en-US", {
+    timeZone: UTC_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(Date.UTC(year, month - 1, date)));
+  const time = wallClockTimeOf(value, timeZone);
+  return time ? `${longDay} at ${time} (${zoneLabel})` : longDay;
+}
+
+/**
  * The zone that reaches each calendar day first (UTC+14). POSIX `Etc/` names
  * invert the sign, so `Etc/GMT-14` is fourteen hours ahead of UTC.
  */

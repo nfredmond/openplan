@@ -17,6 +17,7 @@ import {
 } from "@/lib/grants/atp-packet";
 import { renderAtpPacketMarkdown } from "@/lib/planner-pack/render";
 import { APP_VERSION } from "@/lib/runtime/app-version";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 
 /**
  * The ATP scoring packet for one application, read-only. JSON for the panel;
@@ -144,7 +145,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
         typeof project.estimated_cost_basis_year === "number" ? project.estimated_cost_basis_year : null,
     };
     const runs = (runResult.data ?? []) as AtpPacketRun[];
-    const view = buildAtpPacketView({ project: packetProject, run: runs[0] ?? null });
+    // The crash retrieval day prints on the workspace calendar; a failed read is UTC.
+    const { timeZone } = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);
+    const view = buildAtpPacketView({ project: packetProject, run: runs[0] ?? null, timeZone });
 
     if (wantsMarkdown) {
       const markdown = renderAtpPacketMarkdown(view.packet, {
