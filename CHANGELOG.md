@@ -20,6 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
+`/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
+It removes a staged aerial, Knowledge Base or transit upload whose complete step
+never ran (a closed tab or a failed upload) once its newest Storage timestamp is
+24 hours old, so the file stops counting against the workspace's storage. It
+removes only objects whose path matches the staged path the complete routes
+check, at most 1,000 per bucket per run, and logs its counts as
+`cron_sweep_staged_uploads_completed` or `_failed`; a failed bucket answers 500
+with the counts of what finished. Operators: it uses the existing `CRON_SECRET`.
+A self-hosted installation without Vercel Cron must add this endpoint to its
+own scheduler. No migration.
+
 **Dependency audit:** qs 6.16.1, follow-redirects 1.16.2 and @hono/node-server
 2.1.3 fix advisories published October 27-30 (all development or build
 tooling). The audit step now reads `openplan/audit-exceptions.json`: it still

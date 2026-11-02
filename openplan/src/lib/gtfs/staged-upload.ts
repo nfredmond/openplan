@@ -76,9 +76,12 @@ export function provisionalUploadedFeedName(label: string | undefined, filename:
   return withoutExtension || "Uploaded transit feed";
 }
 
+/** Every staged GTFS object ends in this; the sweep checks names against it too. */
+export const GTFS_STAGED_UPLOAD_EXTENSION = ".zip";
+
 /** The private object key for one staged upload. */
 export function stagedGtfsUploadPath(workspaceId: string, userId: string, uploadId: string): string {
-  return stagedUploadPath(workspaceId, userId, uploadId, ".zip");
+  return stagedUploadPath(workspaceId, userId, uploadId, GTFS_STAGED_UPLOAD_EXTENSION);
 }
 
 /**
@@ -86,7 +89,7 @@ export function stagedGtfsUploadPath(workspaceId: string, userId: string, upload
  * workspace. Anything else, including a real ingested archive's path, is false.
  */
 export function isOwnStagedGtfsUploadPath(objectPath: string, workspaceId: string, userId: string): boolean {
-  return isOwnStagedUploadPath(objectPath, workspaceId, userId, ".zip");
+  return isOwnStagedUploadPath(objectPath, workspaceId, userId, GTFS_STAGED_UPLOAD_EXTENSION);
 }
 
 export type StagedGtfsUploadRead = StagedUploadRead;
