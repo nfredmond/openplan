@@ -56,6 +56,20 @@ npm test
 npm run qa:gate
 ```
 
+On Windows, use Git Bash and run once per machine:
+
+```bash
+git config --global core.autocrlf false
+npm config set script-shell "C:\\Program Files\\Git\\bin\\bash.exe"
+```
+
+The repository's `.gitattributes` already checks text files out with LF line
+endings; the first command keeps Git from rewriting files you add. The second
+lets npm scripts that set environment variables POSIX-style run. CI, the
+hosted build and the security-sensitive local artifact reader assume Linux, so
+some tests that read `/proc` or POSIX permissions fail on Windows; check a
+failure against unchanged `main` before treating it as yours.
+
 The full gate includes lint, dead-code analysis,
 app tests, an optional explicit RLS step, production dependency audit and build.
 Live tests write fixtures. Set `OPENPLAN_RLS_GATE=1` only after selecting an
