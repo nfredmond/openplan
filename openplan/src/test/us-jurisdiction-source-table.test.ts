@@ -20,6 +20,10 @@
  * county is re-resolved to confirm its state, exactly as the analysis route
  * does, and the scorecard summary must name the same source.
  *
+ * Since 2026-11-02 Oregon's live read and corridor rows expect ODOT's crash
+ * layer, which carries injury severity; its acquisition row still expects
+ * FARS, because `safety_crashes` does not yet admit the ODOT source id.
+ *
  * Blind category: the place-to-state step is exercised for county GEOIDs only.
  * Cities, CDPs, metro areas and drawn areas are covered by the route tests in
  * safety-crashes-route.test.ts and analysis-route-grounding.test.ts. Network
@@ -34,6 +38,7 @@ import { readCrashesForStudyArea } from "@/lib/safety/read-only-lane";
 import { resolveCrashSource } from "@/lib/safety/sources/registry";
 import { ccrsAdapter, CCRS_SOURCE_ID } from "@/lib/safety/sources/ccrs";
 import { farsAdapter } from "@/lib/safety/sources/fars";
+import { odotOrAdapter } from "@/lib/safety/sources/odot-or";
 import type { CrashFetchResult } from "@/lib/safety/sources/types";
 import { crashStatesFromTigerwebPlace } from "@/lib/safety/study-area-states";
 import { countyRunShowsCeqaScreen } from "@/lib/models/county-run-vmt-framework";
@@ -85,10 +90,12 @@ function fakeService() {
 }
 
 let ccrsFetch: ReturnType<typeof vi.spyOn>;
+let odotFetch: ReturnType<typeof vi.spyOn>;
 let farsFetch: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
   ccrsFetch = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue(EMPTY_FETCH);
+  odotFetch = vi.spyOn(odotOrAdapter, "fetch").mockResolvedValue(EMPTY_FETCH);
   farsFetch = vi.spyOn(farsAdapter, "fetch").mockResolvedValue(EMPTY_FETCH);
 });
 
@@ -100,12 +107,14 @@ afterEach(() => {
 function askedSources(): string[] {
   return [
     ...(ccrsFetch.mock.calls.length > 0 ? [ccrsAdapter.id] : []),
+    ...(odotFetch.mock.calls.length > 0 ? [odotOrAdapter.id] : []),
     ...(farsFetch.mock.calls.length > 0 ? [farsAdapter.id] : []),
   ];
 }
 
 function askedSource(): string | null {
   if (ccrsFetch.mock.calls.length > 0) return ccrsAdapter.id;
+  if (odotFetch.mock.calls.length > 0) return odotOrAdapter.id;
   if (farsFetch.mock.calls.length > 0) return farsAdapter.id;
   return null;
 }

@@ -26,6 +26,7 @@
 
 import { ccrsAdapter } from "./ccrs";
 import { farsAdapter } from "./fars";
+import { odotOrAdapter } from "./odot-or";
 import type { CrashSourceAdapter, CrashSourceResolution, CrashSourceUse } from "./types";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 
@@ -33,12 +34,13 @@ import type { StudyAreaBbox } from "@/lib/models/study-area";
  * Registered observed-crash adapters, in resolution order.
  *
  * Order is "richest severity coverage first": CCRS separates fatal from injury
- * (and, after the KSI join, serious injury) where it applies; FARS is the
- * fatal-only national backstop. Adding coverage should mean adding an entry
+ * (and, after the KSI join, serious injury) where it applies; ODOT's layer
+ * carries Oregon's own KABCO letter but is read-only until `safety_crashes`
+ * admits it; FARS is the fatal-only national backstop. Adding coverage should mean adding an entry
  * here, not editing callers — the same shape the WA/CO/OR traffic-count
  * adapters use.
  */
-export const CRASH_SOURCE_ADAPTERS: readonly CrashSourceAdapter[] = [ccrsAdapter, farsAdapter];
+export const CRASH_SOURCE_ADAPTERS: readonly CrashSourceAdapter[] = [ccrsAdapter, odotOrAdapter, farsAdapter];
 
 /**
  * The only source ids permitted to reach `safety_crashes`.

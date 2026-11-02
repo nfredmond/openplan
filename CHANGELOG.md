@@ -110,6 +110,17 @@ and the safety line says the state was not confirmed. If CCRS cannot be reached
 for a California corridor, the run uses FARS and names CCRS as unavailable. The
 shared crash map layer also checks coverage by the workspace's stated state.
 
+**Oregon injury crashes:** an Oregon live crash read and an Oregon corridor run now
+read ODOT's published crash layer (Oregon Transportation Safety Data Explorer),
+which carries ODOT's own KABCO severity, so they report serious-injury and injury
+crashes instead of fatal-only FARS. Crashes ODOT could not locate are left out,
+because the layer places them at a default point. The layer is read live and not
+stored: a Safety acquisition in Oregon still saves FARS until a migration admits
+the new source. ODOT names no open license; the attribution says so. A research
+note, `docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md`, records which
+states publish open injury-crash data (California, DC, Iowa, Ohio and Oregon
+qualify; 27 states publish with limits). No action is needed to deploy.
+
 **CEQA screen on county runs:** the §15064.3 screening panel now appears only on
 county runs whose county is in California.
 

@@ -70,6 +70,8 @@ export type CrashSeverityCompleteness =
 export type SafetyCoverageState =
   | "ccrs_ca_statewide"
   | "fars_fatal_only"
+  /** A state's own crash file with injury severity, read live and not stored. */
+  | "state_injury_file"
   | "switrs_legacy_local"
   | "out_of_coverage"
   | "source_unavailable";
@@ -301,7 +303,7 @@ export type CrashSourceAdapter = {
    */
   coversStateFips?: readonly string[];
   /**
-   * Every state FIPS code whose crashes this adapter actually reads.
+   * The state FIPS codes whose crashes this adapter actually reads, listed in full.
    *
    * This, not `covers()`, decides which source a study area gets once its
    * state is known. `covers()` is a coarse rectangle and a rectangle cannot
