@@ -7,7 +7,9 @@
  *
  * Search hits the TIGERweb `tigerWMS_Current` layers by clean BASENAME; boundary
  * resolution fetches a single feature by GEOID as generalized WGS84 GeoJSON.
- * Counties reuse the existing `searchUsCounties` catalog so we don't duplicate it.
+ * Counties come from `searchUsCounties`, a catalog of the same service's
+ * Counties layer, so county search and county boundaries share one source.
+ * Nothing here needs a Census API key.
  *
  * All functions are server-side (they use the shared cached fetcher). The pure
  * URL/parse/score helpers are exported for unit testing without network.
@@ -18,11 +20,15 @@ import { corridorGeojsonSchema, type CorridorGeojson } from "@/lib/models/run-la
 import { searchUsCounties } from "@/lib/geographies/us-counties";
 import { splitStateQualifier, splitTrailingStateWords, stateUspsFromFips } from "@/lib/geographies/state-fips";
 import { normalizePlaceGeoid, type PlaceKind } from "@/lib/api/place-geographies";
+import {
+  TIGERWEB_CENSUS2020_BASE,
+  TIGERWEB_CURRENT_BASE,
+  TIGERWEB_CURRENT_COUNTY_LAYER,
+} from "@/lib/geographies/tigerweb-services";
 
 export type { PlaceKind } from "@/lib/api/place-geographies";
 
-const TIGERWEB_ROOT = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb";
-const TIGERWEB_BASE = `${TIGERWEB_ROOT}/tigerWMS_Current/MapServer`;
+const TIGERWEB_BASE = TIGERWEB_CURRENT_BASE;
 
 /**
  * The 2020 Census vintage, consulted ONLY for population.
@@ -42,7 +48,7 @@ const TIGERWEB_BASE = `${TIGERWEB_ROOT}/tigerWMS_Current/MapServer`;
  * in from Census2020 by GEOID. A geography the 2020 vintage never knew about
  * keeps its full search behavior and simply ranks as unknown-population.
  */
-const TIGERWEB_POPULATION_BASE = `${TIGERWEB_ROOT}/tigerWMS_Census2020/MapServer`;
+const TIGERWEB_POPULATION_BASE = TIGERWEB_CENSUS2020_BASE;
 
 // TIGERweb layer ids (tigerWMS_Current), verified against the live service.
 // County subdivisions (22) were read from
@@ -51,7 +57,7 @@ const TIGERWEB_POPULATION_BASE = `${TIGERWEB_ROOT}/tigerWMS_Census2020/MapServer
 // January 1, 2026 vintage): fields GEOID (10), STATE, COUNTY, BASENAME, NAME,
 // LSADC, FUNCSTAT.
 const LAYER = {
-  county: 82,
+  county: TIGERWEB_CURRENT_COUNTY_LAYER,
   incorporatedPlace: 28,
   censusDesignatedPlace: 30,
   metro: 93,
@@ -101,9 +107,9 @@ const COUSUB_SEARCH_WHERE = "FUNCSTAT NOT IN ('S','F') AND LSADC<>'25'";
 
 /**
  * Matching layer ids on `tigerWMS_Census2020` — they differ from Current and
- * must not be assumed equal. Counties are absent on purpose: they never touch
- * TIGERweb search, they come from the ACS catalog in `us-counties`, which
- * carries its own population column.
+ * must not be assumed equal. Counties are absent on purpose: `us-counties`
+ * loads the whole Counties layer once, with its own 2020 population join,
+ * instead of a per-search query.
  */
 const POPULATION_LAYER_BY_KIND: Partial<Record<PlaceKind, number>> = {
   city: 26,
@@ -168,10 +174,10 @@ export interface PlaceSearchResult {
  *
  * WHY THIS IS NOT JUST AN ARRAY. Every lookup here can fail silently:
  * `fetchJsonWithRetry` returns `null` for a timeout, a non-OK status, or a body
- * that would not parse, and the Census county catalog answers an unauthenticated
- * request with a 302 to an HTML page. Collapsing all of that into `[]` made an
- * outage — or an unset `CENSUS_API_KEY` — indistinguishable from "your county
- * does not exist", which is what the study-area picker then told the planner.
+ * that would not parse. Collapsing that into `[]` made an outage (or, when the
+ * county catalog still came from the keyed Census API, an unset
+ * `CENSUS_API_KEY`) indistinguishable from "your county does not exist", which
+ * is what the study-area picker then told the planner.
  * This is the front door of the whole product; it has to know the difference.
  */
 export interface PlaceSearchOutcome {
@@ -512,10 +518,19 @@ function labelFromBoundaryGeojson(
   if (kind === "metro" || kind === "micro") {
     return typeof props.NAME === "string" ? props.NAME : null;
   }
+  if (kind === "county") {
+    // The full NAME, as county search labels it: "Richmond city, VA" and
+    // "Richmond County, VA" are different places, and BASENAME calls both
+    // "Richmond".
+    const name = [props.NAME, props.BASENAME]
+      .find((value): value is string => typeof value === "string" && !!value.trim())
+      ?.trim();
+    if (!name) return null;
+    const usps = stateUspsFromFips(String(props.GEOID ?? ""));
+    return usps ? `${name}, ${usps}` : name;
+  }
   const basename = typeof props.BASENAME === "string" ? props.BASENAME : null;
-  if (!basename) return typeof props.NAME === "string" ? props.NAME : null;
-  const usps = stateUspsFromFips(kind === "county" ? String(props.GEOID ?? "") : null);
-  return usps ? `${basename}, ${usps}` : basename;
+  return basename ?? (typeof props.NAME === "string" ? props.NAME : null);
 }
 
 async function fetchTigerSearch(options: PlaceSearchUrlOptions): Promise<TigerQueryJson | null> {
@@ -854,8 +869,7 @@ export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearc
     items,
     unavailableKinds,
     searchUnavailable,
-    // Prefer the county cause: it is the one that names a specific, fixable
-    // configuration gap rather than a generic upstream outage.
+    // Prefer the county cause: it names which layer did not answer.
     unavailableReason:
       unavailableKinds.length === 0 ? null : (countyReason ?? TIGERWEB_UNAVAILABLE_REASON),
   };

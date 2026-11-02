@@ -1,0 +1,177 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/82/query?where=GEOID%20IN%20%28%2702020%27%2C%2702050%27%2C%2702110%27%2C%2702185%27%2C%2705143%27%2C%2706057%27%2C%2709110%27%2C%2711001%27%2C%2713245%27%2C%2716041%27%2C%2722071%27%2C%2724043%27%2C%2735045%27%2C%2736073%27%2C%2739049%27%2C%2739167%27%2C%2741067%27%2C%2742125%27%2C%2750019%27%2C%2751159%27%2C%2751760%27%2C%2755057%27%2C%2766010%27%2C%2772127%27%29&outFields=GEOID,NAME,STATE&returnGeometry=false&orderByFields=GEOID&f=json",
+ "trimmed": "Field metadata removed. The app asks for every county (where=1=1, 3,235 rows on 2026-11-01); this capture asks the same layer for 24 of them by GEOID.",
+ "response": {
+  "features": [
+   {
+    "attributes": {
+     "GEOID": "02020",
+     "NAME": "Anchorage Municipality",
+     "STATE": "02"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "02050",
+     "NAME": "Bethel Census Area",
+     "STATE": "02"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "02110",
+     "NAME": "Juneau City and Borough",
+     "STATE": "02"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "02185",
+     "NAME": "North Slope Borough",
+     "STATE": "02"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "05143",
+     "NAME": "Washington County",
+     "STATE": "05"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "06057",
+     "NAME": "Nevada County",
+     "STATE": "06"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "09110",
+     "NAME": "Capitol Planning Region",
+     "STATE": "09"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "11001",
+     "NAME": "District of Columbia",
+     "STATE": "11"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "13245",
+     "NAME": "Richmond County",
+     "STATE": "13"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "16041",
+     "NAME": "Franklin County",
+     "STATE": "16"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "22071",
+     "NAME": "Orleans Parish",
+     "STATE": "22"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "24043",
+     "NAME": "Washington County",
+     "STATE": "24"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "35045",
+     "NAME": "San Juan County",
+     "STATE": "35"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "36073",
+     "NAME": "Orleans County",
+     "STATE": "36"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39049",
+     "NAME": "Franklin County",
+     "STATE": "39"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "39167",
+     "NAME": "Washington County",
+     "STATE": "39"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "41067",
+     "NAME": "Washington County",
+     "STATE": "41"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "42125",
+     "NAME": "Washington County",
+     "STATE": "42"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "50019",
+     "NAME": "Orleans County",
+     "STATE": "50"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "51159",
+     "NAME": "Richmond County",
+     "STATE": "51"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "51760",
+     "NAME": "Richmond city",
+     "STATE": "51"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "55057",
+     "NAME": "Juneau County",
+     "STATE": "55"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "66010",
+     "NAME": "Guam",
+     "STATE": "66"
+    }
+   },
+   {
+    "attributes": {
+     "GEOID": "72127",
+     "NAME": "San Juan Municipio",
+     "STATE": "72"
+    }
+   }
+  ]
+ }
+}

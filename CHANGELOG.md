@@ -20,6 +20,20 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**County search without a Census key:** county search and county boundaries
+now come from the Census TIGERweb Counties layer, the same keyless service
+cities, CDPs, towns, tribal areas and metro areas already used. An install
+without `CENSUS_API_KEY` can search and pick counties and county equivalents:
+Louisiana parishes, Alaska boroughs and census areas, Virginia independent
+cities, Puerto Rico municipios, DC, Connecticut planning regions and the Island
+Areas. Same-named counties are ordered by 2020 Census population, also from
+TIGERweb; a Connecticut planning region has no 2020 count and ranks after
+counties that have one. A picked county's saved label now keeps its full name
+("Falls Church city, VA", not "Falls Church, VA"). The place search no longer
+looks up the workspace's Integration keys, since nothing it reads needs one.
+Census tract demographics, ACS corridor demographics and model zone attributes
+still need a Census key.
+
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
 It removes a staged aerial, Knowledge Base or transit upload whose complete step
