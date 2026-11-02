@@ -301,7 +301,7 @@ export type CrashSourceAdapter = {
    */
   coversStateFips?: readonly string[];
   /**
-   * Every state FIPS code whose crashes this adapter actually reads.
+   * The state FIPS codes this adapter actually reads crash records for.
    *
    * This, not `covers()`, decides which source a study area gets once its
    * state is known. `covers()` is a coarse rectangle and a rectangle cannot

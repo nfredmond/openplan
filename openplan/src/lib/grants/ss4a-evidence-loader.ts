@@ -244,6 +244,18 @@ export async function loadSs4aEvidenceRecords(
   const hinRecompute = selected.has("hin_map") && safety.status === "ready"
     ? await recomputeNetwork(client, { workspaceId, projectId, snapshot: safety.snapshot })
     : ({ status: "not_attempted" } as const);
+  // The project name words the engagement appendix's claims, so a failed read
+  // of it makes that appendix unreadable rather than quietly reworded.
+  if (project.error) {
+    return {
+      projectId,
+      projectName: null,
+      safety,
+      hinRecompute,
+      bca,
+      engagement: { status: "unreadable", reason: "The linked project could not be read, so its engagement summary was not built." },
+    };
+  }
   const projectName = (project.data as { name?: unknown } | null)?.name;
   return {
     projectId,

@@ -217,6 +217,15 @@ describe("SS4A application export with evidence appendices", () => {
     expect((await response.json()).appendices.map((a: { status: string }) => a.status)).toEqual(["missing", "missing", "missing", "missing", "missing"]);
   });
 
+  it("marks the engagement appendix unreadable when the linked project cannot be read", async () => {
+    tables.projects = () => ({ data: null, error: { message: "permission denied", code: "42501" } });
+    const response = await exportApplication(post(), context);
+    expect(response.status).toBe(201);
+    const statuses = (await response.json()).appendices.map((a: { status: string }) => a.status);
+    expect(statuses[4]).toBe("unreadable");
+    expect(renderReportPdfMock.mock.calls[0][0]).toContain("The linked project could not be read");
+  });
+
   it("reads only the selected appendices and lists the rest as not selected", async () => {
     const response = await exportApplication(post({ appendices: ["crash_summary"] }), context);
     expect(response.status).toBe(201);
