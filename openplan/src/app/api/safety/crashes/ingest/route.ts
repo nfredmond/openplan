@@ -11,7 +11,10 @@ import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { studyAreaBboxesMatch } from "@/lib/models/study-area";
 import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
-import { crashStatesFromPlaceOfRecord, crashStatesOfConfirmedPlace } from "@/lib/safety/study-area-states";
+import { confirmCrashStudyPlace, crashStatesFromPlaceOfRecord } from "@/lib/safety/study-area-states";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
+import { bboxOfGeometry, DRAWN_PLACE_SOURCE, UPLOADED_PLACE_SOURCE } from "@/lib/geographies/place-of-record";
+import type { CrashStudyBoundary } from "@/lib/safety/crash-study-area";
 
 // Paging a county-scale crash extract exceeds the default budget.
 export const runtime = "nodejs";
@@ -26,6 +29,8 @@ type ProjectStudyAreaBounds = {
   place_min_lat: number | null;
   place_max_lon: number | null;
   place_max_lat: number | null;
+  place_source?: string | null;
+  place_geometry_geojson?: unknown;
 };
 
 function bboxMatchesProjectStudyArea(
@@ -73,6 +78,13 @@ const ingestSchema = z.object({
    * boundary has this same bbox. The client never supplies a state.
    */
   place: z.object({ kind: placeKindSchema, geoid: placeGeoidStringSchema }).superRefine(refinePlaceReference).optional(),
+  /**
+   * A drawn or uploaded study area's polygon. Used only when the request names
+   * neither a project nor a place, because those boundaries are read on the
+   * server. It must have this request's bbox, and it can only narrow the
+   * crashes the rectangle query returns.
+   */
+  boundary: corridorGeojsonSchema.optional(),
 });
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
@@ -99,7 +111,9 @@ export async function POST(request: NextRequest) {
     // Bounded read: every mutating route caps its body so an oversized payload
     // is a 413 rather than a memory spike. Enforced repo-wide by
     // src/test/body-limit-route-inventory.test.ts.
-    const bodyResult = await readJsonWithLimit(request, BODY_LIMITS.smallJson);
+    // Sized for a drawn or uploaded boundary polygon; place and project
+    // boundaries are read on the server and never ride in the body.
+    const bodyResult = await readJsonWithLimit(request, BODY_LIMITS.documentJson);
     if (!bodyResult.ok) {
       return bodyResult.response;
     }
@@ -160,11 +174,14 @@ export async function POST(request: NextRequest) {
     // The study area's states choose the crash source. They come from an
     // identity the server holds or re-resolves, never from the bbox.
     let stateFips: string[] | null = null;
+    // The polygon the crashes are kept inside, when one is known. Null keeps
+    // the rectangle, and the acquisition records that basis.
+    let boundary: CrashStudyBoundary | null = null;
     if (parsed.data.projectId) {
       const { data: project, error: projectError } = await supabase
         .from("projects")
         .select(
-          "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat"
+          "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_source, place_geometry_geojson"
         )
         .eq("id", parsed.data.projectId)
         .eq("workspace_id", parsed.data.workspaceId)
@@ -189,8 +206,22 @@ export async function POST(request: NextRequest) {
         countryCode: projectPlace.place_country_code,
         subdivisionCode: projectPlace.place_subdivision_code,
       });
+      if (projectPlace.place_geometry_geojson) {
+        const drawn = projectPlace.place_source === DRAWN_PLACE_SOURCE || projectPlace.place_source === UPLOADED_PLACE_SOURCE;
+        boundary = { geometry: projectPlace.place_geometry_geojson, source: drawn ? "drawn_area" : "project_place" };
+      }
     } else if (parsed.data.place) {
-      stateFips = await crashStatesOfConfirmedPlace(parsed.data.place, bbox);
+      const confirmed = await confirmCrashStudyPlace(parsed.data.place, bbox);
+      stateFips = confirmed.stateFips;
+      if (confirmed.geometry) boundary = { geometry: confirmed.geometry, source: "picked_place" };
+    } else if (parsed.data.boundary) {
+      if (!studyAreaBboxesMatch(bbox, bboxOfGeometry(parsed.data.boundary))) {
+        return NextResponse.json(
+          { error: "The study area boundary does not match its bounding box. Redraw the area and retrieve again." },
+          { status: 400 },
+        );
+      }
+      boundary = { geometry: parsed.data.boundary, source: "drawn_area" };
     }
 
     audit.info("safety_crash_ingest_started", {
@@ -199,6 +230,7 @@ export async function POST(request: NextRequest) {
       years: parsed.data.years,
       countyCode: parsed.data.countyCode ?? null,
       stateFips,
+      boundarySource: boundary?.source ?? null,
     });
 
     const result = await ingestCrashesForStudyArea({
@@ -207,6 +239,7 @@ export async function POST(request: NextRequest) {
       projectId: parsed.data.projectId ?? null,
       bbox,
       stateFips,
+      boundary,
       years: parsed.data.years,
       countyCode: parsed.data.countyCode,
       maxRecords: parsed.data.maxRecords,
@@ -221,6 +254,7 @@ export async function POST(request: NextRequest) {
       status: result.status,
       crashCount: result.crashCount,
       geocodedCount: result.geocodedCount,
+      outsideBoundaryCount: result.studyArea?.outsideBoundaryCount ?? null,
       durationMs: Date.now() - startedAt,
     });
 

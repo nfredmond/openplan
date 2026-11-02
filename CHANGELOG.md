@@ -20,6 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
+acquisition now keeps only crashes whose point lies inside the study area's
+polygon (the project's stored place, a picked place, or a drawn area), not every
+crash in the rectangle around it. In Alturas, California, that removes 9 of the
+11 CCRS crashes from 2022 to 2025, including the only injury crash. The number
+left out is recorded with the acquisition and shown beside the counts on the
+Safety page, in the report and in the SS4A appendices. Acquisitions stored
+before this change, and areas with only a rectangle, are labeled "Bounding
+rectangle, not the place boundary"; retrieve crashes again to count by the
+boundary. The corridor scorecard also counts inside the corridor polygon and
+divides crash density by the polygon's area. No migration.
+
 **First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
 fatal or serious-injury crash in the window can now save its safety action plan
 from the high-injury network ("Save plan with no ranked segments"), so the
@@ -32,8 +44,8 @@ project page names the workspace's home geography when the project has no study
 area. Workspace health now reports `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` as a
 partial map configuration (most maps draw; the backdrop, aerial and model maps
 need a Mapbox token) and offers it when neither is set. Still open: crash
-acquisitions above about 100 crashes fail to store (needs a migration), and
-acquisitions use the place's bounding rectangle. No migration.
+acquisitions above about 100 crashes fail to store (needs a migration). No
+migration.
 
 **SS4A seed after logging the opportunity (KI-2026-11-02-022):** logging or
 exporting the SS4A funding opportunity no longer makes the Safety report look

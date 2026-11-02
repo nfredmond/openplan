@@ -287,19 +287,57 @@ function pointOnSegment(
   [ax, ay]: Vertex,
   [bx, by]: Vertex
 ): boolean {
+  // The segment's box first: four comparisons reject almost every edge of a
+  // long boundary before the cross product is computed.
+  if (
+    lon < Math.min(ax, bx) - ON_EDGE_EPSILON_DEGREES ||
+    lon > Math.max(ax, bx) + ON_EDGE_EPSILON_DEGREES ||
+    lat < Math.min(ay, by) - ON_EDGE_EPSILON_DEGREES ||
+    lat > Math.max(ay, by) + ON_EDGE_EPSILON_DEGREES
+  ) {
+    return false;
+  }
+
   const cross = (bx - ax) * (lat - ay) - (by - ay) * (lon - ax);
   // Scale the collinearity tolerance by the segment's own size: a long edge
   // carries more absolute error in the cross product than a short one, and a
   // fixed threshold would be strict on one and loose on the other.
   const scale = Math.max(1, Math.abs(bx - ax) + Math.abs(by - ay));
-  if (Math.abs(cross) > ON_EDGE_EPSILON_DEGREES * scale) return false;
+  return Math.abs(cross) <= ON_EDGE_EPSILON_DEGREES * scale;
+}
 
-  return (
-    lon >= Math.min(ax, bx) - ON_EDGE_EPSILON_DEGREES &&
-    lon <= Math.max(ax, bx) + ON_EDGE_EPSILON_DEGREES &&
-    lat >= Math.min(ay, by) - ON_EDGE_EPSILON_DEGREES &&
-    lat <= Math.max(ay, by) + ON_EDGE_EPSILON_DEGREES
-  );
+/** A ring's continuous frame and that frame's extent, computed once per ring. */
+type PreparedRing = { frame: Ring; minLon: number; maxLon: number; minLat: number; maxLat: number } | null;
+
+const preparedRings = new WeakMap<Ring, PreparedRing>();
+
+/**
+ * The frame `pointInRing` walks, cached on the parsed ring.
+ *
+ * A crash acquisition asks about thousands of points against one boundary, and
+ * recomputing the frame per point doubled the work. The extent lets a point
+ * outside a ring's box skip the ring entirely: outside the box (by more than
+ * the on-edge tolerance) is outside the ring and not on its edge.
+ */
+function prepareRing(ring: Ring): PreparedRing {
+  if (preparedRings.has(ring)) return preparedRings.get(ring) ?? null;
+  const frame = continuousRing(ring);
+  let prepared: PreparedRing = null;
+  if (frame) {
+    let minLon = Infinity;
+    let maxLon = -Infinity;
+    let minLat = Infinity;
+    let maxLat = -Infinity;
+    for (const [lon, lat] of frame) {
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+    prepared = { frame, minLon, maxLon, minLat, maxLat };
+  }
+  preparedRings.set(ring, prepared);
+  return prepared;
 }
 
 type RingResult = "inside" | "outside" | "on_edge" | "unreadable";
@@ -313,10 +351,19 @@ type RingResult = "inside" | "outside" | "on_edge" | "unreadable";
  * point's latitude being counted twice.
  */
 function pointInRing(ring: Ring, longitude: number, latitude: number): RingResult {
-  const frame = continuousRing(ring);
-  if (!frame) return "unreadable";
+  const prepared = prepareRing(ring);
+  if (!prepared) return "unreadable";
+  const { frame } = prepared;
 
   const lon = alignLongitude(longitude, frame[0][0]);
+  if (
+    lon < prepared.minLon - ON_EDGE_EPSILON_DEGREES ||
+    lon > prepared.maxLon + ON_EDGE_EPSILON_DEGREES ||
+    latitude < prepared.minLat - ON_EDGE_EPSILON_DEGREES ||
+    latitude > prepared.maxLat + ON_EDGE_EPSILON_DEGREES
+  ) {
+    return "outside";
+  }
   let inside = false;
 
   for (let i = 0, j = frame.length - 1; i < frame.length; j = i++) {
@@ -446,6 +493,20 @@ function verdictFor(area: ReadArea, coordinate: GeofenceCoordinate): GeofenceVer
   }
 
   return { state: "outside", basis: "boundary", boundaryUnreadable: false };
+}
+
+/**
+ * The same verdict as `evaluateGeofence`, for many separate points.
+ *
+ * The place is read once and the returned function answers each point, so a
+ * crash acquisition of thousands of records walks a county boundary's rings
+ * per record without re-parsing them per record. See `readArea`.
+ */
+export function createGeofenceTester(
+  place: Pick<PlaceOfRecord, "bbox" | "geometry">
+): (coordinate: GeofenceCoordinate) => GeofenceVerdict {
+  const area = readArea(place);
+  return (coordinate) => verdictFor(area, coordinate);
 }
 
 /**

@@ -4,6 +4,7 @@
  * adapter implementations.
  */
 
+import type { CrashStudyAreaCoverage } from "./crash-study-area";
 import type { CrashSeverity } from "./sources/types";
 
 export type SafetyCrashProperties = {
@@ -188,6 +189,8 @@ export type SafetyIngestSummary = {
   /** Exact source-published cutoff, not inferred from requested or returned years. */
   publishedThrough?: string | null;
   publishedThroughProvenance?: Record<string, unknown> | null;
+  /** Place boundary or bounding rectangle, read from the acquisition's coverage. */
+  studyArea?: CrashStudyAreaCoverage;
 };
 
 /**
@@ -227,6 +230,8 @@ export type SafetyLiveCrashRead = {
    * fatality census cannot answer and present the empty result as a finding.
    */
   dimensionCoverage?: unknown;
+  /** Place boundary or bounding rectangle, for the counts above. */
+  studyArea?: CrashStudyAreaCoverage;
 };
 
 /** A workspace project offered on the ingest launcher's attach selector. */

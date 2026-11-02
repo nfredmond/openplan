@@ -150,7 +150,8 @@ describe("POST /api/safety/crashes/ingest guards", () => {
 
   it("413 when the body exceeds the route's size limit", async () => {
     // Bounded read, per the repo-wide body-limit inventory guard.
-    const oversized = { workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], pad: "x".repeat(20_000) };
+    // The limit is sized for a drawn boundary polygon (256 KiB).
+    const oversized = { workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], pad: "x".repeat(300_000) };
     const res = await POST(ingestRequest(oversized));
     expect(res.status).toBe(413);
   });
@@ -424,6 +425,96 @@ describe("POST /api/safety/crashes/ingest derives the study area's state", () =>
     await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
     expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
     expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ stateFips: null }));
+  });
+});
+
+describe("POST /api/safety/crashes/ingest passes the study area's boundary (KI-2026-11-02-021)", () => {
+  // A square with the request bbox, so a drawn area matches its own rectangle.
+  const SQUARE = {
+    type: "Polygon",
+    coordinates: [[[BBOX.minLon, BBOX.minLat], [BBOX.maxLon, BBOX.minLat], [BBOX.maxLon, BBOX.maxLat], [BBOX.minLon, BBOX.maxLat], [BBOX.minLon, BBOX.minLat]]],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    ingestMock.mockResolvedValue({ ingestId: "ingest-1", status: "ready", error: null, studyArea: null });
+  });
+
+  function project(fields: Record<string, unknown>) {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_country_code: "US",
+        place_subdivision_code: "CA",
+        place_min_lon: BBOX.minLon,
+        place_min_lat: BBOX.minLat,
+        place_max_lon: BBOX.maxLon,
+        place_max_lat: BBOX.maxLat,
+        ...fields,
+      },
+      error: null,
+    });
+  }
+
+  it("reads the linked project's stored polygon and passes it as the boundary", async () => {
+    project({ place_source: "tigerweb", place_geometry_geojson: SQUARE });
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID }));
+    expect(projectSelectMock.mock.calls[0][0]).toMatch(/place_geometry_geojson/);
+    expect(ingestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ boundary: { geometry: SQUARE, source: "project_place" } })
+    );
+  });
+
+  it("labels a project's drawn area as drawn, and ignores a boundary the client sent", async () => {
+    project({ place_source: "drawn", place_geometry_geojson: SQUARE });
+    const other = { ...SQUARE, coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID, boundary: other }));
+    expect(ingestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ boundary: { geometry: SQUARE, source: "drawn_area" } })
+    );
+  });
+
+  it("passes no boundary for a project with only a rectangle", async () => {
+    project({ place_geometry_geojson: null });
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID }));
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ boundary: null }));
+  });
+
+  it("uses the resolver's polygon for a picked place, never the client's", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "county", geoid: "06049", label: "Modoc", bbox: BBOX, geojson: SQUARE });
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "county", geoid: "06049" } })
+    );
+    expect(ingestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ boundary: { geometry: SQUARE, source: "picked_place" } })
+    );
+  });
+
+  it("passes no boundary when the picked place does not resolve to this bbox", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "county", geoid: "06049", label: "Modoc", geojson: SQUARE,
+      bbox: { minLon: -119.9, minLat: 39.4, maxLon: -119.6, maxLat: 39.7 },
+    });
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "county", geoid: "06049" }, boundary: SQUARE })
+    );
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ boundary: null }));
+  });
+
+  it("passes a drawn area's polygon when no project or place is named", async () => {
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], boundary: SQUARE }));
+    expect(ingestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ boundary: { geometry: SQUARE, source: "drawn_area" } })
+    );
+  });
+
+  it("refuses a drawn polygon whose extent is not the request's bbox", async () => {
+    const elsewhere = { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]] };
+    const res = await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], boundary: elsewhere }));
+    expect(res.status).toBe(400);
+    expect(ingestMock).not.toHaveBeenCalled();
   });
 });
 
