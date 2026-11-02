@@ -1,3 +1,4 @@
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -36,8 +37,9 @@ const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -78,8 +80,14 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
+// Who pays for the call, as the AI limiter sees it (the shared key unless a
+// test says otherwise). Everything else in the module is real.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 import { POST as postNarrativeDraft } from "@/app/api/funding-opportunities/[opportunityId]/narrative-draft/route";
@@ -165,14 +173,16 @@ function promptsSent(): string[] {
 }
 
 describe("/api/funding-opportunities/[opportunityId]/narrative-draft — a failed evidence read", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
 
     loadFundingOpportunityAccessMock.mockResolvedValue({
@@ -228,7 +238,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — a faile
     expect(promptsSent().some((prompt) => prompt.includes(NO_ENGAGEMENT_INSTRUCTION))).toBe(false);
     expect(draftInsertMock).not.toHaveBeenCalled();
     // A refusal is not an AI call, so it is never metered against the workspace.
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
     expect(mockAudit.error).toHaveBeenCalledWith(
       "narrative_evidence_read_failed",
       expect.objectContaining({
@@ -328,13 +338,15 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — proposa
         : null;
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadFundingOpportunityAccessMock.mockResolvedValue({
       supabase: null,
@@ -431,13 +443,15 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — today's
   // A live draft on 2026-10-11 called a call that closed on 2026-09-30
   // "currently open". Two clocks must give two different close-date facts,
   // so a route that drops or hardcodes the date fails here.
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadFundingOpportunityAccessMock.mockResolvedValue({
       supabase: null,
@@ -490,15 +504,17 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — today's
  * still open, later today.
  */
 describe("/api/funding-opportunities/[opportunityId]/narrative-draft: the workspace's zone", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-10-01T03:00:00Z"));
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadFundingOpportunityAccessMock.mockResolvedValue({
       supabase: null,

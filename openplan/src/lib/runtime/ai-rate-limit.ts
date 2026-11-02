@@ -73,6 +73,21 @@ export class AiUsageMeterUnavailableError extends Error {
 }
 
 /**
+ * Thrown by a caller's reservation callback when the workspace's AI allowance
+ * for the window is used up, so a library that makes the model call can stop
+ * before it and the route can answer with its usual 429. Carries the verdict
+ * for the `retry-after` header.
+ */
+export class AiUsageLimitReachedError extends Error {
+  readonly limit: AiRateLimitResult;
+  constructor(limit: AiRateLimitResult) {
+    super("The workspace's AI allowance for this window is used up.");
+    this.name = "AiUsageLimitReachedError";
+    this.limit = limit;
+  }
+}
+
+/**
  * Whether the effective Anthropic key for this request is the deployment's
  * shared key rather than the workspace's own. Read inside the request's
  * integration context, where the workspace key (if any) takes precedence.
@@ -148,11 +163,12 @@ export async function checkAiUsageRateLimit(
  * is the per-workspace spend limiter above. (The table itself is retained from
  * migration 20260424000072; its stripe_* columns stay NULL forever.)
  *
- * BEST-EFFORT by design: most call sites fire this after a successful model
- * call and must never fail the user's request because metering hiccuped, so
- * any insert error is swallowed with a single console warning and reported
- * only through the returned boolean. {@link reserveAiUsage} is the caller that
- * acts on that boolean.
+ * BEST-EFFORT by design: any insert error is swallowed with a single console
+ * warning and reported only through the returned boolean.
+ * {@link reserveAiUsage} is the caller that acts on that boolean, and every
+ * model call the deployment's key can pay for goes through it. The direct
+ * callers left are the integration-key probes, which relay the caller's own
+ * key and meter their own bucket.
  */
 export async function recordAiUsageEvent(params: {
   workspaceId: string;
@@ -199,6 +215,18 @@ export async function recordAiUsageEvent(params: {
  * failed lookup or a failed insert throws {@link AiUsageMeterUnavailableError}
  * instead of letting an unmetered call through; with the workspace's own key
  * both stay best-effort, as {@link checkAiUsageRateLimit} describes.
+ *
+ * A reservation is KEPT when the provider call then fails. A provider can bill
+ * a call that times out or errors after generating tokens, a refund would be a
+ * second write that can fail on its own, and a caller who can make calls fail
+ * must not get free retries. The cost is one of the window's calls per failed
+ * attempt.
+ *
+ * NOT ATOMIC: the count and the insert are two requests with no lock between
+ * them, so parallel requests can all pass one count and together exceed the
+ * window's limit by up to the number running at once. The SQL dispatchers
+ * for Planner Agent API tasks, workspace-connection chat and public
+ * translation count and insert under one advisory lock; this path does not.
  */
 export async function reserveAiUsage(params: {
   workspaceId: string;

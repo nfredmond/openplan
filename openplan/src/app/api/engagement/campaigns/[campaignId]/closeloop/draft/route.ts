@@ -6,7 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { generateEngagementSynthesis, SYNTHESIS_MAX_ITEMS, type SynthesisItem } from "@/lib/engagement/ai-synthesis";
 import { buildCloseLoopDraftsFromSynthesis } from "@/lib/engagement/close-loop";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { AiUsageLimitReachedError, reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
 
@@ -44,17 +44,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     return await withWorkspaceIntegrationContext(access.campaign.workspace_id, async () => {
       if (!access.campaign || !access.allowed) return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
 
-      // Same guard as the sibling synthesis route — this endpoint drives the same
-      // model spend through the same engine, so it meters the same staff buckets.
       const workspaceId = access.campaign.workspace_id;
-      const rateLimit = await checkAiUsageRateLimit(workspaceId);
-      if (!rateLimit.allowed) {
-        audit.warn("closeloop_draft_rate_limited", { workspaceId, recentCount: rateLimit.count });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
-      }
 
       const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([
         supabase
@@ -81,18 +71,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         longitude: item.longitude,
       }));
 
-      const synthesis = await generateEngagementSynthesis(items);
-
-      // Fire-and-forget spend metering: `source === "ai"` means the model call
-      // succeeded (the deterministic fallback spends nothing and is free).
-      if (synthesis.source === "ai") {
-        void recordAiUsageEvent({
-          workspaceId,
-          bucketKey: "engagement_synthesis",
-          eventKey: "engagement_closeloop_draft",
-          sourceRoute: "/api/engagement/campaigns/[campaignId]/closeloop/draft",
-          metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
+      // The synthesis engine counts its model call before making it
+      // (reserveAiUsage); the free deterministic fallback is not counted. When
+      // the deployment's key pays, a usage lookup or record that fails throws
+      // to the handler below, so no unmetered call is made. A failed call
+      // keeps its reservation.
+      let synthesis: Awaited<ReturnType<typeof generateEngagementSynthesis>>;
+      try {
+        synthesis = await generateEngagementSynthesis(items, {
+          reserveUsage: async ({ model }) => {
+            const rateLimit = await reserveAiUsage({
+              workspaceId,
+              bucketKey: "engagement_synthesis",
+              eventKey: "engagement_closeloop_draft",
+              sourceRoute: "/api/engagement/campaigns/[campaignId]/closeloop/draft",
+              metadataJson: { model, analyzedItemCount: Math.min(items.length, SYNTHESIS_MAX_ITEMS) },
+            });
+            if (!rateLimit.allowed) throw new AiUsageLimitReachedError(rateLimit);
+          },
         });
+      } catch (error) {
+        if (!(error instanceof AiUsageLimitReachedError)) throw error;
+        audit.warn("closeloop_draft_rate_limited", { workspaceId, recentCount: error.limit.count });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(error.limit.retryAfterSeconds) } }
+        );
       }
 
       const drafts = buildCloseLoopDraftsFromSynthesis(synthesis);

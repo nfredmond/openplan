@@ -157,8 +157,16 @@ function buildResult(
 }
 
 /** Classify each item. Falls back to deterministic heuristics with no API key or
- * on any model/parse error; never throws for AI reasons. */
-export async function moderateEngagementItems(items: ModerationInputItem[]): Promise<ModerationResult> {
+ * on any model/parse error; a model failure never throws.
+ *
+ * `reserveUsage` counts the call against the workspace's AI allowance
+ * (`reserveAiUsage` in ai-rate-limit.ts) and runs only when a model call is
+ * about to be made. It throws to refuse; the throw reaches the caller and no
+ * call is made. */
+export async function moderateEngagementItems(
+  items: ModerationInputItem[],
+  options: { reserveUsage: (call: { model: string }) => Promise<void> }
+): Promise<ModerationResult> {
   const capped = items.slice(0, MODERATION_MAX_ITEMS);
 
   if (!hasAnthropicAccess()) {
@@ -167,6 +175,8 @@ export async function moderateEngagementItems(items: ModerationInputItem[]): Pro
   if (capped.length === 0) {
     return buildResult([], "deterministic-fallback", null, null);
   }
+
+  await options.reserveUsage({ model: MODERATION_MODEL_ID });
 
   const lines = capped.map((item) => {
     const body = (item.body ?? "").trim().slice(0, BODY_PROMPT_CAP);

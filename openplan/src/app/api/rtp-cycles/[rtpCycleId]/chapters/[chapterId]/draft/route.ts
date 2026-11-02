@@ -13,7 +13,7 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure, type RouteReadResultLike } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
@@ -266,18 +266,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (!hasAnthropicAccess()) {
         audit.warn("ai_offline", { chapterId: parsedParams.data.chapterId });
         return NextResponse.json({ error: "ai_offline" }, { status: 503 });
-      }
-      const rateLimit = await checkAiUsageRateLimit(chapter.workspace_id);
-      if (!rateLimit.allowed) {
-        audit.warn("chapter_draft_rate_limited", {
-          chapterId: chapter.id,
-          workspaceId: chapter.workspace_id,
-          recentCount: rateLimit.count,
-        });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
       }
 
       // Deterministic cycle context — the same summaries the RTP packet renders.
@@ -655,6 +643,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ...renderNarrativeFactPromptLines(facts),
       ].join("\n");
 
+      // Counted before the call (reserveAiUsage). When the deployment's key
+      // pays, a usage lookup or record that fails throws here, so no unmetered
+      // call is made. A failed call keeps its reservation.
+      const rateLimit = await reserveAiUsage({
+        workspaceId: chapter.workspace_id,
+        bucketKey: "document_narrative_draft",
+        eventKey: "rtp_chapter_narrative_draft",
+        sourceRoute: "/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft",
+        metadataJson: { model: modelId, chapterId: chapter.id },
+      });
+      if (!rateLimit.allowed) {
+        audit.warn("chapter_draft_rate_limited", {
+          chapterId: chapter.id,
+          workspaceId: chapter.workspace_id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
+
       let draftText: string;
       let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
 
@@ -676,15 +686,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
       }
-
-      // Fire-and-forget spend metering after a successful model call only.
-      void recordAiUsageEvent({
-        workspaceId: chapter.workspace_id,
-        bucketKey: "document_narrative_draft",
-        eventKey: "rtp_chapter_narrative_draft",
-        sourceRoute: "/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft",
-        metadataJson: { model: modelId, chapterId: chapter.id },
-      });
 
       if (!draftText) {
         audit.error("chapter_draft_generation_empty", { chapterId: chapter.id, model: modelId });

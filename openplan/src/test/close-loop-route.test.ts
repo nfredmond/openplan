@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const loadCampaignAccess = vi.fn();
@@ -6,8 +7,9 @@ const validateCampaignCategoryAccess = vi.fn();
 const getUser = vi.fn();
 const generateEngagementSynthesis = vi.fn();
 const createServiceRoleClientMock = vi.hoisted(() => vi.fn());
-const checkAiUsageRateLimit = vi.fn();
-const recordAiUsageEvent = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 
 // Terminal resolvers for the engagement_closeloop_entries chains.
 const entryInsertSingle = vi.fn();
@@ -70,9 +72,15 @@ vi.mock("@/lib/engagement/ai-synthesis", () => ({
   generateEngagementSynthesis: (...args: unknown[]) => generateEngagementSynthesis(...args),
   SYNTHESIS_MAX_ITEMS: 300,
 }));
-vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimit(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEvent(...args),
+// The real limiter module, with its reservation routed through the fake meter.
+vi.mock("@/lib/runtime/ai-rate-limit", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/runtime/ai-rate-limit")>()),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+// Who pays for the call, as the AI limiter sees it.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 import { GET } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/route";
@@ -83,11 +91,14 @@ const ENTRY_ID = "22222222-2222-4222-8222-222222222222";
 
 const listCtx = { params: Promise.resolve({ campaignId: CAMPAIGN_ID }) };
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
   createServiceRoleClientMock.mockReturnValue(fakeSupabase);
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
-  checkAiUsageRateLimit.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+  keySourceMock.mockReturnValue("env");
+  meter.count.mockResolvedValue({ count: 0, error: null });
+  meter.insert.mockResolvedValue({ error: null });
+  reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
   entryPriorStatus.mockResolvedValue({ data: { status: "draft" }, error: null }); // draft -> published transition
   loadCampaignAccess.mockResolvedValue({
     campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign", share_token: "share-abc" },
@@ -163,41 +174,87 @@ describe("close-loop draft route", () => {
     expect(body.source).toBe("deterministic-fallback");
     expect(body.fallbackReason).toBe("missing_api_key");
     expect(body.drafts).toEqual([{ themeTitle: "Crossings", youSaid: "safer crossings", sourceItemIds: ["a1"] }]);
-    // The deterministic fallback made no model call, so nothing is metered.
-    expect(recordAiUsageEvent).not.toHaveBeenCalled();
+    // The deterministic fallback made no model call, so nothing is counted.
+    expect(reserveAiUsageMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
   });
 
-  it("meters a successful AI synthesis into the engagement_synthesis bucket", async () => {
-    itemsResolve.mockResolvedValue({ data: [{ id: "a1", body: "x", title: null, category_id: null, latitude: null, longitude: null }], error: null });
-    categoriesResolve.mockResolvedValue({ data: [], error: null });
-    generateEngagementSynthesis.mockResolvedValue({
+  describe("the synthesis model call is counted before it is made (KI-2026-10-12-014)", () => {
+    // Stands in for the engine's model call. The engine itself is mocked here;
+    // engagement-ai-synthesis.test.ts proves it reserves before generateText.
+    const modelCall = vi.fn();
+    const aiSynthesis = {
       source: "ai",
-      model: "claude-haiku-4-5-20251001",
+      model: "SYNTHETIC-model",
       fallback_reason: null,
       item_count: 1,
       analyzed_item_count: 1,
       overall_sentiment: "neutral",
       themes: [{ label: "Crossings", sentiment: "negative", item_count: 1, fact_ids: ["item_a1"], summary: "safer crossings" }],
-      narrative: "…",
+      narrative: "Narrative.",
       grounding: { facts: [], claims: [] },
       caveat: "c",
+    };
+    const draft = () => DRAFT_POST(new NextRequest("http://localhost/x", { method: "POST" }), listCtx);
+
+    beforeEach(() => {
+      itemsResolve.mockResolvedValue({ data: [{ id: "a1", body: "x", title: null, category_id: null, latitude: null, longitude: null }], error: null });
+      categoriesResolve.mockResolvedValue({ data: [], error: null });
+      generateEngagementSynthesis.mockImplementation(
+        async (_items: unknown, options: { reserveUsage: (call: { model: string }) => Promise<void> }) => {
+          await options.reserveUsage({ model: "SYNTHETIC-model" });
+          modelCall();
+          return aiSynthesis;
+        }
+      );
     });
 
-    const res = await DRAFT_POST(new NextRequest("http://localhost/x", { method: "POST" }), listCtx);
-    expect(res.status).toBe(200);
-    expect(recordAiUsageEvent).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ workspaceId: "ws-1", bucketKey: "engagement_synthesis" })
-    );
-  });
+    it("records the usage event with the engagement_synthesis keys before the call", async () => {
+      const res = await draft();
+      expect(res.status).toBe(200);
+      expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+      expect(reserveAiUsageMock).toHaveBeenCalledWith({
+        workspaceId: "ws-1",
+        bucketKey: "engagement_synthesis",
+        eventKey: "engagement_closeloop_draft",
+        sourceRoute: "/api/engagement/campaigns/[campaignId]/closeloop/draft",
+        metadataJson: { model: "SYNTHETIC-model", analyzedItemCount: 1 },
+      });
+      expect(meter.insert).toHaveBeenCalledTimes(1);
+      expect(meter.insert.mock.invocationCallOrder[0]).toBeLessThan(modelCall.mock.invocationCallOrder[0]);
+    });
 
-  it("draft route 429 without a model call when the workspace AI allowance is exhausted", async () => {
-    checkAiUsageRateLimit.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
-    const res = await DRAFT_POST(new NextRequest("http://localhost/x", { method: "POST" }), listCtx);
-    expect(res.status).toBe(429);
-    expect(res.headers.get("retry-after")).toBe("300");
-    expect(generateEngagementSynthesis).not.toHaveBeenCalled();
-    expect(recordAiUsageEvent).not.toHaveBeenCalled();
+    it("429 without a model call when the workspace AI allowance is used up", async () => {
+      meter.count.mockResolvedValue({ count: 20, error: null });
+      const res = await draft();
+      expect(res.status).toBe(429);
+      expect(res.headers.get("retry-after")).toBe("300");
+      expect(await res.json()).toEqual({ error: "Too many AI requests in a short window. Please wait a moment and try again." });
+      expect(modelCall).not.toHaveBeenCalled();
+      expect(meter.insert).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["the usage lookup", () => meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } })],
+      ["the usage record", () => meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } })],
+    ])("makes no call when %s fails and the deployment's shared key pays", async (_label, breakMeter) => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      breakMeter();
+      const res = await draft();
+      expect(res.status).toBe(500);
+      expect(JSON.stringify(await res.json())).not.toContain("SYNTHETIC");
+      expect(modelCall).not.toHaveBeenCalled();
+    });
+
+    it("still calls the model on the workspace's own key when the usage meter fails", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      keySourceMock.mockReturnValue("workspace");
+      meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+      meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+      const res = await draft();
+      expect(res.status).toBe(200);
+      expect(modelCall).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("draft route 403 without write access", async () => {
