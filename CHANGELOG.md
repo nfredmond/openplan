@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**One IPv6 network is one connection for public limits (M9a):** every
+per-connection limit on public input (comments, supports, photos, survey
+responses and saved drafts, update sign-ups) now counts an IPv6 address by its
+/64 network, so a phone or script that picks a new address inside its /64 no
+longer gets fresh limits. IPv4 is counted exactly as before, and an IPv4-mapped
+IPv6 address counts as its IPv4 address. Counts already stored against single
+IPv6 addresses no longer match, so IPv6 connections start their limits again
+once, on deploy. The sign-up email cap is a Supabase Auth setting, not app
+code; [self hosting](openplan/docs/SELF_HOSTING.md#limits-on-public-signup-and-public-input)
+describes it. No migration.
+
 **Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
 acquisition now keeps only crashes whose point lies inside the study area's
 polygon (the project's stored place, a picked place, or a drawn area), not every

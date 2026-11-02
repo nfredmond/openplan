@@ -105,6 +105,42 @@ before admitting traffic. A linked managed project uses
 is not the command for an independently self-hosted Supabase deployment.
 The latter's migration/role/extension setup still needs a tested OpenPlan recipe.
 
+### Limits on public signup and public input
+
+OpenPlan limits public input per connection: comments, supports, photos,
+survey responses and saved drafts, and update sign-ups. A connection is the
+leftmost address in the first of `x-forwarded-for`, `x-real-ip` and
+`cf-connecting-ip`. An IPv4 address counts as itself. An IPv6 address counts by
+its /64 network, because one household or phone normally holds a whole /64 and
+picks new addresses inside it. Vercel overwrites `x-forwarded-for` with the
+address it received the request from
+([request headers](https://vercel.com/docs/headers/request-headers), read
+November 2, 2026). Anywhere else, put a proxy in front of the app that replaces
+these headers with the real client address; otherwise each limit takes the
+client's word for who it is.
+
+Signup, confirmation and password-reset email never pass through OpenPlan. The
+sign-up and sign-in pages call Supabase Auth from the browser, so OpenPlan
+cannot cap that email. Supabase Auth limits it instead
+([Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits), read
+November 2, 2026):
+
+- **Emails sent by Supabase Auth.** Counted per project, per hour, across every
+  Auth endpoint that sends email. The built-in email provider allows 2 per hour.
+  With custom SMTP, as on the hosted installation, the operator sets the number
+  in the Supabase dashboard under **Authentication > Rate Limits**, or through
+  the Management API field `rate_limit_email_sent`.
+- **Sign-ups and sign-ins.** Counted per IP address; the default is 30 requests
+  per 5 minutes. Supabase does not say whether it groups IPv6 addresses.
+
+The email limit is hourly, so the most Auth can send in a day is 24 times it.
+Choose a number whose daily total fits the email provider's daily quota after
+the mail OpenPlan sends itself (such as teammate invitations and update sign-up
+confirmations, at most 30 per campaign per day). When the limit is reached,
+Auth sends nothing more that hour, including password resets for existing
+accounts. An independently hosted Supabase Auth has its own setting for this
+limit; this guide has not verified its name.
+
 ## Rotate the integration encryption secret
 
 This procedure changes the secret that encrypts provider credentials. It does
