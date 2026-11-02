@@ -27,6 +27,7 @@ fails on any advisory at any severity, unless the advisory is listed there with
 a reason and a review date and every installed copy is development-only. Two
 are listed until December 1: minimatch (no fixed release eslint 9 can use) and
 deepmerge (no fixed release). Nothing to do on upgrade.
+
 **Portal translations and scripts:** a participant page shows a catalog
 translation only while it was made from the current English. Each entry records
 a fingerprint of its English source; a mismatch shows English with the existing
@@ -39,6 +40,7 @@ Cantonese) and Shahmukhi Punjabi (`pa-Arab`, `pa-PK`, `pnb`) requests no longer
 receive the Simplified or Gurmukhi pages; they fall through to the next
 language the reader accepts, or English. The picker names Chinese as 简体中文
 and marks it `zh-Hans`. No migration.
+
 **Storage limit and AI metering gaps (KI-2026-10-12-014):** a transit feed
 fetched from an address is now checked against the workspace's remaining
 storage at its downloaded size before it is stored; a feed that does not fit is
@@ -64,6 +66,7 @@ current five-minute allowance cannot finish is refused before it starts,
 and a read stopped by the allowance answers 429 and keeps nothing.
 Engagement scans and drafts that use the free fallback are no longer
 counted. No migration.
+
 **Engagement counts above 1,000 comments:** the database API returns at most
 1,000 rows per request and reports no error when it stops. Several screens and
 records read a campaign's comments in one request, so a campaign above 1,000
@@ -74,6 +77,7 @@ dashboard comment chart, nearby crashes for comments, near-duplicate pairs and a
 model run's corridor comments. A read that cannot finish shows as unreadable,
 not as a lower number. Closing a land use plan review now refuses while any
 comment is pending, including one past the first 1,000. No migration.
+
 **Tribal areas and towns or townships as places:** the place search now finds
 American Indian, Alaska Native and Native Hawaiian areas (reservations, trust
 lands, Hawaiian home lands and tribal statistical areas) and county
@@ -85,6 +89,7 @@ appear in its name. A town records its state. A benefit-cost analysis cannot
 yet record a project whose area or jurisdiction is either kind: the installed
 database guard lists only the earlier five kinds, and widening it needs a
 migration. No action is needed to deploy.
+
 **Crash sources follow the study area's state:** Safety now chooses a crash source
 from the state of the linked project's place or the picked county, city or CDP,
 not from a bounding-box rectangle. Study areas in Nevada and in border counties of
@@ -112,6 +117,7 @@ county runs whose county is in California.
 project record placeholder no longer name Caltrans District 3. The complete streets
 and countywide wayfinding engagement templates no longer tell residents the
 campaign is a demonstration.
+
 **Large aerial photos and documents upload on hosted installs:** mission photos
 and Knowledge Base files (the library, work-program sources, estimated-cost CSVs
 and portfolio imports) now go from the browser straight to private Storage
@@ -123,6 +129,7 @@ workspace storage limit still apply, checked once on the declared size and again
 on the stored file. No migration. The body routes still work for API clients.
 Staged files whose upload never finished stay in Storage under
 `<workspace>/staged/` until removed by hand; nothing sweeps them yet.
+
 **SS4A application evidence appendices:** the application packet export for an
 SS4A application now adds evidence appendices from the linked project's saved
 records: the high-injury network map and ranked list, the crash summary with its
