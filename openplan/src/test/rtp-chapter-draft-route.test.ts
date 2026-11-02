@@ -1,3 +1,4 @@
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -9,8 +10,9 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 const loadCountyRunModelingEvidenceMock = vi.fn();
 const loadKnowledgeBaseExcerptsMock = vi.fn();
 
@@ -45,8 +47,14 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
+// Who pays for the call, as the AI limiter sees it (the shared key unless a
+// test says otherwise). Everything else in the module is real.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 vi.mock("@/lib/models/evidence-backbone", () => ({
@@ -270,14 +278,16 @@ const updateEqMock = vi.fn(() => ({ select: updateSelectMock }));
 const updateMock = vi.fn(() => ({ eq: updateEqMock }));
 
 describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_ASSISTANT_MODEL", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadCountyRunModelingEvidenceMock.mockResolvedValue({ evidence: null, error: null });
     loadKnowledgeBaseExcerptsMock.mockResolvedValue({
@@ -339,14 +349,57 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
   });
 
   it("returns 429 without a model call when the workspace AI allowance is exhausted", async () => {
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    meter.count.mockResolvedValue({ count: 20, error: null });
 
     const response = await postChapterDraft(jsonRequest("POST"), routeContext());
 
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("300");
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+  });
+
+  it("counts the call before making it, with this route's bucket and event keys", async () => {
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "document_narrative_draft",
+      eventKey: "rtp_chapter_narrative_draft",
+      sourceRoute: "/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft",
+      metadataJson: { model: "claude-opus-5-5", chapterId: CHAPTER_ID },
+    });
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(meter.insert.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it.each([
+    ["the usage lookup", () => meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } })],
+    ["the usage record", () => meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } })],
+  ])("makes no call when %s fails and the deployment's shared key pays", async (_label, breakMeter) => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    breakMeter();
+
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still calls the model on the workspace's own key when the usage meter fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    keySourceMock.mockReturnValue("workspace");
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns 403 for a viewer", async () => {
@@ -415,7 +468,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     });
 
     // Metered into the shared document-narrative bucket after success.
-    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+    expect(reserveAiUsageMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         bucketKey: "document_narrative_draft",
@@ -431,7 +484,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     expectFinancialSelects(selects);
     expect(generateTextMock).toHaveBeenCalledTimes(1);
     expect(anthropicMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
+    expect(meter.insert).toHaveBeenCalledTimes(1);
     expect(draftInsertMock).toHaveBeenCalledTimes(1);
     expect(mockAudit.error).not.toHaveBeenCalled();
   });
@@ -451,7 +504,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
       }));
       expect(generateTextMock).not.toHaveBeenCalled();
       expect(anthropicMock).not.toHaveBeenCalled();
-      expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+      expect(meter.insert).not.toHaveBeenCalled();
       expect(draftInsertMock).not.toHaveBeenCalled();
     }
   );
@@ -517,12 +570,14 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     );
   });
 
-  it("returns 502 without persisting or metering when generation fails", async () => {
+  it("returns 502 without persisting when generation fails, keeping the reservation", async () => {
     generateTextMock.mockRejectedValue(new Error("model unavailable"));
     const response = await postChapterDraft(jsonRequest("POST"), routeContext());
     expect(response.status).toBe(502);
     expect(draftInsertMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    // The call was counted before it was made, and a failed call keeps
+    // its reservation (ai-rate-limit.ts, reserveAiUsage).
+    expect(meter.insert).toHaveBeenCalledTimes(1);
   });
 
   it("reads a missing drafts TABLE as a pending migration, not a server fault", async () => {
@@ -579,7 +634,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
       });
       expect(generateTextMock).not.toHaveBeenCalled();
       expect(draftInsertMock).not.toHaveBeenCalled();
-      expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+      expect(meter.insert).not.toHaveBeenCalled();
       expect(mockAudit.error).toHaveBeenCalledWith(
         "chapter_draft_evidence_load_failed",
         expect.objectContaining({
@@ -673,7 +728,7 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft PATCH", () => 
     created_at: "2026-07-27T00:00:00.000Z",
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });

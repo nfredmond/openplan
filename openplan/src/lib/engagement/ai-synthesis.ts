@@ -242,10 +242,16 @@ function coerceThemes(
 /**
  * Generate an AI synthesis of a campaign's approved items, grounded to source
  * comment ids. Falls back to the deterministic synthesis with no API key or on
- * any model/parse error, so this never throws for AI reasons.
+ * any model/parse error, so a model failure never throws.
+ *
+ * `reserveUsage` counts the call against the workspace's AI allowance
+ * (`reserveAiUsage` in ai-rate-limit.ts) and runs only when a model call is
+ * about to be made, never for the free deterministic paths. It throws to
+ * refuse; the throw reaches the caller and no call is made.
  */
 export async function generateEngagementSynthesis(
-  items: SynthesisItem[]
+  items: SynthesisItem[],
+  options: { reserveUsage: (call: { model: string }) => Promise<void> }
 ): Promise<EngagementSynthesis> {
   if (!hasAnthropicAccess()) {
     return buildDeterministicSynthesis(items, "missing_api_key");
@@ -253,6 +259,8 @@ export async function generateEngagementSynthesis(
   if (items.length === 0) {
     return buildDeterministicSynthesis(items, null);
   }
+
+  await options.reserveUsage({ model: SYNTHESIS_MODEL_ID });
 
   const { facts } = buildSynthesisFacts(items);
   const knownFactIds = new Set(facts.map((f) => f.fact_id));

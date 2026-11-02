@@ -10,7 +10,7 @@ import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
@@ -230,20 +230,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
             )}. Only the whitelisted summary section of each packet type can be drafted.`,
           },
           { status: 400 }
-        );
-      }
-
-      const rateLimit = await checkAiUsageRateLimit(report.workspace_id);
-      if (!rateLimit.allowed) {
-        audit.warn("narrative_draft_rate_limited", {
-          reportId: report.id,
-          workspaceId: report.workspace_id,
-          userId: user.id,
-          recentCount: rateLimit.count,
-        });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
         );
       }
 
@@ -504,6 +490,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ...renderNarrativeFactPromptLines(facts),
       ].join("\n");
 
+      // Counted before the call (reserveAiUsage). When the deployment's key
+      // pays, a usage lookup or record that fails throws here, so no unmetered
+      // call is made. A failed call keeps its reservation.
+      const rateLimit = await reserveAiUsage({
+        workspaceId: report.workspace_id,
+        bucketKey: "document_narrative_draft",
+        eventKey: "report_section_narrative_draft",
+        sourceRoute: "/api/reports/[reportId]/narrative-draft",
+        metadataJson: { model: modelId, sectionKey },
+      });
+      if (!rateLimit.allowed) {
+        audit.warn("narrative_draft_rate_limited", {
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          userId: user.id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
+
       let draftText: string;
       let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
 
@@ -526,17 +535,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
       }
-
-      // Fire-and-forget spend metering: the model call succeeded (a thrown
-      // generation returned 502 above without recording, so a user retry after a
-      // failure is never double-counted).
-      void recordAiUsageEvent({
-        workspaceId: report.workspace_id,
-        bucketKey: "document_narrative_draft",
-        eventKey: "report_section_narrative_draft",
-        sourceRoute: "/api/reports/[reportId]/narrative-draft",
-        metadataJson: { model: modelId, sectionKey },
-      });
 
       if (!draftText) {
         audit.error("narrative_generation_empty", {

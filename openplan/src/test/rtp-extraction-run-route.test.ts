@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { checkThroughFakeMeter, createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 
 /**
  * THE RUN ROUTE — reading an adopted plan into staged proposals.
@@ -20,7 +21,8 @@ import { NextRequest } from "next/server";
  *
  * 3. A FAILED RUN MUST NOT READ AS "RECORDED". The 2026-08-10 modeling defect.
  *
- * 4. SPEND IS METERED PER MODEL CALL. A three-hundred-page plan is many calls.
+ * 4. SPEND IS METERED PER MODEL CALL, BEFORE THE CALL. A three-hundred-page
+ *    plan is many calls, and none of them may be made unmetered.
  *
  * WHY THE HARNESS MODELS FILTERS. Following rtp-financial-assumptions-route's
  * fake: rows live in tables and recorded `.eq()` / `.range()` filters are
@@ -36,7 +38,9 @@ const authGetUserMock = vi.fn();
 const generateTextMock = vi.fn();
 const hasAnthropicAccessMock = vi.fn();
 const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -83,15 +87,19 @@ vi.mock("ai", () => ({
 vi.mock("@/lib/integrations/anthropic-access", () => ({
   hasAnthropicAccess: () => hasAnthropicAccessMock(),
   anthropicModel: (modelId: string) => ({ modelId }),
+  // Who pays for the call, as the AI limiter sees it.
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 vi.mock("@/lib/integrations/workspace-keys", () => ({
   withWorkspaceIntegrationContext: async (_workspaceId: string, fn: () => Promise<unknown>) => fn(),
 }));
 
-vi.mock("@/lib/runtime/ai-rate-limit", () => ({
+// The real limiter module, counting and recording through the fake meter.
+vi.mock("@/lib/runtime/ai-rate-limit", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/runtime/ai-rate-limit")>()),
   checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
 }));
 
 import {
@@ -372,15 +380,18 @@ const stagedCandidateWrites = () =>
 const runUpdates = () =>
   writes.filter((write) => write.table === "rtp_extraction_runs" && write.operation === "update");
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
   writes = [];
   insertedIdCounter = 0;
   createApiAuditLoggerMock.mockReturnValue(mockAudit);
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
   hasAnthropicAccessMock.mockReturnValue(true);
-  checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-  recordAiUsageEventMock.mockResolvedValue(undefined);
+  keySourceMock.mockReturnValue("env");
+  meter.count.mockResolvedValue({ count: 0, error: null });
+  meter.insert.mockResolvedValue({ error: null });
+  checkAiUsageRateLimitMock.mockImplementation(await checkThroughFakeMeter(meter));
+  reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
   answerWith([]);
   seed();
   installClients();
@@ -750,38 +761,141 @@ describe("reads that FAILED are not reported as empty", () => {
   });
 });
 
-describe("spend is metered per model call", () => {
-  it("records one usage event for each call, not one for the run", async () => {
+describe("spend is metered per model call, before each call (KI-2026-10-12-014)", () => {
+  const allKinds = { kbDocumentId: DOCUMENT_ID, targetKinds: ["financial_line", "performance_measure", "horizon_band"] };
+  const runRows = () => writes.filter((write) => write.table === "rtp_extraction_runs" && write.operation === "insert");
+
+  it("records one usage event for each call, each one before its call", async () => {
     answerWith([]);
 
-    await createRun(
-      request({
-        kbDocumentId: DOCUMENT_ID,
-        targetKinds: ["financial_line", "performance_measure", "horizon_band"],
-      }),
-      routeContext()
-    );
+    const response = await createRun(request(allKinds), routeContext());
 
+    expect(response.status).toBe(201);
     // The fixture page matches the terms of more than one kind, so more than
-    // one call happens — and the counts must agree.
-    expect(generateTextMock.mock.calls.length).toBeGreaterThan(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(generateTextMock.mock.calls.length);
-    for (const call of recordAiUsageEventMock.mock.calls) {
+    // one call happens, and the counts must agree.
+    const calls = generateTextMock.mock.invocationCallOrder;
+    const records = meter.insert.mock.invocationCallOrder;
+    expect(calls.length).toBeGreaterThan(1);
+    expect(records).toHaveLength(calls.length);
+    for (let index = 0; index < calls.length; index += 1) {
+      expect(records[index]).toBeLessThan(calls[index]);
+      if (index > 0) expect(records[index]).toBeGreaterThan(calls[index - 1]);
+    }
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(calls.length);
+    for (const call of reserveAiUsageMock.mock.calls) {
       expect(call[0]).toMatchObject({
         workspaceId: WORKSPACE_ID,
         bucketKey: "rtp_document_extraction",
+        eventKey: "rtp_document_extraction_call",
+        sourceRoute: "/api/rtp-cycles/[rtpCycleId]/extraction-runs",
+        metadataJson: { model: expect.any(String), runId: expect.any(String), targetKind: expect.any(String) },
       });
     }
   });
 
-  it("429s without calling the model when the workspace is over its window", async () => {
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 40, retryAfterSeconds: 300 });
+  it("429s without a run or a model call when the workspace is over its window", async () => {
+    meter.count.mockResolvedValue({ count: 20, error: null });
 
     const response = await createRun(request({ kbDocumentId: DOCUMENT_ID }), routeContext());
 
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("300");
     expect(generateTextMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+    expect(runRows()).toEqual([]);
+  });
+
+  it("429s before any call when the window has room for some of the document's reads but not all", async () => {
+    answerWith([]);
+    await createRun(request(allKinds), routeContext());
+    const planned = generateTextMock.mock.calls.length;
+    expect(planned).toBeGreaterThan(1);
+
+    vi.clearAllMocks();
+    writes = [];
+    seed();
+    installClients();
+    meter.count.mockResolvedValue({ count: 20 - planned + 1, error: null });
+    const refused = await createRun(request(allKinds), routeContext());
+    expect(refused.status).toBe(429);
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(runRows()).toEqual([]);
+
+    meter.count.mockResolvedValue({ count: 20 - planned, error: null });
+    const allowed = await createRun(request(allKinds), routeContext());
+    expect(allowed.status).toBe(201);
+    expect(generateTextMock).toHaveBeenCalledTimes(planned);
+  });
+
+  it("stops the run with no further call when the allowance runs out part-way", async () => {
+    answerWith([]);
+    // Room before the run and for the first read; used up at the second.
+    meter.count
+      .mockResolvedValueOnce({ count: 0, error: null })
+      .mockResolvedValueOnce({ count: 0, error: null })
+      .mockResolvedValue({ count: 20, error: null });
+
+    const response = await createRun(request(allKinds), routeContext());
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("300");
+    expect(body.reason).toBe("usage_limit_reached");
+    expect(body.candidates).toEqual([]);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
+    expect(stagedCandidateWrites()).toEqual([]);
+    expect(runUpdates().at(-1)?.values?.[0]).toMatchObject({ status: "failed" });
+  });
+
+  it("makes no call and records no run when the usage lookup fails and the deployment's shared key pays", async () => {
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+
+    const response = await createRun(request(allKinds), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(runRows()).toEqual([]);
+  });
+
+  it("makes no call when the usage record fails and the deployment's shared key pays", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+
+    const response = await createRun(request(allKinds), routeContext());
+    const body = await response.json();
+
+    expect(response.status).toBe(502);
+    expect(body.reason).toBe("usage_meter_unavailable");
+    expect(JSON.stringify(body)).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    const update = runUpdates().at(-1)?.values?.[0];
+    expect(update).toMatchObject({ status: "failed" });
+    // No call happened, so the run names no model.
+    expect(update).not.toHaveProperty("model");
+  });
+
+  it("still reads the document on the workspace's own key when the usage meter fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    keySourceMock.mockReturnValue("workspace");
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+    answerWith([]);
+
+    const response = await createRun(request(allKinds), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(generateTextMock.mock.calls.length).toBeGreaterThan(1);
+  });
+
+  it("keeps the reservation when the model call fails", async () => {
+    generateTextMock.mockRejectedValue(new Error("upstream 529"));
+
+    const response = await createRun(request(allKinds), routeContext());
+
+    expect(response.status).toBe(502);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
+    expect(meter.insert).toHaveBeenCalledTimes(1);
   });
 });
 

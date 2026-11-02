@@ -14,7 +14,7 @@ import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import {
   factClaimTextMap,
   renderNarrativeFactPromptLines,
@@ -113,19 +113,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
           durationMs: Date.now() - startedAt,
         });
         return NextResponse.json({ error: "ai_offline" }, { status: 503 });
-      }
-      const rateLimit = await checkAiUsageRateLimit(opportunity.workspace_id);
-      if (!rateLimit.allowed) {
-        audit.warn("narrative_draft_rate_limited", {
-          opportunityId: opportunity.id,
-          workspaceId: opportunity.workspace_id,
-          userId: user.id,
-          recentCount: rateLimit.count,
-        });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
       }
 
       // THE PURSUIT COLUMNS COME BACK ON HERE, and without this the draft was
@@ -255,6 +242,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
           : "No Knowledge Base documents matched this opportunity; do not reference uploaded documents.",
       ].join("\n");
 
+      // Counted before the call (reserveAiUsage). When the deployment's key
+      // pays, a usage lookup or record that fails throws here, so no unmetered
+      // call is made. A failed call keeps its reservation.
+      const rateLimit = await reserveAiUsage({
+        workspaceId: opportunity.workspace_id,
+        bucketKey: "grant_narrative_draft",
+        eventKey: "grant_narrative_draft",
+        sourceRoute: "/api/funding-opportunities/[opportunityId]/narrative-draft",
+        metadataJson: { model: modelId },
+      });
+      if (!rateLimit.allowed) {
+        audit.warn("narrative_draft_rate_limited", {
+          opportunityId: opportunity.id,
+          workspaceId: opportunity.workspace_id,
+          userId: user.id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
+
       let draftText: string;
       let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
 
@@ -277,17 +287,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
       }
-
-      // Fire-and-forget spend metering: the model call succeeded (a thrown
-      // generation returned 502 above without recording, so a user retry after a
-      // failure is never double-counted).
-      void recordAiUsageEvent({
-        workspaceId: opportunity.workspace_id,
-        bucketKey: "grant_narrative_draft",
-        eventKey: "grant_narrative_draft",
-        sourceRoute: "/api/funding-opportunities/[opportunityId]/narrative-draft",
-        metadataJson: { model: modelId },
-      });
 
       if (!draftText) {
         audit.error("narrative_generation_empty", {

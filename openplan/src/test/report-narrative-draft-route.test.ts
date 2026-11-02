@@ -1,3 +1,4 @@
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -7,8 +8,9 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 
 const REPORT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const PROJECT_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -49,8 +51,14 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
+// Who pays for the call, as the AI limiter sees it (the shared key unless a
+// test says otherwise). Everything else in the module is real.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 import { POST as postNarrativeDraft } from "@/app/api/reports/[reportId]/narrative-draft/route";
@@ -192,7 +200,7 @@ function expectFinancialSelects(selects: FinancialSelect[]) {
 }
 
 describe("/api/reports/[reportId]/narrative-draft", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_ASSISTANT_MODEL", "");
@@ -200,8 +208,10 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     // Default: the workspace has uploaded nothing that matches this packet.
     rpcMock.mockResolvedValue({ data: [], error: null });
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
 
     draftSingleMock.mockImplementation(async () => ({
@@ -315,14 +325,57 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
   });
 
   it("returns 429 without a model call when the workspace AI allowance is exhausted", async () => {
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    meter.count.mockResolvedValue({ count: 20, error: null });
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
 
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("300");
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+  });
+
+  it("counts the call before making it, with this route's bucket and event keys", async () => {
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "document_narrative_draft",
+      eventKey: "report_section_narrative_draft",
+      sourceRoute: "/api/reports/[reportId]/narrative-draft",
+      metadataJson: { model: "claude-opus-5-5", sectionKey: "executive_summary" },
+    });
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(meter.insert.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it.each([
+    ["the usage lookup", () => meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } })],
+    ["the usage record", () => meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } })],
+  ])("makes no call when %s fails and the deployment's shared key pays", async (_label, breakMeter) => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    breakMeter();
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still calls the model on the workspace's own key when the usage meter fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    keySourceMock.mockReturnValue("workspace");
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
   });
 
   it("generates, validates, and stores the draft with grounding stats and a facts hash", async () => {
@@ -369,8 +422,8 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     expect(insertPayload.created_by).toBe(USER_ID);
 
     // The successful generation is metered against the shared staff AI allowance.
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         bucketKey: "document_narrative_draft",
@@ -386,7 +439,7 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     expectFinancialSelects(selects);
     expect(generateTextMock).toHaveBeenCalledTimes(1);
     expect(anthropicMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
+    expect(meter.insert).toHaveBeenCalledTimes(1);
     expect(draftInsertMock).toHaveBeenCalledTimes(1);
     expect(mockAudit.error).not.toHaveBeenCalled();
   });
@@ -406,7 +459,7 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
       }));
       expect(generateTextMock).not.toHaveBeenCalled();
       expect(anthropicMock).not.toHaveBeenCalled();
-      expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+      expect(meter.insert).not.toHaveBeenCalled();
       expect(draftInsertMock).not.toHaveBeenCalled();
     }
   );
@@ -424,7 +477,7 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     });
     expect(generateTextMock).not.toHaveBeenCalled();
     expect(anthropicMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
     expect(draftInsertMock).not.toHaveBeenCalled();
   });
 
@@ -440,14 +493,16 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     );
   });
 
-  it("returns 502 without persisting or metering when generation fails", async () => {
+  it("returns 502 without persisting when generation fails, keeping the reservation", async () => {
     generateTextMock.mockRejectedValue(new Error("model unavailable"));
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
 
     expect(response.status).toBe(502);
     expect(draftInsertMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    // The call was counted before it was made, and a failed call keeps
+    // its reservation (ai-rate-limit.ts, reserveAiUsage).
+    expect(meter.insert).toHaveBeenCalledTimes(1);
   });
 
   it("answers 503 with the migration name when the drafts table is missing", async () => {
@@ -572,7 +627,10 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
       ],
       error: null,
     });
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     draftSingleMock.mockResolvedValue({ data: { id: DRAFT_ID }, error: null });
     generateTextMock.mockResolvedValue({

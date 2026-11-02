@@ -56,7 +56,12 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { unconfirmedInsertResponse } from "@/lib/http/write-outcome";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import {
+  AI_RATE_LIMIT_MAX_PER_WINDOW,
+  AI_RATE_LIMIT_WINDOW_SECONDS,
+  checkAiUsageRateLimit,
+  reserveAiUsage,
+} from "@/lib/runtime/ai-rate-limit";
 import { authorizeRtpCycleWrite } from "@/lib/rtp/cycle-write-authorization";
 import {
   describeUnreadableDocument,
@@ -80,7 +85,7 @@ import {
   type ExtractionChunkRow,
   type PassageExclusionReason,
 } from "@/lib/rtp/extraction/verify";
-import { runRtpExtraction } from "@/lib/rtp/extraction/run";
+import { plannedExtractionModelCalls, runRtpExtraction } from "@/lib/rtp/extraction/run";
 
 const ROUTE_PATH = "/api/rtp-cycles/[rtpCycleId]/extraction-runs";
 
@@ -379,12 +384,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
 
+      // Refused before the run row when the window's allowance cannot cover
+      // every read this document needs. Each read is also counted before it is
+      // made (reserveModelCall below), and a run stopped part-way keeps
+      // nothing, so starting a run the allowance cannot finish would spend
+      // calls for no result.
+      const plannedCalls = Math.min(
+        plannedExtractionModelCalls(passages, targetKinds),
+        AI_RATE_LIMIT_MAX_PER_WINDOW
+      );
       const rateLimit = await checkAiUsageRateLimit(workspaceId);
-      if (!rateLimit.allowed) {
-        audit.warn("extraction_rate_limited", { rtpCycleId, workspaceId, recentCount: rateLimit.count });
+      if (!rateLimit.allowed || rateLimit.count + plannedCalls > AI_RATE_LIMIT_MAX_PER_WINDOW) {
+        audit.warn("extraction_rate_limited", {
+          rtpCycleId,
+          workspaceId,
+          recentCount: rateLimit.count,
+          plannedCalls,
+        });
         return NextResponse.json(
           { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+          {
+            status: 429,
+            headers: { "retry-after": String(rateLimit.retryAfterSeconds || AI_RATE_LIMIT_WINDOW_SECONDS) },
+          }
         );
       }
 
@@ -441,17 +463,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
           });
           return generation.text;
         },
-        // ONE USAGE EVENT PER MODEL CALL. Fired here, not after the run, so a
-        // long document's spend is metered as the many calls it actually is.
-        onModelCall: (targetKind) => {
-          void recordAiUsageEvent({
-            workspaceId,
-            bucketKey: "rtp_document_extraction",
-            eventKey: "rtp_document_extraction_call",
-            sourceRoute: ROUTE_PATH,
-            metadataJson: { model: modelId, runId, targetKind },
-            serviceSupabase,
-          });
+        // ONE USAGE EVENT PER MODEL CALL, counted before the call is made, so
+        // a long document's spend is metered as the many calls it actually is.
+        // When the deployment's key pays, a usage lookup or record that fails
+        // throws, and the run stops with no further call. A failed call keeps
+        // its reservation.
+        reserveModelCall: async (targetKind) => {
+          try {
+            const limit = await reserveAiUsage({
+              workspaceId,
+              bucketKey: "rtp_document_extraction",
+              eventKey: "rtp_document_extraction_call",
+              sourceRoute: ROUTE_PATH,
+              metadataJson: { model: modelId, runId, targetKind },
+              serviceSupabase,
+            });
+            return limit.allowed;
+          } catch (error) {
+            audit.error("extraction_usage_meter_unavailable", {
+              runId,
+              message: error instanceof Error ? error.message : String(error),
+            });
+            throw error;
+          }
         },
       });
 
@@ -498,6 +532,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
           durationMs: Date.now() - startedAt,
         });
 
+        // A run stopped by the AI allowance is "wait and retry", not a
+        // failed reading service.
+        const limitReached = outcome.failureReason === "usage_limit_reached";
         return NextResponse.json(
           {
             run: failedRun ?? runRow,
@@ -506,7 +543,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
             candidates: [],
             disclosures,
           },
-          { status: 502 }
+          limitReached
+            ? { status: 429, headers: { "retry-after": String(AI_RATE_LIMIT_WINDOW_SECONDS) } }
+            : { status: 502 }
         );
       }
 

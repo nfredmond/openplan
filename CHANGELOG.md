@@ -54,6 +54,17 @@ unavailable meter ships the deterministic summary. No migration. Operators of a
 deployment with public signup must set `OPENPLAN_MONTHLY_RUN_CAP` and
 `OPENPLAN_MODELING_QUEUE_DEPTH`; both stay unlimited when unset.
 
+**AI drafts counted before the call (KI-2026-10-12-014):** grant narrative
+and section drafts, report and RTP chapter narrative drafts, RTP document
+reads, engagement close-loop drafts and moderation scans now count against
+the workspace's AI allowance before the model call. When the deployment's
+shared key pays and usage cannot be counted or recorded, the call is not
+made. A failed model call still counts. An RTP document read that the
+current five-minute allowance cannot finish is refused before it starts,
+and a read stopped by the allowance answers 429 and keeps nothing.
+Engagement scans and drafts that use the free fallback are no longer
+counted. No migration.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete
