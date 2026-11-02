@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**County run files that this copy cannot reach (KI-2026-11-02-048):** opening or saving observed counts and bringing in validation results now say plainly that this copy of OpenPlan cannot reach the run's files, and change nothing about the run, instead of "file was not found" or an unexplained error. A copy with no county worker says so beside those steps. County validation still needs a county worker that shares files with the app. No migration.
 **A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
 is not a UUID, now shows the not-found page instead of "could not be read" with
 the database's `invalid input syntax for type uuid` message. 22 record pages and

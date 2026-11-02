@@ -32,7 +32,17 @@ import type { PrepareCountyRunValidationResponse } from "@/lib/api/county-onramp
  * would fail at the last step with an auth error, which is worse than not
  * offering it.
  */
-export function CountyRunValidationPrep({ countyRunId }: { countyRunId: string }) {
+/** Shown before the planner clicks, on a copy with no county worker. */
+export const VALIDATION_PREP_NO_WORKER_NOTE =
+  "This copy of OpenPlan has no county worker, so this check may not reach the run's files.";
+
+export function CountyRunValidationPrep({
+  countyRunId,
+  workerConfigured = null,
+}: {
+  countyRunId: string;
+  workerConfigured?: boolean | null;
+}) {
   const [prep, setPrep] = useState<PrepareCountyRunValidationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +88,12 @@ export function CountyRunValidationPrep({ countyRunId }: { countyRunId: string }
           {loading ? "Checking…" : prep ? "Check again" : "Check readiness"}
         </button>
       </div>
+
+      {workerConfigured === false ? (
+        <p className="mt-2 text-sm text-muted-foreground" data-testid="validation-prep-no-worker">
+          {VALIDATION_PREP_NO_WORKER_NOTE}
+        </p>
+      ) : null}
 
       {error ? (
         <p

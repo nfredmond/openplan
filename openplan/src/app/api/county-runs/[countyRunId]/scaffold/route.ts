@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, extname, isAbsolute, resolve } from "node:path";
+import { dirname, extname } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -21,6 +21,11 @@ import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
+import {
+  countyRunFilesUnavailableResponse,
+  isCountyRunFileUnreachable,
+  resolveCountyRunStoredPath,
+} from "@/lib/api/county-onramp-run-files";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -47,7 +52,7 @@ type CountyRunRow = {
 };
 
 function resolveScaffoldPath(scaffoldPath: string): string {
-  const resolvedPath = isAbsolute(scaffoldPath) ? scaffoldPath : resolve(process.cwd(), "..", scaffoldPath);
+  const resolvedPath = resolveCountyRunStoredPath(scaffoldPath);
   if (extname(resolvedPath).toLowerCase() !== ".csv") {
     throw new CountyValidationScaffoldCsvError("Registered scaffold path must end with .csv.");
   }
@@ -109,9 +114,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const inlineCsvContent = getCountyInlineScaffoldCsvContent(parsedManifest.data);
-    const csvContent = inlineCsvContent
-      ? normalizeCountyValidationScaffoldCsvContent(inlineCsvContent)
-      : normalizeCountyValidationScaffoldCsvContent(await readFile(resolveScaffoldPath(scaffoldPath), "utf8"));
+    let csvSource = inlineCsvContent;
+    if (!csvSource) {
+      const scaffoldFilePath = resolveScaffoldPath(scaffoldPath);
+      try {
+        csvSource = await readFile(scaffoldFilePath, "utf8");
+      } catch (readError) {
+        if (await isCountyRunFileUnreachable(readError, scaffoldFilePath)) {
+          audit.warn("county_run_scaffold_files_unreachable", {
+            countyRunId: parsedParams.data.countyRunId,
+            durationMs: Date.now() - startedAt,
+          });
+          return countyRunFilesUnavailableResponse("open-counts");
+        }
+        throw readError;
+      }
+    }
+    const csvContent = normalizeCountyValidationScaffoldCsvContent(csvSource);
 
     audit.info("county_run_scaffold_loaded", {
       countyRunId: parsedParams.data.countyRunId,
@@ -246,8 +265,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ...new Set([...previouslyEdited, ...edits.map((edit) => edit.stationId)]),
     ].sort();
 
-    await mkdir(dirname(resolvedScaffoldPath), { recursive: true });
-    await writeFile(resolvedScaffoldPath, normalizedCsvContent, "utf8");
+    try {
+      await mkdir(dirname(resolvedScaffoldPath), { recursive: true });
+      await writeFile(resolvedScaffoldPath, normalizedCsvContent, "utf8");
+    } catch (writeError) {
+      // The file is written before the row is updated, so a write this copy
+      // cannot make stops here with the run's stored state untouched.
+      if (await isCountyRunFileUnreachable(writeError, resolvedScaffoldPath)) {
+        audit.warn("county_run_scaffold_files_unreachable", {
+          countyRunId: existingRow.id,
+          durationMs: Date.now() - startedAt,
+        });
+        return countyRunFilesUnavailableResponse("save-counts");
+      }
+      throw writeError;
+    }
 
     const invalidatesValidation = Boolean(manifest.summary.validation);
     const nextManifest = withCountyInlineScaffoldCsvContent(
