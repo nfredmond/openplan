@@ -36,6 +36,7 @@ import {
   type MapLibrary,
 } from "@/lib/maps/map-engine";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { expandCluster } from "@/lib/maps/expand-cluster";
 import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import { showsSharedMapControls } from "@/lib/navigation/map-surfaces";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
@@ -2067,7 +2068,9 @@ export function CartographicMapBackdrop({
      * standing on the corner, and OpenPlan reads no feed that could keep the
      * second one.
      */
-    const transitPopup = new mapboxgl.Popup({
+    // Built by the library that drew the map: a Mapbox popup cannot attach to
+    // a MapLibre map, which lacks the private methods it calls.
+    const transitPopup = new mapLibraryRef.current.Popup({
       closeButton: true,
       closeOnClick: true,
       maxWidth: "280px",
@@ -2172,13 +2175,10 @@ export function CartographicMapBackdrop({
       const geometry = feature?.geometry;
       if (!geometry || geometry.type !== "Point") return;
       const center = geometry.coordinates as [number, number];
-      // Callback form, which is what this Mapbox GL version's types require.
-      // A failure is a no-op rather than a thrown error: the planner can still
-      // zoom by hand, and a dead click is a smaller harm than a crashed map.
-      source.getClusterExpansionZoom(clusterId, (error, zoom) => {
-        if (error || typeof zoom !== "number") return;
-        map.easeTo({ center, zoom, duration: FIT_DURATION_MS });
-      });
+      // Mapbox answers by callback and MapLibre by promise; the shared helper
+      // takes either. A failure is a no-op rather than a thrown error: the
+      // planner can still zoom by hand.
+      expandCluster(map, source, clusterId, center, { duration: FIT_DURATION_MS });
     };
 
     /**

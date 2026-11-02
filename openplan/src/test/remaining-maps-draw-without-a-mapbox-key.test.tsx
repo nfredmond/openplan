@@ -37,6 +37,7 @@ import {
 
 const protocols = vi.hoisted(() => ({ added: [] as string[] }));
 const theme = vi.hoisted(() => ({ resolved: "light" as "light" | "dark" }));
+const MAPLIBRE_EXPANSION_ZOOM = vi.hoisted(() => 15);
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -49,16 +50,37 @@ vi.mock("mapbox-gl", async () => {
 });
 vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
 vi.mock("maplibre-gl/dist/maplibre-gl.css", () => ({}));
+/*
+  MapLibre's fake differs from Mapbox's where the libraries differ in ways a map
+  can trip on: its popups are its own class (a Mapbox popup cannot attach to a
+  MapLibre map), and its cluster source answers `getClusterExpansionZoom` with
+  a promise and never calls a callback, as MapLibre 5 and later do.
+*/
 vi.mock("maplibre-gl", async () => {
-  const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
+  const { createMapboxGlModuleFake, FakeMapboxMap } = await import("@/test/helpers/mapbox-gl-fake");
   const fake = createMapboxGlModuleFake();
+  class MapLibrePopup extends fake.default.Popup {
+    readonly library = "maplibre";
+  }
+  class MapLibreMap extends FakeMapboxMap {
+    addSource(id: string, source: { data?: unknown }): void {
+      super.addSource(id, source);
+      Object.assign(this.getSource(id) as object, {
+        getClusterExpansionZoom: () => Promise.resolve(MAPLIBRE_EXPANSION_ZOOM),
+      });
+    }
+  }
   const api = {
     ...fake.default,
+    Map: MapLibreMap,
+    Popup: MapLibrePopup,
     addProtocol: (name: string) => protocols.added.push(name),
     setWorkerUrl: () => undefined,
   };
   return { default: api, ...api };
 });
+/** What the shared Mapbox fake's cluster source answers, by callback. */
+const MAPBOX_EXPANSION_ZOOM = 14;
 vi.mock("pmtiles", () => ({ Protocol: class { tile = () => undefined; } }));
 // Only the shell map reads the theme; a test switches it here.
 vi.mock("@/components/theme-provider", async (importOriginal) => {
@@ -610,6 +632,53 @@ describe("shell map on the Aerial index", () => {
     await waitFor(() => expect(second.layerIds()).toContain("cartographic-aerial-mission-aois-fill"));
   });
 
+  const TRANSIT_SOURCE = "cartographic-transit-stops";
+  const CLUSTER_CLICK = {
+    features: [{ properties: { cluster_id: 7 }, geometry: { type: "Point", coordinates: [-83.0, 39.96] } }],
+  };
+  const STOP_CLICK = {
+    features: [
+      {
+        properties: { stopName: "High St & Broad St", tripsPerDay: 120, peakHeadwayMinutes: 10, routesServing: 2 },
+        geometry: { type: "Point", coordinates: [-83.0, 39.96] },
+      },
+    ],
+  };
+
+  /** A loaded shell map with a clustered transit source, as the transit paint leaves it. */
+  async function loadedWithTransit() {
+    await renderBackdrop();
+    const map = await waitForMap();
+    giveBounds(map);
+    loadMap(map);
+    await waitFor(() => expect(map.layerIds()).toContain("cartographic-aerial-mission-aois-fill"));
+    map.addSource(TRANSIT_SOURCE, { data: { type: "FeatureCollection", features: [] } });
+    return map;
+  }
+
+  it("zooms into a transit cluster on MapLibre, whose source answers with a promise", async () => {
+    const map = await loadedWithTransit();
+    act(() => map.emitOnLayer("click", "cartographic-transit-stops-cluster", CLUSTER_CLICK));
+    await waitFor(() => expect(map.easeToCalls).toHaveLength(1));
+    expect(map.easeToCalls[0]).toMatchObject({ center: [-83.0, 39.96], zoom: MAPLIBRE_EXPANSION_ZOOM });
+  });
+
+  it("still zooms into a transit cluster on Mapbox, whose source answers by callback", async () => {
+    useMapboxKey();
+    const map = await loadedWithTransit();
+    act(() => map.emitOnLayer("click", "cartographic-transit-stops-cluster", CLUSTER_CLICK));
+    await waitFor(() => expect(map.easeToCalls).toHaveLength(1));
+    expect(map.easeToCalls[0]).toMatchObject({ center: [-83.0, 39.96], zoom: MAPBOX_EXPANSION_ZOOM });
+  });
+
+  it("opens a transit stop's popup built by MapLibre, not by Mapbox", async () => {
+    const map = await loadedWithTransit();
+    act(() => map.emitOnLayer("click", "cartographic-transit-stops-circle", STOP_CLICK));
+    expect(map.openPopups).toHaveLength(1);
+    expect((map.openPopups[0] as unknown as { library?: string }).library).toBe("maplibre");
+    expect(map.openPopups[0].content?.textContent).toContain("High St & Broad St");
+  });
+
   it("keeps the theme's Mapbox style when a key is set", async () => {
     useMapboxKey();
     await renderBackdrop();
@@ -621,5 +690,34 @@ describe("shell map on the Aerial index", () => {
     failNextFakeMapConstruction("Failed to initialize WebGL");
     const { container } = await renderBackdrop();
     await waitFor(() => expect(container.querySelector(".op-map-backdrop__canvas")).toBeNull());
+  });
+});
+
+// ── the shared cluster helper ────────────────────────────────────────────────
+
+describe("expandCluster", () => {
+  async function helper() {
+    return (await import("@/lib/maps/expand-cluster")).expandCluster;
+  }
+
+  it("eases once by callback (Mapbox) and once by promise (MapLibre)", async () => {
+    const expandCluster = await helper();
+    const byCallback = { easeTo: vi.fn() };
+    expandCluster(byCallback as never, { getClusterExpansionZoom: (_id: number, done: (e: unknown, z: number) => void) => done(null, 12) } as never, 1, [0, 0]);
+    expect(byCallback.easeTo).toHaveBeenCalledWith({ center: [0, 0], zoom: 12 });
+
+    const byPromise = { easeTo: vi.fn() };
+    expandCluster(byPromise as never, { getClusterExpansionZoom: () => Promise.resolve(13) } as never, 1, [0, 0], { duration: 300 });
+    await waitFor(() => expect(byPromise.easeTo).toHaveBeenCalledWith({ center: [0, 0], zoom: 13, duration: 300 }));
+    expect(byPromise.easeTo).toHaveBeenCalledTimes(1);
+  });
+
+  it("does nothing when either form reports a failure", async () => {
+    const expandCluster = await helper();
+    const map = { easeTo: vi.fn() };
+    expandCluster(map as never, { getClusterExpansionZoom: (_id: number, done: (e: unknown) => void) => done(new Error("gone")) } as never, 1, [0, 0]);
+    expandCluster(map as never, { getClusterExpansionZoom: () => Promise.reject(new Error("gone")) } as never, 1, [0, 0]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(map.easeTo).not.toHaveBeenCalled();
   });
 });
