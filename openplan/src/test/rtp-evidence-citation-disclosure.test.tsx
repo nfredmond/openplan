@@ -99,6 +99,24 @@ vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({ from: fromMock }),
 }));
 
+/**
+ * The rows the page hands the shared map builder. Recorded so a test can see
+ * what the map was given; the map component itself draws nothing in jsdom.
+ */
+const mapBuilderCalls = vi.hoisted(() => [] as Array<{ rows: unknown[]; matchedCount: number | null }>);
+vi.mock("@/lib/cartographic/rtp-cycle-project-layer", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/cartographic/rtp-cycle-project-layer")>();
+  return {
+    ...actual,
+    buildRtpCycleProjectFeatureCollection: (
+      ...args: Parameters<typeof actual.buildRtpCycleProjectFeatureCollection>
+    ) => {
+      mapBuilderCalls.push({ rows: args[0], matchedCount: args[1] });
+      return actual.buildRtpCycleProjectFeatureCollection(...args);
+    },
+  };
+});
+
 import PublicRtpWhyPage from "@/app/(published)/plan/[shareToken]/page";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
 
@@ -107,14 +125,20 @@ import { US_CA_RTP_PRIORITY_FRAMEWORK } from "@/lib/rtp/frameworks/us-ca";
 
 const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
 
+/** The workspace that published the plan, and a different one. */
+const WORKSPACE_ID = "workspace-1";
+const OTHER_WORKSPACE_ID = "workspace-2";
+
 
 function seedPublicPageData() {
+  mapBuilderCalls.length = 0;
   for (const key of Object.keys(selectCalls)) delete selectCalls[key];
   for (const key of Object.keys(filterCalls)) delete filterCalls[key];
   tableErrors = {};
   tableData = {
     rtp_cycles: {
       id: "cycle-1",
+      workspace_id: WORKSPACE_ID,
       title: "Example Region RTP 2050",
       status: "adopted",
       geography_label: null,
@@ -129,7 +153,7 @@ function seedPublicPageData() {
         priority_rationale: "Rationale A",
         priority_scores: { vmt_reduction: 3 },
         evidence_model_run_id: "run-failed",
-        projects: { id: "p1", name: "Corridor improvements", status: "active", summary: null },
+        projects: { id: "p1", workspace_id: WORKSPACE_ID, name: "Corridor improvements", status: "active", summary: null },
       },
       {
         id: "link-sketch",
@@ -137,7 +161,7 @@ function seedPublicPageData() {
         priority_rationale: "Rationale B",
         priority_scores: { vmt_reduction: 2 },
         evidence_model_run_id: "run-sketch",
-        projects: { id: "p2", name: "Trail network", status: "active", summary: null },
+        projects: { id: "p2", workspace_id: WORKSPACE_ID, name: "Trail network", status: "active", summary: null },
       },
     ],
     funding_awards: [],
@@ -515,6 +539,7 @@ describe("public plan page — the per-cycle project map (decision #1's public h
         evidence_model_run_id: null,
         projects: {
           id: "p1",
+          workspace_id: WORKSPACE_ID,
           name: "Corridor improvements",
           status: "active",
           summary: null,
@@ -571,6 +596,60 @@ describe("public plan page — the per-cycle project map (decision #1's public h
     }
   });
 
+  /**
+   * The link-row workspace filter keeps a link forged against this cycle off
+   * the page, but not a link this workspace made to ANOTHER workspace's
+   * project: the embed is read through the service role, so it returns that
+   * project's name, status and site whatever workspace it belongs to. The
+   * database does not refuse such a row yet (KI-2026-11-02-053).
+   */
+  it("drops a linked project from another workspace from the lists and the map", async () => {
+    tableData.project_rtp_cycle_links = [
+      ...(tableData.project_rtp_cycle_links as Array<Record<string, unknown>>),
+      {
+        id: "link-foreign",
+        project_id: "p-foreign",
+        portfolio_role: "constrained",
+        horizon_band_id: null,
+        estimated_cost: "9000000",
+        cost_basis_year: 2026,
+        priority_rationale: "Another agency's rationale",
+        priority_scores: { vmt_reduction: 3 },
+        evidence_model_run_id: null,
+        projects: {
+          id: "p-foreign",
+          workspace_id: OTHER_WORKSPACE_ID,
+          name: "Another agency's interchange",
+          status: "active",
+          summary: "Another agency's unpublished summary",
+          latitude: 38.5,
+          longitude: -121.5,
+        },
+      },
+    ];
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.queryByText("Another agency's interchange")).toBeNull();
+    expect(screen.queryByText(/Another agency's unpublished summary/)).toBeNull();
+    expect(screen.queryByText(/Another agency's rationale/)).toBeNull();
+    expect(screen.getAllByText("Corridor improvements").length).toBeGreaterThan(0);
+
+    expect(mapBuilderCalls.length, "the map builder was never called").toBe(1);
+    const mapLinkIds = (mapBuilderCalls[0].rows as Array<{ id: string }>).map((row) => row.id);
+    expect(mapLinkIds).toEqual(["link-1"]);
+  });
+
+  it("asks for each linked project's workspace on the list read and the map read", async () => {
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    const linkSelects = selectCalls.project_rtp_cycle_links ?? [];
+    expect(linkSelects.length).toBe(2);
+    for (const columns of linkSelects) {
+      expect(columns).toMatch(/projects\([^)]*\bworkspace_id\b[^)]*\)/);
+    }
+  });
+
   it("does not instruct the resident to go place projects", async () => {
     // Same plan, no located projects: the honest empty state renders, but the
     // operator instruction ("Open a project from the lists above…") is copy
@@ -580,6 +659,7 @@ describe("public plan page — the per-cycle project map (decision #1's public h
         ...(tableData.project_rtp_cycle_links as Array<Record<string, unknown>>)[0],
         projects: {
           id: "p1",
+          workspace_id: WORKSPACE_ID,
           name: "Corridor improvements",
           status: "active",
           summary: null,

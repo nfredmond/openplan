@@ -155,6 +155,9 @@ import {
 const SHARE_TOKEN = "public-share-token-1";
 /** The id every child read must be scoped to — shared with the fixture below. */
 const PLAN_ID = "cycle-1";
+/** The workspace that published this plan, and a different one. */
+const WORKSPACE_ID = "workspace-1";
+const OTHER_WORKSPACE_ID = "workspace-2";
 
 const DAY = 24 * 60 * 60 * 1000;
 const YESTERDAY = new Date(Date.now() - DAY).toISOString();
@@ -176,6 +179,7 @@ function seed() {
   tableData = {
     rtp_cycles: {
       id: PLAN_ID,
+      workspace_id: WORKSPACE_ID,
       title: "Example Region RTP 2050",
       status: "public_review",
       geography_label: "Example Region",
@@ -219,7 +223,7 @@ function seed() {
         horizon_band_id: "band-1",
         estimated_cost: "400000",
         cost_basis_year: 2026,
-        projects: { id: "p1", name: "Main Street complete street", summary: null },
+        projects: { id: "p1", workspace_id: WORKSPACE_ID, name: "Main Street complete street", summary: null },
       },
       {
         id: "link-2",
@@ -228,7 +232,12 @@ function seed() {
         horizon_band_id: "band-1",
         estimated_cost: null,
         cost_basis_year: null,
-        projects: { id: "p2", name: "Regional trail extension", summary: "A long-term ambition." },
+        projects: {
+          id: "p2",
+          workspace_id: WORKSPACE_ID,
+          name: "Regional trail extension",
+          summary: "A long-term ambition.",
+        },
       },
     ],
     rtp_horizon_bands: [
@@ -489,6 +498,75 @@ describe("public RTP document page — the filters are the access control", () =
         `${table} was not scoped to this plan — the service-role client returns every workspace's rows`
       ).toBe(PLAN_ID);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// A link row from another workspace
+// ---------------------------------------------------------------------------
+
+/**
+ * The database does not yet refuse a link row whose workspace differs from its
+ * cycle's or its project's (KI-2026-11-02-053). Through the Data API a member of
+ * one workspace can insert a link carrying their own workspace id against any
+ * cycle id, or against another workspace's project. The cycle id filter alone
+ * publishes the first on this plan's page; the second embeds another agency's
+ * project name, summary and cost here. A mocked client answers with the fixture
+ * whatever it was filtered on, so the filter is asserted by value and the
+ * embedded project's workspace by render.
+ */
+describe("public RTP document page — links stay inside the plan's workspace", () => {
+  it("scopes the project-link read to this plan's workspace as well as its id", async () => {
+    await renderPage();
+
+    const [read] = readsOf("project_rtp_cycle_links");
+    expect(filterValue(read, "rtp_cycle_id")).toBe(PLAN_ID);
+    expect(
+      filterValue(read, "workspace_id"),
+      "the link read was not scoped to the plan's workspace"
+    ).toBe(WORKSPACE_ID);
+  });
+
+  it("asks for the plan's workspace on both cycle reads, and for each linked project's workspace", async () => {
+    tableErrors.rtp_cycles = {
+      message: "column rtp_cycles.annual_inflation_rate does not exist",
+      whenSelectIncludes: "annual_inflation_rate",
+    };
+
+    await renderPage();
+
+    const [wide, fallback] = readsOf("rtp_cycles");
+    expect(wide.columns).toMatch(/\bworkspace_id\b/);
+    expect(fallback.columns).toMatch(/\bworkspace_id\b/);
+    const [links] = readsOf("project_rtp_cycle_links");
+    expect(links.columns).toMatch(/projects\([^)]*\bworkspace_id\b[^)]*\)/);
+  });
+
+  it("drops a linked project that belongs to another workspace, from the list and from the money", async () => {
+    (tableData.project_rtp_cycle_links as Array<Record<string, unknown>>).push({
+      id: "link-foreign",
+      portfolio_role: "constrained",
+      priority_rationale: "Another agency's rationale.",
+      horizon_band_id: "band-1",
+      estimated_cost: "900000",
+      cost_basis_year: 2026,
+      projects: {
+        id: "p-foreign",
+        workspace_id: OTHER_WORKSPACE_ID,
+        name: "Another agency's interchange",
+        summary: "Another agency's unpublished summary.",
+      },
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText("Another agency's interchange")).toBeNull();
+    expect(screen.queryByText(/Another agency's unpublished summary/)).toBeNull();
+    expect(screen.queryByText(/Another agency's rationale/)).toBeNull();
+    // Counted, its $900,000 would push capital plus O&M past the $1,000,000 of
+    // revenue and change the published verdict.
+    expect(screen.getAllByText("Fiscally constrained").length).toBeGreaterThan(0);
+    expect(screen.getByText("Main Street complete street")).toBeTruthy();
   });
 });
 
