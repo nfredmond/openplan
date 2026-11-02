@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { posixRelative } from "./helpers/posix-path";
 
 const SOURCE_ROOT = path.resolve(process.cwd(), "src");
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx"]);
@@ -37,7 +38,7 @@ function collectModelRunKpiCalls(): KpiCall[] {
   return collectSourceFiles(SOURCE_ROOT).flatMap((filePath) => {
     const content = fs.readFileSync(filePath, "utf8");
     return Array.from(content.matchAll(tablePattern)).map((match) => ({
-      filePath: path.relative(process.cwd(), filePath),
+      filePath: posixRelative(process.cwd(), filePath),
       chain: readCallChain(content, match.index ?? 0),
     }));
   });

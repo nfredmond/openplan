@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-11-01.1",
+  "registryVersion": "2026-11-02.2",
   "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
@@ -84,12 +84,22 @@
     {
       "id": "crash-source-registry",
       "path": "openplan/src/lib/safety/sources/registry.ts",
-      "sha256": "d719ff645a51f79c25dabceae0a1235b0ea0bf1fa227550ea48081a9d7d31d2f"
+      "sha256": "2c8dafc287aebaf859ae81735b6dca37d4a16d2179a54d768a8d426e07248f90"
     },
     {
       "id": "fars-source-adapter",
       "path": "openplan/src/lib/safety/sources/fars.ts",
-      "sha256": "98879cd0f4ce4dd96e6ef95ace02efd985a104095765521f95b356f32af2a59b"
+      "sha256": "2dbadc5bb24cd39dfabfcd72f7ce76d8035584530cd28726f10ab8f6ae9a6894"
+    },
+    {
+      "id": "odot-or-source-adapter",
+      "path": "openplan/src/lib/safety/sources/odot-or.ts",
+      "sha256": "0bbb8c7e1e0133586824f98e9660a89e8b56455bb530a190b3dba5cf38aea406"
+    },
+    {
+      "id": "odot-or-source-vocabulary",
+      "path": "openplan/src/lib/safety/sources/odot-or-vocabulary.ts",
+      "sha256": "7f14486623fcec4f083399fcd8aafda2b3c404d763f4343e50c56fdcbe55a101"
     },
     {
       "id": "ccrs-source-adapter",
@@ -254,18 +264,27 @@
       "jurisdictionId": "US-OR",
       "jobId": "safety-analysis",
       "status": "partial",
-      "applicability": "FARS can supply fatal crash records for covered Oregon study areas.",
-      "sourceIds": ["crash-source-registry", "fars-source-adapter"],
-      "adapterIds": ["fars-national"],
+      "applicability": "ODOT's published crash layer supplies located Oregon crashes with KABCO severity for live reads and corridor runs. FARS supplies the fatal-only records a Safety acquisition stores.",
+      "sourceIds": ["crash-source-registry", "odot-or-source-adapter", "odot-or-source-vocabulary", "fars-source-adapter"],
+      "adapterIds": ["odot-or", "fars-national"],
       "authorities": [
         {
           "kind": "data_source",
           "label": "Fatality Analysis Reporting System",
           "agency": "National Highway Traffic Safety Administration",
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
+        },
+        {
+          "kind": "data_source",
+          "label": "Oregon Transportation Safety Data Explorer crash data",
+          "agency": "Oregon Department of Transportation",
+          "url": "https://www.oregon.gov/odot/data/pages/crash.aspx"
         }
       ],
-      "limitations": ["The available adapter is fatal-only and persists retrieved crash records. An Oregon all-severity crash source is not configured."]
+      "limitations": [
+        "The ODOT crash layer is read live and not stored: safety_crashes does not admit its source id, so a Safety acquisition in Oregon still stores fatal-only FARS records.",
+        "ODOT states no access constraints but names no open license. Crashes ODOT could not locate are excluded, and the layer holds only the years ODOT publishes in it (2019 to 2024 when checked on November 1, 2026)."
+      ]
     },
     {
       "id": "US-OR/grants-and-reimbursement",
@@ -328,10 +347,10 @@
       "id": "US-PR/safety-analysis",
       "jurisdictionId": "US-PR",
       "jobId": "safety-analysis",
-      "status": "unavailable",
-      "applicability": "No registered crash adapter reads Puerto Rico. NHTSA publishes Puerto Rico fatal crashes in a separate FARS file, and the FARS adapter reads only the National file, which covers the 50 states and DC.",
+      "status": "partial",
+      "applicability": "FARS supplies Puerto Rico fatal crash records for 2020 through 2024 from NHTSA's separate Puerto Rico annual file.",
       "sourceIds": ["crash-source-registry", "fars-source-adapter"],
-      "adapterIds": [],
+      "adapterIds": ["fars-national"],
       "authorities": [
         {
           "kind": "data_source",
@@ -340,7 +359,7 @@
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
         }
       ],
-      "limitations": ["OpenPlan cannot retrieve or store Puerto Rico crash records. Checked 2026-11-01 against the 2023 FARS files: the National accident table has no Puerto Rico rows."]
+      "limitations": ["The adapter is fatal-only and persists retrieved crash records. It cannot support an all-severity or serious-injury claim.", "NHTSA's Puerto Rico files for 2010 through 2019 carry no crash coordinates, so OpenPlan reads Puerto Rico from 2020 on and treats an earlier year as not answered. Checked 2026-11-01: 6 of 229 crashes in 2020 and 1 of 330 in 2021 have no coordinates and cannot be placed in a study area."]
     },
     {
       "id": "US-PR/grants-and-reimbursement",

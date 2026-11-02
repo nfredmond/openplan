@@ -80,7 +80,8 @@ async function fixture() {
     directory, target, signal: controller.signal, generate, statusIntervalMs: 5, ...overrides });
   return { field, request, binding, job, result, directory, target, journal, lookup, queries, from, claim, authorize, current, stop, retain, rpc, generate, invoke, controller, run };
 }
-describe("durable translation worker", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("durable translation worker", () => {
   it("claims with exact projections, journals before dispatch and retains exact output without credentials", async () => {
     const f = await fixture();
     expect(await f.run()).toEqual({ state: "completed", fieldId: f.field.id });

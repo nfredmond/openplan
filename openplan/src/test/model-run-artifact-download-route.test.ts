@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import path from "node:path";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -278,7 +279,8 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", "/srv/worker");
     const runDirPath = `/srv/worker/runs/${MODEL_RUN_ID}/run_output/link_volumes.csv`;
     setArtifact(`local://${runDirPath}`);
-    realpathMock.mockImplementation(async (value: string) => value === runDirPath ? "/srv/worker/runs/another-run/private.csv" : value);
+    // The route resolves host paths, so the fake compares host paths too.
+    realpathMock.mockImplementation(async (value: string) => value === path.resolve(runDirPath) ? path.resolve("/srv/worker/runs/another-run/private.csv") : value);
     readFileMock.mockResolvedValue(Buffer.from("foreign bytes"));
     const res = await downloadArtifact(request(), routeContext());
     expect(res.status).toBe(404);
@@ -293,7 +295,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
 
     const res = await downloadArtifact(request(), routeContext());
 
-    expect(readFileMock).toHaveBeenCalledWith(runDirPath, expect.objectContaining({ flag: expect.any(Number) }));
+    expect(readFileMock).toHaveBeenCalledWith(path.resolve(runDirPath), expect.objectContaining({ flag: expect.any(Number) }));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("text/csv");
     expect(res.headers.get("content-disposition")).toContain('filename="link_volumes.csv"');

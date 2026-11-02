@@ -38,6 +38,8 @@ const DISPLAY_ONLY = "Shows a recorded instant as its UTC day in a sentence. Not
 
 const ALLOWED: readonly AllowedSlice[] = [
   { file: "src/lib/grants/award-handoff.ts", snippet: "date.toISOString().slice(0, 10) === s", reason: ROUND_TRIP },
+  { file: "src/lib/safety/sources/odot-or.ts", snippet: "parsed.toISOString().slice(0, 10) !== iso", reason: ROUND_TRIP },
+  { file: "src/lib/safety/sources/iowadot-ia.ts", snippet: "date.toISOString().slice(0, 10);", reason: SOURCE_DATE },
   { file: "src/app/api/analysis/route.ts", snippet: "droppedSentenceIssues.slice(0, 10)", reason: NOT_A_DATE },
   { file: "src/app/api/projects/[projectId]/bca-analyses/route.ts", snippet: "issues.slice(0, 10)", reason: NOT_A_DATE },
   { file: "src/lib/engagement/survey.ts", snippet: "texts.slice(0, 10)", reason: NOT_A_DATE },
