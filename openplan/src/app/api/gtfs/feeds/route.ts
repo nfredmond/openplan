@@ -405,8 +405,8 @@ export async function POST(request: NextRequest) {
     /* ------------------------------------------------------------------ */
 
     // A fetched archive's size is unknown until it arrives, so this refuses a
-    // workspace already at its storage limit; the per-archive ceiling
-    // (OPENPLAN_GTFS_MAX_ARCHIVE_BYTES) bounds the rest.
+    // workspace already at its storage limit before any network work. The
+    // ingest checks the fetched archive's actual size before storing it.
     const room = await checkWorkspaceStorageRoom(service, workspaceId, 0);
     if (room.status !== "room") {
       audit.warn("gtfs_feed_workspace_storage_refused", {
@@ -437,6 +437,17 @@ export async function POST(request: NextRequest) {
         code: result.code,
         durationMs: Date.now() - startedAt,
       });
+      if (result.storageRoom) {
+        const room = result.storageRoom;
+        audit.warn("gtfs_feed_workspace_storage_refused", {
+          workspaceId,
+          feedId: result.feedId,
+          versionId: result.versionId,
+          status: room.status,
+          ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+        });
+        return workspaceStorageRefusal(room);
+      }
       return NextResponse.json(
         {
           error: "This transit feed could not be ingested",

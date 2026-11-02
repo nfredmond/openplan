@@ -218,6 +218,13 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => mockAudit,
 }));
 
+// The AI usage meter the interpretation is counted against.
+const reserveAiUsageMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/runtime/ai-rate-limit", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/runtime/ai-rate-limit")>()),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
 vi.mock("@/lib/ai/interpret", () => ({
   generateGrantInterpretation: (...args: unknown[]) => generateGrantInterpretationMock(...args),
 }));
@@ -347,6 +354,24 @@ describe("/api/analysis grounding provenance contract", () => {
     classifyWalkBikeAccessMock.mockReturnValue(WALK_BIKE_FIXTURE);
     buildAnalysisCostThresholdWarningMock.mockReturnValue(null);
     generateGrantInterpretationMock.mockResolvedValue(INTERPRETATION_RESULT);
+  });
+
+  it("counts the interpretation against the workspace's staff AI allowance, tagged with this run", async () => {
+    reserveAiUsageMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { runId: string };
+
+    const options = generateGrantInterpretationMock.mock.calls[0][2] as { reserveUsage: () => Promise<unknown> };
+    expect(reserveAiUsageMock).not.toHaveBeenCalled();
+    await options.reserveUsage();
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "grant_narrative_draft",
+      eventKey: "corridor_interpretation",
+      sourceRoute: "/api/analysis",
+      metadataJson: { runId: payload.runId },
+    });
   });
 
   it("withholds ACS employment estimates and walk/bike tiers when their inputs are absent", async () => {

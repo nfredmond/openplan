@@ -31,6 +31,7 @@ import { presentableScoreMetrics, resolveScorePresentation } from "@/lib/analysi
 import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -394,6 +395,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
+    // Narrowed here: the interpretation's usage meter reads it from a callback.
+    const meteredWorkspaceId = workspaceId;
     return await withWorkspaceIntegrationContext(workspaceId, async () => {
       runId = crypto.randomUUID();
 
@@ -707,7 +710,18 @@ export async function POST(request: NextRequest) {
         },
       };
 
-      const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
+      // The interpretation is a model call like any grant narrative draft, so
+      // it is counted against the same staff AI allowance before it is made.
+      const aiInterpretationResult = await generateGrantInterpretation(metrics, summary, {
+        reserveUsage: () =>
+          reserveAiUsage({
+            workspaceId: meteredWorkspaceId,
+            bucketKey: "grant_narrative_draft",
+            eventKey: "corridor_interpretation",
+            sourceRoute: "/api/analysis",
+            metadataJson: { runId },
+          }),
+      });
 
       const finalizedMetrics = {
         ...metrics,

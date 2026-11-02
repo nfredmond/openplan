@@ -1,7 +1,7 @@
 import { generateText, Output } from "ai";
 import { anthropicKeySource, anthropicModel } from "@/lib/integrations/anthropic-access";
 import { listWorkspaceIntegrationKeyMetadata, withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { checkedProviderTurn, ProviderRequestError, providerRpcError, type ProviderService, type ProviderUserClient, type RetainedProviderTurn } from "./provider-server";
 import { parseProviderProjectAnswer, PROVIDER_PROJECT_INSTRUCTIONS, providerProjectOutputSchema, providerProjectPrompt } from "./provider-project-task";
 
@@ -44,10 +44,11 @@ export async function runProviderApiTurn(args: { service: ProviderService; clien
     await observeCancellation();
     await withExactProviderApiMode(turn.workspace_id, turn.auth_mode, async () => {
       signal.throwIfAborted();
-      const rate = await checkAiUsageRateLimit(turn.workspace_id);
-      if (!rate.allowed) throw new ProviderRequestError("provider_rate_limited", 429);
-      await recordAiUsageEvent({ workspaceId: turn.workspace_id, bucketKey: "assistant_chat", eventKey: turn.id,
+      // Counted before the call. When the deployment key pays, a usage lookup
+      // or record that fails throws here, so no unmetered call is made.
+      const rate = await reserveAiUsage({ workspaceId: turn.workspace_id, bucketKey: "assistant_chat", eventKey: turn.id,
         sourceRoute: "/api/assistant/providers/turns", metadataJson: { provider: "anthropic", model: turn.model_id, authMode: turn.auth_mode } });
+      if (!rate.allowed) throw new ProviderRequestError("provider_rate_limited", 429);
       signal.throwIfAborted();
       const generation = await generateText({ model: anthropicModel(turn.model_id), system: PROVIDER_PROJECT_INSTRUCTIONS,
         prompt: providerProjectPrompt(packet, turn.question), output: Output.object({ schema: providerProjectOutputSchema(packet) }),
