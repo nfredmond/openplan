@@ -1,5 +1,6 @@
 import { evaluateRegistryPacketFreshness } from "@/lib/reports/packet-freshness-loader";
 import { latestArtifactByReport, latestSafetyAtByProject } from "@/lib/reports/packet-freshness-rules";
+import { loadReportSafetyIngestOptionsByProject } from "@/lib/reports/safety-evidence-selection";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -252,6 +253,10 @@ export default async function ReportsPage({
   const latestSafetyAtByProjectId = latestSafetyAtByProject(
     (safetyIngestRead.data ?? []) as Array<{ project_id: string | null; created_at: string }>
   );
+  // Each project's ready crash acquisitions, so a new report can start with
+  // its Safety evidence chosen (KI-2026-08-31-015).
+  const safetyEvidenceRead = await loadReportSafetyIngestOptionsByProject(supabase, membership.workspace_id);
+  reads.check("project crash evidence offered to new reports", safetyEvidenceRead);
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
   const artifactsRead = reportIds.length
@@ -719,6 +724,7 @@ export default async function ReportsPage({
               runs={runsData ?? []}
               modelingCountyRuns={modelingCountyRuns}
               reportGuidanceByProject={reportGuidanceByProject}
+              safetyIngestOptionsByProject={safetyEvidenceRead.data ?? {}}
             />
           </div>
         }

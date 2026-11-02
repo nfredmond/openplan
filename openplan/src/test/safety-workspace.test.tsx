@@ -575,6 +575,27 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
+  it("says crash, not crashes, for one fatal or serious-injury crash", async () => {
+    const features = [
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "injury" } },
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => mockCrashResponse(features)) as unknown as typeof fetch
+    );
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={ingest({ severityCompleteness: "kabco_full" })}
+        studyArea={seededStudyArea()}
+      />
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId("safety-ksi-headline-label")).toHaveTextContent(/^1 fatal or serious-injury crash \(/);
+    });
+  });
+
   it("shows a severe-crash total only when the source could separate serious injury", async () => {
     const features = [
       { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },

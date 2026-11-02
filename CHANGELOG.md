@@ -26,6 +26,14 @@ the database's `invalid input syntax for type uuid` message. 22 record pages and
 the API routes that reached the database with such an ID now refuse it before
 querying (each route family keeps its own 400 or 404). Valid IDs behave as
 before, and a read that really fails still says so. No migration.
+**Public plan pages publish only their own workspace's projects (KI-2026-11-02-053):**
+the plan document page now reads project links only from the plan's own workspace,
+and both public plan pages drop a link whose project belongs to another workspace
+from the project lists, the financial summary and the map. No migration.
+**Safety page: ranking retry, project warning and labeled totals (KI-2026-09-05-027, KI-2026-08-31-015, KI-2026-08-31-014):** when the crash-location ranking fails while the totals load, "Try the ranking again" asks for the ranking alone (`/api/safety/crashes?part=ksi_concentrations`) for the same acquisition, and the failure sentence stays until a ranking arrives. Retrieving with no project chosen now says first that the crashes cannot go into a report, and New report offers the chosen project's crash acquisitions as evidence. The fatal-or-serious headline and the high-injury network total each name their area and filters, with one line reconciling them. Nothing to do on upgrade; no migration.
+**Safety starts beside the navigation rail (KI-2026-11-02-024):** on a desktop the
+Safety page no longer runs under the 60px rail, so the active-project banner and
+the map's left edge are fully visible.
 
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
