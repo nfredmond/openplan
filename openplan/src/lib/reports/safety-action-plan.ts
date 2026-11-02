@@ -155,6 +155,39 @@ export const SAFETY_ACTION_PLAN_COMPONENT_COVERAGE: readonly ActionPlanComponent
   },
 ];
 
+/**
+ * The component list for one saved plan.
+ *
+ * The constant above describes a plan that has a crash summary, a ranked
+ * network and attached countermeasures. A plan with no attachments (common
+ * where no fatal or serious-injury crash fell in the window) must not claim it
+ * "has countermeasures attached", and a plan whose crash summary and network
+ * both failed to read must not claim it "has the crash summary".
+ */
+function safetyActionPlanComponentCoverage(input: {
+  hasCrashSummary: boolean;
+  hasNetwork: boolean;
+  hasTreatments: boolean;
+}): ActionPlanComponentCoverage[] {
+  return SAFETY_ACTION_PLAN_COMPONENT_COVERAGE.map((entry) => {
+    if (entry.component === "Strategy and project selections" && !input.hasTreatments) {
+      return {
+        component: entry.component,
+        status: "not_covered",
+        gap: "No countermeasure is attached to a ranked segment. Lacks a prioritized project list, costs, and time ranges.",
+      };
+    }
+    if (entry.component === "Safety analysis" && !input.hasCrashSummary && !input.hasNetwork) {
+      return {
+        component: entry.component,
+        status: "not_covered",
+        gap: "Neither the crash summary nor the high-injury network could be read for this plan. Also lacks a systemic risk analysis, trends over time, and crash factor review.",
+      };
+    }
+    return { ...entry };
+  });
+}
+
 export type SafetyActionPlanNetworkRow = {
   rank: number;
   tied: boolean;
@@ -297,7 +330,11 @@ export function buildSafetyActionPlanSection(input: {
     network: networkSection,
     treatments,
     countermeasureSourceLine: describeCountermeasureSource(),
-    components: SAFETY_ACTION_PLAN_COMPONENT_COVERAGE,
+    components: safetyActionPlanComponentCoverage({
+      hasCrashSummary: crashSummary.kind === "present",
+      hasNetwork: networkSection.kind === "computed",
+      hasTreatments: treatments.some((treatment) => treatment.countermeasures.length > 0),
+    }),
     componentSourceLine: `Source: ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.label}, ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.url}. Retrieved ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.retrievedOn}. ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.note}`,
     draftNotice: "This is a draft section for staff review. It is not an adopted safety action plan, and several required components are missing below.",
   };

@@ -7,10 +7,9 @@ import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
 import { readSafetyArtifactSnapshot } from "@/lib/reports/safety-comparison-snapshot";
 import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
-import { buildSafetySeedPreview, SafetySeedRefusal, SS4A_SEED_MIGRATION, SS4A_SECTION_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_ARTIFACT_PROJECTION, type SeedSourceRows } from "@/lib/grants/ss4a-safety-seed";
+import { buildSafetySeedPreview, SafetySeedRefusal, SS4A_SEED_MIGRATION, SS4A_SECTION_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_ACQUISITION_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_ARTIFACT_PROJECTION, type SeedSourceRows } from "@/lib/grants/ss4a-safety-seed";
 
 const bodySchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("preview"), artifactId: z.string().uuid() }).strict(),
@@ -117,7 +116,7 @@ export async function POST(request: NextRequest, context: Context) {
     const snapshot = recognized.snapshot;
     const [report, acquisition, drafts, persistence] = await Promise.all([
       client.from("reports").select(SS4A_REPORT_PROJECTION).eq("id", artifact.data.report_id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
-      client.from("safety_crash_ingests").select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION).eq("id", snapshot.acquisition.id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
+      client.from("safety_crash_ingests").select(SS4A_ACQUISITION_PROJECTION).eq("id", snapshot.acquisition.id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
       client.from("funding_opportunity_section_drafts").select("id, section_id", { count: "exact" }).eq("opportunity_id", o.id).eq("workspace_id", o.workspace_id).order("id").limit(1001),
       client.from("report_safety_snapshot_persistence").select(SAFETY_PLAN_PERSISTENCE_SELECT)
         .eq("artifact_id", parsed.data.artifactId).eq("report_id", artifact.data.report_id)

@@ -275,8 +275,11 @@ export function HighInjuryNetworkPanel({
         <p className="text-muted-foreground">{SAFETY_COUNTERMEASURE_FILE.cmfPolicy}</p>
       </details>
 
-      {segments.length > 0 && (
-        ingestId && reports.length > 0 ? (
+      {/* Shown even when nothing is ranked. A small place can have no fatal or
+          serious-injury crash in the window, and the saved plan is what the
+          report's action plan section and the SS4A seed read; hiding the save
+          left those places no way to record the plan at all. */}
+      {ingestId && reports.length > 0 ? (
           <div className="flex flex-col gap-1 text-xs" data-testid="safety-hin-save">
             <div className="flex flex-wrap items-center gap-2">
               <label htmlFor="safety-hin-report" className="font-medium">Save to report</label>
@@ -300,7 +303,11 @@ export function HighInjuryNetworkPanel({
                 disabled={saveState.kind === "saving"}
                 className="rounded-md border border-primary/30 px-3 py-1 font-semibold text-primary"
               >
-                {saveState.kind === "saving" ? "Saving" : `Save ${attachedCount} ${attachedCount === 1 ? "segment" : "segments"}`}
+                {saveState.kind === "saving"
+                  ? "Saving"
+                  : segments.length === 0
+                    ? "Save plan with no ranked segments"
+                    : `Save ${attachedCount} ${attachedCount === 1 ? "segment" : "segments"}`}
               </button>
             </div>
             <p className="text-muted-foreground">
@@ -319,8 +326,7 @@ export function HighInjuryNetworkPanel({
           <p className="text-xs text-muted-foreground" data-testid="safety-hin-save-unavailable">
             To save countermeasures, open Safety from a project that has a report.
           </p>
-        )
-      )}
+        )}
     </section>
   );
 }

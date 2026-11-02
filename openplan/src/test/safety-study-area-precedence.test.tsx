@@ -572,6 +572,20 @@ describe("Safety opens on the right study area", () => {
     expect(within(screen.getByLabelText("Crash data coverage")).getByText("Retained corridor source")).toBeInTheDocument();
   });
 
+  it("reads which area the retained counts describe from the acquisition's coverage (KI-2026-11-02-021)", async () => {
+    mountSupabase({
+      projectPlace: { data: projectPlaceRow(), error: null },
+      ingests: [retainedAcquisition({
+        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false } },
+      })],
+    });
+    await renderSafety({ projectId: PROJECT_ID });
+    const coverage = screen.getByLabelText("Crash data coverage");
+    expect(within(coverage).getByText(
+      "Crashes are counted inside the place boundary. 9 crashes inside its bounding rectangle but outside the boundary are left out."
+    )).toBeInTheDocument();
+  });
+
   it("discloses a failed current-acquisition lookup even when recent history loads", async () => {
     mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition()], currentIngestError: "acquisition lookup unavailable" });
     await renderSafety({ projectId: PROJECT_ID });

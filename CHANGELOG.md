@@ -60,6 +60,46 @@ is open, and a comment repeats its original topic only when the topic has since
 changed. Engagement review PDFs name each response's sources by register number
 and title and say whether the response is published. Six build notes were
 removed from staff pages. No migration.
+**Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
+acquisition now keeps only crashes whose point lies inside the study area's
+polygon (the project's stored place, a picked place, or a drawn area), not every
+crash in the rectangle around it. In Alturas, California, that removes 9 of the
+11 CCRS crashes from 2022 to 2025, including the only injury crash. The number
+left out is recorded with the acquisition and shown beside the counts on the
+Safety page, in the report and in the SS4A appendices. Acquisitions stored
+before this change, and areas with only a rectangle, are labeled "Bounding
+rectangle, not the place boundary"; retrieve crashes again to count by the
+boundary. When retrieval stops at its record cap, the counts are the retrieved
+crashes inside the boundary, labeled a lower bound, and the source's total for
+the rectangle is shown beside them. The corridor scorecard also counts inside
+the corridor polygon and divides crash density by the polygon's area. No
+migration.
+
+**First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
+fatal or serious-injury crash in the window can now save its safety action plan
+from the high-injury network ("Save plan with no ranked segments"), so the
+report gets its action plan section and the SS4A application can be seeded from
+it. The action plan section no longer claims attached countermeasures when there
+are none. Tracking a catalog program from Grants opened for a project links the
+new opportunity to that project. Crash filter chips no longer print "(0)" beside
+a severity that is switched off or a facet the source does not record. The
+project page names the workspace's home geography when the project has no study
+area. Workspace health now reports `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` as a
+partial map configuration (most maps draw; the backdrop, aerial and model maps
+need a Mapbox token) and offers it when neither is set. Still open: crash
+acquisitions above about 100 crashes fail to store (needs a migration). No
+migration.
+
+**SS4A seed after logging the opportunity (KI-2026-11-02-022):** logging or
+exporting the SS4A funding opportunity no longer makes the Safety report look
+stale to "Seed from Safety plan". New Safety reports record the crash
+acquisition's evidence revision and the project's place when they are
+generated, and the seed compares those instead of the project's last-updated
+time. A new crash, party or acquisition write, or a change to the project's
+place, still refuses the seed until the report is regenerated. Safety reports
+generated before this change keep the old check: regenerate one once to use the
+new one. The benefit-cost analysis place review still treats any project write
+as a change (needs a migration). No migration.
 
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.

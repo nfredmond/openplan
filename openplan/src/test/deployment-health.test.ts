@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   evaluateDeploymentHealth,
   type DeploymentHealthFacts,
@@ -128,6 +128,23 @@ describe("deployment health — Mapbox", () => {
     // is told it is "missing" goes looking for work they have already done.
     expect(invalid.detail).not.toBe(missing.detail);
     expect(missing.detail).toMatch(/no mapbox token/i);
+  });
+
+  it("reports the open map style as a partial answer, not a blank map", () => {
+    const open = evaluateDeploymentHealth(
+      facts({ mapbox: { hasValidToken: false, hasInvalidToken: false, hasOpenStyle: true } })
+    ).checks.find((check) => check.key === "mapbox")!;
+    expect(open.status).toBe("warn");
+    expect(open.detail).toMatch(/open map style/);
+    expect(open.detail).not.toMatch(/no map draws/);
+
+    const none = evaluateDeploymentHealth(
+      facts({ mapbox: { hasValidToken: false, hasInvalidToken: false } })
+    ).checks.find((check) => check.key === "mapbox")!;
+    expect(none.status).toBe("fail");
+    // The key-free route is offered, not only the paid-account one.
+    expect(none.remedy).toContain("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL");
+    expect(none.detail).not.toMatch(/every map renders blank/);
   });
 
   it("accepts the legacy variable name as a working configuration", () => {
@@ -466,5 +483,21 @@ describe("Mapbox token reads go through the shared resolver", () => {
     );
 
     expect(offenders.map((file) => path.relative(process.cwd(), file))).toEqual([]);
+  });
+});
+
+describe("deployment health facts: the open map style", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("reads a loadable style URL as an open style and anything else as none", async () => {
+    const { readDeploymentEnvFacts } = await import("@/lib/config/deployment-health-facts");
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", "https://tiles.openfreemap.org/styles/liberty");
+    expect(readDeploymentEnvFacts().mapbox.hasOpenStyle).toBe(true);
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", "javascript:alert(1)");
+    expect(readDeploymentEnvFacts().mapbox.hasOpenStyle).toBe(false);
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", "");
+    expect(readDeploymentEnvFacts().mapbox.hasOpenStyle).toBe(false);
   });
 });

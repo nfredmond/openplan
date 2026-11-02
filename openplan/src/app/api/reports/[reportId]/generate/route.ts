@@ -1,6 +1,6 @@
 import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { persistSafetyPlanGeneration } from "@/lib/reports/safety-plan-persistence";
-import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { buildSafetyPlanSnapshot, readSafetyPlanEvidenceFence, type SafetyPlanFenceClient, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
@@ -2575,11 +2575,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
           network,
         });
         if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
+          const evidenceFence = await readSafetyPlanEvidenceFence(supabase as unknown as SafetyPlanFenceClient, {
+            workspaceId: report.workspace_id, projectId: projectRow.id, ingestId: savedSafetyActionPlan.ingestId,
+            project: projectRow as unknown as Record<string, unknown>,
+          });
           safetyPlanSnapshotV1 = buildSafetyPlanSnapshot({
             artifactId, reportId: report.id, workspaceId: report.workspace_id,
             projectId: projectRow.id, generatedAt, reportUpdatedAt: report.updated_at,
             projectUpdatedAt: projectRow.updated_at,
             acquisition: planIngestRow as Record<string, unknown>, selection: savedSafetyActionPlan, draft: safetyActionPlan,
+            evidenceFence: evidenceFence ?? undefined,
           });
         }
       }
