@@ -20,6 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Client invoice writes (KI-2026-10-12-007):** apply
+`20261102120000_client_invoice_owner_admin_writes.sql` before or with this
+code. The database now holds the invoice route's rule for every client,
+including the Data API: only a workspace owner or admin can create, edit, void
+or delete a client invoice or change its lines. Members and viewers can still
+read invoices. No existing invoice or line is changed, including drafts a
+member created earlier. Contract exports (the management snapshot tables and
+the closeout accounting handoff) no longer list the billing source of a voided
+draft invoice, so work billed again on a later invoice appears once. The source
+row stays in the database as history, and a closeout package issued earlier
+also leaves it out when downloaded again.
+
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
 It removes a staged aerial, Knowledge Base or transit upload whose complete step
