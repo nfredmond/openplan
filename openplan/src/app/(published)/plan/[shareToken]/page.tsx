@@ -31,6 +31,7 @@ import {
   type RtpModelingEvidenceKpiRow,
 } from "@/lib/rtp/modeling-evidence";
 import { formatMoney } from "@/lib/money/format";
+import { keepLinksInsideWorkspace } from "@/lib/rtp/link-workspace-scope";
 
 export const metadata = {
   title: "What we're funding and why · Regional Transportation Plan",
@@ -60,7 +61,7 @@ const SECTION_HEADING = "text-[1.5rem] font-semibold leading-snug tracking-tight
 const ITEM_HEADING = "text-[1.25rem] font-semibold leading-snug tracking-tight text-foreground";
 const NOTICE_HEADING = "text-reading font-semibold leading-snug";
 
-type ProjectRef = { id: string; name: string; status: string | null; summary: string | null };
+type ProjectRef = { id: string; workspace_id: string | null; name: string; status: string | null; summary: string | null };
 
 type LinkRow = {
   id: string;
@@ -161,7 +162,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   // award amounts on a resident-facing page. Same scope on both reads, always.
   const linksResult = await supabase
     .from("project_rtp_cycle_links")
-    .select("id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, projects(id, name, status, summary)")
+    .select("id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, projects(id, workspace_id, name, status, summary)")
     .eq("rtp_cycle_id", cycle.id)
     .eq("workspace_id", cycle.workspace_id);
   const linksFailed = reads.check("the projects in this plan", linksResult);
@@ -184,14 +185,23 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     .order("id", { ascending: true })
     .limit(MAP_FEATURE_LAYER_LIMIT);
   const mapFailed = reads.check("the project map", mapLinksResult);
+  // The workspace filter on each read keeps a link forged against this cycle
+  // off the page; it does not stop a link this workspace made to another
+  // workspace's project, whose embed the service role returns in full. The
+  // database does not refuse such a row yet (KI-2026-11-02-053), so both reads
+  // drop it here, and the map's total stops counting it.
+  const mapLinks = keepLinksInsideWorkspace(
+    (mapLinksResult.data ?? []) as unknown as RtpCycleProjectLinkRow[],
+    cycle.workspace_id
+  );
   const mapCollection = mapFailed
     ? null
     : buildRtpCycleProjectFeatureCollection(
-        (mapLinksResult.data ?? []) as unknown as RtpCycleProjectLinkRow[],
-        mapLinksResult.count ?? null
+        mapLinks.rows,
+        mapLinksResult.count == null ? null : Math.max(0, mapLinksResult.count - mapLinks.dropped)
       );
 
-  const links = (linksResult.data ?? []) as LinkRow[];
+  const links = keepLinksInsideWorkspace((linksResult.data ?? []) as LinkRow[], cycle.workspace_id).rows;
   const evidenceRunIds = Array.from(
     new Set(links.map((link) => link.evidence_model_run_id).filter((id): id is string => Boolean(id))),
   );
