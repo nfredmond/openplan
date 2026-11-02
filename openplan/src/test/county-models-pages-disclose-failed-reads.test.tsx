@@ -361,9 +361,8 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
     expect(screen.getByTestId("county-run-read-failures")).toHaveTextContent(
       /permission denied for table county_runs/
     );
-    expect(screen.getByTestId("ceqa-vmt-run-name-read-error")).toHaveTextContent(
-      /has not been shown to be unnamed/i
-    );
+    // An unread row has no county, so the page cannot say CEQA applies.
+    expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
   });
 
   it("says nothing about a read failure when the row simply is not there", async () => {
@@ -372,8 +371,41 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
     await renderCountyRun();
 
     expect(screen.queryByTestId("county-run-read-failures")).toBeNull();
-    expect(screen.queryByTestId("ceqa-vmt-run-name-read-error")).toBeNull();
-    expect(screen.getByTestId("ceqa-vmt-screen")).toBeInTheDocument();
+    expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
+  });
+});
+
+/*
+ * CEQA IS CALIFORNIA LAW. The §15064.3 screen used to render on every county
+ * run. It now follows the run's own county FIPS code, and the projection must
+ * carry that code or every run would read as "jurisdiction unknown".
+ */
+describe("/county-runs/[countyRunId] shows the CEQA screen only for a California county", () => {
+  async function renderRunIn(geographyId: string) {
+    setTable("county_runs", {
+      data: { id: COUNTY_RUN_ID, run_name: "run", geography_type: "county_fips", geography_id: geographyId } as never,
+      error: null,
+    });
+    render(
+      await CountyRunDetailPage({
+        params: Promise.resolve({ countyRunId: COUNTY_RUN_ID }),
+        searchParams: Promise.resolve({}),
+      })
+    );
+  }
+
+  it("renders the §15064.3 screen for a California county run", async () => {
+    await renderRunIn("06057");
+    expect(screen.getByTestId("ceqa-vmt-screen")).toHaveTextContent("§15064.3");
+    const select = queries.find((entry) => entry.table === "county_runs" && entry.method === "select");
+    expect(String(select?.args[0])).toMatch(/geography_type/);
+    expect(String(select?.args[0])).toMatch(/geography_id/);
+  });
+
+  it("renders nothing CEQA-specific for a Nevada county run", async () => {
+    await renderRunIn("32031");
+    expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
+    expect(document.body.textContent ?? "").not.toMatch(/CEQA|15064/);
   });
 });
 

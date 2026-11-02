@@ -4,6 +4,8 @@ import type { CrashRecord } from "@/lib/safety/sources/types";
 import { findUncoveredStudyArea } from "./helpers/crash-coverage-probe";
 
 const CA_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
+// The study area's state, as the route derives it from the place identity.
+const CA_STATE_FIPS = ["06"];
 
 /**
  * A study area NO registered adapter covers, found from the registry itself.
@@ -160,7 +162,7 @@ describe("ingestCrashesForStudyArea", () => {
       matchedTotal: 1, geocodedTotal: 1, yearsCovered: [2025], truncated: false });
     try {
       const result = await ingestCrashesForStudyArea({ service: service as never, workspaceId: "ws-1",
-        bbox: CA_BBOX, years: [2025], enrichSeriousInjury: false, includeParties: false });
+        bbox: CA_BBOX, stateFips: CA_STATE_FIPS, years: [2025], enrichSeriousInjury: false, includeParties: false });
       expect(result.status).toBe("failed");
       expect(result.error).toContain("custody receipt write failed");
     } finally { spy.mockRestore(); }
@@ -198,7 +200,7 @@ describe("ingestCrashesForStudyArea", () => {
     const result = await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: CA_BBOX,
+      bbox: CA_BBOX, stateFips: CA_STATE_FIPS,
       years: [2025],
       countyCode: 29,
       enrichSeriousInjury: false,
@@ -232,7 +234,7 @@ describe("ingestCrashesForStudyArea", () => {
     const result = await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: CA_BBOX,
+      bbox: CA_BBOX, stateFips: CA_STATE_FIPS,
       years: [2025],
       enrichSeriousInjury: false,
       includeParties: false,
@@ -270,7 +272,7 @@ describe("ingestCrashesForStudyArea", () => {
     const result = await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: CA_BBOX,
+      bbox: CA_BBOX, stateFips: CA_STATE_FIPS,
       years: [2025],
       // The person-row pull is a separate lane with its own tests below; keeping
       // it out of this one leaves the KSI assertion about the KSI join alone.
@@ -309,7 +311,7 @@ describe("ingestCrashesForStudyArea", () => {
     const result = await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: CA_BBOX,
+      bbox: CA_BBOX, stateFips: CA_STATE_FIPS,
       years: [2025],
       includeParties: false,
     });
@@ -338,7 +340,7 @@ describe("ingestCrashesForStudyArea", () => {
     await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: CA_BBOX,
+      bbox: CA_BBOX, stateFips: CA_STATE_FIPS,
       years: [2025],
       enrichSeriousInjury: false,
       includeParties: false,

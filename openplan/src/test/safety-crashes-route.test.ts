@@ -7,6 +7,8 @@ const membershipMaybeSingleMock = vi.fn();
 const projectMaybeSingleMock = vi.fn();
 const projectIngestListMock = vi.fn();
 const ingestMock = vi.fn();
+const projectSelectMock = vi.fn();
+const resolvePlaceBoundaryMock = vi.fn();
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
@@ -18,7 +20,10 @@ vi.mock("@/lib/supabase/server", () => ({
     from: (table: string) => {
       if (table === "projects") {
         return {
-          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: projectMaybeSingleMock }) }) }),
+          select: (columns: string) => {
+            projectSelectMock(columns);
+            return { eq: () => ({ eq: () => ({ maybeSingle: projectMaybeSingleMock }) }) };
+          },
         };
       }
       if (table === "safety_crash_ingests") {
@@ -40,6 +45,10 @@ vi.mock("@/lib/supabase/server", () => ({
     },
   }),
   createServiceRoleClient: () => ({}),
+}));
+
+vi.mock("@/lib/geographies/place-resolver", () => ({
+  resolvePlaceBoundary: (...args: unknown[]) => resolvePlaceBoundaryMock(...args),
 }));
 
 vi.mock("@/lib/safety/ingest", () => ({
@@ -302,6 +311,95 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     );
     expect(res.status).toBe(500);
     expect(ingestMock).not.toHaveBeenCalled();
+  });
+});
+
+/*
+ * THE STUDY AREA'S STATE CHOOSES THE CRASH SOURCE. It comes from an identity
+ * the server holds (the linked project's place) or re-resolves (a picked
+ * place), never from the bbox, because the California rectangle contains most
+ * of Nevada. Anything the server cannot confirm reaches the lane as null.
+ */
+describe("POST /api/safety/crashes/ingest derives the study area's state", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    ingestMock.mockResolvedValue({ ingestId: "ingest-1", status: "ready", error: null });
+  });
+
+  function projectIn(country: string | null, subdivision: string | null) {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_country_code: country,
+        place_subdivision_code: subdivision,
+        place_min_lon: BBOX.minLon,
+        place_min_lat: BBOX.minLat,
+        place_max_lon: BBOX.maxLon,
+        place_max_lat: BBOX.maxLat,
+      },
+      error: null,
+    });
+  }
+
+  it("uses the linked project's own state, and selects the columns that carry it", async () => {
+    projectIn("US", "NV");
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(200);
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ stateFips: ["32"] }));
+    expect(projectSelectMock.mock.calls[0][0]).toMatch(/place_country_code/);
+    expect(projectSelectMock.mock.calls[0][0]).toMatch(/place_subdivision_code/);
+  });
+
+  it("passes null for a project area with no stated subdivision", async () => {
+    projectIn(null, null);
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID }));
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ stateFips: null }));
+  });
+
+  it("confirms a picked place by re-resolving it, then uses its state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({ kind: "county", geoid: "32031", label: "Washoe", bbox: BBOX });
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "county", geoid: "32031" } })
+    );
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("county", "32031");
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ stateFips: ["32"] }));
+  });
+
+  it("passes null when the picked place's boundary is not this bbox", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "county",
+      geoid: "06057",
+      label: "Nevada",
+      bbox: { minLon: -119.9, minLat: 39.4, maxLon: -119.6, maxLat: 39.7 },
+    });
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "county", geoid: "06057" } })
+    );
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ stateFips: null }));
+  });
+
+  it("passes null when the resolver is down, and for a metro area, which names no state", async () => {
+    resolvePlaceBoundaryMock.mockRejectedValueOnce(new Error("tigerweb down"));
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "county", geoid: "06057" } })
+    );
+    expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: null }));
+
+    resolvePlaceBoundaryMock.mockResolvedValueOnce({ kind: "metro", geoid: "40900", label: "Sacramento", bbox: BBOX });
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "metro", geoid: "40900" } })
+    );
+    expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: null }));
+  });
+
+  it("passes null when no place identity is supplied at all", async () => {
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
+    expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ stateFips: null }));
   });
 });
 

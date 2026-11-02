@@ -85,6 +85,24 @@ appear in its name. A town records its state. A benefit-cost analysis cannot
 yet record a project whose area or jurisdiction is either kind: the installed
 database guard lists only the earlier five kinds, and widening it needs a
 migration. No action is needed to deploy.
+**Crash sources follow the study area's state:** Safety now chooses a crash source
+from the state of the linked project's place or the picked county, city or CDP,
+not from a bounding-box rectangle. Study areas in Nevada and in border counties of
+Arizona, Idaho, Oregon and Utah used to query California's CCRS and store no
+crashes; they now get NHTSA FARS, labeled fatal-only. California places still get
+CCRS. A drawn area, a metro area or an unconfirmed place gets FARS only, never
+CCRS; pick a county or city to get a state crash file. Puerto Rico is out of
+coverage: the FARS file OpenPlan reads does not include it. Acquisitions saved
+before this change keep the source they recorded; re-run an affected study area
+to replace an empty CCRS pull.
+
+**CEQA screen on county runs:** the §15064.3 screening panel now appears only on
+county runs whose county is in California.
+
+**Neutral starter text:** the California LAPM profile's "submitted to" hint and the
+project record placeholder no longer name Caltrans District 3. The complete streets
+and countywide wayfinding engagement templates no longer tell residents the
+campaign is a demonstration.
 
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep

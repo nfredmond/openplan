@@ -20,16 +20,14 @@ export type CountyRunCeqaVmtScreenProps = {
    * read cannot establish. When set, the screen reports the failure instead.
    */
   kpiReadError?: string | null;
-  /**
-   * True when the county run's own row could not be read, so `runName` is null
-   * because of a failed query rather than because the run carries no name. The
-   * screen falls back to the run id either way, but it must not present the
-   * fallback as though the run were simply unnamed — this screen is read as
-   * evidence, and an unexplained identifier is how evidence stops being checkable.
-   */
-  runNameReadFailed?: boolean;
 };
 
+/**
+ * Mounted only for a run whose county is in California (see
+ * `countyRunShowsCeqaScreen`). The page cannot establish that when the run's
+ * row is unreadable, so this screen never renders for an unread run; the page
+ * discloses that read failure itself.
+ */
 export function CountyRunCeqaVmtScreen({
   countyRunId,
   runName,
@@ -37,7 +35,6 @@ export function CountyRunCeqaVmtScreen({
   heldBackByScreeningGate,
   includeScreeningHref,
   kpiReadError = null,
-  runNameReadFailed = false,
 }: CountyRunCeqaVmtScreenProps) {
   const scenarioId = runName ?? countyRunId;
 
@@ -59,17 +56,6 @@ export function CountyRunCeqaVmtScreen({
         </div>
         <StatusBadge tone="warning">Screening-level — not a determination of record</StatusBadge>
       </div>
-
-      {runNameReadFailed ? (
-        <div
-          className="mt-5 rounded-[0.75rem] border border-amber-300/50 bg-amber-50/60 px-5 py-4 text-sm text-foreground dark:border-amber-900/70 dark:bg-amber-950/20"
-          data-testid="ceqa-vmt-run-name-read-error"
-        >
-          This run&apos;s record could not be read, so the screen below identifies the scenario by the
-          run&apos;s id rather than its name. The run has not been shown to be unnamed — the read
-          failed.
-        </div>
-      ) : null}
 
       {kpiReadError ? (
         <div

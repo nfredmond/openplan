@@ -109,7 +109,7 @@ describe("crash coverage probes are derived from the live registry", () => {
     expect(probe, "no registered read-only crash source covers anywhere").not.toBeNull();
     expect(probe!.adapter.persistable).toBe(false);
     // The ingest resolver genuinely misses it — this is the state under test.
-    expect(resolveCrashSource(probe!.bbox, "ingest").kind).toBe("out_of_coverage");
+    expect(resolveCrashSource({ bbox: probe!.bbox }, "ingest").kind).toBe("out_of_coverage");
   });
 
   it("finds a study area a storable source covers, so the ingest path is still exercised", () => {
@@ -289,6 +289,7 @@ describe("the Safety ingest lane reaches the read-only registry", () => {
       service: service as never,
       workspaceId: "ws-1",
       bbox: probe.bbox,
+      stateFips: probe.stateFips,
       years: [2024],
       enrichSeriousInjury: false,
       includeParties: false,
@@ -390,6 +391,7 @@ describe("mayStore separates what a viewer may read from what they may store", (
       service: service as never,
       workspaceId: "ws-1",
       bbox: probe.bbox,
+      stateFips: probe.stateFips,
       years: [2024],
       mayStore: false,
       enrichSeriousInjury: false,
@@ -428,6 +430,7 @@ describe("mayStore separates what a viewer may read from what they may store", (
       service: service as never,
       workspaceId: "ws-1",
       bbox: probe.bbox,
+      stateFips: probe.stateFips,
       years: [2024],
       mayStore: true,
       enrichSeriousInjury: false,

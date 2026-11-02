@@ -304,7 +304,17 @@ export type CrashSourceAdapter = {
    * source is national (a backstop, e.g. FARS) and claims no exclusive state.
    */
   coversStateFips?: readonly string[];
-  /** True when this adapter can serve the given study area. */
+  /**
+   * Every state FIPS code whose crashes this adapter actually reads.
+   *
+   * This, not `covers()`, decides which source a study area gets once its
+   * state is known. `covers()` is a coarse rectangle and a rectangle cannot
+   * tell Reno from Sacramento: the California envelope contains most of Nevada.
+   * A state missing from this list is a state this adapter cannot answer for,
+   * so it is never asked, and its silence is never stored as zero crashes.
+   */
+  servesStateFips: readonly string[];
+  /** True when this adapter's coarse envelope overlaps the study area. */
   covers: (bbox: StudyAreaBbox) => boolean;
   fetch: (params: CrashFetchParams) => Promise<CrashFetchResult>;
   /**

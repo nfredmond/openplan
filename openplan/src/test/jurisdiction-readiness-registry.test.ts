@@ -67,9 +67,11 @@ describe("jurisdiction readiness registry", () => {
     expect(reports).toHaveLength(JURISDICTION_READINESS_REGISTRY.jobs.length);
     expect(reports.every((report) => report.status !== "unassessed")).toBe(true);
     expect(reports.find((report) => report.job.id === "land-use-plan")?.status).toBe("unavailable");
-    expect(reports.find((report) => report.job.id === "safety-analysis")?.limitations.join(" ")).toMatch(
-      /fatal-only/i,
-    );
+    // FARS publishes Puerto Rico in a file the adapter does not read, so no
+    // crash source covers it; the claim says so instead of promising coverage.
+    const safety = reports.find((report) => report.job.id === "safety-analysis");
+    expect(safety?.status).toBe("unavailable");
+    expect(safety?.applicability).toMatch(/separate FARS file/i);
   });
 
   it("does not omit evidence or adapter lineage from a configured claim", () => {
