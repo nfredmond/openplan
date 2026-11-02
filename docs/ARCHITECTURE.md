@@ -1,183 +1,317 @@
 # OpenPlan architecture
 
-Source description reconciled September 6, 2026 against merge `42515335`, which includes the completed `cc6c3feb` development handoff. The [final acceptance record](ops/V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md) preserves nine of twelve journeys passed and three partial, with release withheld. No complete corrected-build first-week pass or production recovery is claimed here. The [consolidated technical review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md) records findings and verification limits. The product contract defines the destination; this document describes the implemented structure and its important unfinished boundaries.
+Reconciled November 2, 2026 against `main` at `de7c950`. Each section was checked
+against the code paths it cites. This document describes what is built. The
+[V1 contract](product/V1_PRODUCT_CONTRACT.md) defines the destination, the
+[roadmap](ROADMAP.md) holds the queue, and [known issues](ops/KNOWN_ISSUES.md)
+holds open defects. The September 6 description, including its proposed
+designs, remains in Git history (`git show de7c950:docs/ARCHITECTURE.md`); the
+proposals now live in the milestone and review documents listed under
+[Planned structure](#planned-structure).
 
-On October 12, 2026, against `44dceca1c`, only the hosting, map-provider and milestone-location statements were corrected. The October 11 [hosted cutover record](ops/HOSTED_LIVE_2026-10-11.md) and the two-month review's [open findings](ops/KNOWN_ISSUES.md) postdate the rest of this description, which has not been re-reconciled since September 6.
+Paths are under `openplan/` unless they start with `openplan/`, `workers/`,
+`scripts/`, `docs/`, `data/` or `qa-harness/`.
 
-## Runtime and repository map
+## Repository map
 
 | Location | Responsibility |
 |---|---|
-| `openplan/` | Next.js/React/TypeScript web application, API routes, app scripts and Supabase migrations |
-| `openplan/src/app/` | Authenticated planner pages, public/embedded portals, authentication and HTTP routes |
-| `openplan/src/components/`, `openplan/src/lib/` | User controls, domain logic, source adapters, evidence and role/approval policies |
-| `openplan/supabase/` | Local development stack configuration and forward migrations |
-| `workers/` | AequilibraE, ActivitySim, county-onramp, OCR and ODM execution services |
-| `scripts/modeling/`, `scripts/research/` | Offline scientific preparation, diagnosis, experiments and custody verification |
-| `data/modeling/`, `schemas/` | Versioned published scientific evidence and its contracts; frozen studies are historical records |
-| `qa-harness/` | Real-browser journeys, evidence checks, regression scripts and local-target protections |
-| `.github/workflows/` | App, worker/script, RLS, browser, upgrade, recovery and source-contract checks with different triggers |
-| `docs/` | Product contract, single roadmap, milestone definitions, capability ledger, architecture, ADRs and dated research/reviews |
-
-App commands run inside the nested `openplan/` package. Python and browser commands use their own declared roots/environments. A copied runtime is not identified by port alone; compare process working directory, source commit and reported deployment identity.
+| `openplan/` | Next.js 16 web app (`package.json`), API routes, Node queue workers and Supabase migrations |
+| `src/app/` | Planner pages `(app)`, sign-in `(auth)`, public share-token pages `(portal)`, `(published)` and `(embed)`, static pages `(public)`, and `api/` routes |
+| `src/lib/`, `src/components/` | Domain logic, source adapters, permissions and UI, one folder per module |
+| `supabase/migrations/` | Forward migrations (448 files at `de7c950`) |
+| `openplan/scripts/workers/` | Node queue workers that claim work from Postgres |
+| `workers/` | Python model, OCR, imagery and county services; hosted images; the local Planner Agent connector |
+| `scripts/modeling/`, `scripts/research/`, `data/modeling/`, `schemas/` | Offline scientific preparation, published evidence and its contracts |
+| `qa-harness/` | Browser journeys and regression scripts |
+| `.github/workflows/` | CI, RLS isolation, worker, upgrade, restore, health and source-contract checks |
 
 ```mermaid
 flowchart LR
     Planner[Planner browser] --> App[Next.js pages and API]
-    Public[Public and embedded portals] --> App
-    App --> Auth[Supabase Auth]
-    App --> DB[Postgres and PostGIS with RLS]
-    App --> Storage[Supabase Storage]
-    App --> Sources[Configured external data and map providers]
-    App --> AI[Optional task-specific API and installed CLI providers]
-    Workers[Modeling, county, OCR and imagery workers] --> DB
-    Workers --> Storage
-    Workers --> Local[Local model and imagery files]
-    Scheduler[Operator scheduler] --> App
-    DB --> Exports[Approved reports and evidence packages]
-    Storage --> Exports
+    Public[Share-token portals and embeds] --> App
+    Cron[Vercel cron or operator scheduler] --> App
+    App --> DB[(Supabase Postgres, PostGIS, RLS)]
+    App --> Storage[(Supabase private Storage)]
+    Planner -- signed upload URL --> Storage
+    App --> Sources[External data and map services]
+    App --> AI[Workspace-configured AI providers]
+    Queues[Node queue workers] --> DB
+    Models[AequilibraE and ActivitySim pollers] --> DB
+    Models --> Volume[(Shared model volume)]
+    OCR[OCR worker] <--> App
+    ODM[ODM worker] <--> App
+    County[County onramp worker] <--> App
+    Connector[Local Planner Agent connector] --> App
+    Backup[Daily offsite backup] --> DB
+    Backup --> Storage
 ```
 
-The diagram is a responsibility map, not a deployment or security certification. Worker-specific APIs and callbacks differ; read the relevant DEPLOY document before operating them.
+The diagram maps responsibilities. It is not a security certification.
 
-## The planning record
+## Module map
 
-Projects and statutory plans are the intended durable owners of context. Projects already connect delivery milestones, decisions, meetings, issues, funding and selected evidence. Generic Plans, Land Use Plans and RTP cycles have different structures. Generic linked-plan readiness must not be mistaken for the versioned legal/review/adoption process of a statutory plan.
+Each planner surface has a page folder under `src/app/(app)/`, API routes under
+`src/app/api/` and logic under `src/lib/`.
 
-Data Hub/workspace GIS owns source datasets and layers. Documents/Knowledge Base owns uploaded source documents and extraction. Analysis, Models/Scenarios and Safety produce evidence. Engagement owns campaigns, submissions, moderation and public-response records. Programs, Grants and Invoicing carry programming, award and reimbursement work. Reports and project evidence packages assemble selected records. My Work exposes assigned work and approvals. Aerial connects missions and processing outputs to planning evidence.
+| Surface | Pages | Main logic |
+|---|---|---|
+| Projects, portfolio import and GeoPackage export | `projects/` | `src/lib/projects/`, `src/lib/project-evidence-bundles/` |
+| Plans, land-use plans, RTP cycles | `plans/`, `land-use-plans/`, `rtp/` | `src/lib/plans/`, `src/lib/land-use-plans/`, `src/lib/rtp/` |
+| Programs, work programs (OWP/UPWP), grants, invoicing | `programs/`, `grants/`, `invoicing/` | `src/lib/programs/`, `src/lib/grants/`, `src/lib/invoicing/`, `src/lib/money/` |
+| Data Hub, workspace GIS, transit feeds | `data-hub/` | `src/lib/workspace-gis/`, `src/lib/data-sources/`, `src/lib/gtfs/`, `src/lib/transit/` |
+| Knowledge Base and document extraction | `knowledge-base/` | `src/lib/knowledge-base/`, `src/lib/document-library/` |
+| Corridor analysis, models, county runs, scenarios | `explore/`, `models/`, `county-runs/`, `scenarios/` | `src/lib/analysis/`, `src/lib/models/`, `src/lib/scenarios/` |
+| Safety and benefit-cost | `safety/`, `grants/bca/` | `src/lib/safety/`, `src/lib/bca/` |
+| Engagement and public portals | `engagement/` | `src/lib/engagement/` |
+| Reports | `reports/` | `src/lib/reports/` |
+| Map packages | `maps/` | `src/lib/map-packages/` |
+| Aerial missions and processing | `aerial/` | `src/lib/aerial/` |
+| Dashboard, My Work, assistant activity | `dashboard/`, `my-work/`, `assistant-activity/` | `src/lib/dashboard/`, `src/lib/my-work/`, `src/lib/assistant/` |
 
-The implementation is not yet one seamless record. The review identifies independent translations at plan creation, workbook import, direct versus governed GIS export and source-to-report handoff. Extend existing owners and shared evidence builders rather than create another project registry, GIS stack or approval implementation.
+`/billing` only redirects to `/invoicing` (`src/app/(app)/billing/page.tsx`);
+there is no subscription or checkout. Product direction makes projects and
+statutory plans the owners of shared context (AGENTS.md, "Product decisions");
+the modules above do not yet form one connected record.
 
 ## Geography and authority
 
-`src/lib/geographies/place-resolver.ts`, the geography routes and StudyAreaPicker form the main place-selection path. `PlaceOfRecord` separates identity from exact geometry and deliberately leaves drawn areas without invented administrative identity. US-specific concepts belong in adapters/registries rather than shared core types.
-
-Study extent, place identity, workspace home, adopting authority and legal applicability are different facts. At the reviewed commit, land-use legal descriptors are restricted by workspace home; that is a known semantic defect for client/overlapping/sovereign work. The roadmap extends plan-owned authority and plan-kind/version-specific rules. It does not claim those changes already exist.
-
-All states/DC, California depth and explicit territory coverage remain governed by the product contract. Tribal and regional authorities cannot be inferred solely from enclosing state or county geometry. Unsupported, unknown, multistate and failed-read states stay distinct in the readiness system.
-
-## Identity, permissions and approvals
-
-Supabase Auth identifies users. Membership selects a workspace; the role vocabulary is owner, admin, member and viewer. The action matrix controls named application actions. PostgreSQL RLS, grants and immutable-record constraints enforce database boundaries, including linked child records. Separate service-role clients perform privileged operations and require their own narrow checks.
-
-Public/share-token routes intentionally expose approved subsets. A valid share token is not permission to publish confidential originals. Exact artifact/payload hashes bind named review/approval records. The assistant action registry and route-local verification must retain distinct agent identity and human approval. Publication, adoption, spending and claim promotion remain human-controlled.
-
-These foundations establish more than API convention, but they do not prove case-level confidentiality, agency records retention, tribal governance or every service-role side effect. Live RLS, public-derivative and revoked-access journeys must accompany relevant changes. Never infer a safe route solely because it imports an authorization helper.
-
-## Long jobs and model science
-
-AequilibraE and ActivitySim are separate demand methods. Shared networks/assignment and comparison boundaries support disciplined comparison; their results must never be averaged. ActivitySim execution exists. Borrowed behavioral parameters, period/mode representation, distribution, external travel, road loading and nationwide validation remain scientific gaps.
-
-Default GTFS catalog, upload and refresh ingestion still uses the synchronous request. The [opt-in managed candidate](reviews/2026-10-09-gtfs-managed-ingestion/STATUS.md) enrolls retained requests and moves download, immutable archive confirmation, parsing and guarded publication into an installed polling worker. Exact private source bytes, command journals, claims and leases preserve import identity through interruption and replacement. Processing completion and human adoption remain separate. Recurring cleanup checks retired archive keys because external uploads can finish after cancellation. Candidate migrations 28 through 31 must precede app deployment even when managed admission is disabled. The candidate is unreleased. Native local recovery, representative feed processing and same-cluster restoration have dated evidence; cross-host commissioning, largest-feed capacity and hosted GTFS remain open. [October 9 parser measurements](reviews/2026-10-09-gtfs-parser-profile/README.md) retain their narrower historical boundary.
-
-General polling workers claim stages in Postgres. County-onramp jobs use a separate attempt/callback lifecycle. OCR and ODM have their own runtime and artifact contracts. Long work belongs in these workers, not in a serverless request. General-run reconciliation currently relies on stage timestamps while independent worker heartbeats live separately; healthy long ActivitySim silence needs explicit fault-tested reconciliation and attempt fencing.
-
-Versioned scientific artifacts distinguish assignment-blind input/audit preparation from post-output diagnosis. Published study artifacts from v0.39 through the v0.44 development line are development evidence, not untouched nationwide acceptance. Consumed holdouts stay consumed. Rules-v5 remains diagnostic and inconclusive; a new preregistration alone cannot turn it into an acceptance evaluator. Each published use requires an implemented, preregistered and independently evaluated scientific gate.
-
-Database custody, published files, loader checks and the actual production ingestion path are separate responsibilities. A correct published JSON file does not prove that every application run has persisted or displayed it correctly. Preserve raw residuals, unsupported observations and negative candidates.
-
-## Data and external services
-
-Most maps use Mapbox GL and Mapbox-hosted styles and need a Mapbox token; KI-2026-10-12-026 counts 13 of 14 map components. The public engagement map can instead load an operator-chosen MapLibre style named by `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` (`openplan/src/lib/cartographic/open-map-style.ts`), either served locally or from a keyless public tile host. A configured Mapbox key still takes precedence. GIS placement preview sends an extent in a static-image URL. Census/TIGERweb/LODES, NHTSA FARS, California crash sources, OSM, grants and other domain adapters retrieve external data. Optional AI sends selected grounding/content to its configured provider. Self-hosted records do not imply no external traffic.
-
-Operators need a maintained outbound-service inventory, source licenses, attribution, credentials, freshness and incomplete/outage behavior. The future local-capable renderer/data path must keep maps useful when outside services are disabled. Open-source libraries do not automatically grant rights to every source dataset or imagery tile.
-
-Imports must preserve geometry, CRS/axis order, units, identifiers and source provenance. Exports declare exactly what they include. Workbook create-only import is distinct from edited-record reconciliation. Direct and governed GeoPackages currently assemble different selections; optional model/designation geometry support is not yet connected to those production calls.
-
-## Deployment and durable state
-
-The local Supabase CLI stack is for development/evaluation. Agency production self-hosting requires a separately configured and hardened Supabase deployment, Node app, worker processes, storage, authentication/email, scheduler and recovery procedure. The repository's local walkthrough helper is machine-specific and must not stand in for independent commissioning.
-
-Durable state includes database records/auth state, Storage metadata and object bytes, local model/imagery artifacts, scientific source receipts/configurations, and the operator configuration/secrets needed to recover them. `.next`, dependency caches and browser profiles are not the authoritative planning record.
-
-Migration deployment precedes app code that requires new schema. Read the actual release notes and rehearse nonempty upgrade paths; do not assume every future migration is backward-compatible merely because prior ones were. Rollback is a verified recovery procedure, not a destructive reset of the working stack.
-
-Existing restore/upgrade drills cover representative records, not the complete documented backup mechanism and every local artifact. A completed full restore must prove semantic records, exact bytes, relationships, roles, published versions and continued work on a separate target.
-
-## Verification and architectural decisions
-
-Use focused behavior tests for observed defects, live database probes for permissions/custody, browser journeys for actual reachability, and independent people for usefulness and operations. Source-string guards protect narrow mechanical relationships and cannot certify workflow behavior. Each changed consequential guard needs a no-op survivor and a targeted failing mutation.
-
-Read [ADR-002](ADRs/ADR-002-multi-engine-modeling-stack.md) for the multi-engine choice, [ADR-003](ADRs/ADR-003-crash-data-acquisition.md) for crash-source acquisition and [ADR-004](ADRs/ADR-004-mcp-server-surface.md) for agent-server intent. They preserve dated reasoning; verify current third-party APIs, licenses and protocol details before implementing from them. The roadmap owns future work. An architecture diagram or capability label never overrides measured failure.
-
-The following proposals come from the [September 4 review collection](reviews/2026-09-04-pre-handoff/). They retain that review's source dates and limits. The [roadmap](ROADMAP.md) determines current sequencing. They are design requirements, not new implementation or fresh legal research.
-
-## Proposed early extensions: participation, agent connections and capital delivery
-
-These paragraphs began as September 4 designs. Later increments implement parts of them. The [v0.64 evidence](reviews/2026-09-27-synthesis-response-links/RELEASE_VERIFICATION.md) records reviewed synthesis links to staff responses and project decisions, including retained files. The [October integration](reviews/2026-10-06-integration/INTEGRATION.md) adds request discovery and joins preparation/recovery code; complete staff generation remains unfinished. Projects remains the intended capital owner through environmental, ROW/utilities, PS&E, procurement, construction and closeout; Documents, stage gates and Invoicing supply evidence and separately reconciled payments. That complete capital lifecycle is not established here. Rule applicability must follow actual authority, funding, agreement and effective date. The current land-use creation route still constrains configured rules by workspace home and needs correction under M1.
-
-Provider coverage is task-specific. Broad chat still uses the Anthropic adapter. The retained project read/draft task has installed Codex, Claude Code and OpenCode connections and selected API backends; the [requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) records each evidence boundary. This does not establish every provider's account mode or full tool parity. T3 Code remains a reuse reference for native runtime control. The CLI owns its provider login; OpenPlan controls allowed case reads, proposed actions and exact human approval. A provider process has a separate lifecycle from a browser request. Personal connections remain distinct from unattended deployment connections. Milestones A0, M9 and M10 in [MILESTONES.md](product/MILESTONES.md) define the remaining work.
-
-Changing the model transport does not transfer legal, financial or scientific authority to the model. A CLI shell permission is not approval to publish a response, certify PS&E, accept construction, spend money or submit reimbursement. Those remain recorded domain decisions by authorized people.
-
-## Proposed planning-contract and RTP ownership
-
-The restored requirements extend existing owners. Projects owns delivery context; engagements own the commercial contract/task-order hierarchy; task allocations connect effort, people and deliverables. Source time/cost records retain one identity across internal cost, client invoice and funding-claim views. Approved baseline/rate versions, forecast assumptions and payment events need explicit history. Existing scalar budgets and mixed billed/spend totals do not implement that design yet. See M11 and the [contract-budget review](reviews/2026-09-04-pre-handoff/CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md).
-
-RTP owns the regional plan cycle, applicable elements, authored chapters and regional fiscal assumptions/rows. Documents owns predecessor bytes and cited pages; reviewed extraction and conflict decisions bind accepted content to the new cycle. A consultant contract for preparing an RTP belongs to M11's project budget; it is never added to the region's transportation financial element unless an actual regional-plan line independently requires it. M12 links plan-level policies, projects, measures, engagement responses and adoption versions to implementation. Existing extraction excludes chapter text from its ordinary launcher; current narrative machinery is a reuse starting point, not proof of the requested intake journey.
-
-## Proposed administered-program reporting
-
-Programs and its existing local-measure fund own the administered program. Projects/Documents own project facts and evidence. A reusable participation record must link the administrator to recipient organizations and their scoped submitters/certifiers; workspace membership alone currently grants broader powers. Versioned reporting definitions create period obligations and frozen submissions with reviewed corrections. Report, claim, payment and public release are distinct records/decisions. Enforce their boundaries at database, API and document access, including asynchronous work.
-
-Metric observations retain project/segment, quantity/unit, method, period/cumulative basis, evidence and revision. Program financial events distinguish receipts, allocations, source expenditures, claims, disbursements and remaining obligations. Successor measure relationships preserve original rule/tax-period identity and authorized transfers. Reuse reporting and review across administered grants while tax ordinances and each award's conditions remain explicit. M13 describes the future design; current claims lack the structured output and recipient-participation joins.
-
-## Proposed procurement ownership and contract handoff
-
-M14 extends the existing consultant proposal pursuit and introduces an agency-owned procurement case. Share the public solicitation identity and issued versions; separate the agency working record, each consultant's private preparation and the formally received payload. Organization participation from M13 is reusable infrastructure, but bidder/evaluator/conflict and protected-price permissions require their own enforced rules. Search, OCR, assistant retrieval, previews, storage and evidence exports inherit those restrictions. Reviewed public records use an explicit publication projection; OCDS is a candidate interchange format, not an authentication or procurement engine.
-
-The procurement case owns method/authority, solicitation/addendum versions, criteria, deadlines, publication, response receipts, permitted opening, evaluation, negotiation, notices/protests and award. The firm's pursuit owns go/no-go reasoning, qualifications/team evidence, response work and proposed fees. Receipt binds committed bytes and authoritative time; external delivery stays unconfirmed until supported. Award, execution and notice to proceed are separate. Executed scope, staff/rates, task/deliverable budgets, funding and deadlines transfer into M11/M10 while preserving proposal-to-contract changes. The current grant/proposal discriminator and export assembly alone do not provide these outcomes.
-
-## Hosted installation and customer deployment
-
-OpenPlan has run as a public hosted installation since October 11, 2026. Vercel serves the web app from `main`; Supabase holds the database, Auth and private Storage; Railway runs the application queues, one shared AequilibraE/ActivitySim host and OCR. The [cutover record](ops/HOSTED_LIVE_2026-10-11.md) holds its dated evidence and limits. The design below remains the M15 target. Customer transfer to an independent installation (M15c) is not started.
-
-M15 uses the same release and capabilities as self-hosting. Commission a production Linux reference topology with HTTPS, production Supabase, private database/worker administration, app and scheduler supervision, real mail and durable model/object storage. Current county execution assumes app/worker shared files; remote workers need a verified artifact-transfer contract. Use measured queues and resource isolation so a model cannot exhaust the interactive application. Promote tested versions with schema/identity checks and a tested recovery route.
-
-Hosted trials receive separate workspaces and deliberate retention/cleanup rules. Cost controls protect shared resources and authorized external spend, not software subscription tiers. Customer transition needs a complete isolated workspace transfer including bytes, provenance, roles and continued jobs, followed by restore and upgrade proof. Prefer customer-owned hosting/domain/provider accounts and delegated administrative access. Optional implementation, annual administration and customization use the same free software; independent setup and an exit path remain mandatory. A browser-only hosted agent and an authenticated connection to an installed personal CLI are different runtime paths under A0.
-
-## Proposed platform-wide agent execution
-
-A0 selects the model/backend; A1 owns durable planning assignments and shared capability access. Retain AI SDK 6 for current API calls, native CLI sessions through a paired local connector, the OpenPlan registry/approval/domain services and existing workers. A bounded Postgres-backed assignment state machine records scope, source versions, actor, proposed/approved steps, job handles, actual results and recovery. LangGraph JS is a measured fallback for more complex executor state, not a parallel authoritative record. A thin MCP interface admits compatible external clients, including optional Buzz, without duplicating data, identity or approvals. See the [dated agentic control decision](reviews/2026-09-04-pre-handoff/AGENTIC_CONTROL_DECISION.md) for alternatives and the upstream boundaries inspected then.
-
-External agent identity must be authenticated and enforced on routes; the current execution-source header is in-app attribution, not a delegated credential. Never hand a runner an unrestricted human session or service-role database access. Reuse one tested execution service behind browser and MCP transports. Separate business completion, worker completion, audit receipt and recipient usability. The current stage-gate path checks a resolved database error after its audit wrapper may record success; approval consumption, effect and audit are separate calls. Repair those semantics before automated retry or broader execution. Keep uncertain outcomes visible and recover through durable action IDs.
-
-Buzz brings an independent workspace/relay and infrastructure, so it remains optional. Its pinned standalone runtime is stdio-only and lacks persisted session loading; connecting it to remote MCP requires a tested harness/bridge, not a claim of universal compatibility. The dated agentic review examined protocol revision 2026-07-28; verify supported revisions and pin clients/SDKs before implementation. Self-host Supabase configuration documents OAuth server support; the actual OpenPlan issuer/audience/consent/role integration remains unproved. No such agentic runtime or integration was implemented by this review.
-
-## Proposed complete aerial architecture
-
-Extend current Aerial mission/flight/image/job/custody/report records through M5b.1–6. Repair server-side snapshot consistency and profile-specific exported settings first. Version aircraft/payload/controller/app formats separately from geographic context. Survey KML, review KML, WPML/KMZ and USB/device receipts have distinct semantics. A paired local transfer adapter, if needed, accepts only the chosen file/destination and has permissions separate from the native agent runner; a hosted browser does not acquire unrestricted controller storage access.
-
-Persist exact consumed source/control manifests, processing engine/options, NodeODM task identity, callback receipt/application state and resumable artifact transfers. Required output manifests distinguish partial products from complete jobs. Keep current NodeODM while testing a versioned NodeODX adapter against actual contracts/outputs; preserve historical engine provenance. Reuse Aerial Intel viewer/measurement/TiTiler candidates and evaluate OpenGeo tile/extraction work before building replacements, with license, source-unit, memory and analytical validation. A whole-buffer decimated viewer is not a full-resolution volume engine.
-
-Shared GIS services own CRS/vertical reference, surfaces and exported metadata. Each measurement/change record binds exact sources, geometry, method, sampling, coverage, uncertainty and reviewer. Frozen report/public artifacts preserve approved versions. Technical processing, byte custody, independent accuracy and planning/engineering fitness stay separate. Current missing mesh extraction, DNG subset mismatch, in-memory job recovery and callback retry ordering are source findings that require repair before broader reliability claims. See the [aerial decision](reviews/2026-09-04-pre-handoff/AERIAL_REUSE_AND_IMPLEMENTATION_DECISION.md) and its benchmark references for full output, operations and comparison scope; no engine or hardware was run in this review.
-
-
-## Proposed local-assistance administration records
-
-The full LAPM review reinforces a single project identity with reusable authority, document and financial services. Add source-version/applicability and obligation events tied to the actual agency, fund, phase, contract and trigger; external approval is a separately evidenced fact. Source revisions identify affected live records without rewriting historical accepted packages. Store independent clocks rather than deriving all due dates from award.
-
-Extend existing Projects/GIS/Documents with linked parcel/relocation, utility/railroad, environmental commitment, design/contract, material/labor/quantity/change and dispute records. Agency-produced pay quantities and independent checking feed contractor payment; eligible paid source costs feed a separate funder claim. Staff/fee drawdown and agency cost/cash use distinct bases with shared source allocation identities. Version and lock certified support; reconcile rather than duplicate agency accounting.
-
-Agency programs, audits and maintenance/certification outlive individual projects. Their obligations feed My Work and appropriate Plans/Programs/GIS homes. Restrict sealed fees, payroll/interviews, relocation, bank and counsel/CO memoranda across storage, APIs, search/OCR, exports and agent context. Preserve authoritative full records and reviewed public derivatives, actual retention anchors and longer holds through restore. These are proposed domains and controls, not existing operational or legal-compliance claims; see [the LAPM gap analysis](reviews/2026-09-04-pre-handoff/LAPM_FEATURE_GAP_ANALYSIS.md).
-
-
-## National procedural comparison: extend applicability beyond home geography
-
-Nine-state and selected federal reconnaissance reinforces explicit sponsor/recipient/pass-through/delivery-agent/asset-owner/payer relationships. Qualification can attach to an agency, discipline, individual or specific project, with restriction and renewal. Resolve applicability using the actual agreement/program/phase and effective event; country/subdivision is one input. Preserve original PIN/agreement/certification identities rather than translating identical numbers across states.
-
-The sampled reimbursement registry provides geographic vocabulary and guidance, not these operational rules. Extend it alongside the shared authority/event/cost services. Approved incurred-cost reimbursement, local advances, state-account transfers and local contingency are distinct financial treatments, selected by actual authority. Retention binds record class, program and source event, including longer state requirements and holds. Rule-source and chapter/form versions require independent currency records. See [the national comparison](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md); no new implementation or all-state acceptance is claimed.
-
-
-Alaska's selected Denali guidance makes the responsibility matrix award-specific. Model facility owner and maintenance custodian independently of administrator and approval body. Seasonal suspension/resumption records preserve partial-facility condition, actual custody and approved contract-time changes separately from forecasts. Tribal government, ANCSA corporation, county/local agency and consultation party identities cannot be inferred to have interchangeable authority. These are source-backed design requirements, not implemented Alaska procedures.
-
-Hawaii requires island/county/MPO/project-delivery distinctions and positive evidence that an agreement contains operative terms, not merely an appendix cover. The federal source family separates applicable regulations, executed award/amendment, incorporated Master Agreement, delegation and guidance. Distinguish subrecipient from purchased-service contractor and actual written approval from a staff action. Missing authority or a contradictory effective date remains unresolved; source updates identify potentially affected work without rewriting accepted history. See the Alaska, Hawaii and federal reconnaissance reports.
-
-
-## Proposed OWP administration across the product
-
-Use Programs as the agency/program-cycle owner, with a visible OWP/UPWP entry and setup workflow. Each versioned work element links to the actual projects, tasks, responsible staff/consultants, milestones, products, fund allocations and cost records. My Work exposes assignments, approvals, late products, returned claims and reporting deadlines. Do not duplicate the same study in each cycle.
-
-Separate program period, allocation vintage, spending eligibility, reporting period and agreement term. Preserve draft/adopted/externally approved versions and amendment decisions; a proposed budget is not authority to incur cost. Agency-wide OWP scope and federally eligible UPWP scope may differ. Carryover moves through anticipated, reconciled and approved states with evidence, while predecessor closeout and successor delivery can overlap. Detailed staff rates and supporting costs have stricter access than public program summaries. Shared M11 financial records feed M2d reports and M13 funding administration without double counting or equating cost, billed amount, cash and reimbursement.
-
-See [OWP research](reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md), CORE-OWP-01 and M2d.1–4 for source limits, complete-cycle verification and unresolved current-form/amendment wording. Rules and forms bind to actual agency/funding/version; the LAPM is not a universal OWP invoice specification. This is proposed architecture, not implemented behavior.
+- Place search and boundaries go through `src/lib/geographies/place-resolver.ts`
+  (Census TIGERweb, layers in `src/lib/geographies/tigerweb-services.ts`), the
+  routes under `src/app/api/geographies/`, and the picker in
+  `src/components/models/study-area-picker.tsx`.
+- `src/lib/geographies/place-of-record.ts` keeps place identity apart from
+  geometry. A drawn or uploaded area has no administrative reference.
+- Place kinds are county, city or town (incorporated place), census-designated
+  place, metropolitan and micropolitan area, tribal area (American Indian,
+  Alaska Native and Native Hawaiian areas) and town or township (county
+  subdivision), in `src/lib/api/place-geographies.ts`. There is no state, MPO
+  or territory kind; territories appear only in `src/lib/geographies/state-fips.ts`.
+- Land-use plan creation takes the descriptor and plan kind named in the
+  command (`src/lib/land-use-plans/create-command.ts`) and checks them against
+  the registry (`src/lib/land-use-plans/registry.ts`). Workspace home no longer
+  constrains it; the only home-based function, the descriptor recommendation,
+  has no production caller. The selectable descriptors are California and an
+  unconfigured local plan.
+- Remaining place and authority gaps are in [Known structural limits](#known-structural-limits).
+
+## Trust boundaries
+
+**Identity and roles.** Supabase Auth runs through `src/proxy.ts` and
+`src/lib/supabase/middleware.ts`. `src/lib/workspaces/current.ts` selects the
+workspace from the active-workspace cookie only while it names a real
+membership. `src/lib/auth/role-matrix.ts` defines the owner, admin, member and
+viewer roles and the matrix of 24 named workspace actions.
+
+**Database.** RLS, grants and append-only triggers in the migrations enforce
+record boundaries; new tables get no grants by default
+(`supabase/migrations/20260804000001_default_deny_new_table_grants.sql`).
+`src/test/migrations/inventory.test.ts` asserts that all 333 parsed tables
+enable RLS, by count. The RLS Isolation workflow runs live policy tests in CI.
+
+**Service role.** `createServiceRoleClient()` in `src/lib/supabase/server.ts`
+bypasses RLS. 147 non-test files under `src/app` reference it at `de7c950`, and
+no guard limits which files may. Each such route carries its own checks; see the
+[service-role note](#known-structural-limits).
+
+**Public surfaces.** Share-token pages live in `(portal)` (engagement),
+`(published)` (plans, measures, land-use review) and `(embed)`. Token handling
+is per module, for example `src/lib/engagement/public-portal.ts` and
+`src/lib/land-use-plans/public.ts`. `next.config.ts` sends a framing-forbidding
+security policy everywhere except `/embed`.
+
+**Agent writes.** The action registry (`src/lib/runtime/action-registry.ts`,
+`src/lib/runtime/action-metadata.ts`) lists 12 actions, all requiring approval.
+`src/lib/assistant/action-approval-server.ts` hashes the canonical payload,
+checks it against a single-use approval row for the same user, workspace and
+action within five minutes, and consumes it. `src/lib/assistant/agent-principal.ts`
+records agent authorship separately from the approving person. The execution
+source header is in-app attribution, not a delegated credential. Agent stage
+gate holds consume the approval, write the decision and write the audit
+receipt in one database function
+(`supabase/migrations/20261008000001_assistant_hold_receipts.sql`), with retry
+recovery in `src/lib/assistant/stage-gate-hold-receipt.ts`. No MCP server is
+built; [ADR-004](ADRs/ADR-004-mcp-server-surface.md) defers it.
+
+**AI providers and keys.**
+
+| Task | Providers | Path |
+|---|---|---|
+| Assistant chat | Anthropic | `src/app/api/assistant/chat/route.ts` |
+| Saved-API chat | Workspace API connection (OpenAI-compatible) | `src/app/api/assistant/providers/chat/route.ts` |
+| Project read and draft | API connection, Anthropic, or installed Codex, Claude Code or OpenCode | `src/app/api/assistant/providers/turns/route.ts`, `workers/planner_agent_connector/` |
+| Map packages | Installed Claude Code with a Claude subscription | `src/lib/map-packages/contracts.ts` |
+| Translation, grant, report and RTP drafting, extraction, moderation | Anthropic | `src/lib/integrations/anthropic-access.ts` |
+
+Model choices come from `src/lib/ai/model-policy.ts`. Workspace keys are
+encrypted with AES-256-GCM (`src/lib/integrations/key-crypto.ts`) under
+`OPENPLAN_INTEGRATION_KEY_SECRET` and stored in service-role-only tables
+(`src/lib/integrations/workspace-keys.ts`). In production a deployment
+`ANTHROPIC_API_KEY` serves workspaces only when `OPENPLAN_SHARED_AI_KEY` is
+`allow` (`src/lib/integrations/shared-ai-key.ts`); the hosted installation
+must never set it (AGENTS.md). AI calls are rate limited per workspace
+(`src/lib/runtime/ai-rate-limit.ts`). The code has no dollar cap; the hosted
+demo's $5 cap is set at the provider.
+
+## Workers and queues
+
+Long work runs in workers, not in a web request. Node queue workers
+(`openplan/scripts/workers/`) claim and lease rows through Postgres functions. The model
+pollers claim `model_run_stages` rows. OCR, ODM and county services receive
+HTTP requests and report back through callback routes.
+
+| Worker | How it gets work | Hosted on Railway |
+|---|---|---|
+| Document exports, engagement email, provider API turns, translation, synthesis preparation, synthesis execution, contract calculations | Postgres claim functions | Yes, one service under `workers/hosted-node/supervise.mjs` |
+| Managed GTFS ingestion (`openplan/scripts/workers/gtfs-ingestion.ts`) | `src/lib/gtfs/managed-worker-queue.ts`; off unless `OPENPLAN_GTFS_MANAGED_INGESTION` is `1` | No |
+| Synthesis generation (`openplan/scripts/workers/synthesis-generation.ts`) | Operator command for one authorization | No |
+| AequilibraE and ActivitySim | Poll queued stages; lease through 30-second heartbeats (`workers/aequilibrae_worker/model_stage_lease.py`) | Yes, one service on one shared volume (`workers/hosted-models/supervise.py`) |
+| OCR (`workers/ocr_worker/main.py`) | App request or polling `src/app/api/knowledge-base/extraction-dispatch/route.ts`; results to `src/app/api/knowledge-base/ocr-callback/route.ts`; SQLite journal in `workers/ocr_worker/durable.py` | Yes |
+| Offsite backup (`workers/hosted-backup/backup.py`) | Daily Railway cron (`workers/hosted-backup/railway.json`) | Yes |
+| ODM imagery (`workers/odm_worker/main.py`) | App request; callbacks to `src/app/api/aerial/processing-callback/route.ts`; in-memory queue unless managed admission is enabled | No |
+| County onramp (`workers/county_onramp_worker/main.py`) | App request (`src/lib/api/county-onramp-dispatch.ts`); callbacks to `src/app/api/county-runs/[countyRunId]/manifest/route.ts`; in-memory job table | No |
+| Planner Agent connector (`workers/planner_agent_connector/connector.mjs`) | Runs on the planner's computer; claims turns from `src/app/api/assistant/providers/native/route.ts` and map packages from `src/app/api/map-packages/connector/route.ts` with a one-time connection token | No |
+
+Railway service settings and secrets are listed in
+[hosted operations](../openplan/docs/ops/HOSTED_OPERATIONS.md). Each worker's
+DEPLOY document governs its own operation. `workers/aequilibrae_worker/railway.json`
+and its Fly files are standalone self-hosting recipes, not the hosted layout.
+
+Model pollers mark their own stages interrupted after a 15-minute heartbeat
+lapse and leave them for the owner's recovery decision; nothing retries
+automatically. The `reap-model-runs` cron (`src/lib/models/run-reaper.ts`) fails
+only stale work that never started.
+
+**Scheduled routes.** `vercel.json` schedules five routes under
+`src/app/api/cron/`: model-run and GTFS reapers, the deadline sweep, and sweeps
+of unattached engagement photos and abandoned staged uploads. Each requires
+`Authorization: Bearer` with `CRON_SECRET`. A self-hosted operator supplies the
+scheduler ([self-hosting](../openplan/docs/SELF_HOSTING.md)).
+
+## External data and adapters
+
+Self-hosting does not mean no outbound traffic. No outbound-service inventory
+exists yet. `src/lib/http/outbound-url.ts` guards member-supplied URLs, and
+`src/lib/integrations/providers.ts` lists the services a workspace can bring its
+own key for.
+
+| Source | Adapter |
+|---|---|
+| Census ACS, FCC block lookup | `src/lib/data-sources/census.ts` |
+| Census TIGERweb places, boundaries and road context | `src/lib/geographies/tigerweb-services.ts`, `src/lib/safety/us-road-context-adapter.ts` |
+| LODES employment | `src/lib/data-sources/lodes.ts` |
+| OpenStreetMap through Overpass | `src/lib/data-sources/transit/osm-overpass.ts` |
+| GTFS feeds and the Mobility Database catalog | `src/lib/gtfs/catalog.ts`, `src/lib/gtfs/fetch.ts` |
+| Grants.gov | `src/lib/grants/grants-gov.ts` |
+| CEJST, bundled with no network call | `src/lib/data-sources/equity-designation/cejst-national.ts` |
+| Crash records | `src/lib/safety/sources/registry.ts` (below) |
+| Mapbox geocoding, static images and tiles | `src/lib/engagement/place-search.ts`, `src/components/workspace-gis/layer-placement-preview.tsx` |
+| Resend email | `src/lib/notifications/engagement.ts` and Supabase Auth SMTP |
+
+**Crash sources.** The registry picks adapters by the study area's state FIPS
+code, not its bounding box. It holds California CCRS, Oregon DOT, Iowa DOT,
+Ohio DOT, DC DDOT and national NHTSA FARS (fatal only). Only CCRS and FARS
+records can be stored (`OBSERVED_CRASH_SOURCE_IDS`); the four state adapters
+answer live reads and corridor runs only.
+
+**Maps.** All map components start through `src/lib/maps/map-engine.ts`. It uses
+Mapbox when `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` holds a public token, otherwise a
+MapLibre style named by `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL`
+(`src/lib/cartographic/open-map-style.ts`), otherwise an unavailable notice.
+`next.config.ts` adds that style's origin to the content security policy. Place
+search and the background picker still need Mapbox.
+
+## Uploads, imports and exports
+
+- Large planner files go straight from the browser to private Storage through
+  a signed URL, and the complete step re-reads and checks the stored object
+  (`src/lib/files/staged-upload.ts`). Knowledge Base documents, aerial imagery
+  and GTFS uploads use it. Map packages issue their own signed URLs
+  (`src/lib/map-packages/server.ts`), outside the staged-upload sweep.
+- Default GTFS imports still run inside the request; the managed worker path is
+  opt-in ([managed ingestion](../openplan/docs/ops/GTFS_MANAGED_INGESTION.md)).
+- Portfolio workbook import creates or skips rows; it does not reconcile edited
+  records (`src/app/api/projects/import/route.ts`).
+- One GeoPackage builder serves both exports
+  (`src/lib/projects/project-geopackage.ts`). Direct export includes project,
+  corridors and engagement geometry; governed export
+  (`src/lib/project-evidence-bundles/generated-records.ts`) adds crashes. No
+  production caller passes model layers or land-use designations.
+- Report PDFs render with headless Chromium (`src/lib/reports/pdf.ts`) on Vercel
+  and in the hosted queue image.
+
+## Model science
+
+AequilibraE and ActivitySim are separate demand methods; AGENTS.md forbids
+averaging them and treats agreement as sensitivity evidence, not accuracy. Read
+[ADR-002](ADRs/ADR-002-multi-engine-modeling-stack.md), the
+[modeling status](modeling/STATUS_AND_VALIDATION.md) and the
+[ActivitySim runtime gap](modeling/ACTIVITYSIM_RUNTIME_GAP.md) for what is
+validated. The hosted model image pins Python 3.11, AequilibraE 1.6.2 and Pandas
+2.3.3 and checks them at build (`workers/hosted-models/DEPLOY.md`). Hosted run
+artifacts are mirrored to the private `run-artifacts` bucket when
+`OPENPLAN_HOSTED_ARTIFACT_MIRROR` is `1`; the two pollers still exchange
+`local://` files on the shared volume.
+
+## Deployment and migrations
+
+Hosted operation, merge holds and migration order are governed by AGENTS.md
+("Live hosted installation") and the coordination file it names. Do not repeat
+them here. The code-side facts are these:
+
+- `vercel.json` deploys only `main`, runs `npm ci` and `npm run build`, gives
+  three report and export routes 60 seconds and 1,024 MB, and schedules the
+  cron routes.
+- `npm run build` runs `next build --webpack` with a 6,144 MB heap. On Vercel,
+  `next.config.ts` skips the type check and disables webpack's filesystem cache,
+  because both pushed the 8 GB builder out of memory (October 23 and
+  November 2, 2026); CI builds keep both.
+- At build, `next.config.ts` records every migration version in the tree.
+  `src/app/api/health/route.ts` reports version, commit and expected migrations;
+  `src/app/api/health/deep/route.ts` (bearer `OPENPLAN_HEALTH_TOKEN`) also probes
+  the database, model heartbeats and Node queue processes.
+- Git deploys never apply migrations. The upgrade-path workflow upgrades a
+  database in place from the previous release tag, and the restore drill runs
+  quarterly. [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md)
+  and [hosted recovery](../openplan/docs/ops/HOSTED_RECOVERY.md) hold the
+  procedures and their limits.
+
+## Known structural limits
+
+| Limit | Row |
+|---|---|
+| A model stage has no durable lease or resume point in its own columns | KI-2026-10-12-018 |
+| County run routes read worker files from the app's own disk | KL-2026-09-04-041 |
+| ODM queue is in memory by default; mesh is not delivered; DNG is accepted by the UI but not by intake | KL-2026-09-04-051, KL-2026-09-04-052 |
+| No outbound-service inventory or tested no-egress operation | KL-2026-09-04-012 |
+| Place search needs Mapbox; several maps lack browser checks | KI-2026-10-12-026 |
+| Land-use plan geography can change after context is saved; creation assumes TIGERweb | KI-2026-10-12-025 |
+| Injury crash records outside California cannot be stored | KI-2026-11-02-001 |
+| No error tracking or cron failure alerts on the hosted site | KI-2026-10-12-033 |
+| Per-account workspace, storage and AI cost limits are partial | KI-2026-10-12-014 |
+| Local model artifact downloads refuse on non-Linux hosts | KI-2026-10-12-031 |
+| No guard limits which routes use the service-role client | No row yet |
+
+Rows are in [known issues](ops/KNOWN_ISSUES.md).
+
+## Planned structure
+
+These designs are not built. Their requirements live in the milestone
+definitions and the dated research behind them.
+
+| Area | Milestones | Design source |
+|---|---|---|
+| Plan-owned authority and legal applicability | M1, G1, G1a | [MILESTONES](product/MILESTONES.md); [national comparison](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) |
+| Contract budgets and RTP updates | M11, M12 | [contract budget review](reviews/2026-09-04-pre-handoff/CONTRACT_BUDGET_CORE_REQUIREMENTS_REVIEW.md); [RTP review](reviews/2026-09-04-pre-handoff/RTP_UPDATE_CORE_REQUIREMENTS_REVIEW.md) |
+| Administered programs and recipient reporting | M13 | [local tax research](reviews/2026-09-04-pre-handoff/LOCAL_TAX_PROGRAM_ADMINISTRATION_RESEARCH.md) |
+| Procurement and contract handoff | M14 | [agency procurement research](reviews/2026-09-04-pre-handoff/PROCUREMENT_AGENCY_REQUIREMENTS_RESEARCH.md) |
+| Capital delivery and local assistance | M10 | [LAPM gap analysis](reviews/2026-09-04-pre-handoff/LAPM_FEATURE_GAP_ANALYSIS.md) |
+| OWP/UPWP administration | M2d | [OWP research](reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md) |
+| Aerial processing and delivery | M5b.1–6 | [aerial decision](reviews/2026-09-04-pre-handoff/AERIAL_REUSE_AND_IMPLEMENTATION_DECISION.md) |
+| Agent assignments, MCP and outside clients | A0, A1a–d | [agentic control decision](reviews/2026-09-04-pre-handoff/AGENTIC_CONTROL_DECISION.md); [ADR-004](ADRs/ADR-004-mcp-server-surface.md) |
+| Hosted trials and customer-owned installation | M15a–c | [cutover record](ops/HOSTED_LIVE_2026-10-11.md) |
+
+[ADR-003](ADRs/ADR-003-crash-data-acquisition.md) records the July crash source
+decision; the state adapter registry above is what runs now. ADRs preserve
+dated reasoning; verify current third-party APIs and licenses before building
+from them.
