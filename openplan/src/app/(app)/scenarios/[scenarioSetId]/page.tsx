@@ -691,7 +691,7 @@ export default async function ScenarioSetDetailPage({
         <div className="space-y-6">
           <p className="text-label text-muted-foreground">
             {entriesUnreadable
-              ? "Alternative readiness is unavailable — this set's entries could not be read."
+              ? "Alternative readiness is unavailable: this set's entries could not be read."
               : `${comparisonSummary.readyAlternatives}/${comparisonSummary.totalAlternatives} alternatives ready`}
           </p>
           <div className="module-summary-grid cols-4">
@@ -804,7 +804,7 @@ export default async function ScenarioSetDetailPage({
                 </div>
                 {linkedReportsUnreadable ? (
                   <p className="text-sm text-muted-foreground">
-                    Report linkage counts are unavailable for this render — the reports or their run links could not be
+                    Report linkage counts are unavailable for this render: the reports or their run links could not be
                     read.
                   </p>
                 ) : (
@@ -1039,7 +1039,7 @@ export default async function ScenarioSetDetailPage({
                 <h2 className="module-section-title">Assumptions, data, and measured indicators</h2>
                 <p className="module-section-description">
                   What this scenario set assumes, where those numbers came from, and what was measured
-                  against them. A comparison that cannot name these is a number without a defence — and
+                  against them. A comparison that cannot name these is a number without a defence, and
                   until now OpenPlan had the records but offered no way to write or read them.
                 </p>
               </div>

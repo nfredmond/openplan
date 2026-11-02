@@ -35,7 +35,7 @@ import {
  * and its real-time feed, which OpenPlan does not read.
  */
 export const GTFS_NOT_A_TIMETABLE_CAVEAT =
-  "These are trip counts derived from a published schedule for one service day — not a timetable. " +
+  "These are trip counts derived from a published schedule for one service day, not a timetable. " +
   "OpenPlan records how often service runs, and deliberately does not store individual departure times, " +
   "so it cannot tell a rider when the next vehicle leaves. Use the agency's own trip planner for that.";
 
@@ -53,7 +53,7 @@ export const GTFS_HOURLY_AVERAGE_HEADWAY_CAVEAT =
  * check it, which is the entire point of deriving it rather than assuming it.
  */
 export const GTFS_DERIVED_PEAK_WINDOW_CAVEAT =
-  "The peak hour is derived from the feed — it is the clock hour with the most departures — and is reported " +
+  "The peak hour is derived from the feed (the clock hour with the most departures) and is reported " +
   "with every headway so it can be checked. OpenPlan does not assume a 6–9 AM peak, because many systems " +
   "peak at midday, at school bell times, or at shift change, and an assumed window would report the wrong hour " +
   "without saying so.";
@@ -64,7 +64,7 @@ export const GTFS_FREQUENT_SERVICE_TIER_CAVEAT =
   "of peak headway. These are OpenPlan's screening tiers and are NOT a determination under any statute. " +
   "California's major-transit-stop and high-quality-transit-corridor tests, and comparable tests elsewhere, define the " +
   "peak period by statute, may require service in both the morning and afternoon commute periods, and may require two " +
-  "intersecting routes — OpenPlan derives the peak hour from the data instead. Use this to find candidate locations, " +
+  "intersecting routes. OpenPlan derives the peak hour from the data instead. Use this to find candidate locations, " +
   "then confirm each one against the applicable statutory definition.";
 
 /** Frequency-based feeds, and the `exact_times` distinction kept rather than flattened. */
@@ -79,7 +79,7 @@ export const GTFS_FREQUENCIES_EXPANSION_CAVEAT =
  * one we counted is named.
  */
 export const GTFS_REPRESENTATIVE_DATE_CAVEAT =
-  "A feed usually covers months of service, and its Tuesdays are not all the same Tuesday — services start and end " +
+  "A feed usually covers months of service, and its Tuesdays are not all the same Tuesday: services start and end " +
   "mid-window and holidays are added and removed by date. Each day's counts describe ONE date, the busiest of that " +
   "weekday inside the feed's window, and that date is reported so the figure can be reproduced.";
 
@@ -98,7 +98,7 @@ export const GTFS_INTERPOLATED_STOP_TIME_CAVEAT =
  */
 export const GTFS_PAST_MIDNIGHT_CAVEAT =
   `Departures after midnight belong to the day whose service they run under, and GTFS writes them as 24:00:00 and later; ` +
-  `OpenPlan preserves that. A small number of departures in this feed fall past ${SERVICE_DAY_HOUR_BINS}:00:00 — they are ` +
+  `OpenPlan preserves that. A small number of departures in this feed fall past ${SERVICE_DAY_HOUR_BINS}:00:00. They are ` +
   "included in the trip counts but not in the hour-by-hour histogram, so they do not affect the peak hour or headway.";
 
 /** The dangling-reference caveat, applied only when the feed has some. */

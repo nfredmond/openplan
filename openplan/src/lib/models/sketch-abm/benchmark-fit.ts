@@ -76,8 +76,8 @@ export const DEFAULT_SKETCH_REFERENCE_BENCHMARKS: SketchReferenceBenchmarks = {
     shared: 3,
   },
   sources: [
-    "VMT per capita reference 22.0 vehicle-miles/person/day — the same operator-default the CEQA §15064.3 screen uses; a screening reference, not a local observation.",
-    "Mode-split reference — ACS B08301-shaped commute mode shares for a rural/small-urban California context, renormalized over auto/transit/walk/bike/shared; screening reference points, not local observations.",
+    "VMT per capita reference 22.0 vehicle-miles/person/day, the same operator-default the CEQA §15064.3 screen uses; a screening reference, not a local observation.",
+    "Mode-split reference: ACS B08301-shaped commute mode shares for a rural/small-urban California context, renormalized over auto/transit/walk/bike/shared; screening reference points, not local observations.",
   ],
 };
 
@@ -135,7 +135,7 @@ export function deriveReferenceBenchmarksFromCensus(
       shared: 0,
     },
     sources: [
-      `VMT per capita reference ${vmtPerCapitaReference} vehicle-miles/person/day — an operator-configurable screening default, not a local observation.`,
+      `VMT per capita reference ${vmtPerCapitaReference} vehicle-miles/person/day, an operator-configurable screening default, not a local observation.`,
       `Mode-split reference derived from the study area's own ACS B08301 commute shares${yearLabel}, renormalized over non-work-from-home commute trips; shared-ride is not separately observed in ACS and is treated as 0.`,
     ],
   };
@@ -181,8 +181,8 @@ export type BenchmarkFitResult = {
 export function benchmarkFitRecommendation(fitScore: number): string {
   if (fitScore > 90) return "Close to reference benchmarks";
   if (fitScore > 75) return "Reasonable screening agreement";
-  if (fitScore > 60) return "Directional only — review assumptions";
-  return "Large deviation from reference benchmarks — treat results as illustrative";
+  if (fitScore > 60) return "Directional only: review assumptions";
+  return "Large deviation from reference benchmarks: treat results as illustrative";
 }
 
 /**

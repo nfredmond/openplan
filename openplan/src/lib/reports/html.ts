@@ -69,7 +69,7 @@ import type { ReportProjectJurisdictionSchemaPendingPayload } from "./project-ju
  * Verbatim, always — an AI-assisted block is never presented as unassisted
  * prose, and the label only ever appears on operator-ACCEPTED drafts.
  */
-export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance — reviewed and accepted";
+export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance, reviewed and accepted";
 
 /**
  * The disclosure rendered when the fact list recomputed at generation time no
@@ -77,7 +77,7 @@ export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance — revie
  * never silently dropped, never silently regenerated.
  */
 export const AI_NARRATIVE_STALE_NOTICE =
-  "Underlying data changed since acceptance — the workspace facts this narrative was grounded against no longer match the current records. Re-review or regenerate the draft before relying on this block.";
+  "Underlying data changed since acceptance. The workspace facts this narrative was grounded against no longer match the current records. Re-review or regenerate the draft before relying on this block.";
 
 type ProjectRecord = {
   id: string;
@@ -552,7 +552,7 @@ export function compactModelRunKpiLine(resultSummary: Record<string, unknown> | 
  */
 function citedModelRunClaimTierLine(run: ReportCitedModelRun): string | null {
   if (run.claimReadFailed) {
-    return "Claim tier could not be read — a lookup failure, not evidence that no claim decision exists for this run.";
+    return "Claim tier could not be read: a lookup failure, not evidence that no claim decision exists for this run.";
   }
   if (run.claimStatus === undefined && run.claimReadFailed === undefined) {
     return null;
@@ -830,7 +830,7 @@ function engagementSelfReportedDemographicsMarkup(data: EngagementMarkupContext)
     <h3>Self-reported respondent demographics (screening)</h3>
     <p>${selfReported.respondentsWithDemographics} respondent${
       selfReported.respondentsWithDemographics === 1 ? "" : "s"
-    } shared optional demographics. Counts only — no percentages, because suppression and multi-select answers make a share misleading.</p>
+    } shared optional demographics. Counts only: no percentages, because suppression and multi-select answers make a share misleading.</p>
     <ul class="record-list">${dimensions}</ul>
     <p>${esc(selfReported.suppressionNote)}</p>
     <p class="meta">${esc(selfReported.caveat)}</p>
@@ -859,7 +859,7 @@ function engagementJointRepresentativenessMarkup(data: EngagementMarkupContext):
   if (joint.limits.length === 0) {
     return `<div class="warning-box" style="margin-top: 18px;">
       <strong>Joint representativeness reading withheld</strong>
-      <p>This reading arrived without the disclosure of what it cannot say, and the headline is not publishable on its own — the two screenings count different people. Nothing is claimed here either way.</p>
+      <p>This reading arrived without the disclosure of what it cannot say, and the headline is not publishable on its own. The two screenings count different people. Nothing is claimed here either way.</p>
     </div>`;
   }
 
@@ -1239,14 +1239,14 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
       <h3>${esc(acquisition.sourceLabel)}</h3>
       <p>Years requested: ${esc(acquisition.years)}</p>
       <p>${acquisition.resourceUpdateNote ? `${esc(acquisition.resourceUpdateNote)}${acquisition.publishedThroughSourceUrl ? ` <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source file metadata")}</a>` : ""}` : acquisition.publishedThrough
-        ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? ` — <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
+        ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? `, <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
         : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}</p>
       <dl class="detail-grid">
         ${acquisition.figures
           .map(
             (figure) => `<div><dt>${esc(figure.label)}</dt><dd>${
               figure.value === null
-                ? `Not available — ${esc(figure.absentBecause ?? "no reason recorded")}`
+                ? `Not available: ${esc(figure.absentBecause ?? "no reason recorded")}`
                 : esc(figure.value.toLocaleString("en-US"))
             }</dd></div>`
           )

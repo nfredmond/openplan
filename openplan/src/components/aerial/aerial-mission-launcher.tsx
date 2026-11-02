@@ -68,7 +68,7 @@ export function AerialMissionLauncher({
   if (projects.length === 0) {
     return (
       <div className="module-empty-state text-sm">
-        Every aerial mission belongs to a project — that link is what carries its imagery into the
+        Every aerial mission belongs to a project. That link is what carries its imagery into the
         project&apos;s evidence chain. This workspace has no projects yet, so there is nothing to fly
         for.{" "}
         <Link href="/projects" className="underline underline-offset-2 hover:text-foreground">

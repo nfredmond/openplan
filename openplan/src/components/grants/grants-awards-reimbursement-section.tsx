@@ -176,7 +176,7 @@ export function GrantsAwardsReimbursementSection({
           <p className="module-summary-label">Requested</p>
           <p className="module-summary-value text-base leading-tight">{formatCurrency(linkedInvoiceSummary.claimedNetAmount)}</p>
           <p className="module-summary-detail">
-            Award-linked invoice dollars claimed from funders — in review, submitted, approved, or paid. Drafts are not yet claims.
+            Award-linked invoice dollars claimed from funders: in review, submitted, approved, or paid. Drafts are not yet claims.
             {linkedInvoiceSummary.rejectedCount > 0
               ? ` ${formatCurrency(linkedInvoiceSummary.rejectedNetAmount)} across ${linkedInvoiceSummary.rejectedCount} rejected record${linkedInvoiceSummary.rejectedCount === 1 ? "" : "s"} is excluded here and from Uninvoiced.`
               : ""}
@@ -229,7 +229,7 @@ export function GrantsAwardsReimbursementSection({
               {reimbursementProfile?.selection === "interim_unconfigured_default" ? (
                 <div className="mb-3 rounded-2xl border-l-2 border-sky-300/80 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100">
                   Reimbursement postures here come from the {reimbursementProfile.profileName} profile as an
-                  interim default — {INTERIM_DEFAULT_RATIONALE}
+                  interim default: {INTERIM_DEFAULT_RATIONALE}
                 </div>
               ) : null}
               <InvoiceRecordComposer

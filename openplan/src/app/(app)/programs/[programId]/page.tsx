@@ -180,7 +180,7 @@ function SectionReadFailure({ title, noun, compact = true }: { title: string; no
     <StateBlock
       tone="danger"
       title={title}
-      description={`The ${noun} for this program could not be read, so this section cannot say whether any are linked. It is not a statement that none exist — retry, and tell your operator if it persists.`}
+      description={`The ${noun} for this program could not be read, so this section cannot say whether any are linked. It is not a statement that none exist. Retry, and tell your operator if it persists.`}
       compact={compact}
     />
   );
@@ -924,7 +924,7 @@ export default async function ProgramDetailPage({
                 </p>
                 <p className="module-summary-detail">
                   {fundingOpportunitiesUnreadable
-                    ? "A dollar total cannot be shown when the opportunities behind it could not be read — a $0 here would read as a finding."
+                    ? "A dollar total cannot be shown when the opportunities behind it could not be read. A $0 here would read as a finding."
                     : "Expected dollars attached to pursue decisions within this cycle."}
                 </p>
               </div>
@@ -1127,7 +1127,7 @@ export default async function ProgramDetailPage({
                                 </p>
                                 <MetaList>
                                   {supportingModelLinksUnreadable ? (
-                                    <MetaItem>Readiness and linkage counts unavailable — link set unreadable</MetaItem>
+                                    <MetaItem>Readiness and linkage counts unavailable: link set unreadable</MetaItem>
                                   ) : (
                                     <MetaItem>{model.readiness.label}</MetaItem>
                                   )}
@@ -1209,7 +1209,7 @@ export default async function ProgramDetailPage({
                               <MetaList>
                                 <MetaItem>
                                   {reportArtifactsUnreadable
-                                    ? "Artifact count unavailable — the stored artifacts could not be read"
+                                    ? "Artifact count unavailable: the stored artifacts could not be read"
                                     : `${report.artifactCount} artifacts`}
                                 </MetaItem>
                                 <MetaItem>
@@ -1256,7 +1256,7 @@ export default async function ProgramDetailPage({
                               </p>
                               <MetaList>
                                 {engagementItemsUnreadable ? (
-                                  <MetaItem>Item counts unavailable — the engagement items could not be read</MetaItem>
+                                  <MetaItem>Item counts unavailable: the engagement items could not be read</MetaItem>
                                 ) : (
                                   <>
                                     <MetaItem>{campaign.approvedItemCount} approved items</MetaItem>

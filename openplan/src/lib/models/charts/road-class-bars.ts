@@ -104,8 +104,8 @@ export function roadClassBarsSvg(
     const publishedWidth = Math.max(1, scale(row.published));
     parts.push(
       `<text x="${PADDING.left - 10}" y="${top + 16}" text-anchor="end" font-family="system-ui,sans-serif" font-size="11" fill="${colors.textPrimary}">${escapeXml(row.label)}</text>`,
-      `<rect x="${PADDING.left}" y="${top}" width="${modelWidth.toFixed(1)}" height="${barHeight}" rx="4" fill="${colors.series[0]}"><title>${escapeXml(row.label)} — ${modelLabel}: ${(row.model * 100).toFixed(1)}%</title></rect>`,
-      `<rect x="${PADDING.left}" y="${top + barHeight + 2}" width="${publishedWidth.toFixed(1)}" height="${barHeight}" rx="4" fill="${colors.series[1]}"><title>${escapeXml(row.label)} — ${publishedLabel}: ${(row.published * 100).toFixed(1)}%</title></rect>`,
+      `<rect x="${PADDING.left}" y="${top}" width="${modelWidth.toFixed(1)}" height="${barHeight}" rx="4" fill="${colors.series[0]}"><title>${escapeXml(row.label)}, ${modelLabel}: ${(row.model * 100).toFixed(1)}%</title></rect>`,
+      `<rect x="${PADDING.left}" y="${top + barHeight + 2}" width="${publishedWidth.toFixed(1)}" height="${barHeight}" rx="4" fill="${colors.series[1]}"><title>${escapeXml(row.label)}, ${publishedLabel}: ${(row.published * 100).toFixed(1)}%</title></rect>`,
       // Direct labels: identity and value never rest on colour alone.
       `<text x="${(PADDING.left + modelWidth + 6).toFixed(1)}" y="${top + 10}" font-family="system-ui,sans-serif" font-size="10" fill="${colors.textSecondary}">${(row.model * 100).toFixed(0)}%</text>`,
       `<text x="${(PADDING.left + publishedWidth + 6).toFixed(1)}" y="${top + barHeight + 12}" font-family="system-ui,sans-serif" font-size="10" fill="${colors.textSecondary}">${(row.published * 100).toFixed(0)}%</text>`

@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**No em dashes in planner and public text:** screens, API messages, exports, report text, work-plan and stage-gate templates and the public portal now end the sentence or use a comma, colon or parentheses instead. A table cell with no value still shows a lone dash. Accepted report narratives may show "Underlying data changed since acceptance" once, because the fact wording they were grounded on changed. Nothing to do on upgrade; no migration.
+
 **Public plan pages publish only their own workspace's projects (KI-2026-11-02-053):**
 the plan document page now reads project links only from the plan's own workspace,
 and both public plan pages drop a link whose project belongs to another workspace

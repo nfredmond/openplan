@@ -423,7 +423,7 @@ export function FlightPlanEditor({
       return;
     }
     if (speedValue === null) {
-      setGenerateError("Enter the ground speed in m/s — this is your aircraft's survey speed, so there is no default.");
+      setGenerateError("Enter the ground speed in m/s. This is your aircraft's survey speed, so there is no default.");
       return;
     }
     if (marginValue === null) {
@@ -432,7 +432,7 @@ export function FlightPlanEditor({
     }
     if (batteryValue === null) {
       setGenerateError(
-        "Enter the usable flight minutes per battery — the realistic figure for your aircraft, not the brochure maximum."
+        "Enter the usable flight minutes per battery: the realistic figure for your aircraft, not the brochure maximum."
       );
       return;
     }
@@ -545,7 +545,7 @@ export function FlightPlanEditor({
       setSavedMessage(
         includeSnapshot
           ? "Flight plan and generated grid saved."
-          : "Flight plan settings saved. No freshly generated grid accompanied them — generate to update the saved snapshot."
+          : "Flight plan settings saved. No freshly generated grid accompanied them. Generate to update the saved snapshot."
       );
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Unknown error while saving the flight plan.");
@@ -601,7 +601,7 @@ export function FlightPlanEditor({
         <StateBlock
           tone="danger"
           title="The saved flight plan could not be read"
-          description={`${loadError ?? "Unknown error."} The form below starts blank, NOT from your saved plan — saving now would overwrite whatever is stored. Reload the page before editing.`}
+          description={`${loadError ?? "Unknown error."} The form below starts blank, NOT from your saved plan. Saving now would overwrite whatever is stored. Reload the page before editing.`}
         />
       ) : null}
 
@@ -787,7 +787,7 @@ export function FlightPlanEditor({
           </div>
 
           <p className="text-label text-muted-foreground">
-            Overlaps start at 75% front / 65% side — the common photogrammetric starting point; adjust
+            Overlaps start at 75% front / 65% side, the common photogrammetric starting point; adjust
             for your terrain and processing software. Speed and battery minutes belong to your
             aircraft, so they have no default.
             {camera ? ` Camera numbers: ${camera.specSource}` : ""}
@@ -820,8 +820,8 @@ export function FlightPlanEditor({
       {savedPlanStale ? (
         <StateBlock
           tone="warning"
-          title="The saved plan predates these settings — regenerate"
-          description="The settings above no longer match the ones the saved flight lines were generated from (the mission AOI counts too). Generate again and save, or exports will stay locked — a crew must never fly lines nobody reviewed under the current settings."
+          title="The saved plan predates these settings: regenerate"
+          description="The settings above no longer match the ones the saved flight lines were generated from (the mission AOI counts too). Generate again and save, or exports will stay locked. A crew must never fly lines nobody reviewed under the current settings."
           compact
         />
       ) : null}
@@ -837,7 +837,7 @@ export function FlightPlanEditor({
             <div className="absolute bottom-3 left-3 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
               {displaySource === "generated"
                 ? previewStale
-                  ? "Showing the last generated grid — it predates the current settings. Generate again."
+                  ? "Showing the last generated grid. It predates the current settings. Generate again."
                   : "Showing the grid generated from the current settings."
                 : "Showing the SAVED flight plan's lines."}
             </div>
@@ -855,7 +855,7 @@ export function FlightPlanEditor({
       {stats ? (
         <div className="space-y-2 rounded-lg border border-border/70 bg-muted/20 p-4 text-sm">
           <p className="font-medium text-foreground">
-            {stats.source === "generated" ? "Generated grid" : "Saved plan"} — {stats.photoCount} photos
+            {stats.source === "generated" ? "Generated grid" : "Saved plan"}: {stats.photoCount} photos
             across {stats.lineCount} lines
           </p>
           <dl className="grid gap-x-6 gap-y-1 text-xs text-muted-foreground sm:grid-cols-2 lg:grid-cols-3">
@@ -930,7 +930,7 @@ export function FlightPlanEditor({
           <p className="text-xs text-muted-foreground">
             {savedSnapshot === null
               ? "Exports unlock once a generated flight plan is saved. Generate the lines, review them, then save."
-              : "Exports are locked while the saved plan predates the current settings — regenerate and save first."}
+              : "Exports are locked while the saved plan predates the current settings. Regenerate and save first."}
           </p>
         )}
       </div>

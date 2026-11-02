@@ -540,7 +540,7 @@ export async function POST(request: NextRequest) {
         {
           error: cleaned
             ? "Failed to create invoice line items; the invoice was rolled back"
-            : "Failed to create invoice line items, and the draft invoice shell could not be removed — delete it by voiding",
+            : "Failed to create invoice line items, and the draft invoice shell could not be removed. Delete it by voiding",
         },
         { status: 500 }
       );
@@ -562,7 +562,7 @@ export async function POST(request: NextRequest) {
         {
           error: cleaned
             ? "Failed to link time entries to the invoice; the invoice was rolled back"
-            : "Failed to link time entries to the invoice, and the draft invoice shell could not be removed — delete it by voiding",
+            : "Failed to link time entries to the invoice, and the draft invoice shell could not be removed. Delete it by voiding",
         },
         { status: 500 }
       );

@@ -645,7 +645,7 @@ const failedModelRunsSource: MyWorkSource = {
           detail: [
             humanizeStatus(asString(row.engine_key)),
             asString(row.created_at) ? `failed ${formatWorkDeadlineDate(asString(row.created_at), timeZone)}` : null,
-            error ?? "No cause recorded — open the run to see how far it got.",
+            error ?? "No cause recorded. Open the run to see how far it got.",
           ]
             .filter(Boolean)
             .join(" · "),
@@ -872,7 +872,7 @@ const narrativeDraftsSource: MyWorkSource = {
         sourceId: "narrative_drafts",
         block: "needs_review",
         id: String(row.id),
-        title: `Draft narrative — ${humanizeStatus(asString(row.section_key)) ?? "report section"}`,
+        title: `Draft narrative: ${humanizeStatus(asString(row.section_key)) ?? "report section"}`,
         projectId: null,
         projectName: null,
         dueOn: null,

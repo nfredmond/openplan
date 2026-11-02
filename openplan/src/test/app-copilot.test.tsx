@@ -299,7 +299,7 @@ describe("AppCopilot", () => {
 
   it("surfaces an explicit error frame with retry (no more silent empty body)", async () => {
     chatRoute = () =>
-      sseResponse([{ type: "start" }, { type: "error", errorText: "The Planner Agent reply failed mid-stream — the model may be busy. Try again." }]);
+      sseResponse([{ type: "start" }, { type: "error", errorText: "The Planner Agent reply failed mid-stream. The model may be busy. Try again." }]);
 
     await openPanel();
 
@@ -310,7 +310,7 @@ describe("AppCopilot", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("The Planner Agent reply failed mid-stream — the model may be busy. Try again.")
+        screen.getByText("The Planner Agent reply failed mid-stream. The model may be busy. Try again.")
       ).toBeInTheDocument();
     });
     expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
@@ -894,7 +894,7 @@ describe("AppCopilot", () => {
     fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Dismissed — no change was made\./)).toBeInTheDocument();
+      expect(screen.getByText(/Dismissed. No change was made\./)).toBeInTheDocument();
     });
     expect(screen.queryByRole("button", { name: "Approve & run" })).not.toBeInTheDocument();
     const executeCall = fetchMock.mock.calls.find(

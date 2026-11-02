@@ -85,7 +85,7 @@ describe("what a planner sees after relaunching a run that died", () => {
         state: "unattended",
         headline: "Nothing on this OpenPlan installation is going to execute this run.",
         detail:
-          "This OpenPlan installation is not set up to hand runs straight to a worker, so the run sits on the queue until a worker checks for it. There is nothing to buy — OpenPlan is free.",
+          "This OpenPlan installation is not set up to hand runs straight to a worker, so the run sits on the queue until a worker checks for it. There is nothing to buy. OpenPlan is free.",
       },
     });
 

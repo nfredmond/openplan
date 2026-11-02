@@ -276,7 +276,7 @@ function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount:
       <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt, calendar))}</dd></div>`;
 
   return `<header class="hero">
-    <span class="eyebrow">OpenPlan Grants — ${esc(applicationExportPacketLabel(opportunity.pursuit_kind))}</span>
+    <span class="eyebrow">OpenPlan Grants: ${esc(applicationExportPacketLabel(opportunity.pursuit_kind))}</span>
     <h1>${esc(opportunity.title)}</h1>
     <p>${esc(
       opportunity.summary ||
@@ -288,7 +288,7 @@ function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount:
     </div>
     ${
       outstandingRequiredCount > 0
-        ? `<div class="draft-stamp">DRAFT — ${outstandingRequiredCount} required attachment(s) outstanding</div>`
+        ? `<div class="draft-stamp">DRAFT: ${outstandingRequiredCount} required attachment(s) outstanding</div>`
         : ""
     }
     ${
@@ -322,7 +322,7 @@ function sectionMarkup(entry: GrantApplicationExportSection): string {
   // presented as approved application prose, and never a silent omission.
   return `<section id="${esc(section.section_key)}">
     <h2 class="section-title">${esc(section.title)}</h2>
-    <div class="outstanding">Not finalized — this section is still in &ldquo;${esc(
+    <div class="outstanding">Not finalized: this section is still in &ldquo;${esc(
       statusLabel
     )}&rdquo;. It is listed here as an outstanding item; no approved text exists for it yet.</div>
   </section>`;
@@ -408,7 +408,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${esc(data.opportunity.title)} — ${esc(applicationExportPacketLabel(data.opportunity.pursuit_kind))}</title>
+    <title>${esc(data.opportunity.title)}: ${esc(applicationExportPacketLabel(data.opportunity.pursuit_kind))}</title>
     <style>${DOCUMENT_STYLES}
     </style>
   </head>

@@ -745,7 +745,7 @@ export async function POST(request: NextRequest) {
           crashes: crashes.sourceSnapshot,
           equity: {
             source: equity.source,
-            note: "Equity flags are an ACS income + burden proxy (corridor-level tract indicators) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.",
+            note: "Equity flags are an ACS income + burden proxy (corridor-level tract indicators), a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.",
             fetchedAt: analysisGeneratedAt,
           },
           equityDesignation: {

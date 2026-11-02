@@ -26,9 +26,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Trails",
       "Active transportation plans",
     ],
-    cycleNote: "Biennial statewide call — verify the current cycle and application window with the CTC.",
+    cycleNote: "Biennial statewide call. Verify the current cycle and application window with the CTC.",
     matchRequirement:
-      "No minimum local match required; leverage and disadvantaged-community benefit strengthen competitiveness — verify current guidelines.",
+      "No minimum local match required; leverage and disadvantaged-community benefit strengthen competitiveness. Verify current guidelines.",
     url: "https://catc.ca.gov/programs/active-transportation-program",
     summary:
       "California's flagship competitive program for walking and biking projects, consolidating federal and state active transportation funds. Strong fit for small and rural agencies pursuing safe routes to school, gap-closing bikeways, and pedestrian safety work, with a statewide component plus regional components in large MPO areas.",
@@ -37,7 +37,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-narrative",
         title: "Project description and scope",
         guidance:
-          "Describe what the project builds, the gap it closes, and how the elements work together for people walking and biking. Verify the current cycle's narrative prompts and scoring rubric with the CTC — question wording and point values change between cycles.",
+          "Describe what the project builds, the gap it closes, and how the elements work together for people walking and biking. Verify the current cycle's narrative prompts and scoring rubric with the CTC. Question wording and point values change between cycles.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
       {
@@ -51,7 +51,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "disadvantaged-communities",
         title: "Benefit to disadvantaged communities",
         guidance:
-          "Explain which communities the project serves and how benefits reach them. Verify the current cycle's accepted disadvantaged-community definitions and mapping tools with the CTC — the qualifying criteria shift between cycles.",
+          "Explain which communities the project serves and how benefits reach them. Verify the current cycle's accepted disadvantaged-community definitions and mapping tools with the CTC. The qualifying criteria shift between cycles.",
         suggestedEvidence: ["project", "engagement", "kb"],
       },
       {
@@ -128,11 +128,11 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Rail and transit capital",
       "Complete streets elements of capital projects",
     ],
-    cycleNote: "Biennial STIP cycle adopted in even years — verify the current fund estimate and RTIP submission schedule with the CTC and your RTPA.",
-    matchRequirement: "No fixed local match for STIP county-share programming; funding posture is project-specific — verify with your RTPA.",
+    cycleNote: "Biennial STIP cycle adopted in even years. Verify the current fund estimate and RTIP submission schedule with the CTC and your RTPA.",
+    matchRequirement: "No fixed local match for STIP county-share programming; funding posture is project-specific. Verify with your RTPA.",
     url: "https://catc.ca.gov/programs/state-transportation-improvement-program",
     summary:
-      "California's core biennial capital programming document, with 75% of funds flowing to regional shares that each county's RTPA programs through its RTIP. For small agencies this is less a grant application than a programming negotiation — getting a project into the RTIP is the essential step.",
+      "California's core biennial capital programming document, with 75% of funds flowing to regional shares that each county's RTPA programs through its RTIP. For small agencies this is less a grant application than a programming negotiation: getting a project into the RTIP is the essential step.",
     applicationSections: [
       {
         key: "project-description",
@@ -190,17 +190,17 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Transit and rail improvements",
       "Active transportation and safety projects",
     ],
-    cycleNote: "Formulaic shares plus periodic competitive cycles — verify the current programming cycle with the CTC.",
-    matchRequirement: "Generally a dollar-for-dollar (1:1) local match from the qualifying tax or fee revenue — verify current guidelines.",
+    cycleNote: "Formulaic shares plus periodic competitive cycles. Verify the current programming cycle with the CTC.",
+    matchRequirement: "Generally a dollar-for-dollar (1:1) local match from the qualifying tax or fee revenue. Verify current guidelines.",
     url: "https://catc.ca.gov/programs/sb1/local-partnership-program",
     summary:
-      "SB 1 program that rewards self-help jurisdictions — those with voter-approved transportation sales taxes, developer fees, or tolls — with matching state dollars. Only relevant if your agency or county has a qualifying revenue measure, but a dependable leverage source when it does.",
+      "SB 1 program that rewards self-help jurisdictions (those with voter-approved transportation sales taxes, developer fees, or tolls) with matching state dollars. Only relevant if your agency or county has a qualifying revenue measure, but a dependable leverage source when it does.",
     applicationSections: [
       {
         key: "project-narrative",
         title: "Project narrative",
         guidance:
-          "Describe the project and its transportation benefits. Verify the current programming cycle's nomination format with the CTC — the competitive and formulaic components use different paperwork.",
+          "Describe the project and its transportation benefits. Verify the current programming cycle's nomination format with the CTC. The competitive and formulaic components use different paperwork.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -252,8 +252,8 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Zero-emission bus fleets and charging",
       "Service integration and connectivity projects",
     ],
-    cycleNote: "Competitive cycles roughly every one to two years — verify the current call for projects with CalSTA.",
-    matchRequirement: "No formal minimum match; demonstrated leverage and ridership/GHG benefits drive competitiveness — verify guidelines.",
+    cycleNote: "Competitive cycles roughly every one to two years. Verify the current call for projects with CalSTA.",
+    matchRequirement: "No formal minimum match; demonstrated leverage and ridership/GHG benefits drive competitiveness. Verify guidelines.",
     url: "https://calsta.ca.gov/subject-areas/transit-intercity-rail-capital-prog",
     summary:
       "Cap-and-trade-funded program for transformative transit and rail capital investments that reduce greenhouse gas emissions and grow ridership. Awards skew large, but rural and small-urban operators have won for fleet electrification and connectivity projects, especially via joint applications.",
@@ -262,14 +262,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-background",
         title: "Project background and description",
         guidance:
-          "Describe the service context, the capital investment, and how the elements form one transformative project. Verify the current call's narrative outline with CalSTA — the application structure changes between cycles.",
+          "Describe the service context, the capital investment, and how the elements form one transformative project. Verify the current call's narrative outline with CalSTA. The application structure changes between cycles.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "ghg-reduction-narrative",
         title: "Greenhouse gas reduction",
         guidance:
-          "Explain the mechanism for GHG reduction and summarize the quantified estimate. The controlling figures come from the program's required calculator — verify the current cycle's CARB quantification methodology with CalSTA.",
+          "Explain the mechanism for GHG reduction and summarize the quantified estimate. The controlling figures come from the program's required calculator. Verify the current cycle's CARB quantification methodology with CalSTA.",
         suggestedEvidence: ["modeling", "kb"],
       },
       {
@@ -334,11 +334,11 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Safety projects on local streets",
       "Complete streets elements within eligible projects",
     ],
-    cycleNote: "Continuous annual formula apportionments; an adopted project list is due to the CTC each year — verify the submission window.",
-    matchRequirement: "No local match required; maintenance-of-effort spending requirements apply — verify current reporting rules.",
+    cycleNote: "Continuous annual formula apportionments; an adopted project list is due to the CTC each year. Verify the submission window.",
+    matchRequirement: "No local match required; maintenance-of-effort spending requirements apply. Verify current reporting rules.",
     url: "https://catc.ca.gov/programs/sb1/local-streets-roads-program",
     summary:
-      "SB 1 formula funding — roughly $1.5B statewide per year — apportioned directly to cities and counties for basic maintenance, rehabilitation, and safety on the local network. Not competitive, but the annual CTC project-list adoption is a compliance gate worth tracking alongside discretionary pursuits.",
+      "SB 1 formula funding (roughly $1.5B statewide per year) apportioned directly to cities and counties for basic maintenance, rehabilitation, and safety on the local network. Not competitive, but the annual CTC project-list adoption is a compliance gate worth tracking alongside discretionary pursuits.",
     applicationSections: [
       {
         key: "project-list-description",
@@ -376,8 +376,8 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Community placemaking near transportation facilities",
       "Public space and gateway improvements",
     ],
-    cycleNote: "Periodic cycles subject to state budget action — verify whether a current call is open with Caltrans.",
-    matchRequirement: "Little to no match historically required, with emphasis on underserved communities — verify current guidelines.",
+    cycleNote: "Periodic cycles subject to state budget action. Verify whether a current call is open with Caltrans.",
+    matchRequirement: "Little to no match historically required, with emphasis on underserved communities. Verify current guidelines.",
     url: "https://cleancalifornia.dot.ca.gov/local-grant-program",
     summary:
       "State beautification program funding litter abatement, community gateways, and placemaking in and around the transportation right-of-way. Application lift is modest relative to capital programs, making it a practical entry point for small agencies building grant capacity.",

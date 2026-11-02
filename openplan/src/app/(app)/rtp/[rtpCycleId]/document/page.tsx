@@ -185,7 +185,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
             title="This RTP cycle could not be read"
             description={`The query for this cycle did not complete: ${
               cycleResult.error.message ?? "no reason was returned"
-            }. That is not the same as the cycle not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle or its document is gone.`}
+            }. That is not the same as the cycle not existing. OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle or its document is gone.`}
           />
           <div className="mt-4">
             <Link href="/rtp" className="module-inline-action w-fit">
@@ -326,7 +326,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
 
         <p className={`mt-6 ${READING_PROSE} whitespace-pre-wrap`}>
           {cycle.summary?.trim() ||
-            "No summary yet. On the plan's working page, write a few lines about what this update covers and why it matters — it is the first thing a board member reads."}
+            "No summary yet. On the plan's working page, write a few lines about what this update covers and why it matters. It is the first thing a board member reads."}
         </p>
         <p className="mt-3 text-sm text-muted-foreground">Last changed {formatRtpDateTime(cycle.updated_at)}</p>
       </header>
@@ -434,7 +434,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
           <section id="public-input" className={SECTION_SPACING}>
             <h2 className={SECTION_HEADING}>Where the public was asked</h2>
             <p className={`mt-3 ${READING_PROSE} text-muted-foreground`}>
-              The places people could comment on this plan — some about the plan as a whole, some
+              The places people could comment on this plan: some about the plan as a whole, some
               about a single chapter.
             </p>
 
@@ -487,7 +487,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
               <StateBlock
                 tone="danger"
                 title="The chapters of this plan could not be read"
-                description="No chapter text is shown below because the chapters could not be loaded, not because the plan has none. This document is incomplete in an unknown way — do not export it, and do not start rewriting sections that may already exist."
+                description="No chapter text is shown below because the chapters could not be loaded, not because the plan has none. This document is incomplete in an unknown way. Do not export it, and do not start rewriting sections that may already exist."
               />
             </div>
           ) : null}
@@ -554,7 +554,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                         {chapterCampaigns.map((campaign) => (
                           <li key={campaign.id}>
                             <span className="font-semibold text-foreground">{campaign.title}</span>
-                            {" — "}
+                            {": "}
                             {titleizeEngagementValue(campaign.engagement_type)},{" "}
                             {titleizeEngagementValue(campaign.status).toLowerCase()}.{" "}
                             {campaign.summary?.trim() || "Nobody has written down what people were asked about."}

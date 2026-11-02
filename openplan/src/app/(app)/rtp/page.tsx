@@ -217,7 +217,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
         title="Regional Plan (RTP) needs a workspace"
-        description="RTP cycles only appear inside a workspace. You are signed in, but no workspace membership was found for this account — that is why the registry is empty here, not a missing cycle."
+        description="RTP cycles only appear inside a workspace. You are signed in, but no workspace membership was found for this account. That is why the registry is empty here, not a missing cycle."
       />
     );
   }

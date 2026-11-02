@@ -125,14 +125,14 @@ export function describeBlockedCoverage(
       return [
         `${name} was drawn by hand, so it carries no county identity. Census tracts load county by ` +
           "county, and OpenPlan will not guess which county contains a drawn shape. This is not a " +
-          "finding that the area has no census tracts — none have been requested for it. Search for " +
+          "finding that the area has no census tracts. None have been requested for it. Search for " +
           "the county instead, and tract coverage can be loaded for it.",
       ];
 
     case "kind_unsupported":
       return [
         `Census tracts load county by county, and this place is recorded as a ${kindLabel(target.placeKind)}. ` +
-          "OpenPlan will not pick a county for it — a place can sit in more than one, and a metro area " +
+          "OpenPlan will not pick a county for it: a place can sit in more than one, and a metro area " +
           `can cross state lines. This is not a finding that ${name} has no census tracts; none have ` +
           "been requested for it. Choose the county it sits in to load tract coverage.",
       ];
@@ -188,7 +188,7 @@ export function describeCountyCoverage(options: {
   if (options.storedTractCount === 0) {
     notes.push(
       `No census tracts are loaded for ${name} yet, so the equity layer draws nothing for it. This is ` +
-        "not a finding that the county has no census tracts — none have been fetched. Loading pulls " +
+        "not a finding that the county has no census tracts. None have been fetched. Loading pulls " +
         "every tract boundary and its ACS demographics from the US Census Bureau and takes up to a minute."
     );
   } else {
@@ -197,7 +197,7 @@ export function describeCountyCoverage(options: {
     );
     if (options.storedTractCount > limit) {
       notes.push(
-        `The map draws at most ${limit.toLocaleString("en-US")} of them at a time, by tract ID — the rest are ` +
+        `The map draws at most ${limit.toLocaleString("en-US")} of them at a time, by tract ID. The rest are ` +
           "stored but not drawn."
       );
     }
@@ -218,7 +218,7 @@ export function describeCountyCoverage(options: {
   if (typeof stale === "number" && stale > 0) {
     notes.push(
       `${stale.toLocaleString("en-US")} of them were loaded before OpenPlan recorded which Census population ` +
-        "each rate is measured against, so they report no poverty rate and no minority share at all — " +
+        "each rate is measured against, so they report no poverty rate and no minority share at all, " +
         "in the equity layer and in a Title VI service comparison alike. Reloading fixes it. Until then " +
         "those tracts are left out of the figures rather than counted with a rate divided by the wrong " +
         "population, which is what OpenPlan used to do and what understated poverty in tracts holding a " +
@@ -255,7 +255,7 @@ export function describeCoverageLoadOutcome(
         return [
           `Nothing was stored for ${name}: all ${result.unmatched.toLocaleString("en-US")} tract boundaries came ` +
             "back without matching ACS demographics. This is not a finding that the county has no " +
-            "tracts — the boundaries exist, the demographics did not join to them.",
+            "tracts. The boundaries exist, the demographics did not join to them.",
           censusKeyRemedy,
         ];
       }
@@ -263,7 +263,7 @@ export function describeCoverageLoadOutcome(
         return [
           `Loaded ${result.tractsUpserted.toLocaleString("en-US")} census tracts for ${name}. ` +
             `${result.unmatched.toLocaleString("en-US")} more had a boundary but no matching ACS demographics in ` +
-            "this release, so they were not stored — they are missing from the equity layer rather than " +
+            "this release, so they were not stored. They are missing from the equity layer rather than " +
             `absent from the county. ${stored}`,
         ];
       }
@@ -273,7 +273,7 @@ export function describeCoverageLoadOutcome(
       return [
         `The US Census boundary service returned no tracts for ${name}, so nothing was stored. That is ` +
           "an answer from the source, not a measurement of the county. If the county is right, the " +
-          "service may be unavailable right now — try again later.",
+          "service may be unavailable right now. Try again later.",
       ];
 
     case "no_demographics":

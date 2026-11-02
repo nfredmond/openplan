@@ -64,7 +64,7 @@ describe("buildLinkedDatasetQueueState", () => {
     expect(state.items[0]).toMatchObject({
       rowClassName: "module-record-row is-interactive",
       overlayStatusLabel: "Overlay-ready",
-      summary: "Coverage footprint only — dataset values stay honest until a thematic binding exists.",
+      summary: "Coverage footprint only. Dataset values stay honest until a thematic binding exists.",
       sourceLabel: "Manual source",
       buttonLabel: "Show coverage",
       buttonVariant: "outline",

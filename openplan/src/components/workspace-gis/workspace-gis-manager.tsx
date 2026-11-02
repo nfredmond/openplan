@@ -117,7 +117,7 @@ export function WorkspaceGisManager({
 
       {listings !== null && listings.length === 0 && !error ? (
         <p className="op-gis-manager__empty">
-          No map layers yet. Upload your agency&rsquo;s own GIS files — a bike network, city limits,
+          No map layers yet. Upload your agency&rsquo;s own GIS files: a bike network, city limits,
           zoning, parcels. Each one is drawn straight away, with a{" "}
           <strong>Show on the map</strong> link that opens{" "}
           {navLabel(MAP_SURFACE_ROUTES[0])} with the layer switched on.
@@ -175,7 +175,7 @@ function LayerRow({
           <span className="op-gis-layer__sub">
             {version
               ? `${version.featureCount.toLocaleString("en-US")} shapes · version ${version.versionNumber} · ${version.srs.name}`
-              : "No finished upload — nothing is drawn for this layer"}
+              : "No finished upload: nothing is drawn for this layer"}
           </span>
         </div>
         {/*
@@ -412,7 +412,7 @@ function LayerVersionHistory({
                   {version.ingestStatus !== "ready" ? ` · ${version.ingestStatus}` : ""}
                 </span>
                 {isCurrent ? (
-                  <strong> — drawn on maps now</strong>
+                  <strong> (drawn on maps now)</strong>
                 ) : !readOnly && version.ingestStatus === "ready" ? (
                   <button
                     type="button"

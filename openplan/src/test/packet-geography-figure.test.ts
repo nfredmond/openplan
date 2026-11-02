@@ -270,8 +270,8 @@ describe("packet geography figure — it draws only what the project has", () =>
     expect(figure.shapes.filter((shape) => shape.kind === "marker")).toHaveLength(1);
     expect(figure.legend.map((entry) => entry.label)).toEqual([
       "Central Grass Valley (drawn by hand)",
-      "1 — SR-49",
-      "2 — Empire Street",
+      "1. SR-49",
+      "2. Empire Street",
       "Project point",
     ]);
   });

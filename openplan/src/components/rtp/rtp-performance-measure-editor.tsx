@@ -225,7 +225,7 @@ function checkLengths(values: {
   const checks: Array<{ value: string; limit: number; field: string; advice: string }> = [
     { value: values.measureKey, limit: FIELD_LIMITS.measureKey, field: "measure key", advice: "Keys are meant to be short and stable." },
     { value: values.label, limit: FIELD_LIMITS.label, field: "measure name", advice: "Move the detail into Notes." },
-    { value: values.unit, limit: FIELD_LIMITS.unit, field: "unit", advice: "A unit is a few words — put the method in Notes." },
+    { value: values.unit, limit: FIELD_LIMITS.unit, field: "unit", advice: "A unit is a few words. Put the method in Notes." },
     { value: values.dataSource, limit: FIELD_LIMITS.dataSource, field: "data source", advice: "Name the dataset and its vintage here, and put the rest in Notes." },
     { value: values.notes, limit: FIELD_LIMITS.notes, field: "notes", advice: "Trim it, or keep the long version in the chapter draft." },
   ];
@@ -288,7 +288,7 @@ function buildMeasurePayload(
   if (sortOrder.value === null) {
     return {
       ok: false,
-      message: "Give this measure a display order — the position it should hold in the list, such as 0 for first.",
+      message: "Give this measure a display order: the position it should hold in the list, such as 0 for first.",
     };
   }
   if (!Number.isInteger(sortOrder.value)) {
@@ -705,7 +705,7 @@ export function RtpPerformanceMeasureEditor({
               A performance measure is how the plan says what it is trying to change and how anyone will know
               whether it happened: the number today, the number the region is aiming for, the year each of those
               describes, and where the numbers come from. Safety, pavement and bridge condition, transit ridership,
-              travel time reliability — whichever this region&apos;s goals are actually measured by.
+              travel time reliability, whichever this region&apos;s goals are actually measured by.
             </p>
             {canWrite ? (
               <p>Add the handful a board or a funder will ask about, and the plan can be checked against them later.</p>
@@ -804,7 +804,7 @@ export function RtpPerformanceMeasureEditor({
                     </p>
                   ) : (
                     <p className="text-compact text-amber-700 dark:text-amber-300">
-                      No data source recorded — until one is named, this measure is an assertion rather than
+                      No data source recorded. Until one is named, this measure is an assertion rather than
                       evidence.
                     </p>
                   )}

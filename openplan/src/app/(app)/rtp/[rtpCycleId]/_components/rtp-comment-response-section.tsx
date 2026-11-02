@@ -46,7 +46,7 @@ export function RtpCommentResponseSection({
         <StateBlock
           tone="danger"
           title="The public engagement on this plan could not be read"
-          description="No comment-response record is shown, because the consultations attached to this plan could not be loaded. This is a failed read — it is not a finding that nobody commented."
+          description="No comment-response record is shown, because the consultations attached to this plan could not be loaded. This is a failed read. It is not a finding that nobody commented."
         />
       ) : (
         <div className="space-y-3">
@@ -62,7 +62,7 @@ export function RtpCommentResponseSection({
               <StatusBadge tone="warning">Outstanding responses</StatusBadge>
               <p className="mt-1.5 text-muted-foreground">
                 Some approved comments have no published response yet. This does not stop the plan
-                being adopted — it is recorded here so it can be closed before the board sees it.
+                being adopted. It is recorded here so it can be closed before the board sees it.
               </p>
             </div>
           ) : null}
@@ -77,7 +77,7 @@ export function RtpCommentResponseSection({
           {summary.entries.length === 0 && summary.commentsReadable ? (
             <EmptyState
               title="No approved public comments yet"
-              description="Comments appear here once they have been through moderation. Only approved comments are published in the record — an agency should not publish input it has not reviewed."
+              description="Comments appear here once they have been through moderation. Only approved comments are published in the record. An agency should not publish input it has not reviewed."
             />
           ) : (
             <ul className="space-y-2">

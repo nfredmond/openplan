@@ -47,7 +47,7 @@ export function CountyRunBehavioralKpisSection({
             <p className="module-section-description">
               Trips, vehicle-miles, and mode shares for this county run. Results from a run that is
               still <ScreeningGradeLink /> are hidden until you ask for them, because the same rule
-              governs what reports, grant narratives, and the assistant may use — so what you see
+              governs what reports, grant narratives, and the assistant may use, so what you see
               here is what anyone downstream will see.
             </p>
           </div>
@@ -61,7 +61,7 @@ export function CountyRunBehavioralKpisSection({
 
       {error ? (
         <div className="mt-5 rounded-[0.75rem] border border-destructive/40 bg-destructive/10 px-5 py-4 text-sm text-destructive-foreground">
-          These results could not be read, so this panel is not showing them — this is not a
+          These results could not be read, so this panel is not showing them. This is not a
           statement that the run produced none. {error}
         </div>
       ) : null}

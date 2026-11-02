@@ -55,7 +55,7 @@ describe("computeBenchmarkFit", () => {
     expect(result.components.mode_split_score).toBeCloseTo(48.23128357782086, 12);
     expect(result.fit_score_0_100).toBeCloseTo(49.11564178891043, 12);
     expect(result.recommendation).toBe(
-      "Large deviation from reference benchmarks — treat results as illustrative"
+      "Large deviation from reference benchmarks: treat results as illustrative"
     );
     expect(result.sources).toEqual(["reference benchmark fixture"]);
   });
@@ -132,13 +132,13 @@ describe("benchmarkFitRecommendation", () => {
     expect(benchmarkFitRecommendation(90.01)).toBe("Close to reference benchmarks");
     expect(benchmarkFitRecommendation(90)).toBe("Reasonable screening agreement");
     expect(benchmarkFitRecommendation(75.01)).toBe("Reasonable screening agreement");
-    expect(benchmarkFitRecommendation(75)).toBe("Directional only — review assumptions");
-    expect(benchmarkFitRecommendation(60.01)).toBe("Directional only — review assumptions");
+    expect(benchmarkFitRecommendation(75)).toBe("Directional only: review assumptions");
+    expect(benchmarkFitRecommendation(60.01)).toBe("Directional only: review assumptions");
     expect(benchmarkFitRecommendation(60)).toBe(
-      "Large deviation from reference benchmarks — treat results as illustrative"
+      "Large deviation from reference benchmarks: treat results as illustrative"
     );
     expect(benchmarkFitRecommendation(0)).toBe(
-      "Large deviation from reference benchmarks — treat results as illustrative"
+      "Large deviation from reference benchmarks: treat results as illustrative"
     );
   });
 });

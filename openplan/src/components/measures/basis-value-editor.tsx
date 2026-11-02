@@ -184,8 +184,8 @@ export function BasisValueEditor({
               <span className="font-medium">{gap.definition.label}</span> has no figure for vintage{" "}
               <span className="font-medium">{gap.vintage}</span> for{" "}
               {gap.missing.map((recipient) => recipient.name).join(", ")}. Until every active recipient has one,
-              any category apportioned on this basis is held undistributed rather than split among the rest —
-              a missing figure would otherwise inflate everyone else&rsquo;s share.
+              any category apportioned on this basis is held undistributed rather than split among the rest.
+              A missing figure would otherwise inflate everyone else&rsquo;s share.
             </div>
           ))}
       </div>

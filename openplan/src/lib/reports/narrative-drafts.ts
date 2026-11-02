@@ -185,9 +185,9 @@ function formatAmount(value: number | null): string {
 function fundingSnapshotClaims(snapshot: ProjectFundingSnapshot, projectName: string): string[] {
   if (snapshot.comparableFunding) return [`${projectName}: ${comparableFundingDisclosure(snapshot.comparableFunding)}`];
   return [
-    `${projectName} funding posture at this moment: ${snapshot.label} — ${snapshot.reason}`,
-    `${projectName} funding pipeline posture: ${snapshot.pipelineLabel} — ${snapshot.pipelineReason}`,
-    `${projectName} reimbursement posture: ${snapshot.reimbursementLabel} — ${snapshot.reimbursementReason}`,
+    `${projectName} funding posture at this moment: ${snapshot.label}. ${snapshot.reason}`,
+    `${projectName} funding pipeline posture: ${snapshot.pipelineLabel}. ${snapshot.pipelineReason}`,
+    `${projectName} reimbursement posture: ${snapshot.reimbursementLabel}. ${snapshot.reimbursementReason}`,
     `${projectName} committed award dollars: ${formatAmount(snapshot.committedFundingAmount)} across ${snapshot.awardCount} award record(s).`,
     snapshot.fundingNeedAmount !== null && snapshot.fundingNeedAmount > 0
       ? `${projectName} recorded funding need: ${formatAmount(snapshot.fundingNeedAmount)}.`

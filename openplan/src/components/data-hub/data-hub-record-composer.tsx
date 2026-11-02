@@ -235,7 +235,7 @@ export function DataHubRecordComposer({
       // The server's own three parts, joined and unedited: `error` says what
       // happened, `details` and `hint` say what to do about it.
       throw new Error(
-        [data.error, data.details, data.hint].filter(Boolean).join(" — ") || "Failed to save record"
+        [data.error, data.details, data.hint].filter(Boolean).join(". ") || "Failed to save record"
       );
     }
 
@@ -251,7 +251,7 @@ export function DataHubRecordComposer({
       {
         id: "identity",
         title: "What is this source called?",
-        hint: "A connector is one place data comes from — an agency API, a file drop, a vendor feed.",
+        hint: "A connector is one place data comes from: an agency API, a file drop, a vendor feed.",
         fields: [
           {
             name: "connectorName",
@@ -353,7 +353,7 @@ export function DataHubRecordComposer({
               flow={flow}
               name="connectorCadence"
               label="How often does it update?"
-              hint="How often the publisher releases new data — not how often you fetch it."
+              hint="How often the publisher releases new data, not how often you fetch it."
             >
               <select {...flow.text("connectorCadence")} className={selectClassName}>
                 <Options options={CADENCE_OPTIONS} />
@@ -452,7 +452,7 @@ export function DataHubRecordComposer({
       {
         id: "identity",
         title: "What is this dataset, and what does it belong to?",
-        hint: "A dataset is one body of data you actually use — not the place it came from.",
+        hint: "A dataset is one body of data you actually use, not the place it came from.",
         fields: [
           {
             name: "datasetName",
@@ -483,7 +483,7 @@ export function DataHubRecordComposer({
                     second option with the same empty value. */}
                 <option value="">
                   {connectors.length === 0
-                    ? "No connectors registered yet — manual import"
+                    ? "No connectors registered yet: manual import"
                     : "No connector / manual import"}
                 </option>
                 {connectors.map((connector) => (
@@ -634,7 +634,7 @@ export function DataHubRecordComposer({
                 >
                   <Options
                     options={[
-                      { value: "none", label: "Nothing — it is just a record" },
+                      { value: "none", label: "Nothing (it is just a record)" },
                       { value: "analysis_tracts", label: "Census tracts in the analysis" },
                       { value: "analysis_corridor", label: "The analysis corridor" },
                       { value: "analysis_crash_points", label: "Crash points in the analysis" },
@@ -843,10 +843,10 @@ export function DataHubRecordComposer({
               <select {...flow.text("jobType")} className={selectClassName}>
                 <Options
                   options={[
-                    { value: "ingest", label: "Ingest — first load" },
-                    { value: "refresh", label: "Refresh — bring up to date" },
-                    { value: "validation", label: "Validation — check it" },
-                    { value: "backfill", label: "Backfill — fill in history" },
+                    { value: "ingest", label: "Ingest: first load" },
+                    { value: "refresh", label: "Refresh: bring up to date" },
+                    { value: "validation", label: "Validation: check it" },
+                    { value: "backfill", label: "Backfill: fill in history" },
                   ]}
                 />
               </select>

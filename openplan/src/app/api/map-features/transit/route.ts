@@ -555,7 +555,7 @@ export async function GET(request: NextRequest) {
         `Transit stops: derived from ${versions.length.toLocaleString("en-US")} ingested transit ` +
           `${versions.length === 1 ? "feed" : "feeds"}, for one representative ` +
           `${dayLabel(serviceDay)} of service. Each dot is a place where something stops that day, and how ` +
-          "often — a planning figure, not a timetable.",
+          "often (a planning figure, not a timetable).",
       );
     } else {
       coverageNotes.push(
@@ -580,7 +580,7 @@ export async function GET(request: NextRequest) {
     if (disclosure.truncated) {
       coverageNotes.push(
         `Transit stops: showing the ${disclosure.returnedCount.toLocaleString("en-US")} most-served of ` +
-          `${disclosure.matchedCount.toLocaleString("en-US")} — the map draws at most ` +
+          `${disclosure.matchedCount.toLocaleString("en-US")}. The map draws at most ` +
           `${disclosure.limit.toLocaleString("en-US")}, taking them in order of how many trips call there on a ` +
           `${dayLabel(serviceDay)}. The ones not drawn are the least-served stops in these feeds, not stops ` +
           "that do not exist.",

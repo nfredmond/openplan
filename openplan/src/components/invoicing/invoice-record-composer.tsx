@@ -471,7 +471,7 @@ function InvoiceRecordComposerSession({
                   <GuidedFlowRow
                     flow={flow}
                     name="reimbursementPosture"
-                    label={`Reimbursement stage — ${reimbursementProfile.profileName}`}
+                    label={`Reimbursement stage: ${reimbursementProfile.profileName}`}
                     hint={reimbursementProfile.framingNote ?? undefined}
                   >
                     <select className={selectClassName} {...flow.text("reimbursementPosture")}>

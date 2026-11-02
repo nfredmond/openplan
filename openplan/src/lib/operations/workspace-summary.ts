@@ -2414,7 +2414,7 @@ export function buildWorkspaceOperationsSummary({
       aerialPosture.verificationReadiness === "ready"
         ? `${aerialPosture.readyPackageCount} evidence package${aerialPosture.readyPackageCount === 1 ? " is" : "s are"} ready to support field verification. Review before the next site visit to ensure materials are current.`
         : aerialPosture.activeMissionCount > 0
-        ? `${aerialPosture.activeMissionCount} mission${aerialPosture.activeMissionCount === 1 ? " is" : "s are"} active. Evidence packages are pending QA and verification — check back after collection concludes.`
+        ? `${aerialPosture.activeMissionCount} mission${aerialPosture.activeMissionCount === 1 ? " is" : "s are"} active. Evidence packages are pending QA and verification. Check back after collection concludes.`
         : `${aerialPosture.completeMissionCount} of ${aerialPosture.missionCount} mission${aerialPosture.missionCount === 1 ? "" : "s"} complete. Review evidence packages before treating field capture as verification-ready.`;
 
     queueCandidates.push({
@@ -2468,7 +2468,7 @@ export function buildWorkspaceOperationsSummary({
     queueCandidates.push({
       key: "resolve-failed-model-runs",
       title: "Resolve failed model runs",
-      detail: `${failedModelRuns} model run${failedModelRuns === 1 ? " has" : "s have"} failed and produced no result. Anything downstream that expected those runs — scenario comparison, packet evidence, grant modeling support — is missing an input rather than showing a low number.`,
+      detail: `${failedModelRuns} model run${failedModelRuns === 1 ? " has" : "s have"} failed and produced no result. Anything downstream that expected those runs (scenario comparison, packet evidence, grant modeling support) is missing an input rather than showing a low number.`,
       href: "/models",
       tone: "warning",
       priority: 5.5,
@@ -2492,7 +2492,7 @@ export function buildWorkspaceOperationsSummary({
       title: hasFailures ? "Retry failed crash data pulls" : "Disclose uncovered crash data areas",
       detail: hasFailures
         ? `${failedCrashIngests} crash data pull${failedCrashIngests === 1 ? "" : "s"} did not complete. A failed pull does not establish whether other crash evidence exists for the same area. Review completed acquisitions in Safety before relying on a screening output. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`
-        : `${uncoveredCrashIngests} crash data pull${uncoveredCrashIngests === 1 ? " found no" : "s found no"} registered source covering the requested area. Say that limit in any safety framing for ${uncoveredCrashIngests === 1 ? "that area" : "those areas"} — an empty result there is a coverage gap, not a finding about collisions. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`,
+        : `${uncoveredCrashIngests} crash data pull${uncoveredCrashIngests === 1 ? " found no" : "s found no"} registered source covering the requested area. Say that limit in any safety framing for ${uncoveredCrashIngests === 1 ? "that area" : "those areas"}. An empty result there is a coverage gap, not a finding about collisions. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`,
       href: "/safety",
       tone: hasFailures ? "warning" : "info",
       priority: 6.5,
@@ -2585,7 +2585,7 @@ export function buildWorkspaceOperationsSummary({
   const detail = nextCommand
     ? nextCommand.detail
     : unreadableReads.length > 0
-      ? `${describeUnreadableWorkspaceReads(unreadableReads)} Nothing needing attention turned up in the records this snapshot could read, which is not the same as nothing needing attention — the unreadable records were not counted at all.`
+      ? `${describeUnreadableWorkspaceReads(unreadableReads)} Nothing needing attention turned up in the records this snapshot could read, which is not the same as nothing needing attention. The unreadable records were not counted at all.`
       : reports.length > 0
         ? `The current workspace has ${reports.length} report record${reports.length === 1 ? "" : "s"}, ${projects.length} project${projects.length === 1 ? "" : "s"}, and no immediate packet or funding-window pressure visible from this snapshot.`
         : "Create the next project, plan, program, or report record so the operations runtime has a real command surface to prioritize.";

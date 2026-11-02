@@ -404,7 +404,7 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
                       <div key={linkType} className="space-y-1.5">
                         <p className="text-compact font-semibold">{linkFieldLabel(linkType)}</p>
                         <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-                          This list could not be read, so these links cannot be edited on this page load — it does not
+                          This list could not be read, so these links cannot be edited on this page load. It does not
                           mean there are none. Any {formatPlanLinkTypeLabel(linkType).toLowerCase()} links already stored
                           on this plan are kept as they are.
                         </p>

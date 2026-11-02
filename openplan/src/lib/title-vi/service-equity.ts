@@ -408,7 +408,7 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
         code: "no_tract_coverage",
         message:
           "No census tracts are loaded for the area this feed covers, so service cannot be compared " +
-          "between tracts. This is not a finding that the area has no census tracts — none have been " +
+          "between tracts. This is not a finding that the area has no census tracts. None have been " +
           "fetched. Load tract coverage for the county from the Workspace geography panel on the " +
           "dashboard, then run this again.",
       },
@@ -543,7 +543,7 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
     "Tracts are matched to the feed's stops by the bounding envelope of every stop in it, which is " +
       "not the agency's adopted service-area boundary and includes area the agency may not serve.",
     "Service figures are population-weighted across tracts and cover the " +
-      `${serviceDay} service day only. Service days are never added together — a system with no ` +
+      `${serviceDay} service day only. Service days are never added together. A system with no ` +
       "weekend service is a common finding that a weekly total would erase.",
     "A stop event is one scheduled departure at one stop. A single vehicle passing several stops in " +
       "a tract contributes one event at each, so this measures service intensity at a place rather " +
@@ -566,7 +566,7 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
   if (withNoPovertyUniverse > 0) {
     disclosures.push(
       `${withNoPovertyUniverse} of the classified tract${withNoPovertyUniverse === 1 ? "" : "s"} ` +
-        "reported no poverty universe — the population ACS determined poverty status for — so " +
+        "reported no poverty universe (the population ACS determined poverty status for), so " +
         "they are absent from the low-income comparison only. They are NOT counted as being above " +
         "or below the low-income threshold, because a rate divided by the wrong population is not a " +
         "smaller error than no rate at all."

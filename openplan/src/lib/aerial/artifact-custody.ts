@@ -583,7 +583,7 @@ export function describeAerialCustodyFailure(input: {
     case "source_expired":
       return `${subject}: the processing worker's download link expired on ${formatExpiry(input.sourceExpiresAt ?? "")}. The bytes are no longer retrievable from ${input.sourceHost ?? "the worker"}; the flight has to be re-processed to produce a fresh link.`;
     case "http_error":
-      return `${subject}: ${input.sourceHost ?? "the processing worker"} answered HTTP ${input.httpStatus ?? 0} instead of the file. The link may still be valid — a retry is worth attempting before it expires.`;
+      return `${subject}: ${input.sourceHost ?? "the processing worker"} answered HTTP ${input.httpStatus ?? 0} instead of the file. The link may still be valid. A retry is worth attempting before it expires.`;
     case "unexpected_content_type":
       return `${subject}: ${input.sourceHost ?? "the processing worker"} returned ${input.observedContentType ?? "an unlabelled response"}, which is a web page or an error document, not the artifact. Nothing was stored.`;
     case "empty_body":
@@ -591,9 +591,9 @@ export function describeAerialCustodyFailure(input: {
     case "too_large":
       return `${subject}: it exceeds this deployment's per-artifact ceiling of ${formatBytes(input.maxBytes ?? 0)}${
         input.declaredBytes ? ` and the worker declared ${formatBytes(input.declaredBytes)}` : ""
-      }. The download was stopped rather than allowed to fill the deployment's storage. Whoever operates this deployment can raise ${AERIAL_ARTIFACT_MAX_BYTES_ENV} and retry — OpenPlan itself is free and has no usage tiers.`;
+      }. The download was stopped rather than allowed to fill the deployment's storage. Whoever operates this deployment can raise ${AERIAL_ARTIFACT_MAX_BYTES_ENV} and retry. OpenPlan itself is free and has no usage tiers.`;
     case "network_error":
-      return `${subject}: the download from ${input.sourceHost ?? "the processing worker"} failed (${input.errorName ?? "network error"}). The link may still be valid — a retry is worth attempting before it expires.`;
+      return `${subject}: the download from ${input.sourceHost ?? "the processing worker"} failed (${input.errorName ?? "network error"}). The link may still be valid. A retry is worth attempting before it expires.`;
     case "storage_write_failed":
       return `${subject}: the bytes were downloaded but the write into this deployment's private aerial-artifacts bucket failed. Confirm the bucket exists (migration 20260730000004) and that its size limit allows this object.`;
     case "workspace_storage_full":
@@ -601,7 +601,7 @@ export function describeAerialCustodyFailure(input: {
     case "workspace_storage_unreadable":
       return `${subject}: this workspace's storage use could not be checked, so nothing was stored. The link is untouched; retry through POST /api/aerial/processing-callback/custody before it expires.`;
     case "budget_exhausted":
-      return `${subject} during the processing callback: the callback's custody time budget (${AERIAL_CUSTODY_BUDGET_MS_ENV}) ran out first. The link is untouched and still valid — retry through POST /api/aerial/processing-callback/custody before it expires.`;
+      return `${subject} during the processing callback: the callback's custody time budget (${AERIAL_CUSTODY_BUDGET_MS_ENV}) ran out first. The link is untouched and still valid. Retry through POST /api/aerial/processing-callback/custody before it expires.`;
   }
 }
 

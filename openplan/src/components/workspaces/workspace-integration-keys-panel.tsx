@@ -254,8 +254,8 @@ export function WorkspaceIntegrationKeysPanel({
             <p>
               <span className="font-medium">
                 Stored workspace key ••••{provider.storedKey.keyLast4} can no longer be read
-              </span>{" "}
-              — the key this workspace saved is no longer usable, through no action of yours.
+              </span>{". "}
+              The key this workspace saved is no longer usable, through no action of yours.
             </p>
             <p className="mt-1">
               {provider.envKeyPresent ? (
@@ -307,14 +307,14 @@ export function WorkspaceIntegrationKeysPanel({
     if (provider.envKeyPresent) {
       return (
         <p className="mt-2 text-sm text-muted-foreground">
-          Ready — running on a key set up by whoever operates this deployment (
+          Ready: running on a key set up by whoever operates this deployment (
           <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>)
         </p>
       );
     }
     return (
       <p className="mt-2 text-sm text-amber-800 dark:text-amber-200">
-        Not configured — {provider.label} features will be unavailable or degraded. Whoever
+        Not configured: {provider.label} features will be unavailable or degraded. Whoever
         operates this deployment can set it up{provider.workspaceConfigurable && storageAvailable ? ", or paste a workspace key below" : ""}.
       </p>
     );
@@ -384,7 +384,7 @@ export function WorkspaceIntegrationKeysPanel({
                 provider.storedKey &&
                 provider.storedKey.decryptable !== false ? (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    AI usage from this workspace — including its public engagement portal — bills
+                    AI usage from this workspace, including its public engagement portal, bills
                     this workspace&apos;s own Anthropic account.
                   </p>
                 ) : null}

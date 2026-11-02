@@ -68,7 +68,7 @@ describe("FundingOpportunityNarrativeDraftPanel grounding", () => {
     fireEvent.click(disclosure);
 
     expect(screen.getByText("Uncited filler sentence.")).toBeInTheDocument();
-    expect(screen.getByText("— no citation")).toBeInTheDocument();
+    expect(screen.getByText("(no citation)")).toBeInTheDocument();
   });
 
   it("labels unknown-citation sentences with the unknown fact ids", () => {
@@ -100,7 +100,7 @@ describe("FundingOpportunityNarrativeDraftPanel grounding", () => {
       />
     );
 
-    expect(screen.getByText("— unknown fact id: fact_9")).toBeInTheDocument();
+    expect(screen.getByText("(unknown fact id: fact_9)")).toBeInTheDocument();
   });
 
   it("labels unfaithful-citation sentences with the unsupported figures", () => {
@@ -136,7 +136,7 @@ describe("FundingOpportunityNarrativeDraftPanel grounding", () => {
 
     // The fabricated figure the belt caught is shown, not a blank
     // "unknown fact ids" label.
-    expect(screen.getByText("— figure not in cited facts: 900000")).toBeInTheDocument();
+    expect(screen.getByText("(figure not in cited facts: 900000)")).toBeInTheDocument();
   });
 
   it("strips [fact:N] tokens from the rendered markdown but keeps them for copy", async () => {

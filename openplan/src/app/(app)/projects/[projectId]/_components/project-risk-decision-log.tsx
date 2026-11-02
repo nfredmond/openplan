@@ -70,7 +70,7 @@ type ProjectRiskAndDecisionLogProps = {
 
 /** The one sentence every unreadable lane shows, in the lane's own words. */
 function readFailureCopy(label: string): string {
-  return `${label} could not be read, so this panel is unavailable rather than empty — this is not a finding that none are recorded. Reload; if it persists, the page banner above carries the database's message for an operator.`;
+  return `${label} could not be read, so this panel is unavailable rather than empty. This is not a finding that none are recorded. Reload; if it persists, the page banner above carries the database's message for an operator.`;
 }
 
 export function ProjectRiskAndDecisionLog({

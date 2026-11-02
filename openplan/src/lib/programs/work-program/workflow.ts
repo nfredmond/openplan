@@ -60,7 +60,7 @@ const differenceFieldName = (field: string) => differenceNames[field] ?? field.r
 export function workProgramDifferenceLabel(path: string): string {
   return path.split(/\.(?![^\[]*\])/).map(part => {
     const match = part.match(/^([^[]+)(.*)$/);
-    return match ? `${differenceFieldName(match[1])}${match[2].replace(/\[([^\]]*)\]/g, " — $1")}` : part;
+    return match ? `${differenceFieldName(match[1])}${match[2].replace(/\[([^\]]*)\]/g, ": $1")}` : part;
   }).join(" / ");
 }
 

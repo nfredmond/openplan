@@ -382,7 +382,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         {
           error: "A closed award cannot be re-opened by a status edit",
           details:
-            "This award is recorded as fully spent, and changing that is not an ordinary field edit — " +
+            "This award is recorded as fully spent, and changing that is not an ordinary field edit: " +
             "it withdraws a close-out. Send a `reopen` intent with a written reason and the status the " +
             "award returns to, so the re-opening is on the record.",
           closureBasis: award.closure_basis ?? null,
@@ -828,7 +828,7 @@ async function handleReopen({
       // on a date, which is still a fact; deleting it would erase history to
       // make the project timeline tidier.
       details:
-        "Re-opened. Any close-out milestone already filed on this project is left in place — it records " +
+        "Re-opened. Any close-out milestone already filed on this project is left in place. It records " +
         "that a close-out happened, which re-opening does not undo.",
       award: result.award,
     },

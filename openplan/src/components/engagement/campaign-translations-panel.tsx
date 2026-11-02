@@ -91,8 +91,8 @@ type FetchState = { busy: string | null; error: string | null; notice: string | 
 
 const STATE_LABELS: Record<CampaignLocaleCoverage["state"], { label: string; tone: StatusTone }> = {
   source_language: { label: "Campaign's own language", tone: "info" },
-  operator_complete: { label: "Complete — your wording", tone: "success" },
-  machine_assisted: { label: "Complete — partly machine", tone: "warning" },
+  operator_complete: { label: "Complete: your wording", tone: "success" },
+  machine_assisted: { label: "Complete: partly machine", tone: "warning" },
   partial: { label: "Partly translated", tone: "warning" },
   untranslated: { label: "Not translated", tone: "neutral" },
 };
@@ -411,7 +411,7 @@ export function CampaignTranslationsPanel({
           <h2 className="module-section-title">Publish this campaign in your community&rsquo;s languages</h2>
           <p className="module-section-description">
             OpenPlan can already translate what residents tell you. This is where you translate what you
-            ask them — the campaign title, the topics, the survey questions, the updates you publish back.
+            ask them: the campaign title, the topics, the survey questions, the updates you publish back.
             Anything you write here is published as your agency&rsquo;s own wording. A machine translation is
             published with a caveat saying so, until someone here accepts it.
           </p>
@@ -473,7 +473,7 @@ export function CampaignTranslationsPanel({
       */}
       <p className="mt-4 text-sm text-muted-foreground">
         {!sourceLocaleReadable
-          ? `Which language this campaign is written in could not be read, so OpenPlan is falling back to ${TRANSLATION_LANGUAGE_LABELS[sourceLocale]} to lay this screen out. That is a fallback, not a record — nobody has established what language this campaign is in, and the counts below are measured against a language that may be the wrong one.`
+          ? `Which language this campaign is written in could not be read, so OpenPlan is falling back to ${TRANSLATION_LANGUAGE_LABELS[sourceLocale]} to lay this screen out. That is a fallback, not a record. Nobody has established what language this campaign is in, and the counts below are measured against a language that may be the wrong one.`
           : unsupportedSource
             ? `The recorded source language is ${recordedSource}. This editor does not support that source language, so language coverage is unassessed. The original wording and recorded language remain unchanged.`
           : sourceLocaleStated
@@ -528,7 +528,7 @@ export function CampaignTranslationsPanel({
                           // language OpenPlan's own copy falls back to is a
                           // property of the catalog, and a literal here would go
                           // on saying "English" after that stopped being true.
-                          `OpenPlan's own page text: ${rowChrome.translated} of ${rowChrome.total} phrases — the rest of the page shows in ${TRANSLATION_LANGUAGE_LABELS[PORTAL_DEFAULT_LOCALE]}, labelled.`}
+                          `OpenPlan's own page text: ${rowChrome.translated} of ${rowChrome.total} phrases. The rest of the page shows in ${TRANSLATION_LANGUAGE_LABELS[PORTAL_DEFAULT_LOCALE]}, labelled.`}
                     </p>
                   )}
                   {row.staleCount > 0 ? (
@@ -580,7 +580,7 @@ export function CampaignTranslationsPanel({
             <p className="mt-2 text-xs text-muted-foreground">
               OpenPlan&rsquo;s own page text is {chrome.translated} of {chrome.total} phrases translated into{" "}
               {englishName}. Even with everything below translated, a participant reading {englishName} sees the
-              rest of the page in {TRANSLATION_LANGUAGE_LABELS[PORTAL_DEFAULT_LOCALE]} — the portal tells them so
+              rest of the page in {TRANSLATION_LANGUAGE_LABELS[PORTAL_DEFAULT_LOCALE]}. The portal tells them so
               rather than leaving it unlabelled.
             </p>
           )}
@@ -614,7 +614,7 @@ export function CampaignTranslationsPanel({
       ) : !inventoryComplete ? (
         <p className="mt-4 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
           Editing is off because part of what this campaign shows participants could not be read, so the list
-          below is known to be short. Saving would be refused anyway — the write checks every string against
+          below is known to be short. Saving would be refused anyway: the write checks every string against
           this campaign&rsquo;s own text before it stores a translation, and it cannot do that from a partial
           list.
         </p>
@@ -625,7 +625,7 @@ export function CampaignTranslationsPanel({
       ) : !machineTranslationAvailable ? (
         <p className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
           Machine translation is unavailable: no Anthropic API key is configured for this workspace or this
-          deployment. You can still write every translation by hand — and hand-written translations are the
+          deployment. You can still write every translation by hand, and hand-written translations are the
           only kind the portal publishes without a caveat.
         </p>
       ) : null}
@@ -680,11 +680,11 @@ export function CampaignTranslationsPanel({
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <p className="text-sm font-medium text-foreground">{field.label}</p>
                         {!translationsReadable ? (
-                          <StatusBadge tone="warning">Unknown — could not be read</StatusBadge>
+                          <StatusBadge tone="warning">Unknown: could not be read</StatusBadge>
                         ) : entry?.source === "operator" ? (
                           <StatusBadge tone="success">Your agency&rsquo;s wording</StatusBadge>
                         ) : entry?.source === "machine" ? (
-                          <StatusBadge tone="warning">Machine translation — participants are told</StatusBadge>
+                          <StatusBadge tone="warning">Machine translation: participants are told</StatusBadge>
                         ) : (
                           <StatusBadge tone="neutral">Not translated</StatusBadge>
                         )}

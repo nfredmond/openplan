@@ -55,7 +55,7 @@ export function renderBcaMemoMarkdown(result: BcaResult, options: RenderBcaMemoO
       ? `- Discounted payback: **${result.paybackYearsDiscounted.toFixed(1)} years** from the first analysis year`
       : "- Discounted payback: not computable from these flows.";
 
-  let out = `# Benefit-Cost Screening — ${options.contextLabel}
+  let out = `# Benefit-Cost Screening: ${options.contextLabel}
 
 - Engine version: \`${engineVersion}\`
 - Generated: \`${result.generatedAt}\`
@@ -98,7 +98,7 @@ ${paybackLine}
     out += `
 ## Uncertainty (Monte Carlo)
 
-- Iterations: **${monteCarlo.iterations}**, seed \`${monteCarlo.seed}\` — rerun with the same seed to reproduce these figures exactly.
+- Iterations: **${monteCarlo.iterations}**, seed \`${monteCarlo.seed}\`. Rerun with the same seed to reproduce these figures exactly.
 - P(BCR ≥ 1): **${bcrProbability}**; P(NPV > 0): **${npvProbability}**.
 - NPV p10–p90: **${formatUsd(monteCarlo.npv.percentiles.p10)}** to **${formatUsd(monteCarlo.npv.percentiles.p90)}** (median ${formatUsd(monteCarlo.npv.median)}).
 `;
@@ -134,7 +134,7 @@ ${paybackLine}
   out += `
 ---
 
-*OpenPlan — benefit-cost screening memo.*
+*OpenPlan: benefit-cost screening memo.*
 `;
 
   return out;

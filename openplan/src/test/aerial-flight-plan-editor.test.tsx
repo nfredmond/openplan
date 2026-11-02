@@ -232,13 +232,13 @@ describe("FlightPlanEditor", () => {
 
     // Drift ONE parameter: the stale warning fires and exports lock again.
     typeInto(/Side overlap/, "72");
-    expect(screen.getByText(/The saved plan predates these settings — regenerate/)).toBeInTheDocument();
+    expect(screen.getByText(/The saved plan predates these settings: regenerate/)).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /DJI Pilot 2/ })).not.toBeInTheDocument();
     expect(screen.getByText(/Exports are locked while the saved plan predates/)).toBeInTheDocument();
 
     // Drift back: fresh again, exports return.
     typeInto(/Side overlap/, "70");
-    expect(screen.queryByText(/The saved plan predates these settings — regenerate/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/The saved plan predates these settings: regenerate/)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /DJI Pilot 2/ })).toBeInTheDocument();
   });
 

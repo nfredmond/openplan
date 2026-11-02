@@ -44,7 +44,7 @@ export default async function KnowledgeBasePage({
         <div className="module-intro-card">
           <h1 className="module-section-title">Workspace access required</h1>
           <p className="module-note">
-            You need to belong to a workspace to manage its Knowledge Base — the place to upload your
+            You need to belong to a workspace to manage its Knowledge Base, the place to upload your
             agency&apos;s plans, comment letters, prior studies, and grant notices so the Planner Agent
             and Grant Writer can ground and cite from them.
           </p>

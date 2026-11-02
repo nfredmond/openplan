@@ -65,7 +65,7 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
               <h1 className="text-xl font-semibold text-foreground">Set up your workspace</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 A workspace is your agency&apos;s home for projects, models, engagement, grants, and reports. Name it to
-                get started — you can invite teammates later.
+                get started. You can invite teammates later.
               </p>
             </div>
 
@@ -101,7 +101,7 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 It is empty, and it does not know where you work yet. Your workspace overview lists what
-                is set up so far and what each remaining step turns on — starting with the place you
+                is set up so far and what each remaining step turns on, starting with the place you
                 plan for, which every map, jurisdiction rule, and equity layer in OpenPlan reads.
               </p>
             </div>

@@ -83,7 +83,7 @@ export type AerialOrthoPreviewResult =
 
 const REFUSAL_DETAIL: Record<OrthoPreviewRefusalReason, string> = {
   no_preview_artifact:
-    "No map-displayable preview exists for this mission. The processing worker did not report an ortho_preview artifact — the full orthomosaic, when one is held, remains available as a download from the processing jobs list.",
+    "No map-displayable preview exists for this mission. The processing worker did not report an ortho_preview artifact. The full orthomosaic, when one is held, remains available as a download from the processing jobs list.",
   preview_not_held:
     "A preview was reported for this mission, but its bytes are not in OpenPlan's custody, so there is nothing to draw. The processing jobs list shows what happened to it and whether a custody retry can still take it.",
   no_georeference:
@@ -221,7 +221,7 @@ export async function loadAerialOrthoPreview(input: {
     return {
       status: "unreadable",
       detail:
-        "The preview is held and placeable, but a display link could not be minted. Reload to try again — the bytes themselves are safe in custody.",
+        "The preview is held and placeable, but a display link could not be minted. Reload to try again. The bytes themselves are safe in custody.",
       operatorDetail: `Signing the storage object failed: ${signError?.message ?? "no signed URL was returned"}`,
     };
   }

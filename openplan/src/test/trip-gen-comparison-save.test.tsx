@@ -91,7 +91,7 @@ describe("TripGenComparisonSaveButton", () => {
     const body = JSON.parse((postCall?.[1] as RequestInit).body as string);
     expect(body.baselineEntryId).toBe("8a3b0f8e-8f4a-4d3e-9a2b-1c5d6e7f8a9b");
     expect(body.candidateEntryId).toBe("b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e");
-    expect(body.label).toBe("Trip generation — Infill housing package vs Existing conditions");
+    expect(body.label).toBe("Trip generation: Infill housing package vs Existing conditions");
     expect(body.indicatorDeltas).toHaveLength(2);
     expect(body.indicatorDeltas[0]).toMatchObject({
       indicatorKey: "project_daily_trip_ends",

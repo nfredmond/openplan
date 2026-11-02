@@ -234,7 +234,7 @@ describe("buildGrantApplicationHtml", () => {
       })
     );
 
-    expect(html).toContain("DRAFT — 2 required attachment(s) outstanding");
+    expect(html).toContain("DRAFT: 2 required attachment(s) outstanding");
   });
 
   it("does not stamp DRAFT when every required item is attached or not applicable", () => {
@@ -252,7 +252,7 @@ describe("buildGrantApplicationHtml", () => {
       })
     );
 
-    expect(html).not.toContain("DRAFT —");
+    expect(html).not.toContain("DRAFT:");
   });
 
   it("renders a non-final section as a disclosed outstanding item, never as prose", () => {

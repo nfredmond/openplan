@@ -426,7 +426,7 @@ export function buildProjectSpineReadinessRollup(
               : "The project spine is still missing one or more linked planning lanes.",
     detail:
       status === "unreadable"
-        ? `${unreadableLaneLabels.join(", ")} could not be read, so ${unreadableLaneLabels.length === 1 ? "it is" : "they are"} shown as unavailable rather than as not linked — an unlinked lane here would not mean the records are absent.`
+        ? `${unreadableLaneLabels.join(", ")} could not be read, so ${unreadableLaneLabels.length === 1 ? "it is" : "they are"} shown as unavailable rather than as not linked. An unlinked lane here would not mean the records are absent.`
         : status === "schema_pending"
           ? "Lanes waiting on a migration are shown as setup work rather than as not linked, so nobody reads a missing table as a project with nothing attached."
           : status === "ready_current"

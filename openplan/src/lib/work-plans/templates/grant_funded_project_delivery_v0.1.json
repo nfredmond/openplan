@@ -8,15 +8,15 @@
     "grant_funded_project",
     "grant_delivery"
   ],
-  "description": "Delivering a project after the money is awarded: agreement, authorization, procurement, progress reporting, reimbursement and closeout — the administrative spine every grant carries.",
+  "description": "Delivering a project after the money is awarded: agreement, authorization, procurement, progress reporting, reimbursement and closeout: the administrative spine every grant carries.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the award date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
-    "Offsets run from the award date because that is the date every grant obligation is counted from. Your agreement's own milestone dates override every offset here — enter them as soon as the agreement is executed.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the award date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
+    "Offsets run from the award date because that is the date every grant obligation is counted from. Your agreement's own milestone dates override every offset here. Enter them as soon as the agreement is executed.",
     "It is deliberately administrative. The technical work the grant pays for is a separate work plan applied alongside this one.",
     "Reimbursement timing, allowable costs and records retention are set by the agreement and by whoever audits it. None of them are stated here.",
     "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "deliverables": [
     {
@@ -77,7 +77,7 @@
       "offset_days": 45,
       "milestone_type": "authorization",
       "phase_code": "procurement",
-      "summary": "Written confirmation that costs may be incurred — the step that most often gets skipped and most often costs money."
+      "summary": "Written confirmation that costs may be incurred: the step that most often gets skipped and most often costs money."
     },
     {
       "key": "contract_award",

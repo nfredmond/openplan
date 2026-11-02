@@ -836,7 +836,7 @@ export default async function ReportsPage({
             <EmptyState
               title={reportsReadFailed ? "Reports could not be loaded" : "No reports yet"}
               description={reportsReadFailed
-                ? "The report registry could not be read, so nothing is listed. This does not mean the workspace has no reports — do not regenerate on the strength of this screen."
+                ? "The report registry could not be read, so nothing is listed. This does not mean the workspace has no reports. Do not regenerate on the strength of this screen."
                 : "Reports turns work from across OpenPlan into a shareable document, with every number traceable back to its source. Create your first report to assemble findings for a board, a funder, or the public."}
               action={reportsReadFailed ? undefined : (
                 <a href="#create-report" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">Create a report</a>

@@ -43,4 +43,4 @@ export const PUBLIC_SLUG_FORMAT_REFUSAL =
 
 /** The refusal for a slug some other campaign already holds (globally unique). */
 export const PUBLIC_SLUG_TAKEN_REFUSAL =
-  "That link name is taken — another campaign is already using it. Pick a different one.";
+  "That link name is taken. Another campaign is already using it. Pick a different one.";

@@ -259,7 +259,7 @@ describe("the coordinate-system picker records an assertion, and says so", () =>
     );
 
     expect(screen.getByText(/This is your statement, not something read from the file/)).toBeInTheDocument();
-    expect(screen.getByText(/nothing in this file says/)).toBeInTheDocument();
+    expect(screen.getByText(/Nothing in this file says/)).toBeInTheDocument();
   });
 
   it("does NOT claim an assertion when the file's own .prj said it", () => {

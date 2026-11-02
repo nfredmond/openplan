@@ -293,7 +293,7 @@ describe("report-lane run citations carry their claim tier", () => {
 
       await renderReportPage();
 
-      expect(screen.getByText(/Cited run — could not be resolved/i)).toBeInTheDocument();
+      expect(screen.getByText(/Cited run: could not be resolved/i)).toBeInTheDocument();
       // And the operator's database message is not leaked onto the surface.
       expect(screen.queryByText(/connection reset by peer/i)).not.toBeInTheDocument();
       cleanup();

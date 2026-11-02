@@ -128,7 +128,7 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
       "Location-based safety feedback along a street or corridor: crossing, walking, biking, transit access, and driver-behavior categories, plus a short survey that pairs a map question with travel-habit context.",
     engagementType: "map_feedback",
     suggestedSummary:
-      "Collects location-specific safety and comfort feedback along the study corridor — public map comments, survey responses, and staff-entered observations — to surface recurring problem locations and candidate countermeasures for project review.",
+      "Collects location-specific safety and comfort feedback along the study corridor (public map comments, survey responses, and staff-entered observations) to surface recurring problem locations and candidate countermeasures for project review.",
     suggestedPublicDescription:
       "We are studying safety along this corridor and want to hear from the people who use it. Share the specific places where walking, biking, driving, or reaching transit feels unsafe or uncomfortable, and what you think would improve them. Your comments are reviewed by the project team and inform which improvements are studied.",
     categories: [
@@ -218,7 +218,7 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
       "Walking and biking access to a school: crossing, sidewalk, pickup/drop-off, and visibility categories drawn from safe-routes practice, plus a survey about how students travel today and what would change that.",
     engagementType: "map_feedback",
     suggestedSummary:
-      "Captures location-specific safety and access feedback on walking and biking routes to school — from families, school staff, and neighbors — to identify barrier locations, arrival/dismissal conflicts, and improvements that would let more students walk and bike.",
+      "Captures location-specific safety and access feedback on walking and biking routes to school (from families, school staff, and neighbors) to identify barrier locations, arrival/dismissal conflicts, and improvements that would let more students walk and bike.",
     suggestedPublicDescription:
       "We are looking at how students get to school and where the walk or ride could be safer. Tell us about the specific crossings, sidewalks, and streets your household uses, what happens at arrival and dismissal, and what would make walking or biking to school a realistic choice. The project team reviews every comment.",
     categories: [
@@ -312,7 +312,7 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
       "Community-wide input for a general plan, regional transportation plan, or other long-range plan: topic categories spanning plan elements, plus a survey that pairs open questions with a priorities ranking.",
     engagementType: "comment_collection",
     suggestedSummary:
-      "Collects community-wide input for the long-range planning effort — values, concerns, and priorities across plan topics — to ground the plan's goals and policies in what residents actually said, with a comment record that carries into the plan's documentation.",
+      "Collects community-wide input for the long-range planning effort (values, concerns, and priorities across plan topics) to ground the plan's goals and policies in what residents actually said, with a comment record that carries into the plan's documentation.",
     suggestedPublicDescription:
       "We are updating the long-range plan that guides how this community grows and invests over the coming decades. Share what you value, what concerns you, and what you want prioritized. Your input shapes the plan's goals and is part of its public record.",
     categories: [
@@ -401,9 +401,9 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
       "Intake for an open house or public meeting on a specific project: categories for design comments, access, construction, and questions for the team, plus a short survey mirroring a comment card.",
     engagementType: "meeting_intake",
     suggestedSummary:
-      "Records comments from the project open house and related outreach — comment cards, table notes, and follow-up submissions — in one moderated place, so the project team can categorize what was raised and carry it into design review and the project record.",
+      "Records comments from the project open house and related outreach (comment cards, table notes, and follow-up submissions) in one moderated place, so the project team can categorize what was raised and carry it into design review and the project record.",
     suggestedPublicDescription:
-      "Thank you for taking part in the open house for this project. Use this page to share your comments on the proposal — what works, what you would change, and any questions you want the project team to answer. Every comment is reviewed by the project team.",
+      "Thank you for taking part in the open house for this project. Use this page to share your comments on the proposal: what works, what you would change, and any questions you want the project team to answer. Every comment is reviewed by the project team.",
     categories: [
       {
         label: "Design comments",

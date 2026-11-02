@@ -34,7 +34,7 @@ const OPERATOR_DOCS = [
     href: `${REPO_URL}/blob/main/README.md`,
     label: "Running OpenPlan on one computer",
     description:
-      "The step-by-step install guide, assuming nothing — it walks through installing Node and Docker on Windows, macOS, and Linux.",
+      "The step-by-step install guide, assuming nothing. It walks through installing Node and Docker on Windows, macOS, and Linux.",
   },
   {
     href: `${REPO_URL}/blob/main/openplan/docs/FIRST_DEPLOYMENT.md`,
@@ -140,8 +140,8 @@ export default function HelpPage() {
         </div>
 
         <p className="mt-4 text-base leading-6 text-muted-foreground">
-          The formal version of this boundary — what an agency is agreeing to when it publishes
-          something OpenPlan produced — is in the{" "}
+          The formal version of this boundary (what an agency is agreeing to when it publishes
+          something OpenPlan produced) is in the{" "}
           <a
             href="/legal"
             className="font-semibold underline underline-offset-4 hover:text-foreground"
@@ -265,8 +265,8 @@ export default function HelpPage() {
         <div className="mt-3 space-y-3 text-base leading-6 text-muted-foreground">
           <p>
             OpenPlan is software your organization (or a host acting for it) runs on a server. A
-            few capabilities — maps, AI assistance, Census-backed equity data, the modeling worker
-            that executes large runs — depend on keys and services that are set up on that server,
+            few capabilities (maps, AI assistance, Census-backed equity data, the modeling worker
+            that executes large runs) depend on keys and services that are set up on that server,
             not inside these pages. When one of them is missing, the affected pages say so plainly
             instead of showing an empty result.
           </p>
@@ -274,7 +274,7 @@ export default function HelpPage() {
             If you see a message that a capability is <em>switched off or limited by
             configuration</em>, nothing about your account, your data, or your area caused it, and
             nothing you can click in the app will fix it. Copy the message and hand it to whoever
-            operates this deployment — your IT staff, the consultant who set OpenPlan up, or
+            operates this deployment: your IT staff, the consultant who set OpenPlan up, or
             whoever installed it. Each message names exactly what to change, and none of the fixes
             cost anything: OpenPlan itself is free, and the keys it uses have free tiers that cover
             normal planning work.
@@ -318,7 +318,7 @@ export default function HelpPage() {
           <LifeBuoy className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>
             Found something wrong, or something this page does not answer? OpenPlan is open
-            source — questions and problem reports go to{" "}
+            source. Questions and problem reports go to{" "}
             <a
               href={`${REPO_URL}/issues`}
               target="_blank"

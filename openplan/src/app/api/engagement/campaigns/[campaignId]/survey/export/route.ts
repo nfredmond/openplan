@@ -125,11 +125,11 @@ function buildSurveyRegisterPreamble(input: {
       : `# ${input.rowCount} survey response${input.rowCount === 1 ? "" : "s"} recorded${scope}.`;
 
   return [
-    `# OpenPlan survey response register — campaign "${oneLine(input.campaignTitle)}" (${input.campaignId})`,
+    `# OpenPlan survey response register: campaign "${oneLine(input.campaignTitle)}" (${input.campaignId})`,
     `# Exported ${input.exportedAt}.`,
     countLine,
     "# Contains: one row per survey response received, with the channel it arrived through, its moderation status and its timestamps.",
-    "# Excludes: respondent names and contact details, device fingerprints, self-reported demographics (read only as suppressed aggregates), internal moderation notes, and answer content (exported separately — add content=answers to this address).",
+    "# Excludes: respondent names and contact details, device fingerprints, self-reported demographics (read only as suppressed aggregates), internal moderation notes, and answer content (exported separately: add content=answers to this address).",
   ];
 }
 
@@ -203,10 +203,10 @@ function buildSurveyAnswersPreamble(input: {
       : `# ${input.answerCount} answer${input.answerCount === 1 ? "" : "s"} across ${input.responseCount} survey response${input.responseCount === 1 ? "" : "s"}${scope}.`;
 
   return [
-    `# OpenPlan survey answer export — campaign "${oneLine(input.campaignTitle)}" (${input.campaignId})`,
+    `# OpenPlan survey answer export: campaign "${oneLine(input.campaignTitle)}" (${input.campaignId})`,
     `# Exported ${input.exportedAt}.`,
     countLine,
-    "# Contains: one row per answer, attributed to its response, with the question prompt as the respondent read it — a snapshot that survives later question edits.",
+    "# Contains: one row per answer, attributed to its response, with the question prompt as the respondent read it, a snapshot that survives later question edits.",
     "# Excludes: respondent names and contact details, device fingerprints, and internal moderation notes. File-upload answers list file names and counts, never file contents.",
     `# ${DEMOGRAPHICS_EXCLUSION_STATEMENT}`,
   ];
@@ -256,7 +256,7 @@ function buildSurveyAnswersJson(input: {
     response_count: input.sessions.length,
     answer_count: input.answerCount,
     contains:
-      "One entry per survey response; each answer carries the question prompt as the respondent read it — a snapshot that survives later question edits.",
+      "One entry per survey response; each answer carries the question prompt as the respondent read it, a snapshot that survives later question edits.",
     excludes: [
       "respondent names and contact details",
       "device fingerprints",

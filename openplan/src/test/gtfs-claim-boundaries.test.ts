@@ -628,11 +628,11 @@ describe("what the transit lane may not say about its own data", () => {
 
   it("does not fire on the honest phrasings the lane actually uses", () => {
     const honest = [
-      "These are trip counts derived from a published schedule for one service day — not a timetable.",
+      "These are trip counts derived from a published schedule for one service day, not a timetable.",
       "Bring an agency's published schedule into this workspace",
-      "OpenPlan reads a GTFS feed and keeps how often service runs — trip counts, headways and a derived peak hour.",
+      "OpenPlan reads a GTFS feed and keeps how often service runs, trip counts, headways and a derived peak hour.",
       "Departures after midnight belong to the day whose service they run under, and GTFS writes them as 24:00:00 and later; OpenPlan preserves that.",
-      "Service window 2024-08-01 to 2025-04-05 — that schedule ENDED 16 months ago.",
+      "Service window 2024-08-01 to 2025-04-05: that schedule ENDED 16 months ago.",
       "What every number from this feed comes with (4)",
       "Every workspace on this deployment reads this feed.",
     ];

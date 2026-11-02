@@ -187,7 +187,7 @@ describe("WorkspaceIntegrationKeysPanel", () => {
     // just the workspace's team.
     expect(
       screen.getByText(
-        /AI usage from this workspace — including its public engagement portal — bills this workspace's own Anthropic account/,
+        /AI usage from this workspace, including its public engagement portal, bills this workspace's own Anthropic account/,
       ),
     ).toBeInTheDocument();
   });

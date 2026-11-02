@@ -251,7 +251,7 @@ export function EngagementContextLayersPanel({
           <p className="module-section-label">Map layers</p>
           <h2 className="module-section-title">Put your project on the map</h2>
           <p className="module-section-description">
-            Upload the alignment, the parcels, the existing network — anything a resident needs to see before
+            Upload the alignment, the parcels, the existing network: anything a resident needs to see before
             they can tell you something useful. OpenPlan reads the coordinate system from the file itself, so
             there is no projection to choose. Layers arrive hidden; you decide which ones participants see.
           </p>
@@ -285,8 +285,8 @@ export function EngagementContextLayersPanel({
               }}
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              GeoJSON (.geojson/.json), KML, KMZ, or a zipped shapefile — the whole shapefile, including its
-              .prj, in one .zip. A shapefile in a projected coordinate system is refused rather than
+              GeoJSON (.geojson/.json), KML, KMZ, or a zipped shapefile (the whole shapefile, including its
+              .prj, in one .zip). A shapefile in a projected coordinate system is refused rather than
               reprojected on a guess.
             </p>
           </FormField>

@@ -257,15 +257,15 @@ export function ClientInvoiceComposer({
           defaultRateEntries,
         });
         if (resolved.source === "engagement_table") {
-          return `${category} — ${formatMoney(resolved.rate ?? 0, { precision: "cents" })}/hour from the engagement rate table`;
+          return `${category}: ${formatMoney(resolved.rate ?? 0, { precision: "cents" })}/hour from the engagement rate table`;
         }
         if (resolved.source === "default_table") {
-          return `${category} — ${formatMoney(resolved.rate ?? 0, { precision: "cents" })}/hour from the workspace default rate table`;
+          return `${category}: ${formatMoney(resolved.rate ?? 0, { precision: "cents" })}/hour from the workspace default rate table`;
         }
-        return `${category} — no rate found in any table; enter the amount manually`;
+        return `${category}: no rate found in any table; enter the amount manually`;
       });
       if (entries.some((entry) => !entry.labor_category || !String(entry.labor_category).trim())) {
-        sourceNotes.push("Uncategorized time — no labor category, so no rate; enter the amount manually");
+        sourceNotes.push("Uncategorized time: no labor category, so no rate; enter the amount manually");
       }
       setRateSourceNotes(sourceNotes);
 
@@ -290,7 +290,7 @@ export function ClientInvoiceComposer({
       setPullNotice(
         `${drafts.length} draft line${drafts.length === 1 ? "" : "s"} pulled from ${entries.length} unbilled time entr${entries.length === 1 ? "y" : "ies"}.` +
           (payload.hasMore
-            ? " Only the first 500 unbilled entries were loaded — invoice these, then pull again for the rest."
+            ? " Only the first 500 unbilled entries were loaded. Invoice these, then pull again for the rest."
             : "")
       );
     } catch (pullError) {
@@ -325,7 +325,7 @@ export function ClientInvoiceComposer({
     });
     if (ratelessWithoutAmount.length > 0) {
       setError(
-        "Enter a manual amount for every pulled line without a rate — rates are never invented, so those hours have no price until you set one."
+        "Enter a manual amount for every pulled line without a rate. Rates are never invented, so those hours have no price until you set one."
       );
       return;
     }
@@ -426,7 +426,7 @@ export function ClientInvoiceComposer({
           </div>
 
           <p className="mt-4 text-sm text-muted-foreground">
-            Draft an invoice to one of this workspace&apos;s clients — line by line, or pulled from the engagement&apos;s unbilled time ledger.
+            Draft an invoice to one of this workspace&apos;s clients, line by line or pulled from the engagement&apos;s unbilled time ledger.
           </p>
 
           <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
@@ -646,7 +646,7 @@ export function ClientInvoiceComposer({
                           step="0.01"
                           value={line.amount}
                           onChange={(event) => updateLine(line.key, { amount: event.target.value })}
-                          placeholder={line.needsRate ? "Required — no rate found" : "Or quantity × rate"}
+                          placeholder={line.needsRate ? "Required: no rate found" : "Or quantity × rate"}
                         />
                       </div>
                     </div>
@@ -671,12 +671,12 @@ export function ClientInvoiceComposer({
                         </select>
                         {line.sourceTimeEntryIds.length > 0 ? (
                           <span className="text-xs text-muted-foreground">
-                            From {line.sourceTimeEntryIds.length} time entr{line.sourceTimeEntryIds.length === 1 ? "y" : "ies"} — saving stamps them billed.
+                            From {line.sourceTimeEntryIds.length} time entr{line.sourceTimeEntryIds.length === 1 ? "y" : "ies"}. Saving stamps them billed.
                           </span>
                         ) : null}
                         {line.needsRate ? (
                           <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-                            No rate found — enter the amount manually.
+                            No rate found. Enter the amount manually.
                           </span>
                         ) : null}
                       </div>
@@ -754,7 +754,7 @@ export function ClientInvoiceComposer({
         <aside className="border border-border/60 bg-background/70 px-4 py-4" aria-live="polite">
           <p className="text-label font-semibold text-muted-foreground">Invoice totals</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Live from the line items and retention — the server recomputes the same math on save.
+            Live from the line items and retention. The server recomputes the same math on save.
           </p>
           <dl className="mt-4 space-y-3 text-sm text-muted-foreground">
             <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
@@ -773,7 +773,7 @@ export function ClientInvoiceComposer({
           {selectedEngagement?.notToExceedAmount != null ? (
             <p className="mt-5 border-l-2 border-[color:var(--pine)] bg-[color:var(--pine)]/6 px-3 py-3 text-sm text-foreground">
               {selectedEngagement.title} carries a {formatInvoiceMoney(selectedEngagement.notToExceedAmount, null)} not-to-exceed.
-              Billing past it records a warning on save — it never blocks.
+              Billing past it records a warning on save. It never blocks.
             </p>
           ) : null}
         </aside>

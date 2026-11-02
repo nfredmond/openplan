@@ -98,7 +98,7 @@ export default async function EngagementPortalPreviewPage({
           <StateBlock
             tone="danger"
             title="This preview could not be loaded"
-            description={`The database refused a read this preview needs: ${result.error.message}. That is not the same as the campaign not existing — OpenPlan cannot tell you either way right now.`}
+            description={`The database refused a read this preview needs: ${result.error.message}. That is not the same as the campaign not existing. OpenPlan cannot tell you either way right now.`}
           />
           <p className="mt-4 text-sm">
             <Link
@@ -137,8 +137,8 @@ export default async function EngagementPortalPreviewPage({
         <p className="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-200">
           <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
           {portalState.isPubliclyReachable
-            ? "Preview — this campaign is live, so residents can already see this page at its public link. Submissions are turned off in this preview: nothing you do here reaches the public record."
-            : "Preview — residents cannot see this yet. This is what they will get when the campaign goes active. Submissions are turned off in this preview."}
+            ? "Preview: this campaign is live, so residents can already see this page at its public link. Submissions are turned off in this preview: nothing you do here reaches the public record."
+            : "Preview: residents cannot see this yet. This is what they will get when the campaign goes active. Submissions are turned off in this preview."}
         </p>
         <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-300/80">
           Portal status: {portalState.label}. {portalState.detail}

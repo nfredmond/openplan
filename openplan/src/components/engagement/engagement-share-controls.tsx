@@ -209,7 +209,7 @@ export function EngagementShareControls({
     const confirmed = await confirm({
       headline: "Mint a replacement public link?",
       consequence:
-        "The current link stops working immediately — everywhere it has already been shared — and cannot be restored.",
+        "The current link stops working immediately, everywhere it has already been shared, and cannot be restored.",
       confirmLabel: "Mint a replacement link",
       cancelLabel: "Keep the current link",
       // Nothing is deleted here, but a link already printed on a flyer stops
@@ -273,7 +273,7 @@ export function EngagementShareControls({
         <div className="space-y-1.5">
           <p className="text-compact font-semibold">Share link</p>
           <p className="text-xs text-muted-foreground">
-            Links are minted server-side and saved in one step — there is nothing to type or guess.
+            Links are minted server-side and saved in one step. There is nothing to type or guess.
           </p>
           <div className="flex flex-wrap gap-2">
             {!shareToken ? (
@@ -339,7 +339,7 @@ export function EngagementShareControls({
           </label>
           <p className="text-xs text-muted-foreground">
             Give the portal a short name to make a printable address people can read off a flyer,
-            a slide, or a bus-shelter poster — like /engage/jefferson-street-study. Lowercase
+            a slide, or a bus-shelter poster, like /engage/jefferson-street-study. Lowercase
             letters, numbers, and hyphens only. It works alongside the share link above and only
             answers while the campaign is Active. Save with the button below.
           </p>
@@ -368,7 +368,7 @@ export function EngagementShareControls({
               </Button>
             </div>
             <p className="mt-1 text-muted-foreground">
-              Paste this iframe into your site. Anyone who can see your page can submit — the same moderation, rate limits,
+              Paste this iframe into your site. Anyone who can see your page can submit. The same moderation, rate limits,
               and anti-abuse checks apply as on the hosted portal.
             </p>
             <pre className="mt-2 overflow-x-auto rounded-lg border border-border/60 bg-background/80 px-3 py-2 font-mono text-xs text-foreground">
@@ -376,8 +376,8 @@ export function EngagementShareControls({
             </pre>
             {publicFeedUrl ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                Building your own page instead? The same consultation is readable as JSON — campaign,
-                topics, and approved comments — at{" "}
+                Building your own page instead? The same consultation is readable as JSON (campaign,
+                topics, and approved comments) at{" "}
                 <a
                   href={publicFeedUrl}
                   target="_blank"
@@ -501,10 +501,10 @@ export function EngagementShareControls({
         <div className="space-y-2 border-t pt-4">
           <p className="text-compact font-semibold">Survey responses</p>
           <p className="text-xs text-muted-foreground">
-            One row per survey response received — when it arrived, through what channel, and its
+            One row per survey response received: when it arrived, through what channel, and its
             moderation status. It leaves out respondent names and contact details, device
             fingerprints, self-reported demographics (which are only ever read as suppressed
-            aggregates) and internal moderation notes. Answer content exports separately — the
+            aggregates) and internal moderation notes. Answer content exports separately: the
             second file below carries what each respondent actually said, one row per answer, with
             the question wording they were shown. Each file opens with a few <code>#</code> lines
             describing itself.

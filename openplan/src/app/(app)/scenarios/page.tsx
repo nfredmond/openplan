@@ -113,7 +113,7 @@ export default async function ScenariosPage({
       <WorkspaceMembershipRequired
         moduleLabel="Scenarios"
         title="Scenarios need a workspace"
-        description="Scenario sets belong to the workspace that owns the projects they compare. You are signed in, but this account is not in a workspace yet — that, and not a missing scenario, is why nothing is listed here."
+        description="Scenario sets belong to the workspace that owns the projects they compare. You are signed in, but this account is not in a workspace yet. That, and not a missing scenario, is why nothing is listed here."
       />
     );
   }
@@ -366,7 +366,7 @@ export default async function ScenariosPage({
           <div className="mt-5">
             <EmptyState
 title="Your scenario sets could not be read"
-              description="This list could not be loaded, so nothing is shown below. That is a failed read, not an empty list — do not read it as a statement that no scenario sets exist."
+              description="This list could not be loaded, so nothing is shown below. That is a failed read, not an empty list. Do not read it as a statement that no scenario sets exist."
             />
           </div>
         ) : scenarioSets.length === 0 ? (
@@ -375,8 +375,8 @@ title="Your scenario sets could not be read"
               title={hasActiveFilters ? "No scenario sets match these filters" : "No scenario sets yet"}
               description={
                 hasActiveFilters
-                  ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set you have — an empty filtered list is not a statement that none exist.`
-                  : "Scenarios lets you compare a baseline against alternatives — with the project, without it, or with a different design — before you recommend one. Create your first scenario set for a project you are studying."
+                  ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set you have. An empty filtered list is not a statement that none exist.`
+                  : "Scenarios lets you compare a baseline against alternatives (with the project, without it, or with a different design) before you recommend one. Create your first scenario set for a project you are studying."
               }
               action={
                 hasActiveFilters ? undefined : (

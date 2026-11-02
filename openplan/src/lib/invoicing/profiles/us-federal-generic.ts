@@ -43,13 +43,13 @@ export const US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE: ReimbursementProfileDescr
       postureId: "progress_invoicing",
       label: "Progress invoicing",
       description:
-        "Periodic reimbursement invoices — monthly or quarterly per the funding agreement — itemized by phase, claiming costs incurred after phase authorization and within the period of performance. Advance payments exist under 2 CFR 200.305 but are agreement-dependent and rare for local transportation awards; this profile notes them without offering one as a posture.",
+        "Periodic reimbursement invoices (monthly or quarterly per the funding agreement) itemized by phase, claiming costs incurred after phase authorization and within the period of performance. Advance payments exist under 2 CFR 200.305 but are agreement-dependent and rare for local transportation awards; this profile notes them without offering one as a posture.",
     },
     {
       postureId: "final_only",
       label: "Final invoice only",
       description:
-        "One reimbursement invoice at project completion. Honest for small awards, but the agency carries every cost until closeout — name that cash-flow risk before choosing this posture.",
+        "One reimbursement invoice at project completion. Honest for small awards, but the agency carries every cost until closeout. Name that cash-flow risk before choosing this posture.",
     },
     {
       postureId: "retention_in_effect",
@@ -68,13 +68,13 @@ export const US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE: ReimbursementProfileDescr
   // The honesty line every surface rendering this profile shows: generic
   // practice never outranks the agreement an agency actually signed.
   framingNote:
-    "Generic US federal-aid reimbursement practice. Your executed funding agreement controls — where it differs from this profile, the agreement wins.",
+    "Generic US federal-aid reimbursement practice. Your executed funding agreement controls. Where it differs from this profile, the agreement wins.",
   documentationChecklist: [
     {
       key: "itemized_cost_ledger",
       label: "Itemized cost ledger",
       guidance:
-        "Costs broken out by phase and cost category, tied to the amounts claimed on this invoice — the ledger is what a funder's reviewer reconciles first.",
+        "Costs broken out by phase and cost category, tied to the amounts claimed on this invoice. The ledger is what a funder's reviewer reconciles first.",
     },
     {
       key: "source_documentation",

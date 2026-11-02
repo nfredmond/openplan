@@ -85,7 +85,7 @@ export function ClaimComposer({
         <h2 className="text-base font-semibold">File a claim</h2>
         <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
           This measure has not recorded what its money may be spent on yet. Record the ordinance&rsquo;s allocation
-          rule, or — if the ordinance does not fit the rule form — enter a period&rsquo;s allocations by hand. A
+          rule, or, if the ordinance does not fit the rule form, enter a period&rsquo;s allocations by hand. A
           claim has to be for something the measure says it pays for.
         </p>
       </section>

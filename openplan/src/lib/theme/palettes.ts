@@ -62,7 +62,7 @@ export const PALETTES: readonly PaletteDefinition[] = [
   {
     id: "cartographic",
     label: "Cartographic",
-    description: "The OpenPlan default — parchment and ink, with copper and pine accents.",
+    description: "The OpenPlan default: parchment and ink, with copper and pine accents.",
     swatch: {
       light: { bg: "#f4f1ec", panel: "#ffffff", accent: "#c03f1c", accent2: "#1f6b5e" },
       dark: { bg: "#111618", panel: "#1c2225", accent: "#ff7a58", accent2: "#6dc6b5" },
@@ -80,7 +80,7 @@ export const PALETTES: readonly PaletteDefinition[] = [
   {
     id: "harbor",
     label: "Harbor",
-    description: "Cool blues and teal — a civic, technical register.",
+    description: "Cool blues and teal: a civic, technical register.",
     swatch: {
       light: { bg: "#f2f5f8", panel: "#ffffff", accent: "#1d4ed8", accent2: "#0e7490" },
       dark: { bg: "#0f1520", panel: "#1a2130", accent: "#8ab0f9", accent2: "#67e8f9" },
@@ -89,7 +89,7 @@ export const PALETTES: readonly PaletteDefinition[] = [
   {
     id: "meadow",
     label: "Meadow",
-    description: "Greens and moss — reads well alongside parks, land use and open space.",
+    description: "Greens and moss. Reads well alongside parks, land use and open space.",
     swatch: {
       light: { bg: "#f3f6f1", panel: "#ffffff", accent: "#15803d", accent2: "#4d7c0f" },
       dark: { bg: "#101613", panel: "#1a231d", accent: "#86efac", accent2: "#bef264" },
@@ -98,7 +98,7 @@ export const PALETTES: readonly PaletteDefinition[] = [
   {
     id: "plum",
     label: "Plum",
-    description: "Violet and magenta — the highest contrast against map greens and blues.",
+    description: "Violet and magenta: the highest contrast against map greens and blues.",
     swatch: {
       light: { bg: "#f6f3f7", panel: "#ffffff", accent: "#7e22ce", accent2: "#a21caf" },
       dark: { bg: "#15111a", panel: "#201a26", accent: "#d8b4fe", accent2: "#f0abfc" },

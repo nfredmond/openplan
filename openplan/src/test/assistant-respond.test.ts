@@ -980,8 +980,8 @@ describe("a count whose read failed may not be spoken", () => {
     expect(preview.stats).toEqual(
       expect.arrayContaining([expect.objectContaining({ label: "Open risks", value: "0" })])
     );
-    expect(preview.facts.some((fact) => fact.startsWith("Read failure —"))).toBe(false);
-    expect(response.findings.some((finding) => finding.startsWith("Read failure —"))).toBe(false);
+    expect(preview.facts.some((fact) => fact.startsWith("Read failure:"))).toBe(false);
+    expect(response.findings.some((finding) => finding.startsWith("Read failure:"))).toBe(false);
     expect(response.caution ?? "").not.toContain("Read failure");
   });
 });

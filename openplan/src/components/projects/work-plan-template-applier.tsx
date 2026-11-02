@@ -118,7 +118,7 @@ export function WorkPlanTemplateApplier({
                 <option value="">Choose a template…</option>
                 {templates.map((entry) => (
                   <option key={entry.templateId} value={entry.templateId}>
-                    {entry.templateName} — {WORK_PLAN_PRACTICE_AREA_LABELS[entry.practiceArea]}
+                    {entry.templateName} ({WORK_PLAN_PRACTICE_AREA_LABELS[entry.practiceArea]})
                   </option>
                 ))}
               </select>
@@ -160,7 +160,7 @@ export function WorkPlanTemplateApplier({
                 label={template ? WORK_PLAN_ANCHOR_LABELS[template.anchor] : "Anchor date"}
                 hint={
                   template
-                    ? `Every date is counted forward from this day — the last one lands ${template.spanDays} days later.`
+                    ? `Every date is counted forward from this day. The last one lands ${template.spanDays} days later.`
                     : "Choose a template first; each one counts its dates from a different real-world event."
                 }
               >
@@ -194,7 +194,7 @@ export function WorkPlanTemplateApplier({
                     {template.deliverableCount === 1 ? "" : "s"} and {template.milestoneCount}{" "}
                     milestone{template.milestoneCount === 1 ? "" : "s"} will be created, unassigned.
                     {template.jurisdiction
-                      ? ` Written for ${template.jurisdiction.label} — check it against your own rules before using it elsewhere.`
+                      ? ` Written for ${template.jurisdiction.label}. Check it against your own rules before using it elsewhere.`
                       : " No jurisdiction is assumed."}
                   </p>
                 </div>

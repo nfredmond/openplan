@@ -29,7 +29,7 @@ export function WorkspaceMembershipRequired({
           <h1 className="module-intro-title">{title ?? `${moduleLabel} needs a workspace`}</h1>
           <p className="module-intro-description">
             {description ??
-              `${moduleLabel} records belong to a workspace. You are signed in, but this account is not in a workspace yet — a workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one.`}
+              `${moduleLabel} records belong to a workspace. You are signed in, but this account is not in a workspace yet. A workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one.`}
           </p>
         </div>
         <div className="mt-5 flex flex-wrap gap-5 border-t border-white/10 pt-4 text-sm">

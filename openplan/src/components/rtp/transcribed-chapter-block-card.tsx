@@ -179,7 +179,7 @@ export function TranscribedChapterBlockCard({
       {outcome === "staged" ? (
         <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
           Put into the chapter&apos;s waiting text, citing page {candidate.page}. It is not in the plan
-          yet — accept it below and put it into the chapter editor.
+          yet. Accept it below and put it into the chapter editor.
         </p>
       ) : null}
       {outcome === "set_aside" ? (

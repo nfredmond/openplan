@@ -46,25 +46,25 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     administeringAgency: "Ohio Department of Transportation (ODOT)",
     level: "state",
     typicalApplicants:
-      "Infrastructure applications must be sponsored by the local jurisdiction with maintenance authority (city, village, township, county). Non-infrastructure applications may come from political subdivisions — including school districts and health districts — or a non-profit or public agency affiliated with a jurisdiction, school, or school system. A township applying for infrastructure or plan development also needs a letter of support from its county.",
+      "Infrastructure applications must be sponsored by the local jurisdiction with maintenance authority (city, village, township, county). Non-infrastructure applications may come from political subdivisions (including school districts and health districts) or a non-profit or public agency affiliated with a jurisdiction, school, or school system. A township applying for infrastructure or plan development also needs a letter of support from its county.",
     eligibleProjectTypes: [
       "Infrastructure: crossings, walkways, bike facilities and trails within 2 miles of a K-12 school",
       "Non-infrastructure: education and encouragement programs, events, crossing-guard programs, data collection and evaluation",
-      "School Travel Plan development assistance — ODOT consultant support, or reimbursement for a locally selected consultant",
+      "School Travel Plan development assistance: ODOT consultant support, or reimbursement for a locally selected consultant",
     ],
     cycleNote:
-      "Annual, opening early in the year and closing in spring. Coordinating with your ODOT District SRTS Coordinator first is required — verify this cycle's guidance.",
+      "Annual, opening early in the year and closing in spring. Coordinating with your ODOT District SRTS Coordinator first is required. Verify this cycle's guidance.",
     matchRequirement:
-      "None in the usual sense: the program reimburses up to 100 percent of eligible costs. What the applicant carries instead is overruns — covering project overages is explicitly the local applicant's responsibility, and any work started before FHWA authorization makes that entire phase ineligible.",
+      "None in the usual sense: the program reimburses up to 100 percent of eligible costs. What the applicant carries instead is overruns: covering project overages is explicitly the local applicant's responsibility, and any work started before FHWA authorization makes that entire phase ineligible.",
     url: "https://dam.assets.ohio.gov/image/upload/transportation.ohio.gov/safety/srts/2026SRTSGuidance.pdf",
     summary:
-      "Ohio's Safe Routes to School program funds walking and biking improvements and programming within two miles of K-12 schools, at up to 100 percent reimbursement. Two features shape an application more than the money does. First, ELIGIBILITY IS PLAN-GATED: a project must already be identified in a School Travel Plan, an Active Transportation Plan, or an ODOT-approved equivalent that is less than five years old — so an agency without a current plan applies for plan-development assistance first, not for the project. Second, several disqualifiers are procedural rather than substantive: not coordinating with the District SRTS Coordinator, a cost estimate not prepared with an engineer, or a countermeasure absent from the plan will each end an otherwise sound application. The 2026 cycle raised the infrastructure cap from $500,000 to $1,000,000 and extended eligibility to high schools.",
+      "Ohio's Safe Routes to School program funds walking and biking improvements and programming within two miles of K-12 schools, at up to 100 percent reimbursement. Two features shape an application more than the money does. First, ELIGIBILITY IS PLAN-GATED: a project must already be identified in a School Travel Plan, an Active Transportation Plan, or an ODOT-approved equivalent that is less than five years old, so an agency without a current plan applies for plan-development assistance first, not for the project. Second, several disqualifiers are procedural rather than substantive: not coordinating with the District SRTS Coordinator, a cost estimate not prepared with an engineer, or a countermeasure absent from the plan will each end an otherwise sound application. The 2026 cycle raised the infrastructure cap from $500,000 to $1,000,000 and extended eligibility to high schools.",
     applicationSections: [
       {
         key: "plan-basis",
         title: "Plan basis for the project",
         guidance:
-          "Name the School Travel Plan, Active Transportation Plan or ODOT-approved equivalent this project comes from, and verify it is less than five years old. A countermeasure not identified as a priority in a current plan is a listed disqualifier — this section is the eligibility gate, not background.",
+          "Name the School Travel Plan, Active Transportation Plan or ODOT-approved equivalent this project comes from, and verify it is less than five years old. A countermeasure not identified as a priority in a current plan is a listed disqualifier. This section is the eligibility gate, not background.",
         suggestedEvidence: ["kb", "project"],
       },
       {
@@ -78,14 +78,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "safety-need",
         title: "Safety need and existing conditions",
         guidance:
-          "Describe the conditions on the route and the safety problem the project addresses. Verify the current scoring rubric in the guidance appendix — it changed for 2026.",
+          "Describe the conditions on the route and the safety problem the project addresses. Verify the current scoring rubric in the guidance appendix. It changed for 2026.",
         suggestedEvidence: ["project", "modeling", "kb"],
       },
       {
         key: "cost-estimate",
         title: "Cost estimate by phase",
         guidance:
-          "An estimate identifying which phases are being requested — preliminary engineering, design, right of way, construction, construction engineering. For infrastructure, verify that a professional engineer or other appropriate discipline assisted in preparing it; not doing so is a listed disqualifier, as is an estimate that does not identify its phases.",
+          "An estimate identifying which phases are being requested: preliminary engineering, design, right of way, construction, construction engineering. For infrastructure, verify that a professional engineer or other appropriate discipline assisted in preparing it; not doing so is a listed disqualifier, as is an estimate that does not identify its phases.",
         suggestedEvidence: ["project"],
         aiDraftingEnabled: false,
       },
@@ -93,7 +93,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "sustainability",
         title: "Sustainability past the funding (non-infrastructure)",
         guidance:
-          "For non-infrastructure requests, show how the plans, programs, policies or environments continue after SRTS funding ends — that is the program's stated intent. Two-year projects are encouraged; verify the current completion window and the recommended per-school limits.",
+          "For non-infrastructure requests, show how the plans, programs, policies or environments continue after SRTS funding ends. That is the program's stated intent. Two-year projects are encouraged; verify the current completion window and the recommended per-school limits.",
         suggestedEvidence: ["engagement", "kb", "project"],
       },
     ],
@@ -102,7 +102,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "student-radius-maps",
         title: "2-mile Student Radius Maps",
         guidance:
-          "Required documentation of the student catchment. ODOT can develop these from submitted student address data if you cannot — verify the submission format with your District Coordinator.",
+          "Required documentation of the student catchment. ODOT can develop these from submitted student address data if you cannot. Verify the submission format with your District Coordinator.",
         required: true,
       },
       {
@@ -116,7 +116,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "mpo-rtpo-support",
         title: "MPO or RTPO letter of support",
         guidance:
-          "Required for infrastructure and School Travel Plan applications where applicable. Townships additionally need a letter of support from their county government — verify which apply to you.",
+          "Required for infrastructure and School Travel Plan applications where applicable. Townships additionally need a letter of support from their county government. Verify which apply to you.",
         required: true,
       },
     ],
@@ -128,7 +128,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Ohio Public Works Commission (OPWC), awarded through 19 District Public Works Integrating Committees",
     level: "state",
     typicalApplicants:
-      "Counties, cities, villages, townships, and water and sewer districts — local subdivisions with authority over the infrastructure being improved",
+      "Counties, cities, villages, townships, and water and sewer districts: local subdivisions with authority over the infrastructure being improved",
     eligibleProjectTypes: [
       "Roads and bridges (both SCIP and LTIP)",
       "Culverts (SCIP)",
@@ -138,18 +138,18 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Solid waste disposal facilities (SCIP)",
     ],
     cycleNote:
-      "Annual, but each of the 19 district committees sets its own calendar and ranking method. There is no statewide deadline — verify your district's policy manual.",
+      "Annual, but each of the 19 district committees sets its own calendar and ranking method. There is no statewide deadline. Verify your district's policy manual.",
     matchRequirement:
       "SCIP grant funds cannot exceed 90 percent of total project cost for repair or replacement, or 50 percent for new or expanded facilities. An SCIP loan can be credited as the local match provided it is at least 10 percent. LTIP is grant-only and covers roads and bridges.",
     url: "https://www.publicworks.ohio.gov/",
     summary:
-      "OPWC is where most Ohio local road, bridge and utility capital work is actually funded, and it is structurally unlike a state DOT program: the money is distributed to 19 district committees of local officials, and each district writes its own policy manual and ranking methodology. Two consequences for an applicant. First, the competitive criteria that matter are your district's, not the state's — a strong application in one district can be scored differently in the next. Second, the repair-versus-new distinction is the single largest lever on the award: 90 percent for repair or replacement against 50 percent for new or expanded capacity, which frequently decides how a project is scoped rather than merely how it is funded.",
+      "OPWC is where most Ohio local road, bridge and utility capital work is actually funded, and it is structurally unlike a state DOT program: the money is distributed to 19 district committees of local officials, and each district writes its own policy manual and ranking methodology. Two consequences for an applicant. First, the competitive criteria that matter are your district's, not the state's. A strong application in one district can be scored differently in the next. Second, the repair-versus-new distinction is the single largest lever on the award: 90 percent for repair or replacement against 50 percent for new or expanded capacity, which frequently decides how a project is scoped rather than merely how it is funded.",
     applicationSections: [
       {
         key: "district-methodology-alignment",
         title: "District methodology alignment",
         guidance:
-          "Show how the project scores against YOUR district committee's current ranking methodology, not against a statewide standard — each of the 19 districts publishes its own. Verify the current round's policy manual before drafting.",
+          "Show how the project scores against YOUR district committee's current ranking methodology, not against a statewide standard. Each of the 19 districts publishes its own. Verify the current round's policy manual before drafting.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -163,14 +163,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "repair-or-new",
         title: "Repair/replacement versus new or expanded",
         guidance:
-          "State plainly which the project is: the grant ceiling is 90 percent for repair or replacement and 50 percent for new or expanded facilities. Verify how your district classifies work that does both — getting this wrong changes the award by nearly half.",
+          "State plainly which the project is: the grant ceiling is 90 percent for repair or replacement and 50 percent for new or expanded facilities. Verify how your district classifies work that does both. Getting this wrong changes the award by nearly half.",
         suggestedEvidence: ["project"],
       },
       {
         key: "budget-and-match",
         title: "Budget and local share",
         guidance:
-          "Total project cost, the grant requested, and the local share. An SCIP loan can be credited as your match if it is 10 percent or more — verify with your district how it treats loan-as-match in scoring.",
+          "Total project cost, the grant requested, and the local share. An SCIP loan can be credited as your match if it is 10 percent or more. Verify with your district how it treats loan-as-match in scoring.",
         suggestedEvidence: ["project"],
         aiDraftingEnabled: false,
       },
@@ -180,7 +180,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "district-policy-manual-alignment",
         title: "District policy manual alignment",
         guidance:
-          "Documentation that the application meets your district committee's current-round requirements. Verify the manual — each of the 19 districts publishes its own.",
+          "Documentation that the application meets your district committee's current-round requirements. Verify the manual. Each of the 19 districts publishes its own.",
         required: true,
       },
       {

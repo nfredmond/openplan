@@ -453,7 +453,7 @@ export default async function RtpExtractionReviewPage({ params, searchParams }: 
               <h1 className="module-section-title">What the plan document says</h1>
               <p className="module-section-description">
                 OpenPlan reads an adopted plan and copies out what it finds, with the page and the
-                document&apos;s own words. Nothing reaches this plan until you save it here — and what
+                document&apos;s own words. Nothing reaches this plan until you save it here, and what
                 you save goes through the same checks as a figure you type.
               </p>
             </div>
@@ -466,7 +466,7 @@ export default async function RtpExtractionReviewPage({ params, searchParams }: 
             <StateBlock
               tone="danger"
               title="Part of this page could not be read"
-              description={`${reads.describe()} What is missing below is not a finding — do not treat this page as a complete picture of what has been copied out of your documents.`}
+              description={`${reads.describe()} What is missing below is not a finding. Do not treat this page as a complete picture of what has been copied out of your documents.`}
             />
           ) : null}
 

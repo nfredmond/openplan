@@ -298,7 +298,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "",
         ...(section.guidance
           ? [
-              "SECTION GUIDANCE (orientation only — the funder's current NOFO/guidelines control what this section must contain):",
+              "SECTION GUIDANCE (orientation only: the funder's current NOFO/guidelines control what this section must contain):",
               section.guidance,
               "",
             ]
@@ -315,7 +315,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               priorDraftMarkdown,
               "",
               "REVISION INSTRUCTIONS FROM THE OPERATOR:",
-              instructions ?? "(none provided — improve clarity and flow without changing the substance.)",
+              instructions ?? "(none provided. Improve clarity and flow without changing the substance.)",
               "",
             ]
           : instructions
@@ -325,12 +325,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- Write 1-4 paragraphs of professional grant-application prose in markdown (paragraphs only; no headings, no bullet lists).",
         "- Ground every statement STRICTLY in the numbered WORKSPACE FACTS below. Do not invent numbers, dollar amounts, dates, deadlines, commitments, partners, or project details that are not present in the facts.",
         "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on, e.g. \"The project carries a documented funding need. [fact:fact_3]\".",
-        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
-        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
+        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual. When in doubt, prefer citing.",
+        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented. Never fabricate it.",
         "- Dates: the facts say whether a recorded close date or decision due date has passed. Never describe a passed close date as open or upcoming, and do not compute day counts the facts do not state.",
         "- If (and only if) you reference the modeling evidence or model results below, you MUST include the following caveat sentence verbatim in the same paragraph:",
         `  "${GRANT_MODELING_PLANNING_CAVEAT}"`,
-        "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level — never as an application benefit-cost analysis:",
+        "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level, never as an application benefit-cost analysis:",
         `  "${BCA_NARRATIVE_CAVEAT}"`,
         "- If (and only if) you reference the community-engagement facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must never describe comment counts or sentiment as community consensus, a survey result, or completed public-participation requirements:",
         `  "${ENGAGEMENT_NARRATIVE_CAVEAT}"`,

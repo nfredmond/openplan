@@ -107,13 +107,13 @@ function sourceGroupBlock({ source, outcome, entries }: SourceGroup) {
       </p>
       {outcome.pending ? (
         <p className="module-empty-state text-sm">
-          This deployment&apos;s database does not carry {source.readLabel} yet — apply the pending
+          This deployment&apos;s database does not carry {source.readLabel} yet. Apply the pending
           migration, then reload. Until then this group is unavailable, not empty.
         </p>
       ) : outcome.failed ? (
         <p className="module-empty-state text-sm">
           This project&apos;s {source.readLabel} could not be read, so this group is unavailable
-          rather than empty — this is not a finding that no files exist. Reload; if it persists, an
+          rather than empty. This is not a finding that no files exist. Reload; if it persists, an
           operator can act on the database&apos;s message below.
         </p>
       ) : (
@@ -166,7 +166,7 @@ export function ProjectDocumentsPanel({ library, projectId, canGenerateEvidenceB
       {groups.length === 0 ? (
         <div className="module-empty-state mt-5 text-sm">
           No files are attached to this project yet. Reports, grant application exports, invoices,
-          aerial deliverables, and model outputs will appear here as their modules produce them —
+          aerial deliverables, and model outputs will appear here as their modules produce them,
           or attach plans, letters, and studies directly in the Knowledge Base.
         </div>
       ) : (

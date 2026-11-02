@@ -47,7 +47,7 @@ describe("model run launch helpers", () => {
       overrideQueryText: "Test alternative",
     });
 
-    expect(payload.queryText).toBe("Test alternative — with lower vehicle speeds");
+    expect(payload.queryText).toBe("Test alternative, with lower vehicle speeds");
     expect(payload.corridorGeojson?.type).toBe("Polygon");
     expect(payload.assumptionSnapshot).toEqual({ analysisQuerySuffix: "with lower vehicle speeds" });
     expect(payload.engineKey).toBe("deterministic_corridor_v1");

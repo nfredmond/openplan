@@ -179,7 +179,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           error: "This plan already has horizon periods",
           details:
             "Scaffolding writes a fresh set of periods for an empty plan. This plan already has " +
-            `${existingBands.count} — edit them in the periods editor instead.`,
+            `${existingBands.count}. Edit them in the periods editor instead.`,
         },
         { status: 409 }
       );

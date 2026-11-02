@@ -106,7 +106,7 @@ async function post<T>(url: string, body: unknown): Promise<PostResult<T>> {
       const megabytes = (payload.maxBytes / (1024 * 1024)).toFixed(1);
       return {
         ok: false,
-        message: `The request was larger than this deployment accepts (${megabytes} MB per request). The form weighs every request before sending it, so reaching this means the ceiling is lower than the one it checked against — ask whoever operates this deployment what it is set to.`,
+        message: `The request was larger than this deployment accepts (${megabytes} MB per request). The form weighs every request before sending it, so reaching this means the ceiling is lower than the one it checked against. Ask whoever operates this deployment what it is set to.`,
       };
     }
     return {
@@ -394,8 +394,8 @@ export function NetworkPackageUploadForm({
       const failures = counted("failures");
       const qaLine =
         passed !== null && warnings !== null && failures !== null
-          ? `QA ${qaStatus} — ${passed} passed, ${warnings} warnings, ${failures} failures.`
-          : `QA ${qaStatus} — the response carried no check counts, so none are shown.`;
+          ? `QA ${qaStatus}: ${passed} passed, ${warnings} warnings, ${failures} failures.`
+          : `QA ${qaStatus}: the response carried no check counts, so none are shown.`;
       setQaSummary(`${qaLine} ${ingest.data?.message ?? ""}`.trim());
       setStep("ingest", qaStatus === "fail" ? "failed" : "done", qaLine);
 
@@ -525,7 +525,7 @@ export function NetworkPackageUploadForm({
       <div>
         <h3 className="text-sm font-semibold text-foreground">Upload a network package</h3>
         <p className="mt-1 text-xs text-muted-foreground">
-          Nodes and links are QA-checked and their geometry is not retained — the QA report and manifest are
+          Nodes and links are QA-checked and their geometry is not retained. The QA report and manifest are
           what the version keeps. The zones, corridors and connectors this workspace can model against are
           created from the optional files below, one record per feature.
         </p>

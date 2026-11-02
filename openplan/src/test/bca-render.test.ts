@@ -60,7 +60,7 @@ describe("renderBcaMemoMarkdown", () => {
   const memo = renderBcaMemoMarkdown(fullResult, { contextLabel: "Elm Street Corridor" });
 
   it("renders the determination with 2-decimal BCR, USD NPV, IRR and payback", () => {
-    expect(memo).toContain("# Benefit-Cost Screening — Elm Street Corridor");
+    expect(memo).toContain("# Benefit-Cost Screening: Elm Street Corridor");
     // BCR 1.25095963... -> two decimals.
     expect(memo).toContain("- Benefit-cost ratio: **1.25**");
     // NPV 228145.12 -> whole-dollar USD.
@@ -89,7 +89,7 @@ describe("renderBcaMemoMarkdown", () => {
 
   it("pins the screening caveat and method citation byte-exact", () => {
     expect(BCA_SCREENING_CAVEAT).toBe(
-      "Screening-level benefit-cost estimate for internal prioritization and grant-readiness review — not a benefit-cost analysis of record. Confirm monetization values against the current USDOT Benefit-Cost Analysis Guidance before including results in an application."
+      "Screening-level benefit-cost estimate for internal prioritization and grant-readiness review, not a benefit-cost analysis of record. Confirm monetization values against the current USDOT Benefit-Cost Analysis Guidance before including results in an application."
     );
     expect(BCA_METHOD_CITATION).toBe(
       "USDOT Benefit-Cost Analysis Guidance for Discretionary Grant Programs; OMB Circular A-94 (2023 revision)."

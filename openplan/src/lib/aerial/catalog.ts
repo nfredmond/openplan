@@ -652,7 +652,7 @@ export function readAerialProcessingArtifacts(
  * implying a file this system has custody of.
  */
 export const AERIAL_PROCESSING_ARTIFACT_CUSTODY_NOTE =
-  "These are time-limited links the processing worker issued against its own storage. OpenPlan records the list, not the files — once a link expires, the output is only retrievable by re-requesting processing.";
+  "These are time-limited links the processing worker issued against its own storage. OpenPlan records the list, not the files. Once a link expires, the output is only retrievable by re-requesting processing.";
 
 /** Hostname of the imagery source, or null. The full URL is deliberately never rendered: it is
  *  a signed URL supplied by the operator and belongs in nobody's browser history. */
@@ -787,7 +787,7 @@ export function summarizeAerialProcessingJob(
       status === "dispatch_failed"
         ? (dispatchError ??
           message ??
-          "No detail was recorded. The job row exists because OpenPlan writes it before calling the worker, so the request was made — nothing came back to describe why it was refused.")
+          "No detail was recorded. The job row exists because OpenPlan writes it before calling the worker, so the request was made. Nothing came back to describe why it was refused.")
         : (message ??
           dispatchError ??
           "The worker reported a failure without a message. Its own logs are the only place the reason exists.");
@@ -815,7 +815,7 @@ export function summarizeAerialProcessingJob(
             : "This job carries no timestamp at all";
       livenessDetail =
         `${silenceSince}, which is longer than this deployment's ${options.silenceMinutes}-minute reporting window. ` +
-        `OpenPlan cannot poll the worker — it only learns a job's state from callbacks — so this job may still be running there, or may have died. ` +
+        `OpenPlan cannot poll the worker (it only learns a job's state from callbacks), so this job may still be running there, or may have died. ` +
         `Nothing here has observed it finish. Its recorded status is still "${formatAerialProcessingJobStatusLabel(status)}".`;
     } else {
       liveness = "reporting";
@@ -948,7 +948,7 @@ export function describeAerialProcessingRequestSurface(input: {
 
   if (!input.canRequest) {
     return {
-      title: "Imagery processing is configured — viewers cannot request it",
+      title: "Imagery processing is configured (viewers cannot request it)",
       description:
         "This deployment has an Aerial Intel Platform worker configured. Requesting processing changes workspace content, so it needs member access or above; jobs already dispatched are listed below either way.",
       tone: "neutral",
@@ -958,7 +958,7 @@ export function describeAerialProcessingRequestSurface(input: {
   return {
     title: "Imagery processing is configured",
     description:
-      "Give the worker a link it can fetch the imagery ZIP from. OpenPlan records the job before dispatching it, then advances it as the worker calls back — it never polls, so everything below is as of the worker's last callback.",
+      "Give the worker a link it can fetch the imagery ZIP from. OpenPlan records the job before dispatching it, then advances it as the worker calls back. It never polls, so everything below is as of the worker's last callback.",
     tone: "info",
   };
 }

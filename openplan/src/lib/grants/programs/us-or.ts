@@ -30,18 +30,18 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Education, outreach, and technical assistance",
     ],
     cycleNote:
-      "Construction funding is currently paused after a state budget redirection; education and technical assistance continue — verify status on the ODOT SRTS page.",
+      "Construction funding is currently paused after a state budget redirection; education and technical assistance continue. Verify status on the ODOT SRTS page.",
     matchRequirement:
-      "No match percentage is stated on the program page; construction grants have historically carried a statutory local match with reductions for qualifying areas — verify in the current application packet.",
+      "No match percentage is stated on the program page; construction grants have historically carried a statutory local match with reductions for qualifying areas. Verify in the current application packet.",
     url: "https://www.oregon.gov/odot/programs/pages/srts.aspx",
     summary:
-      "Oregon's Safe Routes to School program at ODOT funds both infrastructure — crossings, sidewalks, bike lanes, beacons near schools — and education and technical assistance to help children walk and bike to school safely. It is a hybrid, not purely state-funded: the construction lane runs on state highway funds and the education lane on federal funds, and projects are recommended for funding by a Safe Routes to School Advisory Committee. The construction funding opportunity is temporarily suspended following a state budget redirection and is expected to reopen in a future cycle.",
+      "Oregon's Safe Routes to School program at ODOT funds both infrastructure (crossings, sidewalks, bike lanes, beacons near schools) and education and technical assistance to help children walk and bike to school safely. It is a hybrid, not purely state-funded: the construction lane runs on state highway funds and the education lane on federal funds, and projects are recommended for funding by a Safe Routes to School Advisory Committee. The construction funding opportunity is temporarily suspended following a state budget redirection and is expected to reopen in a future cycle.",
     applicationSections: [
       {
         key: "project-narrative",
         title: "Project description and scope",
         guidance:
-          "Describe the school-route improvement and how its elements work together for children walking and biking. Verify the current cycle's application questions on the ODOT SRTS page — the advisory committee's criteria control.",
+          "Describe the school-route improvement and how its elements work together for children walking and biking. Verify the current cycle's application questions on the ODOT SRTS page. The advisory committee's criteria control.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -101,18 +101,18 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Planning, design, and engineering tied to an eligible path project",
     ],
     cycleNote:
-      "Periodic calls for applications rather than a fixed annual cycle, and the next call is on hold — verify whether a call is open on the ODOT Community Paths page.",
+      "Periodic calls for applications rather than a fixed annual cycle, and the next call is on hold. Verify whether a call is open on the ODOT Community Paths page.",
     matchRequirement:
-      "No match is stated on the program page; match terms vary with each award's funding source (state funds or federal Transportation Alternatives) — verify in the solicitation documents.",
+      "No match is stated on the program page; match terms vary with each award's funding source (state funds or federal Transportation Alternatives). Verify in the solicitation documents.",
     url: "https://www.oregon.gov/odot/programs/pages/ocp.aspx",
     summary:
-      "Oregon Community Paths is ODOT's grant program for multiuse paths — building new ones and maintaining existing ones — open to local and tribal governments and certain agencies and nonprofits. It is funded from a blend of state sources (bicycle excise tax, vehicle privilege tax, lottery bonds) and federal Transportation Alternatives Program funds, so it is state-anchored but not exclusively state-funded, and it runs as discrete competitive calls rather than an annual cycle.",
+      "Oregon Community Paths is ODOT's grant program for multiuse paths (building new ones and maintaining existing ones) open to local and tribal governments and certain agencies and nonprofits. It is funded from a blend of state sources (bicycle excise tax, vehicle privilege tax, lottery bonds) and federal Transportation Alternatives Program funds, so it is state-anchored but not exclusively state-funded, and it runs as discrete competitive calls rather than an annual cycle.",
     applicationSections: [
       {
         key: "path-project-narrative",
         title: "Path project description",
         guidance:
-          "Describe the multiuse path work — new construction, reconstruction, or the planning and design tied to it — and its limits. Verify the current solicitation's application outline on the ODOT Community Paths page.",
+          "Describe the multiuse path work (new construction, reconstruction, or the planning and design tied to it) and its limits. Verify the current solicitation's application outline on the ODOT Community Paths page.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -172,12 +172,12 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Marine and port capital infrastructure",
     ],
     cycleNote:
-      "Periodic competitive rounds plus a rolling federal grant match option between rounds — verify the next round's status on the ODOT Connect Oregon page.",
+      "Periodic competitive rounds plus a rolling federal grant match option between rounds. Verify the next round's status on the ODOT Connect Oregon page.",
     matchRequirement:
-      "A substantial local match is required — program materials describe a matching-funds requirement; verify the current percentage in the application instructions on the ODOT page.",
+      "A substantial local match is required: program materials describe a matching-funds requirement; verify the current percentage in the application instructions on the ODOT page.",
     url: "https://www.oregon.gov/odot/programs/pages/connectoregon.aspx",
     summary:
-      "Connect Oregon is ODOT's state-funded program for non-highway transportation, awarding competitive grants approved by the Oregon Transportation Commission plus a rolling federal-grant-match option between rounds. Its scope has narrowed to aviation, rail, and marine projects — bicycle and pedestrian projects are no longer in scope, so an agency seeking path or sidewalk money should look to the Oregon Community Paths Program instead. Awards are reimbursement-based per program materials.",
+      "Connect Oregon is ODOT's state-funded program for non-highway transportation, awarding competitive grants approved by the Oregon Transportation Commission plus a rolling federal-grant-match option between rounds. Its scope has narrowed to aviation, rail, and marine projects. Bicycle and pedestrian projects are no longer in scope, so an agency seeking path or sidewalk money should look to the Oregon Community Paths Program instead. Awards are reimbursement-based per program materials.",
     applicationSections: [
       {
         key: "project-description",
@@ -233,19 +233,19 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "or-small-city-allotment",
     name: "Small City Allotment (SCA) Program",
-    administeringAgency: "Oregon Department of Transportation (ODOT) — Local Government section",
+    administeringAgency: "Oregon Department of Transportation (ODOT), Local Government section",
     level: "state",
     typicalApplicants: "Incorporated cities with populations of 5,000 or less; counties are not eligible",
     eligibleProjectTypes: [
       "Local street repair and improvement projects, particularly streets inadequate for the capacity they serve or in a condition detrimental to safety",
     ],
     cycleNote:
-      "Annual cycle: spring application window, advisory-committee review in summer, agreements by early fall — verify the current window on the ODOT SCA page.",
+      "Annual cycle: spring application window, advisory-committee review in summer, agreements by early fall. Verify the current window on the ODOT SCA page.",
     matchRequirement:
-      "No match requirement is stated on the program page; the program is characterized as a direct state allotment to small cities — verify terms in the current-year application instructions.",
+      "No match requirement is stated on the program page; the program is characterized as a direct state allotment to small cities. Verify terms in the current-year application instructions.",
     url: "https://www.oregon.gov/odot/localgov/pages/sca_program.aspx",
     summary:
-      "The Small City Allotment is ODOT's annual state-funded competitive allocation for street projects in Oregon's incorporated cities of 5,000 or fewer residents — a genuinely state-funded, small-city-specific program drawn from city gas-tax revenue and the State Highway Fund. Applications are ranked competitively with regional distribution and reviewed by the Small City Allotment Advisory Committee, with one representative per ODOT region. Counties cannot use it; it is city-only.",
+      "The Small City Allotment is ODOT's annual state-funded competitive allocation for street projects in Oregon's incorporated cities of 5,000 or fewer residents: a genuinely state-funded, small-city-specific program drawn from city gas-tax revenue and the State Highway Fund. Applications are ranked competitively with regional distribution and reviewed by the Small City Allotment Advisory Committee, with one representative per ODOT region. Counties cannot use it; it is city-only.",
     applicationSections: [
       {
         key: "street-condition-narrative",
@@ -314,18 +314,18 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Drainage and stormwater treatment",
     ],
     cycleNote:
-      "Not a recurring open call — funded through one-time infusions programmed via the STIP; verify status with your ODOT region office and the Great Streets page.",
+      "Not a recurring open call. Funded through one-time infusions programmed via the STIP; verify status with your ODOT region office and the Great Streets page.",
     matchRequirement:
-      "No local match is stated — project funding is programmed by ODOT rather than granted to applicants; verify any cost-sharing expectations with your ODOT region office.",
+      "No local match is stated. Project funding is programmed by ODOT rather than granted to applicants; verify any cost-sharing expectations with your ODOT region office.",
     url: "https://www.oregon.gov/odot/programs/pages/great-streets-program.aspx",
     summary:
-      "Great Streets bundles complete-streets improvements — sidewalks, crossings, bike lanes, transit facilities, drainage — into single projects on state highways that serve as community main streets. It is not a grant a city or county applies to: ODOT and the Oregon Transportation Commission identify and select projects using eligibility and scoring criteria, with community support required, and the page states funding is primarily federal with State Highway Funds secondary. It appears here so agencies on a state-highway main street know the lane exists and can advocate for their corridor.",
+      "Great Streets bundles complete-streets improvements (sidewalks, crossings, bike lanes, transit facilities, drainage) into single projects on state highways that serve as community main streets. It is not a grant a city or county applies to: ODOT and the Oregon Transportation Commission identify and select projects using eligibility and scoring criteria, with community support required, and the page states funding is primarily federal with State Highway Funds secondary. It appears here so agencies on a state-highway main street know the lane exists and can advocate for their corridor.",
     applicationSections: [
       {
         key: "corridor-needs-narrative",
         title: "Corridor needs narrative",
         guidance:
-          "There is no application to file — this is the advocacy case for your corridor: the main-street function, the gaps, and the safety needs. Verify the current selection criteria with your ODOT region office.",
+          "There is no application to file. This is the advocacy case for your corridor: the main-street function, the gaps, and the safety needs. Verify the current selection criteria with your ODOT region office.",
         suggestedEvidence: ["project", "modeling", "kb"],
       },
       {
@@ -385,12 +385,12 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Integrated land use and transportation planning: area plans, downtown plans, urban growth boundary concept plans",
     ],
     cycleNote:
-      "Annual cycle opening late spring with a late-summer deadline and awards in the fall — verify the current window on the DLCD TGM Planning Grants page.",
+      "Annual cycle opening late spring with a late-summer deadline and awards in the fall. Verify the current window on the DLCD TGM Planning Grants page.",
     matchRequirement:
-      "Grantees must provide match, satisfiable with cash, staff time, monetized volunteer time, or direct project expenses; no percentage is stated on the page — verify the rate in the current application packet.",
+      "Grantees must provide match, satisfiable with cash, staff time, monetized volunteer time, or direct project expenses; no percentage is stated on the page. Verify the rate in the current application packet.",
     url: "https://www.oregon.gov/lcd/TGM/Pages/Planning-Grants.aspx",
     summary:
-      "TGM is a long-standing joint ODOT/DLCD program whose planning grants fund local governments to produce Transportation System Plans and integrated land-use/transportation plans such as downtown and urban growth boundary concept plans — planning work only, not construction. It runs an annual application cycle with two grant categories and roughly two-year project terms, and its match can be satisfied in-kind. TGM has historically drawn on both federal transportation planning funds and state funds — confirm the funding source with the program before assuming either applies to your award.",
+      "TGM is a long-standing joint ODOT/DLCD program whose planning grants fund local governments to produce Transportation System Plans and integrated land-use/transportation plans such as downtown and urban growth boundary concept plans: planning work only, not construction. It runs an annual application cycle with two grant categories and roughly two-year project terms, and its match can be satisfied in-kind. TGM has historically drawn on both federal transportation planning funds and state funds. Confirm the funding source with the program before assuming either applies to your award.",
     applicationSections: [
       {
         key: "planning-project-description",
@@ -417,7 +417,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "budget-and-match",
         title: "Budget and match demonstration",
         guidance:
-          "The budget and the match demonstration — cash, staff time, monetized volunteer time, or direct expenses — are finance work products, never AI-drafted. Verify the current match rate in the application packet.",
+          "The budget and the match demonstration (cash, staff time, monetized volunteer time, or direct expenses) are finance work products, never AI-drafted. Verify the current match rate in the application packet.",
         suggestedEvidence: ["funding"],
         aiDraftingEnabled: false,
       },

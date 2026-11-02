@@ -135,7 +135,7 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays 
           {inbox.pending ? (
             <>
               <p>
-                Reminders cannot be listed on this copy of OpenPlan yet — that part of the database
+                Reminders cannot be listed on this copy of OpenPlan yet. That part of the database
                 is not set up. Whoever installed OpenPlan for your agency can finish the setup, and
                 then this panel will fill in.
               </p>
@@ -149,8 +149,8 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays 
           ) : (
             <>
               <p>
-                Your reminders could not be read, so this panel is unavailable rather than empty —
-                it does not mean nothing is due. Reload, and if it persists ask whoever runs this
+                Your reminders could not be read, so this panel is unavailable rather than empty.
+                It does not mean nothing is due. Reload, and if it persists ask whoever runs this
                 OpenPlan to look at the detail below.
               </p>
               <OperatorDetail>

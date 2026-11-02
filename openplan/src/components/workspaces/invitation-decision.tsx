@@ -59,7 +59,7 @@ export function InvitationDecision({
     } catch {
       // A request that never reached the server has decided nothing, and the
       // invitation is still open. Say so, rather than leaving a spinner.
-      setError("Could not reach OpenPlan. Your invitation is unchanged — check your connection and try again.");
+      setError("Could not reach OpenPlan. Your invitation is unchanged. Check your connection and try again.");
       setPending(null);
       return;
     }
@@ -113,7 +113,7 @@ export function InvitationDecision({
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           <dt className="font-semibold text-foreground">Your role</dt>
           <dd className="text-muted-foreground">
-            {role} — {roleDescription}
+            {role}: {roleDescription}
           </dd>
         </div>
         <div className="flex flex-wrap gap-x-3 gap-y-1">

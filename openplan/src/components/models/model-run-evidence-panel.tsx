@@ -108,15 +108,15 @@ function transitStatusDisplay(
   noFeedReason?: string | null
 ): { label: string; tone: StatusTone } | null {
   if (status === "feed_unavailable" && noFeedReason === "transit_skim_timed_out") {
-    return { label: "Transit not modeled — time budget exceeded", tone: "warning" };
+    return { label: "Transit not modeled: time budget exceeded", tone: "warning" };
   }
   switch (status) {
     case "modeled":
       return { label: "Transit modeled (local GTFS)", tone: "info" };
     case "no_local_feed":
-      return { label: "Transit not modeled — no local GTFS feed", tone: "warning" };
+      return { label: "Transit not modeled: no local GTFS feed", tone: "warning" };
     case "feed_unavailable":
-      return { label: "Transit not modeled — feed unavailable", tone: "warning" };
+      return { label: "Transit not modeled: feed unavailable", tone: "warning" };
     case "not_run":
       return { label: "Transit not modeled", tone: "neutral" };
     default:
@@ -190,7 +190,7 @@ const TRANSIT_FEED_ORIGIN_LABELS: Record<string, string> = {
   // one that ships with the worker, applied only because its own stops fall
   // inside the study area.
   bundled_after_catalog_unavailable:
-    "Feed bundled with the worker (fallback — the feed catalog could not be reached)",
+    "Feed bundled with the worker (fallback: the feed catalog could not be reached)",
   // The one origin that names a feed a PLANNER put into OpenPlan. It outranks
   // the operator's env feed and every discovery path, so the label says the
   // choice was theirs rather than the deployment's.
@@ -259,7 +259,7 @@ export const TRANSIT_NO_FEED_REASON_LABELS: Record<string, string> = {
     "the feed, so it was not skimmed. Bring the feed in again from the Data Hub, then relaunch.",
   selected_feed_has_no_stops_in_study_area:
     "The transit feed chosen for this run has no stops inside this study area, so it was not skimmed. " +
-    "That is a fact about this feed, not about the area — another agency may serve it.",
+    "That is a fact about this feed, not about the area. Another agency may serve it.",
   // NARROWED 2026-08-06. This no longer means "the feed contains a
   // frequencies.txt row" — both lanes stopped throwing a whole feed away over
   // that. It now means EVERY trip on the modeled service day was published as a
@@ -267,7 +267,7 @@ export const TRANSIT_NO_FEED_REASON_LABELS: Record<string, string> = {
   selected_feed_uses_frequencies:
     "Every trip on the modeled service day of the transit feed chosen for this run is published as a " +
     "headway range (frequencies.txt) rather than individual departures, so the transit skim had nothing " +
-    "to measure. Re-ingesting will not change it — it is how the agency publishes.",
+    "to measure. Re-ingesting will not change it. It is how the agency publishes.",
   selected_feed_handoff_failed:
     "OpenPlan could not resolve the transit feed chosen for this run, so none was handed to the modeling " +
     "worker.",
@@ -753,7 +753,7 @@ export function ModelRunEvidencePanel({
           <p className="text-xs font-semibold text-muted-foreground">Evidence record</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {canInspect
-              ? "What went into this run and what came out — inputs, sources, results, and caveats. Refresh it after the worker runs again."
+              ? "What went into this run and what came out: inputs, sources, results, and caveats. Refresh it after the worker runs again."
               : canRelaunch
                 ? "This worker run can be reset and queued again without leaving the model page."
                 : isWorkerExecutedRunMode(engineKey) && routeAcceptsRelaunchOfStatus(runStatus)
@@ -961,7 +961,7 @@ export function ModelRunEvidencePanel({
                             : null) ??
                             transitSelection.status ??
                             "Not recorded"}
-                          {transitSelection.agencyName ? ` — ${transitSelection.agencyName}` : ""}
+                          {transitSelection.agencyName ? ` (${transitSelection.agencyName})` : ""}
                         </p>
                         {transitSelection.reason ? <p className="mt-1">{transitSelection.reason}</p> : null}
                         {/* An expired schedule does NOT refuse the run — three
@@ -975,8 +975,8 @@ export function ModelRunEvidencePanel({
                             {transitSelection.serviceEndDate
                               ? ` on ${transitSelection.serviceEndDate}`
                               : ""}{" "}
-                            when this run was launched. That is normal — it is usually the last schedule
-                            the agency published — but the service modeled here is that schedule, not
+                            when this run was launched. That is normal (it is usually the last schedule
+                            the agency published), but the service modeled here is that schedule, not
                             today&apos;s.
                           </p>
                         ) : null}
@@ -1112,7 +1112,7 @@ export function ModelRunEvidencePanel({
                         {(transitProvenance?.noFeedReason
                           ? TRANSIT_NO_FEED_REASON_LABELS[transitProvenance.noFeedReason]
                           : null) ?? "No GTFS feed was applied to this run."}{" "}
-                        Transit share is 0 because no feed was applied — a limit of what this run was given,
+                        Transit share is 0 because no feed was applied: a limit of what this run was given,
                         not a finding that transit demand here is zero.
                       </p>
                     ) : null}
@@ -1167,7 +1167,7 @@ export function ModelRunEvidencePanel({
                         data-testid="evidence-transit-operator-override"
                       >
                         This installation configures a transit feed of its own, and the feed chosen for
-                        this run was used instead of it — a choice made on this run outranks a default
+                        this run was used instead of it. A choice made on this run outranks a default
                         set for every run.
                       </p>
                     ) : null}
@@ -1208,7 +1208,7 @@ export function ModelRunEvidencePanel({
                   <div>
                     <p className="text-sm font-semibold text-foreground">Observed counts and calibration evidence</p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      What this run could compare, how gateway traffic was estimated, and which result—if any—was independent.
+                      What this run could compare, how gateway traffic was estimated, and which result, if any, was independent.
                     </p>
                   </div>
                   <StatusBadge
@@ -1846,7 +1846,7 @@ export function ModelRunEvidencePanel({
             */
             <p className="text-sm text-muted-foreground" data-testid="evidence-empty-reason">
               {evidenceReadFailed
-                ? "This run’s evidence record could not be read, so none of it is shown here — that is not a finding that the run produced none. The message above says what failed."
+                ? "This run’s evidence record could not be read, so none of it is shown here. That is not a finding that the run produced none. The message above says what failed."
                 : "No evidence record came back for this run."}
             </p>
           )}
