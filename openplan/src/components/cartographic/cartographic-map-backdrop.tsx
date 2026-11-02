@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
 import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
@@ -27,7 +28,13 @@ import {
   FIT_DURATION_MS,
   FIT_PADDING,
 } from "@/lib/cartographic/geometry-bbox";
-import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import {
+  deploymentMapEngine,
+  labelFontsFor,
+  startMap,
+  styleForEngine,
+  type MapLibrary,
+} from "@/lib/maps/map-engine";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import { showsSharedMapControls } from "@/lib/navigation/map-surfaces";
@@ -62,14 +69,18 @@ import {
   FREQUENT_SERVICE_HEADWAY_MINUTES,
 } from "@/lib/gtfs/service-levels";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
-const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = hasInvalidPublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-) && !MAPBOX_ACCESS_TOKEN;
+/**
+ * Mapbox with a public key, else MapLibre with the operator's open style, else
+ * the CSS parchment below. The open style is one style, so on MapLibre the map
+ * does not change with the light and dark theme.
+ */
+const MAP_ENGINE = deploymentMapEngine();
+/** Mapbox's own fonts, for the transit cluster counts. */
+const TRANSIT_COUNT_MAPBOX_FONTS = ["DIN Offc Pro Medium", "Arial Unicode MS Bold"];
+
+function mapboxBackdropStyle(theme: string): string {
+  return theme === "dark" ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/light-v11";
+}
 
 // Which routes own their own map — and therefore suppress this backdrop — is
 // declared in `lib/navigation/map-surfaces`, beside the list of routes that get
@@ -456,6 +467,8 @@ export function CartographicMapBackdrop({
     return { returnedCount, matchedCount, droppedCount, limit, truncated: Boolean(p.truncated) };
   }, []);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  // The library that built `mapRef`: Mapbox, or MapLibre on an open style.
+  const mapLibraryRef = useRef<MapLibrary>(mapboxgl);
   // `new Map({ style })` starts the style request itself. The theme effect also
   // runs after that first render; without this ref it immediately called
   // `setStyle` with the same URL, cancelled the first request, and Mapbox logged
@@ -463,7 +476,11 @@ export function CartographicMapBackdrop({
   const appliedStyleRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [themeMounted, setThemeMounted] = useState(false);
-  const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
+  // Already "ready" with no engine: the layer effects then find no map and stop.
+  const [ready, setReady] = useState(() => MAP_ENGINE.kind === "none");
+  // The browser could not start the map library (no WebGL), or MapLibre never
+  // arrived. The parchment then stays, as it does with no engine.
+  const [cannotStart, setCannotStart] = useState(false);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
   const [projectAreas, setProjectAreas] = useState<ProjectAreaFeatureCollection | null>(null);
@@ -581,77 +598,79 @@ export function CartographicMapBackdrop({
     if (suppressed) return;
     if (!themeMounted) return;
     if (!containerRef.current || mapRef.current) return;
-    if (!MAPBOX_ACCESS_TOKEN) {
-      // Fall back to the CSS parchment gradient (no Mapbox) — still visually on-brand.
+    if (MAP_ENGINE.kind === "none") {
+      // Fall back to the CSS parchment gradient (no map engine), still visually on-brand.
       // This also prevents a mis-scoped secret token (`sk.*`) in a public env var from
       // crashing route-level smoke tests or being handed to Mapbox GL.
-      if (HAS_INVALID_PUBLIC_MAPBOX_TOKEN) {
+      if (MAP_ENGINE.unusableToken) {
         console.warn("[cartographic-backdrop] NEXT_PUBLIC_MAPBOX token must use a public pk.* token; rendering CSS fallback.");
       }
       return;
     }
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
-    const styleUrl =
-      backdropTheme === "dark"
-        ? "mapbox://styles/mapbox/dark-v11"
-        : "mapbox://styles/mapbox/light-v11";
-
+    const container = containerRef.current;
+    if (!container) return;
+    const styleUrl = styleForEngine(MAP_ENGINE, mapboxBackdropStyle(backdropTheme)) as string;
     const home = homeMapViewRef.current;
 
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: styleUrl,
-      center: home?.center ?? NEUTRAL_CENTER,
-      zoom: home?.zoom ?? NEUTRAL_ZOOM,
-      attributionControl: false,
-      logoPosition: "bottom-left",
-      interactive: true,
-      pitchWithRotate: false,
-      dragRotate: false,
-    });
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style: styleUrl,
+        center: home?.center ?? NEUTRAL_CENTER,
+        zoom: home?.zoom ?? NEUTRAL_ZOOM,
+        attributionControl: false,
+        logoPosition: "bottom-left",
+        interactive: true,
+        pitchWithRotate: false,
+        dragRotate: false,
+      });
 
-    // Mapbox and OpenStreetMap require visible attribution on every map. The
-    // logo holds bottom-left; the account chip and the Planner Agent button hold
-    // the bottom-right corner, so the compact control sits beside the logo.
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
-    appliedStyleRef.current = styleUrl;
+      // Mapbox and OpenStreetMap require visible attribution on every map, as do
+      // the sources of an operator's open style. The logo holds bottom-left; the
+      // account chip and the Planner Agent button hold the bottom-right corner,
+      // so the compact control sits beside the logo.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-left");
+      appliedStyleRef.current = styleUrl;
 
-    didInitialFitRef.current = false;
-    userMovedMapRef.current = false;
-    // Only user-driven moves carry an originalEvent; programmatic fits do not.
-    // Once the planner has moved the map themselves, no late-arriving payload
-    // is allowed to yank the viewport out from under them.
-    map.on("movestart", (event) => {
-      if ((event as { originalEvent?: unknown }).originalEvent) {
-        userMovedMapRef.current = true;
-      }
-    });
+      didInitialFitRef.current = false;
+      userMovedMapRef.current = false;
+      // Only user-driven moves carry an originalEvent; programmatic fits do not.
+      // Once the planner has moved the map themselves, no late-arriving payload
+      // is allowed to yank the viewport out from under them.
+      map.on("movestart", (event) => {
+        if ((event as { originalEvent?: unknown }).originalEvent) {
+          userMovedMapRef.current = true;
+        }
+      });
 
-    map.on("load", () => setReady(true));
-    mapRef.current = map;
-    registerMapControls({
-      zoomIn: () => map.zoomIn(),
-      zoomOut: () => map.zoomOut(),
-    });
+      map.on("load", () => setReady(true));
+      mapRef.current = map;
+      mapLibraryRef.current = gl;
+      registerMapControls({
+        zoomIn: () => map.zoomIn(),
+        zoomOut: () => map.zoomOut(),
+      });
 
-    return () => {
-      registerMapControls(null);
-      map.remove();
-      mapRef.current = null;
-      appliedStyleRef.current = null;
-    };
+      return () => {
+        registerMapControls(null);
+        map.remove();
+        mapRef.current = null;
+        appliedStyleRef.current = null;
+        // MapLibre rebuilds after this effect has run, so the layer effects must
+        // wait for the next map's `load`. Mapbox rebuilds in the same pass.
+        if (gl !== mapboxgl) setReady(false);
+      };
+    }, () => setCannotStart(true));
   }, [suppressed, themeMounted, backdropTheme, registerMapControls]);
 
   // Swap style when theme toggles (without tearing down the whole map).
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    const styleUrl =
-      backdropTheme === "dark"
-        ? "mapbox://styles/mapbox/dark-v11"
-        : "mapbox://styles/mapbox/light-v11";
+    // MapLibre draws the operator's one style; there is no dark twin to swap to.
+    if (MAP_ENGINE.kind !== "mapbox") return;
+    const styleUrl = mapboxBackdropStyle(backdropTheme);
     if (appliedStyleRef.current === styleUrl) return;
     try {
       map.setStyle(styleUrl);
@@ -1627,7 +1646,9 @@ export function CartographicMapBackdrop({
         );
       }
 
-      if (!map.getLayer(TRANSIT_CLUSTER_COUNT_LAYER_ID)) {
+      // A style that serves no fonts gets no counts; the cluster circles still draw.
+      const countFonts = labelFontsFor(MAP_ENGINE, map, TRANSIT_COUNT_MAPBOX_FONTS);
+      if (countFonts && !map.getLayer(TRANSIT_CLUSTER_COUNT_LAYER_ID)) {
         map.addLayer(
           {
             id: TRANSIT_CLUSTER_COUNT_LAYER_ID,
@@ -1636,7 +1657,7 @@ export function CartographicMapBackdrop({
             filter: ["has", "point_count"],
             layout: {
               "text-field": ["get", "point_count_abbreviated"],
-              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+              "text-font": countFonts,
               "text-size": 11,
               "text-allow-overlap": true,
             },
@@ -1695,7 +1716,8 @@ export function CartographicMapBackdrop({
     if (!map || !ready) return;
     if (didInitialFitRef.current || userMovedMapRef.current) return;
 
-    const bounds = new mapboxgl.LngLatBounds();
+    // Built by the library that drew the map: MapLibre does not read Mapbox's bounds object.
+    const bounds = new mapLibraryRef.current.LngLatBounds();
     for (const collection of [
       aois,
       projectMarkers,
@@ -2351,7 +2373,8 @@ export function CartographicMapBackdrop({
 
   if (suppressed) return null;
 
-  const usingMapbox = Boolean(MAPBOX_ACCESS_TOKEN);
+  // Any engine that started draws a map; the parchment is for none, or a failed start.
+  const drawsMap = MAP_ENGINE.kind !== "none" && !cannotStart;
 
   return (
     <div
@@ -2381,7 +2404,7 @@ export function CartographicMapBackdrop({
         inset: 0,
         zIndex: 0,
         // D2 parchment fallback — radial gradients over base bg
-        background: usingMapbox
+        background: drawsMap
           ? "var(--bg)"
           : [
               "radial-gradient(1200px 700px at 70% 40%, var(--map-park) 0%, transparent 45%)",
@@ -2391,7 +2414,7 @@ export function CartographicMapBackdrop({
             ].join(","),
       }}
     >
-      {usingMapbox ? (
+      {drawsMap ? (
         <div
           ref={containerRef}
           className="op-map-backdrop__canvas"
@@ -2424,12 +2447,12 @@ export function CartographicMapBackdrop({
         />
       ) : null}
       {/*
-        Parchment warm-tint overlay so Mapbox light style feels cartographic —
+        Parchment warm-tint overlay so the light basemap feels cartographic;
         and, like the canvas filter above, gone while the map is being read. A
         30% wash over the whole map is a second thing standing between the
         planner's colour and their eye.
       */}
-      {usingMapbox && !mapReading ? (
+      {drawsMap && !mapReading ? (
         <div
           style={{
             position: "absolute",

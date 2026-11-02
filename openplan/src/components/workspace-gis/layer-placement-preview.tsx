@@ -24,17 +24,26 @@
  * planner answers it.
  */
 
-import { useMemo } from "react";
+import dynamic from "next/dynamic";
+import { useMemo, useState } from "react";
 
 import { describeSpatialFileSrs } from "@/lib/geo/crs/describe";
 import type { Bbox, CrsPlacementWarning } from "@/lib/geo/crs/area-of-use";
 import type { CrsRegistryEntry } from "@/lib/geo/crs/types";
 import type { SpatialFileImport } from "@/lib/geo/spatial-file-import";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine } from "@/lib/maps/map-engine";
 
-const MAPBOX_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+/**
+ * Mapbox with a public key draws the static image below. Without one, an
+ * operator's open style draws the same rectangle through MapLibre, whose code
+ * loads only on a deployment that uses it.
+ */
+const MAP_ENGINE = deploymentMapEngine();
+const MAPBOX_TOKEN = MAP_ENGINE.kind === "mapbox" ? MAP_ENGINE.token : "";
+
+const ExtentPreviewMap = dynamic(
+  () => import("./extent-preview-map").then((module) => module.ExtentPreviewMap),
+  { ssr: false },
 );
 
 function formatDegrees(value: number): string {
@@ -51,9 +60,11 @@ function formatLatitude(value: number): string {
  * A STATIC IMAGE RATHER THAN A LIVE MAP, deliberately: this is one glance at one
  * question, the wizard is already holding a parsed 200 MB file in memory, and
  * standing up a second interactive GL context beside the workspace's own map is
- * a lot of machinery for a picture nobody pans. Without a token there is no
- * image and the extent is stated in words — which is degraded, and said so,
- * rather than a blank box.
+ * a lot of machinery for a picture nobody pans. Without a token an operator's
+ * open style draws the rectangle on a small fixed MapLibre map instead
+ * (`extent-preview-map.tsx`), since MapLibre has no static image API. With
+ * neither there is no picture and the extent is stated in words. That is
+ * degraded, and said so, rather than a blank box.
  */
 function staticMapUrl(bbox: Bbox): string | null {
   if (!MAPBOX_TOKEN) return null;
@@ -99,6 +110,12 @@ export function LayerPlacementPreview({
   homeGeography: [number, number, number, number] | null;
 }) {
   const imageUrl = useMemo(() => (bbox ? staticMapUrl(bbox) : null), [bbox]);
+  // The browser could not start MapLibre (no WebGL2); the extent stays in words.
+  const [mapCannotStart, setMapCannotStart] = useState(false);
+  const extentLabel = bbox
+    ? `The extent of this file, from ${formatLatitude(bbox.south)} ${formatDegrees(bbox.west)} ` +
+      `to ${formatLatitude(bbox.north)} ${formatDegrees(bbox.east)}`
+    : "The extent of this file";
 
   const srsSentence = describeSpatialFileSrs(imported.srs);
 
@@ -107,22 +124,15 @@ export function LayerPlacementPreview({
       <div className="op-gis-preview__map">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt={
-              bbox
-                ? `The extent of this file, from ${formatLatitude(bbox.south)} ${formatDegrees(bbox.west)} ` +
-                  `to ${formatLatitude(bbox.north)} ${formatDegrees(bbox.east)}`
-                : "The extent of this file"
-            }
-            width={480}
-            height={300}
-          />
+          <img src={imageUrl} alt={extentLabel} width={480} height={300} />
+        ) : bbox && MAP_ENGINE.kind === "maplibre" && !mapCannotStart ? (
+          <ExtentPreviewMap bbox={bbox} label={extentLabel} onCannotStart={() => setMapCannotStart(true)} />
         ) : (
           <p className="op-gis-preview__no-map">
             {bbox
-              ? "No basemap is configured on this deployment, so the extent is given in coordinates rather " +
-                "than drawn. Check them against where you expect this data to be."
+              ? `${mapCannotStart ? "This browser could not start the map" : "No basemap is configured on this deployment"}` +
+                ", so the extent is given in coordinates rather than drawn. Check them against where you expect " +
+                "this data to be."
               : "This file carries no usable extent, so there is nothing to show."}
           </p>
         )}

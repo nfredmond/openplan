@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Every map draws without a Mapbox key (KI-2026-10-12-026):** with
+`NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` set and no Mapbox key, MapLibre now also
+draws the Aerial index map, the aerial mission map, the mission area editor,
+the flight plan editor, the traffic volume and model agreement maps, the
+participation heat map and the extent preview in GIS layer import. A Mapbox key
+still selects Mapbox and its styles. Without a key the mission map has no
+satellite background and says so, and the Aerial index map uses your one style
+in light and dark mode. Rebuild after setting the variable.
+
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
 It removes a staged aerial, Knowledge Base or transit upload whose complete step

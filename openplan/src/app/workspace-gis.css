@@ -313,6 +313,15 @@ html.dark .op-gis-wizard__ack {
   border: 1px solid var(--line);
   display: block;
 }
+/* The open-style preview: the static image's size and frame, on a map that does not move. */
+.op-gis-preview__live-map {
+  width: 100%;
+  max-width: 480px;
+  height: 300px;
+  border-radius: calc(8px * var(--corner-scale));
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
 .op-gis-preview__no-map {
   margin: 0;
   font-size: var(--fs-label);
