@@ -1,9 +1,9 @@
 # OpenPlan roadmap to v1
 
 <!-- openplan-active-roadmap
-reviewed_commit: 380aad49770d856a9c4b577ccc9793baf39d3ddf
+reviewed_commit: d4ca41657304bd41b74da6b6d4665f5bb1ade32e
 current_release: v0.72.0
-review_by: 2026-11-06
+review_by: 2026-12-01
 paths:
 - AGENTS.md
 - CLAUDE.md
@@ -12,6 +12,7 @@ paths:
 - docs/product/AGENT_OPERATING_RULES.md
 - docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 - docs/reviews/product-direction/2026-10-06-integration-review.md
+- docs/reviews/product-direction/2026-11-01-first-proven-job-review.md
 - docs/reviews/2026-10-12-two-month-review/PLAN.md
 - openplan/scripts/ops/product-direction-review.mjs
 - openplan/src/test/product-direction-review-guard.test.ts
@@ -150,7 +151,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | S1 | Comparable model custody | In progress, partial | [Oct 8](reviews/2026-10-08-model-custody-metadata/DISPLAY_VERIFICATION.md); [Oct 23 county appendix correction](reviews/2026-10-23-s1-county-tier-custody/STATUS.md) | Review and verify the remaining KI-001 appendix correction after merged PR 244. Complete native custody ingestion and exact UI/report/assistant observation accounting. |
 | S2 | Model structure experiments | Later, partial | Audit | Experiments after S1 |
 | S2a | TimesFM forecasting research | Later | [Sep 5](reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md) | Confirm license permits research |
-| S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
+| S3 | Untouched nationwide validation | Next (November 1 review) | Audit; [PR 374 draft](https://github.com/nfredmond/openplan/pull/374) | Freeze the successor preregistration on continuous-count stations with one untouched state holdout; needs Nathaniel's decisions on partitions, sample size and thresholds |
 | G1 | Every state and organization type | Later | Audit | Confirm state order (decision 6) |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
 | A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Bespoke catalogue captures are deferred under the October 17 delivery instruction. Keep tested CLI versions, honest usage limits and the proven project task usable through ordinary CI and relevant UI checks. Generic Codex resets remain unknown without a reviewed causal binding. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
@@ -165,7 +166,30 @@ The Maps module (PR 189, "M17" in the cutover record) and the UI overhaul
 (PRs 186 to 188 and 193) have no milestone ID. [VERIFY: assign IDs at the next
 direction review.]
 
-## Next three, October 15, 2026
+## Next three, November 1, 2026
+
+Set by the [November 1 direction review](reviews/product-direction/2026-11-01-first-proven-job-review.md).
+The October 15 list below is kept as history; its open parts (Stage A operator
+settings, the first-week journeys, A0b) carry into these items or continue
+alongside them.
+
+1. **Prove the first cell: a safety action plan and SS4A application in three
+   places (M6, M13e, G1).** A rural California county, a rural Nevada county and
+   a tribal area, each from sign-up to exported plan and application PDFs at
+   desktop and 390px with an automated accessibility check, on one identified
+   main commit served by the hosted site. This includes correct crash sources by
+   state, tribal and town or township place kinds, and a per-state table test in
+   CI. Registry cells move only through a checked evidence record.
+2. **Cut the evidence cost per change (M0).** Per-change evidence lives in pull
+   requests and CI artifacts under the November 1 `AGENTS.md` rule. Done when,
+   over four weeks, lines added under `docs/reviews/` are fewer than lines added
+   to application and worker code.
+3. **Freeze the successor validation preregistration (S3).** Continuous-count
+   stations as the decisive corpus and one untouched state holdout, from the PR
+   374 draft. Needs Nathaniel's decisions on partitions, sample size and
+   thresholds. Both engines stay separate.
+
+## Next three, October 15, 2026 (superseded November 1)
 
 The October 12 list is kept in the evidence log. The original October 15 list
 uses main `1b2fefe0f0e98f99700fc77e99146fe697b43ee7`. An October 16 main-ref
