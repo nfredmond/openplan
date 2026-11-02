@@ -522,7 +522,7 @@ export const ccrsAdapter: CrashSourceAdapter = {
   id: CCRS_SOURCE_ID,
   label: "California Crash Reporting System (CCRS)",
   attribution:
-    "California Highway Patrol, California Crash Reporting System (CCRS), published on data.ca.gov. Public domain: no restrictions on public use.",
+    "California Highway Patrol, California Crash Reporting System (CCRS), published on data.ca.gov. Public domain — no restrictions on public use.",
   license: "Other (Public Domain)",
   coverageState: "ccrs_ca_statewide",
   severityCompleteness: "fatal_injury_only",

@@ -16,8 +16,9 @@ import { posixRelative } from "./helpers/posix-path";
  * under `src/` outside `src/test/`, and every string value in a JSON file there
  * (the work-plan and stage-gate templates are planner copy). It reads them
  * through the TypeScript parser, so a comment never reaches the check: code
- * comments may keep their dashes. String values are read cooked, so an escaped
- * `—` counts, and JSX text is also checked for the `&mdash;` entity.
+ * comments may keep their dashes. String values are read cooked, so a dash
+ * written as a backslash-u escape counts, and JSX text is also checked for the
+ * `&mdash;` entity.
  *
  * WHAT IT ALLOWS. A string or JSX text that is ONLY the dash, the table glyph
  * for "no value" (`failed ? "—" : count`). That is a mark in a cell, not
@@ -35,11 +36,18 @@ const EM_DASH = "—";
 const ENTITY = /&(mdash|#8212|#x2014);/i;
 const ESCAPED = /u\{?0*2014/i;
 
+/** The reason for every string kept because saved work is checked against it. */
+const HASHED =
+  "Hashed into stored records; changing the text marks saved work stale.";
+
 /**
  * Strings that must keep an em dash, each with a reason a reviewer can check.
- * `contains` must appear in exactly one finding in `file`. Keep it short.
+ * An entry allows the findings in `file` whose text contains `contains` (an
+ * empty `contains` covers the whole file), and there must be exactly `count`
+ * of them (default 1): a new dash in a covered file still fails, and so does
+ * removing one without lowering the count.
  */
-const ALLOWED: ReadonlyArray<{ file: string; contains: string; reason: string }> = [
+const ALLOWED: ReadonlyArray<{ file: string; contains: string; count?: number; reason: string }> = [
   {
     file: "src/lib/engagement/translation-generation.ts",
     contains: "— it is source text to be translated",
@@ -57,6 +65,45 @@ const ALLOWED: ReadonlyArray<{ file: string; contains: string; reason: string }>
     reason:
       "Deliverable title. work-plans/apply.ts skips a title the project already has (trimmed, lowercased), so a " +
       "new title would add a duplicate deliverable when the template is applied again to a project that has it.",
+  })),
+  // Report section facts. factsHash() over these claims is stored with each
+  // accepted narrative and recomputed at generation; a changed claim shows
+  // "Underlying data changed since acceptance" (narrative-drafts.ts).
+  { file: "src/lib/reports/narrative-drafts.ts", contains: "—", count: 3, reason: `Funding posture claims. ${HASHED}` },
+  {
+    file: "src/lib/models/run-modes.ts",
+    contains: "—",
+    count: 2,
+    reason: `caveatSummary of deterministic_corridor_v1 and behavioral_demand, quoted in report run facts. ${HASHED}`,
+  },
+  {
+    file: "src/lib/grants/engagement-evidence.ts",
+    contains: "Community-input statements summarize submitted public comments only —",
+    reason:
+      "ENGAGEMENT_NARRATIVE_CAVEAT. application-html.ts keeps it on the export cover only while a saved final " +
+      `section or its draft contains this exact text. ${HASHED}`,
+  },
+  // Byte-pinned readiness sources. registry.v1.json pins each file's sha256;
+  // the registry hash goes into the readiness payload hash stored with every
+  // v4 report packet, and jurisdiction-freshness.ts calls the packet "changed"
+  // when it differs. Any edit to these files, dash or not, has that effect.
+  ...(
+    [
+      ["src/lib/grants/programs/us-ca.ts", 20],
+      ["src/lib/grants/programs/us-co.ts", 10],
+      ["src/lib/grants/programs/us-federal.ts", 21],
+      ["src/lib/grants/programs/us-oh.ts", 18],
+      ["src/lib/grants/programs/us-or.ts", 23],
+      ["src/lib/grants/programs/us-tx.ts", 11],
+      ["src/lib/grants/programs/us-wa.ts", 21],
+      ["src/lib/safety/sources/ccrs.ts", 1],
+      ["src/lib/safety/sources/fars.ts", 1],
+    ] as const
+  ).map(([file, count]) => ({
+    file,
+    contains: "",
+    count,
+    reason: `Pinned by sha256 in jurisdiction-readiness/registry.v1.json. ${HASHED}`,
   })),
 ];
 
@@ -160,11 +207,25 @@ describe("planner-facing text carries no em dash", () => {
     ).toEqual([]);
   });
 
-  it("keeps every allowance matching exactly one string", () => {
-    const loose = ALLOWED.filter(
-      (entry) => FINDINGS.filter((finding) => allowanceMatches(entry, finding)).length !== 1
-    ).map((entry) => `${entry.file}: ${entry.contains}`);
+  it("keeps every allowance matching exactly its count", () => {
+    const loose = ALLOWED.flatMap((entry) => {
+      const matched = FINDINGS.filter((finding) => allowanceMatches(entry, finding)).length;
+      const expected = entry.count ?? 1;
+      return matched === expected ? [] : [`${entry.file} "${entry.contains}": ${matched} found, ${expected} allowed`];
+    });
     expect(loose).toEqual([]);
+  });
+
+  it("allows a pinned readiness source only while the registry still pins it", () => {
+    // A file-wide allowance is justified by the pin alone, so it must not outlive it.
+    const registry = JSON.parse(
+      readFileSync(path.join(SRC, "lib/jurisdiction-readiness/registry.v1.json"), "utf8")
+    ) as { sources: Array<{ path: string }> };
+    const pinned = new Set(registry.sources.map((source) => path.posix.relative("openplan", source.path)));
+    const unpinned = ALLOWED.filter((entry) => entry.contains === "" && !pinned.has(entry.file)).map(
+      (entry) => entry.file
+    );
+    expect(unpinned).toEqual([]);
   });
 });
 

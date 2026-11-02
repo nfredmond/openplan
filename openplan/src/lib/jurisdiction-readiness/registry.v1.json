@@ -460,7 +460,7 @@
     {
       "id": "fars-source-adapter",
       "path": "openplan/src/lib/safety/sources/fars.ts",
-      "sha256": "011b6b3514dead37660309e1b1fa48bcc6023f626fd038440835fc3f1f745b8f"
+      "sha256": "2dbadc5bb24cd39dfabfcd72f7ce76d8035584530cd28726f10ab8f6ae9a6894"
     },
     {
       "id": "odot-or-source-adapter",
@@ -475,7 +475,7 @@
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "4e2f24dd2a22f23d5a386a5bcafefd5722f816b4d5bb242bcfc33a5b3f735603"
+      "sha256": "e85d3b079952c44abf3b94882d17a41f609ba2409f37e4ca50d481b05f151c62"
     },
     {
       "id": "grant-program-registry",
@@ -485,17 +485,17 @@
     {
       "id": "oregon-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-or.ts",
-      "sha256": "31fa38a76af167d5dc36f9a4dfeb509350dd056d8e55a1b97cc9a7f683e7e8b0"
+      "sha256": "106a360ab164122eb43a9f5146590690f08eb4e416d37ff3408a21029459548c"
     },
     {
       "id": "federal-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-federal.ts",
-      "sha256": "fd823664ba571da563377c6fca7d9f0d329a845842681a2bb3da06c73f69cd71"
+      "sha256": "232ab428804b141ec462d7d2bfb3f11b8406f1e3b1c3c7d790ed868958fc0a3f"
     },
     {
       "id": "california-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-ca.ts",
-      "sha256": "baa0470ba16bda5484d48700860257b8f42586690290aace211e2381a84d6981"
+      "sha256": "db35063a2d9be22bd4641e9db792b451d495e51efd0fe06fef370ad703c94280"
     },
     {
       "id": "comparable-observation-proof-v041",
@@ -530,22 +530,22 @@
     {
       "id": "washington-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-wa.ts",
-      "sha256": "790e0e2763f547d864533078471bae5e74be0140cef1d8215174fded2280e992"
+      "sha256": "64d3962d61d3fca331f4fe39e765ea06e9fe806c9bfba7808a95ea1eedab0c17"
     },
     {
       "id": "colorado-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-co.ts",
-      "sha256": "db1ebdbbe1e0c7416c094a7530a7c88db9eded73d4123aaf62e1d6f3b87b662e"
+      "sha256": "d8099ee72f956bbda37fc9284fb78c6616ad366b8d5a9b66f4431a20e8a8bef0"
     },
     {
       "id": "texas-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-tx.ts",
-      "sha256": "68c83d1a76bc647c055239e2c496202d0b3d28caeebd41ad6e8970f9a987cad4"
+      "sha256": "1b563e5dea73529f850cc7a37c41053f1913e4efe7f3794b9bb11128b0c8d612"
     },
     {
       "id": "ohio-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-oh.ts",
-      "sha256": "cc95627caf2897086f5a21d62e2ce84dbae9eea225c8ce2c44c71779537537df"
+      "sha256": "07791ef01b00242151c1e27ca5fcb26b4973436bae0f2d2a0b670e383d447806"
     },
     {
       "id": "land-use-plan-kind-connections-20261007",

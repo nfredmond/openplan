@@ -26,7 +26,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     ],
     cycleNote: "Each state sets its own HSIP call for local agencies. Verify the current call with your state DOT's local assistance office.",
     matchRequirement:
-      "Typically 90% federal / 10% local; certain safety countermeasures qualify for 100% federal funding. Verify the current call.",
+      "Typically 90% federal / 10% local; certain safety countermeasures qualify for 100% federal funding — verify the current call.",
     url: "https://highways.dot.gov/safety/hsip",
     summary:
       "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a local road safety plan or safety action plan.",
@@ -116,8 +116,8 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Safety demonstration activities",
       "Safety implementation projects",
     ],
-    cycleNote: "Annual NOFO under BIL through the current authorization. Verify current-round status with USDOT before planning an application.",
-    matchRequirement: "Generally 80% federal share maximum, so plan for roughly a 20% local match. Verify the current NOFO.",
+    cycleNote: "Annual NOFO under BIL through the current authorization — verify current-round status with USDOT before planning an application.",
+    matchRequirement: "Generally 80% federal share maximum, so plan for roughly a 20% local match — verify the current NOFO.",
     url: "https://www.transportation.gov/grants/SS4A",
     summary:
       "USDOT discretionary program funding Vision Zero-style safety action plans and the projects that implement them, with dedicated planning grants that are very accessible to small and rural agencies. An adopted action plan is the gateway to larger implementation awards.",
@@ -126,14 +126,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-overview",
         title: "Project overview",
         guidance:
-          "Summarize the applicant, the proposal, and the award type sought (planning, demonstration, or implementation). Verify the current NOFO's application structure with USDOT. The narrative outline changes between rounds.",
+          "Summarize the applicant, the proposal, and the award type sought (planning, demonstration, or implementation). Verify the current NOFO's application structure with USDOT — the narrative outline changes between rounds.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
       {
         key: "safety-problem-and-impact",
         title: "Safety problem and expected impact",
         guidance:
-          "Document the roadway safety problem (fatality and serious-injury history) and the expected impact of the proposed work. Verify the current NOFO's required safety-data presentation with USDOT.",
+          "Document the roadway safety problem — fatality and serious-injury history — and the expected impact of the proposed work. Verify the current NOFO's required safety-data presentation with USDOT.",
         // `engagement` is here for the locations residents mapped and what the
         // collision history holds near them. Without it the section that IS the
         // safety problem could not cite the community's own account of that
@@ -209,9 +209,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Complete streets and corridor projects",
       "Project planning and design",
     ],
-    cycleNote: "Annual NOFO; USDOT renamed RAISE back to BUILD in 2025. Verify the current round and name with USDOT.",
+    cycleNote: "Annual NOFO; USDOT renamed RAISE back to BUILD in 2025 — verify the current round and name with USDOT.",
     matchRequirement:
-      "Urban projects generally capped at 80% federal share; rural projects can reach up to 100%. Verify the current NOFO.",
+      "Urban projects generally capped at 80% federal share; rural projects can reach up to 100% — verify the current NOFO.",
     url: "https://www.transportation.gov/BUILDgrants",
     summary:
       "USDOT's broad multimodal discretionary program (TIGER, then RAISE, now BUILD) for locally significant capital projects, with funding reserved for rural awards and smaller minimum award sizes for rural applicants. Highly competitive, but one of the few federal programs where a small agency can fund a transformative corridor project directly.",
@@ -222,21 +222,21 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-description",
         title: "Project description",
         guidance:
-          "Describe the transportation challenges, the proposed scope, and project history. Verify the current NOFO's narrative outline and page limits with USDOT. BUILD restructures its application most rounds.",
+          "Describe the transportation challenges, the proposed scope, and project history. Verify the current NOFO's narrative outline and page limits with USDOT — BUILD restructures its application most rounds.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "project-location",
         title: "Project location",
         guidance:
-          "Describe the project location, its connections, and its rural or urban designation. The designation drives match rules and set-asides. Verify how the current NOFO defines rural/urban with USDOT.",
+          "Describe the project location, its connections, and its rural or urban designation — the designation drives match rules and set-asides. Verify how the current NOFO defines rural/urban with USDOT.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "merit-criteria",
         title: "Merit criteria narrative",
         guidance:
-          "Address each merit criterion in the current NOFO (historically: safety, environmental sustainability, quality of life, mobility and community connectivity, economic competitiveness and opportunity, state of good repair, partnership and collaboration, innovation). Verify the criteria list and weighting in the current NOFO. They shift between rounds.",
+          "Address each merit criterion in the current NOFO (historically: safety, environmental sustainability, quality of life, mobility and community connectivity, economic competitiveness and opportunity, state of good repair, partnership and collaboration, innovation). Verify the criteria list and weighting in the current NOFO — they shift between rounds.",
         suggestedEvidence: ["modeling", "bca", "engagement", "kb"],
       },
       {
@@ -260,7 +260,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "benefit-cost-analysis",
         title: "Benefit-cost analysis",
         guidance:
-          "Capital applications include a BCA of record following the current USDOT BCA Guidance. OpenPlan's screening BCA is a rescope signal, not this document. Verify the guidance edition named in the current NOFO.",
+          "Capital applications include a BCA of record following the current USDOT BCA Guidance — OpenPlan's screening BCA is a rescope signal, not this document. Verify the guidance edition named in the current NOFO.",
         required: true,
       },
       {
@@ -288,19 +288,19 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Highway projects of regional significance",
       "Grade separations",
     ],
-    cycleNote: "Periodic NOFOs, often combined into the Multimodal Project Discretionary Grant round. Verify with USDOT.",
-    matchRequirement: "INFRA funds capped at 60% of project cost; total federal share capped at 80%. Verify the current NOFO.",
+    cycleNote: "Periodic NOFOs, often combined into the Multimodal Project Discretionary Grant round — verify with USDOT.",
+    matchRequirement: "INFRA funds capped at 60% of project cost; total federal share capped at 80% — verify the current NOFO.",
     url: "https://www.transportation.gov/grants/infra-grant-program",
     summary:
       "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with the state DOT or a regional agency on a goods-movement or corridor application.",
     bcaNote:
-      "USDOT requires a benefit-cost analysis per its BCA Guidance for INFRA applications, with freight benefits typically driving the ratio. Run the screening BCA early. A BCR below 1.0 at screening grade is a signal to rescope or firm up benefit evidence before committing to the full analysis.",
+      "USDOT requires a benefit-cost analysis per its BCA Guidance for INFRA applications, with freight benefits typically driving the ratio. Run the screening BCA early — a BCR below 1.0 at screening grade is a signal to rescope or firm up benefit evidence before committing to the full analysis.",
     applicationSections: [
       {
         key: "project-description",
         title: "Project description",
         guidance:
-          "Describe the project, the problem it addresses, and its regional or national significance. Verify the current NOFO's narrative outline with USDOT. INFRA rounds are often combined into a multi-program NOFO with shared sections.",
+          "Describe the project, the problem it addresses, and its regional or national significance. Verify the current NOFO's narrative outline with USDOT — INFRA rounds are often combined into a multi-program NOFO with shared sections.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -338,7 +338,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "benefit-cost-analysis",
         title: "Benefit-cost analysis",
         guidance:
-          "A BCA of record per the current USDOT BCA Guidance, typically freight-benefit driven. OpenPlan's screening BCA is an early-warning analogue, not this document. Verify the guidance edition in the current NOFO.",
+          "A BCA of record per the current USDOT BCA Guidance, typically freight-benefit driven — OpenPlan's screening BCA is an early-warning analogue, not this document. Verify the guidance edition in the current NOFO.",
         required: true,
       },
       {
@@ -437,7 +437,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Operating support for specialized services",
     ],
     cycleNote: "Each state or designated recipient sets its own call. Verify the current call with your state DOT's transit office or your area's designated recipient.",
-    matchRequirement: "Typically 80/20 federal/local for capital and 50/50 for operating; toll credits may cover match. Verify.",
+    matchRequirement: "Typically 80/20 federal/local for capital and 50/50 for operating; toll credits may cover match — verify.",
     url: "https://www.transit.dot.gov/funding/grants/enhanced-mobility-seniors-individuals-disabilities-section-5310",
     summary:
       "Federal formula funds passed through states and designated recipients to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. The standard source for paratransit vehicle replacement and mobility management in small and rural communities.",
@@ -512,7 +512,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Intercity bus service (5311(f))",
     ],
     cycleNote: "Annual apportionments programmed through the state, with periodic 5311(f) intercity bus calls. Verify with your state DOT's transit office.",
-    matchRequirement: "Operating assistance roughly 50/50 and capital roughly 80/20 federal share; sliding scale and toll credits apply. Verify.",
+    matchRequirement: "Operating assistance roughly 50/50 and capital roughly 80/20 federal share; sliding scale and toll credits apply — verify.",
     url: "https://www.transit.dot.gov/rural-formula-grants-5311",
     summary:
       "The backbone federal funding source for public transit in areas under 50,000 population, covering both operating and capital needs. Rural operators access it through their state, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
@@ -639,7 +639,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Resilience planning",
     ],
     cycleNote: "Formula funds flow through your state DOT, and discretionary NOFOs are periodic. Verify current opportunities with FHWA and your state DOT.",
-    matchRequirement: "Typically 80% federal share; planning activities can reach a higher federal share. Verify the current guidance.",
+    matchRequirement: "Typically 80% federal share; planning activities can reach a higher federal share — verify the current guidance.",
     url: "https://highways.dot.gov/iija/fact-sheets/protect-formula-program",
     summary:
       "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes. Directly relevant to rural agencies managing wildfire corridors and storm-damaged roads.",
@@ -662,7 +662,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "resilience-benefits",
         title: "Resilience benefits",
         guidance:
-          "Explain avoided damage, maintained access, and continuity of the network during hazard events. Verify how the current opportunity expects benefits to be presented. Some discretionary rounds ask for benefit-cost information.",
+          "Explain avoided damage, maintained access, and continuity of the network during hazard events. Verify how the current opportunity expects benefits to be presented — some discretionary rounds ask for benefit-cost information.",
         suggestedEvidence: ["modeling", "bca", "kb"],
       },
       {
@@ -691,7 +691,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "benefit-cost-analysis",
         title: "Benefit-cost analysis",
-        guidance: "Some discretionary PROTECT rounds request benefit-cost information. OpenPlan's screening BCA is not that document. Verify whether the current NOFO requires one and to what guidance.",
+        guidance: "Some discretionary PROTECT rounds request benefit-cost information — OpenPlan's screening BCA is not that document. Verify whether the current NOFO requires one and to what guidance.",
         required: false,
       },
       {

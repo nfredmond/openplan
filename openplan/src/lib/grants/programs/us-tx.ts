@@ -47,11 +47,11 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     eligibleProjectTypes: [
       "Pedestrian infrastructure (sidewalks, crossings, ADA improvements)",
       "Bicycle infrastructure (lanes, separated facilities, shared-use paths)",
-      "Safe Routes to School infrastructure: Texas has no separate SRTS program; this is where that work competes",
+      "Safe Routes to School infrastructure — Texas has no separate SRTS program; this is where that work competes",
       "Active transportation planning (non-infrastructure)",
     ],
     cycleNote:
-      "Roughly biennial statewide call, two-step. Verify it with TxDOT, or with your MPO above 200,000 population, where TxDOT's call does not apply.",
+      "Roughly biennial statewide call, two-step. Verify it with TxDOT — or with your MPO above 200,000 population, where TxDOT's call does not apply.",
     matchRequirement:
       "A local match is required under the federal set-aside; TxDOT publishes the rate and any sliding scale in each call's program guide rather than on the program page. Verify the current guide before budgeting.",
     url: "https://www.txdot.gov/business/grants-and-funding/bicycle-pedestrian-local-federal-funding-programs.html",
@@ -62,14 +62,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-description",
         title: "Project description and limits",
         guidance:
-          "Describe the facility, its termini, and what it connects. The preliminary application establishes eligibility before the detailed application is invited. Verify the current call's two-step structure and what each step asks for.",
+          "Describe the facility, its termini, and what it connects. The preliminary application establishes eligibility before the detailed application is invited — verify the current call's two-step structure and what each step asks for.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "safety-need",
         title: "Safety need and existing conditions",
         guidance:
-          "Document the safety problem the project addresses: crash history, missing facilities, or conditions on a school route. Verify how the current call scores safety need.",
+          "Document the safety problem the project addresses — crash history, missing facilities, or conditions on a school route. Verify how the current call scores safety need.",
         suggestedEvidence: ["project", "modeling", "kb"],
       },
       {
@@ -90,7 +90,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "budget-and-match",
         title: "Cost estimate and local match",
         guidance:
-          "A cost estimate by phase and your committed local match. Verify the current match rate in the call's program guide. It is not published on the program page.",
+          "A cost estimate by phase and your committed local match. Verify the current match rate in the call's program guide — it is not published on the program page.",
         suggestedEvidence: ["project"],
         // Never AI-drafted: a fabricated figure here is the number the award is
         // computed from.
@@ -133,7 +133,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Enhanced mobility of seniors and individuals with disabilities (49 U.S.C. 5310)",
       "Small urban public transportation",
       "Intercity bus service (49 U.S.C. 5311(f))",
-      "Rural Transportation Assistance Program: training and technical assistance (49 U.S.C. 5311(b)(3))",
+      "Rural Transportation Assistance Program — training and technical assistance (49 U.S.C. 5311(b)(3))",
       "Statewide planning assistance (49 U.S.C. 5304)",
     ],
     cycleNote:
@@ -142,7 +142,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Varies by program and by whether the request is capital or operating; TxDOT publishes the rates in each cycle's call instructions rather than on the program page. Verify before budgeting.",
     url: "https://www.txdot.gov/business/grants-and-funding/public-transportation-grants.html",
     summary:
-      "TxDOT's Public Transportation Division is the pass-through for the federal transit programs that serve everywhere in Texas outside the large urbanized areas: rural operating and capital assistance, seniors and disabilities mobility, intercity bus, and rural training assistance. Several are solicited together through one coordinated call, so an agency pursuing more than one of them is usually filing once rather than separately.",
+      "TxDOT's Public Transportation Division is the pass-through for the federal transit programs that serve everywhere in Texas outside the large urbanized areas — rural operating and capital assistance, seniors and disabilities mobility, intercity bus, and rural training assistance. Several are solicited together through one coordinated call, so an agency pursuing more than one of them is usually filing once rather than separately.",
     applicationSections: [
       {
         key: "service-description",
@@ -162,7 +162,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "budget-and-match",
         title: "Budget and local match",
         guidance:
-          "Operating and capital budgets with your committed match. Rates differ between capital and operating. Verify both in the current call instructions.",
+          "Operating and capital budgets with your committed match. Rates differ between capital and operating — verify both in the current call instructions.",
         suggestedEvidence: ["project"],
         aiDraftingEnabled: false,
       },
@@ -190,12 +190,12 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     administeringAgency: "Texas Department of Transportation (TxDOT), Traffic Safety Division",
     level: "state",
     typicalApplicants:
-      "State and local government agencies, educational institutions, and non-profit agencies. TxDOT publishes the specific eligibility criteria in the Request for Proposals rather than on the program page",
+      "State and local government agencies, educational institutions, and non-profit agencies — TxDOT publishes the specific eligibility criteria in the Request for Proposals rather than on the program page",
     eligibleProjectTypes: [
       "Behavioral traffic safety projects proposed against the current Request for Proposals",
     ],
     cycleNote:
-      "Annual Request for Proposals in eGrants. Categories, deadlines and match are in the RFP, not on the program page. Verify the current one in the portal.",
+      "Annual Request for Proposals in eGrants. Categories, deadlines and match are in the RFP, not on the program page — verify the current one in the portal.",
     matchRequirement:
       "Not published on the program page; stated in the Request for Proposals. Verify there before budgeting.",
     url: "https://www.txdot.gov/business/grants-and-funding/traffic-safety-egrants.html",
@@ -223,7 +223,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "rfp-eligibility-confirmation",
         title: "Eligibility confirmation from the current RFP",
         guidance:
-          "Confirmation that your organization type is eligible under the current solicitation. Verify in the eGrants Request for Proposals. The program page does not publish it.",
+          "Confirmation that your organization type is eligible under the current solicitation. Verify in the eGrants Request for Proposals — the program page does not publish it.",
         required: true,
       },
     ],

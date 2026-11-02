@@ -23,9 +23,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Roadway physical condition and reconstruction",
     ],
     cycleNote:
-      "Annual call for projects: opens late spring, applications due in summer, awards at TIB's November board meeting; verify current dates on tib.wa.gov.",
+      "Annual call for projects — opens late spring, applications due in summer, awards at TIB's November board meeting; verify current dates on tib.wa.gov.",
     matchRequirement:
-      "Local match of 10 to 20 percent scaled to the agency's assessed valuation. Verify your band in the current TIB guidelines.",
+      "Local match of 10 to 20 percent scaled to the agency's assessed valuation — verify your band in the current TIB guidelines.",
     url: "https://www.tib.wa.gov/grants/grants.cfm",
     summary:
       "TIB's flagship urban program funds arterial street projects in larger cities and urban county areas, scored against safety, commercial growth and development, mobility, and physical-condition criteria. TIB is an independent state agency funded by a share of the statewide gas tax, and it runs an annual call for projects with applications submitted through its online funding portal and awards made at the November board meeting.",
@@ -34,7 +34,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-narrative",
         title: "Project description and scope",
         guidance:
-          "Describe the arterial improvement: limits, elements, and how they address the program's criteria. Verify the current call's application questions in TIB's online funding portal. TIB also runs pre-application funding workshops each spring.",
+          "Describe the arterial improvement: limits, elements, and how they address the program's criteria. Verify the current call's application questions in TIB's online funding portal — TIB also runs pre-application funding workshops each spring.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -93,12 +93,12 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Reconstruction of arterial streets consistent with local needs",
     ],
     cycleNote:
-      "Shares TIB's annual call: late-spring opening, summer deadline, awards at the November board meeting; verify current dates on tib.wa.gov.",
+      "Shares TIB's annual call — late-spring opening, summer deadline, awards at the November board meeting; verify current dates on tib.wa.gov.",
     matchRequirement:
-      "Valuation-scaled small-city match, from no match for the lowest-valuation towns up to 10%. Verify your band in the current TIB guidelines.",
+      "Valuation-scaled small-city match, from no match for the lowest-valuation towns up to 10% — verify your band in the current TIB guidelines.",
     url: "https://www.tib.wa.gov/grants/grants.cfm",
     summary:
-      "SCAP funds preservation, rehabilitation, and reconstruction of TIB-classified arterial streets in Washington's incorporated cities and towns under 5,000 population. It shares TIB's annual call-for-projects cycle, and its match requirement scales with assessed valuation down to zero for the smallest communities: the core TIB street-construction program for small cities.",
+      "SCAP funds preservation, rehabilitation, and reconstruction of TIB-classified arterial streets in Washington's incorporated cities and towns under 5,000 population. It shares TIB's annual call-for-projects cycle, and its match requirement scales with assessed valuation down to zero for the smallest communities — the core TIB street-construction program for small cities.",
     applicationSections: [
       {
         key: "project-scope",
@@ -164,9 +164,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Condition improvements to existing active-transportation facilities",
     ],
     cycleNote:
-      "Part of TIB's annual call: late-spring opening, summer deadline, November awards; verify current dates on tib.wa.gov.",
+      "Part of TIB's annual call — late-spring opening, summer deadline, November awards; verify current dates on tib.wa.gov.",
     matchRequirement:
-      "Follows the SCAP valuation-scaled schedule: no match for the lowest-valuation towns, rising to 10%. Verify your band in the current TIB guidelines.",
+      "Follows the SCAP valuation-scaled schedule: no match for the lowest-valuation towns, rising to 10% — verify your band in the current TIB guidelines.",
     url: "https://www.tib.wa.gov/grants/grants.cfm",
     summary:
       "The program small cities knew as TIB's Small City Sidewalk Program now runs as the Small City Active Transportation Program, broadened beyond sidewalks to pedestrian and cyclist safety, mobility, connectivity, and facility-condition projects. It keeps the small-city eligibility (under 5,000 population) and the valuation-scaled match, within TIB's annual call-for-projects cycle.",
@@ -230,12 +230,12 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     typicalApplicants:
       "Cities and counties with an adopted complete streets ordinance, put forward by board-approved nominators rather than by standard application",
     eligibleProjectTypes: [
-      "Flexible award funding for streets serving all users: pedestrians, transit access, cyclists, and motorists of all ages and abilities",
+      "Flexible award funding for streets serving all users — pedestrians, transit access, cyclists, and motorists of all ages and abilities",
     ],
     cycleNote:
-      "Intermittent nomination rounds at the board's discretion rather than a fixed annual cycle. Verify the current round's status on tib.wa.gov.",
+      "Intermittent nomination rounds at the board's discretion rather than a fixed annual cycle — verify the current round's status on tib.wa.gov.",
     matchRequirement:
-      "No local match is stated on the TIB grants page for this award. Verify the posture with TIB before budgeting around it.",
+      "No local match is stated on the TIB grants page for this award — verify the posture with TIB before budgeting around it.",
     url: "https://www.tib.wa.gov/grants/grants.cfm",
     summary:
       "TIB's Complete Streets Award recognizes and funds local governments that have adopted a complete streets ordinance and demonstrate the practice of planning and building streets for all users. Unlike TIB's project grants it is nomination-based: board-approved nominators put agencies forward rather than agencies submitting a standard project application, so the preparation work is documenting the ordinance and the practice.",
@@ -251,7 +251,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "nominator-coordination",
         title: "Nominator coordination",
         guidance:
-          "The award is nomination-based. Identify the board-approved nominators who know your agency's work and brief them. Verify the current nominator list and round timing with TIB.",
+          "The award is nomination-based — identify the board-approved nominators who know your agency's work and brief them. Verify the current nominator list and round timing with TIB.",
         suggestedEvidence: ["project", "engagement", "kb"],
       },
       {
@@ -288,7 +288,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "wa-wsdot-ped-bike",
     name: "WSDOT Pedestrian / Bicyclist Program (PBP)",
-    administeringAgency: "Washington State Department of Transportation (WSDOT), Local Programs, Active Transportation",
+    administeringAgency: "Washington State Department of Transportation (WSDOT), Local Programs — Active Transportation",
     level: "state",
     typicalApplicants:
       "Cities, counties, and tribal governments; a joint application with WSDOT is required when state right-of-way is involved",
@@ -298,9 +298,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Projects that increase active transportation trips",
     ],
     cycleNote:
-      "Biennial call aligned to the state budget biennium, with a spring application deadline. Verify the next call on WSDOT's active transportation pages.",
+      "Biennial call aligned to the state budget biennium, with a spring application deadline — verify the next call on WSDOT's active transportation pages.",
     matchRequirement:
-      "No match requirement is stated on the program page; the biennium's applicant guidance governs. Verify there before assuming zero match.",
+      "No match requirement is stated on the program page; the biennium's applicant guidance governs — verify there before assuming zero match.",
     url: "https://wsdot.wa.gov/business-wsdot/support-local-programs/funding-programs/active-transportation-funding-programs/pedestrian-bicycle-program",
     summary:
       "WSDOT's Pedestrian / Bicyclist Program funds infrastructure and design-only projects that improve pedestrian and bicyclist safety and mobility and increase active-transportation trips, funded largely through Washington's Climate Commitment Act. It runs a biennial call administered by WSDOT Local Programs, with applications submitted through an online portal against a biennium-specific guidance document, documented tribal consultation required, and a joint application with WSDOT when state right-of-way is involved.",
@@ -361,7 +361,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "wa-wsdot-srts",
     name: "WSDOT Safe Routes to Schools Program (SRTS)",
-    administeringAgency: "Washington State Department of Transportation (WSDOT), Local Programs, Active Transportation",
+    administeringAgency: "Washington State Department of Transportation (WSDOT), Local Programs — Active Transportation",
     level: "state",
     typicalApplicants:
       "Cities, counties, tribal governments, and organizations serving school communities; projects on tribal lands need tribal government support documentation",
@@ -371,9 +371,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Education and encouragement projects",
     ],
     cycleNote:
-      "Biennial call aligned to the state budget biennium, alongside the Pedestrian / Bicyclist Program. Verify the next call on WSDOT's active transportation pages.",
+      "Biennial call aligned to the state budget biennium, alongside the Pedestrian / Bicyclist Program — verify the next call on WSDOT's active transportation pages.",
     matchRequirement:
-      "No match requirement is stated on the program page; the biennium's applicant guidance governs. Verify there before assuming zero match.",
+      "No match requirement is stated on the program page; the biennium's applicant guidance governs — verify there before assuming zero match.",
     url: "https://wsdot.wa.gov/business-wsdot/support-local-programs/funding-programs/active-transportation-funding-programs/safe-routes-school-program",
     summary:
       "WSDOT's Safe Routes to Schools Program funds projects that improve safety and mobility for children walking and bicycling to school, restricted to within two miles of K-12 schools, covering infrastructure, design-only, and education/encouragement work. It is supported by the Climate Commitment Act plus state multimodal and federal funds, and shares WSDOT's biennial active-transportation call and online application portal.",
@@ -436,7 +436,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     administeringAgency: "Washington State Freight Mobility Strategic Investment Board (FMSIB)",
     level: "state",
     typicalApplicants:
-      "Washington local agency partners: in practice cities, counties, and ports with projects on or connected to a Designated Strategic Freight Corridor; confirm eligibility with FMSIB staff",
+      "Washington local agency partners — in practice cities, counties, and ports with projects on or connected to a Designated Strategic Freight Corridor; confirm eligibility with FMSIB staff",
     eligibleProjectTypes: [
       "Asset preservation and safety on freight corridors (bridge and road preservation and replacement)",
       "Operational improvements to the existing system (intersection modifications, striping)",
@@ -444,9 +444,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Innovative freight solutions (truck parking, intermodal facilities)",
     ],
     cycleNote:
-      "Biennial call for projects builds FMSIB's Six-Year Investment Program, which the Legislature then funds. Verify the next window at fmsib.wa.gov.",
+      "Biennial call for projects builds FMSIB's Six-Year Investment Program, which the Legislature then funds — verify the next window at fmsib.wa.gov.",
     matchRequirement:
-      "No match percentage is stated on the program pages; FMSIB expects projects to carry partner funding and acts as a partial funder. Verify leverage expectations with FMSIB staff.",
+      "No match percentage is stated on the program pages; FMSIB expects projects to carry partner funding and acts as a partial funder — verify leverage expectations with FMSIB staff.",
     url: "https://fmsib.wa.gov/six-year-investment-program/current-funding-opportunities",
     summary:
       "FMSIB does not run a single branded grant program; it runs a biennial call for projects that builds its Six-Year Investment Program of the state's highest-priority freight mobility projects, recommended to the Legislature for funding. Eligible projects must be on or directly connected to a Designated Strategic Freight Corridor, be constructible within six years, and appear in a Regional TIP and the statewide STIP, with applications scored against published criteria.",

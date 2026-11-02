@@ -93,7 +93,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     engineLabel: "Deterministic Corridor",
     summaryDetail: "The original corridor scorecard. Runs inside OpenPlan and returns right away.",
     runtimeExpectation: "Results usually appear in seconds for a corridor-scale study area.",
-    caveatSummary: "A rules-based scorecard, not a network assignment and not a travel-behavior model.",
+    caveatSummary: "A rules-based scorecard — not a network assignment and not a travel-behavior model.",
     comparisonMessage: "Comparison uses the deterministic scorecard and its map results.",
     availability: "launchable",
   },
@@ -126,7 +126,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     runtimeExpectation:
       "The readiness check finishes in a few minutes and keeps working after you leave the page. A calibrated behavioral run takes materially longer (tens of minutes to hours) and needs a dedicated modeling computer.",
     caveatSummary:
-      "Launching this checks inputs and prepares the ActivitySim model. It is NOT a behavioral forecast. Do not read readiness-check or uncalibrated output as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
+      "Launching this checks inputs and prepares the ActivitySim model — it is NOT a behavioral forecast. Do not read readiness-check or uncalibrated output as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
     comparisonMessage:
       "Comparison shows behavioral outputs and KPI summaries when a run produced them. A run that only reached the readiness check or partial data ingestion is labeled that way, never shown as if it were a complete run.",
     availability: "preflight",

@@ -523,7 +523,7 @@ export const farsAdapter: CrashSourceAdapter = {
   id: FARS_SOURCE_ID,
   label: "NHTSA Fatality Analysis Reporting System (FARS)",
   attribution:
-    "U.S. Department of Transportation, National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS). Public domain: U.S. Government work.",
+    "U.S. Department of Transportation, National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS). Public domain — U.S. Government work.",
   license: "U.S. Government Work (public domain)",
   coverageState: "fars_fatal_only",
   severityCompleteness: "fatal_only",

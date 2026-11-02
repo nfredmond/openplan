@@ -20,7 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**No em dashes in planner and public text:** screens, API messages, exports, report text, work-plan and stage-gate templates and the public portal now end the sentence or use a comma, colon or parentheses instead. A table cell with no value still shows a lone dash. Accepted report narratives may show "Underlying data changed since acceptance" once, because the fact wording they were grounded on changed. Nothing to do on upgrade; no migration.
+**No em dashes in planner and public text:** screens, API messages, exports, report text, work-plan and stage-gate templates and the public portal now end the sentence or use a comma, colon or parentheses instead. A table cell with no value still shows a lone dash. Text that saved work is checked against (report narrative facts, grant cover caveats and the byte-pinned grant program and crash source files) keeps its wording, so nothing saved shows as changed. Nothing to do on upgrade; no migration.
 
 **A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
 is not a UUID, now shows the not-found page instead of "could not be read" with
