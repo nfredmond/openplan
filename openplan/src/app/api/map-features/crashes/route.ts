@@ -13,7 +13,8 @@ import {
   type LonLatBox,
 } from "@/lib/cartographic/crash-layer-coverage";
 import { homeGeographyBbox, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
-import { resolveCrashSources } from "@/lib/safety/sources/registry";
+import { crashSourcesForStudyArea } from "@/lib/safety/sources/registry";
+import { crashStatesFromPlaceOfRecord } from "@/lib/safety/study-area-states";
 import { readCrashRowFacts } from "@/lib/safety/crash-properties";
 import { CRASH_QUERY_PROJECTION } from "@/lib/safety/crash-filters";
 
@@ -50,9 +51,12 @@ import { CRASH_QUERY_PROJECTION } from "@/lib/safety/crash-filters";
  * which footprint each sentence is about.
  */
 
-/** Identity + extent, never the boundary polygon — this fires on every navigation. */
+/**
+ * Identity + extent, never the boundary polygon — this fires on every navigation.
+ * The ISO codes are the stated area's state, which chooses the crash source.
+ */
 const HOME_GEOGRAPHY_EXTENT_COLUMNS =
-  "home_geography_source, home_geography_label, home_min_lon, home_min_lat, home_max_lon, home_max_lat";
+  "home_geography_source, home_geography_label, home_country_code, home_subdivision_code, home_min_lon, home_min_lat, home_max_lon, home_max_lat";
 
 /**
  * The crash columns this layer asks for, GENERATED — never hand-written.
@@ -241,12 +245,24 @@ export async function GET(request: NextRequest) {
     let scopeState: CrashLayerScopeState = "coverage_unknown";
     let checkedSourceLabels: string[] = [];
     if (bbox) {
-      const resolution = resolveCrashSources(bbox, "ingest");
-      if (resolution.kind === "resolved") {
+      // By the stated area's STATE, the same rule an acquisition uses. A home
+      // geography with no state (a metro area, a manual entry) lets only a
+      // national source answer.
+      const { candidates, checked } = crashSourcesForStudyArea(
+        {
+          bbox,
+          stateFips: crashStatesFromPlaceOfRecord({
+            countryCode: homeGeography?.home_country_code,
+            subdivisionCode: homeGeography?.home_subdivision_code,
+          }),
+        },
+        "ingest"
+      );
+      if (candidates.length > 0) {
         scopeState = "covered";
       } else {
         scopeState = "out_of_coverage";
-        checkedSourceLabels = resolution.checked.map((entry) => entry.label);
+        checkedSourceLabels = checked.map((adapter) => adapter.label);
       }
     }
 

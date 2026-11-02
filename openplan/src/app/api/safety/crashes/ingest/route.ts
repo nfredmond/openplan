@@ -11,8 +11,7 @@ import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { studyAreaBboxesMatch } from "@/lib/models/study-area";
 import { placeKindSchema } from "@/lib/api/place-geographies";
-import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
-import { crashStatesFromPlaceOfRecord, crashStatesFromTigerwebPlace } from "@/lib/safety/study-area-states";
+import { crashStatesFromPlaceOfRecord, crashStatesOfConfirmedPlace } from "@/lib/safety/study-area-states";
 
 // Paging a county-scale crash extract exceeds the default budget.
 export const runtime = "nodejs";
@@ -75,25 +74,6 @@ const ingestSchema = z.object({
    */
   place: z.object({ kind: placeKindSchema, geoid: z.string().regex(/^\d{5,7}$/) }).optional(),
 });
-
-/**
- * The states of a picked place, or null when the place cannot be confirmed to
- * be this study area. A resolver outage also returns null, which lets only the
- * national source answer instead of failing the request.
- */
-async function statesOfPickedPlace(
-  place: { kind: z.infer<typeof placeKindSchema>; geoid: string },
-  bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number },
-): Promise<string[] | null> {
-  try {
-    const boundary = await resolvePlaceBoundary(place.kind, place.geoid);
-    if (!boundary || boundary.kind !== place.kind || boundary.geoid !== place.geoid) return null;
-    if (!studyAreaBboxesMatch(bbox, boundary.bbox)) return null;
-    return crashStatesFromTigerwebPlace(place.kind, place.geoid);
-  } catch {
-    return null;
-  }
-}
 
 function membershipErrorResponse(result: Extract<WorkspaceMembershipResult, { ok: false }>) {
   if (result.kind === "schema_pending") {
@@ -210,7 +190,7 @@ export async function POST(request: NextRequest) {
         subdivisionCode: projectPlace.place_subdivision_code,
       });
     } else if (parsed.data.place) {
-      stateFips = await statesOfPickedPlace(parsed.data.place, bbox);
+      stateFips = await crashStatesOfConfirmedPlace(parsed.data.place, bbox);
     }
 
     audit.info("safety_crash_ingest_started", {

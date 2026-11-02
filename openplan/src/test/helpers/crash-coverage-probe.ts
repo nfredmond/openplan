@@ -16,10 +16,7 @@
  * which cells mean what.
  */
 
-import {
-  CRASH_SOURCE_ADAPTERS,
-  type MultiCrashSourceResolution,
-} from "@/lib/safety/sources/registry";
+import { CRASH_SOURCE_ADAPTERS } from "@/lib/safety/sources/registry";
 import type { CrashSourceAdapter } from "@/lib/safety/sources/types";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 
@@ -91,12 +88,4 @@ export function findUncoveredStudyArea(): StudyAreaBbox | null {
     if (coveringAdapters(bbox).length === 0) return bbox;
   }
   return null;
-}
-
-/** Narrow a multi-source resolution in a test without repeating the guard. */
-export function resolvedPrimary(resolution: MultiCrashSourceResolution): CrashSourceAdapter {
-  if (resolution.kind !== "resolved") {
-    throw new Error("expected the registry to resolve a covering crash source");
-  }
-  return resolution.primary;
 }

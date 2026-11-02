@@ -23,7 +23,7 @@ import {
 } from "@/lib/data-sources/equity-designation/disclosure";
 import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
-import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
+import { fetchCrashesForStudyArea } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
@@ -37,6 +37,13 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
+import { placeKindSchema } from "@/lib/api/place-geographies";
+import {
+  crashStatesFromMatchingPlaceOfRecord,
+  crashStatesOfConfirmedPlace,
+} from "@/lib/safety/study-area-states";
+import { placeOfRecordFromProject, type ProjectPlaceRow } from "@/lib/projects/project-place";
+import type { StudyAreaBbox } from "@/lib/models/study-area";
 
 /**
  * This body is a GeoJSON body, and it is sized like one.
@@ -76,6 +83,12 @@ const analysisRequestSchema = z.object({
   queryText: z.string().trim().min(1).max(ANALYSIS_QUERY_MAX_CHARS),
   workspaceId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
+  /**
+   * The picked place this corridor came from, when there is one. Only an
+   * identity: the route re-resolves it and uses its state only when the
+   * resolved boundary has the corridor's bbox. The client never supplies a state.
+   */
+  place: z.object({ kind: placeKindSchema, geoid: z.string().regex(/^\d{5,7}$/) }).optional(),
 });
 
 type CorridorGeoJSON = z.infer<typeof polygonSchema> | z.infer<typeof multiPolygonSchema>;
@@ -127,7 +140,7 @@ function generateSummary(
   census: Awaited<ReturnType<typeof fetchCensusForCorridor>>,
   lodes: Awaited<ReturnType<typeof fetchLODESForCorridor>>,
   transit: Awaited<ReturnType<typeof fetchTransitAccessForBbox>>,
-  crashes: Awaited<ReturnType<typeof fetchCrashesForBbox>>,
+  crashes: Awaited<ReturnType<typeof fetchCrashesForStudyArea>>,
   equity: ReturnType<typeof screenEquity>,
   scores: ReturnType<typeof computeCorridorScores>,
   walkBikeAccess: ReturnType<typeof classifyWalkBikeAccess> | null
@@ -244,6 +257,40 @@ function generateSummary(
   return lines.join("\n");
 }
 
+/** Project columns that can confirm a corridor's state. Never the boundary geometry. */
+const PROJECT_PLACE_FOR_CRASH_STATE_COLUMNS =
+  "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat";
+
+type ProjectPlaceForCrashState = Pick<
+  ProjectPlaceRow,
+  | "place_country_code"
+  | "place_subdivision_code"
+  | "place_min_lon"
+  | "place_min_lat"
+  | "place_max_lon"
+  | "place_max_lat"
+>;
+
+/**
+ * The corridor's state FIPS codes, or null when no identity confirms them.
+ *
+ * The project's place counts only when the corridor is that place (same bbox);
+ * a corridor drawn inside a county project is not confirmed to be in one
+ * state by the project alone. A picked place counts only when the server
+ * re-resolves it to this bbox.
+ */
+async function corridorCrashStates(
+  bbox: StudyAreaBbox,
+  projectPlace: ProjectPlaceForCrashState | null,
+  pickedPlace: z.infer<typeof analysisRequestSchema>["place"],
+): Promise<string[] | null> {
+  if (projectPlace) {
+    const fromProject = crashStatesFromMatchingPlaceOfRecord(placeOfRecordFromProject(projectPlace), bbox);
+    if (fromProject) return fromProject;
+  }
+  return pickedPlace ? crashStatesOfConfirmedPlace(pickedPlace, bbox) : null;
+}
+
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("analysis", request);
   const startedAt = Date.now();
@@ -341,10 +388,13 @@ export async function POST(request: NextRequest) {
     // Provenance: a run may be attributed to a project the planner chose.
     // The insert below runs with the service role, so the workspace check
     // happens here (the DB CHECK constraint backstops it).
+    // The project's place of record comes along because it can confirm the
+    // corridor's state, which chooses the crash source further down.
+    let projectPlace: ProjectPlaceForCrashState | null = null;
     if (projectId) {
       const { data: projectRow, error: projectLookupError } = await userSupabase
         .from("projects")
-        .select("id")
+        .select(PROJECT_PLACE_FOR_CRASH_STATE_COLUMNS)
         .eq("id", projectId)
         .eq("workspace_id", workspaceId)
         .maybeSingle();
@@ -364,6 +414,7 @@ export async function POST(request: NextRequest) {
         audit.warn("forbidden_project", { workspaceId, userId: user.id, projectId });
         return NextResponse.json({ error: "Project not found in workspace" }, { status: 403 });
       }
+      projectPlace = projectRow as unknown as ProjectPlaceForCrashState;
     }
 
     // No subscription gate: OpenPlan is free and has no paid tier, so there is
@@ -423,6 +474,13 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // The corridor's states choose its crash source. They come from an
+      // identity the server holds or re-resolves, and only when that identity's
+      // bbox is this corridor's bbox. A drawn or uploaded corridor, or a place
+      // that does not match, stays null: only a national source may answer and
+      // the crash summary says the state was not confirmed.
+      const crashStateFips = await corridorCrashStates(bbox, projectPlace, parsed.data.place);
+
       // The service-role client is created BEFORE the fetches because the
       // transit registry needs one: a workspace's own ingested GTFS feeds are
       // the strongest transit evidence available and they live in this database,
@@ -442,7 +500,7 @@ export async function POST(request: NextRequest) {
         // undefined` inside this closure, and a workspace filter that could be
         // undefined is the one thing this argument must never be.
         fetchTransitAccessForBbox(bbox, { workspaceId: parsedWorkspaceId, client: supabase }),
-        fetchCrashesForBbox(bbox),
+        fetchCrashesForStudyArea({ bbox, stateFips: crashStateFips }),
       ]);
 
       // LODES depends on census population

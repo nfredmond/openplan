@@ -132,18 +132,15 @@ export type CrashRecord = {
   latitude: number;
   longitude: number;
   /**
-   * 2-digit state FIPS ("06" = California), when the source carries it. Used to
-   * dedup a national backstop against a regional primary: a FARS fatal in
-   * California is already in CCRS, so the multi-source read drops backstop
-   * records whose state the primary already covers. Undefined when the source
-   * does not expose state.
+   * 2-digit state FIPS ("06" = California), when the source carries it.
+   * Undefined when the source does not expose state. No reader merges sources
+   * by it any more: since 2026-11-02 every caller picks one source that serves
+   * every state of the study area.
    */
   stateFips?: string;
   /**
-   * The adapter id that produced this record. Set so a MERGED result (a primary
-   * plus a national backstop) can carry per-point provenance — otherwise every
-   * merged crash point would inherit the primary source id and a FARS Nevada
-   * fatal would render as CCRS. Undefined falls back to the summarizing adapter.
+   * The adapter id that produced this record, so each point carries its own
+   * provenance. Undefined falls back to the summarizing adapter.
    */
   sourceId?: string;
 };
@@ -298,10 +295,9 @@ export type CrashSourceAdapter = {
   persistable: boolean;
   /**
    * The state FIPS codes this source AUTHORITATIVELY covers, when it is a
-   * regional source. Used by the multi-source read to dedup a national backstop:
-   * backstop records whose state is in a regional primary's `coversStateFips` are
-   * already represented by the primary and are dropped. Undefined means the
-   * source is national (a backstop, e.g. FARS) and claims no exclusive state.
+   * regional source. Undefined means the source is national (e.g. FARS) and
+   * claims no exclusive state; only such a source may answer for a study area
+   * whose state is unknown (see `crashSourcesForStudyArea`).
    */
   coversStateFips?: readonly string[];
   /**
