@@ -140,6 +140,15 @@ note, `docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md`, records which
 states publish open injury-crash data (California, DC, Iowa, Ohio and Oregon
 qualify; 27 states publish with limits). No action is needed to deploy.
 
+**Iowa, Ohio and DC injury crashes:** a live crash read and a corridor run in
+Iowa, Ohio or the District of Columbia now read the state's published crash
+layer (Iowa DOT Crash Data, ODOT TIMS crash locations, DDOT Crashes in DC), so
+they report serious-injury and injury crashes instead of fatal-only FARS. Like
+Oregon, the layers are read live and not stored: a Safety acquisition in these
+places still saves FARS until a migration admits the new sources. Ohio's layer
+has no casualty counts or crash day; DC's years are the years crashes were
+reported; Iowa's newest year is partial. No action is needed to deploy.
+
 **CEQA screen on county runs:** the §15064.3 screening panel now appears only on
 county runs whose county is in California.
 
