@@ -3,6 +3,8 @@ import { runWithWorkspaceIntegrationKeys } from "@/lib/integrations/context";
 import type { IntegrationProviderId } from "@/lib/integrations/providers";
 import {
   AI_RATE_LIMIT_MAX_PER_WINDOW,
+  AI_RATE_LIMIT_WINDOW_SECONDS,
+  AI_USAGE_RESERVATION_MIGRATION,
   AiUsageMeterUnavailableError,
   checkAiUsageRateLimit,
   recordAiUsageEvent,
@@ -275,15 +277,34 @@ describe("reserveAiUsage", () => {
     vi.restoreAllMocks();
   });
 
-  /** usage_events with a count answer and an insert outcome chosen per test. */
-  function usageEvents(options: { count: number; insertError?: { message: string } | null }) {
-    const insert = vi.fn(async () => ({ error: options.insertError ?? null }));
-    const gte = vi.fn(async () => ({ count: options.count, error: null }));
+  const MISSING_FUNCTION = {
+    code: "PGRST202",
+    message: "Could not find the function public.reserve_ai_usage(p_bucket_key, ...) in the schema cache",
+  };
+
+  type RpcAnswer = { data?: unknown; error?: { code?: string; message: string } | null };
+
+  /**
+   * A service client with the SQL reservation (`rpc`) and, behind it, the
+   * two-request usage_events path the workspace's own key falls back to.
+   */
+  function meter(options: {
+    rpc?: RpcAnswer | (() => never);
+    count?: number;
+    countError?: { message: string } | null;
+    insertError?: { message: string } | null;
+  }) {
+    const rpc = vi.fn(async (_fn: string, _args: Record<string, unknown>) => {
+      if (typeof options.rpc === "function") return options.rpc();
+      return { data: options.rpc?.data ?? null, error: options.rpc?.error ?? null };
+    });
+    const insert = vi.fn(async (_row: Record<string, unknown>) => ({ error: options.insertError ?? null }));
+    const gte = vi.fn(async () => ({ count: options.count ?? 0, error: options.countError ?? null }));
     const from = vi.fn(() => ({
       insert,
       select: () => ({ eq: () => ({ in: () => ({ gte }) }) }),
     }));
-    return { insert, supabase: { from } as never };
+    return { rpc, insert, gte, from, supabase: { from, rpc } as never };
   }
 
   const reservation = (serviceSupabase: never) => ({
@@ -294,37 +315,141 @@ describe("reserveAiUsage", () => {
     serviceSupabase,
   });
 
-  it("records the call before returning an allowed verdict", async () => {
+  it("reserves through the SQL function with the staff buckets, limit and window", async () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
-    const { insert, supabase } = usageEvents({ count: 0 });
-    const result = await reserveAiUsage(reservation(supabase));
-    expect(result).toMatchObject({ allowed: true, count: 0 });
-    expect(insert).toHaveBeenCalledTimes(1);
-    expect(insert).toHaveBeenCalledWith(
-      expect.objectContaining({ workspace_id: "ws-1", bucket_key: "assistant_chat", event_key: "assistant_chat_reply" })
-    );
+    const m = meter({ rpc: { data: { allowed: true, count: 7 } } });
+    const result = await reserveAiUsage({ ...reservation(m.supabase), metadataJson: { model: "fixture" } });
+    expect(result).toEqual({ allowed: true, count: 7, retryAfterSeconds: 0 });
+    expect(m.rpc).toHaveBeenCalledTimes(1);
+    expect(m.rpc).toHaveBeenCalledWith("reserve_ai_usage", {
+      p_workspace_id: "ws-1",
+      p_bucket_keys: [
+        "assistant_chat",
+        "grant_narrative_draft",
+        "engagement_synthesis",
+        "engagement_moderation",
+        "document_narrative_draft",
+        "rtp_document_extraction",
+      ],
+      p_max_per_window: AI_RATE_LIMIT_MAX_PER_WINDOW,
+      p_window_seconds: AI_RATE_LIMIT_WINDOW_SECONDS,
+      p_bucket_key: "assistant_chat",
+      p_event_key: "assistant_chat_reply",
+      p_source_route: "/api/assistant/chat",
+      p_metadata: { model: "fixture" },
+    });
+    // The function records the row itself; the two-request path is not used.
+    expect(m.from).not.toHaveBeenCalled();
   });
 
-  it("records nothing when the limit refuses the call", async () => {
+  it("defaults the source route to null and the metadata to {}", async () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
-    const { insert, supabase } = usageEvents({ count: AI_RATE_LIMIT_MAX_PER_WINDOW });
-    const result = await reserveAiUsage(reservation(supabase));
-    expect(result.allowed).toBe(false);
-    expect(insert).not.toHaveBeenCalled();
+    const m = meter({ rpc: { data: { allowed: true, count: 0 } } });
+    await reserveAiUsage({ workspaceId: "ws-1", bucketKey: "engagement_synthesis", eventKey: "e", serviceSupabase: m.supabase });
+    expect(m.rpc).toHaveBeenCalledWith("reserve_ai_usage", expect.objectContaining({ p_source_route: null, p_metadata: {} }));
   });
 
-  it("refuses when the event cannot be recorded and the shared key would pay", async () => {
+  it("passes a refusal through with the window as retry-after and records nothing", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+    const m = meter({ rpc: { data: { allowed: false, count: AI_RATE_LIMIT_MAX_PER_WINDOW } } });
+    const result = await reserveAiUsage(reservation(m.supabase));
+    expect(result).toEqual({
+      allowed: false,
+      count: AI_RATE_LIMIT_MAX_PER_WINDOW,
+      retryAfterSeconds: AI_RATE_LIMIT_WINDOW_SECONDS,
+    });
+    expect(m.from).not.toHaveBeenCalled();
+    expect(m.insert).not.toHaveBeenCalled();
+  });
+
+  describe("when the deployment's shared key would pay", () => {
+    it("fails closed, naming the migration, when the function is not installed", async () => {
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({ rpc: { error: MISSING_FUNCTION } });
+      const failure = await reserveAiUsage(reservation(m.supabase)).catch((error: unknown) => error);
+      expect(failure).toBeInstanceOf(AiUsageMeterUnavailableError);
+      expect((failure as Error).message).toContain(AI_USAGE_RESERVATION_MIGRATION);
+      // No unlocked count and record behind the operator's back.
+      expect(m.from).not.toHaveBeenCalled();
+    });
+
+    it("fails closed on Postgres's undefined_function too", async () => {
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({ rpc: { error: { code: "42883", message: "function public.reserve_ai_usage does not exist" } } });
+      const failure = await reserveAiUsage(reservation(m.supabase)).catch((error: unknown) => error);
+      expect((failure as Error).message).toContain(AI_USAGE_RESERVATION_MIGRATION);
+      expect(m.from).not.toHaveBeenCalled();
+    });
+
+    const failures: Array<[string, RpcAnswer | (() => never)]> = [
+      ["a database error", { error: { code: "55P03", message: "canceling statement due to lock timeout" } }],
+      ["a thrown request", () => { throw new Error("no network"); }],
+      ["an unexpected answer", { data: [{ allowed: true, count: 0 }] }],
+      ["a non-integer count", { data: { allowed: true, count: "0" } }],
+    ];
+    it.each(failures)("fails closed on %s", async (_label, rpc) => {
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({ rpc });
+      await expect(reserveAiUsage(reservation(m.supabase))).rejects.toBeInstanceOf(AiUsageMeterUnavailableError);
+      expect(m.from).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("when the workspace's own key pays", () => {
+    it("falls back to the two-request count and record when the function is not installed", async () => {
+      const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({ rpc: { error: MISSING_FUNCTION }, count: 3 });
+      const result = await withWorkspaceKey(() => reserveAiUsage(reservation(m.supabase)));
+      expect(result).toEqual({ allowed: true, count: 3, retryAfterSeconds: 0 });
+      expect(m.insert).toHaveBeenCalledTimes(1);
+      expect(m.insert).toHaveBeenCalledWith({
+        workspace_id: "ws-1",
+        bucket_key: "assistant_chat",
+        event_key: "assistant_chat_reply",
+        weight: 1,
+        source_route: "/api/assistant/chat",
+        metadata_json: {},
+      });
+      expect(warn.mock.calls[0]?.[0]).toContain(AI_USAGE_RESERVATION_MIGRATION);
+    });
+
+    it("still refuses at the limit on the fallback, recording nothing", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({ rpc: { error: MISSING_FUNCTION }, count: AI_RATE_LIMIT_MAX_PER_WINDOW });
+      const result = await withWorkspaceKey(() => reserveAiUsage(reservation(m.supabase)));
+      expect(result.allowed).toBe(false);
+      expect(m.insert).not.toHaveBeenCalled();
+    });
+
+    it("never takes the workspace's AI offline when the meter is broken throughout", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({
+        rpc: { error: { message: "boom" } },
+        countError: { message: "count failed" },
+        insertError: { message: "insert failed" },
+      });
+      const result = await withWorkspaceKey(() => reserveAiUsage(reservation(m.supabase)));
+      expect(result.allowed).toBe(true);
+    });
+
+    it("uses the SQL verdict, not the fallback, when the function answers", async () => {
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const m = meter({ rpc: { data: { allowed: false, count: AI_RATE_LIMIT_MAX_PER_WINDOW } }, count: 0 });
+      const result = await withWorkspaceKey(() => reserveAiUsage(reservation(m.supabase)));
+      expect(result.allowed).toBe(false);
+      expect(m.from).not.toHaveBeenCalled();
+    });
+  });
+
+  it("falls back rather than refusing when no deployment key is shared", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
-    const { supabase } = usageEvents({ count: 0, insertError: { message: "denied" } });
-    await expect(reserveAiUsage(reservation(supabase))).rejects.toBeInstanceOf(AiUsageMeterUnavailableError);
-  });
-
-  it("allows an unrecorded call when the workspace's own key pays", async () => {
-    vi.spyOn(console, "warn").mockImplementation(() => {});
-    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
-    const { supabase } = usageEvents({ count: 0, insertError: { message: "denied" } });
-    const result = await withWorkspaceKey(() => reserveAiUsage(reservation(supabase)));
+    vi.stubEnv("ANTHROPIC_API_KEY", "");
+    const m = meter({ rpc: { error: MISSING_FUNCTION }, count: 0 });
+    const result = await reserveAiUsage(reservation(m.supabase));
     expect(result.allowed).toBe(true);
+    expect(m.insert).toHaveBeenCalledTimes(1);
   });
 });
