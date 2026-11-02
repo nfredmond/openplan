@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectPortfolioImporter } from "@/components/projects/project-portfolio-importer";
+import { jsonAnswer, stagedUploadFetch } from "./helpers/staged-upload-fetch";
 
 const refreshMock = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: refreshMock }) }));
@@ -67,19 +68,20 @@ describe("ProjectPortfolioImporter", () => {
 
   it("stores a workbook, selects several sheets, copies exact-header setup, confirms a formula row, and commits", async () => {
     const requests: Array<{ url: string; body: Record<string, unknown> | null }> = [];
-    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    // The workbook goes through Storage; the import calls go to `other`.
+    const staged = stagedUploadFetch({
+      complete: () => jsonAnswer({ document: { id: SOURCE_ID, title: "portfolio.xlsx" } }, 201),
+      other: async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
-      if (url.startsWith("/api/knowledge-base/documents")) {
-        requests.push({ url, body: null });
-        return jsonResponse({ document: { id: SOURCE_ID, title: "portfolio.xlsx" } }, 201);
-      }
       const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
       requests.push({ url, body });
       if (body.mode === "inspect") return jsonResponse({ source: { id: SOURCE_ID, format: "xlsx" }, inspection });
       const rows = (body.rowReviews ?? []) as Array<Record<string, unknown>>;
       if (body.mode === "commit") return jsonResponse({ review: reviewed(rows), committed: { batchId: "batch", created: 2, skipped: 0, conflicted: 0, invalid: 0, previouslyCreated: 0, projectIds: ["one", "two"] } }, 201);
       return jsonResponse({ review: reviewed(rows) });
-    }));
+      },
+    });
+    vi.stubGlobal("fetch", staged.fetch);
 
     render(<ProjectPortfolioImporter workspaceId={WORKSPACE_ID} recentImports={[]} historyReadFailed={false} />);
     const file = new File(["workbook bytes"], "portfolio.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -87,6 +89,15 @@ describe("ProjectPortfolioImporter", () => {
     fireEvent.click(screen.getByRole("button", { name: /Store source and inspect worksheets/i }));
 
     expect(await screen.findByText(/No worksheet is selected automatically/i)).toBeInTheDocument();
+    expect(staged.uploads).toHaveLength(1);
+    expect(staged.uploads[0].start).toMatchObject({
+      workspaceId: WORKSPACE_ID,
+      title: "portfolio.xlsx",
+      filename: "portfolio.xlsx",
+      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    expect(staged.uploads[0].putBody).toBe(file);
+    expect(requests[0]?.body).toMatchObject({ mode: "inspect", sourceDocumentId: SOURCE_ID });
     expect(screen.getByText(/Location text stays with the import; it is not a verified project location/i)).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText("Select worksheet North"));
     fireEvent.click(screen.getByLabelText("Select worksheet South"));
@@ -152,16 +163,16 @@ describe("ProjectPortfolioImporter", () => {
         sampleRows: [...sampleRows, { rowNumber: 13, cells: [cell("12"), cell("Thirteenth visible project")] }],
       }],
     };
-    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-      if (String(input).startsWith("/api/knowledge-base/documents")) {
-        return jsonResponse({ document: { id: SOURCE_ID, title: "long.xlsx" } }, 201);
-      }
-      const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
-      return jsonResponse({
-        source: { id: SOURCE_ID, format: "xlsx" },
-        inspection: body.worksheetIndex === 0 ? completeInspection : initialInspection,
-      });
-    }));
+    vi.stubGlobal("fetch", stagedUploadFetch({
+      complete: () => jsonAnswer({ document: { id: SOURCE_ID, title: "long.xlsx" } }, 201),
+      other: async (_input: RequestInfo | URL, init?: RequestInit) => {
+        const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        return jsonResponse({
+          source: { id: SOURCE_ID, format: "xlsx" },
+          inspection: body.worksheetIndex === 0 ? completeInspection : initialInspection,
+        });
+      },
+    }).fetch);
 
     render(<ProjectPortfolioImporter workspaceId={WORKSPACE_ID} recentImports={[]} historyReadFailed={false} />);
     fireEvent.change(screen.getByLabelText(/Project list, up to/i), {
@@ -178,10 +189,10 @@ describe("ProjectPortfolioImporter", () => {
   });
 
   it("shows a source-review failure and an honest history-read failure", async () => {
-    vi.stubGlobal("fetch", vi.fn((input: RequestInfo | URL) => {
-      if (String(input).startsWith("/api/knowledge-base/documents")) return jsonResponse({ document: { id: SOURCE_ID, title: "bad.xlsx" } }, 201);
-      return jsonResponse({ error: "The workbook archive is malformed." }, 400);
-    }));
+    vi.stubGlobal("fetch", stagedUploadFetch({
+      complete: () => jsonAnswer({ document: { id: SOURCE_ID, title: "bad.xlsx" } }, 201),
+      other: () => jsonResponse({ error: "The workbook archive is malformed." }, 400),
+    }).fetch);
     render(<ProjectPortfolioImporter workspaceId={WORKSPACE_ID} recentImports={[]} historyReadFailed />);
     fireEvent.change(screen.getByLabelText(/Project list, up to/i), { target: { files: [new File(["bad"], "bad.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })] } });
     fireEvent.click(screen.getByRole("button", { name: /Store source and inspect worksheets/i }));

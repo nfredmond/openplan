@@ -112,6 +112,17 @@ county runs whose county is in California.
 project record placeholder no longer name Caltrans District 3. The complete streets
 and countywide wayfinding engagement templates no longer tell residents the
 campaign is a demonstration.
+**Large aerial photos and documents upload on hosted installs:** mission photos
+and Knowledge Base files (the library, work-program sources, estimated-cost CSVs
+and portfolio imports) now go from the browser straight to private Storage
+through a signed URL, as GTFS feeds already did. Vercel refuses a function
+request body above about 4.5 MB, so RTPs, agency PDFs and drone frames larger
+than that could not be added before. The per-file ceilings
+(`OPENPLAN_AERIAL_IMAGE_MAX_BYTES`, `OPENPLAN_KB_DOCUMENT_MAX_BYTES`) and the
+workspace storage limit still apply, checked once on the declared size and again
+on the stored file. No migration. The body routes still work for API clients.
+Staged files whose upload never finished stay in Storage under
+`<workspace>/staged/` until removed by hand; nothing sweeps them yet.
 
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
