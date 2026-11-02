@@ -7,9 +7,11 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadWorkProgramPreparation } from "@/lib/programs/work-program/server";
 import { WorkProgramEditor } from "@/components/programs/work-program/editor";
 import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
+import { isUuid } from "@/lib/uuid";
 
 export default async function WorkProgramPage({ params }: { params: Promise<{ programId: string }> }) {
   const { programId } = await params;
+  if (!isUuid(programId)) notFound();
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/sign-in");

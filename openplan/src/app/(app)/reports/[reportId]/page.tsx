@@ -6,6 +6,7 @@ import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparis
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
+import { isUuid } from "@/lib/uuid";
 import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components/reports/report-read-failure-notice";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
@@ -102,7 +103,7 @@ import { loadSpecializedReportPage } from "@/components/reports/specialized-repo
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
-  const { reportId } = await params; const query = searchParams ? await searchParams : {}; const supabase = await createClient();
+  const { reportId } = await params; if (!isUuid(reportId)) notFound(); const query = searchParams ? await searchParams : {}; const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 

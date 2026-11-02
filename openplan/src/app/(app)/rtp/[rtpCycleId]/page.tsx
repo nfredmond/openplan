@@ -93,6 +93,7 @@ import { buildRtpCycleTabs } from "./_tabs";
 import { RtpCycleOverviewSummary } from "./_components/rtp-cycle-overview-summary";
 import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
+import { isUuid } from "@/lib/uuid";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
@@ -130,6 +131,7 @@ function toOptionalNumber(value: number | string | null | undefined): number | n
 
 export default async function RtpCycleDetailPage({ params, searchParams }: RouteContext) {
   const { rtpCycleId } = await params;
+  if (!isUuid(rtpCycleId)) notFound();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {

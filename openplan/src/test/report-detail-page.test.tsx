@@ -335,7 +335,7 @@ type ReportTabKey = "packet" | "evidence" | "history";
 async function renderReport(tab: ReportTabKey) {
   render(
     await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
+      params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve({ tab }),
     })
   );
@@ -352,7 +352,7 @@ function selectGuidedPageFixture(fault?: string, sourceContext: Record<string, u
   saved.bindingSha256 = guidedReportDigest(saved.payload);
   if (fault === "digest") saved.bindingSha256 = "f".repeat(64);
   if (fault === "version") Object.assign(saved, { version: 2 });
-  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "72000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", project_id: "project-1",
     report_type: "analysis_summary", title: "Saved guided comparison", status: "generated", summary: null,
     rtp_cycle_id: null, engagement_campaign_id: null, generated_at: "2026-03-28T18:00:00Z",
     latest_artifact_kind: "html", latest_artifact_url: null, created_at: "2026-03-28T17:00:00Z", updated_at: "2026-03-28T18:05:00Z",
@@ -394,7 +394,7 @@ function selectReadinessSeamFixture(state: string) {
   const jurisdiction = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
   const updatedAt = state === "complete-writeback" ? "2026-10-18T01:00:00Z" : at;
   projectMaybeSingleMock.mockResolvedValueOnce({ data: project, error: null });
-  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "72000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", project_id: "project-1",
     title: "Synthetic source review packet", report_type: "project_status", status: "generated", summary: null,
     engagement_campaign_id: null, rtp_cycle_id: null, metadata_json: {}, latest_artifact_kind: "html", generated_at: at,
     updated_at: updatedAt, created_at: at }, error: null });
@@ -431,7 +431,7 @@ function expectNoGuidedWorkerReads() {
     expect(fromMock).not.toHaveBeenCalledWith(table);
   }
   expect(reportSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
-  expect(reportEqMock).toHaveBeenCalledWith("id", "report-1");
+  expect(reportEqMock).toHaveBeenCalledWith("id", "72000000-0000-4000-8000-000000000001");
 }
 
 function expectLinkByHref(name: RegExp, href: string) {
@@ -525,7 +525,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
     reportMaybeSingleMock.mockResolvedValue({
       data: {
-        id: "report-1",
+        id: "72000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "Downtown Safety Packet",
@@ -1242,7 +1242,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       const retained = state === "unavailable" ? { ...snapshot, payloadSha256: "f".repeat(64) }
         : state === "legacy" ? { ...snapshot, schema: "historical.v3" } : snapshot;
       projectMaybeSingleMock.mockResolvedValueOnce({ data: state === "changed" ? { ...project, place_country_code: "CA" } : project, error: null });
-      reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+      reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "72000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", project_id: "project-1",
         title: "Synthetic jurisdiction packet", report_type: "project_status", status: "generated", summary: null,
         latest_artifact_kind: "html", generated_at: at, updated_at: at, created_at: at }, error: null });
       artifactsOrderMock.mockResolvedValueOnce(state === "unreadable" ? { data: null, error: { message: "Artifact read unavailable" } }
@@ -1367,7 +1367,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
     projectMaybeSingleMock.mockResolvedValueOnce({ data: { ...oldProject, workspace_id: "workspace-1", name: "Downtown Mobility Plan", status: "active", plan_type: "corridor", delivery_phase: "analysis", updated_at: "2026-03-28T18:01:00.000Z", place_country_code: "CA" }, error: null });
     artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", generated_at: "2026-10-18T00:00:00Z", metadata_json: { sourceContext: { jurisdictionReadiness: snapshot } } }], error: null });
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
     expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
     expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
   });
@@ -1376,8 +1376,8 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     try {
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
-      expect(screen.getByRole("link", { name: "Open Safety evidence and applicability comparison" })).toHaveAttribute("href", "/reports/report-1?safetyComparison=1");
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
+      expect(screen.getByRole("link", { name: "Open Safety evidence and applicability comparison" })).toHaveAttribute("href", "/reports/72000000-0000-4000-8000-000000000001?safetyComparison=1");
 
       expect(
         consoleErrorSpy.mock.calls.some((call) =>
@@ -1391,7 +1391,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
   it("reads source metrics with linked summaries so the evidence view can enforce disclosure", async () => {
     reportRunsOrderMock.mockResolvedValue({ data: [{ run_id: "run-1", sort_order: 0 }], error: null });
-    await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) });
+    await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) });
     expect(runsSelectMock).toHaveBeenCalledWith("id, title, summary_text, metrics, created_at");
   });
 
@@ -1577,7 +1577,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       "href",
       "/engagement/campaign-1"
     );
-    expectLinkByHref(/Build the report packet/i, "/reports/report-1");
+    expectLinkByHref(/Build the report packet/i, "/reports/72000000-0000-4000-8000-000000000001");
     expect(screen.getByRole("button", { name: /Generate the report packet/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Current surface/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Analysis behind a grant case")).toBeInTheDocument();
@@ -1677,7 +1677,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   it("shows latest artifact timing in the summary card when report generated_at is null", async () => {
     reportMaybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "report-1",
+        id: "72000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "Downtown Safety Packet",
@@ -1706,7 +1706,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // same workspace would show up as this packet's own gate posture — in a
     // document an agency sends to a funder.
     const page = await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
+      params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }),
     });
 
     render(page);
@@ -1952,7 +1952,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     it("still says No packet when the artifact read SUCCEEDS and there genuinely is none", async () => {
       reportMaybeSingleMock.mockResolvedValueOnce({
         data: {
-          id: "report-1",
+          id: "72000000-0000-4000-8000-000000000001",
           workspace_id: "workspace-1",
           project_id: "project-1",
           title: "Downtown Safety Packet",
@@ -1982,7 +1982,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     it("does not answer No packet when the artifact read FAILED", async () => {
       reportMaybeSingleMock.mockResolvedValueOnce({
         data: {
-          id: "report-1",
+          id: "72000000-0000-4000-8000-000000000001",
           workspace_id: "workspace-1",
           project_id: "project-1",
           title: "Downtown Safety Packet",
@@ -2060,7 +2060,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
         error: { message: 'permission denied for table "reports"' },
       });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
 
       // `if (!data) notFound()` is the same defect wearing a different face: it
       // tells a planner the report does not exist when the truth is that it
@@ -2155,7 +2155,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
       await expect(
-        ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
+        ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) })
       ).rejects.toThrow("notFound");
       expect(notFoundMock).toHaveBeenCalled();
     });
@@ -2185,7 +2185,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       });
 
       await expect(
-        ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
+        ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) })
       ).rejects.toThrow("notFound");
 
       // Exactly one of the two queued values was consumed, so the second is
@@ -2195,7 +2195,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     });
 
     it("reads the shared fixture, not the previous test's leftover", async () => {
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
 
       expect(screen.getByRole("heading", { level: 1, name: "Downtown Safety Packet" })).toBeInTheDocument();
       expect(notFoundMock).not.toHaveBeenCalled();
@@ -2204,7 +2204,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   });
   it("refuses an incomplete successful funding read while retaining the version projections", async () => {
     fundingAwardsOrderMock.mockResolvedValueOnce({ data: [], count: 1, error: null });
-    await expect(ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }), searchParams: Promise.resolve({}) })).rejects.toThrow("No partial financial snapshot is accepted");
+    await expect(ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }), searchParams: Promise.resolve({}) })).rejects.toThrow("No partial financial snapshot is accepted");
     for (const select of [fundingAwardsSelectMock, fundingOpportunitiesSelectMock, billingInvoicesSelectMock]) expect(select).toHaveBeenCalledWith(expect.any(String), { count: "exact" });
     const columns = fundingAwardsSelectMock.mock.calls[0][0];
     for (const field of ["currency_code", "current_handoff_revision_id", "latest_handoff_revision_id"]) expect(columns).toContain(field);

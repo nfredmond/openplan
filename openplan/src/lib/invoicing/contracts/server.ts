@@ -6,7 +6,9 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { normalizeContractCommand } from "./calculation";
 import { contractCommandSchema } from "./schema";
 import { reportingError } from "@/lib/programs/work-program/reporting-server";
+import { isUuid } from "@/lib/uuid";
 export async function contractAccess(engagementId: string) {
+ if (!isUuid(engagementId)) return { response: NextResponse.json({ error: "Invalid engagement id" }, { status: 400 }) };
  const client = await createClient();
  const { data: { user } } = await client.auth.getUser();
  if (!user) return { response: NextResponse.json({ error: "Sign in to manage this contract" }, { status: 401 }) };

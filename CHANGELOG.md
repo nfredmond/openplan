@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
+is not a UUID, now shows the not-found page instead of "could not be read" with
+the database's `invalid input syntax for type uuid` message. 22 record pages and
+the API routes that reached the database with such an ID now refuse it before
+querying (each route family keeps its own 400 or 404). Valid IDs behave as
+before, and a read that really fails still says so. No migration.
+
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
 American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.

@@ -157,7 +157,7 @@ import {
 } from "@/lib/reports/run-citations";
 
 const REPORT_ROW = {
-  id: "report-1",
+  id: "72000000-0000-4000-8000-000000000001",
   workspace_id: "workspace-1",
   project_id: "project-1",
   rtp_cycle_id: null,
@@ -188,7 +188,7 @@ const PROJECT_ROW = {
 /** One report_runs link citing one worker model run. */
 const CITATION_LINK: ReportRunCitationLink = {
   id: "report-run-1",
-  report_id: "report-1",
+  report_id: "72000000-0000-4000-8000-000000000001",
   run_id: null,
   model_run_id: "model-run-1",
   county_run_id: null,
@@ -233,7 +233,7 @@ const REPORT_TABS: readonly ReportTabKey[] = ["packet", "evidence", "history"];
 async function renderReportPage(tab: ReportTabKey = "evidence") {
   render(
     await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
+      params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve({ tab }),
     })
   );
@@ -440,7 +440,7 @@ describe("report-lane run citations carry their claim tier", () => {
     function packetData(citedModelRuns: ReportGenerationData["citedModelRuns"]): ReportGenerationData {
       return {
         report: {
-          id: "report-1",
+          id: "72000000-0000-4000-8000-000000000001",
           title: "Corridor Screening Packet",
           summary: null,
           report_type: "project_status",

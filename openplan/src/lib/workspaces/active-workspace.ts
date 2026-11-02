@@ -18,13 +18,12 @@
  */
 
 import { cookies } from "next/headers";
+import { isUuid } from "@/lib/uuid";
 
 export const ACTIVE_WORKSPACE_COOKIE = "openplan_active_workspace";
 
 /** One year — a selection should survive well beyond a session. */
 const ACTIVE_WORKSPACE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * The selected workspace id from the cookie, or null.
@@ -38,7 +37,7 @@ export async function readActiveWorkspaceId(): Promise<string | null> {
   try {
     const store = await cookies();
     const value = store.get(ACTIVE_WORKSPACE_COOKIE)?.value?.trim();
-    return value && UUID_PATTERN.test(value) ? value : null;
+    return value && isUuid(value) ? value : null;
   } catch {
     return null;
   }

@@ -49,7 +49,7 @@ vi.mock("@/lib/programs/api", () => ({
     error: null,
     allowed: true,
     membership: { role: "owner" },
-    program: { id: "program-1", workspace_id: "workspace-1", title: "FY 2026-27 work program", sponsor_agency: "Regional agency" },
+    program: { id: "73000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", title: "FY 2026-27 work program", sponsor_agency: "Regional agency" },
   }),
 }));
 
@@ -88,7 +88,7 @@ vi.mock("next/link", () => ({
 import WorkProgramPage from "@/app/(app)/programs/[programId]/work-program/page";
 
 async function renderPage() {
-  render(await WorkProgramPage({ params: Promise.resolve({ programId: "program-1" }) }));
+  render(await WorkProgramPage({ params: Promise.resolve({ programId: "73000000-0000-4000-8000-000000000001" }) }));
 }
 
 /** True when `first` comes before `second` in document order. */
@@ -133,7 +133,7 @@ describe("work program page order", () => {
     expect(precedes(screen.getByTestId("preparation-editor"), screen.getByTestId("reporting-panel"))).toBe(true);
     // The read that decides it: this program's adopted version, nothing else.
     expect(workflowSelectMock).toHaveBeenCalledWith("effective_revision_id");
-    expect(workflowEqMock).toHaveBeenCalledWith("program_id", "program-1");
+    expect(workflowEqMock).toHaveBeenCalledWith("program_id", "73000000-0000-4000-8000-000000000001");
   });
 
   it("keeps preparation first when review has started but nothing is adopted", async () => {

@@ -41,6 +41,7 @@ import { buildMeasureReceiptLedger, toMeasureFundPeriodRead } from "@/lib/measur
 import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { isUuid } from "@/lib/uuid";
 
 /**
  * THE MEASURE FUND, in the workspace.
@@ -77,6 +78,7 @@ type PageProps = { params: Promise<{ programId: string }> };
 
 export default async function MeasureFundPage({ params }: PageProps) {
   const { programId } = await params;
+  if (!isUuid(programId)) notFound();
   const supabase = await createClient();
   const {
     data: { user },

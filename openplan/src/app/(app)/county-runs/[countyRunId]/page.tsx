@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -8,6 +8,7 @@ import { loadBehavioralOnrampKpisForWorkspace } from "@/lib/models/behavioral-on
 import { countyRunShowsCeqaScreen, type CountyRunGeography } from "@/lib/models/county-run-vmt-framework";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { CountyRunBehavioralKpisSection } from "./_components/county-run-behavioral-kpis";
+import { isUuid } from "@/lib/uuid";
 
 type CountyRunDetailPageProps = {
   params: Promise<{ countyRunId: string }>;
@@ -16,6 +17,7 @@ type CountyRunDetailPageProps = {
 
 export default async function CountyRunDetailPage({ params, searchParams }: CountyRunDetailPageProps) {
   const { countyRunId } = await params;
+  if (!isUuid(countyRunId)) notFound();
   const resolvedSearchParams = (await searchParams) ?? {};
   const acceptingScreeningGrade = resolvedSearchParams.includeScreening === "1";
 

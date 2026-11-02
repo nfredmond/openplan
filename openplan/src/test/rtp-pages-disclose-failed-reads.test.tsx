@@ -102,7 +102,7 @@ function makeQuery(fixture: QueryResult, table?: string) {
 const fromMock = vi.fn((table: string) => makeQuery(tableResults[table] ?? OK, table));
 
 const CYCLE_ROW = {
-  id: "rtp-1",
+  id: "76000000-0000-4000-8000-000000000001",
   workspace_id: "workspace-1",
   title: "Regional Transportation Plan 2050",
   status: "draft",
@@ -216,14 +216,14 @@ const RTP_CYCLE_TABS: readonly RtpCycleTabKey[] = ["overview", "projects", "fina
 async function renderDetail(tab?: RtpCycleTabKey) {
   render(
     await RtpCycleDetailPage({
-      params: Promise.resolve({ rtpCycleId: "rtp-1" }),
+      params: Promise.resolve({ rtpCycleId: "76000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(tab ? { tab } : {}),
     }),
   );
 }
 
 async function renderDocument() {
-  render(await RtpCycleDocumentPage({ params: Promise.resolve({ rtpCycleId: "rtp-1" }) }));
+  render(await RtpCycleDocumentPage({ params: Promise.resolve({ rtpCycleId: "76000000-0000-4000-8000-000000000001" }) }));
 }
 
 async function renderRegistry() {

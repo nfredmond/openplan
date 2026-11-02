@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
+import { isUuid } from "@/lib/uuid";
 
 type EditMissionAoiPageProps = {
   params: Promise<{ missionId: string }>;
@@ -20,6 +21,7 @@ type EditMissionAoiPageProps = {
 
 export default async function EditMissionAoiPage({ params, searchParams }: EditMissionAoiPageProps) {
   const { missionId } = await params;
+  if (!isUuid(missionId)) notFound();
   const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {

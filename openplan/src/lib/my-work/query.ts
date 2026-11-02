@@ -37,6 +37,7 @@ import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { instantFromWallClock, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { parseSortableDate, sortDeadlineItemsBy } from "@/lib/work/deadlines";
+import { isUuid } from "@/lib/uuid";
 
 import { MY_WORK_SOURCES, type MyWorkSource } from "./sources";
 import { MY_WORK_LOADER_SOURCES, type MyWorkLoaderOutcome, type MyWorkLoaderSource } from "./stale-evidence";
@@ -71,8 +72,6 @@ export const MY_WORK_MAX_LIMIT_PER_SOURCE = 100;
  * `departedIncludedInUnassigned: false`, which the page discloses.
  */
 export const MY_WORK_DEPARTED_FILTER_MAX_ROSTER = 100;
-
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * The slice of a supabase-js query chain this module uses. Structural, like
@@ -307,7 +306,7 @@ export function buildDepartedAwareUnassignedFilter(
   // request — this is the belt to that braces, and a roster that somehow
   // carried anything else narrows the scope honestly instead of building a
   // filter out of it.
-  if (!ids.every((id) => UUID_PATTERN.test(id))) return null;
+  if (!ids.every((id) => isUuid(id))) return null;
   if (ids.length === 0) return `${column}.is.null`;
 
   return `${column}.is.null,${column}.not.in.(${ids.join(",")})`;

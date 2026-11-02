@@ -69,6 +69,7 @@ import {
 } from "./_components/extraction-run-launcher";
 import { ManualSourceIntake } from "./_components/manual-source-intake";
 import { MAX_READING_HISTORY_PAGE, PENDING_REVIEW_PAGE_SIZE, READING_HISTORY_PAGE_SIZE, pendingReviewAfterFilter, readReviewPagination, reviewPageHref, type ReviewSearch } from "@/lib/rtp/extraction/review-pagination";
+import { isUuid } from "@/lib/uuid";
 
 type RouteContext = { params: Promise<{ rtpCycleId: string }>; searchParams?: Promise<ReviewSearch> };
 
@@ -170,6 +171,7 @@ function unreadableReason(document: DocumentRow, workerConfigured: boolean): str
 
 export default async function RtpExtractionReviewPage({ params, searchParams }: RouteContext) {
   const { rtpCycleId } = await params;
+  if (!isUuid(rtpCycleId)) notFound();
   const pagination = readReviewPagination((await searchParams) ?? {});
   const supabase = await createClient();
   const {

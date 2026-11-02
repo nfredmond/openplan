@@ -686,7 +686,7 @@ const PROJECT_TABS: readonly ProjectTab[] = ["overview", "delivery", "funding", 
 async function renderPage(tab?: ProjectTab) {
   render(
     await ProjectDetailPage({
-      params: Promise.resolve({ projectId: "project-1" }),
+      params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
@@ -720,7 +720,7 @@ function expectLinkByHref(name: RegExp, href: string) {
 
 // Comparable inputs do not establish adopting authority or legal applicability.
 const REPORT_JURISDICTION_INPUT = {
-  id: "project-1",
+  id: "70000000-0000-4000-8000-000000000001",
   jurisdiction_context: {
     version: 1, state: "unresolved", entries: [],
     recordedBy: "99999999-9999-4999-8999-999999999999",
@@ -775,7 +775,7 @@ describe("ProjectDetailPage", () => {
     projectSingleMock.mockResolvedValue({
       data: {
         jurisdiction_context: null,
-        id: "project-1",
+        id: "70000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
         summary: "Planning effort focused on corridor safety and access.",
@@ -1073,9 +1073,9 @@ describe("ProjectDetailPage", () => {
       ["denied snapshot", { data: null, error: { code: "42501", message: "permission denied for function public.project_budget_inputs_v1" } }, "unreadable"],
       ["malformed snapshot", { data: {}, error: null }, "unreadable"],
       ["pending deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
-        error: { code: "42P01", message: 'relation "public.project_deliverables" does not exist' } } }), error: null }, "pending"],
+        error: { code: "42P01", message: 'relation "public.project_deliverables" does not exist' } } }, undefined, "70000000-0000-4000-8000-000000000001"), error: null }, "pending"],
       ["denied deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
-        error: { code: "42501", message: "permission denied for table project_deliverables" } } }), error: null }, "unreadable"],
+        error: { code: "42501", message: "permission denied for table project_deliverables" } } }, undefined, "70000000-0000-4000-8000-000000000001"), error: null }, "unreadable"],
     ] as const)("withholds false counts and empty actions for %s", async (_label, answer, state) => {
       budgetRpcMock.mockResolvedValueOnce(answer);
       await renderPage("overview");
@@ -1105,7 +1105,7 @@ describe("ProjectDetailPage", () => {
       expect(within(budget).queryByText(/No deliverables recorded yet/)).toBeNull();
       expect(within(budget).queryByRole("combobox")).toBeNull();
       expect(within(budget).queryByText("$0")).toBeNull();
-      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "70000000-0000-4000-8000-000000000001" });
       expect(deliverablesSelectMock).not.toHaveBeenCalled();
     });
 
@@ -1125,25 +1125,25 @@ describe("ProjectDetailPage", () => {
   it("threads the saved estimate source through the page and real documents loader", async () => {
     const sourceId = "22222222-2222-4222-8222-222222222222";
     projectSingleMock.mockResolvedValueOnce({ data: {
-      id: "project-1", workspace_id: "workspace-1", name: "Estimate source case", status: "active",
+      id: "70000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", name: "Estimate source case", status: "active",
       jurisdiction_context: null, plan_type: "corridor_plan", delivery_phase: "analysis",
       created_at: "2026-10-18", updated_at: "2026-10-18",
       estimated_cost_amount: "4200000", estimated_cost_currency: "USD",
       estimated_cost_basis_year: null, estimated_cost_source_document_id: sourceId,
     }, error: null });
     kbLibraryLimitMock.mockResolvedValueOnce({ data: Array.from({ length: 20 }, (_, index) => ({
-      id: `recent-${index}`, project_id: "project-1", title: `Recent ${index}`, status: "ready",
+      id: `recent-${index}`, project_id: "70000000-0000-4000-8000-000000000001", title: `Recent ${index}`, status: "ready",
     })), error: null });
     kbEstimateSingleMock.mockResolvedValueOnce({ data: {
-      id: sourceId, project_id: "project-1", title: "Saved supporting estimate.csv", status: "ready",
+      id: sourceId, project_id: "70000000-0000-4000-8000-000000000001", title: "Saved supporting estimate.csv", status: "ready",
       storage_ref: `storage://kb-documents/workspace-1/${sourceId}/estimate.csv`,
     }, error: null });
 
-    const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+    const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) });
     const props = pagePropsFor(page, ProjectEstimatedCostEditor);
     expect(props.estimateSource, "saved estimate source reaches editor through actual page and loader").toMatchObject({
       status: "readable", entry: {
-        id: sourceId, projectId: "project-1", title: "Saved supporting estimate.csv",
+        id: sourceId, projectId: "70000000-0000-4000-8000-000000000001", title: "Saved supporting estimate.csv",
         downloadHref: `/api/knowledge-base/documents/${sourceId}/download`,
       },
     });
@@ -1151,7 +1151,7 @@ describe("ProjectDetailPage", () => {
     expect(props.documents).not.toContainEqual(expect.objectContaining({ id: sourceId }));
     expect(kbEstimateIdEqMock).toHaveBeenCalledExactlyOnceWith("id", sourceId);
     expect(kbEstimateWorkspaceEqMock).toHaveBeenCalledExactlyOnceWith("workspace_id", "workspace-1");
-    expect(kbEstimateProjectEqMock).toHaveBeenCalledExactlyOnceWith("project_id", "project-1");
+    expect(kbEstimateProjectEqMock).toHaveBeenCalledExactlyOnceWith("project_id", "70000000-0000-4000-8000-000000000001");
   });
 
   describe("project workspace permission props", () => {
@@ -1174,7 +1174,7 @@ describe("ProjectDetailPage", () => {
         error: readError ? { message: "membership read unavailable" } : null,
       });
 
-      const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+      const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) });
       const overview = pagePropsFor(page, ProjectOverviewTab);
       const posture = overview.postureHeader as { canWriteProjects: boolean };
       expect({
@@ -1212,14 +1212,14 @@ describe("ProjectDetailPage", () => {
     // the projects_read RLS policy — here, the project select returning a row),
     // not equality with whichever workspace resolved as "current" newest-first.
     // The old equality gate stranded every project a member could read but that
-    // was not their current workspace. project-1 lives in workspace-1; the
+    // was not their current workspace. The project lives in workspace-1; the
     // caller's current workspace is a different one they also belong to.
     loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
       membership: { workspace_id: "workspace-other", role: "member" },
       workspace: { id: "workspace-other", name: "Other workspace", plan: "pilot" },
     });
 
-    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
     // It renders (no notFound), and the page scopes to the PROJECT's workspace.
     expect(notFoundMock).not.toHaveBeenCalled();
@@ -1243,7 +1243,7 @@ describe("ProjectDetailPage", () => {
       ],
       error: null,
     });
-    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
     // The mocked client returns the fixture whatever columns are asked for,
     // and `!row.geometry_ref` passes on undefined — so dropping the column
@@ -1310,7 +1310,7 @@ describe("ProjectDetailPage", () => {
       ],
     });
 
-    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
     // Projection first: the picker renders created_at, and the mocked client
     // returns the fixture whatever columns are asked for — so the .select()
@@ -1412,7 +1412,7 @@ describe("ProjectDetailPage", () => {
     projectSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     await expect(
-      ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+      ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) })
     ).rejects.toThrow("notFound");
 
     expect(notFoundMock).toHaveBeenCalled();
@@ -1423,7 +1423,7 @@ describe("ProjectDetailPage", () => {
     loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({ membership: null, workspace: null });
 
     render(
-      await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+      await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) })
     );
 
     expect(screen.getByTestId("workspace-membership-required")).toBeInTheDocument();
@@ -1531,11 +1531,11 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText("Continue this pilot story")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
       "href",
-      "/projects/project-1"
+      "/projects/70000000-0000-4000-8000-000000000001"
     );
     expect(screen.getByRole("link", { name: /Engagement signal/i })).toHaveAttribute(
       "href",
-      "/engagement?projectId=project-1"
+      "/engagement?projectId=70000000-0000-4000-8000-000000000001"
     );
     expectLinkByHref(/Build the report packet/i, "/reports");
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
@@ -1552,7 +1552,7 @@ describe("ProjectDetailPage", () => {
     );
     expect(screen.getAllByRole("link", { name: /Open Grants/i })[0]).toHaveAttribute(
       "href",
-      "/grants?focusProjectId=project-1"
+      "/grants?focusProjectId=70000000-0000-4000-8000-000000000001"
     );
     expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
@@ -1860,7 +1860,7 @@ describe("ProjectDetailPage", () => {
       data: [
         {
           id: "award-1",
-          project_id: "project-1",
+          project_id: "70000000-0000-4000-8000-000000000001",
           program_id: null,
           funding_opportunity_id: null,
           title: "Legacy ATP construction award",
@@ -1894,12 +1894,12 @@ describe("ProjectDetailPage", () => {
     for (const column of ["latest_handoff_revision_id", "current_handoff_revision_id", "currency_code", "has_source_backed_issuance"]) {
       expect(awardColumns.split(", ")).toContain(column);
     }
-    expect(fundingAwardsEqMock).toHaveBeenCalledWith("project_id", "project-1");
+    expect(fundingAwardsEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
     expect(fundingOpportunitiesSelectMock).toHaveBeenCalledWith(
       expect.stringContaining("has_source_backed_issuance"),
       { count: "exact" },
     );
-    expect(fundingOpportunitiesEqMock).toHaveBeenCalledWith("project_id", "project-1");
+    expect(fundingOpportunitiesEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
     expect(invoicesSelectMock).toHaveBeenCalledWith(
       expect.stringContaining("award_handoff_revision_id, currency_code, handoff_applicable_revision_id"),
       { count: "exact" },
@@ -1928,7 +1928,7 @@ describe("ProjectDetailPage", () => {
       data: [
         {
           id: "award-2",
-          project_id: "project-1",
+          project_id: "70000000-0000-4000-8000-000000000001",
           program_id: null,
           funding_opportunity_id: null,
           title: "Award read without its provenance columns",
@@ -2001,7 +2001,7 @@ describe("ProjectDetailPage", () => {
         error: { code: "42703", message: 'column projects.place_set_at does not exist' },
       });
 
-      render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+      render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
       expect(notFoundMock).not.toHaveBeenCalled();
       expect(screen.getByText(/This project could not be read/i)).toBeInTheDocument();
@@ -2020,10 +2020,24 @@ describe("ProjectDetailPage", () => {
       });
 
       await expect(
-        ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+        ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) })
       ).rejects.toThrow("notFound");
       expect(notFoundMock).toHaveBeenCalled();
     });
+
+    // `/projects/new` used to reach `.eq("id", "new")`, Postgres refused the
+    // cast with 22P02, and the page above quoted it as "could not be read". A
+    // string that is not a uuid names no project: notFound(), with no query.
+    it.each(["new", "project-1", "70000000-0000-4000-8000-00000000000"])(
+      "answers notFound() for the malformed id %j without querying",
+      async (projectId) => {
+        await expect(ProjectDetailPage({ params: Promise.resolve({ projectId }) })).rejects.toThrow("notFound");
+        expect(notFoundMock).toHaveBeenCalledOnce();
+        expect(createClientMock).not.toHaveBeenCalled();
+        expect(projectEqMock).not.toHaveBeenCalled();
+        expect(projectSingleMock).not.toHaveBeenCalled();
+      }
+    );
 
     it("says the risk register could not be read instead of 'No risks recorded yet.'", async () => {
       const failRisksRead = () =>
@@ -2294,7 +2308,7 @@ describe("ProjectDetailPage", () => {
       expect(within(row).getByText("Could not be read")).toBeInTheDocument();
       expect(within(row).queryByText("No campaign or report evidence")).toBeNull();
       expect(campaignProjectsSelectMock).toHaveBeenCalledWith("campaign_id");
-      expect(campaignProjectsEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(campaignProjectsEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
     });
 
     it("keeps failed campaign coverage unknown on the evidence board", async () => {
@@ -2610,9 +2624,9 @@ describe("ProjectDetailPage", () => {
       // The head-count and the library read both bind the fixture's own ids —
       // the binding is asserted, not just the render, so a loader hardcoding a
       // project id cannot pass.
-      expect(kbHeadCountEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(kbHeadCountEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
       expect(kbLibraryWorkspaceEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
-      expect(kbLibraryProjectEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(kbLibraryProjectEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
 
       const kbCard = screen
         .getByText("Knowledge Base", { selector: ".module-summary-label" })
@@ -2633,7 +2647,7 @@ describe("ProjectDetailPage", () => {
         data: [
           {
             id: "kb-1",
-            project_id: "project-1",
+            project_id: "70000000-0000-4000-8000-000000000001",
             title: "Corridor letter scan",
             doc_kind: "other",
             source_kind: "uploaded_image",
@@ -2733,7 +2747,7 @@ describe("ProjectDetailPage", () => {
       // as unassigned with every assertion below still green. The projection
       // string itself is the only thing that can be checked here.
       await renderPage();
-      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "70000000-0000-4000-8000-000000000001" });
 
       for (const [name, mock] of [
         ["milestones", milestonesSelectMock],
