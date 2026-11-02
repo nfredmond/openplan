@@ -151,6 +151,10 @@ const nextConfig: NextConfig = {
   // Keep the existing webpack build path.
   experimental: {
     webpackMemoryOptimizations: true,
+    // A custom `webpack` hook (below) turns off the build worker Next.js
+    // otherwise enables on its own; the worker keeps compile memory out of the
+    // main process, so it stays on explicitly.
+    webpackBuildWorker: true,
   },
   // Vercel's builder skips Next's type check, which needs more than 5 GB of
   // heap on its own and pushed the 8 GB builder out of memory on October 23,

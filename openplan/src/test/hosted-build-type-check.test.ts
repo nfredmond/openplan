@@ -38,6 +38,10 @@ describe("webpack's persistent cache on the hosted builder", () => {
     expect(run(false)).toBe(false);
   });
 
+  it("keeps the webpack build worker on, which a custom webpack hook would otherwise disable", () => {
+    expect(nextConfig.experimental?.webpackBuildWorker).toBe(true);
+  });
+
   it("keeps the cache for local, CI and development builds", () => {
     vi.stubEnv("VERCEL", "");
     expect(run(false)).toEqual({ type: "filesystem" });
