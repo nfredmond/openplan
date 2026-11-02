@@ -20,6 +20,7 @@
  * there is no service-role client in this module.
  */
 
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 import type { ChartReadOutcome, DashboardRunRow } from "./insights";
@@ -36,6 +37,7 @@ type ChartFilterChain = PromiseLike<ReadResult> & {
   gte: (column: string, value: string) => ChartFilterChain;
   order: (column: string, options: { ascending: boolean }) => ChartFilterChain;
   limit: (count: number) => ChartFilterChain;
+  range: (from: number, toInclusive: number) => PromiseLike<ReadResult>;
 };
 
 export type DashboardChartSupabaseLike = {
@@ -50,6 +52,13 @@ export type DashboardChartSupabaseLike = {
  * rather than drawing a short total.
  */
 export const COMMENT_READ_CAP = 5000;
+/**
+ * The comment cap is above PostgREST's own `max_rows` (1,000 here), which
+ * truncates a single read with no error. A `.limit(5000)` therefore came back
+ * with 1,000 rows, which never reached the cap, so a busy month drew short and
+ * was not marked truncated. The comment read pages instead, up to the cap.
+ */
+const COMMENT_READ_PAGE_SIZE = 500;
 export const AWARD_READ_CAP = 200;
 export const INVOICE_READ_CAP = 2000;
 /**
@@ -100,6 +109,37 @@ export function noDashboardChartRows(): DashboardChartRows {
 }
 
 /**
+ * The window's comments, paged up to `COMMENT_READ_CAP`.
+ *
+ * The `id` tiebreak makes the order total, so comments submitted in the same
+ * second cannot repeat or drop between pages. Stopping at the page ceiling
+ * means more comments remain: that is `truncated`, which blocks the figure.
+ */
+async function readCommentsUpToCap(
+  supabase: DashboardChartSupabaseLike,
+  workspaceId: string,
+  since: Date
+): Promise<ChartReadOutcome<EngagementCommentRow>> {
+  const read = await readEveryPage<EngagementCommentRow, NonNullable<ReadResult["error"]>>(
+    (from, toInclusive) =>
+      supabase
+        .from("engagement_items")
+        .select("created_at, engagement_campaigns!inner(workspace_id)")
+        .eq("engagement_campaigns.workspace_id", workspaceId)
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, toInclusive) as PromiseLike<{
+        data: EngagementCommentRow[] | null;
+        error: NonNullable<ReadResult["error"]> | null;
+      }>,
+    { pageSize: COMMENT_READ_PAGE_SIZE, maxPages: COMMENT_READ_CAP / COMMENT_READ_PAGE_SIZE }
+  );
+  if (read.error) return outcome<EngagementCommentRow>({ data: null, error: read.error }, COMMENT_READ_CAP);
+  return { rows: read.rows, failed: false, pending: false, truncated: !read.complete };
+}
+
+/**
  * `since` bounds the comment read to the window the figure actually draws, so
  * the cap is spent on rows the chart can use. The caller passes it (and the
  * clock behind it) rather than this module reading `Date.now()`, so the read
@@ -115,14 +155,8 @@ export async function loadDashboardChartRows(
     return noDashboardChartRows();
   }
 
-  const [commentsResult, awardsResult, invoicesResult, runsResult] = await Promise.all([
-    supabase
-      .from("engagement_items")
-      .select("created_at, engagement_campaigns!inner(workspace_id)")
-      .eq("engagement_campaigns.workspace_id", workspaceId)
-      .gte("created_at", since.toISOString())
-      .order("created_at", { ascending: true })
-      .limit(COMMENT_READ_CAP),
+  const [comments, awardsResult, invoicesResult, runsResult] = await Promise.all([
+    readCommentsUpToCap(supabase, workspaceId, since),
     supabase
       .from("funding_awards")
       .select("id, title, awarded_amount")
@@ -150,7 +184,7 @@ export async function loadDashboardChartRows(
   ]);
 
   return {
-    comments: outcome<EngagementCommentRow>(commentsResult, COMMENT_READ_CAP),
+    comments,
     awards: outcome<FundingAwardRow>(awardsResult, AWARD_READ_CAP),
     invoices: outcome<AwardInvoiceRow>(invoicesResult, INVOICE_READ_CAP),
     runs: outcome<DashboardRunRow>(runsResult, RUN_READ_CAP),

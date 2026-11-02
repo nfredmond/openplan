@@ -1,4 +1,5 @@
 import { exactCountResult } from "./helpers/exact-count-result";
+import { pagingFake } from "./helpers/paging-fake";
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
@@ -75,9 +76,14 @@ const engagementCategoriesOrderSortMock = vi.fn(() => ({ order: engagementCatego
 const engagementCategoriesEqCampaignMock = vi.fn(() => ({ order: engagementCategoriesOrderSortMock }));
 const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEqCampaignMock }));
 
+// The campaign's comments are paged; the fake slices like PostgREST and holds
+// its 1,000-row cap, so a single unpaged read would come back short.
 const engagementItemsOrderMock = vi.fn();
-const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
-const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsOrderMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 const scenarioSetsInMock = vi.fn();
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
@@ -465,6 +471,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // the NEXT test's first read instead. Proven by the pair of tests at the
     // end of this file.
     vi.resetAllMocks();
+    engagementItemsPaging.reset();
     guidedPageMocks.realControls = false;
     guidedPageMocks.verify.mockRejectedValue(new Error("Full guided verification must not run on ordinary page load"));
     guidedPageMocks.bytes.mockRejectedValue(new Error("Worker artifact downloads must not run on ordinary page load"));
@@ -1586,6 +1593,41 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       "href",
       "#report-controls"
     );
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The campaign's live
+    comments were read in one request, so a campaign with 1,234 comments showed
+    "1000 items" against its packet, a drift that never happened.
+  */
+  it("compares the packet against every live comment past the 1,000-row cap", async () => {
+    engagementItemsOrderMock.mockResolvedValue({
+      data: Array.from({ length: 1234 }, (_, i) => ({
+        id: `item-${i}`,
+        campaign_id: "campaign-1",
+        category_id: "category-1",
+        status: "pending",
+        source_type: "map_pin",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-28T17:20:00.000Z",
+        updated_at: "2026-03-28T18:10:00.000Z",
+      })),
+      error: null,
+    });
+
+    await renderReport("history");
+
+    expect(screen.getByText(/Live Active · 0 ready \/ 1234 items/i)).toBeInTheDocument();
+    expect(engagementItemsPaging.calls[0]).toEqual([
+      "select",
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at",
+    ]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", ["campaign-1"]]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
   });
 
   it("shows what drifted between the frozen packet and the live sources", async () => {

@@ -6,6 +6,8 @@
  * so it is unit-testable; the loader takes an injected client.
  */
 
+import { readEveryPageAsResult } from "@/lib/supabase/paged-read";
+
 export const NEAR_DUPLICATE_DEFAULT_THRESHOLD = 0.55;
 /** Server-side pair cap in the RPC (LIMIT). If the RPC returns this many, the
  * scan was truncated (e.g. a huge form-letter clique) and the app says so. */
@@ -110,29 +112,49 @@ function classify(pairs: NearDuplicatePair[], threshold: number): NearDuplicateA
   };
 }
 
-type RpcClientLike = {
-  rpc: (
-    fn: string,
-    params: Record<string, unknown>
+type RpcPageBuilder = {
+  order: (column: string, options: { ascending: boolean }) => RpcPageBuilder;
+  range: (
+    from: number,
+    toInclusive: number
   ) => PromiseLike<{ data: unknown; error: { message: string } | null }>;
 };
 
+type RpcClientLike = {
+  rpc: (fn: string, params: Record<string, unknown>) => RpcPageBuilder;
+};
+
 /** Call `engagement_near_duplicate_pairs` (SECURITY INVOKER → caller RLS) and
- * group the pairs. Injected client → unit-testable; empty analysis on error. */
+ * group the pairs. Injected client → unit-testable; empty analysis on error.
+ *
+ * PAGED. The function may return up to `NEAR_DUPLICATE_MAX_PAIRS` (2,000) pairs,
+ * but PostgREST stops a function result at `max_rows` (1,000 here) with no
+ * error. A single read therefore never reached 2,000, so `truncated` could not
+ * fire and half the pairs went missing unannounced. Similarity, then the pair
+ * of ids, is a total order. */
 export async function loadNearDuplicates(
   supabase: unknown,
   params: { workspaceId: string; campaignId?: string | null; threshold?: number }
 ): Promise<{ analysis: NearDuplicateAnalysis; error: string | null }> {
   const threshold = Math.min(0.95, Math.max(0.3, params.threshold ?? NEAR_DUPLICATE_DEFAULT_THRESHOLD));
   const client = supabase as RpcClientLike;
-  const { data, error } = await client.rpc("engagement_near_duplicate_pairs", {
-    p_workspace_id: params.workspaceId,
-    p_campaign_id: params.campaignId ?? null,
-    p_threshold: threshold,
-  });
+  const { data, error } = await readEveryPageAsResult<NearDuplicatePair>(
+    (from, toInclusive) =>
+      client
+        .rpc("engagement_near_duplicate_pairs", {
+          p_workspace_id: params.workspaceId,
+          p_campaign_id: params.campaignId ?? null,
+          p_threshold: threshold,
+        })
+        .order("similarity", { ascending: false })
+        .order("item_a", { ascending: true })
+        .order("item_b", { ascending: true })
+        .range(from, toInclusive) as PromiseLike<{ data: NearDuplicatePair[] | null; error: { message: string } | null }>,
+    "the near-duplicate pairs could not be read in full"
+  );
   if (error) {
     return { analysis: classify([], threshold), error: error.message };
   }
-  const pairs = (Array.isArray(data) ? data : []) as NearDuplicatePair[];
+  const pairs = data ?? [];
   return { analysis: classify(pairs, threshold), error: null };
 }

@@ -3,6 +3,8 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { pagingFake } from "./helpers/paging-fake";
+
 import {
   buildCrashCorroborationView,
   buildCrashRadiusChoices,
@@ -18,6 +20,8 @@ import {
   weakestCompleteness,
   type NearbyCrashRow,
 } from "@/lib/engagement/crash-corroboration";
+
+type NearbyCrashClient = Parameters<typeof readNearbyCrashes>[0];
 
 /**
  * THE ENGAGEMENT <-> SAFETY READING, and the three ways it could lie.
@@ -301,15 +305,16 @@ describe("engagement × safety — what the console is handed", () => {
     expect(countUnmoderatedMapped(null)).toBe(0);
   });
 
-  it("sends the campaign and workspace the caller asked about, under the names the function declares", () => {
+  it("sends the campaign and workspace the caller asked about, under the names the function declares", async () => {
     // An untyped client cannot catch a renamed argument, so the spellings are
     // asserted here rather than discovered as an unreadable lane in production.
     const calls: Array<{ name: string; args: Record<string, unknown> }> = [];
-    readNearbyCrashes(
+    const paging = pagingFake(() => ({ data: [], error: null }), { serverCap: 1000 });
+    await readNearbyCrashes(
       {
         rpc: (name, args) => {
           calls.push({ name, args });
-          return Promise.resolve({ data: [], error: null });
+          return paging.chain as unknown as ReturnType<NearbyCrashClient["rpc"]>;
         },
       },
       "ws-1",
@@ -337,5 +342,49 @@ describe("engagement × safety — what the console is handed", () => {
     const declared = [...sql.matchAll(/^\s+(p_[a-z_]+)\s+\w/gm)].map((m) => m[1]);
     expect(new Set(declared)).toEqual(new Set(Object.keys(calls[0].args)));
     expect(sql).toContain("FUNCTION public.engagement_items_with_nearby_crashes(");
+  });
+
+  /*
+    The function returns one row per mapped comment, and PostgREST stops a
+    function result at 1,000 rows with no error. A campaign with 1,234 mapped
+    comments read once reported 1,000 as its mapped total.
+  */
+  it("reads every mapped comment past the 1,000-row cap, in the function's order ending on id", async () => {
+    const rows = Array.from({ length: 1234 }, (_, i) => row({ id: `item-${String(i).padStart(5, "0")}` }));
+    const paging = pagingFake(() => ({ data: rows, error: null }), { serverCap: 1000 });
+    const result = await readNearbyCrashes(
+      { rpc: () => paging.chain as unknown as ReturnType<NearbyCrashClient["rpc"]> },
+      "ws-1",
+      "campaign-1",
+      100
+    );
+
+    expect(result.error).toBeNull();
+    const view = buildCrashCorroborationView({
+      campaignId: "campaign-1",
+      query: {},
+      radiusMeters: 100,
+      rpcResult: result,
+      items: null,
+      checkRead: (_label, read) => Boolean(read.error),
+    });
+    expect(view.summary?.mappedTotal).toBe(1234);
+    const orders = paging.calls.filter(([method]) => method === "order").map(([, column]) => column);
+    expect(orders.slice(0, 4)).toEqual(["killed_total", "injured_total", "crash_total", "id"]);
+  });
+
+  it("returns a read that fails part way as an error, never as a short total", async () => {
+    const rows = Array.from({ length: 1234 }, (_, i) => row({ id: `item-${i}` }));
+    const paging = pagingFake(() => ({ data: rows, error: null }), { serverCap: 1000 });
+    paging.failPage(2, { message: "timeout" });
+    const result = await readNearbyCrashes(
+      { rpc: () => paging.chain as unknown as ReturnType<NearbyCrashClient["rpc"]> },
+      "ws-1",
+      "campaign-1",
+      100
+    );
+
+    expect(result.data).toBeNull();
+    expect(result.error?.message).toBe("timeout");
   });
 });

@@ -63,8 +63,10 @@ type SupabaseDouble = {
  * asked for would let the workspace scoping, the `IN` resolution and the option
  * limit all be wrong and still pass; this one applies `eq`, `in` and `limit` to
  * a row store, so the assertions below are about the queries the code actually
- * writes.
+ * writes. It also holds PostgREST's 1,000-row cap and honours `.range`.
  */
+const POSTGREST_MAX_ROWS = 1000;
+
 function createSupabaseDouble(store: Record<string, Row[]>, failingTables: string[] = []): SupabaseDouble {
   const queries: RecordedQuery[] = [];
   const inserts: SupabaseDouble["inserts"] = [];
@@ -76,7 +78,7 @@ function createSupabaseDouble(store: Record<string, Row[]>, failingTables: strin
     const filters: RecordedQuery["filters"] = [];
     let limitValue: number | null = null;
 
-    function resolve() {
+    function resolve(window?: { from: number; toInclusive: number }) {
       queries.push({ table, columns, filters: [...filters], limit: limitValue });
 
       if (failing.has(table)) {
@@ -91,6 +93,10 @@ function createSupabaseDouble(store: Record<string, Row[]>, failingTables: strin
             : rows.filter((row) => (filter.value as unknown[]).includes(row[filter.column]));
       }
       if (limitValue !== null) rows = rows.slice(0, limitValue);
+      // PostgREST's `max_rows`: no response holds more than 1,000 rows.
+      const from = window?.from ?? 0;
+      const asked = window ? window.toInclusive - window.from + 1 : Number.POSITIVE_INFINITY;
+      rows = rows.slice(from, from + Math.min(asked, POSTGREST_MAX_ROWS));
 
       return { data: rows, error: null };
     }
@@ -110,6 +116,9 @@ function createSupabaseDouble(store: Record<string, Row[]>, failingTables: strin
       limit(value: number) {
         limitValue = value;
         return builder;
+      },
+      async range(from: number, toInclusive: number) {
+        return resolve({ from, toInclusive });
       },
       async maybeSingle() {
         const result = resolve();

@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { pagingFake } from "./helpers/paging-fake";
+
 const loadCampaignAccess = vi.fn();
 const getUser = vi.fn();
 const itemsLimit = vi.fn();
@@ -10,16 +12,15 @@ const updateEq = vi.fn();
 const fetchCensusForCorridor = vi.fn();
 const fetchTractOverlayFeatures = vi.fn();
 
+const itemsPaging = pagingFake(() => itemsLimit(), { serverCap: 1000 });
+
 const fakeSupabase = {
   auth: { getUser },
   from: vi.fn((table: string) => {
     if (table === "engagement_items") {
-      const builder: Record<string, unknown> = {};
-      builder.select = () => builder;
-      builder.eq = () => builder;
-      builder.not = () => builder;
-      builder.limit = itemsLimit;
-      return builder;
+      // Paged, through a fake that slices like PostgREST and holds its
+      // 1,000-row cap. `itemsLimit` stays the fixture.
+      return itemsPaging.chain;
     }
     if (table === "projects") {
       const builder: Record<string, unknown> = {};
@@ -71,6 +72,7 @@ const B_SQUARE = { type: "Polygon", coordinates: [[[-120.5, 39.0], [-120.4, 39.0
 
 beforeEach(() => {
   vi.clearAllMocks();
+  itemsPaging.reset();
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   loadCampaignAccess.mockResolvedValue({ campaign: { workspace_id: "ws-1" }, error: null, allowed: true });
   // No stated project area by default, so the existing corridor and fallback
@@ -121,6 +123,41 @@ describe("POST /api/engagement/campaigns/[campaignId]/representativeness", () =>
     const res = await POST(req(), ctx);
     expect(res.status).toBe(502);
     expect((await res.json()).error).toBe("census_unavailable");
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The located comments
+    were read with `.limit(2000)`, which the server cut to 1,000, so a campaign
+    with 1,234 located comments was screened, and cached, as 1,000.
+  */
+  it("screens every located comment past the 1,000-row cap", async () => {
+    itemsLimit.mockResolvedValue({
+      data: Array.from({ length: 1234 }, (_, i) => ({ id: `i${i}`, latitude: 39.24, longitude: -121.03 })),
+      error: null,
+    });
+
+    const res = await POST(req(), ctx);
+
+    expect(res.status).toBe(200);
+    const rep = (await res.json()).representativeness;
+    expect(rep.locatedRespondentCount).toBe(1234);
+    expect(rep.respondentCount).toBe(1234);
+    expect(itemsPaging.calls[0]).toEqual(["select", "id, latitude, longitude"]);
+    expect(itemsPaging.calls).toContainEqual(["eq", "status", "approved"]);
+    expect(itemsPaging.calls.filter(([method]) => method === "order").map(([, column]) => column)[0]).toBe("id");
+  });
+
+  it("refuses to screen when a page of located comments fails part way", async () => {
+    itemsLimit.mockResolvedValue({
+      data: Array.from({ length: 1234 }, (_, i) => ({ id: `i${i}`, latitude: 39.24, longitude: -121.03 })),
+      error: null,
+    });
+    itemsPaging.failPage(2, { message: "statement timeout" });
+
+    const res = await POST(req(), ctx);
+
+    expect(res.status).toBe(500);
+    expect(updateEq).not.toHaveBeenCalled();
   });
 
   it("computes, flags under-representation, and caches the result", async () => {

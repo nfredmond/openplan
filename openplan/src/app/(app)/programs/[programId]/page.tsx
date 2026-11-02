@@ -54,6 +54,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { formatMoney } from "@/lib/money/format";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 
 function formatCurrency(value: number | string | null | undefined) {
   return formatMoney(Number(value ?? 0), { precision: "whole" });
@@ -389,9 +390,12 @@ export default async function ProgramDetailPage({
   );
 
   const [engagementItemsResult, reportArtifactsResult] = await Promise.all([
-    campaignIds.length
-      ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
-      : Promise.resolve({ data: [], error: null }),
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+      supabase,
+      campaignIds,
+      CAMPAIGN_ITEM_STATUS_COLUMNS
+    ),
     reportIds.length
       ? supabase
           .from("report_artifacts")

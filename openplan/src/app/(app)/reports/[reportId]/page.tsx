@@ -100,6 +100,7 @@ import {
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 import { loadSpecializedReportPage } from "@/components/reports/specialized-report-page";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
+import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
   const { reportId } = await params; const query = searchParams ? await searchParams : {}; const supabase = await createClient();
 
@@ -560,14 +561,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     const currentRtpProjectLinks = (rtpProjectLinks ?? []) as Array<{ id: string }>;
     const currentRtpCampaigns = (rtpCampaigns ?? []) as Array<{ id: string; rtp_cycle_chapter_id: string | null }>;
     const currentRtpCampaignIds = currentRtpCampaigns.map((campaign) => campaign.id);
-    const rtpEngagementItemsResult = currentRtpCampaignIds.length
-      ? await supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-          )
-          .in("campaign_id", currentRtpCampaignIds)
-      : { data: [], error: null };
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    const rtpEngagementItemsResult = await readEveryCampaignItem(
+      supabase,
+      currentRtpCampaignIds,
+      CAMPAIGN_ITEM_SUMMARY_COLUMNS
+    );
     // The comment counts below drive this cycle's public-review posture. An
     // unread items table would report a zero pending queue — "nothing is waiting
     // on you" — from a broken query, so the failure is disclosed AND the counts
@@ -791,15 +790,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true })
       : Promise.resolve({ data: [], error: null }),
-    engagementCampaign
-      ? supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-          )
-          .eq("campaign_id", engagementCampaign.id)
-          .order("updated_at", { ascending: false })
-      : Promise.resolve({ data: [], error: null }),
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    readEveryCampaignItem(
+      supabase,
+      engagementCampaign ? [engagementCampaign.id] : [],
+      CAMPAIGN_ITEM_SUMMARY_COLUMNS
+    ),
     liveScenarioSetIds.length > 0
       ? supabase
           .from("scenario_sets")

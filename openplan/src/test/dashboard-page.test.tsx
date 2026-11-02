@@ -2,6 +2,8 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { pagingFake } from "./helpers/paging-fake";
+
 const createClientMock = vi.fn();
 const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
@@ -55,6 +57,9 @@ const chartReadChainMock = () => {
   return chain;
 };
 
+const commentsFixtureMock = vi.fn((): { data: unknown[]; error: null } => ({ data: [], error: null }));
+const commentsPaging = pagingFake(() => commentsFixtureMock(), { serverCap: 1000 });
+
 const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return { select: runsSelectMock };
@@ -88,11 +93,17 @@ const fromMock = vi.fn((table: string) => {
   // answer empty-and-successful here, which is what a fresh workspace looks
   // like; the figures' own refusals are proven in dashboard-chart-*.test.ts
   // against a fake that records every filter.
-  if (
-    table === "engagement_items" ||
-    table === "funding_awards" ||
-    table === "billing_invoice_records"
-  ) {
+  // The comment lane pages, through a fake that slices like PostgREST and
+  // holds its 1,000-row cap.
+  if (table === "engagement_items") {
+    return {
+      select: (...args: unknown[]) => {
+        commentsPaging.calls.push(["select", ...args]);
+        return commentsPaging.chain;
+      },
+    };
+  }
+  if (table === "funding_awards" || table === "billing_invoice_records") {
     return { select: () => chartReadChainMock() };
   }
 
@@ -368,6 +379,7 @@ describe("DashboardPage", () => {
     loadWorkspaceDatesMock.mockResolvedValue({ items: [], missed: [], failed: [], capped: [] });
     homeGeographyRowMock.mockReturnValue({ data: null, error: null });
     commentsChartCalls.length = 0;
+    commentsPaging.reset();
     workspaceCalendarRowMock.mockReturnValue({ data: { time_zone: null, home_country_code: null }, error: null });
     // Default: no Anthropic key resolves — the honest state of a fresh
     // deployment with no env key and no stored workspace key.
@@ -377,6 +389,29 @@ describe("DashboardPage", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+  });
+
+  /*
+    The comment chart's read pages. A single `.limit(5000)` read came back with
+    PostgREST's 1,000 rows, below the cap, so a busy window drew short and was
+    not marked truncated.
+  */
+  it("hands the comment chart every comment in its window past the 1,000-row cap", async () => {
+    commentsFixtureMock.mockReturnValue({
+      data: Array.from({ length: 1234 }, () => ({ created_at: new Date().toISOString() })),
+      error: null,
+    });
+
+    await renderPage();
+
+    const outcome = commentsChartCalls[0][0] as { rows: unknown[]; truncated: boolean; failed: boolean };
+    expect(outcome.rows).toHaveLength(1234);
+    expect(outcome.truncated).toBe(false);
+    expect(outcome.failed).toBe(false);
+    expect(commentsPaging.calls[0]).toEqual(["select", "created_at, engagement_campaigns!inner(workspace_id)"]);
+    expect(
+      commentsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
   });
 
   it("keeps the full setup checklist on an active workspace whose geography is unset", async () => {

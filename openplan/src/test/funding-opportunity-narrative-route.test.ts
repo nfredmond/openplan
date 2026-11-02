@@ -1,5 +1,6 @@
 import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
 import { exactCountResult } from "./helpers/exact-count-result";
+import { pagingFake } from "./helpers/paging-fake";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
@@ -65,6 +66,15 @@ vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
 }));
 
 import { POST as postNarrativeDraft } from "@/app/api/funding-opportunities/[opportunityId]/narrative-draft/route";
+
+/**
+ * An RPC answering no rows. The crash-proximity read pages its result, so the
+ * answer also takes `.order` and `.range`, as the real builder does; a bare
+ * promise made that read throw and the route refuse to draft.
+ */
+function emptyRpc() {
+  return pagingFake(() => ({ data: [], error: null }), { serverCap: 1000 }).chain;
+}
 
 function jsonRequest(payload: unknown = {}) {
   return new NextRequest(`http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/narrative-draft`, {
@@ -147,7 +157,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
       // A real client always has `rpc`; omitting it made this fake answer a
       // TypeError where the database would answer rows, which is not a state
       // production can reach.
-      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      rpc: vi.fn(emptyRpc),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") {
           return { insert: draftInsertMock };
@@ -195,7 +205,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     ];
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
-      rpc: vi.fn(async () => ({ data: [], error: null })),
+      rpc: vi.fn(emptyRpc),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
         let columns = "";
@@ -613,7 +623,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
       // A real client always has `rpc`; omitting it made this fake answer a
       // TypeError where the database would answer rows, which is not a state
       // production can reach.
-      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      rpc: vi.fn(emptyRpc),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
         if (table === "projects") {

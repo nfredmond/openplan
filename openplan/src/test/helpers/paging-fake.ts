@@ -22,8 +22,15 @@ export type PagingFake = {
   chain: Record<string, unknown>;
   /** The `.range` mock itself, for asserting what was asked for. */
   range: (from: number, toInclusive: number) => Promise<FakePage>;
-  /** Forget the cached fixture. Call from `beforeEach`. */
+  /** Forget the cached fixture and the recorded calls. Call from `beforeEach`. */
   reset: () => void;
+  /**
+   * Every builder call, in order, as `[method, ...args]`, including each
+   * `range`. A test asserts the projection, filters and total order from this.
+   */
+  calls: Array<[string, ...unknown[]]>;
+  /** Answer the Nth `.range` call (1-based) with `error`, as a page that fails part way. Cleared by `reset()`. */
+  failPage: (page: number, error: unknown) => void;
 };
 
 /**
@@ -37,8 +44,14 @@ export function pagingFake(
   options: { serverCap?: number } = {}
 ): PagingFake {
   let cached: Promise<{ data?: unknown[] | null; error?: unknown }> | null = null;
+  const calls: Array<[string, ...unknown[]]> = [];
+  let failure: { page: number; error: unknown } | null = null;
 
   const range = async (from: number, toInclusive: number): Promise<FakePage> => {
+    calls.push(["range", from, toInclusive]);
+    if (failure && calls.filter(([method]) => method === "range").length === failure.page) {
+      return { data: null, error: failure.error };
+    }
     cached ??= Promise.resolve(readFixture() as { data?: unknown[] | null; error?: unknown });
     const result = await cached;
     if (result?.error) return { data: null, error: result.error };
@@ -51,8 +64,11 @@ export function pagingFake(
   const chain: Record<string, unknown> = { range };
   // Every builder method a caller might chain before `.range` returns the chain,
   // so the fake does not have to know how many `.order()`s a query applies.
-  for (const method of ["select", "eq", "in", "order", "limit", "filter"]) {
-    chain[method] = () => chain;
+  for (const method of ["select", "eq", "in", "order", "limit", "filter", "not", "gte"]) {
+    chain[method] = (...args: unknown[]) => {
+      calls.push([method, ...args]);
+      return chain;
+    };
   }
   // THENABLE TOO. One table is often read by both a paged loader and an unpaged
   // one — the campaign detail page awaits the chain while its route pages the
@@ -74,5 +90,17 @@ export function pagingFake(
       }))
       .then(resolve, reject);
 
-  return { chain, range, reset: () => (cached = null) };
+  return {
+    chain,
+    range,
+    calls,
+    failPage: (page, error) => {
+      failure = { page, error };
+    },
+    reset: () => {
+      cached = null;
+      calls.length = 0;
+      failure = null;
+    },
+  };
 }
