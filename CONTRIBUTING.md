@@ -65,10 +65,17 @@ npm config set script-shell "C:\\Program Files\\Git\\bin\\bash.exe"
 
 The repository's `.gitattributes` already checks text files out with LF line
 endings; the first command keeps Git from rewriting files you add. The second
-lets npm scripts that set environment variables POSIX-style run. CI, the
-hosted build and the security-sensitive local artifact reader assume Linux, so
-some tests that read `/proc` or POSIX permissions fail on Windows; check a
-failure against unchanged `main` before treating it as yours.
+lets npm scripts that set environment variables POSIX-style run. CI, the hosted
+build and the workers assume Linux. Tests of Linux-only code skip on Windows,
+each with a one-line reason: the local artifact reader (`/proc/self/fd`, skipped
+on any host other than Linux), the Planner Agent connector custody shared by the
+engagement synthesis, translation, API and managed GTFS workers (owner uid, file
+modes and directory `fsync`), the GTFS parse supervisor's signal escalation and
+child environment, the systemd synthesis units and the email journal's file mode
+check. Every other test, including the repository guards, should pass on
+Windows; compare paths with the helpers in
+`openplan/src/test/helpers/posix-path.ts`. Check a failure against unchanged
+`main` before treating it as yours.
 
 The full gate includes lint, dead-code analysis,
 app tests, an optional explicit RLS step, production dependency audit and build.

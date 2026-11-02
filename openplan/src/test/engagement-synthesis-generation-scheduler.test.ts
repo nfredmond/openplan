@@ -62,7 +62,8 @@ async function fixture(sourceCount = 2) {
   return { ...f, args, run, journal, save, initial, inventoryTrace, controls, calls, runAttempt, addInitial };
 }
 
-describe("synthesis authorized corpus scheduling", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("synthesis authorized corpus scheduling", () => {
   it("persists the complete task list before sequential attempts and reuses single-task directories", async () => {
     const f = await fixture(), count = f.plan.entries.length;
     expect(count).toBeGreaterThan(2);

@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assertChatHttpTargetBinding, type ChatHttpTargetEvidence } from "./helpers/chat-http-target-binding";
 
@@ -13,7 +14,8 @@ function evidence(labeled = false): ChatHttpTargetEvidence {
     NetworkSettings: { Ports: { [port]: [{ HostIp: "0.0.0.0", HostPort: hostPort }] },
       Networks: { supabase_network_openplan: { NetworkID: "synthetic-network-id" } } },
   });
-  return { workdir, configPath: `${workdir}/supabase/config.toml`,
+  // join, as the live fixture does: the binding compares host paths.
+  return { workdir, configPath: join(workdir, "supabase/config.toml"),
     configText: '# No project_id: CLI uses the workdir basename.\n[api]\nport = 54321\n[db]\nport = 54322\n',
     status: { API_URL: "http://127.0.0.1:54321", DB_URL: "postgresql://postgres:synthetic@127.0.0.1:54322/postgres" },
     container: "supabase_db_openplan", database: container("db", "5432/tcp", "54322"), gateway: container("kong", "8000/tcp", "54321") };
@@ -61,7 +63,7 @@ describe("chat HTTP target binding before SQL", () => {
   it("uses an explicit config project rather than the directory basename", () => {
     const f = evidence();
     f.workdir = "/isolated/different-directory";
-    f.configPath = `${f.workdir}/supabase/config.toml`;
+    f.configPath = join(f.workdir, "supabase/config.toml");
     f.configText = 'project_id = "openplan"\n' + f.configText;
     expect(() => assertChatHttpTargetBinding(f)).not.toThrow();
   });

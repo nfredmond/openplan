@@ -66,7 +66,8 @@ async function fixture() {
   return { f, args, from, options, trace, initial, calls, runAttempt, journal, save, resealGrant, addInitial, run: () => runSynthesisThematicSchedule(args) };
 }
 
-describe("dependent thematic scheduling", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("dependent thematic scheduling", () => {
   it("persists every task before processing them in order", async () => {
     const f = await fixture(), count = f.f.plan.header.taskCount, result = await f.run();
     expect(count).toBeGreaterThan(2); expect(result).toMatchObject({ state: "grant_drained", scheduledCount: count, taskCount: count, outsideScheduleCount: 0, stoppedAt: null });

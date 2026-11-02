@@ -31,7 +31,8 @@ function refused(result: ReturnType<typeof run>) {
   expect(result.stderr).not.toContain("do-not-copy-this-value");
 }
 
-describe("reviewable synthesis supervisor units", () => {
+// POSIX only: renders systemd units and checks owner uid and file modes; the fixture path also uses characters Windows forbids.
+describe.skipIf(process.platform === "win32")("reviewable synthesis supervisor units", () => {
   it.each(["preparation", "execution"])("renders %s with retained private state and literal paths", worker => {
     const result = run([], worker);
     expect(result.status).toBe(0);

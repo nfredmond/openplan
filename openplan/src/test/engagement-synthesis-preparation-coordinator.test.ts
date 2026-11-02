@@ -35,7 +35,8 @@ async function fixture() {
   const save = (value: unknown) => writeFile(join(directory, "pending.json"), JSON.stringify(value), { mode: 0o600 });
   return { args, directory, controller, journal, state, save, run: () => runSynthesisPreparationQueuePass(args) };
 }
-describe("durable preparation queue coordination", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("durable preparation queue coordination", () => {
   it("persists target before discovery and every directory identity before an attempt", async () => {
     const f = await fixture();
     list.mockImplementationOnce(async args => { expect(await f.journal()).toEqual(f.state); expect(args).toMatchObject({ service: f.args.service, after: null }); return { requestIds: [id(1), id(2)], nextAfter: id(2) }; });

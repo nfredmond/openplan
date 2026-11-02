@@ -37,7 +37,8 @@ async function fixture(){
  }
  return{root,target,directory,requests,get businessRequests(){return requests.filter(row=>row.path!=="/rest/v1/rpc/record_node_queue_process_observation");},options,start,claimReached:claimReached.promise,release:()=>release.resolve(),journal:async()=>JSON.parse(await readFile(join(directory,"pending.json"),"utf8"))};
 }
-describe("preparation CLI processes",()=>{
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("preparation CLI processes",()=>{
  it("runs one bounded empty pass and creates private target custody",async()=>{
   const f=await fixture(),result=await f.start().ended;expect(result.code,result.stderr).toBe(0);expect(result.stdout).toContain("0 pending custody records");expect(result.stdout).toContain("not full queue completion");expect((await f.journal()).target).toBe(f.target);expect(f.businessRequests,"A bounded empty pass makes one business inventory read").toHaveLength(1);
   expect(f.businessRequests[0].path).toBe("/rest/v1/engagement_synthesis_preparation_jobs");

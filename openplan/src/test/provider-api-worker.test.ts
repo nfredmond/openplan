@@ -64,7 +64,8 @@ async function fixture(authMode: "none" | "api_key" = "none") {
   return { directory, target, controller, job, receipt, answer, credential, generate, rpc, from, query, lookup, current, claim, completion, run, journal, retainRunning, setState: (value: string) => { state = value; } };
 }
 
-describe("saved API worker custody", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("saved API worker custody", () => {
   it("journals before its single invocation and delivers the exact scoped receipt", async () => {
     const f = await fixture();
     expect(await f.run()).toEqual({ state: "succeeded", turnId: f.job.id });

@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { posixRelative } from "./helpers/posix-path";
 
 const REPO_ROOT = resolve(process.cwd(), "..");
 const DOCS_ROOT = resolve(REPO_ROOT, "docs");
@@ -37,7 +38,7 @@ describe("the canonical development roadmap", () => {
     const active = markdownFiles(DOCS_ROOT).filter((path) =>
       readFileSync(path, "utf8").includes(MARKER),
     );
-    expect(active.map((path) => path.replace(`${REPO_ROOT}/`, ""))).toEqual([
+    expect(active.map((path) => posixRelative(REPO_ROOT, path))).toEqual([
       "docs/ROADMAP.md",
     ]);
 
