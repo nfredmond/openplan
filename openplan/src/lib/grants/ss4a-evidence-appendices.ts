@@ -32,6 +32,7 @@ import { formatSavedDate, type ProjectBcaScreeningSummary } from "@/lib/grants/b
 import { buildEngagementFactClaims, type ProjectEngagementEvidence } from "@/lib/grants/engagement-evidence";
 import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
+import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 import {
@@ -148,6 +149,29 @@ function describeSeverityCoverage(severityCompleteness: unknown): string {
   }
 }
 
+/**
+ * Why a ranked row has no serious-injury count, from the acquisition's own
+ * severity coverage. A fatality census and an injury source that does not
+ * split serious injuries are different facts; both rank on fatal crashes.
+ */
+function seriousInjuryAbsence(severityCompleteness: unknown): string {
+  if (severityCompleteness === "fatal_only") return "Not in source (fatal crashes only)";
+  if (severityCompleteness === "fatal_injury_only") return "Not separated in source (injury crashes not split by severity)";
+  return "Not available; severity coverage not recorded";
+}
+
+/** The publication line as the frozen caveats state it: a file update is never a cutoff. */
+function publicationCutoff(acquisition: Record<string, unknown>): string {
+  const provenance = acquisition.published_through_provenance && typeof acquisition.published_through_provenance === "object" && !Array.isArray(acquisition.published_through_provenance)
+    ? (acquisition.published_through_provenance as Record<string, unknown>)
+    : null;
+  const publication = readCrashPublicationEvidence(
+    typeof acquisition.published_through === "string" && acquisition.published_through ? acquisition.published_through : null,
+    provenance
+  );
+  return publication.resourceUpdateNote ?? publication.publishedThrough ?? "Not recorded by the source";
+}
+
 function safetySource(safety: Extract<Ss4aSafetySourceRead, { status: "ready" }>): Ss4aAppendixSource {
   const { snapshot, otherSeededArtifactCount } = safety;
   const acquisition = snapshot.acquisition;
@@ -194,6 +218,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
   const safety = records.safety;
   if (safety.status !== "ready") return safetyNotReady(key, index, safety);
   const network = safety.snapshot.draft.network;
+  const severityCompleteness = safety.snapshot.acquisition.severity_completeness;
   if (network.kind === "unavailable") return absentAppendix(key, index, "missing", network.reason);
 
   const table = network.rows.length > 0
@@ -204,7 +229,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
           row.label,
           row.lengthMiles === null ? "Not a road piece" : row.lengthMiles.toFixed(2),
           row.fatalCrashCount.toLocaleString("en-US"),
-          row.seriousInjuryCrashCount === null ? "Not in source (fatal crashes only)" : row.seriousInjuryCrashCount.toLocaleString("en-US"),
+          row.seriousInjuryCrashCount === null ? seriousInjuryAbsence(severityCompleteness) : row.seriousInjuryCrashCount.toLocaleString("en-US"),
           row.crashesPerMile === null ? `${row.crashCount.toLocaleString("en-US")} in square` : row.crashesPerMile.toFixed(1),
         ]),
       }
@@ -239,6 +264,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     source: safetySource(safety),
     facts: [
       { label: "Measure", value: network.measureLabel },
+      { label: "Source severity coverage", value: describeSeverityCoverage(severityCompleteness) },
       { label: "Years", value: network.years },
       { label: "Method", value: network.method },
       { label: "Coverage", value: network.coverage },
@@ -277,7 +303,7 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
       { label: "Crashes geocoded", value: stored(acquisition.geocoded_count) },
       { label: "Crashes stored", value: stored(acquisition.stored_count) },
       { label: "Retrieval truncated", value: acquisition.truncated === true ? "Yes; every count is a floor" : acquisition.truncated === false ? "No" : "Not recorded" },
-      { label: "Source publication cutoff", value: typeof acquisition.published_through === "string" && acquisition.published_through ? acquisition.published_through : "Not recorded by the source" },
+      { label: "Source publication cutoff", value: publicationCutoff(acquisition) },
       ...summary.figures.map((figure) => ({
         label: figure.label,
         value: figure.value === null ? `Not available. ${figure.absentBecause ?? "No reason recorded."}` : figure.value.toLocaleString("en-US"),

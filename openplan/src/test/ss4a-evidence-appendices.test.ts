@@ -94,6 +94,43 @@ describe("SS4A evidence appendices", () => {
     expect(factValue(crash, "Crashes geocoded")).toBe("4");
   });
 
+  it("explains a missing serious-injury count from the acquisition's coverage, matching the crash summary", () => {
+    for (const [completeness, cell, coverage] of [
+      ["fatal_only", "Not in source (fatal crashes only)", /^Fatal crashes only\./],
+      ["fatal_injury_only", "Not separated in source (injury crashes not split by severity)", /^Fatal and injury crashes\. The source does not separate serious injuries/],
+    ] as const) {
+      const records = completeEvidenceRecords();
+      records.safety = { status: "ready", snapshot: evidenceSnapshot({ severity_completeness: completeness }), otherSeededArtifactCount: 0 };
+      const appendices = buildSs4aEvidenceAppendices(records, ALL);
+      const hin = byKey(appendices, "hin_map");
+      expect(hin.table!.rows.map((row) => row[4])).toEqual([cell, cell]);
+      expect(factValue(hin, "Source severity coverage")).toMatch(coverage);
+      expect(factValue(hin, "Source severity coverage")).toBe(factValue(byKey(appendices, "crash_summary"), "Severity coverage"));
+    }
+  });
+
+  it("never prints a source file update as a publication cutoff", () => {
+    const cases = [
+      { provenance: { basis: "resource_updates", resources: [{ year: 2024, lastModified: "2025-06-01" }] }, cutoff: false },
+      { provenance: { label: "Last-Modified header" }, cutoff: false },
+      { provenance: { basis: "source_metadata", label: "Dataset metadata" }, cutoff: true },
+    ];
+    for (const { provenance, cutoff } of cases) {
+      const records = completeEvidenceRecords();
+      records.safety = { status: "ready", snapshot: evidenceSnapshot({ published_through: "2025-06-01", published_through_provenance: provenance }), otherSeededArtifactCount: 0 };
+      const crash = byKey(buildSs4aEvidenceAppendices(records, ALL), "crash_summary");
+      const value = factValue(crash, "Source publication cutoff")!;
+      if (cutoff) {
+        expect(value).toBe("2025-06-01");
+      } else {
+        expect(value).not.toBe("2025-06-01");
+        expect(value).toContain("A file update is not a crash-coverage cutoff.");
+        // The appendix line agrees with the frozen caveat the snapshot carries.
+        expect(crash.notes).toContain(value);
+      }
+    }
+  });
+
   it("lists missing evidence as missing instead of omitting it", () => {
     const records: Ss4aEvidenceRecords = {
       ...completeEvidenceRecords(),

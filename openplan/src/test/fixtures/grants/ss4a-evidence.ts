@@ -73,6 +73,8 @@ export function evidenceSnapshot(acquisitionOverrides: Record<string, unknown> =
     id: EVIDENCE_IDS.ingest, projectId: EVIDENCE_IDS.project, status: "ready", severityCompleteness: completeness,
     sourceLabel: String(acquisition.source_label), attribution: null, crashCount: 4, geocodedCount: 4, storedCount: 4, truncated: false,
     yearsRequested: [2023, 2024], createdAt: EVIDENCE_DATE, dimensionCoverage: null, partyCompleteness: "not_supported", partyCount: null, involvementBasis: null,
+    publishedThrough: typeof acquisition.published_through === "string" ? acquisition.published_through : null,
+    publishedThroughProvenance: (acquisition.published_through_provenance as Record<string, unknown> | null) ?? null,
   }, { severity: { fatal: 4, severe_injury: 0, injury: 0, pdo: 0, unknown: 0 }, role: null });
   const draft = buildSafetyActionPlanSection({ plan, evidence, network });
   return buildSafetyPlanSnapshot({
