@@ -34,6 +34,7 @@ import { identifySeededCatalogKey, isAtpApplication } from "@/lib/grants/atp-pac
 import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel";
 import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
 import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
+import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 
 /**
  * The application workspace for one funding opportunity: initialize from a
@@ -212,7 +213,11 @@ export function FundingOpportunityApplicationWorkspace({
     engineDisclosure: string | null;
     isDraftStamped: boolean;
     outstandingRequiredCount: number;
+    sha256: string | null;
   } | null>(null);
+  const [appendixSelection, setAppendixSelection] = useState<ReadonlySet<Ss4aAppendixKey>>(
+    () => new Set(SS4A_APPENDIX_KEYS)
+  );
 
   const catalogTemplateOptions = useMemo(
     () =>
@@ -486,6 +491,8 @@ export function FundingOpportunityApplicationWorkspace({
     }
   }
 
+  const isSs4aApplication = pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a";
+
   async function handleExport() {
     setIsExporting(true);
     setExportError(null);
@@ -494,7 +501,13 @@ export function FundingOpportunityApplicationWorkspace({
     try {
       const response = await fetch(
         `/api/funding-opportunities/${opportunityId}/application/export`,
-        { method: "POST" }
+        isSs4aApplication
+          ? {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ appendices: SS4A_APPENDIX_KEYS.filter((key) => appendixSelection.has(key)) }),
+            }
+          : { method: "POST" }
       );
       const payload = (await response.json()) as Record<string, unknown>;
       if (!response.ok) {
@@ -520,6 +533,7 @@ export function FundingOpportunityApplicationWorkspace({
         isDraftStamped: payload.isDraftStamped === true,
         outstandingRequiredCount:
           typeof payload.outstandingRequiredCount === "number" ? payload.outstandingRequiredCount : 0,
+        sha256: typeof payload.sha256 === "string" ? payload.sha256 : null,
       });
     } catch (error) {
       setExportError(error instanceof Error ? error.message : "Failed to export the application");
@@ -634,7 +648,7 @@ export function FundingOpportunityApplicationWorkspace({
               ) : null}
 
               {showAtpPacket ? <AtpScoringPacketPanel opportunityId={opportunityId} /> : null}
-              {pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a" ? (
+              {isSs4aApplication ? (
                 <SafetyPlanSeedPanel opportunityId={opportunityId} onApplied={loadApplication} />
               ) : null}
 
@@ -741,6 +755,30 @@ export function FundingOpportunityApplicationWorkspace({
                     item), the attachment checklist, and a provenance appendix into one PDF.
                     Missing required attachments stamp the document DRAFT; they never disappear.
                   </p>
+                  {isSs4aApplication ? (
+                    <fieldset className="mt-2" data-testid="export-appendices">
+                      <legend className="text-xs font-semibold text-foreground/80">Evidence appendices</legend>
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                        {SS4A_APPENDIX_KEYS.map((key) => (
+                          <label key={key} className="flex items-center gap-1.5 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={appendixSelection.has(key)}
+                              onChange={(event) =>
+                                setAppendixSelection((current) => {
+                                  const next = new Set(current);
+                                  if (event.target.checked) next.add(key);
+                                  else next.delete(key);
+                                  return next;
+                                })
+                              }
+                            />
+                            {SS4A_APPENDIX_TITLES[key]}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  ) : null}
                   <Button
                     type="button"
                     variant="outline"
@@ -782,6 +820,9 @@ export function FundingOpportunityApplicationWorkspace({
                       ) : null}
                       {exportResult.engineDisclosure ? (
                         <p className="text-muted-foreground">{exportResult.engineDisclosure}</p>
+                      ) : null}
+                      {exportResult.sha256 ? (
+                        <p className="break-all text-xs text-muted-foreground">SHA-256 {exportResult.sha256}</p>
                       ) : null}
                       {exportResult.exportId ? (
                         <a

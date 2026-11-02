@@ -20,6 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**SS4A application evidence appendices:** the application packet export for an
+SS4A application now adds evidence appendices from the linked project's saved
+records: the high-injury network map and ranked list, the crash summary with its
+source, years and severity coverage as stored, the countermeasure table, the
+latest benefit-cost analysis with its limits, and the engagement summary. Each
+names its source record, date and stored hash. Missing, unreadable and
+deselected appendices are listed, never dropped. Planners choose appendices
+before export; all are on by default. The map is drawn only when the stored
+crash records and cached road lines reproduce the frozen ranking exactly. The
+export response and audit log carry the PDF's SHA-256; the export record does
+not store it yet. No migration is needed.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete

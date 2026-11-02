@@ -1,6 +1,12 @@
 import { readSafetySeedOrigin, type SafetySeedProvenance } from "@/lib/grants/safety-seed-origin";
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
+import { identifySeededCatalogKey } from "@/lib/grants/atp-packet";
+import { SS4A_APPENDIX_KEYS, ss4aAppendixSelectionSchema, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
+import { buildSs4aEvidenceAppendices, summarizeSs4aAppendices, type Ss4aAppendix } from "@/lib/grants/ss4a-evidence-appendices";
+import { loadSs4aEvidenceRecords } from "@/lib/grants/ss4a-evidence-loader";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
@@ -48,6 +54,11 @@ import {
  * Missing required attachments do NOT block — the document is stamped DRAFT
  * prominently instead, because packaging a work in progress is legitimate as
  * long as no reader can mistake it for submittable.
+ *
+ * An SS4A application also carries evidence appendices drawn from the linked
+ * project's saved records. The optional JSON body `{ appendices: [...] }`
+ * chooses which; no body means all of them. A deselected or missing appendix
+ * is still listed in the document, never dropped.
  */
 
 const EXPORT_BUCKET = "grant-application-exports";
@@ -148,6 +159,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!parsedParams.success) {
       return NextResponse.json({ error: "Invalid funding opportunity id" }, { status: 400 });
     }
+
+    const body = await readJsonWithLimit(request, BODY_LIMITS.smallJson);
+    if (!body.ok) return body.response;
+    const selection = body.data === null && !body.parseError ? null : ss4aAppendixSelectionSchema.safeParse(body.data);
+    if (selection && !selection.success) {
+      return NextResponse.json({ error: "Invalid export request" }, { status: 400 });
+    }
+    const selectedAppendices = new Set<Ss4aAppendixKey>(selection ? selection.data.appendices : SS4A_APPENDIX_KEYS);
 
     const supabase = await createClient();
     const {
@@ -367,6 +386,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (!safetySeedHistory.some((entry) => entry.artifactId === provenance.artifactId && entry.snapshotHash === provenance.snapshotHash)) safetySeedHistory.push(provenance);
     }
 
+    // SS4A only: the evidence appendices, read from the linked project's saved
+    // records. Other programs keep the packet they had.
+    let evidenceAppendices: Ss4aAppendix[] | undefined;
+    if (pursuit.context.pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a") {
+      const records = await loadSs4aEvidenceRecords(supabase, {
+        workspaceId: opportunity.workspace_id,
+        projectId: typeof opportunity.project_id === "string" ? opportunity.project_id : null,
+        seedHistory: safetySeedHistory,
+        selected: selectedAppendices,
+      });
+      evidenceAppendices = buildSs4aEvidenceAppendices(records, selectedAppendices);
+    }
+
     const exportSections: GrantApplicationExportSection[] = sections.map((section) => ({
       section,
       provenance: resolveSectionProvenance(
@@ -393,6 +425,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sections: exportSections,
       attachments,
       generatedAt,
+      evidenceAppendices,
     });
 
     const pdf = await renderReportPdf(html, {
@@ -404,6 +437,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const exportId = crypto.randomUUID();
     const storagePath = `${opportunity.workspace_id}/${opportunity.id}/${exportId}.pdf`;
     const pdfBytes = Buffer.from(pdf.bytes);
+    const sha256 = createHash("sha256").update(pdfBytes).digest("hex");
+    const appendixSummary = evidenceAppendices ? summarizeSs4aAppendices(evidenceAppendices) : null;
 
     // Members have no direct INSERT on this bucket (migration
     // 20261017000013): the export is stored with the service role, after the
@@ -476,6 +511,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       exportId,
       pdfEngine: pdf.engine,
       pageCount: pdf.pageCount,
+      sha256,
+      byteLength: pdfBytes.byteLength,
+      appendices: appendixSummary,
       outstandingRequiredCount,
       durationMs: Date.now() - startedAt,
     });
@@ -490,6 +528,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         engineDisclosure: pdf.disclosure,
         outstandingRequiredCount,
         isDraftStamped: outstandingRequiredCount > 0,
+        sha256,
+        byteLength: pdfBytes.byteLength,
+        appendices: appendixSummary,
       },
       { status: 201 }
     );

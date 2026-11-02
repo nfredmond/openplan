@@ -664,3 +664,28 @@ published v0.70 limitation. R8, R21 and R22 evidence remains retained at its
 original scope. Compiler/build and browser evidence remain unexecuted here.
 Root still owns the later identified-build journey and acceptance disposition.
 Private packet: `pr355-readiness-failure-mixed-state-repair-20261022-23`.
+
+
+## SS4A application evidence appendices, November 1, 2026
+
+The SS4A application export now embeds evidence appendices drawn from the
+linked project's saved Safety snapshot, benefit-cost analysis and engagement
+campaign. Limits that remain open:
+
+- The export record has no checksum column. The PDF's SHA-256 is returned to
+  the planner and written to the audit log, but not stored with the export row.
+  Persisting it needs an additive migration.
+- The high-injury network map is redrawn at export from stored crash records
+  and cached road lines. It is drawn only when that recomputation matches the
+  frozen ranking exactly; otherwise the frozen table stands alone with the
+  reason. A later change to the cached road lines stops the map from drawing.
+- A deployment without a browser rendering engine uses the built-in PDF
+  writer, which drops the drawn map. The ranked table and every source line
+  remain as text.
+- Letters of support and other attachments are still listed in the checklist,
+  not embedded. The appendices name only the Safety artifact most recently
+  generated among those seeded into the application.
+- Evidence so far is route, render and component tests with mutation pairs,
+  and a rendered packet built from synthetic fixture records at desktop and
+  390px. No identified-build app journey, live RLS run or hosted export has
+  been performed.
