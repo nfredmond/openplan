@@ -211,11 +211,11 @@ describe("Oregon in the registry", () => {
     expect(odotOrAdapter.severityCompleteness).toBe("kabco_full");
   });
 
-  it("is not stored until the database admits it, so an Oregon acquisition stores FARS", () => {
-    expect(odotOrAdapter.persistable).toBe(false);
-    expect(OBSERVED_CRASH_SOURCE_IDS).not.toContain(ODOT_OR_SOURCE_ID);
+  it("is stored now that the database admits it, so an Oregon acquisition asks it before FARS", () => {
+    expect(odotOrAdapter.persistable).toBe(true);
+    expect(OBSERVED_CRASH_SOURCE_IDS).toContain(ODOT_OR_SOURCE_ID);
     const { candidates } = crashSourcesForStudyArea({ bbox, stateFips: OREGON }, "ingest");
-    expect(candidates.map((adapter) => adapter.id)).toEqual([farsAdapter.id]);
+    expect(candidates.map((adapter) => adapter.id)).toEqual([ODOT_OR_SOURCE_ID, farsAdapter.id]);
   });
 
   it("never answers for an unknown state or another state", () => {

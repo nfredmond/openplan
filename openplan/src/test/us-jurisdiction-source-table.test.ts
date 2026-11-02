@@ -20,11 +20,10 @@
  * county is re-resolved to confirm its state, exactly as the analysis route
  * does, and the scorecard summary must name the same source.
  *
- * Since 2026-11-02 Oregon's live read and corridor rows expect ODOT's crash
- * layer, which carries injury severity; its acquisition row still expects
- * FARS, because `safety_crashes` does not yet admit the ODOT source id. Iowa,
- * Ohio and DC rows expect their state layers (Iowa DOT, Ohio DOT, DDOT) the
- * same way, read live and not stored.
+ * Since 2026-11-02 the Oregon, Iowa, Ohio and DC rows expect their state's
+ * crash layer (ODOT, Iowa DOT, Ohio DOT, DDOT), which carries injury severity,
+ * for the live read, the corridor run and the acquisition. Migration
+ * 20261102100000 admits the four source ids to `safety_crashes`.
  *
  * Blind category: the place-to-state step is exercised for county GEOIDs only.
  * Cities, CDPs, metro areas and drawn areas are covered by the route tests in
@@ -137,6 +136,19 @@ describe("the jurisdiction fixture", () => {
   });
 });
 
+/**
+ * What an acquisition records for each stored source, written from each
+ * adapter's documentation rather than read off the adapter objects.
+ */
+const STORED_SOURCE_DECLARATIONS: Record<string, { severityCompleteness: string; coverageState: string }> = {
+  "ccrs-ca": { severityCompleteness: "fatal_injury_only", coverageState: "ccrs_ca_statewide" },
+  "fars-national": { severityCompleteness: "fatal_only", coverageState: "fars_fatal_only" },
+  "odot-or": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+  "iowadot-ia": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+  "odot-oh": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+  "ddot-dc": { severityCompleteness: "kabco_full", coverageState: "state_injury_file" },
+};
+
 describe.each(table.rows)("$usps $countyName ($countyGeoid)", (row) => {
   const stateFips = () => crashStatesFromTigerwebPlace("county", row.countyGeoid);
 
@@ -159,10 +171,14 @@ describe.each(table.rows)("$usps $countyName ($countyGeoid)", (row) => {
       expect(result.coverageState, label(row)).toBe("out_of_coverage");
     } else {
       expect(service.ingestRows[0]?.source_id, label(row)).toBe(row.expected.ingestCrashSource);
-      // A fatality census must say so wherever it is the source.
-      const expectedCompleteness =
-        row.expected.ingestCrashSource === farsAdapter.id ? "fatal_only" : ccrsAdapter.severityCompleteness;
-      expect(result.severityCompleteness, label(row)).toBe(expectedCompleteness);
+      // Each stored source records its own severity completeness and coverage
+      // state: a fatality census says so, CCRS without the KSI join cannot
+      // separate serious injury, and a state's KABCO layer can.
+      const stored = STORED_SOURCE_DECLARATIONS[row.expected.ingestCrashSource];
+      expect(stored, label(row)).toBeDefined();
+      expect(result.severityCompleteness, label(row)).toBe(stored.severityCompleteness);
+      expect(service.ingestRows[0]?.severity_completeness, label(row)).toBe(stored.severityCompleteness);
+      expect(service.ingestRows[0]?.coverage_state, label(row)).toBe(stored.coverageState);
     }
   });
 

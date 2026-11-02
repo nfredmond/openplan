@@ -97,10 +97,10 @@ subdivisions (New England towns, townships, boroughs). Either can be a
 workspace home geography, a project or campaign area, a plan area or a
 resolved project jurisdiction. A tribal area records no state, because many
 cross state lines and state rules on tribal land are not a map fact; its states
-appear in its name. A town records its state. A benefit-cost analysis cannot
-yet record a project whose area or jurisdiction is either kind: the installed
-database guard lists only the earlier five kinds, and widening it needs a
-migration. No action is needed to deploy.
+appear in its name. A town records its state. A benefit-cost analysis can
+record a project whose area or jurisdiction is either kind once
+`20261102100100_bca_tribal_and_town_place_kinds.sql` is applied (see "Stored
+state injury crashes and BCA place kinds" below).
 
 **Crash sources follow the study area's state:** Safety now chooses a crash source
 from the state of the linked project's place or the picked county, city or CDP,
@@ -133,9 +133,9 @@ shared crash map layer also checks coverage by the workspace's stated state.
 read ODOT's published crash layer (Oregon Transportation Safety Data Explorer),
 which carries ODOT's own KABCO severity, so they report serious-injury and injury
 crashes instead of fatal-only FARS. Crashes ODOT could not locate are left out,
-because the layer places them at a default point. The layer is read live and not
-stored: a Safety acquisition in Oregon still saves FARS until a migration admits
-the new source. ODOT names no open license; the attribution says so. A research
+because the layer places them at a default point. A Safety acquisition in Oregon
+stores these crashes once `20261102100000_persist_state_injury_crashes.sql` is
+applied (see below). ODOT names no open license; the attribution says so. A research
 note, `docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md`, records which
 states publish open injury-crash data (California, DC, Iowa, Ohio and Oregon
 qualify; 27 states publish with limits). No action is needed to deploy.
@@ -144,10 +144,31 @@ qualify; 27 states publish with limits). No action is needed to deploy.
 Iowa, Ohio or the District of Columbia now read the state's published crash
 layer (Iowa DOT Crash Data, ODOT TIMS crash locations, DDOT Crashes in DC), so
 they report serious-injury and injury crashes instead of fatal-only FARS. Like
-Oregon, the layers are read live and not stored: a Safety acquisition in these
-places still saves FARS until a migration admits the new sources. Ohio's layer
-has no casualty counts or crash day; DC's years are the years crashes were
-reported; Iowa's newest year is partial. No action is needed to deploy.
+Oregon, a Safety acquisition stores them once
+`20261102100000_persist_state_injury_crashes.sql` is applied (see below). Ohio's
+layer has no casualty counts or crash day; DC's years are the years crashes were
+reported; Iowa's newest year is partial.
+
+**Stored state injury crashes and BCA place kinds (KI-2026-11-02-001,
+KI-2026-11-01-001):** two migrations. Operators must apply both before
+deploying this code, in this order:
+
+- `20261102100000_persist_state_injury_crashes.sql` widens
+  `safety_crashes.source_id` to admit `odot-or`, `iowadot-ia`, `odot-oh` and
+  `ddot-dc`, and `safety_crash_ingests.coverage_state` to admit
+  `state_injury_file`. A Safety acquisition in Oregon, Iowa, Ohio or DC now
+  stores the state's crashes with KABCO severity (`kabco_full`) instead of
+  fatal-only FARS. Ohio's stored crashes keep their missing casualty counts as
+  blank, not zero. Person rows stay CCRS-only. Acquisitions saved before this
+  change keep FARS; re-run a study area to store the state file.
+- `20261102100100_bca_tribal_and_town_place_kinds.sql` lets a benefit-cost
+  analysis record a project whose place or resolved jurisdiction is a tribal
+  area or a town or township. Each GEOID is checked by its own kind's format;
+  a city or CDP reference must now be 7 digits, as the reader already
+  required.
+
+Code deployed without them fails: an acquisition in those four places fails at
+its first write, and a BCA save for those place kinds returns 409.
 
 **CEQA screen on county runs:** the §15064.3 screening panel now appears only on
 county runs whose county is in California.

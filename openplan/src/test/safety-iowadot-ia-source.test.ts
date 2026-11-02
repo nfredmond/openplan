@@ -199,11 +199,11 @@ describe("Iowa in the registry", () => {
     expect(iowaDotIaAdapter.severityCompleteness).toBe("kabco_full");
   });
 
-  it("is not stored until the database admits it, so an Iowa acquisition stores FARS", () => {
-    expect(iowaDotIaAdapter.persistable).toBe(false);
-    expect(OBSERVED_CRASH_SOURCE_IDS).not.toContain(IOWADOT_IA_SOURCE_ID);
+  it("is stored now that the database admits it, so an Iowa acquisition asks it before FARS", () => {
+    expect(iowaDotIaAdapter.persistable).toBe(true);
+    expect(OBSERVED_CRASH_SOURCE_IDS).toContain(IOWADOT_IA_SOURCE_ID);
     const { candidates } = crashSourcesForStudyArea({ bbox, stateFips: IOWA }, "ingest");
-    expect(candidates.map((adapter) => adapter.id)).toEqual([farsAdapter.id]);
+    expect(candidates.map((adapter) => adapter.id)).toEqual([IOWADOT_IA_SOURCE_ID, farsAdapter.id]);
   });
 
   it("never answers for an unknown state or another state", () => {

@@ -17,8 +17,9 @@
  *     says.
  *
  * WHAT IT IS NOT.
- *   - Not stored. `safety_crashes.source_id` admits only the CCRS and FARS
- *     ids, so this adapter is `persistable: false`, like `odot-or`.
+ *   - Not limited to live reads. Migration 20261102100000 admits `odot-oh` to
+ *     `safety_crashes.source_id`, so a Safety acquisition in Ohio stores
+ *     these crashes rather than fatal-only FARS.
  *   - Not every reported crash. Every row carries a latitude and longitude
  *     (no null or zero coordinates in 2021 or 2025) and the layer is named
  *     "Crash Locations"; it does not say whether crashes ODOT could not locate
@@ -181,7 +182,7 @@ export const odotOhAdapter: CrashSourceAdapter = {
   severityCompleteness: "kabco_full",
   dimensions: ODOT_OH_DIMENSION_SUPPORT,
   earliestYear: ODOT_OH_EARLIEST_YEAR,
-  persistable: false,
+  persistable: true,
   roadContextProvider: "us-census-tiger-line",
   coversStateFips: [OHIO_STATE_FIPS],
   servesStateFips: [OHIO_STATE_FIPS],

@@ -56,10 +56,11 @@ describe("BCA project-place reader and document boundary", () => {
         place_min_lon: 1, place_min_lat: 1, place_max_lon: 2, place_max_lat: 2 },
     ]) expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), ...patch }).status).toBe("invalid");
   });
-  // The installed snapshot guard (20261023190200) lists five TIGERweb kinds.
-  // A tribal area or town is a real place, not a malformed one, so the reader
-  // says the analysis cannot record it yet instead of calling the record broken.
-  it("says a tribal area or town cannot be recorded yet, in the place or in a resolved jurisdiction", () => {
+  // 20261102100100 widened the snapshot guard to every resolver kind, with each
+  // GEOID checked by its own kind. A tribal area or a town binds like a county,
+  // in the place and in a resolved jurisdiction entry; a malformed GEOID for
+  // either kind is a broken record, not an unsupported one.
+  it("binds a tribal area or town, in the place or in a resolved jurisdiction, and refuses a malformed GEOID", () => {
     const tigerweb = { place_source: "tigerweb", place_label: "Synthetic place", place_country_code: "US",
       place_set_at: "2026-10-19T00:00:00Z", place_min_lon: 1, place_min_lat: 1, place_max_lon: 2, place_max_lat: 2 };
     const resolvedEntry = (kind: string, geoid: string) => ({ version: 1, state: "declared", recordedBy: bcaActorId,
@@ -68,20 +69,24 @@ describe("BCA project-place reader and document boundary", () => {
         identity: "server_resolved" }] });
     for (const patch of [
       { ...tigerweb, place_kind: "aiannh", place_ref: "2430R" },
+      { ...tigerweb, place_kind: "aiannh", place_ref: "2430T" },
       { ...tigerweb, place_kind: "cousub", place_ref: "2501735215", place_subdivision_code: "MA" },
       { jurisdiction_context: resolvedEntry("aiannh", "2430R") },
       { jurisdiction_context: resolvedEntry("cousub", "2501735215") },
+      { ...tigerweb, place_kind: "county", place_ref: "39049", place_subdivision_code: "OH" },
+      { jurisdiction_context: resolvedEntry("county", "39049") },
     ]) {
-      const read = readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), ...patch });
-      expect(read.status).toBe("unavailable");
-      if (read.status === "available") throw new Error("Expected refusal");
-      expect(read.message).toMatch(/cannot yet record .*tribal area or a town or township/);
+      expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), ...patch }).status, JSON.stringify(patch)).toBe("available");
     }
-    // The five kinds the guard lists still bind.
-    expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), ...tigerweb, place_kind: "county",
-      place_ref: "39049", place_subdivision_code: "OH" }).status).toBe("available");
-    expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(),
-      jurisdiction_context: resolvedEntry("county", "39049") }).status).toBe("available");
+    for (const patch of [
+      { ...tigerweb, place_kind: "aiannh", place_ref: "24301" },
+      { ...tigerweb, place_kind: "cousub", place_ref: "250173521" },
+      { ...tigerweb, place_kind: "city", place_ref: "06440" },
+      { jurisdiction_context: resolvedEntry("aiannh", "2430X") },
+      { jurisdiction_context: resolvedEntry("cousub", "25017352150") },
+    ]) {
+      expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), ...patch }).status, JSON.stringify(patch)).toBe("invalid");
+    }
   });
   it("compares exact microseconds and full source/context values without Date rounding", () => {
     const snapshot = bcaProjectPlace();

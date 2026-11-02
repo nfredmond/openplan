@@ -174,11 +174,11 @@ describe("DC in the registry", () => {
     expect(ddotDcAdapter.severityCompleteness).toBe("kabco_full");
   });
 
-  it("is not stored until the database admits it, so a DC acquisition stores FARS", () => {
-    expect(ddotDcAdapter.persistable).toBe(false);
-    expect(OBSERVED_CRASH_SOURCE_IDS).not.toContain(DDOT_DC_SOURCE_ID);
+  it("is stored now that the database admits it, so a DC acquisition asks it before FARS", () => {
+    expect(ddotDcAdapter.persistable).toBe(true);
+    expect(OBSERVED_CRASH_SOURCE_IDS).toContain(DDOT_DC_SOURCE_ID);
     const { candidates } = crashSourcesForStudyArea({ bbox, stateFips: DC }, "ingest");
-    expect(candidates.map((adapter) => adapter.id)).toEqual([farsAdapter.id]);
+    expect(candidates.map((adapter) => adapter.id)).toEqual([DDOT_DC_SOURCE_ID, farsAdapter.id]);
   });
 
   it("never answers for an unknown state or a neighboring state", () => {

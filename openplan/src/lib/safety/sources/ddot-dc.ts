@@ -15,8 +15,9 @@
  *     Creative Commons Attribution 4.0 International License".
  *
  * WHAT IT IS NOT.
- *   - Not stored. `safety_crashes.source_id` admits only the CCRS and FARS
- *     ids, so this adapter is `persistable: false`, like `odot-or`.
+ *   - Not limited to live reads. Migration 20261102100000 admits `ddot-dc` to
+ *     `safety_crashes.source_id`, so a Safety acquisition in DC stores
+ *     these crashes rather than fatal-only FARS.
  *   - Not every reported crash. DDOT: "In the event that location data is
  *     missing or incomplete for a crash, it is unable to be published within
  *     this dataset." `matchedTotal` therefore equals `geocodedTotal`.
@@ -220,7 +221,7 @@ export const ddotDcAdapter: CrashSourceAdapter = {
   severityCompleteness: "kabco_full",
   dimensions: DDOT_DC_DIMENSION_SUPPORT,
   earliestYear: DDOT_DC_EARLIEST_YEAR,
-  persistable: false,
+  persistable: true,
   roadContextProvider: "us-census-tiger-line",
   coversStateFips: [DC_STATE_FIPS],
   servesStateFips: [DC_STATE_FIPS],

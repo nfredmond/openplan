@@ -17,8 +17,9 @@
  *     restrict reuse.
  *
  * WHAT IT IS NOT.
- *   - Not stored. `safety_crashes.source_id` admits only the CCRS and FARS
- *     ids, so this adapter is `persistable: false`, like `odot-or`.
+ *   - Not limited to live reads. Migration 20261102100000 admits `iowadot-ia` to
+ *     `safety_crashes.source_id`, so a Safety acquisition in Iowa stores
+ *     these crashes rather than fatal-only FARS.
  *   - Not every reported crash. Iowa DOT places a crash it could not locate
  *     at one default point outside the state (see
  *     `IOWADOT_IA_UNLOCATED_POINT`); those crashes are excluded and cannot be
@@ -323,7 +324,7 @@ export const iowaDotIaAdapter: CrashSourceAdapter = {
   severityCompleteness: "kabco_full",
   dimensions: IOWADOT_IA_DIMENSION_SUPPORT,
   earliestYear: IOWADOT_IA_EARLIEST_YEAR,
-  persistable: false,
+  persistable: true,
   roadContextProvider: "us-census-tiger-line",
   coversStateFips: [IOWA_STATE_FIPS],
   servesStateFips: [IOWA_STATE_FIPS],

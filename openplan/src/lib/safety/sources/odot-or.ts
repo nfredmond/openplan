@@ -19,10 +19,9 @@
  *     attribution and label below say plainly.
  *
  * WHAT IT IS NOT.
- *   - Not stored. `safety_crashes.source_id` admits only the CCRS and FARS
- *     ids, so this adapter is `persistable: false` and serves the live read
- *     lane, the corridor scorecard and the shared map. A Safety acquisition in
- *     Oregon still stores fatal-only FARS until a migration widens that CHECK.
+ *   - Not limited to live reads. Migration 20261102100000 admits `odot-or` to
+ *     `safety_crashes.source_id`, so a Safety acquisition in Oregon stores
+ *     these crashes rather than fatal-only FARS.
  *   - Not every reported crash. A crash ODOT could not locate carries the
  *     Unlocatable Flag and sits at a default point inside its city or county
  *     (code manual, "Unlocatable Crash Flag"). Such a point is not a
@@ -325,7 +324,7 @@ export const odotOrAdapter: CrashSourceAdapter = {
   severityCompleteness: "kabco_full",
   dimensions: ODOT_OR_DIMENSION_SUPPORT,
   earliestYear: ODOT_OR_EARLIEST_YEAR,
-  persistable: false,
+  persistable: true,
   roadContextProvider: "us-census-tiger-line",
   coversStateFips: [OREGON_STATE_FIPS],
   servesStateFips: [OREGON_STATE_FIPS],

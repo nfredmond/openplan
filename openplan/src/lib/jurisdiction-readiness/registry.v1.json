@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-11-02.2",
+  "registryVersion": "2026-11-02.3",
   "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
@@ -84,7 +84,7 @@
     {
       "id": "crash-source-registry",
       "path": "openplan/src/lib/safety/sources/registry.ts",
-      "sha256": "2c8dafc287aebaf859ae81735b6dca37d4a16d2179a54d768a8d426e07248f90"
+      "sha256": "7ff73b236060873c830a3a10d427ea3ca3099e50110307d33dfc53748cc04f46"
     },
     {
       "id": "fars-source-adapter",
@@ -94,7 +94,7 @@
     {
       "id": "odot-or-source-adapter",
       "path": "openplan/src/lib/safety/sources/odot-or.ts",
-      "sha256": "c25f542678a1fe3c13ac1bd045f306b84273ab6ea48d2a354d4a7f8920b56083"
+      "sha256": "34b57fed15f80f865c0fcd6973b791fc9225cb5c058c1540a990a4300f3e3ea3"
     },
     {
       "id": "odot-or-source-vocabulary",
@@ -264,7 +264,7 @@
       "jurisdictionId": "US-OR",
       "jobId": "safety-analysis",
       "status": "partial",
-      "applicability": "ODOT's published crash layer supplies located Oregon crashes with KABCO severity for live reads and corridor runs. FARS supplies the fatal-only records a Safety acquisition stores.",
+      "applicability": "ODOT's published crash layer supplies located Oregon crashes with KABCO severity for live reads, corridor runs and stored Safety acquisitions. FARS remains the fatal-only fallback.",
       "sourceIds": ["crash-source-registry", "odot-or-source-adapter", "odot-or-source-vocabulary", "fars-source-adapter"],
       "adapterIds": ["odot-or", "fars-national"],
       "authorities": [
@@ -282,7 +282,7 @@
         }
       ],
       "limitations": [
-        "The ODOT crash layer is read live and not stored: safety_crashes does not admit its source id, so a Safety acquisition in Oregon still stores fatal-only FARS records.",
+        "A Safety acquisition stores ODOT crashes only on an installation that has applied migration 20261102100000, which admits the ODOT source id to safety_crashes.",
         "ODOT states no access constraints but names no open license. Crashes ODOT could not locate are excluded, and the layer holds only the years ODOT publishes in it (2019 to 2024 when checked on November 1, 2026)."
       ]
     },
