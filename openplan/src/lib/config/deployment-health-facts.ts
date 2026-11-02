@@ -19,6 +19,7 @@ import {
   hasInvalidPublicMapboxToken,
   resolvePublicMapboxToken,
 } from "@/lib/mapbox/public-token";
+import { resolveOpenMapStyleUrl } from "@/lib/cartographic/open-map-style";
 import { classifyRunLiveness, type LivenessRun } from "@/lib/models/run-liveness";
 import {
   MODELING_WORKER_DECLARATION_ENV,
@@ -64,6 +65,7 @@ export function readDeploymentEnvFacts(): Omit<DeploymentHealthFacts, "modelingW
       // both a good and a bad token is working, and saying otherwise would be
       // a false alarm.
       hasInvalidToken: validToken.length === 0 && hasInvalidPublicMapboxToken(accessToken, legacyToken),
+      hasOpenStyle: resolveOpenMapStyleUrl(process.env.NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL) !== null,
     },
     censusApiKeyPresent: Boolean(process.env.CENSUS_API_KEY?.trim()),
     anthropicApiKeyPresent: sharedAnthropicApiKey() !== null,

@@ -81,7 +81,7 @@ import {
   serializeProjectCorridor,
   type ProjectCorridorRow,
 } from "@/lib/cartographic/project-corridor-record";
-import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+import { deriveHomeMapView, HOME_GEOGRAPHY_VIEW_COLUMNS, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
@@ -202,12 +202,13 @@ export default async function ProjectDetailPage({
   // apart only by asking where the workspace works. A deployment that predates
   // those columns rejects the extended select, so the read falls back to the
   // original list — the binding then resolves as "jurisdiction unknown", a
-  // disclosed fallback rather than a guess.
+  // disclosed fallback rather than a guess. Label and bbox come too, or an unset
+  // study area claims the workspace has no home geography (and no map view).
   const workspaceCoreColumns = "id, name, slug, stage_gate_template_id, stage_gate_template_version, created_at";
   const workspaceRead = await supabase
     .from("workspaces")
     .select(
-      `${workspaceCoreColumns}, stage_gate_template_selection, home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code`
+      `${workspaceCoreColumns}, stage_gate_template_selection, ${HOME_GEOGRAPHY_VIEW_COLUMNS}`
     )
     .eq("id", project.workspace_id)
     .single();

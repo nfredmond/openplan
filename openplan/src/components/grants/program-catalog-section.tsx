@@ -17,8 +17,15 @@ import {
 export function GrantsProgramCatalogSection({
   trackedTitles,
   workspaceJurisdiction,
+  focusedProjectId = null,
 }: {
   trackedTitles: string[];
+  /**
+   * The project Grants was opened for, if any. A program tracked from here is
+   * linked to it: an opportunity has no later control for adding a project,
+   * and the SS4A Safety seed refuses an opportunity without one.
+   */
+  focusedProjectId?: string | null;
   /**
    * Where this workspace works, as `resolveJurisdiction()` reports it from the
    * home geography. `null` means it has not said — which is disclosed above the
@@ -51,6 +58,7 @@ export function GrantsProgramCatalogSection({
           agencyName: program.administeringAgency,
           cadenceLabel: program.cycleNote,
           summary: program.summary,
+          ...(focusedProjectId ? { projectId: focusedProjectId } : {}),
         }),
       });
 

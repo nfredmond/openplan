@@ -113,6 +113,17 @@ export const HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES = HOME_GEOGRAPHY_COLUMN_NAMES.fil
 
 export const HOME_GEOGRAPHY_SCOPE_COLUMNS = HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES.join(", ");
 
+/**
+ * Every column except the boundary polygon: enough to name the place, resolve
+ * its jurisdiction and frame a map on it (`homeGeographyLabel`,
+ * `deriveHomeMapView`), without dragging megabytes of geometry into a page.
+ */
+const HOME_GEOGRAPHY_VIEW_COLUMN_NAMES = HOME_GEOGRAPHY_COLUMN_NAMES.filter(
+  (column): column is (typeof HOME_GEOGRAPHY_COLUMN_NAMES)[number] => column !== "home_geometry_geojson"
+);
+
+export const HOME_GEOGRAPHY_VIEW_COLUMNS = HOME_GEOGRAPHY_VIEW_COLUMN_NAMES.join(", ");
+
 /** The smallest workspace projection that can resolve a legal jurisdiction. */
 export const HOME_JURISDICTION_COLUMN_NAMES = HOME_GEOGRAPHY_COLUMN_NAMES.filter(
   (column): column is (typeof HOME_GEOGRAPHY_COLUMN_NAMES)[number] =>

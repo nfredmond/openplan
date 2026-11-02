@@ -860,6 +860,7 @@ export default async function GrantsPage({
           <GrantsProgramCatalogSection
             trackedTitles={trackedOpportunityTitles}
             workspaceJurisdiction={workspaceJurisdiction}
+            focusedProjectId={activeFocusedProjectId}
           />
           <GrantsGovLiveSection trackedTitles={trackedOpportunityTitles} />
       </PageTabPanel>
