@@ -34,8 +34,12 @@ import {
 } from "./vocabulary";
 import type { SafetyCrashCollection, SafetyCrashFeature } from "./client-types";
 import { readCrashesForStudyArea, type CrashSourceIdentity } from "./read-only-lane";
-import { CCRS_SOURCE_ID } from "./sources/ccrs";
-import { fetchSeriousInjuryCollisionIds } from "./sources/ccrs-injury";
+import { enrichSeriousInjuries, seriousInjuryInputsForAdapter } from "./sources/serious-injury";
+import {
+  seriousInjuryAvailability,
+  seriousInjuryInputsForRecord,
+  type SeriousInjuryInputs,
+} from "./serious-injury-availability";
 import { resolveCrashSource, type CrashStudyAreaStates } from "./sources/registry";
 import type { CrashPartyRecord, CrashRecord, CrashSourceAdapter } from "./sources/types";
 import {
@@ -193,6 +197,12 @@ export type IngestCrashesResult = {
   severityCompleteness: string;
   /** Injury crashes upgraded to KABCO A by the injured-person join. */
   seriousInjuryUpgrades: number;
+  /**
+   * The source's declared completeness and whether its serious-injury join
+   * ran. The page renders the availability sentence from these through
+   * `seriousInjuryAvailability`, the same function every other surface uses.
+   */
+  seriousInjury: SeriousInjuryInputs;
   /**
    * What happened to the person-level pull.
    *
@@ -431,48 +441,6 @@ export function toLiveCrashCollection(
 }
 
 /**
- * Upgrade injury crashes to KABCO A using the CCRS injured-person table.
- *
- * Only `injury` rows are candidates: a fatal crash already outranks serious
- * injury, and a PDO crash by definition injured nobody. Returns the records
- * with severity upgraded in place, so the caller writes one consistent batch.
- *
- * A failure here is deliberately NOT fatal to the ingest — the crashes are still
- * real and worth storing. The caller keeps `severityCompleteness` at
- * `fatal_injury_only` in that case, so the UI says serious injuries could not be
- * separated instead of implying there were none.
- */
-export async function applySeriousInjuryUpgrade(
-  records: CrashRecord[],
-  signal?: AbortSignal
-): Promise<{ records: CrashRecord[]; upgraded: number }> {
-  const byYear = new Map<number, string[]>();
-  for (const record of records) {
-    if (record.severity !== "injury" || record.collisionYear === null) continue;
-    const bucket = byYear.get(record.collisionYear) ?? [];
-    bucket.push(record.externalId);
-    byYear.set(record.collisionYear, bucket);
-  }
-
-  const serious = new Set<string>();
-  for (const [year, collisionIds] of byYear) {
-    const found = await fetchSeriousInjuryCollisionIds({ year, collisionIds, signal });
-    for (const id of found) serious.add(id);
-  }
-
-  let upgraded = 0;
-  const out = records.map((record) => {
-    if (record.severity === "injury" && serious.has(record.externalId)) {
-      upgraded += 1;
-      return { ...record, severity: "severe_injury" as const };
-    }
-    return record;
-  });
-
-  return { records: out, upgraded };
-}
-
-/**
  * De-duplicate within a single fetch before writing.
  *
  * Postgres rejects an ON CONFLICT batch that contains the same key twice
@@ -490,6 +458,15 @@ export function dedupeRecords(records: CrashRecord[]): CrashRecord[] {
   }
   return out;
 }
+
+/**
+ * No source answered. Read the way a stored coverage-gap row (`none`,
+ * `fatal_only`) is read back, so the response and the reload agree.
+ */
+const NO_SOURCE_SERIOUS_INJURY: SeriousInjuryInputs = seriousInjuryInputsForRecord({
+  sourceId: "none",
+  severityCompleteness: "fatal_only",
+});
 
 export async function ingestCrashesForStudyArea(
   params: IngestCrashesParams
@@ -517,6 +494,7 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: [],
       severityCompleteness: resolution.adapter.severityCompleteness,
       seriousInjuryUpgrades: 0,
+      seriousInjury: seriousInjuryInputsForAdapter(resolution.adapter, false),
       partyCompleteness: partyPostureFor(resolution.adapter),
       partyCount: null,
       involvementBasis: null,
@@ -546,7 +524,13 @@ export async function ingestCrashesForStudyArea(
 
     if (live.kind === "read_only") {
       const clipped = clipCrashRecordsToBoundary(dedupeRecords(live.fetched.records), params.bbox, params.boundary);
-      const records = clipped.records;
+      // The same join a stored acquisition runs, so a live read of the same
+      // crashes says the same thing about serious injury.
+      const joined = await enrichSeriousInjuries(live.adapter, clipped.records, {
+        enabled: params.enrichSeriousInjury !== false,
+        signal: params.signal,
+      });
+      const records = joined.records;
       const counts = crashCountsForStudyArea(clipped, {
         ...live.fetched,
         retrievedCount: live.fetched.records.length,
@@ -568,8 +552,9 @@ export async function ingestCrashesForStudyArea(
         yearsCovered: live.fetched.yearsCovered,
         publishedThrough: live.fetched.publishedCutoff?.publishedThrough,
         publishedThroughProvenance: live.fetched.publishedCutoff?.provenance ?? live.fetched.resourceUpdates,
-        severityCompleteness: live.adapter.severityCompleteness,
-        seriousInjuryUpgrades: 0,
+        severityCompleteness: seriousInjuryAvailability(joined.seriousInjury).effective ?? live.adapter.severityCompleteness,
+        seriousInjuryUpgrades: joined.upgraded,
+        seriousInjury: joined.seriousInjury,
         // A live read stores nothing, so it stores no people either — and it
         // still discloses what the source COULD have said, because the same
         // filter panel renders both lanes.
@@ -606,6 +591,7 @@ export async function ingestCrashesForStudyArea(
         yearsCovered: [],
         severityCompleteness: live.adapter.severityCompleteness,
         seriousInjuryUpgrades: 0,
+        seriousInjury: seriousInjuryInputsForAdapter(live.adapter, false),
         partyCompleteness: partyPostureFor(live.adapter),
         partyCount: null,
         involvementBasis: null,
@@ -642,6 +628,7 @@ export async function ingestCrashesForStudyArea(
         yearsCovered: [],
         severityCompleteness: "fatal_only",
         seriousInjuryUpgrades: 0,
+        seriousInjury: NO_SOURCE_SERIOUS_INJURY,
         partyCompleteness: "not_supported",
         partyCount: null,
         involvementBasis: null,
@@ -686,6 +673,7 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: [],
       severityCompleteness: "fatal_only",
       seriousInjuryUpgrades: 0,
+      seriousInjury: NO_SOURCE_SERIOUS_INJURY,
       partyCompleteness: "not_supported",
       partyCount: null,
       involvementBasis: null,
@@ -737,21 +725,18 @@ export async function ingestCrashesForStudyArea(
     const studyArea = counts.studyArea;
     let records = clipped.records;
 
-    // KSI upgrade. Only CCRS has the injured-person table, and only when the
-    // caller wants it. If it fails, keep the crashes and keep the honest
-    // "serious injuries not separable" completeness rather than losing the run.
-    let severityCompleteness = adapter.severityCompleteness;
-    let seriousInjuryUpgrades = 0;
-    if (adapter.id === CCRS_SOURCE_ID && params.enrichSeriousInjury !== false) {
-      try {
-        const upgrade = await applySeriousInjuryUpgrade(records, params.signal);
-        records = upgrade.records;
-        seriousInjuryUpgrades = upgrade.upgraded;
-        severityCompleteness = "kabco_full";
-      } catch {
-        severityCompleteness = adapter.severityCompleteness;
-      }
-    }
+    // KSI upgrade, through the adapter's own join when it has one and the
+    // caller wants it. If it fails, the crashes are kept and the recorded
+    // completeness stays what the crash file declares, so every reader says
+    // serious injuries were not separated rather than implying there were none.
+    const joined = await enrichSeriousInjuries(adapter, records, {
+      enabled: params.enrichSeriousInjury !== false,
+      signal: params.signal,
+    });
+    records = joined.records;
+    const seriousInjuryUpgrades = joined.upgraded;
+    const severityCompleteness =
+      seriousInjuryAvailability(joined.seriousInjury).effective ?? adapter.severityCompleteness;
 
     // PERSON ROWS. Same degradation contract as the KSI join above: a failure
     // keeps the crashes and records that people were not retrieved. It is the
@@ -879,6 +864,7 @@ export async function ingestCrashesForStudyArea(
       publishedThroughProvenance: fetched.publishedCutoff?.provenance ?? fetched.resourceUpdates,
       severityCompleteness,
       seriousInjuryUpgrades,
+      seriousInjury: joined.seriousInjury,
       partyCompleteness,
       partyCount,
       involvementBasis,
@@ -913,6 +899,7 @@ export async function ingestCrashesForStudyArea(
       yearsCovered: [],
       severityCompleteness: adapter.severityCompleteness,
       seriousInjuryUpgrades: 0,
+      seriousInjury: seriousInjuryInputsForAdapter(adapter, false),
       partyCompleteness: partyPostureFor(adapter),
       partyCount: null,
       involvementBasis: null,

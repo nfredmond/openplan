@@ -20,6 +20,34 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**"Can OpenPlan do this here?" answers for every state, DC and territory:**
+the jurisdiction support panel now has an entry for all 50 states, DC,
+American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.
+Virgin Islands, reviewed November 2, 2026 (registry 2026-11-02.3, review by
+December 2). Each job shows what the code does there: the crash sources the
+safety registry serves (FARS fatal-only in most states; Iowa, Ohio and DC
+state layers read live and not stored; no source in the four territories
+without FARS), the state grant bundle where one exists (Washington, Colorado,
+Texas and Ohio added), no configured land-use bundle outside California, and no
+model validation outside California. Project handoff reads "Not assessed here"
+in the 53 newly listed places, because no journey there is retained as
+evidence. California's land-use entry now says specific plans use their own
+checklist, which has been true since October 7. The direction check fails if
+any of the 56 entries is missing.
+
+**One serious-injury statement for the same crashes (KI-2026-11-02-046):** the
+Safety page, the corridor analysis, report caveats, the SS4A appendices, the RTP
+safety line and the high-injury network now take serious-injury availability
+from one function of the source's declared severity and whether its serious-injury
+join ran. A California corridor run now joins the CCRS injured-person table like
+a Safety acquisition does, so it reports the same serious-injury count instead
+of saying serious injury is not separable; the injury total and the safety score
+do not change. When the join cannot run, every surface says the injured-person
+records were not joined, not that CCRS cannot separate serious injury. The join
+now counts as not run when data.ca.gov does not answer or a requested year has
+no injured-person table; before, an outage during an acquisition recorded zero
+serious injuries as a finding. Nothing to do on upgrade; no migration.
+
 **County search without a Census key:** county search and county boundaries
 now come from the Census TIGERweb Counties layer, the same keyless service
 cities, CDPs, towns, tribal areas and metro areas already used. An install
@@ -82,6 +110,19 @@ Once an application section is final, a draft, export, Safety seed, map package
 or award exists, the link no longer changes; track a new opportunity for the
 other project. The database does not yet enforce these rules on its own.
 
+**ATP application PDF carries its evidence (KI-2026-11-02-044, 045, 047):** an
+application set up from the ATP template now exports with evidence appendices
+drawn from the linked project's saved records: the ATP screening packet
+(program facts marked `[VERIFY]` with the CTC's ATP page, and OpenPlan screening
+scores or "Not recorded"), the latest crash acquisition, the planning-level
+estimate, engagement, disadvantaged-community and equity inputs, and the
+benefit-cost summary. A record the project lacks is listed as missing. The
+export panel offers the same choice of appendices it offers for SS4A. Every
+application PDF now names the person who finalized each section by their
+workspace email, or says the person is not on record, instead of printing a
+user id; lists only the standing caveats for evidence it includes; and prints
+times in the workspace time zone. No migration.
+
 **ATP report states what it knows (KI-2026-11-02-040 to 042):** the ATP report
 downloaded from an ATP application now cites SB 535 to Health and Safety Code
 §39711, calls its numbers OpenPlan screening scores rather than CTC scoring
@@ -91,6 +132,18 @@ internal files. It prints the project's recorded summary and planning-level
 estimate instead of "to be provided", and names the crash source, years and
 retrieval date behind the safety score. The ATP panel no longer runs past its
 border on a phone.
+
+**My Work lists stale evidence:** the "Waiting on a person" section now lists
+report packets the Reports page would ask you to refresh, and packets a newer
+model run flagged, each linked to the report's change review. It also lists SS4A
+applications whose seeded Safety evidence changed after the seed (new crash
+records, a changed project place, or a different linked project), linked to the
+application, and seeds that cannot be checked, such as seeds made before
+November 2. Seeding again keeps final sections, so an application stays listed
+while any final section still comes from an earlier seed whose evidence changed,
+and the item names those sections. Archived reports and awarded or archived
+applications are left out. A failed read is named on the page instead of shown
+as an empty list. No migration is needed.
 
 **My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
 the "Waiting on a person" section now lists model runs that were interrupted

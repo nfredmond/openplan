@@ -25,6 +25,7 @@
  */
 
 import type { CrashSeverity } from "./sources/types";
+import { isCrashSeverityCompleteness, separatesSeriousInjuries } from "./serious-injury-availability";
 import type { SafetyRoadContextFeature } from "./road-context";
 
 export type HighInjuryNetworkBasis = "ksi" | "fatal_only";
@@ -124,8 +125,11 @@ const TIE_TOLERANCE = 1e-9;
  * severity coverage. Null means coverage is not recorded, so nothing is ranked.
  */
 export function highInjuryNetworkBasis(severityCompleteness: string | null | undefined): HighInjuryNetworkBasis | null {
-  if (severityCompleteness === "kabco_full") return "ksi";
-  if (severityCompleteness === "fatal_only" || severityCompleteness === "fatal_injury_only") return "fatal_only";
+  // The recorded completeness is `seriousInjuryAvailability(...).effective`,
+  // written at acquisition, so the network ranks on serious injuries exactly
+  // when every other surface says they are separated.
+  if (separatesSeriousInjuries(severityCompleteness)) return "ksi";
+  if (isCrashSeverityCompleteness(severityCompleteness)) return "fatal_only";
   return null;
 }
 

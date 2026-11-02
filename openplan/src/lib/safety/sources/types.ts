@@ -330,6 +330,22 @@ export type CrashSourceAdapter = {
    * that there were none.
    */
   fetchParties?: (params: CrashPartyFetchParams) => Promise<CrashPartyRecord[]>;
+  /**
+   * Separate suspected serious injury (KABCO A) for crashes this adapter already
+   * returned, when its crash file cannot and another table of the same source
+   * can.
+   *
+   * OPTIONAL, and the absence is the declaration: a source without it either
+   * records severity on the crash (`kabco_full`) or has no way to separate
+   * serious injury at all. Only meaningful beside `fatal_injury_only`. Callers
+   * reach it through `enrichSeriousInjuries`, so the Safety acquisition, the
+   * live read and the corridor scorecard run the same join. A throw means the
+   * join did not apply; the crashes are kept.
+   */
+  enrichSeriousInjury?: (params: {
+    records: CrashRecord[];
+    signal?: AbortSignal;
+  }) => Promise<{ records: CrashRecord[]; upgraded: number }>;
 };
 
 /**

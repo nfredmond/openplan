@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 
 import { COMING_UP_KIND_LABELS, comingUpFromMyWork } from "@/lib/dashboard/coming-up";
 import { loadMyWork } from "@/lib/my-work/query";

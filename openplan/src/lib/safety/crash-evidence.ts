@@ -51,13 +51,15 @@ import {
   type CrashSeverity,
 } from "./vocabulary";
 import { readEveryPage } from "@/lib/supabase/paged-read";
+import {
+  seriousInjuryAvailabilityForRecord,
+  type SeriousInjuryAvailability,
+} from "./serious-injury-availability";
 import { readCrashPublicationEvidence } from "./publication-evidence";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
   SAFETY_CRASH_DATA_NARRATIVE_CAVEAT,
-  SAFETY_FATAL_ONLY_CAVEAT,
   SAFETY_SCREENING_NARRATIVE_CAVEAT,
-  SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
   SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
   SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT,
   describeGeocodingShortfall,
@@ -130,8 +132,14 @@ export type SafetyCrashEvidence = {
    * evidence would put two sources of the same truth on one screen.
    */
   status: string;
-  /** Whether the source separates suspected serious injuries — see `separatesSeriousInjuries`. */
+  /** Recorded completeness after any serious-injury join. `seriousInjury` below says what it means. */
   severityCompleteness: string;
+  /**
+   * Whether serious injuries are separated for this acquisition and the one
+   * sentence that says so, from `seriousInjuryAvailability`. Every surface that
+   * prints this acquisition prints this sentence, never its own.
+   */
+  seriousInjury: SeriousInjuryAvailability;
   /** Retrieval stopped at the record cap, so every count here is a floor. */
   truncated: boolean;
   sourceLabel: string | null;
@@ -226,16 +234,14 @@ export function totalCountedParties(counts: SafetyCrashRoleCounts | null): numbe
 }
 
 /**
- * Whether a source separates suspected serious injuries.
- *
- * The severity-completeness marker is the ingest's own record of what its source
- * could express, and `severe_injury` is only reachable when it says `kabco_full`.
- * A severe-crash figure derived without it would be `fatal + 0`, which reads as
- * "no serious-injury crashes occurred" — an unsupported claim this module must
- * not publish.
+ * The serious-injury availability an evidence object carries, or, for an
+ * object assembled elsewhere without it, the same function read from its
+ * recorded completeness alone (an unidentified source, so no join is claimed).
  */
-export function separatesSeriousInjuries(severityCompleteness: string): boolean {
-  return severityCompleteness === "kabco_full";
+export function safetyEvidenceSeriousInjury(
+  item: Pick<SafetyCrashEvidence, "severityCompleteness"> & { seriousInjury?: SeriousInjuryAvailability }
+): SeriousInjuryAvailability {
+  return item.seriousInjury ?? seriousInjuryAvailabilityForRecord({ sourceId: null, severityCompleteness: item.severityCompleteness });
 }
 
 // Visible rankings and printed packets use the same coverage disclosure.
@@ -261,7 +267,11 @@ export function buildSafetyCrashEvidence(
   const severityCounts = counts.severity;
   const roleCounts = counts.role;
 
-  const ksi = severityCounts && separatesSeriousInjuries(ingest.severityCompleteness)
+  const seriousInjury = seriousInjuryAvailabilityForRecord({
+    sourceId: ingest.sourceId,
+    severityCompleteness: ingest.severityCompleteness,
+  });
+  const ksi = severityCounts && seriousInjury.separable
     ? severityCounts.fatal + severityCounts.severe_injury
     : null;
   const unclassifiedCount = severityCounts ? severityCounts.unknown : null;
@@ -285,12 +295,9 @@ export function buildSafetyCrashEvidence(
     narrativeCaveats.push(SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT);
   }
 
-  if (!separatesSeriousInjuries(ingest.severityCompleteness)) {
-    caveats.push(SAFETY_SEVERITY_COMPLETENESS_CAVEAT);
-  }
-  if (ingest.severityCompleteness === "fatal_only") {
-    caveats.push(SAFETY_FATAL_ONLY_CAVEAT);
-  }
+  // Always said, separated or not: where a serious-injury count comes from is
+  // part of citing it, and the corridor run of the same crashes says the same.
+  caveats.push(seriousInjury.statement);
 
   if (ingest.truncated) {
     caveats.push(
@@ -334,6 +341,7 @@ export function buildSafetyCrashEvidence(
     projectId: ingest.projectId,
     status: ingest.status,
     severityCompleteness: ingest.severityCompleteness,
+    seriousInjury,
     truncated: ingest.truncated,
     sourceLabel: ingest.sourceLabel,
     attribution: ingest.attribution,

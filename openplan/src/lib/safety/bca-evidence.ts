@@ -32,7 +32,7 @@
  */
 
 import {
-  separatesSeriousInjuries,
+  safetyEvidenceSeriousInjury,
   totalCountedCrashes,
   type SafetyCrashEvidence,
 } from "./crash-evidence";
@@ -117,10 +117,9 @@ export function buildBcaCrashInputSuggestion(
     );
   }
 
-  if (!separatesSeriousInjuries(evidence.severityCompleteness)) {
-    caveats.push(
-      "This source could not separate suspected serious injuries; they are folded into the injury dimension."
-    );
+  const seriousInjury = safetyEvidenceSeriousInjury(evidence);
+  if (!seriousInjury.separable) {
+    caveats.push(`${seriousInjury.statement} OpenPlan could not separate them, so serious injuries are folded into the injury dimension.`);
   }
 
   if (evidence.truncated) {

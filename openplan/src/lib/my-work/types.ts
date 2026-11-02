@@ -60,6 +60,8 @@ export const MY_WORK_SOURCE_IDS = [
   "stalled_model_runs",
   "failed_county_runs",
   "aerial_processing",
+  "stale_report_packets",
+  "stale_ss4a_seeds",
   "narrative_drafts",
   "decision_package_reviews",
   "land_use_plan_actions",

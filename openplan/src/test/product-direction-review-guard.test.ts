@@ -51,7 +51,7 @@ describe("the recurring product-direction review", () => {
     const frozenReadiness = JSON.parse(
       readFileSync(resolve(APP_ROOT, "src/lib/jurisdiction-readiness/registry.v1.json"), "utf8"),
     );
-    expect(frozenReadiness.releaseVersion).toBe("0.44.0");
+    expect(frozenReadiness.releaseVersion).toBe("0.72.0");
     expect(registry.currentRelease).toBe(`v${JSON.parse(readFileSync(resolve(APP_ROOT, "package.json"), "utf8")).version}`);
     expect(source).toContain("Product direction records checked");
   });
@@ -111,6 +111,60 @@ describe("the recurring product-direction review", () => {
     try {
       if (accepted) expect(check()).toContain("Product direction records checked");
       else expect(check).toThrow(/latest review claims future release/);
+    } finally {
+      rmSync(directory, { recursive: true });
+    }
+  });
+
+  // Each case edits the readiness registry in memory and re-pins its hash in
+  // the capability registry, so only the rule under test can reject it.
+  it.each([
+    ["an unchanged registry", "", null],
+    ["a dropped territory", "drop:US-VI", /has no entry for US-VI/],
+    ["a dropped state", "drop:US-WY", /has no entry for US-WY/],
+    ["an invented code", "invent:US-XX", /US-XX is not a known state, DC or territory/],
+    ["an unassessed cell with an adapter", "unassessed:US-NV/land-use-plan", /US-NV\/land-use-plan is unassessed but names adapters/],
+    ["an unassessed cell with an authority", "unassessed-authority:US-NV/safety-analysis", /US-NV\/safety-analysis is unassessed but names adapters or authorities/],
+  ])("checks the readiness entries for %s", (_name, mutation, rejection) => {
+    const directory = mkdtempSync(resolve(tmpdir(), "openplan-review-readiness-"));
+    const preload = resolve(directory, "readiness.cjs");
+    writeFileSync(preload, `const fs = require('node:fs'); const crypto = require('node:crypto');
+      const sep = require('node:path').sep; const read = fs.readFileSync; let text = null;
+      function mutated(file) {
+        if (text !== null) return text;
+        const registry = JSON.parse(read.call(fs, file, 'utf8'));
+        const [kind, target] = ${JSON.stringify(mutation)}.split(':');
+        if (kind === 'drop') {
+          registry.jurisdictions = registry.jurisdictions.filter((j) => j.id !== target);
+          registry.claims = registry.claims.filter((c) => c.jurisdictionId !== target);
+        } else if (kind === 'invent') {
+          registry.jurisdictions.push({ id: target, label: target, country: 'US', subdivision: target.slice(3), assessmentKind: 'code-inventory' });
+        } else if (kind === 'unassessed') {
+          registry.claims.find((c) => c.id === target).status = 'unassessed';
+        } else if (kind === 'unassessed-authority') {
+          Object.assign(registry.claims.find((c) => c.id === target), { status: 'unassessed', adapterIds: [] });
+        }
+        text = JSON.stringify(registry);
+        return text;
+      }
+      fs.readFileSync = function(file, ...args) {
+        const name = String(file).split(sep).join('/');
+        if (name.endsWith('/jurisdiction-readiness/registry.v1.json')) return mutated(file);
+        const value = read.call(this, file, ...args);
+        if (name.endsWith('/US_PLANNING_CAPABILITY_REGISTRY.json')) {
+          const pinned = JSON.parse(String(value));
+          const path = require('node:path').resolve(require('node:path').dirname(file), '..', '..', pinned.readinessRegistry.path);
+          pinned.readinessRegistry.sha256 = crypto.createHash('sha256').update(JSON.stringify(JSON.parse(mutated(path)))).digest('hex');
+          return JSON.stringify(pinned);
+        }
+        return value;
+      }; require('node:module').syncBuiltinESMExports();`);
+    const check = () => execFileSync(process.execPath, ["--require", preload, SCRIPT, "--check"], {
+      cwd: APP_ROOT, encoding: "utf8", stdio: "pipe",
+    });
+    try {
+      if (rejection === null) expect(check()).toContain("Product direction records checked");
+      else expect(check).toThrow(rejection);
     } finally {
       rmSync(directory, { recursive: true });
     }

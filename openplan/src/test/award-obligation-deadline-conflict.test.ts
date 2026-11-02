@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 import { AWARD_MIRRORED, buildDb, loadSeededMyWork } from "./helpers/fake-my-work-tables";
 
 describe("award obligation deadline conflicts", () => {

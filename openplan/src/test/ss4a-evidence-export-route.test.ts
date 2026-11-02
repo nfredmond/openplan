@@ -175,7 +175,7 @@ describe("SS4A application export with evidence appendices", () => {
     expect(html).toContain(snapshot.hash);
     expect(html).toContain(EVIDENCE_IDS.bcaVersion);
     expect(html).toContain(EVIDENCE_IDS.campaign);
-    expect(html).toContain("Fatal crashes only. The source records only crashes in which someone was killed");
+    expect(html).toContain("Fatal crashes only. This source is a fatality census: it records only crashes in which someone was killed");
 
     const body = await response.json();
     expect(body.appendices.map((a: { status: string }) => a.status)).toEqual(["included", "included", "included", "included", "included"]);

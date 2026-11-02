@@ -54,7 +54,7 @@ export function fixtureNetwork(crashes: HighInjuryNetworkCrash[] = CRASH_ROWS) {
 export function evidenceAcquisition(overrides: Record<string, unknown> = {}) {
   const acquisition: Record<string, unknown> = Object.fromEntries(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION.split(", ").map((key) => [key, null]));
   Object.assign(acquisition, {
-    id: EVIDENCE_IDS.ingest, project_id: EVIDENCE_IDS.project, status: "ready", source_id: "fars",
+    id: EVIDENCE_IDS.ingest, project_id: EVIDENCE_IDS.project, status: "ready", source_id: "fars-national",
     source_label: "NHTSA Fatality Analysis Reporting System (FARS)", created_at: EVIDENCE_DATE,
     min_lon: -100.05, min_lat: 39.95, max_lon: -99.95, max_lat: 40.05,
     severity_completeness: "fatal_only", crash_count: 4, geocoded_count: 4, stored_count: 4, truncated: false,

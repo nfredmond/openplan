@@ -36,7 +36,7 @@ import {
   type PacketGeographyFigure,
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
-import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE, safetyEvidenceSeriousInjury, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
@@ -1263,7 +1263,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   const concentrations = data.safetyKsiConcentrations;
   const acquisitionCoverage = data.safetyEvidence ?? [];
   const ksiPresentationSupported = acquisitionCoverage.length > 0
-    && acquisitionCoverage.every(item => separatesSeriousInjuries(item.severityCompleteness));
+    && acquisitionCoverage.every(item => safetyEvidenceSeriousInjury(item).separable);
   const concentrationMarkup = concentrations === undefined
     ? ""
     : !ksiPresentationSupported

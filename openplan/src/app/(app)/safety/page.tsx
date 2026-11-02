@@ -35,7 +35,7 @@ import { readCrashStudyAreaCoverage } from "@/lib/safety/crash-study-area";
 
 export const metadata = moduleMetadata("Safety");
 
-const INGEST_SUMMARY_COLUMNS = "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code,dimension_coverage";
+const INGEST_SUMMARY_COLUMNS = "id,project_id,source_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code,dimension_coverage";
 
 /**
  * `?projectId=` is how this page is TOLD which project it was opened for.
@@ -281,6 +281,7 @@ export default async function SafetyPage({
   const latestIngest: SafetyIngestSummary | null = ingestRow
     ? {
         id: ingestRow.id as string,
+        sourceId: typeof ingestRow.source_id === "string" ? ingestRow.source_id : null,
         sourceLabel: (ingestRow.source_label as string | null) ?? null,
         attribution: (ingestRow.attribution as string | null) ?? null,
         coverageState: ingestRow.coverage_state as string,

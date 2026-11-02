@@ -1,3 +1,4 @@
+import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
 import { buildSafetySeedPreview, SS4A_SECTION_KEYS } from "@/lib/grants/ss4a-safety-seed";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
@@ -402,6 +403,29 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     await screen.findByText(`SHA-256 ${"a".repeat(64)}`);
     const exportCall = recordedCalls().find((call) => call.method === "POST");
     expect(exportCall?.body).toEqual({ appendices: ["hin_map", "crash_summary", "countermeasures", "engagement"] });
+  });
+
+  it("offers the ATP evidence appendices on an ATP application and sends the choice", async () => {
+    const atpTemplate = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
+    const atpSections = (atpTemplate.applicationSections ?? []).map((template, index) =>
+      sectionRow({ id: seedId(30 + index), section_key: template.key, title: template.title, sort_order: index })
+    );
+    await exportWith(applicationPayload({ sections: atpSections, attachments: [] }));
+    const boxes = screen.getAllByRole("checkbox").filter((box) => box.closest("[data-testid='export-appendices']"));
+    expect(boxes.map((box) => box.closest("label")?.textContent)).toEqual([
+      "ATP screening packet",
+      "Crash summary",
+      "Cost estimate",
+      "Engagement summary",
+      "Disadvantaged-community and equity inputs",
+      "Benefit-cost summary",
+    ]);
+    expect(boxes.every((box) => (box as HTMLInputElement).checked)).toBe(true);
+    fireEvent.click(screen.getByRole("checkbox", { name: "Cost estimate" }));
+    fireEvent.click(screen.getByRole("button", { name: /export application packet \(pdf\)/i }));
+    await screen.findByText(`SHA-256 ${"a".repeat(64)}`);
+    const exportCall = recordedCalls().find((call) => call.method === "POST");
+    expect(exportCall?.body).toEqual({ appendices: ["scoring_packet", "crash_summary", "engagement", "equity", "bca"] });
   });
 
   it("offers no appendix choice outside SS4A and posts without a body", async () => {

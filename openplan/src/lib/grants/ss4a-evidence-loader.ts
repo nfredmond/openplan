@@ -4,14 +4,11 @@
  * workspace and linked project. A failed read becomes an "unreadable" state
  * with its reason; it never becomes an empty record.
  *
- * Only the appendices the planner selected are read.
+ * Only the appendices the planner selected are read. The benefit-cost and
+ * engagement reads are shared with other programs (`evidence-appendix-reads.ts`).
  */
 
-import { buildLatestBcaScreeningByProjectId, type ProjectBcaScreeningRowLike } from "@/lib/grants/bca-evidence";
-import {
-  buildProjectEngagementEvidenceByProjectId,
-  type ProjectEngagementCampaignRowLike,
-} from "@/lib/grants/engagement-evidence";
+import { loadProjectBcaRead, loadProjectEngagementRead, type EvidenceQueryClient } from "@/lib/grants/evidence-appendix-reads";
 import type { SafetySeedProvenance } from "@/lib/grants/safety-seed-origin";
 import type { Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 import type { Ss4aEvidenceRecords, Ss4aHinRecomputeRead, Ss4aSafetySourceRead } from "@/lib/grants/ss4a-evidence-appendices";
@@ -21,36 +18,17 @@ import { describeHighInjuryNetworkUnavailable } from "@/lib/safety/high-injury-n
 import { buildHighInjuryNetworkForIngest, type HighInjuryNetworkSupabaseLike } from "@/lib/safety/high-injury-network-loader";
 import { readSafetyKsiBounds } from "@/lib/safety/ksi-concentrations";
 import { readCachedUsRoadContext } from "@/lib/safety/road-context";
-import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-
-type QueryError = { message: string } | null;
-type QueryResult = { data: unknown; error: QueryError; count?: number | null };
-type QueryBuilder = PromiseLike<QueryResult> & {
-  select: (columns: string, options?: { count: "exact" }) => QueryBuilder;
-  eq: (column: string, value: unknown) => QueryBuilder;
-  neq: (column: string, value: unknown) => QueryBuilder;
-  in: (column: string, values: unknown[]) => QueryBuilder;
-  order: (column: string, options?: { ascending?: boolean }) => QueryBuilder;
-  limit: (count: number) => QueryBuilder;
-  maybeSingle: () => PromiseLike<QueryResult>;
-};
-type QueryClient = { from: (table: string) => QueryBuilder };
 
 /** Seeded artifacts considered at once. More than this is refused rather than sampled. */
 const MAX_SEEDED_ARTIFACTS = 50;
 /** Matches the report generator's cached road read, so a recomputation sees the same lines. */
 const ROAD_CONTEXT_LIMIT = 2000;
-const ENGAGEMENT_CAMPAIGN_LIMIT = 200;
 
 const SS4A_ARTIFACT_PROJECTION = "id, report_id, generated_at, metadata_json";
 const SS4A_ROAD_CONTEXT_PROJECTION = "id, road_name, geometry_geojson, source_id, source_vintage";
-const SS4A_BCA_VERSION_PROJECTION = "id, project_id, created_at, document_json, engine_version";
-const SS4A_BCA_SCREENING_PROJECTION = "id, project_id, result_json, engine_version, created_at";
-const SS4A_ENGAGEMENT_PROJECTION =
-  "id, project_id, title, status, updated_at, ai_synthesis_json, ai_synthesized_at, representativeness_json, representativeness_computed_at";
 
 async function loadSafetySource(
-  client: QueryClient,
+  client: EvidenceQueryClient,
   input: { workspaceId: string; projectId: string; seedHistory: readonly SafetySeedProvenance[] }
 ): Promise<Ss4aSafetySourceRead> {
   if (input.seedHistory.length === 0) return { status: "absent" };
@@ -110,7 +88,7 @@ async function loadSafetySource(
 }
 
 async function recomputeNetwork(
-  client: QueryClient,
+  client: EvidenceQueryClient,
   input: { workspaceId: string; projectId: string; snapshot: SafetyPlanSnapshot }
 ): Promise<Ss4aHinRecomputeRead> {
   const { snapshot } = input;
@@ -152,64 +130,6 @@ async function recomputeNetwork(
   return { status: "computed", network, roads };
 }
 
-async function loadBca(client: QueryClient, projectId: string): Promise<Ss4aEvidenceRecords["bca"]> {
-  const versions = await client
-    .from("project_bca_versions")
-    .select(SS4A_BCA_VERSION_PROJECTION)
-    .eq("project_id", projectId)
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .limit(1);
-  // An install without the workbench table falls back to saved screenings.
-  if (versions.error && !looksLikePendingSchema(versions.error.message)) {
-    return { status: "unreadable", reason: "Saved benefit-cost analyses could not be read. That is a failed read, not an absence of analysis." };
-  }
-  const latest = !versions.error && Array.isArray(versions.data) ? (versions.data[0] as Record<string, unknown> | undefined) : undefined;
-  if (latest && typeof latest.id === "string" && typeof latest.project_id === "string") {
-    return {
-      status: "workbench",
-      row: {
-        id: latest.id,
-        project_id: latest.project_id,
-        created_at: typeof latest.created_at === "string" ? latest.created_at : null,
-        engine_version: typeof latest.engine_version === "string" ? latest.engine_version : null,
-        document_json: latest.document_json,
-      },
-    };
-  }
-
-  const screenings = await client
-    .from("project_bca_screenings")
-    .select(SS4A_BCA_SCREENING_PROJECTION)
-    .eq("project_id", projectId)
-    .order("created_at", { ascending: false })
-    .limit(5);
-  if (screenings.error || !Array.isArray(screenings.data)) {
-    return { status: "unreadable", reason: "Saved benefit-cost screenings could not be read. That is a failed read, not an absence of analysis." };
-  }
-  if (screenings.data.length === 0) return { status: "absent" };
-  const screening = buildLatestBcaScreeningByProjectId(screenings.data as ProjectBcaScreeningRowLike[]).get(projectId);
-  return screening
-    ? { status: "screening", screening }
-    : { status: "unreadable", reason: "The saved benefit-cost screening does not carry its computed results." };
-}
-
-async function loadEngagement(client: QueryClient, projectId: string): Promise<Ss4aEvidenceRecords["engagement"]> {
-  const result = await client
-    .from("engagement_campaigns")
-    .select(SS4A_ENGAGEMENT_PROJECTION, { count: "exact" })
-    .eq("project_id", projectId)
-    .neq("status", "archived")
-    .order("updated_at", { ascending: false })
-    .limit(ENGAGEMENT_CAMPAIGN_LIMIT);
-  if (result.error || !Array.isArray(result.data)) {
-    return { status: "unreadable", reason: "Engagement campaigns could not be read. That is a failed read, not an absence of engagement." };
-  }
-  const evidence = buildProjectEngagementEvidenceByProjectId(result.data as ProjectEngagementCampaignRowLike[]).get(projectId);
-  if (!evidence) return { status: "absent" };
-  return { status: "ready", evidence, truncated: typeof result.count !== "number" || result.count > result.data.length };
-}
-
 /** Load the records for the selected appendices. */
 export async function loadSs4aEvidenceRecords(
   supabase: unknown,
@@ -220,7 +140,7 @@ export async function loadSs4aEvidenceRecords(
     selected: ReadonlySet<Ss4aAppendixKey>;
   }
 ): Promise<Ss4aEvidenceRecords> {
-  const client = supabase as QueryClient;
+  const client = supabase as EvidenceQueryClient;
   const { workspaceId, projectId, selected } = input;
   if (!projectId) {
     return {
@@ -235,8 +155,8 @@ export async function loadSs4aEvidenceRecords(
   const needsSafety = selected.has("hin_map") || selected.has("crash_summary") || selected.has("countermeasures");
   const [safety, bca, engagement, project] = await Promise.all([
     needsSafety ? loadSafetySource(client, { workspaceId, projectId, seedHistory: input.seedHistory }) : Promise.resolve({ status: "absent" } as const),
-    selected.has("bca") ? loadBca(client, projectId) : Promise.resolve({ status: "absent" } as const),
-    selected.has("engagement") ? loadEngagement(client, projectId) : Promise.resolve({ status: "absent" } as const),
+    selected.has("bca") ? loadProjectBcaRead(client, projectId) : Promise.resolve({ status: "absent" } as const),
+    selected.has("engagement") ? loadProjectEngagementRead(client, projectId) : Promise.resolve({ status: "absent" } as const),
     selected.has("engagement")
       ? client.from("projects").select("id, name").eq("id", projectId).eq("workspace_id", workspaceId).maybeSingle()
       : Promise.resolve({ data: null, error: null }),

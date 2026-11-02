@@ -51,13 +51,36 @@ export function validateSafetySeedSource(rows: SeedSourceRows): SafetyPlanSnapsh
   if (!persistence || persistence.artifact_id !== a.id || persistence.report_id !== r.id || persistence.project_id !== p.id || persistence.workspace_id !== o.workspace_id || persistence.snapshot_hash !== snapshot.hash || !sameSafetyRevision(persistence.source_project_updated_at, snapshot.projectUpdatedAt) || !sameSafetyRevision(persistence.source_report_updated_at, snapshot.reportUpdatedAt) || (!fence && !sameSafetyRevision(persistence.persisted_project_updated_at, p.updated_at))) {
     throw new SafetySeedRefusal("Safety generation custody is missing, mismatched or stale. Regenerate the report and preview its new artifact.");
   }
-  if (fence && (readAcquisitionEvidenceRevision(acquisition.evidence_revision) !== fence.acquisitionEvidenceRevision || safetyProjectPlaceHash(p) !== fence.projectPlaceHash)) {
+  if (fence && safetySeedFenceChanged(safetySeedFenceChanges(fence, acquisition, p))) {
     throw new SafetySeedRefusal("The crash records or project place behind this Safety report changed after it was generated. Regenerate the report and preview its new artifact.");
   }
   const receipt = a.metadata_json.generationWriteback as Record<string, unknown> | null;
   const plan = readReportSafetyActionPlan(r.metadata_json);
   if (snapshot.artifactId !== a.id || snapshot.reportId !== r.id || snapshot.workspaceId !== o.workspace_id || snapshot.projectId !== p.id || Date.parse(snapshot.generatedAt) !== Date.parse(a.generated_at) || !receipt || receipt.schema !== "openplan.report-generation-writeback.v1" || !sameSafetyRevision(receipt.reportUpdatedAt, r.updated_at) || !sameSafetyRevision(persistence.report_updated_at, r.updated_at) || snapshot.acquisition.id !== acquisition.id || safetySeedHash(snapshot.acquisition) !== safetySeedHash(frozenAcquisition(acquisition)) || !plan || safetySeedHash(plan) !== safetySeedHash(snapshot.selection) || plan.ingestId !== acquisition.id || !readReportSafetyIngestSelections(r.metadata_json).some((s) => s.ingestId === acquisition.id)) throw new SafetySeedRefusal("Safety source changed or generation did not finish. Regenerate the report and preview the new artifact.");
   return snapshot;
+}
+
+export type SafetySeedFence = NonNullable<SafetyPlanSnapshot["evidenceFence"]>;
+export type SafetySeedFenceChanges = { crashRecords: boolean; projectPlace: boolean };
+
+/**
+ * Compare a snapshot's fence with the acquisition and project as read now.
+ * A missing row counts as changed: the seed no longer matches anything.
+ * The seed route refuses on either change; My Work lists it.
+ */
+export function safetySeedFenceChanges(
+  fence: SafetySeedFence,
+  acquisition: Record<string, unknown> | null | undefined,
+  project: Record<string, unknown> | null | undefined,
+): SafetySeedFenceChanges {
+  return {
+    crashRecords: !acquisition || readAcquisitionEvidenceRevision(acquisition.evidence_revision) !== fence.acquisitionEvidenceRevision,
+    projectPlace: !project || safetyProjectPlaceHash(project) !== fence.projectPlaceHash,
+  };
+}
+
+function safetySeedFenceChanged(changes: SafetySeedFenceChanges): boolean {
+  return changes.crashRecords || changes.projectPlace;
 }
 
 /** The acquisition as the v1 snapshot froze it: every column except the mutation fence. */
@@ -100,7 +123,10 @@ export function buildSs4aSafetyDrafts(snapshot: SafetyPlanSnapshot, projectName:
     "budget-narrative": "[OPERATOR: Enter the approved cost estimate, currency, estimate date, methods, funding sources and match. This snapshot records no typed budget facts. No amounts, costs, currency or benefits have been inferred.]",
   };
   const provenance: SafetySeedProvenance = { kind: "openplan.ss4a-safety-seed.v1", artifactId: snapshot.artifactId, reportId: snapshot.reportId, acquisitionId: String(snapshot.acquisition.id), snapshotHash: snapshot.hash,
-    caveat: SAFETY_SEED_CAVEAT, sourceCaveats: [draft.draftNotice, ...(draft.crashSummary.kind === "present" ? [...draft.crashSummary.caveats, ...draft.crashSummary.figures.flatMap((f) => f.value === null && f.absentBecause ? [f.absentBecause] : [])] : [draft.crashSummary.reason]), draft.network.kind === "computed" ? draft.network.coverage : draft.network.reason, gaps, draft.componentSourceLine, draft.countermeasureSourceLine] };
+    caveat: SAFETY_SEED_CAVEAT,
+    // Two missing figures can share the serious-injury statement the crash
+    // caveats already carry; a sentence is listed once.
+    sourceCaveats: [...new Set([draft.draftNotice, ...(draft.crashSummary.kind === "present" ? [...draft.crashSummary.caveats, ...draft.crashSummary.figures.flatMap((f) => f.value === null && f.absentBecause ? [f.absentBecause] : [])] : [draft.crashSummary.reason]), draft.network.kind === "computed" ? draft.network.coverage : draft.network.reason, gaps, draft.componentSourceLine, draft.countermeasureSourceLine])] };
   return SS4A_SECTION_KEYS.map((key) => ({ section_key: key, draft_markdown: `${header}\n\n${bodies[key]}\n\nSnapshot component gaps, not findings of agency absence:\n\n${gaps}\n\n${draft.componentSourceLine}\n\nSource qualifications:\n\n${provenance.sourceCaveats.join("\n\n")}`, provenance }));
 }
 

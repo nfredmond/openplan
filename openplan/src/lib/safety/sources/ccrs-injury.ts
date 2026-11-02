@@ -29,8 +29,11 @@
  */
 
 import { fetchJsonWithRetry } from "@/lib/data-sources/http";
+import { CrashSourceUnavailableError, type CrashRecord } from "./types";
 
 const CKAN_BASE = "https://data.ca.gov/api/3/action";
+/** The CCRS adapter id, spelled here because `ccrs.ts` imports this module. */
+const CCRS_INJURY_SOURCE_ID = "ccrs-ca";
 const CCRS_PACKAGE_ID = "ccrs";
 
 /** KABCO A, current and retired spellings. */
@@ -52,7 +55,14 @@ export function chunk<T>(items: T[], size: number): T[][] {
   return out;
 }
 
-/** Resource ids for the per-year injured-person tables. */
+/**
+ * Resource ids for the per-year injured-person tables.
+ *
+ * THROWS when the manifest did not arrive. `fetchJsonWithRetry` answers an
+ * outage with null rather than an error, and reading that null as "no tables"
+ * let a data.ca.gov outage during an acquisition record `kabco_full` with no
+ * crash upgraded: zero serious injuries, published as a finding.
+ */
 export async function fetchInjuryResourceIds(signal?: AbortSignal): Promise<Map<number, string>> {
   const payload = await fetchJsonWithRetry<CkanPackageShow>(
     `${CKAN_BASE}/package_show?id=${CCRS_PACKAGE_ID}`,
@@ -65,8 +75,12 @@ export async function fetchInjuryResourceIds(signal?: AbortSignal): Promise<Map<
     }
   );
 
+  const resources = payload?.result?.resources;
+  if (!Array.isArray(resources)) {
+    throw new CrashSourceUnavailableError(CCRS_INJURY_SOURCE_ID, "data.ca.gov CCRS package manifest unreachable");
+  }
   const byYear = new Map<number, string>();
-  for (const resource of payload?.result?.resources ?? []) {
+  for (const resource of resources) {
     const name = typeof resource?.name === "string" ? resource.name : "";
     const id = typeof resource?.id === "string" ? resource.id : "";
     const match = /^InjuredWitnessPassengers_(\d{4})$/.exec(name);
@@ -84,6 +98,7 @@ function sqlLiteral(value: string): string {
  *
  * Returns only positives — a crash absent from the result is one where no
  * injured person was coded KABCO A, which is a real finding rather than a gap.
+ * A batch request that fails throws, so that finding is never made from a gap.
  */
 export async function fetchSeriousInjuryCollisionIds(params: {
   year: number;
@@ -112,11 +127,74 @@ export async function fetchSeriousInjuryCollisionIds(params: {
       { timeoutMs: 30_000, retries: 1 }
     );
 
-    for (const row of payload?.result?.records ?? []) {
+    // Same rule as the manifest: a request that failed is not an answer that
+    // no crash in the batch had a serious injury.
+    const rows = payload?.result?.records;
+    if (!Array.isArray(rows)) {
+      throw new CrashSourceUnavailableError(CCRS_INJURY_SOURCE_ID, `CCRS injured-person table for ${params.year} did not answer`);
+    }
+    for (const row of rows) {
       const id = row["CollisionId"];
       if (id != null) serious.add(String(id).trim());
     }
   }
 
   return serious;
+}
+
+/**
+ * Upgrade injury crashes to KABCO A using the injured-person table.
+ *
+ * Only `injury` rows are candidates: a fatal crash already outranks serious
+ * injury, and a PDO crash by definition injured nobody. Returns the records
+ * with severity upgraded, so the caller writes or counts one consistent batch.
+ *
+ * A year that holds injury crashes but has no injured-person table THROWS. The
+ * join for that year cannot run, so its injury crashes would otherwise stay
+ * `injury` under a run that claims serious injuries were separated, and the
+ * serious-injury count would be a floor printed as a total. The caller treats
+ * the throw as "join not applied" and keeps every crash.
+ *
+ * This is CCRS's `enrichSeriousInjury` capability. Callers reach it through
+ * `enrichSeriousInjuries` in `serious-injury.ts`, never by naming CCRS.
+ */
+export async function upgradeCcrsSeriousInjuries(
+  records: CrashRecord[],
+  signal?: AbortSignal
+): Promise<{ records: CrashRecord[]; upgraded: number }> {
+  const byYear = new Map<number, string[]>();
+  for (const record of records) {
+    if (record.severity !== "injury" || record.collisionYear === null) continue;
+    const bucket = byYear.get(record.collisionYear) ?? [];
+    bucket.push(record.externalId);
+    byYear.set(record.collisionYear, bucket);
+  }
+
+  if (byYear.size > 0) {
+    const tables = await fetchInjuryResourceIds(signal);
+    const missing = [...byYear.keys()].filter((year) => !tables.has(year)).sort((a, b) => a - b);
+    if (missing.length > 0) {
+      throw new CrashSourceUnavailableError(
+        CCRS_INJURY_SOURCE_ID,
+        `CCRS publishes no injured-person table for ${missing.join(", ")}, so serious injuries cannot be separated for every requested year.`
+      );
+    }
+  }
+
+  const serious = new Set<string>();
+  for (const [year, collisionIds] of byYear) {
+    const found = await fetchSeriousInjuryCollisionIds({ year, collisionIds, signal });
+    for (const id of found) serious.add(id);
+  }
+
+  let upgraded = 0;
+  const out = records.map((record) => {
+    if (record.severity === "injury" && serious.has(record.externalId)) {
+      upgraded += 1;
+      return { ...record, severity: "severe_injury" as const };
+    }
+    return record;
+  });
+
+  return { records: out, upgraded };
 }

@@ -80,7 +80,7 @@ describe("SS4A evidence appendices", () => {
     expect(factValue(crash, "Recorded severity coverage")).toBe("fatal_only");
     expect(factValue(crash, "Years requested")).toBe("2023, 2024");
     expect(byKey(appendices, "hin_map").table!.rows[0][4]).toBe("Not in source (fatal crashes only)");
-    expect(packetText(appendices)).toContain("Fatal crashes only. The source records only crashes in which someone was killed");
+    expect(packetText(appendices)).toContain("Fatal crashes only. This source is a fatality census: it records only crashes in which someone was killed");
   });
 
   it("says a packet's crashes were counted by the bounding rectangle when no boundary was applied", () => {
@@ -137,22 +137,25 @@ describe("SS4A evidence appendices", () => {
 
   it("keeps a count the acquisition does not carry as not recorded, never zero", () => {
     const records = completeEvidenceRecords();
-    records.safety = { status: "ready", snapshot: evidenceSnapshot({ crash_count: null, stored_count: null, truncated: null, severity_completeness: null }), otherSeededArtifactCount: 0 };
+    records.safety = { status: "ready", snapshot: evidenceSnapshot({ source_id: null, crash_count: null, stored_count: null, truncated: null, severity_completeness: null }), otherSeededArtifactCount: 0 };
     const crash = byKey(buildSs4aEvidenceAppendices(records, ALL), "crash_summary");
     expect(factValue(crash, "Crashes reported")).toBe("Not recorded");
     expect(factValue(crash, "Crashes stored")).toBe("Not recorded");
     expect(factValue(crash, "Retrieval truncated")).toBe("Not recorded");
-    expect(factValue(crash, "Severity coverage")).toBe("Severity coverage is unknown.");
+    expect(factValue(crash, "Severity coverage")).toMatch(/^Severity coverage is unknown\. /);
     expect(factValue(crash, "Crashes geocoded")).toBe("4");
   });
 
   it("explains a missing serious-injury count from the acquisition's coverage, matching the crash summary", () => {
-    for (const [completeness, cell, coverage] of [
-      ["fatal_only", "Not in source (fatal crashes only)", /^Fatal crashes only\./],
-      ["fatal_injury_only", "Not separated in source (injury crashes not split by severity)", /^Fatal and injury crashes\. The source does not separate serious injuries/],
+    // The source id matters as much as the completeness: CCRS recorded as
+    // fatal_injury_only means its injured-person join did not run, which is a
+    // different fact from a source that cannot separate serious injury at all.
+    for (const [sourceId, completeness, cell, coverage] of [
+      ["fars-national", "fatal_only", "Not in source (fatal crashes only)", /^Fatal crashes only\./],
+      ["ccrs-ca", "fatal_injury_only", "Not separated (injured-person records not joined)", /^Fatal and injury crashes\. Serious-injury crashes are not separated here/],
     ] as const) {
       const records = completeEvidenceRecords();
-      records.safety = { status: "ready", snapshot: evidenceSnapshot({ severity_completeness: completeness }), otherSeededArtifactCount: 0 };
+      records.safety = { status: "ready", snapshot: evidenceSnapshot({ source_id: sourceId, severity_completeness: completeness }), otherSeededArtifactCount: 0 };
       const appendices = buildSs4aEvidenceAppendices(records, ALL);
       const hin = byKey(appendices, "hin_map");
       expect(hin.table!.rows.map((row) => row[4])).toEqual([cell, cell]);

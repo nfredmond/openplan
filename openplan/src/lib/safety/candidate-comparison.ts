@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CRASH_DIMENSION_COLUMNS, CRASH_SEVERITIES } from "./vocabulary";
+import { seriousInjuryAvailabilityForRecord } from "./serious-injury-availability";
 import { projectEstimateDecimal } from "@/lib/projects/estimated-cost";
 
 export const SAFETY_COMPARISON_VERSION = "openplan.safety-comparison.v2";
@@ -131,10 +132,10 @@ export function describeSafetyComparisonSource(record: SafetyComparisonRecord): 
   const raw = record.payload.source.acquisition;
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return "Acquisition source metadata is unavailable.";
   const a = raw as Record<string, unknown>;
-  const severity = a.severity_completeness === "fatal_only" ? "Fatal crashes only; serious-injury coverage is unavailable."
-    : a.severity_completeness === "fatal_injury_only" ? "The source does not separate serious injury from other injury."
-    : a.severity_completeness === "kabco_full" ? "The source records distinct severity categories; classification completeness still requires review."
-    : "Severity coverage is unknown.";
+  const seriousInjury = seriousInjuryAvailabilityForRecord({ sourceId: a.source_id, severityCompleteness: a.severity_completeness });
+  const severity = seriousInjury.effective === "kabco_full"
+    ? `${seriousInjury.statement} Classification completeness still requires review.`
+    : seriousInjury.statement;
   const measure = (value: unknown) => typeof value === "number" ? String(value) : "unknown";
   const mismatch = typeof a.stored_count === "number" && a.stored_count !== record.payload.capture.stored ? " The recorded stored count differs from this capture; population coverage remains unassessed." : "";
   return `${typeof a.source_label === "string" ? a.source_label : "Source label unknown"}. ${severity} Acquisition metadata counts: reported ${measure(a.crash_count)}, geocoded ${measure(a.geocoded_count)}, recorded stored ${measure(a.stored_count)}. Current capture examines ${record.payload.capture.stored} stored rows.${mismatch} ${a.truncated === true ? "Source retrieval was truncated." : "An untruncated retrieval does not prove complete observation intervals."} Publication cutoff: ${typeof a.published_through === "string" ? a.published_through : "unknown"}. False involvement flags remain indeterminate without per-crash completeness. No person count is derived.`;

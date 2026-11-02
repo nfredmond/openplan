@@ -55,6 +55,13 @@ import type {
   CrashSeverityCompleteness,
   CrashSourceAdapter,
 } from "@/lib/safety/sources/types";
+import {
+  seriousInjuryAvailability,
+  seriousInjuryAvailabilityForRecord,
+  type SeriousInjuryEnrichment,
+  type SeriousInjuryInputs,
+} from "@/lib/safety/serious-injury-availability";
+import { enrichSeriousInjuries, seriousInjuryInputsForAdapter } from "@/lib/safety/sources/serious-injury";
 
 /**
  * What a crash figure on the scorecard is made of.
@@ -83,13 +90,22 @@ export interface CrashSummary {
   source: string | CrashSummarySourceState;
   sourceLabel: string;
   attribution: string | null;
+  /** What these crashes can express, after any serious-injury join. */
   severityCompleteness: CrashSeverityCompleteness | null;
+  /**
+   * Whether the source's serious-injury join ran for these crashes. With the
+   * source's declared completeness it decides `severeInjuryCrashes` and the
+   * sentence about it, through the same function the Safety page uses.
+   * Null when nothing was observed; undefined on summaries built before this
+   * field existed, which are then read from their source and completeness.
+   */
+  seriousInjuryEnrichment?: SeriousInjuryEnrichment | null;
   totalFatalCrashes: number;
   totalFatalities: number;
   /** Fatal crashes INVOLVING a pedestrian — not the number of pedestrians killed. */
   pedestrianFatalities: number;
   bicyclistFatalities: number;
-  /** null when the source cannot separate KABCO A (suspected serious injury). */
+  /** null when these crashes do not separate KABCO A (suspected serious injury). */
   severeInjuryCrashes: number | null;
   /** null when the source is fatal-only and therefore never saw an injury crash. */
   totalInjuryCrashes: number | null;
@@ -280,6 +296,7 @@ function emptySummary(
     observed: false,
     attribution: null,
     severityCompleteness: null,
+    seriousInjuryEnrichment: null,
     totalFatalCrashes: 0,
     totalFatalities: 0,
     pedestrianFatalities: 0,
@@ -303,7 +320,9 @@ export function summarizeCrashFetch(
   fetched: CrashFetchResult,
   bbox: StudyAreaBbox,
   requestedYears: number[],
-  boundary?: CrashStudyBoundary | null
+  boundary?: CrashStudyBoundary | null,
+  /** Whether the serious-injury join ran on `fetched.records`. Defaults to not run. */
+  seriousInjury: SeriousInjuryInputs = seriousInjuryInputsForAdapter(adapter, false)
 ): CrashSummaryCore {
   // The corridor's own polygon, when it is passed: crashes outside it are left
   // out of every tally and point, and the density divides by its area rather
@@ -346,11 +365,12 @@ export function summarizeCrashFetch(
     if (point) points.push(point);
   }
 
-  const fatalOnly = adapter.severityCompleteness === "fatal_only";
-  // A source that cannot separate KABCO A must report null, never 0: "0 serious
+  const availability = seriousInjuryAvailability(seriousInjury);
+  const fatalOnly = availability.effective === "fatal_only";
+  // Crashes that do not separate KABCO A must report null, never 0: "0 serious
   // injuries" and "serious injuries are not distinguishable here" are opposite
   // findings, and the second one is the true one.
-  const severeInjury = adapter.severityCompleteness === "kabco_full" ? severeInjuryCrashes : null;
+  const severeInjury = availability.separable ? severeInjuryCrashes : null;
   const totalInjuryCrashes = fatalOnly ? null : injuryCrashes;
 
   const polygonArea = clipped?.studyArea.basis === "place_boundary" ? boundaryAreaSquareMiles(boundary?.geometry) : null;
@@ -368,7 +388,8 @@ export function summarizeCrashFetch(
     source: adapter.id,
     sourceLabel: adapter.label,
     attribution: adapter.attribution,
-    severityCompleteness: adapter.severityCompleteness,
+    severityCompleteness: availability.effective,
+    seriousInjuryEnrichment: availability.enrichment,
     totalFatalCrashes,
     totalFatalities,
     pedestrianFatalities,
@@ -460,7 +481,18 @@ export async function fetchCrashesForStudyArea(
         maxRecords: ANALYSIS_MAX_RECORDS,
         signal: options.signal,
       });
-      const core = summarizeCrashFetch(adapter, fetched, bbox, years, area.boundary);
+      // The same serious-injury join a Safety acquisition runs, over the
+      // crashes inside the corridor. Without it CCRS crashes read "serious
+      // injury not separable" here and "12 serious-injury crashes" on the
+      // Safety page (KI-2026-11-02-046).
+      const inArea =
+        area.boundary === undefined
+          ? fetched.records
+          : clipCrashRecordsToBoundary(fetched.records, bbox, area.boundary).records;
+      const joined = await enrichSeriousInjuries(adapter, inArea, { signal: options.signal });
+      const joinedById = new Map(joined.records.map((record) => [record.externalId, record]));
+      const records = fetched.records.map((record) => joinedById.get(record.externalId) ?? record);
+      const core = summarizeCrashFetch(adapter, { ...fetched, records }, bbox, years, area.boundary, joined.seriousInjury);
       return withDisclosure({
         ...core,
         studyAreaStates,
@@ -539,11 +571,9 @@ export function buildCrashSourceSnapshot(
   }
 
   const severityNote =
-    crashes.severityCompleteness === "fatal_only"
+    (crashes.severityCompleteness === "fatal_only"
       ? " Fatal crashes only — this source records no injury or property-damage crashes, so injury figures are unavailable rather than zero."
-      : crashes.severityCompleteness === "fatal_injury_only"
-        ? " Fatal and injury crashes are separable; suspected serious injury (KABCO A) is not, so no KSI total is reported."
-        : "";
+      : "") + ` ${crashSeriousInjury(crashes).statement}`;
 
   const ungeocoded = Math.max(0, crashes.reportedTotal - crashes.mappedTotal);
   const mappingNote =
@@ -574,6 +604,7 @@ export function buildCrashSourceSnapshot(
     ...shared,
     source: crashes.source,
     severityCompleteness: crashes.severityCompleteness,
+    seriousInjuryEnrichment: crashes.seriousInjuryEnrichment,
     crashDensityBasis: crashes.crashDensityBasis,
     reportedTotal: crashes.reportedTotal,
     mappedTotal: crashes.mappedTotal,
@@ -584,6 +615,19 @@ export function buildCrashSourceSnapshot(
     unclassifiedCrashes: crashes.unclassifiedCrashes,
     note: `Observed crash records from ${crashes.sourceLabel}.${areaNote}${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${truncationNote}${unavailableNote}${stateNote}`,
   };
+}
+
+/**
+ * The serious-injury statement for an observed summary. Read back from the
+ * summary's own fields, so a summary built before `seriousInjuryEnrichment`
+ * existed is described from its source and recorded completeness.
+ */
+function crashSeriousInjury(crashes: CrashSummaryCore) {
+  return seriousInjuryAvailabilityForRecord({
+    sourceId: crashes.source,
+    severityCompleteness: crashes.severityCompleteness,
+    enrichment: crashes.seriousInjuryEnrichment,
+  });
 }
 
 /** The safety line of the deterministic corridor narrative. */
@@ -637,15 +681,13 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
     crashes.totalInjuryCrashes === null
       ? ""
       : ` ${crashes.totalInjuryCrashes} non-fatal injury crashes` +
-        (crashes.severeInjuryCrashes === null
-          ? " (the source does not separate suspected serious injuries)"
-          : ` (${crashes.severeInjuryCrashes} with a suspected serious injury)`) +
+        (crashes.severeInjuryCrashes === null ? "" : ` (${crashes.severeInjuryCrashes} with a suspected serious injury)`) +
         ` of ${crashes.reportedTotal.toLocaleString("en-US")} crashes reported.`;
 
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
-    `${crashes.bicyclistFatalities} involving a bicyclist).${injuryNote} ${densityLabel}: ` +
+    `${crashes.bicyclistFatalities} involving a bicyclist).${injuryNote} ${crashSeriousInjury(crashes).statement} ${densityLabel}: ` +
     `${crashes.crashesPerSquareMile}/sq mi/yr.${studyAreaNote(crashes)}${cutoffNote}${unclassifiedNote}${unavailableNote}${stateNote}`
   );
 }

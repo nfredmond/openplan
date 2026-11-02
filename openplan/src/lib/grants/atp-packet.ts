@@ -28,6 +28,7 @@ import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { computeAtpPacket } from "@/lib/planner-pack/atp";
 import type { AtpGrantResult, AtpLapmRow } from "@/lib/planner-pack/types";
 import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
+import { calendarDayOf, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 
 export const ATP_CATALOG_KEY = "atp";
 
@@ -107,9 +108,10 @@ function formatYears(years: number[]): string {
 /**
  * The crash source, years and retrieval date behind a run's safety score,
  * read from the run's crash source snapshot. Null when the run recorded none,
- * so the packet says the source is not recorded instead of guessing one.
+ * so the packet says the source is not recorded instead of guessing one. The
+ * retrieval date is the day on the workspace calendar.
  */
-function describeSafetyScoreSource(metrics: Record<string, unknown> | null): string | null {
+function describeSafetyScoreSource(metrics: Record<string, unknown> | null, timeZone: string): string | null {
   const snapshots = metrics?.sourceSnapshots;
   if (!snapshots || typeof snapshots !== "object") return null;
   const crashes = (snapshots as Record<string, unknown>).crashes;
@@ -120,9 +122,9 @@ function describeSafetyScoreSource(metrics: Record<string, unknown> | null): str
   const years = Array.isArray(record.yearsQueried)
     ? record.yearsQueried.filter((year): year is number => Number.isInteger(year))
     : [];
-  const fetchedAt = typeof record.fetchedAt === "string" ? record.fetchedAt.slice(0, 10) : "";
+  const fetchedOn = typeof record.fetchedAt === "string" ? calendarDayOf(record.fetchedAt, timeZone) : null;
   const parts = [label, years.length > 0 ? `crash years ${formatYears(years)}` : "crash years not recorded"];
-  if (/^\d{4}-\d{2}-\d{2}$/.test(fetchedAt)) parts.push(`retrieved ${fetchedAt}`);
+  if (fetchedOn) parts.push(`retrieved ${fetchedOn}`);
   return `${parts.join(", ")}.`;
 }
 
@@ -143,6 +145,8 @@ export function buildAtpPacketView(input: {
   project: AtpPacketProject;
   run: AtpPacketRun | null;
   generatedAt?: string;
+  /** The workspace calendar's zone for the crash retrieval day. Defaults to UTC. */
+  timeZone?: string;
 }): AtpPacketView {
   const metrics = input.run?.metrics ?? null;
   const summary = typeof input.project.summary === "string" ? input.project.summary.trim() : "";
@@ -162,7 +166,7 @@ export function buildAtpPacketView(input: {
         feasibility_score: null,
         total_score: null,
         sensitivity_flag: null,
-        safety_source_note: describeSafetyScoreSource(metrics),
+        safety_source_note: describeSafetyScoreSource(metrics, input.timeZone ?? UTC_TIME_ZONE),
       },
     ],
     {
