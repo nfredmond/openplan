@@ -47,7 +47,7 @@ const AI_PROVIDER = provider({
 const DATA_PROVIDER = provider({
   id: "census",
   label: "US Census Bureau",
-  purpose: "County search and demographics.",
+  purpose: "Demographics and equity data.",
   keySignupUrl: "https://example.test/data-keys",
   envVar: "CENSUS_API_KEY",
 });

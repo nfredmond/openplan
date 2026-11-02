@@ -12,7 +12,9 @@
  *   its catalog URL by hand and omitted the key, so county lookup returned
  *   nothing on EVERY deployment — including ones that had a key configured —
  *   while the keyless TIGERweb city/CDP layers kept working. The bug was
- *   invisible because the failure mode is emptiness, not an error.
+ *   invisible because the failure mode is emptiness, not an error. (County
+ *   search has since moved to TIGERweb's Counties layer, 2026-11-02, and needs
+ *   no key at all; the ACS requests that remain still need this module.)
  *
  *   Centralizing it means a new Census call site cannot repeat the omission by
  *   forgetting a query parameter, and `src/test/census-api-key.test.ts` fails
