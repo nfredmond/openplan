@@ -62,6 +62,7 @@ is open, and a comment repeats its original topic only when the topic has since
 changed. Engagement review PDFs name each response's sources by register number
 and title and say whether the response is published. Six build notes were
 removed from staff pages. No migration.
+
 **One IPv6 network is one connection for public limits (M9a):** every
 per-connection limit on public input (comments, supports, photos, survey
 responses and saved drafts, update sign-ups) now counts an IPv6 address by its
@@ -72,6 +73,7 @@ IPv6 addresses no longer match, so IPv6 connections start their limits again
 once, on deploy. The sign-up email cap is a Supabase Auth setting, not app
 code; [self hosting](openplan/docs/SELF_HOSTING.md#limits-on-public-signup-and-public-input)
 describes it. No migration.
+
 **Link a project to a tracked grant (KI-2026-11-02-043):** a funding opportunity
 tracked from the Grants catalog without a project can now be linked from its
 card on the Grants page, and the ATP panel's "Link a project" goes there. The
@@ -89,6 +91,7 @@ internal files. It prints the project's recorded summary and planning-level
 estimate instead of "to be provided", and names the crash source, years and
 retrieval date behind the safety score. The ATP panel no longer runs past its
 border on a phone.
+
 **My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
 the "Waiting on a person" section now lists model runs that were interrupted
 or stopped reporting for more than 45 minutes, failed county runs, and aerial
