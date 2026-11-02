@@ -1,0 +1,15 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/82/query?where=GEOID+IN+%28%2725017%27%29&outFields=GEOID%2CNAME&returnGeometry=false&resultRecordCount=1&f=json",
+ "trimmed": "Field metadata removed.",
+ "response": {
+  "features": [
+   {
+    "attributes": {
+     "GEOID": "25017",
+     "NAME": "Middlesex County"
+    }
+   }
+  ]
+ }
+}

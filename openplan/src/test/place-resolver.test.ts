@@ -356,7 +356,9 @@ describe("searchPlaces", () => {
 
     expect(outcome.items).toEqual([]);
     expect(outcome.searchUnavailable).toBe(true);
-    expect(outcome.unavailableKinds).toEqual(expect.arrayContaining(["county", "city", "cdp", "metro", "micro"]));
+    expect(outcome.unavailableKinds).toEqual(
+      expect.arrayContaining(["county", "city", "cdp", "metro", "micro", "cousub", "aiannh"])
+    );
     // The knowable, actionable cause wins over a generic outage message.
     expect(outcome.unavailableReason).toMatch(/Census API key/i);
   });
@@ -369,7 +371,7 @@ describe("searchPlaces", () => {
     const outcome = await searchPlaces("davis");
 
     expect(outcome.searchUnavailable).toBe(false);
-    expect(outcome.unavailableKinds).toEqual(["city", "cdp", "metro", "micro"]);
+    expect(outcome.unavailableKinds).toEqual(["city", "cdp", "metro", "micro", "cousub", "aiannh"]);
     expect(outcome.unavailableReason).not.toBeNull();
     // The county layer still answered, so its result is still returned.
     expect(outcome.items.map((item) => item.label)).toContain("Yolo County, CA");

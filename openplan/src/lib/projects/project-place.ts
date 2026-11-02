@@ -1,4 +1,9 @@
-import { placeKindSchema, type PlaceBoundaryResponse, type PlaceKind } from "@/lib/api/place-geographies";
+import {
+  normalizePlaceGeoid,
+  placeKindSchema,
+  type PlaceBoundaryResponse,
+  type PlaceKind,
+} from "@/lib/api/place-geographies";
 import {
   bboxOfGeometry,
   DRAWN_PLACE_SOURCE,
@@ -190,8 +195,9 @@ export function projectPlaceReference(
 ): ProjectPlaceReference | null {
   if (row?.place_source !== TIGERWEB_GEOGRAPHY_SOURCE) return null;
   const kind = placeKindSchema.safeParse(row.place_kind);
-  const geoid = row.place_ref?.trim() ?? "";
-  if (!kind.success || geoid.length < 5 || geoid.length > 7) return null;
+  if (!kind.success) return null;
+  const geoid = normalizePlaceGeoid(kind.data, row.place_ref);
+  if (!geoid) return null;
   return { kind: kind.data, geoid, label: row.place_label?.trim() || null };
 }
 

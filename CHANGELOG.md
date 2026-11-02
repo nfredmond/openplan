@@ -74,6 +74,17 @@ dashboard comment chart, nearby crashes for comments, near-duplicate pairs and a
 model run's corridor comments. A read that cannot finish shows as unreadable,
 not as a lower number. Closing a land use plan review now refuses while any
 comment is pending, including one past the first 1,000. No migration.
+**Tribal areas and towns or townships as places:** the place search now finds
+American Indian, Alaska Native and Native Hawaiian areas (reservations, trust
+lands, Hawaiian home lands and tribal statistical areas) and county
+subdivisions (New England towns, townships, boroughs). Either can be a
+workspace home geography, a project or campaign area, a plan area or a
+resolved project jurisdiction. A tribal area records no state, because many
+cross state lines and state rules on tribal land are not a map fact; its states
+appear in its name. A town records its state. A benefit-cost analysis cannot
+yet record a project whose area or jurisdiction is either kind: the installed
+database guard lists only the earlier five kinds, and widening it needs a
+migration. No action is needed to deploy.
 
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
