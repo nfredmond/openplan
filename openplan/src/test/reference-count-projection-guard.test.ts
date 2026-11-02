@@ -312,10 +312,17 @@ describe("reference count projections", () => {
     );
     expect(sites).toHaveLength(1);
     expect(sites[0]).toMatchObject({
-      projectionExpression: "SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION",
-      projection: "id, project_id, min_lon, min_lat, max_lon, max_lat, status, source_id, source_label, attribution, severity_completeness, crash_count, geocoded_count, stored_count, truncated, years_requested, created_at, dimension_coverage, party_completeness, party_count, involvement_basis, published_through, published_through_provenance",
+      projectionExpression: "SS4A_ACQUISITION_PROJECTION",
+      projection: "id, project_id, min_lon, min_lat, max_lon, max_lat, status, source_id, source_label, attribution, severity_completeness, crash_count, geocoded_count, stored_count, truncated, years_requested, created_at, dimension_coverage, party_completeness, party_count, involvement_basis, published_through, published_through_provenance, evidence_revision",
     });
     expect(projectionColumns(sites[0].projection as string).every((column) => schema.hasColumn("safety_crash_ingests", column))).toBe(true);
+    // The evidence fence compares the project's place (KI-2026-11-02-022).
+    const project = selectSites.filter((site) =>
+      site.file === "src/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route.ts" && site.table === "projects");
+    expect(project).toHaveLength(1);
+    expect(project[0].projectionExpression).toBe("SS4A_PROJECT_PROJECTION");
+    expect(projectionColumns(project[0].projection as string)).toContain("place_set_at");
+    expect(projectionColumns(project[0].projection as string).every((column) => schema.hasColumn("projects", column))).toBe(true);
   });
 
   it("checks the new project jurisdiction reader's imported literal against the schema", () => {
