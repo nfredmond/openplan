@@ -86,6 +86,7 @@ import {
   extractEngagementCampaignId,
   type ReportEngagementItemRecord,
 } from "@/lib/reports/engagement";
+import { loadReportEngagementTrace } from "@/lib/reports/engagement-trace";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   buildCampaignReportHtml,
@@ -274,7 +275,7 @@ async function readEveryReportEngagementItem(
       supabase
         .from("engagement_items")
         .select(
-          "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+          "id, campaign_id, category_id, title, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
         )
         .eq("campaign_id", campaignId)
         .order("updated_at", { ascending: false })
@@ -1137,10 +1138,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         collectionEnabled: campaignRow.demographics_enabled,
       });
 
+      // The comment-to-decision trace (KI-2026-11-02-010), read with the
+      // generating staff member's client. A failed read is disclosed in the
+      // packet as unknown; it does not block generation.
+      const campaignTrace = await loadReportEngagementTrace(
+        supabase,
+        { campaignId: campaignRow.id, workspaceId: report.workspace_id },
+        campaignItemsResult.data ?? []
+      );
+
       const engagement = buildReportEngagementSummary({
         campaign: campaignRow,
         categories: campaignCategoriesResult.data ?? [],
         items: campaignItemsResult.data ?? [],
+        trace: campaignTrace,
         hotspots: campaignHotspots,
         // Cached E5b screening only (never recomputed in the report path).
         representativeness: campaignRow.representativeness_json ?? null,
@@ -1908,10 +1919,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         })
       : ({ state: "not_loaded" } as const);
 
+    // The comment-to-decision trace for the linked campaign (KI-2026-11-02-010).
+    const engagementTrace = linkedCampaign
+      ? await loadReportEngagementTrace(
+          supabase,
+          { campaignId: linkedCampaign.id, workspaceId: report.workspace_id },
+          engagementItemsResult.data ?? []
+        )
+      : ({ state: "not_loaded" } as const);
+
     const engagement = buildReportEngagementSummary({
       campaign: engagementCampaignResult.data,
       categories: engagementCategoriesResult.data ?? [],
       items: engagementItemsResult.data ?? [],
+      trace: engagementTrace,
       hotspots: engagementHotspots,
       // Read the cached E5b screening (never recompute in the report path).
       representativeness:

@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   decisionLinkIntentSchema, readDecisionContext, readDecisionLinkReceipt, readDecisionLinkSnapshot,
 } from "./decision-links";
-import type { DecisionLinkAddress, DecisionLinkIntent, DecisionLinkScope } from "./decision-links";
+import type { DecisionLinkAddress, DecisionLinkIntent, DecisionLinkScope, DecisionLinkSnapshot } from "./decision-links";
 import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 
 type Client = Pick<SupabaseClient, "rpc">;
@@ -16,15 +16,23 @@ export function decisionLinkFailure(code?: string): DecisionLinkFailure {
   return { kind: "unavailable", status: 503, message: "OpenPlan could not confirm this request. Keep your explanation and retry the same request." };
 }
 
-/** Return exact native packets only after checking their complete private content. */
-export async function loadDecisionLinks(client: Client, scope: DecisionLinkScope) {
+/** The checked campaign-wide history and current states, or the failure that stopped the read. */
+export async function loadVerifiedDecisionLinks(client: Client, scope: DecisionLinkScope): Promise<
+  { packet: unknown; snapshot: DecisionLinkSnapshot; error: null } | { packet: null; snapshot: null; error: DecisionLinkFailure }
+> {
   try {
     const reply = await client.rpc("read_engagement_decision_links", { p_campaign: scope.campaignId });
-    if (reply.error) return { packet: null, error: decisionLinkFailure(reply.error.code) };
+    if (reply.error) return { packet: null, snapshot: null, error: decisionLinkFailure(reply.error.code) };
     const snapshot = await readDecisionLinkSnapshot(reply.data, scope);
     for (const row of snapshot.entries) await verifyDecisionSynthesisSources(row.context);
-    return { packet: reply.data as unknown, error: null };
-  } catch { return { packet: null, error: decisionLinkFailure() }; }
+    return { packet: reply.data as unknown, snapshot, error: null };
+  } catch { return { packet: null, snapshot: null, error: decisionLinkFailure() }; }
+}
+
+/** Return exact native packets only after checking their complete private content. */
+export async function loadDecisionLinks(client: Client, scope: DecisionLinkScope) {
+  const { packet, error } = await loadVerifiedDecisionLinks(client, scope);
+  return { packet, error };
 }
 
 /** Preview only a decision on the campaign's current projects. */
