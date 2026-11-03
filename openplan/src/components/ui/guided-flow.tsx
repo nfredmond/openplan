@@ -270,8 +270,14 @@ export function useGuidedFlow<V extends GuidedFlowValues>(
   // closes over the caller's state). Read it through a ref so `submit` does not
   // have to be rebuilt — an in-flight guard on a callback that is replaced
   // mid-flight is not a guard.
+  //
+  // The ref updates in a LAYOUT effect, which runs in the same task as the DOM
+  // commit. A passive effect runs later, so a Save click landing between an
+  // async render (a finished fetch) and that effect ran the previous render's
+  // handler: the invoice composer then posted award terms whose review the
+  // screen had already cleared.
   const submitRef = React.useRef(onSubmit);
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     submitRef.current = onSubmit;
   }, [onSubmit]);
 

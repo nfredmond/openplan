@@ -7,9 +7,8 @@ import { installJsdomDialogShim } from './guided-flow-jsdom-dialog-shim'
 installJsdomDialogShim()
 
 // Testing Library's findBy and waitFor give up after one second by default.
-// That is a limit on how loaded the CI runner is, not on whether the UI is
-// right: invoice-record-composer-award-terms failed on main 4dfa830 (October
-// 24) and 7d1a196 (November 2) waiting 1.4 s for text that renders locally in
-// milliseconds. Five seconds only lengthens a wait that was going to fail;
-// a passing test returns as soon as its element appears.
+// Five seconds only lengthens a wait that was going to fail; a passing test
+// returns as soon as its element appears. It did not fix the
+// invoice-record-composer-award-terms failures of October 24 and November 2,
+// which were a stale submit handler in GuidedFlow, not a slow runner.
 configure({ asyncUtilTimeout: 5_000 })

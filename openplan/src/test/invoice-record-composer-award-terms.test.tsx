@@ -19,6 +19,19 @@ function checkbox(){return within(dialog()).getByRole("checkbox",{name:reviewNam
 function review(){fireEvent.click(checkbox());}
 function save(){fireEvent.click(within(dialog()).getByRole("button",{name:"Save the invoice record"}));}
 function toSubmit(){next();next();save();}
+/**
+ * Click Save in the same task that commits `text`, before React runs passive
+ * effects: the fastest a planner can click. A submit handler that is still the
+ * previous render's closure acts on the cleared review here, every run.
+ */
+function saveOnCommit(text:RegExp){
+  let clicked=false;
+  const observer=new MutationObserver(()=>{if(!clicked && text.test(document.body.textContent??"")){clicked=true;observer.disconnect();save();}});
+  observer.observe(document.body,{subtree:true,childList:true,characterData:true});
+  return ()=>clicked;
+}
+const handoffUrl=`/api/funding-awards/${a1}/handoff`, invoicesUrl="/api/invoicing/invoices";
+function urls(mock:{mock:{calls:unknown[][]}}){return mock.mock.calls.map(([url])=>String(url));}
 beforeEach(()=>{vi.clearAllMocks();});
 afterEach(()=>{vi.unstubAllGlobals();});
 
@@ -87,22 +100,23 @@ describe("invoice award review lifecycle, prepared and unrun",()=>{
   it("replaces refreshed currency and clears acknowledgement before accepting the new terms", async () => {
     let reads = 0;
     const posted: RequestInit[] = [];
-    vi.stubGlobal("fetch", vi.fn(async (url: unknown, init?: RequestInit) => {
-      if (String(url) === "/api/invoicing/invoices") { posted.push(init!); return response({}); }
+    const fetchMock = vi.fn(async (url: unknown, init?: RequestInit) => {
+      if (String(url) === invoicesUrl) { posted.push(init!); return response({}); }
       return response(terms(a1, r1, ++reads === 1 ? "EUR" : "USD"));
-    }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
     render(<InvoiceRecordComposer {...props} />);open();
-    await screen.findByRole("checkbox", { name: reviewName });review();toSubmit();
-    await within(dialog()).findByText(/Award terms changed. Review the current version/);
-    expect(posted).toHaveLength(0);
+    await screen.findByRole("checkbox", { name: reviewName });review();
+    const clicked = saveOnCommit(/Award terms changed. Review the current version/);
+    toSubmit();
+    await within(dialog()).findByText(/Review current effective award conditions before saving reimbursement/);
+    expect(clicked()).toBe(true);
+    expect(urls(fetchMock)).toEqual([handoffUrl, handoffUrl]);
     expect(checkbox()).not.toBeChecked();
     expect(within(dialog()).getByText(`Current version: ${r1}. Currency: USD.`)).toBeInTheDocument();
-    save();
-    await within(dialog()).findByText(/Review current effective award conditions before saving reimbursement/);
-    expect(posted).toHaveLength(0);
-    expect(reads).toBe(2);
     review();save();
     await waitFor(() => expect(posted).toHaveLength(1));
+    expect(urls(fetchMock)).toEqual([handoffUrl, handoffUrl, handoffUrl, invoicesUrl]);
     expect(JSON.parse(String(posted[0].body))).toMatchObject({ awardHandoffRevisionId: r1, currencyCode: "USD" });
   });
 
@@ -212,21 +226,41 @@ describe("invoice award review lifecycle, prepared and unrun",()=>{
   });
   it("requires new review when current revision changes during final refresh, without posting the old review",async()=>{
     let reads=0;const posted:RequestInit[]=[];
-    vi.stubGlobal("fetch",vi.fn(async(url:unknown,init?:RequestInit)=>{
-      if(String(url)==="/api/invoicing/invoices"){posted.push(init!);return response({});}
+    const fetchMock=vi.fn(async(url:unknown,init?:RequestInit)=>{
+      if(String(url)===invoicesUrl){posted.push(init!);return response({});}
       return response(terms(a1,++reads===1?r1:r2));
-    }));
-    render(<InvoiceRecordComposer {...props}/>);open();await screen.findByLabelText(/I reviewed this exact current terms version/);review();toSubmit();
-    await screen.findByText(/Award terms changed. Review the current version/);
-    expect(posted).toHaveLength(0);
-    expect(screen.getByLabelText(/I reviewed this exact current terms version/)).not.toBeChecked();
-    expect(within(dialog()).getByText(`Current version: ${r2}. Currency: EUR.`)).toBeInTheDocument();
-    save();
+    });
+    vi.stubGlobal("fetch",fetchMock);
+    render(<InvoiceRecordComposer {...props}/>);open();await screen.findByLabelText(reviewName);review();
+    const clicked=saveOnCommit(/Award terms changed. Review the current version/);
+    toSubmit();
     await within(dialog()).findByText(/Review current effective award conditions before saving reimbursement/);
-    expect(posted).toHaveLength(0);expect(reads).toBe(2);
-    review();fireEvent.click(screen.getByRole("button",{name:"Save the invoice record"}));
+    expect(clicked()).toBe(true);
+    expect(urls(fetchMock)).toEqual([handoffUrl,handoffUrl]);
+    expect(checkbox()).not.toBeChecked();
+    expect(within(dialog()).getByText(`Current version: ${r2}. Currency: EUR.`)).toBeInTheDocument();
+    review();save();
     await waitFor(()=>expect(posted).toHaveLength(1));
+    expect(urls(fetchMock)).toEqual([handoffUrl,handoffUrl,handoffUrl,invoicesUrl]);
     expect(JSON.parse(String(posted[0].body)).awardHandoffRevisionId).toBe(r2);
+  });
+  it("never posts a cleared review when the terms revert before the next save",async()=>{
+    let reads=0;const posted:RequestInit[]=[];
+    const fetchMock=vi.fn(async(url:unknown,init?:RequestInit)=>{
+      if(String(url)===invoicesUrl){posted.push(init!);return response({});}
+      return response(terms(a1,++reads===2?r2:r1));
+    });
+    vi.stubGlobal("fetch",fetchMock);
+    render(<InvoiceRecordComposer {...props}/>);open();await screen.findByLabelText(reviewName);review();
+    const clicked=saveOnCommit(/Award terms changed. Review the current version/);
+    toSubmit();
+    await within(dialog()).findByText(/Review current effective award conditions before saving reimbursement/);
+    expect(clicked()).toBe(true);
+    // The review of r1 was cleared when r2 arrived. A third read returning r1
+    // must never turn that cleared review back into an invoice request.
+    expect(urls(fetchMock)).toEqual([handoffUrl,handoffUrl]);
+    expect(posted).toHaveLength(0);
+    expect(checkbox()).not.toBeChecked();
   });
   it("does not revive old review after clearing and choosing the same award again",async()=>{
     vi.stubGlobal("fetch",vi.fn(async()=>response(terms())));
