@@ -27,7 +27,18 @@ import { CountyRunValidationPrep } from "@/components/county-runs/county-run-val
 
 const COUNTY_RUN_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
 
-export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
+export function CountyRunDetailClient({
+  countyRunId,
+  countyOnrampWorkerConfigured = null,
+}: {
+  countyRunId: string;
+  /**
+   * Whether this deployment has a county worker, read server-side by the page
+   * from `isCountyOnrampWorkerConfigured()`. Only the boolean crosses to the
+   * browser. `null` means the caller did not say, and nothing is shown.
+   */
+  countyOnrampWorkerConfigured?: boolean | null;
+}) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // We own the polling loop (the hook's built-in interval is disabled with 0):
@@ -582,8 +593,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       {/* Counts first, then the readiness check: a planner fills the file in,
           then asks whether the validator can run against it. The other order
           sends them to a check that will always say the same thing. */}
-      {data.manifest ? <CountyRunObservedCounts countyRunId={countyRunId} /> : null}
-      {data.manifest ? <CountyRunValidationPrep countyRunId={countyRunId} /> : null}
+      {data.manifest ? (
+        <CountyRunObservedCounts countyRunId={countyRunId} workerConfigured={countyOnrampWorkerConfigured} />
+      ) : null}
+      {data.manifest ? (
+        <CountyRunValidationPrep countyRunId={countyRunId} workerConfigured={countyOnrampWorkerConfigured} />
+      ) : null}
 
       <Card className="mt-4">
         <CardHeader>

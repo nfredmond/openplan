@@ -9,6 +9,7 @@ import { countyRunShowsCeqaScreen, type CountyRunGeography } from "@/lib/models/
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { CountyRunBehavioralKpisSection } from "./_components/county-run-behavioral-kpis";
 import { isUuid } from "@/lib/uuid";
+import { isCountyOnrampWorkerConfigured } from "@/lib/config/deployment-health-facts";
 
 type CountyRunDetailPageProps = {
   params: Promise<{ countyRunId: string }>;
@@ -74,7 +75,10 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
 
   return (
     <>
-      <CountyRunDetailClient countyRunId={countyRunId} />
+      <CountyRunDetailClient
+        countyRunId={countyRunId}
+        countyOnrampWorkerConfigured={isCountyOnrampWorkerConfigured()}
+      />
       {reads.any ? (
         // Internal page, so the database's own message is shown — the reader
         // here is the person who can act on it.
