@@ -21,8 +21,8 @@ describe("OWP review records",()=>{
   expect(workProgramDifferences(before,after)).toEqual([{path:'elements[row 1; duplicate identity].title',before:'First',after:'Changed first'}]);
  });
  it("explains amendment fields and distinguishes unknown, absent, zero and blank",()=>{
-  expect(workProgramDifferenceLabel('preparation.costs[WE100 reference].amount')).toBe('Financial preparation / Expenditure — WE100 reference / Amount');
-  expect(workProgramDifferenceLabel('elements[100 Administration].products[Draft report].schedule')).toBe('Work element — 100 Administration / Product — Draft report / Schedule');
+  expect(workProgramDifferenceLabel('preparation.costs[WE100 reference].amount')).toBe('Financial preparation / Expenditure: WE100 reference / Amount');
+  expect(workProgramDifferenceLabel('elements[100 Administration].products[Draft report].schedule')).toBe('Work element: 100 Administration / Product: Draft report / Schedule');
   expect(workProgramDifferenceValue(workProgramDifferences(draft,{...draft,newField:'Absent'} as WorkProgramDraft)[0].before)).toBe('Not present in this version');
   expect([null,undefined,0,'',76641.63].map(workProgramDifferenceValue)).toEqual(['Unresolved','Not present in this version','0','Not recorded','76,641.63']);
  });

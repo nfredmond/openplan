@@ -202,7 +202,7 @@ describe("a figure edited after it was accepted", () => {
     });
 
     expect(
-      screen.getByText("From “Example Region RTP 2050 (adopted)”, p. 112 — edited since")
+      screen.getByText("From “Example Region RTP 2050 (adopted)”, p. 112, edited since")
     ).toBeTruthy();
   });
 });

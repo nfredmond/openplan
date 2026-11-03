@@ -147,7 +147,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
           error: "photo_is_potential_processing_evidence",
           detail:
             `Processing has been dispatched for this mission (${jobCount} job${jobCount === 1 ? "" : "s"}), and ` +
-            "OpenPlan cannot establish after the fact which photos a job consumed — so it keeps them all. " +
+            "OpenPlan cannot establish after the fact which photos a job consumed, so it keeps them all. " +
             "Uploaded photos are the source evidence beneath every processed output. Photos can be deleted " +
             "only before the mission's first processing request.",
         },

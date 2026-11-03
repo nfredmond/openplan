@@ -123,7 +123,7 @@ describe("KnowledgeBaseWorkspace", () => {
     source_kind: "uploaded_pdf" as const,
     chunk_count: 0,
     extraction_error:
-      "No extractable text layer was found. Scanned or image-only documents are not supported yet — OCR is not enabled.",
+      "No extractable text layer was found. Scanned or image-only documents are not supported yet. OCR is not enabled.",
   };
 
   it("offers OCR on a scanned PDF when this deployment has a worker", () => {
@@ -315,7 +315,7 @@ describe("KnowledgeBaseWorkspace", () => {
         screen.getByText(/could not be read, so this screen cannot say how many documents/)
       ).toBeInTheDocument();
       // The disclosure that was already there must survive alongside it.
-      expect(screen.getByText(/do not re-upload on the strength of this screen/)).toBeInTheDocument();
+      expect(screen.getByText(/Do not re-upload on the strength of this screen/)).toBeInTheDocument();
       expect(screen.queryByText(/No documents yet/)).not.toBeInTheDocument();
     });
 
@@ -499,7 +499,7 @@ describe("KnowledgeBaseWorkspace", () => {
               libraryEntry({
                 sourceId: "aerial_artifact_custody",
                 id: "cust-1",
-                title: "Orthomosaic — Bridge Survey",
+                title: "Orthomosaic: Bridge Survey",
                 hasBytes: false,
                 downloadHref: null,
                 badge: { label: "Custody failed", tone: "critical" },
@@ -516,7 +516,7 @@ describe("KnowledgeBaseWorkspace", () => {
         screen.getByText(/The processing provider's file could not be retrieved/)
       ).toBeInTheDocument();
       expect(
-        screen.queryByRole("link", { name: /Orthomosaic — Bridge Survey/ })
+        screen.queryByRole("link", { name: /Orthomosaic: Bridge Survey/ })
       ).not.toBeInTheDocument();
     });
 
@@ -569,7 +569,7 @@ describe("KnowledgeBaseWorkspace", () => {
             entries: [],
             perSource: { report_artifacts: { count: 0, pending: false, failed: true } },
             readFailureSummary:
-              "This page could not read report files. Anything below that depends on it is shown as unavailable rather than as zero — an empty list here would not mean the records are absent.",
+              "This page could not read report files. Anything below that depends on it is shown as unavailable rather than as zero. An empty list here would not mean the records are absent.",
           })}
         />
       );

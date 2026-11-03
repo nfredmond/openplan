@@ -137,7 +137,7 @@ function subtotalLine(group: Group): string {
   }
   // The plural belongs to the TOTAL and the verb agrees with the count:
   // "1 of 2 projects has", "2 of 3 projects have".
-  return `${formatMoney(group.pricedTotal, { precision: "whole" })} so far — ${group.unpricedCount} of ${group.entries.length} projects ${group.unpricedCount === 1 ? "has" : "have"} no cost recorded`;
+  return `${formatMoney(group.pricedTotal, { precision: "whole" })} so far, ${group.unpricedCount} of ${group.entries.length} projects ${group.unpricedCount === 1 ? "has" : "have"} no cost recorded`;
 }
 
 export function RtpProgrammeLists({

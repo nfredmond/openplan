@@ -606,7 +606,7 @@ export function geofenceRefusalMessage(areaLabel: string | null): string {
     ? `outside ${areaLabel.trim()}, the area this consultation covers`
     : "outside the area this consultation covers";
 
-  return `The location you marked is ${area}. Move it inside the area shown on the map, or remove it and send your comment without a location — comments with no location are still received.`;
+  return `The location you marked is ${area}. Move it inside the area shown on the map, or remove it and send your comment without a location. Comments with no location are still received.`;
 }
 
 /**

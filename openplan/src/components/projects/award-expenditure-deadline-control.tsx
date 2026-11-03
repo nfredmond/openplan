@@ -125,7 +125,7 @@ export function AwardExpenditureDeadlineControl({
         {recorded ? (
           <span className="font-semibold text-foreground">{recorded}</span>
         ) : (
-          <span>no lapse date recorded — no expenditure reminder will be sent for this award</span>
+          <span>no lapse date recorded: no expenditure reminder will be sent for this award</span>
         )}
       </p>
 

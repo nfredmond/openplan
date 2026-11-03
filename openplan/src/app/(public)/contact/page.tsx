@@ -5,7 +5,7 @@ export const metadata = {
   // No product name here: the root layout appends it via `title.template`.
   title: "Contact",
   description:
-    "Get in touch about OpenPlan — questions, bug reports, and feedback from planners using the software.",
+    "Get in touch about OpenPlan: questions, bug reports, and feedback from planners using the software.",
 };
 
 const REPO_URL = "https://github.com/nfredmond/openplan";
@@ -21,7 +21,7 @@ export default function ContactPage() {
           <div className="public-headline-block">
             <h1 className="public-title">Questions, bug reports, and feedback.</h1>
             <p className="public-lead max-w-4xl">
-              You do not need to contact anyone to use OpenPlan — it is free and open source, and
+              You do not need to contact anyone to use OpenPlan. It is free and open source, and
               signing up creates your workspace immediately. Use this if something is broken,
               something is unclear, or you want to tell us what planners in your agency actually
               need.
@@ -55,7 +55,7 @@ export default function ContactPage() {
           </div>
           <p className="public-rail-copy">
             There is no access queue, no approval step, and no payment. Sign up and the software is
-            yours to use. OpenPlan is open source — issues and pull requests on the repository are
+            yours to use. OpenPlan is open source. Issues and pull requests on the repository are
             welcome too, and are often the fastest route for a bug.
           </p>
         </aside>
@@ -88,7 +88,7 @@ export default function ContactPage() {
                 >
                   github.com/nfredmond/openplan/issues
                 </a>
-                . Include what you did, what you expected, and what happened instead — and whether
+                . Include what you did, what you expected, and what happened instead, and whether
                 you were on a local dev server or a self-hosted deployment.
               </p>
             </div>
@@ -101,7 +101,7 @@ export default function ContactPage() {
               <p className="public-ledger-label">Security reports</p>
               <p className="public-ledger-copy">
                 Report vulnerabilities privately through GitHub Security Advisories on the
-                repository — see <code className="rounded bg-muted/40 px-1.5 py-0.5 text-xs">SECURITY.md</code>.
+                repository. See <code className="rounded bg-muted/40 px-1.5 py-0.5 text-xs">SECURITY.md</code>.
                 Never put exploitable details in a public issue.
               </p>
             </div>
@@ -114,7 +114,7 @@ export default function ContactPage() {
               <p className="public-ledger-label">Everything else</p>
               <p className="public-ledger-copy">
                 Feedback on what your agency actually needs, questions about self-hosting, and
-                contributions all belong on the repository too — start with{" "}
+                contributions all belong on the repository too. Start with{" "}
                 <a
                   href={REPO_URL}
                   className="underline underline-offset-4 hover:text-foreground"

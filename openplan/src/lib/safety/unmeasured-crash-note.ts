@@ -61,7 +61,7 @@ export function unmeasuredCrashNote({ state, label }: UnmeasuredCrashNoteOptions
 
   if (state === "source-unavailable") {
     const named = sourceName ? `${sourceName} could not be reached` : "The crash source could not be reached";
-    return `${named}, so no safety score was produced. This is an outage, not a finding that this area has no crash data — the same run may succeed later. ${NOT_A_SAFETY_FINDING}`;
+    return `${named}, so no safety score was produced. This is an outage, not a finding that this area has no crash data. The same run may succeed later. ${NOT_A_SAFETY_FINDING}`;
   }
 
   return `No safety score was produced for this run, and it did not record why. ${NOT_A_SAFETY_FINDING}`;

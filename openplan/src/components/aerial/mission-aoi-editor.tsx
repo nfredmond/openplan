@@ -445,8 +445,8 @@ export function MissionAoiEditor({
                 {seedSources.map((source) => (
                   <option key={source.key} value={source.key}>
                     {source.kind === "project_boundary"
-                      ? `Project boundary — ${source.label}`
-                      : `Corridor — ${source.label}`}
+                      ? `Project boundary: ${source.label}`
+                      : `Corridor: ${source.label}`}
                   </option>
                 ))}
               </select>

@@ -133,7 +133,7 @@ export function PublicBasemapPicker({
                   <span className="min-w-0">
                     <span className="block font-medium text-foreground">
                       {choice.label}
-                      {failed ? ` — ${labels.unavailable}` : ""}
+                      {failed ? ` (${labels.unavailable})` : ""}
                     </span>
                     <span className="block text-muted-foreground">{choice.description}</span>
                   </span>

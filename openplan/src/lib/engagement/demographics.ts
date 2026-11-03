@@ -13,7 +13,7 @@
 import { TRANSLATION_LANGUAGE_LABELS } from "./translation-languages";
 
 export const DEMOGRAPHICS_SCREENING_CAVEAT =
-  "Self-reported by a self-selected subset of respondents and shown only in aggregate (small groups suppressed). Screening context to check who outreach reached — NOT a statistical sample, a representativeness finding, or a civil-rights determination.";
+  "Self-reported by a self-selected subset of respondents and shown only in aggregate (small groups suppressed). Screening context to check who outreach reached, NOT a statistical sample, a representativeness finding, or a civil-rights determination.";
 
 export const AGE_BANDS = [
   "under_18",

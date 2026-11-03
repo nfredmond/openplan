@@ -119,7 +119,7 @@ export function formatRtpModelingEvidenceLine(evidence: RtpModelingEvidence): st
   }
   // "No KPIs" is a claim about the run; a failed read cannot make it.
   return evidence.kpiReadFailed
-    ? "This run's VMT/GHG KPIs could not be read — a lookup failure, not evidence that the run has none."
+    ? "This run's VMT/GHG KPIs could not be read: a lookup failure, not evidence that the run has none."
     : "No VMT/GHG KPIs on this run.";
 }
 
@@ -181,8 +181,8 @@ export function rtpEvidenceRunWarnings(disclosure: RtpEvidenceRunDisclosure): st
   if (disclosure.status && disclosure.status !== "succeeded") {
     warnings.push(
       disclosure.status === "failed"
-        ? "This cited run failed — it did not finish, so its figures may be missing or unreliable. The citation is kept so readers can see exactly what was cited."
-        : `This cited run has status "${formatRunStatusLabel(disclosure.status)}" — it has not completed successfully, so its figures may be incomplete. The citation is kept so readers can see exactly what was cited.`
+        ? "This cited run failed. It did not finish, so its figures may be missing or unreliable. The citation is kept so readers can see exactly what was cited."
+        : `This cited run has status "${formatRunStatusLabel(disclosure.status)}". It has not completed successfully, so its figures may be incomplete. The citation is kept so readers can see exactly what was cited.`
     );
   }
   // The engine's caveat comes from the engine registry, never from a key named

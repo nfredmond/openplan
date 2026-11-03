@@ -118,7 +118,7 @@ export const FLOOR_COUNTED_BANDS: readonly RaceEthnicity[] = ["ai_an", "asian", 
 export const FLOOR_UNMAPPABLE_BANDS: readonly RaceEthnicity[] = ["mena", "other", "prefer_not_to_say"];
 
 const DIMENSION_RATIONALE =
-  "Race / ethnicity is the only dimension the two screens both name: the ACS metric is everyone who is not White alone, non-Hispanic, and the survey asks the respondent directly. Age, primary language and housing tenure have no ACS counterpart in this screen, and poverty, zero-vehicle and transit have no survey counterpart — so none of those are compared.";
+  "Race / ethnicity is the only dimension the two screens both name: the ACS metric is everyone who is not White alone, non-Hispanic, and the survey asks the respondent directly. Age, primary language and housing tenure have no ACS counterpart in this screen, and poverty, zero-vehicle and transit have no survey counterpart, so none of those are compared.";
 
 export type JointReading =
   /** Neither screen has anything to say yet. */
@@ -145,9 +145,9 @@ export const JOINT_READING_LABELS: Record<JointReading, string> = {
   no_signal: "No signal yet",
   self_reported_unreadable: "Self-reported side could not be read",
   ecological_only: "Area-based screening only",
-  self_reported_only: "Self-reported only — no area baseline",
+  self_reported_only: "Self-reported only: no area baseline",
   floor_at_or_above_area: "Self-reported floor at or above the area share",
-  floor_below_area: "Self-reported floor below the area share — inconclusive",
+  floor_below_area: "Self-reported floor below the area share: inconclusive",
 };
 
 export type JointEcologicalSide = {
@@ -329,7 +329,7 @@ function buildHeadline(input: {
 
   switch (reading) {
     case "no_signal":
-      return `No representativeness signal yet. The area-based screening has not been computed. ${selfReportedAbsence}. So this campaign has nothing to read either way — that is an absence of evidence, not evidence about who was reached.`;
+      return `No representativeness signal yet. The area-based screening has not been computed. ${selfReportedAbsence}. So this campaign has nothing to read either way. That is an absence of evidence, not evidence about who was reached.`;
 
     case "self_reported_unreadable":
       return ecological
@@ -337,13 +337,13 @@ function buildHeadline(input: {
         : "Neither screening could be shown: self-reported respondent demographics could not be read, and no area-based screening has been computed. Nothing below is a finding about who was reached.";
 
     case "ecological_only":
-      return `Area-based screening only. ${selfReportedAbsence}, so nothing here describes the people who actually responded — this says who the tracts around them look like, not who they are.`;
+      return `Area-based screening only. ${selfReportedAbsence}, so nothing here describes the people who actually responded. This says who the tracts around them look like, not who they are.`;
 
     case "self_reported_only":
-      return `${floorClause}. There is no ACS baseline for this area to compare that against, so it does not establish that the campaign reached the community — only what the respondents who answered reported.`;
+      return `${floorClause}. There is no ACS baseline for this area to compare that against, so it does not establish that the campaign reached the community, only what the respondents who answered reported.`;
 
     case "floor_at_or_above_area": {
-      const clearsArea = `${floorClause} — at or above the area's own ${pct(comparableBaselinePct ?? 0)}.`;
+      const clearsArea = `${floorClause}, at or above the area's own ${pct(comparableBaselinePct ?? 0)}.`;
       if (rebutsAreaFlag) {
         return `${clearsArea} The area-based screening flagged residents of color as under-represented, but that flag is inferred from the tracts comments came from; the respondents we hold individual answers for do not fit it.`;
       }
@@ -360,7 +360,7 @@ function buildHeadline(input: {
     case "floor_below_area":
       return `${floorClause}, below the area's ${pct(
         comparableBaselinePct ?? 0
-      )}. Because suppression makes that a floor rather than a share, it cannot establish under-representation — it only fails to rule it out.`;
+      )}. Because suppression makes that a floor rather than a share, it cannot establish under-representation. It only fails to rule it out.`;
   }
 }
 
@@ -371,7 +371,7 @@ function buildLimits(input: {
 }): string[] {
   const { ecological, selfReported, reading } = input;
   const limits: string[] = [
-    "Only race / ethnicity is compared. Age, primary language and housing tenure have no ACS counterpart in this screen, and poverty, zero-vehicle and transit have no self-reported counterpart — this reading says nothing about those.",
+    "Only race / ethnicity is compared. Age, primary language and housing tenure have no ACS counterpart in this screen, and poverty, zero-vehicle and transit have no self-reported counterpart. This reading says nothing about those.",
   ];
 
   if (selfReported) {
@@ -413,7 +413,7 @@ function buildLimits(input: {
 
   if (reading === "self_reported_unreadable") {
     limits.push(
-      "The self-reported side is unknown here because a read failed — it must not be reported as an absence of respondent demographics."
+      "The self-reported side is unknown here because a read failed. It must not be reported as an absence of respondent demographics."
     );
   }
 

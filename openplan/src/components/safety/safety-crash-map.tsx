@@ -556,7 +556,7 @@ export function SafetyCrashMap({
         ) : (
           <p>
             This OpenPlan deployment has no map key configured. The crash counts and rates on this
-            page are unaffected — only the map is missing. Whoever runs this deployment can add the
+            page are unaffected. Only the map is missing. Whoever runs this deployment can add the
             key.
           </p>
         )}

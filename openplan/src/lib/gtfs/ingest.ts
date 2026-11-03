@@ -495,7 +495,7 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
   if (byteSize === 0) {
     return refuse(
       "not_a_zip",
-      "This feed is empty — nothing was received. A GTFS feed is a `.zip` archive of `.txt` files.",
+      "This feed is empty: nothing was received. A GTFS feed is a `.zip` archive of `.txt` files.",
       null
     );
   }

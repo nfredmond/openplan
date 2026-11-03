@@ -275,7 +275,7 @@ export function CountyRunsPageClient({
                   </span>
                   <span className="mt-1 block text-muted-foreground">
                     Your state transport department publishes traffic counts, and OpenPlan compares
-                    every run against them wherever they exist — you do not need to tick anything for
+                    every run against them wherever they exist. You do not need to tick anything for
                     that. Ticking this also lets the model adjust itself toward those counts. Some
                     counts are kept back from the adjustment and used to check the result, so the
                     accuracy you are shown is measured on traffic the model was not fitted to.
@@ -292,7 +292,7 @@ export function CountyRunsPageClient({
                 className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
               >
                 <p className="font-semibold">
-                  On this OpenPlan installation, launching produces a handoff — not a run that starts itself
+                  On this OpenPlan installation, launching produces a handoff, not a run that starts itself
                 </p>
                 <p className="mt-2">
                   {/* Two sentences for the same conclusion, and which one is on
@@ -308,7 +308,7 @@ export function CountyRunsPageClient({
                           : `${preparedOnlyRunCount} county runs here were prepared rather than sent`
                       }, which OpenPlan records only when no processing worker is configured to run county validation.`}{" "}
                   Launching still creates the run record and the full worker payload, and that
-                  payload is usable — but the setup does not run until whoever operates this
+                  payload is usable, but the setup does not run until whoever operates this
                   OpenPlan installation either configures the validation worker (see{" "}
                   <code>workers/county_onramp_worker/DEPLOY.md</code>) or runs the prepared handoff
                   themselves and posts the manifest back.
@@ -382,7 +382,7 @@ export function CountyRunsPageClient({
           // same screen. Every other status keeps the shared wording.
           const enqueueHelp =
             item.enqueueStatus === "prepared"
-              ? "This county setup handoff is prepared, not sent — no processing worker was configured to run it, so it will not start until an operator runs it or configures a worker."
+              ? "This county setup handoff is prepared, not sent. No processing worker was configured to run it, so it will not start until an operator runs it or configures a worker."
               : getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
 
           return (

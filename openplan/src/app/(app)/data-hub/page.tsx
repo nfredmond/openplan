@@ -462,7 +462,7 @@ export default async function DataHubPage() {
           ? "Visible system component"
           : transitFeedCard.state === "read-failed"
             ? "Registry could not be read"
-            : "No feed ingested yet — add one below",
+            : "No feed ingested yet. Add one below",
     },
     {
       label: "Crash / safety inputs",
@@ -583,7 +583,7 @@ export default async function DataHubPage() {
           Upload a GeoJSON, KML, KMZ or zipped shapefile and it becomes a layer you can switch on
           from the Layers panel on Safety and Aerial, and from the map layers panel in Corridor
           Analysis. Old files are expected: a State Plane
-          shapefile in feet with no .prj works — OpenPlan asks which coordinate system it is in
+          shapefile in feet with no .prj works. OpenPlan asks which coordinate system it is in
           rather than guessing, and shows you where it lands before storing anything.
         </p>
         <WorkspaceGisManager
@@ -870,7 +870,7 @@ export default async function DataHubPage() {
               <div className="module-section-heading">
                 <h2 className="module-section-title">Refreshes you recorded</h2>
                 <p className="module-section-description">
-                  These are refreshes someone on your team did, or plans to do. OpenPlan does not run them for you —
+                  These are refreshes someone on your team did, or plans to do. OpenPlan does not run them for you:
                   nothing here is scheduled or automatic.
                 </p>
               </div>

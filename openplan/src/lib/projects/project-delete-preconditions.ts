@@ -372,6 +372,6 @@ export function assessProjectDelete(
       ? "Set the project's status to complete to retire it. Its immutable award handoff history stays intact and attributable."
       : hasCommitments
       ? "Set the project's status to complete to retire it. Its funding and invoicing history stays intact and attributable."
-      : "Set the project's status to complete to retire it — that is reversible — or remove the attached records from the modules listed above and delete the empty project afterwards.",
+      : "Set the project's status to complete to retire it (that is reversible), or remove the attached records from the modules listed above and delete the empty project afterwards.",
   };
 }

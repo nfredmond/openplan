@@ -274,7 +274,7 @@ export async function POST(request: NextRequest) {
         });
         return NextResponse.json(
           {
-            error: `This deployment's database predates the reimbursement-profile columns, and its legacy posture column cannot store "${reimbursementPosture}". Apply migration 20260727000009_invoicing_reimbursement_profiles, then retry — the record was not saved under a posture you did not choose.`,
+            error: `This deployment's database predates the reimbursement-profile columns, and its legacy posture column cannot store "${reimbursementPosture}". Apply migration 20260727000009_invoicing_reimbursement_profiles, then retry. The record was not saved under a posture you did not choose.`,
           },
           { status: 503 }
         );

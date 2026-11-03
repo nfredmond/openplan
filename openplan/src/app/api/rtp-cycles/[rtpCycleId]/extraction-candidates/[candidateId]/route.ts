@@ -148,7 +148,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           error: "That transcription has already been reviewed",
           details:
             candidate.status === "accepted"
-              ? "Somebody has already saved this passage into the plan. Nothing was changed — remove the figure from the plan itself if it should not be there."
+              ? "Somebody has already saved this passage into the plan. Nothing was changed. Remove the figure from the plan itself if it should not be there."
               : "Somebody has already set this passage aside. Nothing was changed.",
         },
         { status: 409 }

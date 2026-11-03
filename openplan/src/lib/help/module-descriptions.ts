@@ -21,7 +21,7 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
   "/projects":
     "One record per project, from scoping through delivery: milestones, decisions, risks, issues, meetings, funding, and the stage-gate board your delivery process follows.",
   "/reports":
-    "Where analysis, comparisons, and narrative come together into documents you can hand to a board or a funder — with the sources and caveats attached to every claim.",
+    "Where analysis, comparisons, and narrative come together into documents you can hand to a board or a funder, with the sources and caveats attached to every claim.",
   "/maps":
     "Map packages for your projects: figures, map books, a web map, and QGIS and ArcGIS Pro projects. Claude Fable 5.1 builds them on your own computer, or you add a package you made.",
   "/assistant-activity":
@@ -29,7 +29,7 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
   "/rtp":
     "Regional transportation plan cycles: project lists, horizon years, the financial picture, performance measures, public draft review, and the comment record.",
   "/plans":
-    "The plan documents your agency maintains — chapters, sections, and the evidence behind them.",
+    "The plan documents your agency maintains: chapters, sections, and the evidence behind them.",
   "/land-use-plans":
     "Land-use plan authoring from requirements and mapped designations through public review, adoption, publication, and annual implementation reporting.",
   "/programs":
@@ -37,7 +37,7 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
   "/grants":
     "Funding opportunities from discovery to award: pursue-or-pass decisions, applications, award records, and reimbursement follow-through.",
   "/invoicing":
-    "The invoices your agency sends — reimbursement claims to funders and client invoices — with their status. OpenPlan itself never charges you; it is free.",
+    "The invoices your agency sends (reimbursement claims to funders and client invoices), with their status. OpenPlan itself never charges you; it is free.",
   "/models":
     "Travel-demand models for any place you choose, and the runs behind analysis evidence. Results are screening-grade: they support prioritization and narrative, not final engineering.",
   "/scenarios":
@@ -51,11 +51,11 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
   "/engagement":
     "Public engagement: publish a map or survey where residents comment, review every comment before it counts, and carry what you heard into projects and reports.",
   "/data-hub":
-    "The datasets registered to this workspace — where each came from, how fresh it is, and the geometry attached to it.",
+    "The datasets registered to this workspace: where each came from, how fresh it is, and the geometry attached to it.",
   "/aerial":
     "Aerial imagery missions: plan a flight area, track the mission, and keep the resulting imagery as evidence attached to your work.",
   "/knowledge-base":
-    "The documents you upload — adopted plans, studies, policies — that grounded citations across OpenPlan are drawn from.",
+    "The documents you upload (adopted plans, studies, policies) that grounded citations across OpenPlan are drawn from.",
   "/help":
     "This page: what OpenPlan is, what each module does, where the setup guides live, and who fixes what.",
 };

@@ -14,7 +14,7 @@ export const NEAR_DUPLICATE_DEFAULT_THRESHOLD = 0.55;
 export const NEAR_DUPLICATE_MAX_PAIRS = 2000;
 
 export const NEAR_DUPLICATE_CAVEAT =
-  "Near-duplicates are lexical (trigram) look-alikes over comment text — a screening aid to help collapse paraphrased or re-posted submissions. It is NOT a semantic/embedding match and never merges anything automatically; a moderator decides.";
+  "Near-duplicates are lexical (trigram) look-alikes over comment text: a screening aid to help collapse paraphrased or re-posted submissions. It is NOT a semantic/embedding match and never merges anything automatically; a moderator decides.";
 
 export type NearDuplicatePair = {
   item_a: string;

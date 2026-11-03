@@ -718,7 +718,7 @@ describe("loadDocumentLibrary", () => {
     expect(held?.byteSize).toBe(512_000_000);
     expect(held?.badge).toEqual({ label: "Held", tone: "positive" });
     expect(held?.downloadHref).not.toBeNull();
-    expect(held?.title).toBe("Orthomosaic — River Rd survey");
+    expect(held?.title).toBe("Orthomosaic: River Rd survey");
 
     const failed = byId.get("cus-failed");
     expect(failed?.hasBytes).toBe(false);

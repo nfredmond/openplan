@@ -183,7 +183,7 @@ describe("finding a Knowledge Base file by its name", () => {
 
     const caption = screen.getByTestId("kb-list-caption").textContent ?? "";
     expect(caption).toMatch(new RegExp(`Showing the first ${KB_DOCUMENT_LIST_LIMIT} documents`));
-    expect(caption).toMatch(/there are more/);
+    expect(caption).toMatch(/There are more/);
     // The old sentence claimed a total. It must not survive anywhere on screen.
     expect(caption).not.toMatch(
       new RegExp(`^${KB_DOCUMENT_LIST_LIMIT} documents in this workspace\\.$`)
@@ -328,7 +328,7 @@ describe("the filter helpers the list read is built from", () => {
         filters: unfiltered,
         scopeLabel: null,
       })
-    ).toMatch(/Showing the first 200 documents in this workspace — there are more/);
+    ).toMatch(/Showing the first 200 documents in this workspace\. There are more/);
     expect(
       describeKbDocumentListResult({
         count: 3,

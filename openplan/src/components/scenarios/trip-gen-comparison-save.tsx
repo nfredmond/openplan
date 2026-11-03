@@ -74,7 +74,7 @@ export function TripGenComparisonSaveButton({
         candidateEntry: { id: candidateEntryId, label: candidateEntryLabel },
         baselineKpis,
         candidateKpis,
-        label: `Trip generation — ${candidateEntryLabel} vs ${baselineEntryLabel}`,
+        label: `Trip generation: ${candidateEntryLabel} vs ${baselineEntryLabel}`,
       });
 
       if (payload.indicatorDeltas.length === 0) {

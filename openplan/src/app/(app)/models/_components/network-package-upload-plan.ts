@@ -445,7 +445,7 @@ export function requestSizeProblems(
       problems.push(
         `${request.label} would be ${formatMebibytes(size)}, and this deployment accepts at most ${formatMebibytes(
           maxBytes
-        )} per request. Nothing was sent. Either reduce the network — fewer attributes per feature, or coordinates rounded to the precision the model needs — or ask whoever operates this deployment to raise the limit.`
+        )} per request. Nothing was sent. Either reduce the network (fewer attributes per feature, or coordinates rounded to the precision the model needs) or ask whoever operates this deployment to raise the limit.`
       );
     }
   }

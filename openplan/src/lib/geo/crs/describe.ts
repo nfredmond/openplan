@@ -96,9 +96,9 @@ export function describeSpatialFileSrs(srs: DescribableSrs): string {
     case "geojson_crs_member":
       return `${reprojection}Coordinate system read from the file's own crs member: ${named}.${datum}`;
     case "geojson_rfc7946_default":
-      return `The file named no coordinate system. GeoJSON is defined as ${named} by RFC 7946, so it was read as that — not guessed.`;
+      return `The file named no coordinate system. GeoJSON is defined as ${named} by RFC 7946, so it was read as that, not guessed.`;
     case "kml_specification":
-      return `KML is defined as ${named} by the OGC specification, so it was read as that — not guessed.`;
+      return `KML is defined as ${named} by the OGC specification, so it was read as that, not guessed.`;
     case "planner_asserted":
       // NAMED, ALWAYS. This is the one basis where the answer came from a
       // person rather than from the file, and the record has to say so — both

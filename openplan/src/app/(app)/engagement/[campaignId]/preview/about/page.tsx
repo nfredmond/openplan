@@ -68,7 +68,7 @@ export default async function EngagementPortalPreviewAboutPage({
           <StateBlock
             tone="danger"
             title="This preview could not be loaded"
-            description={`The database refused a read this preview needs: ${result.error.message}. That is not the same as the campaign not existing — OpenPlan cannot tell you either way right now.`}
+            description={`The database refused a read this preview needs: ${result.error.message}. That is not the same as the campaign not existing. OpenPlan cannot tell you either way right now.`}
           />
           <p className="mt-4 text-sm">
             <Link
@@ -93,7 +93,7 @@ export default async function EngagementPortalPreviewAboutPage({
       <div className="mb-4 rounded-xl border border-amber-300/70 bg-amber-50/80 px-4 py-3 dark:border-amber-900 dark:bg-amber-950/30">
         <p className="flex items-center gap-2 text-sm font-semibold text-amber-900 dark:text-amber-200">
           <Eye className="h-4 w-4 shrink-0" aria-hidden="true" />
-          Preview — this is the page behind the one link on the resident&apos;s map. Submissions,
+          Preview: this is the page behind the one link on the resident&apos;s map. Submissions,
           votes and sign-ups are turned off here: nothing you do reaches the public record.
         </p>
       </div>

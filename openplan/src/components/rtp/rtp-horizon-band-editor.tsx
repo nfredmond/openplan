@@ -78,13 +78,13 @@ const COST_BASIS_OPTIONS: ReadonlyArray<{
 }> = [
   {
     value: "itemized",
-    label: "Itemized — every project's cost listed separately",
+    label: "Itemized: every project's cost listed separately",
     hint: "Each project programmed in this period carries its own cost estimate.",
   },
   {
     value: "banded",
-    label: "Aggregate — costs grouped for the whole period",
-    hint: "Costs are reported as a range or total for the period rather than project by project. Aggregate treatment is usually only accepted for later periods — check the rule your plan is adopted under.",
+    label: "Aggregate: costs grouped for the whole period",
+    hint: "Costs are reported as a range or total for the period rather than project by project. Aggregate treatment is usually only accepted for later periods. Check the rule your plan is adopted under.",
   },
 ];
 
@@ -190,7 +190,7 @@ function describeRemovalConsequence(projectLinksUnassigned: number | null): stri
   if (projectLinksUnassigned === null) {
     return (
       "The period was removed. Any projects that were programmed into it no longer belong to a period, and how " +
-      "many could not be counted — check the programmed project list before relying on the fiscal constraint check."
+      "many could not be counted. Check the programmed project list before relying on the fiscal constraint check."
     );
   }
   if (projectLinksUnassigned === 0) return null;
@@ -314,7 +314,7 @@ function HorizonBandForm({
     }
     if (escalationTargetYear !== null && (escalationTargetYear < startYear || escalationTargetYear > endYear)) {
       setLocalError(
-        `The year money is treated as spent has to fall inside this period — between ${startYear} and ${endYear}.`
+        `The year money is treated as spent has to fall inside this period, between ${startYear} and ${endYear}.`
       );
       return;
     }
@@ -357,7 +357,7 @@ function HorizonBandForm({
           required
         />
         <p className="text-label text-muted-foreground">
-          Your agency&apos;s own name for the period — &ldquo;First ten years&rdquo;, &ldquo;2035&ndash;2050&rdquo;,
+          Your agency&apos;s own name for the period: &ldquo;First ten years&rdquo;, &ldquo;2035&ndash;2050&rdquo;,
           &ldquo;Phase 2&rdquo;. It appears on every financial table in this plan.
         </p>
       </div>
@@ -415,7 +415,7 @@ function HorizonBandForm({
             <>Costs and revenue in this period will be escalated to {escalationTargetYear} dollars.</>
           ) : previewMidpoint !== null ? (
             <>
-              Leave this blank and the middle of the period &mdash; <strong>{previewMidpoint}</strong> &mdash; is assumed,
+              Leave this blank and the middle of the period (<strong>{previewMidpoint}</strong>) is assumed,
               and every table says so.
             </>
           ) : (
@@ -684,7 +684,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
               flow={flow}
               name="label"
               label="What this period is called"
-              hint="Your agency's own name for it — “First ten years”, “2035–2050”, “Phase 2”. It appears on every financial table in this plan."
+              hint="Your agency's own name for it: “First ten years”, “2035–2050”, “Phase 2”. It appears on every financial table in this plan."
             >
               <Input {...flow.text("label")} placeholder="First ten years" maxLength={LABEL_MAX_LENGTH} />
             </GuidedFlowRow>
@@ -727,7 +727,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
           if (target < startYear || target > endYear) {
             return {
               field: "escalationTargetYear",
-              message: `The year money is treated as spent has to fall inside this period — between ${startYear} and ${endYear}.`,
+              message: `The year money is treated as spent has to fall inside this period, between ${startYear} and ${endYear}.`,
             };
           }
           return null;
@@ -771,8 +771,8 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
                     <>Costs and revenue in this period will be escalated to {target} dollars.</>
                   ) : previewMidpoint !== null ? (
                     <>
-                      Leave this blank and the middle of the period &mdash;{" "}
-                      <strong>{previewMidpoint}</strong> &mdash; is assumed, and every table says so.
+                      Leave this blank and the middle of the period (
+                      <strong>{previewMidpoint}</strong>) is assumed, and every table says so.
                     </>
                   ) : (
                     <>Leave this blank and the middle of the period is assumed, and every table says so.</>
@@ -850,12 +850,12 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
           <p className="mx-auto mt-1.5 max-w-prose text-sm text-muted-foreground">
             A financial plan works period by period: money raised in a span of years pays for what is built in that
             same span. Until at least one period exists there is nowhere to record revenue, nowhere to record operations
-            and maintenance, and no way to work out whether this plan can be paid for &mdash; so the fiscal constraint
+            and maintenance, and no way to work out whether this plan can be paid for, so the fiscal constraint
             check will decline to give an answer rather than guess one.
           </p>
           <p className="mx-auto mt-2 max-w-prose text-xs text-muted-foreground">
-            Most agencies start with the split their adoption rule expects &mdash; often a first ten years listed project
-            by project, then a longer period costed in aggregate &mdash; but the periods are yours to name and to set
+            Most agencies start with the split their adoption rule expects (often a first ten years listed project
+            by project, then a longer period costed in aggregate), but the periods are yours to name and to set
             years for.
           </p>
           {canWrite ? (
@@ -933,7 +933,7 @@ export function RtpHorizonBandEditor({ rtpCycleId, bands, canWrite }: RtpHorizon
                     <p className="mt-1.5 text-xs text-muted-foreground">
                       {band.escalationTargetYear === null ? (
                         <>
-                          Money treated as spent in <strong>{assumedYear}</strong> &mdash; assumed from the middle of the
+                          Money treated as spent in <strong>{assumedYear}</strong>, assumed from the middle of the
                           period, because no year was set.
                         </>
                       ) : (

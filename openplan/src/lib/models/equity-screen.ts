@@ -36,7 +36,7 @@ export type EquityScreen = {
 };
 
 export const EQUITY_SCREENING_CAVEAT =
-  "Screening EJ/Title VI overlay from real ACS low-income, minority, and zero-vehicle shares. Equity-focus zones are above the study-area average on ≥2 of the 3 indicators. Relative to this study area — NOT the official CalEnviroScreen / SB 535 disadvantaged-community designation.";
+  "Screening EJ/Title VI overlay from real ACS low-income, minority, and zero-vehicle shares. Equity-focus zones are above the study-area average on ≥2 of the 3 indicators. Relative to this study area, NOT the official CalEnviroScreen / SB 535 disadvantaged-community designation.";
 
 function num(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;

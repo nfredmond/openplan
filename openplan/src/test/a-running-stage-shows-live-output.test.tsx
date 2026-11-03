@@ -306,7 +306,7 @@ describe("accuracy by road type on the run card", () => {
     // Tertiary reads 1.2% here — the best number shown, over one station.
     renderRun(runWithAccuracy(ROAD_CLASSES));
     expect(screen.getByTestId("run-accuracy-by-class").textContent).toContain(
-      "a 1% error over one station is one station"
+      "A 1% error over one station is one station"
     );
   });
 

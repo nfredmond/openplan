@@ -202,10 +202,10 @@ describe("resolveAssignee", () => {
     expect(resolved).toEqual({
       kind: "departed",
       userId: DEPARTED,
-      sentence: "Unassigned — previously a member",
+      sentence: "Unassigned, previously a member",
     });
     // The sentence constant and the literal must agree — surfaces render the constant.
-    expect(DEPARTED_ASSIGNEE_SENTENCE).toBe("Unassigned — previously a member");
+    expect(DEPARTED_ASSIGNEE_SENTENCE).toBe("Unassigned, previously a member");
   });
 
   it("resolves a free-text owner label as an external party, trimmed", () => {

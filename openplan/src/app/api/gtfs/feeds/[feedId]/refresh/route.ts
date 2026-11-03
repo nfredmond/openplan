@@ -277,7 +277,7 @@ export async function POST(
           error: "An uploaded feed cannot be refreshed",
           detail:
             "This feed was ingested from a file, so there is no address to fetch it from again. " +
-            "Upload the agency's newer archive to this feed instead — the upload door takes a " +
+            "Upload the agency's newer archive to this feed instead. The upload door takes a " +
             "feedId and adds a version to the feed named here rather than registering a second " +
             "one for the same agency.",
         },

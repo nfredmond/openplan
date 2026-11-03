@@ -420,7 +420,7 @@ function describeFraming(
   }
 
   const role = PORTAL_FRAMING_ORIGIN_ROLE[origin];
-  return originLabel ? `This map opens on ${originLabel} — ${role}.` : `This map opens on ${role}.`;
+  return originLabel ? `This map opens on ${originLabel}, ${role}.` : `This map opens on ${role}.`;
 }
 
 /**

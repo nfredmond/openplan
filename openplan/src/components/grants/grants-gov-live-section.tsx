@@ -163,7 +163,7 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
             </p>
           </div>
         </div>
-        <span className="module-inline-item">Synopsis-level — the NOFO is the record</span>
+        <span className="module-inline-item">Synopsis-level: the NOFO is the record</span>
       </div>
 
       <div className="mt-5 flex flex-wrap items-end gap-3">
@@ -242,7 +242,7 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
           data-testid="grants-gov-offline"
         >
           grants.gov is unreachable from this environment right now. Grants keeps working
-          from the curated program catalog and your tracked opportunities — try loading again later.
+          from the curated program catalog and your tracked opportunities. Try loading again later.
         </div>
       ) : null}
 
@@ -251,7 +251,7 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
           className="mt-4 rounded-[0.75rem] border border-dashed border-border/60 bg-background/60 px-5 py-4 text-sm text-muted-foreground"
           data-testid="grants-gov-error"
         >
-          Couldn&apos;t load live opportunities — check your session and search terms, then try
+          Couldn&apos;t load live opportunities. Check your session and search terms, then try
           again.
         </div>
       ) : null}

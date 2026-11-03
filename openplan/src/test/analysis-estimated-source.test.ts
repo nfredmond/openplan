@@ -95,21 +95,21 @@ describe("estimated source labels", () => {
   });
 
   it("provides a one-line explanation per estimated domain", () => {
-    expect(estimatedSourceNote("crashes")).toBe("Crash source API unavailable — area-based estimate.");
-    expect(estimatedSourceNote("transit")).toBe("Transit stop inventory unavailable — area-based estimate.");
-    expect(estimatedSourceNote("lodes")).toBe("LODES employment not yet ingested — ACS-based estimate.");
+    expect(estimatedSourceNote("crashes")).toBe("Crash source API unavailable, area-based estimate.");
+    expect(estimatedSourceNote("transit")).toBe("Transit stop inventory unavailable, area-based estimate.");
+    expect(estimatedSourceNote("lodes")).toBe("LODES employment not yet ingested, ACS-based estimate.");
   });
 
   it("describes estimated accessibility inputs only when present", () => {
     expect(describeEstimatedAccessibilityInputs({ transit: false, lodes: false })).toBeNull();
     expect(describeEstimatedAccessibilityInputs({ transit: true, lodes: false })).toBe(
-      "Includes estimated inputs (transit stops) — source data unavailable or not yet ingested."
+      "Includes estimated inputs (transit stops): source data unavailable or not yet ingested."
     );
     expect(describeEstimatedAccessibilityInputs({ transit: false, lodes: true })).toBe(
-      "Includes estimated inputs (employment) — source data unavailable or not yet ingested."
+      "Includes estimated inputs (employment): source data unavailable or not yet ingested."
     );
     expect(describeEstimatedAccessibilityInputs({ transit: true, lodes: true })).toBe(
-      "Includes estimated inputs (transit stops, employment) — source data unavailable or not yet ingested."
+      "Includes estimated inputs (transit stops, employment): source data unavailable or not yet ingested."
     );
   });
 });

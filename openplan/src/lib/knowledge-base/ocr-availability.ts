@@ -126,7 +126,7 @@ export function isKbOcrCallbackConfigured(): boolean {
  * One home, because copy with two homes drifts.
  */
 export const KB_OCR_PROVENANCE_NOTICE =
-  "Read with OCR — quotes carry their page, and a scan can misread a digit, so check a figure " +
+  "Read with OCR. Quotes carry their page, and a scan can misread a digit, so check a figure " +
   "against the original before you rely on it.";
 
 /**
@@ -151,8 +151,8 @@ export function describeUnreadableDocument(
     return stored || "This document could not be read, and the reason was not recorded.";
   }
   return workerConfigured
-    ? "No text layer was found — this looks like a scan. It can be read with OCR."
-    : "No text layer was found — this looks like a scan. Reading it needs an OCR service, which " +
+    ? "No text layer was found. This looks like a scan. It can be read with OCR."
+    : "No text layer was found. This looks like a scan. Reading it needs an OCR service, which " +
         "this deployment does not have, so it cannot be searched or quoted yet.";
 }
 

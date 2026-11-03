@@ -149,7 +149,7 @@ export function CampaignHandoffReadinessSection({
               </h3>
               <p className="module-record-summary">
                 {projectUnreadable
-                  ? "This campaign records a project id, so it is linked. The project record itself could not be read, which is why it cannot be named here — this is not an unlinked campaign."
+                  ? "This campaign records a project id, so it is linked. The project record itself could not be read, which is why it cannot be named here. This is not an unlinked campaign."
                   : project
                     ? project.summary || "This project has no summary yet."
                     : "Link a project when this intake should stay traceable to a planning effort rather than stand alone."}
@@ -182,7 +182,7 @@ export function CampaignHandoffReadinessSection({
           <StateBlock
             tone="danger"
             title="The coverage and workload figures could not be computed"
-            description="Moderation load, categorized coverage, map coverage, export readiness and the comment appendix are all counted from this campaign's comments, and that read failed. They are withheld rather than shown as zero — a zero here would say this campaign received no input, which nothing has established."
+            description="Moderation load, categorized coverage, map coverage, export readiness and the comment appendix are all counted from this campaign's comments, and that read failed. They are withheld rather than shown as zero. A zero here would say this campaign received no input, which nothing has established."
           />
         ) : (
           <>
@@ -303,7 +303,7 @@ export function CampaignHandoffReadinessSection({
                 <h3 className="module-record-title text-[1rem]">Recent intake signal</h3>
                 <p className="module-record-summary">
                   {itemsUnreadable
-                    ? "The comments could not be read, so the intake signal is unknown — not zero."
+                    ? "The comments could not be read, so the intake signal is unknown, not zero."
                     : primarySource
                       ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest source of input, with ${primarySource.count} items.`
                       : "No intake items yet."}

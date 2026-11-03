@@ -332,7 +332,7 @@ export function buildProjectStageGateSummary(
         rationale:
           latestDecision?.rationale?.trim() ||
           (workflowState === "unknown"
-            ? `This gate's decision log could not be read (${decisionsUnavailable?.reason ?? "no reason reported"}), so whether a decision exists for it is unknown — not that none was recorded.`
+            ? `This gate's decision log could not be read (${decisionsUnavailable?.reason ?? "no reason reported"}), so whether a decision exists for it is unknown, not that none was recorded.`
             : workflowState === "not_started"
               ? "No gate decision has been recorded for this gate. That is an absence of a decision, not a failure to pass."
               : workflowState === "hold"

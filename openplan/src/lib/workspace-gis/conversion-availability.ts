@@ -94,7 +94,7 @@ export function describeSpatialConversionAvailability(
       `This deployment has set ${SPATIAL_CONVERSION_WORKER_URL_ENV} and ${SPATIAL_CONVERSION_WORKER_TOKEN_ENV}, but ` +
       `this build has no dispatch path to a conversion worker: it never uploads a ${format} anywhere and never asks ` +
       `for a conversion. Nothing was stored and nothing was guessed. Export the layer you want to a shapefile or ` +
-      `GeoJSON and upload that instead — that path is complete today. When conversion does land, the worker will ` +
+      `GeoJSON and upload that instead. That path is complete today. When conversion does land, the worker will ` +
       `report the coordinate system it found, OpenPlan will decide against the same registry it uses for every other ` +
       `upload, and the version will record that PROJ did the transform rather than OpenPlan.`,
     exportPath: FILE_GEODATABASE_EXPORT_PATH,

@@ -107,7 +107,7 @@ async function uploadThroughTheWizard(catalog: WorkspaceGisLayerListing[]) {
 
   // The real confirmation step — nothing is stored before a planner answers it.
   await screen.findByText("Does this look right?");
-  fireEvent.click(screen.getByRole("button", { name: "Yes — add this layer" }));
+  fireEvent.click(screen.getByRole("button", { name: "Yes, add this layer" }));
 
   await waitFor(() => expect(createWorkspaceGisLayer).toHaveBeenCalled());
   return createWorkspaceGisLayer.mock.calls[0][0] as Record<string, unknown>;

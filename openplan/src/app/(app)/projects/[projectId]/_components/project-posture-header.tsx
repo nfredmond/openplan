@@ -206,7 +206,7 @@ export function ProjectPostureHeader({
               <p className="module-summary-value">{openRiskCount ?? "—"}</p>
               <p className="module-summary-detail">
                 {openRiskCount === null
-                  ? "Risk count unavailable — the risk register could not be read, so this is not zero."
+                  ? "Risk count unavailable: the risk register could not be read, so this is not zero."
                   : "Risks still requiring active attention or mitigation."}
               </p>
             </div>
@@ -215,7 +215,7 @@ export function ProjectPostureHeader({
               <p className="module-summary-value">{openIssueCount ?? "—"}</p>
               <p className="module-summary-detail">
                 {openIssueCount === null
-                  ? "Issue count unavailable — the issue log could not be read, so this is not zero."
+                  ? "Issue count unavailable: the issue log could not be read, so this is not zero."
                   : "Things stopping work right now, on delivery or analysis."}
               </p>
             </div>
@@ -266,7 +266,7 @@ export function ProjectPostureHeader({
             </div>
           </div>
           <p className="module-operator-copy">
-            The dates you have to hit, the packets you have to send, and the money you are owed — tracked on the project itself instead of in someone&apos;s notes.
+            The dates you have to hit, the packets you have to send, and the money you are owed, tracked on the project itself instead of in someone&apos;s notes.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
@@ -287,14 +287,14 @@ export function ProjectPostureHeader({
               <div className="module-operator-item">
                 This workspace is bound to stage-gate template
                 {" "}&ldquo;{workspaceData?.stage_gate_template_id ?? "unknown"}&rdquo;, which this deployment
-                does not register — no gate names, evidence requirements, or exhibit ids can be shown for it
+                does not register. No gate names, evidence requirements, or exhibit ids can be shown for it
                 here, and none should be inferred from the board below.
               </div>
             )}
             {stageGateBinding?.lapmFormIdsStatus ? (
               <div className="module-operator-item">
                 Gate domains map to invoice and submittal workflow, but the {stageGateBinding.jurisdictionLabel} pack
-                declares its own exhibit/form ids &ldquo;{stageGateBinding.lapmFormIdsStatus}&rdquo; — the ids shown
+                declares its own exhibit/form ids &ldquo;{stageGateBinding.lapmFormIdsStatus}&rdquo;. The ids shown
                 in this board are not the funder&apos;s.
               </div>
             ) : null}

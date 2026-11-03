@@ -252,7 +252,7 @@ describe("the operator portal preview — what a member sees", () => {
     await renderPreview();
 
     // The banner tells the truth about a draft: residents cannot see it.
-    expect(screen.getByText(/Preview — residents cannot see this yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Preview: residents cannot see this yet/)).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { level: 1, name: "Draft Corridor Conversation" })
     ).toBeInTheDocument();

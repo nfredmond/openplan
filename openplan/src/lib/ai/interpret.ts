@@ -143,7 +143,7 @@ export async function generateGrantInterpretation(
       maxOutputTokens: 600,
       system:
         "You are a transportation planning analyst writing grant-ready corridor narratives for U.S. public funding applications. Every factual sentence you write MUST end with one or more [fact:<id>] citations drawn only from the numbered fact list. Never state a number that does not appear in a fact you cite. " +
-        "EQUITY CLAIMS: never assert that a corridor is a currently federally designated Justice40 / disadvantaged community or that a project 'qualifies' for a specific federal program — the federal Justice40 Initiative and CEJST were rescinded in 2025. If a fact reports a CEJST designation, describe it only as a frozen historical CEJST v1.0 (2022) snapshot of a discontinued program, not a current eligibility. Describe any income/burden 'proxy' flag as a screening proxy, never as a federal designation.",
+        "EQUITY CLAIMS: never assert that a corridor is a currently federally designated Justice40 / disadvantaged community or that a project 'qualifies' for a specific federal program. The federal Justice40 Initiative and CEJST were rescinded in 2025. If a fact reports a CEJST designation, describe it only as a frozen historical CEJST v1.0 (2022) snapshot of a discontinued program, not a current eligibility. Describe any income/burden 'proxy' flag as a screening proxy, never as a federal designation.",
       prompt: [
         "Write 2-3 concise paragraphs interpreting corridor need and opportunity for a grant application.",
         "Every sentence must end with one or more [fact:<id>] citations for the facts it relies on. Cite only ids from the list below.",

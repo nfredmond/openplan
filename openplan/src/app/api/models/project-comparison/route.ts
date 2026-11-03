@@ -281,7 +281,7 @@ export async function POST(request: NextRequest) {
           workspace_id: project.workspace_id,
           project_id: project.id,
           scenario_set_id: scenarioSet.id,
-          title: `${projectName} — ${definition.titleSuffix}`,
+          title: `${projectName}: ${definition.titleSuffix}`,
           model_family: definition.modelFamily,
           status: "draft",
           summary: `Guided ${definition.titleSuffix} record for the project baseline and build. No result exists until its real inputs are supplied and its run succeeds.`,

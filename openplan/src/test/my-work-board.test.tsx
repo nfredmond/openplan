@@ -135,7 +135,7 @@ describe("my work — the board", () => {
     await renderBoard({ scope: "all_projects", roster: { ok: false } });
 
     expect(
-      screen.getAllByText("Assignee unavailable — the team roster could not be read").length
+      screen.getAllByText("Assignee unavailable: the team roster could not be read").length
     ).toBeGreaterThan(0);
     // And it does not silently narrow "unassigned" without saying so.
     expect(screen.queryByText(DEPARTED_ASSIGNEE_SENTENCE)).toBeNull();
@@ -237,7 +237,7 @@ describe("my work — the review queue on screen", () => {
     // which is the whole point of the block.
     expect(waiting.getByText(/The crossing at 4th and Main/)).toBeInTheDocument();
     expect(waiting.getByText("Corridor screening — build alternative")).toBeInTheDocument();
-    expect(waiting.getByText("Draft narrative — Existing conditions")).toBeInTheDocument();
+    expect(waiting.getByText("Draft narrative: Existing conditions")).toBeInTheDocument();
     // Nothing here is presented as belonging to anyone.
     expect(waiting.queryByText(DEPARTED_ASSIGNEE_SENTENCE)).toBeNull();
     expect(waiting.getByText("Flagged")).toBeInTheDocument();

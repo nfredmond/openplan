@@ -47,7 +47,7 @@ export const WORKSPACE_GIS_BATCH_BYTE_LIMIT = BODY_LIMITS.workspaceGisFeatureBat
 
 export const WORKSPACE_GIS_BATCH_TOO_LARGE_MESSAGE =
   `One upload batch may carry up to ${Math.round(WORKSPACE_GIS_BATCH_BYTE_LIMIT / (1024 * 1024))} MB of features. ` +
-  `Send fewer features per batch — nothing was stored from this one, and the same batch can be sent again split in two.`;
+  `Send fewer features per batch. Nothing was stored from this one, and the same batch can be sent again split in two.`;
 
 export type IngestOpenValidation =
   | { ok: true; request: WorkspaceGisIngestOpenRequest }
@@ -244,7 +244,7 @@ export function describeIncompleteIngest(
   const missing = declaredFeatureCount - featureCount;
   return (
     `This upload is not finished: ${featureCount.toLocaleString("en-US")} of ${declaredFeatureCount.toLocaleString("en-US")} shapes ` +
-    `have arrived and ${missing.toLocaleString("en-US")} have not. It stays unfinished — a partly loaded layer is never drawn, ` +
+    `have arrived and ${missing.toLocaleString("en-US")} have not. It stays unfinished. A partly loaded layer is never drawn, ` +
     `because a map missing shapes nobody knows about is worse than a map that is not there.`
   );
 }

@@ -377,7 +377,7 @@ export function describeModelRunDispatch(
       // would leave a planner reading a stalled run as a run in progress, which
       // is the same defect as reporting a queued run nothing will ever look at.
       detail:
-        "OpenPlan pushed the run to that worker and it answered that it had taken it. Progress appears as its stages complete; the worker reports by writing to this database, so OpenPlan is reading its work rather than watching the process. That is also the limit of what acceptance proves: if the worker stops before finishing — a pool instance reclaimed mid-run, a crash, a redeploy — the run stops progressing rather than failing by itself. OpenPlan marks a run failed once it has been stalled long enough, so it will not sit here looking alive indefinitely, and any stage the worker never claimed is still queued for another worker to take.",
+        "OpenPlan pushed the run to that worker and it answered that it had taken it. Progress appears as its stages complete; the worker reports by writing to this database, so OpenPlan is reading its work rather than watching the process. That is also the limit of what acceptance proves: if the worker stops before finishing (a pool instance reclaimed mid-run, a crash, a redeploy), the run stops progressing rather than failing by itself. OpenPlan marks a run failed once it has been stalled long enough, so it will not sit here looking alive indefinitely, and any stage the worker never claimed is still queued for another worker to take.",
     };
   }
 
@@ -411,7 +411,7 @@ export function describeModelRunDispatch(
     return {
       state: "unattended",
       headline: "Nothing on this OpenPlan installation is going to execute this run.",
-      detail: `${pushFailure} This installation also declares that no AequilibraE worker checks it for runs, so the run will sit queued and then be failed rather than finishing. Nothing about this workspace or this study area caused that, and there is nothing to buy — OpenPlan is free. ${
+      detail: `${pushFailure} This installation also declares that no AequilibraE worker checks it for runs, so the run will sit queued and then be failed rather than finishing. Nothing about this workspace or this study area caused that, and there is nothing to buy. OpenPlan is free. ${
         pushFailed
           ? operatorNext
           : `Whoever operates this OpenPlan installation either runs the polling worker or configures a push endpoint (${MODELING_WORKER_URL_ENV} / ${MODELING_WORKER_TOKEN_ENV}).`
@@ -423,7 +423,7 @@ export function describeModelRunDispatch(
     return {
       state: "waiting_for_poller",
       headline: "This run is waiting for the modeling worker to pick it up.",
-      detail: `${pushFailure} This installation declares that an AequilibraE worker checks it for runs, which is a statement of configuration and not a live check — the worker cannot be probed from here. If that worker is running, it will claim this run the next time it checks.`,
+      detail: `${pushFailure} This installation declares that an AequilibraE worker checks it for runs, which is a statement of configuration and not a live check. The worker cannot be probed from here. If that worker is running, it will claim this run the next time it checks.`,
     };
   }
 
@@ -469,7 +469,7 @@ export function resolveModelingQueueDepth(env: NodeJS.ProcessEnv = process.env):
 export function modelingQueueDepthMessage(limit: number, inFlight: number): string {
   return (
     `This OpenPlan installation limits a workspace to ${limit} model run${limit === 1 ? "" : "s"} on the processing worker at once, and this workspace has ${inFlight} in flight. ` +
-    `Wait for one to finish, or contact whoever operates this installation to raise or remove the limit — OpenPlan itself is free and has no usage tiers.`
+    `Wait for one to finish, or contact whoever operates this installation to raise or remove the limit. OpenPlan itself is free and has no usage tiers.`
   );
 }
 

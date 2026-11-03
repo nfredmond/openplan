@@ -78,13 +78,13 @@ export function describeAerialProcessingAvailability(
     return {
       title: "Imagery processing is not configured on this deployment",
       description:
-        "Missions, AOIs, and evidence packages are tracked here today. Imagery-to-ortho/DSM processing runs on a separate Aerial Intel Platform worker, and this deployment has not set OPENPLAN_AERIAL_PROCESSING_WORKER_URL and OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN — so POST /api/aerial/missions/[id]/process answers HTTP 501 with an integration-boundary payload describing what to provision. No simulated outputs are produced.",
+        "Missions, AOIs, and evidence packages are tracked here today. Imagery-to-ortho/DSM processing runs on a separate Aerial Intel Platform worker, and this deployment has not set OPENPLAN_AERIAL_PROCESSING_WORKER_URL and OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN, so POST /api/aerial/missions/[id]/process answers HTTP 501 with an integration-boundary payload describing what to provision. No simulated outputs are produced.",
     };
   }
 
   return {
-    title: "Imagery processing is configured — request it through the API",
+    title: "Imagery processing is configured: request it through the API",
     description:
-      `This deployment has an Aerial Intel Platform worker configured, so POST /api/aerial/missions/[id]/process accepts a signed imagery ZIP URL, records the job, dispatches it, and answers HTTP 202; a succeeded worker callback writes an evidence package. On that callback OpenPlan also downloads each artifact — orthomosaic, DSM, point cloud — into its own private storage, up to ${formatCeiling(maxArtifactBytes)} per artifact (${AERIAL_ARTIFACT_MAX_BYTES_ENV}), so the deliverables outlive the worker's time-limited links; anything it could not take is recorded against the job with the reason, and an evidence package whose bytes are not held stays verification-pending rather than claiming partial verification.`,
+      `This deployment has an Aerial Intel Platform worker configured, so POST /api/aerial/missions/[id]/process accepts a signed imagery ZIP URL, records the job, dispatches it, and answers HTTP 202; a succeeded worker callback writes an evidence package. On that callback OpenPlan also downloads each artifact (orthomosaic, DSM, point cloud) into its own private storage, up to ${formatCeiling(maxArtifactBytes)} per artifact (${AERIAL_ARTIFACT_MAX_BYTES_ENV}), so the deliverables outlive the worker's time-limited links; anything it could not take is recorded against the job with the reason, and an evidence package whose bytes are not held stays verification-pending rather than claiming partial verification.`,
   };
 }

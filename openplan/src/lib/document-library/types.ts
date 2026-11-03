@@ -143,5 +143,5 @@ export type DocumentLibraryResult = {
  * ordering is LABELED, never presented as a global sort).
  */
 export function describeDocumentLibraryOrdering(limitPerSource: number): string {
-  return `Showing up to the ${limitPerSource} most recent files from each source — grouped by source, not sorted across them.`;
+  return `Showing up to the ${limitPerSource} most recent files from each source (grouped by source, not sorted across them).`;
 }

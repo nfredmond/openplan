@@ -71,7 +71,7 @@ function buildDefaultPayload(overrides: { label?: string } = {}) {
     candidateEntry: CANDIDATE_ENTRY,
     baselineKpis: fullKpiSet(1),
     candidateKpis: fullKpiSet(2),
-    label: overrides.label ?? "Trip generation — Infill housing package vs Existing conditions",
+    label: overrides.label ?? "Trip generation: Infill housing package vs Existing conditions",
   });
 }
 
@@ -162,7 +162,7 @@ describe("buildTripGenComparisonPayload", () => {
       "Trip generation — A vs B"
     );
     expect(buildDefaultPayload({ label: "   " }).label).toBe(
-      "Trip generation — Infill housing package vs Existing conditions"
+      "Trip generation: Infill housing package vs Existing conditions"
     );
     const longLabel = `Trip generation — ${"x".repeat(300)}`;
     expect(buildDefaultPayload({ label: longLabel }).label.length).toBeLessThanOrEqual(160);

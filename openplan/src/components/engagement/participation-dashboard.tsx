@@ -85,7 +85,7 @@ export function ParticipationDashboard({
       {/* Intake trend */}
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-3">
-          <SubLabel>Intake — last {intake.windowDays} days</SubLabel>
+          <SubLabel>Intake: last {intake.windowDays} days</SubLabel>
           <span className="text-xs text-muted-foreground">
             {intake.total} contribution{intake.total === 1 ? "" : "s"}
             {intake.peak > 0 ? ` · peak ${intake.peak}/day` : ""}

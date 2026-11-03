@@ -946,7 +946,7 @@ describe("the transit map lane stays inside service-level claims", () => {
     const honest = [
       "About 96 trips call here on a Wednesday.",
       "About one vehicle every 12 minutes in the busiest hour.",
-      "Derived from a published feed, averaged over one service day — a service level, not a timetable.",
+      "Derived from a published feed, averaged over one service day: a service level, not a timetable.",
       "Transit stops (ingested feeds)",
       "Served by 3 routes (1, 51, 81).",
     ];

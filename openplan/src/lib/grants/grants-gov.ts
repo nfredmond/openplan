@@ -15,7 +15,7 @@ export const GRANTS_GOV_DEFAULT_STATUSES = "forecasted|posted";
 export const GRANTS_GOV_DEFAULT_ROWS = 25;
 
 export const GRANTS_GOV_SYNC_CAVEAT =
-  "Live results from the grants.gov Search API — synopsis-level only. Always verify eligibility, match, and deadlines in the full NOFO on grants.gov before planning an application.";
+  "Live results from the grants.gov Search API, synopsis-level only. Always verify eligibility, match, and deadlines in the full NOFO on grants.gov before planning an application.";
 
 export interface GrantsGovSearchOptions {
   keyword?: string;
@@ -251,13 +251,13 @@ export function describeGrantsGovWindow(
   if (opportunity.status === "forecasted") {
     return {
       label: opportunity.openDate
-        ? `Forecasted — estimated open ${formatIsoDateLabel(opportunity.openDate)}`
-        : "Forecasted — opening date not yet published",
+        ? `Forecasted: estimated open ${formatIsoDateLabel(opportunity.openDate)}`
+        : "Forecasted: opening date not yet published",
       tone: "info",
     };
   }
   if (!opportunity.closeDate) {
-    return { label: "Posted — no close date published; check the NOFO", tone: "neutral" };
+    return { label: "Posted: no close date published; check the NOFO", tone: "neutral" };
   }
   const closeAt = new Date(`${opportunity.closeDate}T23:59:59Z`).getTime();
   const daysLeft = Math.ceil((closeAt - now.getTime()) / DAY_MS);
@@ -268,10 +268,10 @@ export function describeGrantsGovWindow(
     return { label: `Closed ${closeLabel}`, tone: "neutral" };
   }
   if (daysLeft <= 14) {
-    return { label: `Closes ${closeLabel} — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`, tone: "danger" };
+    return { label: `Closes ${closeLabel} (${daysLeft} day${daysLeft === 1 ? "" : "s"} left)`, tone: "danger" };
   }
   if (daysLeft <= 30) {
-    return { label: `Closes ${closeLabel} — ${daysLeft} days left`, tone: "warning" };
+    return { label: `Closes ${closeLabel} (${daysLeft} days left)`, tone: "warning" };
   }
   return { label: `Closes ${closeLabel}`, tone: "neutral" };
 }
@@ -319,8 +319,8 @@ export function toFundingOpportunityDraft(opportunity: GrantsGovOpportunity): Fu
     status: opportunity.status === "posted" ? "open" : undefined,
     cadenceLabel: truncateForField(
       opportunity.closeDate
-        ? `grants.gov ${opportunity.status} — closes ${formatIsoDateLabel(opportunity.closeDate)}; verify the NOFO.`
-        : `grants.gov ${opportunity.status} — verify current timing in the NOFO.`,
+        ? `grants.gov ${opportunity.status}: closes ${formatIsoDateLabel(opportunity.closeDate)}; verify the NOFO.`
+        : `grants.gov ${opportunity.status}: verify current timing in the NOFO.`,
       160
     ),
     opensAt: opportunity.openDate ? `${opportunity.openDate}T00:00:00.000Z` : undefined,

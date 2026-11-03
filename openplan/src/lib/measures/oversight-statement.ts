@@ -178,7 +178,7 @@ export function statementCoverageSentence(
   } else {
     parts.push(
       `Covers ${included.length} reporting ${included.length === 1 ? "period" : "periods"} in ` +
-        `${fiscalYearLabel} — ${included.join(", ")}${coverage.spanText ? ` (${coverage.spanText})` : ""}.`
+        `${fiscalYearLabel}: ${included.join(", ")}${coverage.spanText ? ` (${coverage.spanText})` : ""}.`
     );
   }
 
@@ -485,7 +485,7 @@ function moeSection(data: MeasureAnnualStatementData): string {
             }</td>
             <td>${
               row.notDeterminedSentence
-                ? `<span class="undetermined">${esc(MEASURE_OVERSIGHT_COPY.notDeterminedLabel)} — ${esc(
+                ? `<span class="undetermined">${esc(MEASURE_OVERSIGHT_COPY.notDeterminedLabel)}: ${esc(
                     row.notDeterminedSentence
                   )}</span>`
                 : row.isShortfall
@@ -537,14 +537,14 @@ export function buildMeasureAnnualStatementHtml(data: MeasureAnnualStatementData
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>${esc(STATEMENT_DOCUMENT_TITLE)} ${esc(data.fiscalYearLabel)} — ${esc(data.measureTitle)}</title>
+    <title>${esc(STATEMENT_DOCUMENT_TITLE)} ${esc(data.fiscalYearLabel)}: ${esc(data.measureTitle)}</title>
     <style>${DOCUMENT_STYLES}</style>
   </head>
   <body>
     <header>
       <p class="doc-title">${esc(STATEMENT_DOCUMENT_TITLE)} · ${esc(data.fiscalYearLabel)}</p>
       <p class="measure-name">${esc(data.measureTitle)}${
-        data.agencyName ? ` — ${esc(data.agencyName)}` : ""
+        data.agencyName ? `, ${esc(data.agencyName)}` : ""
       }</p>
       <p class="header-meta">${meta.map((part) => `<span>${esc(part)}</span>`).join("")}</p>
     </header>

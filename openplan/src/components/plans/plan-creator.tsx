@@ -157,7 +157,7 @@ export function PlanCreator({ projects }: { projects: ProjectOption[] }) {
               flow={flow}
               name="geographyLabel"
               label="Which area does it cover?"
-              hint="Optional. In your own words — a corridor, a downtown, a whole county."
+              hint="Optional. In your own words: a corridor, a downtown, a whole county."
             >
               <Input
                 {...flow.text("geographyLabel")}

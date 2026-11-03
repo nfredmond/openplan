@@ -504,7 +504,7 @@ describe("the results board a planner actually sees, fed by what the API persist
     expect(within(populationTile).getByText("Not measured")).toBeInTheDocument();
     expect(within(populationTile).queryByText("0")).not.toBeInTheDocument();
     expect(
-      screen.getByText(/this is an unanswered read, not a count of zero/)
+      screen.getByText(/This is an unanswered read, not a count of zero/)
     ).toBeInTheDocument();
   });
 

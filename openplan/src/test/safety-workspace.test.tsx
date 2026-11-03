@@ -759,7 +759,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // The points are on screen…
     expect(screen.getByText(/Showing 2 of 2 mappable crashes from this live read/i)).toBeInTheDocument();
     // …and the page says what they are NOT.
-    expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument();
+    expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument();
     expect(screen.getByText(/were not saved into this workspace/i)).toBeInTheDocument();
   });
 
@@ -788,7 +788,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
-    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument());
     expect(screen.queryByLabelText(/Acquisition history/i)).not.toBeInTheDocument();
   });
 
@@ -867,7 +867,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     const lighting = screen.getByRole("group", { name: /Lighting/i });
     expect(lighting).toHaveTextContent(/does not record lighting/i);
     expect(lighting).toHaveTextContent(/not a finding/i);
-    expect(screen.getByRole("button", { name: /^Dark — no street lights/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^Dark, no street lights/ })).toBeDisabled();
 
     // A facet the source CAN answer stays live on the same screen, so the
     // disabled state above is a statement about that dimension and not an
@@ -884,12 +884,12 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("tx-county");
     await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
-    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument());
 
     // The mocked picker emits a different polygon for a different pick.
     selectStudyArea("far-county");
 
-    await waitFor(() => expect(screen.queryByText(/Live read — not saved/i)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/Live read \(not saved\)/i)).not.toBeInTheDocument());
   });
 
   it("drops a saved acquisition banner when the study area changes", async () => {

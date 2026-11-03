@@ -365,7 +365,7 @@ export async function DELETE(
         detail:
           `Removed this feed and all ${versions.length} of its ingests, together with the ` +
           `${routeServiceLevelRows} route and ${stopServiceLevelRows} stop service-level rows ` +
-          "derived from them. Those service levels are gone — anything that read this feed's " +
+          "derived from them. Those service levels are gone. Anything that read this feed's " +
           "frequencies now has nothing to read. Bringing the feed back means ingesting it again.",
       },
       { status: 200 }

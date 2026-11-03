@@ -525,7 +525,7 @@ describe("my work — the cross-module review queue", () => {
     // How much of the draft is grounded is the fact that decides how hard it
     // needs reading, so it rides on the queue row itself.
     expect(drafts[0].detail).toContain("7 of 11 sentences grounded");
-    expect(drafts[0].title).toBe("Draft narrative — Existing conditions");
+    expect(drafts[0].title).toBe("Draft narrative: Existing conditions");
     // Accepted and dismissed drafts are settled.
     expect(idsOf(drafts)).not.toContain("n-accepted");
     expect(idsOf(drafts)).not.toContain("n-dismissed");

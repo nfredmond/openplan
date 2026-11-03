@@ -181,7 +181,7 @@ function mapboxCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       label: "Maps",
       status: "fail",
       detail:
-        "A Mapbox token is set but is not a public token, so every map renders blank — including the shell backdrop, Explore, Safety, and engagement maps.",
+        "A Mapbox token is set but is not a public token, so every map renders blank, including the shell backdrop, Explore, Safety, and engagement maps.",
       remedy:
         "Public tokens begin with 'pk.'. A secret token ('sk.') will not work in a browser and must not be published. Replace it with the public token from your Mapbox account.",
     };
@@ -233,9 +233,9 @@ function censusCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     label: "Census / equity data",
     status: "warn",
     detail:
-      "No Census API key is configured. Equity choropleths stay empty, census-tract ingestion for a workspace's county does not populate, and ACS-backed corridor demographics are unavailable — these surfaces return no data rather than an error, so they look like 'nothing here' instead of 'not configured'.",
+      "No Census API key is configured. Equity choropleths stay empty, census-tract ingestion for a workspace's county does not populate, and ACS-backed corridor demographics are unavailable. These surfaces return no data rather than an error, so they look like 'nothing here' instead of 'not configured'.",
     remedy:
-      "Demographic and equity data switch on once whoever operates this deployment adds a Census API key — the key is free from the U.S. Census Bureau (api.census.gov/data/key_signup.html). For the operator: set it as CENSUS_API_KEY.",
+      "Demographic and equity data switch on once whoever operates this deployment adds a Census API key. The key is free from the U.S. Census Bureau (api.census.gov/data/key_signup.html). For the operator: set it as CENSUS_API_KEY.",
   };
 }
 
@@ -255,7 +255,7 @@ function anthropicCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     label: "AI assistance",
     status: "warn",
     detail:
-      "No Anthropic API key is configured. AI-assisted features — grant narrative drafting, engagement comment synthesis, translation and moderation, and the in-app assistant — are unavailable. Every other module works normally.",
+      "No Anthropic API key is configured. AI-assisted features (grant narrative drafting, engagement comment synthesis, translation and moderation, and the in-app assistant) are unavailable. Every other module works normally.",
     remedy:
       "AI assistance switches on once whoever operates this deployment adds an Anthropic API key. For the operator: set ANTHROPIC_API_KEY to an Anthropic API key, and in a production build also set OPENPLAN_SHARED_AI_KEY=allow. Leave that unset on a deployment with public signup; each workspace then adds its own key in workspace settings.",
   };
@@ -309,7 +309,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
    * answer dressed as a complete one.
    */
   const executionOptions = pushDispatch.configured
-    ? `Whoever operates this deployment has already connected a modeling worker endpoint. For the operator: the push endpoint (${MODELING_WORKER_URL_ENV}) is configured, so OpenPlan hands every worker-backed run to it and records at launch whether it was accepted — that answer, or the failure in its place, is on the launch panel and in the audit log.`
+    ? `Whoever operates this deployment has already connected a modeling worker endpoint. For the operator: the push endpoint (${MODELING_WORKER_URL_ENV}) is configured, so OpenPlan hands every worker-backed run to it and records at launch whether it was accepted. That answer, or the failure in its place, is on the launch panel and in the audit log.`
     : `Modeling runs are executed by a separate worker that whoever operates this deployment sets up once, at no cost. For the operator, either configuration works: run the worker as a long-lived poller (workers/aequilibrae_worker/DEPLOY.md), or run it behind its HTTP trigger and set ${MODELING_WORKER_URL_ENV} and ${MODELING_WORKER_TOKEN_ENV} so OpenPlan pushes each run to it and learns at launch whether anything took it.`;
 
   // Runs that have stopped moving are the strongest signal available, so they
@@ -338,7 +338,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     return {
       ...base,
       status: "fail",
-      detail: `${stalled} A worker-backed run executes only where something claims it — a worker polling this deployment's queue, or one OpenPlan pushes to. With neither, runs queue indefinitely instead of failing.`,
+      detail: `${stalled} A worker-backed run executes only where something claims it: a worker polling this deployment's queue, or one OpenPlan pushes to. With neither, runs queue indefinitely instead of failing.`,
       remedy: `${executionOptions} Whichever is in use, check that it is pointed at THIS deployment's own Supabase project and read its logs. Setting ${MODELING_WORKER_DECLARATION_ENV} to "deployed" or "absent" also lets the launch controls answer before a run is queued rather than after it has been reaped.`,
     };
   }
@@ -358,7 +358,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       ...base,
       status: "warn",
       detail:
-        "This deployment is partly configured to push model runs to a processing worker, but not enough of that configuration is present to use, so nothing is pushed. Worker-backed runs fall back to waiting for a worker that polls this deployment — which may or may not be what was intended, and is why this is reported rather than left silent.",
+        "This deployment is partly configured to push model runs to a processing worker, but not enough of that configuration is present to use, so nothing is pushed. Worker-backed runs fall back to waiting for a worker that polls this deployment, which may or may not be what was intended, and is why this is reported rather than left silent.",
       remedy: `${pushDispatch.configurationProblem} ${executionOptions}`,
     };
   }
@@ -373,7 +373,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       ...base,
       status: "warn",
       detail:
-        "This deployment declares that it runs no AequilibraE worker, and also configures an endpoint for OpenPlan to push model runs to. Both are statements by whoever configured this deployment, and they disagree. While the declaration says no worker exists, worker-backed launches are refused at the button — so if the push endpoint is real, planners are being refused runs this deployment can actually execute.",
+        "This deployment declares that it runs no AequilibraE worker, and also configures an endpoint for OpenPlan to push model runs to. Both are statements by whoever configured this deployment, and they disagree. While the declaration says no worker exists, worker-backed launches are refused at the button, so if the push endpoint is real, planners are being refused runs this deployment can actually execute.",
       // The middle case is the one a push-only operator actually lands in, and
       // it must not be answered with `deployed`. This variable states whether
       // anything POLLS the queue — so on a deployment whose runs are only ever
@@ -381,7 +381,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       // refuses every worker-backed launch at the button. UNSET is the only
       // answer that is both truthful and lets the pool work, and an operator
       // will not guess that from a remedy that offers them two settings.
-      remedy: `If a worker also POLLS this deployment, set ${MODELING_WORKER_DECLARATION_ENV} to "deployed". If runs are only ever pushed to the endpoint above, UNSET ${MODELING_WORKER_DECLARATION_ENV} instead — it answers whether anything polls the queue, and "absent" goes on refusing worker-backed launches at the button even though the push endpoint could serve them. If nothing serves this deployment at all, remove ${MODELING_WORKER_URL_ENV} so nothing is pushed at an endpoint that will not answer. Every one of those is free — none of this is a plan or a tier.`,
+      remedy: `If a worker also POLLS this deployment, set ${MODELING_WORKER_DECLARATION_ENV} to "deployed". If runs are only ever pushed to the endpoint above, UNSET ${MODELING_WORKER_DECLARATION_ENV} instead. It answers whether anything polls the queue, and "absent" goes on refusing worker-backed launches at the button even though the push endpoint could serve them. If nothing serves this deployment at all, remove ${MODELING_WORKER_URL_ENV} so nothing is pushed at an endpoint that will not answer. Every one of those is free. None of this is a plan or a tier.`,
     };
   }
 
@@ -405,8 +405,8 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     return {
       ...base,
       status: "warn",
-      detail: `This deployment declares that it runs no AequilibraE worker, but ${runsInFlight} queued or running here, and none has yet been abandoned. A run nothing has picked up is indistinguishable from one waiting its turn until it goes stale, so this is not evidence that a worker exists — only a sign that the declaration may be out of date.`,
-      remedy: `If this deployment does run a worker, change ${MODELING_WORKER_DECLARATION_ENV} to "deployed". While it says "absent", planners are told that worker-backed runs cannot execute here — so if they can, that is what needs correcting.`,
+      detail: `This deployment declares that it runs no AequilibraE worker, but ${runsInFlight} queued or running here, and none has yet been abandoned. A run nothing has picked up is indistinguishable from one waiting its turn until it goes stale, so this is not evidence that a worker exists, only a sign that the declaration may be out of date.`,
+      remedy: `If this deployment does run a worker, change ${MODELING_WORKER_DECLARATION_ENV} to "deployed". While it says "absent", planners are told that worker-backed runs cannot execute here, so if they can, that is what needs correcting.`,
     };
   }
 
@@ -415,8 +415,8 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       ...base,
       status: "warn",
       detail:
-        "This deployment declares that it runs no AequilibraE worker. Worker-backed model runs — Fast Screening network assignment and the behavioral-demand preflight — are refused at the launch button instead of being queued and then failed minutes later, and a sketch run whose study area is large enough to be rerouted onto that same queue is disclosed as unable to finish. Every other run mode, and every other module, works normally.",
-      remedy: `${executionOptions} Whichever you choose, set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" so launches stop being refused. Declaring no worker is a valid, honest configuration and costs nothing — OpenPlan is free either way; it only changes whether the refusal arrives before the run or after it.`,
+        "This deployment declares that it runs no AequilibraE worker. Worker-backed model runs (Fast Screening network assignment and the behavioral-demand preflight) are refused at the launch button instead of being queued and then failed minutes later, and a sketch run whose study area is large enough to be rerouted onto that same queue is disclosed as unable to finish. Every other run mode, and every other module, works normally.",
+      remedy: `${executionOptions} Whichever you choose, set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" so launches stop being refused. Declaring no worker is a valid, honest configuration and costs nothing. OpenPlan is free either way; it only changes whether the refusal arrives before the run or after it.`,
     };
   }
 
@@ -489,7 +489,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     return {
       ...base,
       status: "warn",
-      detail: `${runsInFlight} queued or running here, and none has yet stopped making progress — which is not the same as something having picked them up, because until a run goes stale it looks identical whether a worker is serving it or nothing is. Nothing declares whether this deployment runs an AequilibraE worker, so before a run is queued OpenPlan still cannot tell a planner whether one exists — on a model with no worker-backed history, the first run is queued, waits, and is failed by the reaper before anything can warn them.`,
+      detail: `${runsInFlight} queued or running here, and none has yet stopped making progress, which is not the same as something having picked them up, because until a run goes stale it looks identical whether a worker is serving it or nothing is. Nothing declares whether this deployment runs an AequilibraE worker, so before a run is queued OpenPlan still cannot tell a planner whether one exists. On a model with no worker-backed history, the first run is queued, waits, and is failed by the reaper before anything can warn them.`,
       remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" or "absent" so the launch controls can answer before the first run rather than after it. ${executionOptions}`,
     };
   }

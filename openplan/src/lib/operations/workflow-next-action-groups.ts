@@ -357,7 +357,7 @@ function engagementReadiness(summary: WorkspaceOperationsSummary, queuedActionCo
   if (actionable > 0) {
     return {
       label: "Comments waiting on moderation",
-      detail: `${pluralize(actionable, "comment")} ${actionable === 1 ? "is" : "are"} pending or flagged. The rest of the handoff check — categorization, duplicate review, source split, appendix posture — is judged per campaign in Engagement, not here.`,
+      detail: `${pluralize(actionable, "comment")} ${actionable === 1 ? "is" : "are"} pending or flagged. The rest of the handoff check (categorization, duplicate review, source split, appendix posture) is judged per campaign in Engagement, not here.`,
       tone: "warning",
       metrics: [
         { label: "Awaiting moderation", value: actionable },
@@ -379,7 +379,7 @@ function engagementReadiness(summary: WorkspaceOperationsSummary, queuedActionCo
 
   return {
     label: "Moderation queue clear",
-    detail: `Nothing is pending or flagged${approved === null ? "" : `, and ${pluralize(approved, "approved comment")} ${approved === 1 ? "is" : "are"} available to draw from`}. Full handoff readiness is still judged per campaign in Engagement — this board sees the moderation queue only.`,
+    detail: `Nothing is pending or flagged${approved === null ? "" : `, and ${pluralize(approved, "approved comment")} ${approved === 1 ? "is" : "are"} available to draw from`}. Full handoff readiness is still judged per campaign in Engagement. This board sees the moderation queue only.`,
     tone: "success",
     metrics: [
       { label: "Awaiting moderation", value: 0 },
@@ -402,7 +402,7 @@ function safetyReadiness(summary: WorkspaceOperationsSummary): WorkflowReadiness
     return {
       label: "Crash data pulls not readable",
       detail:
-        "This board could not read this workspace's crash data pulls. Nothing here says whether crash evidence exists — open Safety to find out.",
+        "This board could not read this workspace's crash data pulls. Nothing here says whether crash evidence exists. Open Safety to find out.",
       tone: "neutral",
       metrics: [{ label: "Data pulls", value: UNMEASURED_METRIC_LABEL }],
     };
@@ -433,7 +433,7 @@ function safetyReadiness(summary: WorkspaceOperationsSummary): WorkflowReadiness
   if (uncoveredCrashIngests !== null && uncoveredCrashIngests > 0) {
     return {
       label: "Coverage gap to disclose",
-      detail: `${pluralize(uncoveredCrashIngests, "study area")} returned no registered crash source covering it. Carry that limit into any safety framing for ${uncoveredCrashIngests === 1 ? "it" : "them"} — the empty result is a coverage gap, not a finding.`,
+      detail: `${pluralize(uncoveredCrashIngests, "study area")} returned no registered crash source covering it. Carry that limit into any safety framing for ${uncoveredCrashIngests === 1 ? "it" : "them"}. The empty result is a coverage gap, not a finding.`,
       tone: "warning",
       metrics: [
         { label: "No coverage", value: uncoveredCrashIngests },
@@ -592,7 +592,7 @@ function receivablesReadiness(summary: WorkspaceOperationsSummary): WorkflowRead
         : "No unsent receivable work",
     detail:
       awaitingPaymentClientInvoices !== null && awaitingPaymentClientInvoices > 0
-        ? `${pluralize(awaitingPaymentClientInvoices, "client invoice")} ${awaitingPaymentClientInvoices === 1 ? "has" : "have"} been sent and not yet marked paid. Payment state is whatever this workspace last recorded — OpenPlan does not observe the payment itself.`
+        ? `${pluralize(awaitingPaymentClientInvoices, "client invoice")} ${awaitingPaymentClientInvoices === 1 ? "has" : "have"} been sent and not yet marked paid. Payment state is whatever this workspace last recorded. OpenPlan does not observe the payment itself.`
         : "No client invoice is sitting in draft. Payment state is whatever this workspace last recorded.",
     tone: "info",
     metrics: [
@@ -789,7 +789,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/safety",
     fallbackTitle: "Check what crash data you have",
     fallbackDetail:
-      "No safety exception is queued. Confirm which study areas have a covered, completed crash data pull before any screening language leaves this workspace — an area with no source coverage is a disclosed gap, not a finding.",
+      "No safety exception is queued. Confirm which study areas have a covered, completed crash data pull before any screening language leaves this workspace. An area with no source coverage is a disclosed gap, not a finding.",
     fallbackBadges: (summary) => {
       const safety = summary.moduleObservations?.safety;
       if (!safety) return [{ label: "Crash data", value: UNMEASURED_METRIC_LABEL }];
@@ -870,7 +870,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     href: "/invoicing",
     fallbackTitle: "Check where your invoices stand",
     fallbackDetail:
-      "No receivable exception is queued. Confirm which client invoices are still in draft and which are sent and unpaid — OpenPlan records what this workspace tells it, and never observes a payment itself.",
+      "No receivable exception is queued. Confirm which client invoices are still in draft and which are sent and unpaid. OpenPlan records what this workspace tells it, and never observes a payment itself.",
     fallbackBadges: (summary) => {
       const receivables = summary.moduleObservations?.receivables;
       if (!receivables) return [{ label: "Client invoices", value: UNMEASURED_METRIC_LABEL }];

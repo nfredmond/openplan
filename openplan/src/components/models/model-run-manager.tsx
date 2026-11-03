@@ -404,7 +404,7 @@ export function ModelRunManager({
   // brand-new model (empty template) must not default the query box to "" —
   // that produced a launch 400 that read like a study-area error. Prefill a
   // sensible screening label; the operator can edit it.
-  const [queryText, setQueryText] = useState(defaultQueryText || `Screening run — ${modelTitle}`);
+  const [queryText, setQueryText] = useState(defaultQueryText || `Screening run: ${modelTitle}`);
   const [corridorText, setCorridorText] = useState(defaultCorridorText);
   const [scenarioEntryId, setScenarioEntryId] = useState(initialScenarioEntryId);
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
@@ -837,7 +837,7 @@ export function ModelRunManager({
                    copy in the UI is a number that can silently drift. */
                 <p className="mt-2 text-muted-foreground">
                   <span className="text-foreground">Where it runs:</span> in this app for study areas
-                  within the sketch model&apos;s size limit. A larger area — a mid-size city or a metro —
+                  within the sketch model&apos;s size limit. A larger area (a mid-size city or a metro)
                   is sent to the same modeling worker queue Fast Screening uses, so it needs that
                   worker running to finish. The launch tells you when that happens.
                 </p>
@@ -888,7 +888,7 @@ export function ModelRunManager({
                     Data Hub
                   </Link>{" "}
                   to model transit from it. Without one, the modeling worker picks a feed the way it
-                  always has — one the deployment&apos;s operator configured, one discovered in the
+                  always has: one the deployment&apos;s operator configured, one discovered in the
                   published-feed catalog for this study area, or the feed bundled with the worker.
                 </p>
               ) : (
@@ -910,8 +910,8 @@ export function ModelRunManager({
                     ))}
                   </select>
                   <p className="text-xs text-muted-foreground">
-                    Naming a feed hands the modeling worker the exact archive OpenPlan parsed —
-                    verified against its checksum — instead of letting it fetch an address that may
+                    Naming a feed hands the modeling worker the exact archive OpenPlan parsed,
+                    verified against its checksum, instead of letting it fetch an address that may
                     have been republished since. It overrides the worker&apos;s own feed selection for
                     this run.
                   </p>
@@ -951,8 +951,8 @@ export function ModelRunManager({
                       data-testid="managed-run-transit-feed-coverage-no"
                     >
                       None of this feed&apos;s stops fall inside this study area&apos;s bounding box. The
-                      run can still be launched — the modeling worker makes the final judgement
-                      against the resolved zone system — but this usually means a different agency
+                      run can still be launched (the modeling worker makes the final judgement
+                      against the resolved zone system), but this usually means a different agency
                       serves the area.
                     </p>
                   ) : null}
@@ -985,7 +985,7 @@ export function ModelRunManager({
                 The held-out counts choose and reject calibration steps; they are candidate-selection
                 evidence, not an independent accuracy test. A calibrated-to-counts claim requires a
                 separate untouched validation result. Where no counts match, calibration does not run.
-                Calibrated VMT publishes under distinct KPI names — it never becomes the CEQA
+                Calibrated VMT publishes under distinct KPI names. It never becomes the CEQA
                 §15064.3 determination input.
               </p>
             </div>
@@ -1058,7 +1058,7 @@ export function ModelRunManager({
             />
             {studyAreaOriginLabel && corridorText === defaultCorridorText ? (
               <p className="text-xs text-muted-foreground">
-                Starting from {studyAreaOriginLabel}. Change it here to run somewhere else — this
+                Starting from {studyAreaOriginLabel}. Change it here to run somewhere else. This
                 does not alter the source.
               </p>
             ) : null}
@@ -1149,11 +1149,11 @@ export function ModelRunManager({
 
           {selectedRunMode.availability === "prototype" ? (
             <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
-              {selectedRunMode.label} is a prototype — it cannot be launched from this form yet. {selectedRunMode.runtimeExpectation} {selectedRunMode.caveatSummary}
+              {selectedRunMode.label} is a prototype. It cannot be launched from this form yet. {selectedRunMode.runtimeExpectation} {selectedRunMode.caveatSummary}
             </div>
           ) : selectedRunMode.availability === "preflight" ? (
             <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
-              Launching {selectedRunMode.label} runs a <span className="font-semibold">readiness check</span> — it checks your inputs and prepares the model, and it is <span className="font-semibold">NOT a behavioral forecast</span>. {selectedRunMode.caveatSummary}
+              Launching {selectedRunMode.label} runs a <span className="font-semibold">readiness check</span>: it checks your inputs and prepares the model, and it is <span className="font-semibold">NOT a behavioral forecast</span>. {selectedRunMode.caveatSummary}
             </div>
           ) : null}
 
@@ -1244,9 +1244,9 @@ export function ModelRunManager({
                   />
                   <span>
                     A modeling worker has been started on this OpenPlan installation since those
-                    runs — queue this one anyway. (OpenPlan has no way to check this on its own —
-                    only you can tell it. If another run is abandoned after this, the refusal comes
-                    back — the tick answers the runs on screen now, not every run from here on.)
+                    runs. Queue this one anyway. (OpenPlan has no way to check this on its own.
+                    Only you can tell it. If another run is abandoned after this, the refusal comes
+                    back. The tick answers the runs on screen now, not every run from here on.)
                   </span>
                 </label>
               ) : null}
@@ -1256,13 +1256,13 @@ export function ModelRunManager({
           <Button type="button" onClick={() => void handleLaunch()} disabled={launchDisabled}>
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {heartbeatGate.blocked && !heartbeatAcknowledged
-              ? "Launch blocked — required worker health is not current"
+              ? "Launch blocked: required worker health is not current"
               : workerRefusesLaunch && !workerAcknowledged
               ? workerGate.reason === "deployment_declares_no_worker"
-                ? "Launch refused — this installation declares no modeling worker"
+                ? "Launch refused: this installation declares no modeling worker"
                 : workerGate.reason === "declared_worker_never_started"
-                  ? "Launch refused — the declared worker has not been picking these runs up"
-                  : "Launch refused — nothing has been picking these runs up"
+                  ? "Launch refused: the declared worker has not been picking these runs up"
+                  : "Launch refused: nothing has been picking these runs up"
               : selectedRunMode.availability === "launchable"
                 ? "Launch run"
                 : selectedRunMode.availability === "preflight"
@@ -1305,7 +1305,7 @@ export function ModelRunManager({
                 {stuckRuns.length === 1
                   ? `Run "${stuckRuns[0].run_title}" has been ${stuckRuns[0].status} for over 10 minutes with no stage progress.`
                   : `${stuckRuns.length} runs have been queued/running for over 10 minutes with no stage progress.`}{" "}
-                No worker has picked this up — check that the modeling worker is running (see
+                No worker has picked this up. Check that the modeling worker is running (see
                 {" "}<code>workers/aequilibrae_worker/DEPLOY.md</code>).
               </span>
             </div>
@@ -1418,7 +1418,7 @@ export function ModelRunManager({
                             data-testid="run-repeat-failure"
                           >
                             {failureSummary.repeat.sameAsLast
-                              ? `This run has now failed ${failureSummary.repeat.priorFailures + 1} times with the same recorded reason — relaunching again without changing something is unlikely to end differently.`
+                              ? `This run has now failed ${failureSummary.repeat.priorFailures + 1} times with the same recorded reason. Relaunching again without changing something is unlikely to end differently.`
                               : `This run failed ${failureSummary.repeat.priorFailures} ${failureSummary.repeat.priorFailures === 1 ? "time" : "times"} before, with a different recorded reason.`}
                           </p>
                         ) : null}
@@ -1427,7 +1427,7 @@ export function ModelRunManager({
                             {run.error_message ||
                               (run.source_analysis_run_id
                                 ? `Backed by analysis run ${run.source_analysis_run_id}.`
-                                : "Run recorded — no linked analysis results yet.")}
+                                : "Run recorded: no linked analysis results yet.")}
                           </p>
                         )}
                         {/*
@@ -1628,7 +1628,7 @@ function RunAccuracyByClass({
       </table>
       <p className="mt-2 text-label text-muted-foreground">
         A road type with only a handful of stations is shown faded. Its figure is not evidence about
-        that road type however good it looks — a 1% error over one station is one station.
+        that road type however good it looks. A 1% error over one station is one station.
       </p>
     </div>
   );
@@ -1740,7 +1740,7 @@ function StageLogView({ log, isRunning }: { log: string; isRunning: boolean }) {
       </pre>
       {isRunning && !isFollowing ? (
         <p className="mt-1 text-label text-muted-foreground" data-testid="stage-log-paused">
-          Paused following — scroll to the bottom to keep up with new output.
+          Paused following. Scroll to the bottom to keep up with new output.
         </p>
       ) : null}
     </div>
@@ -1978,7 +1978,7 @@ function ModelRunStagingAndArtifacts({
                         <div className="mt-2" data-testid="stage-log">
                           {shown.isPartial ? (
                             <p className="mb-1 text-label text-muted-foreground">
-                              Log up to the point of failure — the stage did not finish, so it stops
+                              Log up to the point of failure. The stage did not finish, so it stops
                               here rather than at the end.
                             </p>
                           ) : null}

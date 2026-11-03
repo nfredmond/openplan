@@ -190,7 +190,7 @@ export function describeGtfsServiceWindow(input: {
     return {
       state: "expired",
       text:
-        `Service window ${span} — that schedule ENDED ${ago}. These are historic service levels, ` +
+        `Service window ${span}: that schedule ENDED ${ago}. These are historic service levels, ` +
         "not the service running today. Ingest the agency's current feed before using them.",
     };
   }
@@ -198,13 +198,13 @@ export function describeGtfsServiceWindow(input: {
   if (start && start > input.today) {
     return {
       state: "not_started",
-      text: `Service window ${span} — this schedule has not started yet, so it describes planned service rather than today's.`,
+      text: `Service window ${span}: this schedule has not started yet, so it describes planned service rather than today's.`,
     };
   }
 
   return {
     state: "current",
-    text: `Service window ${span} — in effect today.`,
+    text: `Service window ${span}, in effect today.`,
   };
 }
 
@@ -400,7 +400,7 @@ export function describeTransitFeedRegistry(input: {
     tone,
     state: "feed-present",
     detail:
-      `${agencyName} — ${describeFeedStatus(lead.status)}, ` +
+      `${agencyName}: ${describeFeedStatus(lead.status)}, ` +
       `${lead.loaded_at ? `loaded ${input.formatTimestamp(lead.loaded_at)}` : "not loaded yet"}.` +
       `${serviceSentence}${others}`,
   };

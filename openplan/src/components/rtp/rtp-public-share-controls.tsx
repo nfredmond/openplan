@@ -56,7 +56,7 @@ export function RtpPublicShareControls({
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("Couldn't copy — select and copy the link manually.");
+      setError("Couldn't copy. Select and copy the link manually.");
     }
   }
 

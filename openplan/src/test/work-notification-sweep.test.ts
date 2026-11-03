@@ -789,7 +789,7 @@ describe("the daily deadline sweep", () => {
     expect(lapse?.due_on).toBe("2026-08-15");
     expect(lapse?.title).toBe("Corridor construction award");
     expect(lapse?.body).toBe(
-      "Funds on Corridor construction award must be expended — due Aug 15, 2026. " +
+      "Funds on Corridor construction award must be expended, due Aug 15, 2026. " +
         // The ISO code, not "$": this line is the whole reminder, and a bare
         // dollar sign is the same glyph for a dozen different currencies.
         "USD\u00a0136,666.67 of this award is authorized and not yet claimed. " +
@@ -819,7 +819,7 @@ describe("the daily deadline sweep", () => {
     const lapse = db.notifications.find((row) => row.subject_id === "fa-lapse");
     expect(lapse, "the reminder is worth more than its figure").toBeDefined();
     expect(lapse?.body).toBe(
-      "Funds on Corridor construction award must be expended — due Aug 15, 2026. " +
+      "Funds on Corridor construction award must be expended, due Aug 15, 2026. " +
         "OpenPlan could not read this award's invoices, so the amount at risk is not stated here. " +
         "You recorded this award; expenditure deadlines carry no assignee."
     );
@@ -1151,7 +1151,7 @@ describe("the reminder inbox read", () => {
             is_read: false,
             kind: "deliverable_due",
             title: "Public review draft",
-            body: "Deliverable on Corridor study — was due Aug 1, 2026 and is now overdue.",
+            body: "Deliverable on Corridor study was due Aug 1, 2026 and is now overdue.",
             due_on: "2026-08-01",
             project_id: PROJECT_ONE,
             created_at: "2026-08-11T13:00:00.000Z",

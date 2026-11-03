@@ -395,7 +395,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           {
             error: "stored_imagery_unreadable",
             detail:
-              "This mission's stored photos could not be read, so nothing was dispatched. That is a read failure, not an empty mission — retry, and if it persists the deployment operator should check the aerial_imagery table.",
+              "This mission's stored photos could not be read, so nothing was dispatched. That is a read failure, not an empty mission. Retry, and if it persists the deployment operator should check the aerial_imagery table.",
           },
           { status: 500 }
         );

@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
           reason: "crs_not_in_registry",
           message:
             `OpenPlan does not carry the coordinate system ${code}, so it cannot place a file read as that ` +
-            `system. It is not substituted with a nearby zone — a neighbouring zone lands the layer in the ` +
+            `system. It is not substituted with a nearby zone. A neighbouring zone lands the layer in the ` +
             `wrong place and nothing on screen would say so.`,
           declaredName: null,
           declaredCode: code,
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
       const declaredCode = identification.declaredCode;
       const message =
         identification.reason === "unreadable"
-          ? "OpenPlan could not read this file's .prj — its contents are not recognisable as a coordinate-system " +
+          ? "OpenPlan could not read this file's .prj: its contents are not recognisable as a coordinate-system " +
             "definition. The file may be truncated or may not be a .prj at all."
           : `This file names a coordinate system OpenPlan does not carry, so it cannot be placed. It is not read ` +
             `as anything nearby, because a neighbouring zone lands the layer in the wrong place and nothing on ` +

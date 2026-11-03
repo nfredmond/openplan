@@ -201,7 +201,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json(
           {
             error:
-              "AI narrative drafting supports project-targeted reports only in this version. RTP-cycle packets assemble operator-authored chapters — use the chapter draft assist on the RTP cycle page instead.",
+              "AI narrative drafting supports project-targeted reports only in this version. RTP-cycle packets assemble operator-authored chapters. Use the chapter draft assist on the RTP cycle page instead.",
           },
           { status: 405 }
         );
@@ -472,8 +472,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- Write 1-3 paragraphs of clear, professional planning-report prose in markdown (paragraphs only; no headings, no bullet lists).",
         "- Ground every statement STRICTLY in the numbered WORKSPACE FACTS below. Do not invent numbers, dollar amounts, dates, statuses, run results, or project details that are not present in the facts.",
         "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on.",
-        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
-        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
+        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual. When in doubt, prefer citing.",
+        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented. Never fabricate it.",
         "- NEVER upgrade a claim: modeling and analysis facts below are screening-grade planning support. If a fact carries a caveat sentence, repeat that caveat verbatim in the same paragraph whenever you reference that fact, and never present screening results as forecasts, calibrated models, or decisions.",
         // Stated only when uploaded-document facts actually exist: an
         // instruction about facts that are not in the list below teaches the

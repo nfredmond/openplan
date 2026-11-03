@@ -147,7 +147,7 @@ describe("ModelRunTripGenScreen", () => {
     expect(screen.getByTestId("model-run-trip-gen-screen")).toBeInTheDocument();
     expect(screen.getByTestId("trip-gen-caveat")).toHaveTextContent(ITE_TRIP_GEN_SCREENING_CAVEAT);
     expect(screen.getByTestId("trip-gen-screening-badge")).toHaveTextContent(
-      "Screening worksheet — not a study or determination"
+      "Screening worksheet: not a study or determination"
     );
     expect(screen.getByText("Trip generation screening worksheet")).toBeInTheDocument();
   });
