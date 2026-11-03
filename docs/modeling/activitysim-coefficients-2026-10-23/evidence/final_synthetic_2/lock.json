@@ -1,0 +1,170 @@
+{
+  "schema_version": "openplan.sealed-study.lock.v1",
+  "study_id": "walk-transfer-synthetic-20261023",
+  "status": "frozen_unopened",
+  "working_directory": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd",
+  "scratch_directory": "/tmp/openplan-walk-synthetic-20261023-e/scratch",
+  "lease_path": "/tmp/openplan-walk-synthetic-20261023-e/lease.json",
+  "receipt_path": "/tmp/openplan-walk-synthetic-20261023-e/receipt.json",
+  "candidate_result_path": "/tmp/openplan-walk-synthetic-20261023-e/scratch/candidate.json",
+  "aggregate_result_path": "/tmp/openplan-walk-synthetic-20261023-e/aggregate.json",
+  "candidate_result_schema_version": "openplan.activitysim-walk-transfer-development.v1",
+  "evaluator": {
+    "command": [
+      "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/activitysim_walk_transfer.py",
+      "evaluate",
+      "/tmp/openplan-walk-synthetic-20261023-e/inputs.zip",
+      "/tmp/openplan-walk-synthetic-20261023-e/scratch",
+      "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/overlay",
+      "/tmp/openplan-walk-synthetic-20261023-e/scratch/candidate.json",
+      "walk-transfer-synthetic-20261023"
+    ],
+    "files": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/activitysim_walk_transfer.py",
+        "sha256": "63111d350424e227702ee385fb33057e55b938f1012a354b3cc51191a0407dfc"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/prepare_activitysim_walk_transfer.py",
+        "sha256": "c6676767f17effa496fecbc343ac69cb116b23d1b93046404fb64897f16dea62"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/activitysim_accepted_components.py",
+        "sha256": "e87422583794bf56a895f5301e35d6dfc3b0dcb41258b76622af937e88519698"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/activitysim_mtc_inputs.py",
+        "sha256": "5e9af6b973dc79efee7be1626016c501429f01e7c44dee9c38f7042f3bc37b1e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/screening_metrics.py",
+        "sha256": "0ba6a36bb7aa323408e8957bb14bad15b1dd120b484e8734ba3b4136a3fb7bff"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/research/sealed_study.py",
+        "sha256": "3194d188d27b791ba1e9160ab619329ee95a561dca46b20358eb396534e63ca7"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/research/streaming_zip_csv.py",
+        "sha256": "62c263ba00e10e6a015a173490a9a76885bfef4277f5fd9b7f7fd1bf6b4ba728"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/docs/modeling/activitysim-coefficients-2026-10-23/PREREGISTRATION.md",
+        "sha256": "617dddc098c2300b592c8eeb273d5468db283cd61b47dbe35e254162c04a62da"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/docs/modeling/activitysim-coefficients-2026-10-23/stock-files.json",
+        "sha256": "2c47925e8eec58029352192828211ece907e99beb98766466145ca5b6eb307e5"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-accepted-components.json",
+        "sha256": "de9b83b0802a435d6646416bc336d35fd0061956aadbb6b04237ced68854b340"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/auto-ownership-fresh-holdout-2026-08-19-result.json",
+        "sha256": "f04741430e2d0e2c8e9bbbea7d10ec65bb5ab3830296179945ac3bf44e550056"
+      },
+      {
+        "path": "/tmp/openplan-walk-synthetic-20261023-e/environment.json",
+        "sha256": "3c3e50401e85a2894747584a720a9f681bcf3ed171acd2422d4fd4efc02a2304"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/LICENSE.txt",
+        "sha256": "fd0061b0d097157c786dfad9e66cd58dde3891d3b096b05c3423bd563c6f734e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/README.md",
+        "sha256": "6c9bcf030652eedf99f97eac4dbb9facd0ee1c1c3bfeb01307f60ff7ba65a815"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/overlay/coefficient-set.json",
+        "sha256": "a1c850754c2f22b7f765b9429b4f9bf50137f2833a896c66f7740a3cf173e728"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/overlay/tour_mode_choice_coefficients.csv",
+        "sha256": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/source/LICENSE.txt",
+        "sha256": "fd0061b0d097157c786dfad9e66cd58dde3891d3b096b05c3423bd563c6f734e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/source/source-manifest.json",
+        "sha256": "56e50c15be5cc6a72b26e95d2ed58f0a8645d39ed8ae0bb1b46d7a21197ba47b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/source/tour_mode_choice.csv",
+        "sha256": "fc490cc0d923f159dd62d602c9a04d00192e8664f08d8e34de8d8ac7d2ea3a55"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/source/tour_mode_choice_coeffs.csv",
+        "sha256": "4e7b7ed7e37672ec76ed0a3aa877708cb723207586074923946831c41dec482c"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-semcog-walk-development-v1/source/tour_mode_choice_coeffs_template.csv",
+        "sha256": "36cba4d55538fa9309709869bfe99f260432c1b55ece81191cb4bdf332858771"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-auto-ownership-national-v1/auto_ownership.csv",
+        "sha256": "9af0c2d4930c482b7beee620ad71aa28f132025d64687ac4b2459caeb93ff4c1"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-auto-ownership-national-v1/auto_ownership.yaml",
+        "sha256": "3d004b283f619d449bf0c4ea5111009ec3b6efbd558a8100be9c73db16377332"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-auto-ownership-national-v1/auto_ownership_coefficients.csv",
+        "sha256": "9596d29ebdef16a1de701b90bf0287ef97e016206819dba915382a79711a2862"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/data/modeling/activitysim-auto-ownership-national-v1/coefficient_package.json",
+        "sha256": "2edc3febdf5d8ceda80ce47955b27f02d1d3e085c2811c81c19ac054b0efcf12"
+      }
+    ],
+    "closure_sha256": "35002b204e8ce23c4513fcc04537ef44371608c702f1be8dc18c589239ae7b68"
+  },
+  "validator": {
+    "command": [
+      "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/validate_activitysim_walk_transfer.py",
+      "/tmp/openplan-walk-synthetic-20261023-e/scratch/candidate.json"
+    ],
+    "files": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e642c2cd/scripts/modeling/validate_activitysim_walk_transfer.py",
+        "sha256": "8538fcaab90c1cac2d3edf3bb290805155b5711d12474b20b6722b0c722bd699"
+      }
+    ],
+    "closure_sha256": "fc50febab56666ff0c4e154d1bc9e8d842b5b3540bf7990743f5afd23d289474"
+  },
+  "sources": [
+    {
+      "name": "development_input_bundle",
+      "path": "/tmp/openplan-walk-synthetic-20261023-e/inputs.zip",
+      "sha256": "b5defbef86968befdce1442ac7ec3c02b8a5a7ccfcd4b5b0fe1bd70f8bb4ece4",
+      "selected_members": [
+        "households.csv",
+        "persons.csv",
+        "land_use.csv",
+        "skims/mtc_skims.omx",
+        "configs/settings.yaml",
+        "configs/network_los.yaml"
+      ]
+    }
+  ],
+  "output_policy": {
+    "maximum_bytes": 10485760,
+    "prohibited_fields": [
+      "person_id",
+      "household_id",
+      "tour_id",
+      "trip_id"
+    ],
+    "prohibited_array_fields": [
+      "replicates",
+      "replicate_results"
+    ]
+  }
+}

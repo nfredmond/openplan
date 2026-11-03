@@ -1,0 +1,48 @@
+{
+  "initial_lock_refusal": "validator file overlaps a control or result path; no receipt created",
+  "records": [
+    {
+      "label": "initial_native_failure",
+      "status": "evaluated_once_inconclusive",
+      "error_kind": "EvaluatorProcessFailed",
+      "aggregate_sha256": "720ff4cf0171440126a3b9bd8509cd74fb5d91390bc69794de8d2f70533507a9",
+      "tours": null,
+      "peak_rss_bytes": 338923520
+    },
+    {
+      "label": "first_native_pass",
+      "status": "evaluated_once",
+      "error_kind": null,
+      "aggregate_sha256": "5640d01e74eb76b73f0675cfeab8c0012dbaf1a182a8ac0f839a3257c8fac547",
+      "tours": 284,
+      "peak_rss_bytes": 506380288
+    },
+    {
+      "label": "native_fault",
+      "status": "evaluated_once_inconclusive",
+      "error_kind": "EvaluatorProcessFailed",
+      "aggregate_sha256": "e93d13079305eec999d290914dba189c97035e6522acf52e44a7376b7bc5b076",
+      "tours": null,
+      "peak_rss_bytes": 496787456
+    },
+    {
+      "label": "final_synthetic_1",
+      "status": "evaluated_once",
+      "error_kind": null,
+      "aggregate_sha256": "5a87deeb4e5fc94d7dacebc3a97536de37dc563f2c3d885ed33b9c4db3381fa3",
+      "tours": 284,
+      "peak_rss_bytes": 498601984
+    },
+    {
+      "label": "final_synthetic_2",
+      "status": "evaluated_once",
+      "error_kind": null,
+      "aggregate_sha256": "834f039822a2e565391f0bcb76aa7d51fdeb2213596217f043cc04177560a731",
+      "tours": 284,
+      "peak_rss_bytes": 507846656
+    }
+  ],
+  "final_repeated_numerical_aggregates_identical": true,
+  "synthetic_tours": 284,
+  "synthetic_joint_tours": 9
+}
