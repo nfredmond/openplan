@@ -25,7 +25,7 @@
 
 /** One sentence pair, in one place, so the setup and the result cannot drift. */
 export const CORRIDOR_ANALYSIS_ANSWERS =
-  "This describes who and what is around the corridor today — people, jobs, how they travel now, and reported collisions — from open data.";
+  "This describes who and what is around the corridor today (people, jobs, how they travel now, and reported collisions) from open data.";
 
 export const CORRIDOR_ANALYSIS_DOES_NOT_ANSWER =
   "It does not estimate traffic volumes or miles driven. Those come from a travel model run, which needs a road network and is a longer piece of work.";

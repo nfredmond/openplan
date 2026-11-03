@@ -62,7 +62,7 @@ export const ACTION_METADATA: ActionMetadataRegistry = {
   record_stage_gate_hold: {
     kind: "record_stage_gate_hold",
     description:
-      "Records a HOLD on one stage gate for the selected project, with the stated rationale and any cited run. It cannot record a PASS — an affirmative gate verdict is a person's signature, not the agent's.",
+      "Records a HOLD on one stage gate for the selected project, with the stated rationale and any cited run. It cannot record a PASS: an affirmative gate verdict is a person's signature, not the agent's.",
     approval: "approval_required",
     auditEvent: "planner_agent.record_stage_gate_hold",
     // The gate board reads from the decision log, not from the assistant

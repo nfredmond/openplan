@@ -318,7 +318,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
 
     const rendered = await renderReportPdf(html, {
-      title: `${WORKSHEET_DOCUMENT_TITLE} — ${award.title ?? "Untitled award"}`,
+      title: `${WORKSHEET_DOCUMENT_TITLE}: ${award.title ?? "Untitled award"}`,
       generatedAt: null,
       // The DISCLAIMER, not the document title. Under the built-in typesetter
       // this is the only text that reaches every page — the HTML's fixed

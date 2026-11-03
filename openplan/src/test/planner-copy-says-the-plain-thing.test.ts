@@ -234,7 +234,10 @@ const BASELINE: Readonly<Record<string, number>> = {
   provenance: 9,
   readiness: 28,
   // Safety must distinguish crash records from people killed or injured.
-  record: 230,
+  // 232 on 2026-11-02, not new copy: an `&mdash;` in rtp-horizon-band-editor.tsx
+  // put a `;` in that paragraph, so LOOKS_LIKE_CODE skipped it. Without the dash
+  // the scan reads it, and its two uses ("nowhere to record revenue") are the verb.
+  record: 232,
   registry: 11,
   resolve: 2,
   scaffold: 3,

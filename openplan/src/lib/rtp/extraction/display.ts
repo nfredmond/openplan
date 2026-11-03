@@ -106,7 +106,7 @@ export const RECONCILIATION_COPY: Record<ReconciliationVerdict, ReconciliationCo
     label: "Disagrees with what you have",
     tone: "warning",
     detail:
-      "This plan already records something under the same name, and the figures do not match. Both are shown below with the page the document states its figure on — decide which one this plan should carry.",
+      "This plan already records something under the same name, and the figures do not match. Both are shown below with the page the document states its figure on. Decide which one this plan should carry.",
     primaryAction: "accept",
   },
 };
@@ -182,7 +182,7 @@ export function describeRunOutcome(run: ExtractionRunSummary): string {
   const total = proposed + discarded;
 
   if (total === 0) {
-    return "Nothing in this document matched what OpenPlan knows how to record. Nothing was dropped and nothing was proposed — this is not a finding that the document contains no figures.";
+    return "Nothing in this document matched what OpenPlan knows how to record. Nothing was dropped and nothing was proposed. This is not a finding that the document contains no figures.";
   }
   if (discarded === 0) {
     return `${proposed} ${proposed === 1 ? "proposal was" : "proposals were"} kept; none were dropped.`;
@@ -226,16 +226,16 @@ export function describeCycleBasisBlastRadius(counts: {
         } changes that for the whole plan.`;
 
   if (affected === 0) {
-    return `${change} Nothing is recorded against it yet, so no figure changes today — but every figure entered afterwards will be read in the new year.`;
+    return `${change} Nothing is recorded against it yet, so no figure changes today, but every figure entered afterwards will be read in the new year.`;
   }
 
   return `${change} It re-derives the escalated value of ${affected} recorded ${
     affected === 1 ? "figure" : "figures"
-  } — ${counts.lineCount} revenue and cost ${counts.lineCount === 1 ? "line" : "lines"} and ${
+  } (${counts.lineCount} revenue and cost ${counts.lineCount === 1 ? "line" : "lines"} and ${
     counts.programmedProjectCount
   } programmed project ${
     counts.programmedProjectCount === 1 ? "cost" : "costs"
-  } — without editing any of them.`;
+  }) without editing any of them.`;
 }
 
 // ---------------------------------------------------------------------------
@@ -418,7 +418,7 @@ export function buildProvenanceChip(
 
   return {
     headline: edited
-      ? `From “${documentTitle}”, p. ${record.page} — edited since`
+      ? `From “${documentTitle}”, p. ${record.page}, edited since`
       : `From “${documentTitle}”, p. ${record.page}`,
     detail: edited
       ? `Changed after it was accepted: ${record.divergentFields

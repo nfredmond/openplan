@@ -95,8 +95,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "This layer is read one map view at a time. Pass bbox=west,south,east,north in longitude/latitude — " +
-            "there is no whole-layer fetch, because a parcel layer is larger than any one response.",
+            "This layer is read one map view at a time. Pass bbox=west,south,east,north in longitude/latitude. " +
+            "There is no whole-layer fetch, because a parcel layer is larger than any one response.",
         },
         { status: 400 }
       );

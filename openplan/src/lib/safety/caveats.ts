@@ -13,7 +13,7 @@
  * the same as "complete", which is what this caveat exists to say.
  */
 export const SAFETY_CRASH_DATA_CAVEAT =
-  "Crash records are reported collisions retrieved from the source agency, not modeled estimates. Coverage, geocoding completeness, and severity detail vary by source and year — review the coverage summary before relying on any count.";
+  "Crash records are reported collisions retrieved from the source agency, not modeled estimates. Coverage, geocoding completeness, and severity detail vary by source and year. Review the coverage summary before relying on any count.";
 
 export const SAFETY_CRASH_DATA_NARRATIVE_CAVEAT =
   "Crash counts reflect reported collisions retrieved from the source agency and may be incomplete for the period shown.";
@@ -72,7 +72,7 @@ export function describeGeocodingShortfall(
  * "property damage".
  */
 export const SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT =
-  "Some reported collisions carry no casualty count from the source agency, so they cannot be placed in a severity band. They are counted in the total and in no severity band — their absence from the fatal, serious, injury and property-damage figures is missing information, not a mild outcome.";
+  "Some reported collisions carry no casualty count from the source agency, so they cannot be placed in a severity band. They are counted in the total and in no severity band. Their absence from the fatal, serious, injury and property-damage figures is missing information, not a mild outcome.";
 
 export const SAFETY_UNCLASSIFIED_SEVERITY_NARRATIVE_CAVEAT =
   "Collisions for which the source agency reported no casualty count are counted in the total but placed in no severity band.";

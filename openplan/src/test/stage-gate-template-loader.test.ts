@@ -37,7 +37,7 @@ describe("resolveStageGateTemplateBinding", () => {
       templateName: "US Federal-Aid Delivery Floor",
       templateVersion: "0.1.0",
       jurisdiction: "US",
-      jurisdictionLabel: "United States — federal-aid floor",
+      jurisdictionLabel: "United States: federal-aid floor",
       bindingMode: "workspace_bootstrap_interim",
       templateSelection: "interim_unconfigured_default",
       // A nationwide template declares no Caltrans form-set status — null is

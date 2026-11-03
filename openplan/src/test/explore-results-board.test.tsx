@@ -264,10 +264,10 @@ describe("ExploreResultsBoard", () => {
     // Safety + Accessibility score tiles, plus "Stops / sq mi" and "Crash intensity" planning signals.
     expect(screen.getAllByText("Estimated").length).toBeGreaterThanOrEqual(4);
     expect(
-      screen.getByText("Includes estimated inputs (transit stops, employment) — source data unavailable or not yet ingested.")
+      screen.getByText("Includes estimated inputs (transit stops, employment): source data unavailable or not yet ingested.")
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/Crash source API unavailable — area-based estimate\./).length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText(/Transit stop inventory unavailable — area-based estimate\./).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Crash source API unavailable, area-based estimate\./).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/Transit stop inventory unavailable, area-based estimate\./).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders comparison context and clears the pinned baseline", () => {

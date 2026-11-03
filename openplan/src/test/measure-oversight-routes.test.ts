@@ -530,7 +530,7 @@ describe("the annual statement route", () => {
     expect(html).not.toContain("6,812,340.17");
 
     // FY26 Q2 is open and unreported, so the year is partial and says so.
-    expect(html).toContain("Covers 1 reporting period in FY 2026 — FY26 Q1");
+    expect(html).toContain("Covers 1 reporting period in FY 2026: FY26 Q1");
     expect(html).toContain("1 further period has been opened for this year with no amount recorded yet (FY26 Q2)");
 
     // Claims and allocations are the year's too: 150,000.00 asked for against

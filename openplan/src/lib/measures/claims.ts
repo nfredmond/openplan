@@ -175,7 +175,7 @@ export const MEASURE_CLAIM_STATUS_OPTIONS: readonly MeasureClaimStatusOption[] =
   {
     value: "approved",
     label: "Approved",
-    description: "Approved for payment. A promise, not a payment — the money has not left the fund.",
+    description: "Approved for payment. A promise, not a payment: the money has not left the fund.",
     tone: "success",
   },
   {
@@ -426,7 +426,7 @@ export function resolveMeasureClaimCategories({
     reason: "no_categories_recorded",
     message:
       "This measure has no categories recorded yet. Record the ordinance's allocation rule, or enter " +
-      "this period's allocations by hand if the ordinance does not fit the rule form — a claim has to " +
+      "this period's allocations by hand if the ordinance does not fit the rule form. A claim has to " +
       "be for something the measure says it pays for.",
   };
 }

@@ -116,7 +116,7 @@ export function blockedRead<Row>(
   }
   if (outcome.failed) {
     return blocked(
-      `The ${subject} could not be read, so nothing is drawn here. This is a failed query, not an empty workspace — do not read it as zero. Reload, and tell whoever runs this deployment if it keeps happening.`,
+      `The ${subject} could not be read, so nothing is drawn here. This is a failed query, not an empty workspace. Do not read it as zero. Reload, and tell whoever runs this deployment if it keeps happening.`,
       "unreadable"
     );
   }
@@ -313,7 +313,7 @@ export function lanePressure(lanes: readonly DashboardLaneCount[]): InsightSerie
   if (impossible.length > 0) {
     const named = impossible.map((lane) => `${lane.label} (${lane.value})`).join(", ");
     return blocked(
-      `${named} reported a count that cannot exist — a queue cannot hold fewer than nothing. Something upstream is counting wrong, so nothing is drawn here. This is a fault, not an empty queue: do not read it as "no open work".`,
+      `${named} reported a count that cannot exist: a queue cannot hold fewer than nothing. Something upstream is counting wrong, so nothing is drawn here. This is a fault, not an empty queue: do not read it as "no open work".`,
       "impossible"
     );
   }
@@ -326,7 +326,7 @@ export function lanePressure(lanes: readonly DashboardLaneCount[]): InsightSerie
 
   if (points.every((point) => point.value === 0)) {
     return blocked(
-      "Every lane is clear — nothing is queued in RTP, grants, engagement, modeling or aerial right now.",
+      "Every lane is clear: nothing is queued in RTP, grants, engagement, modeling or aerial right now.",
       "empty"
     );
   }

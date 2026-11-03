@@ -431,7 +431,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
 
     expect(response.status).toBe(201);
     const html = renderReportPdfMock.mock.calls[0][0] as string;
-    expect(html).toContain("DRAFT — 1 required attachment(s) outstanding");
+    expect(html).toContain("DRAFT: 1 required attachment(s) outstanding");
     const body = await response.json();
     expect(body.isDraftStamped).toBe(true);
     expect(body.outstandingRequiredCount).toBe(1);
@@ -568,7 +568,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(html).not.toContain("Expected award");
 
     const pdfOptions = renderReportPdfMock.mock.calls[0][1] as { title: string };
-    expect(pdfOptions.title).toBe("Corridor safety package — Proposal packet");
+    expect(pdfOptions.title).toBe("Corridor safety package: Proposal packet");
   });
 
   it("refuses an uninitialized application rather than exporting an empty shell", async () => {

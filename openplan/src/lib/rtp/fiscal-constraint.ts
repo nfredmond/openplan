@@ -532,5 +532,5 @@ export function describeRtpFiscalConstraint(summary: RtpFiscalConstraintSummary)
     return `The constrained programme totals ${money(summary.totalCost)} against ${money(summary.revenue)} of reasonably available revenue ${basisPhrase}, leaving ${money(summary.balance)} unprogrammed.`;
   }
 
-  return `The constrained programme totals ${money(summary.totalCost)} against ${money(summary.revenue)} of reasonably available revenue ${basisPhrase} — ${money(Math.abs(summary.balance))} more than the plan can pay for.`;
+  return `The constrained programme totals ${money(summary.totalCost)} against ${money(summary.revenue)} of reasonably available revenue ${basisPhrase}, ${money(Math.abs(summary.balance))} more than the plan can pay for.`;
 }

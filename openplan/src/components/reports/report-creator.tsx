@@ -155,7 +155,7 @@ function formatModelingRunOptionText(option: ModelingCountyRunOption) {
     ? modelingClaimStatusLabel(option.claimStatus)
     : "No claim decision";
   const geography = option.geographyLabel ? `, ${option.geographyLabel}` : "";
-  return `${option.runName} — ${posture}${geography}`;
+  return `${option.runName}: ${posture}${geography}`;
 }
 
 function formatValidationSummary(value: Record<string, unknown> | null) {
@@ -352,7 +352,7 @@ export function ReportCreator({
                 flow={flowState}
                 name="reportType"
                 label="Report type"
-                hint="Pick the closest one — you can add or remove sections later."
+                hint="Pick the closest one. You can add or remove sections later."
               >
                 <select {...flowState.text("reportType")} className={SELECT_CLASS}>
                   {REPORT_TYPE_OPTIONS.map((option) => (

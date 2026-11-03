@@ -72,7 +72,7 @@ export function describeWorkspaceLayerCoverage(input: WorkspaceGisCoverageInput)
 
   if (input.tooDenseToDraw) {
     notes.push(
-      `${name}: ${input.matchedCount.toLocaleString("en-US")} shapes in this view — more than OpenPlan draws at once ` +
+      `${name}: ${input.matchedCount.toLocaleString("en-US")} shapes in this view, more than OpenPlan draws at once ` +
         `(${input.limit.toLocaleString("en-US")}). None of them are drawn, because drawing some of a fabric looks like ` +
         `holes in the fabric. Zoom in and they appear.`
     );
@@ -141,7 +141,7 @@ export function describeWorkspaceLayerVersion(
       hunting through a settings panel for a control that was never built.
     */
     notes.push(
-      `This file carried no coordinate system, so it is drawn as ${version.srs.name} — stated by the person ` +
+      `This file carried no coordinate system, so it is drawn as ${version.srs.name}, stated by the person ` +
         `who uploaded it, not read from the file. If it lands in the wrong place, that statement is why. ` +
         `OpenPlan does not keep the original file, so there is no setting that moves it: upload the file ` +
         `again, choose the right system, and delete this layer.`
@@ -157,7 +157,7 @@ export function describeWorkspaceLayerVersion(
     const held = version.sourceFeatureCount.toLocaleString("en-US");
     notes.push(
       `This upload stored ${kept} of the ${held} shapes in the file. What is missing is the tail of the file, not a ` +
-        `selection — the layer is incomplete in a way the map cannot show you.`
+        `selection. The layer is incomplete in a way the map cannot show you.`
     );
   }
 

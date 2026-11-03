@@ -146,7 +146,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "Generate and save the flight plan first. Exports are built from the saved, reviewed plan — there is nothing saved for this mission yet.",
+            "Generate and save the flight plan first. Exports are built from the saved, reviewed plan. There is nothing saved for this mission yet.",
         },
         { status: 409 }
       );
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "The saved plan predates these settings — the flight-plan parameters (or the mission AOI) changed after the grid was generated. Regenerate and save the flight plan, then export.",
+            "The saved plan predates these settings: the flight-plan parameters (or the mission AOI) changed after the grid was generated. Regenerate and save the flight plan, then export.",
         },
         { status: 409 }
       );

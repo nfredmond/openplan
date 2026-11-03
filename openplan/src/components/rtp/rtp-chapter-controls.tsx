@@ -182,7 +182,7 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
             />
           ) : (
             <div className="rounded-xl border border-dashed border-border/70 bg-background px-4 py-6 text-center text-sm text-muted-foreground">
-              Nothing to preview yet — switch back to Edit and start drafting.
+              Nothing to preview yet. Switch back to Edit and start drafting.
             </div>
           )}
         </div>

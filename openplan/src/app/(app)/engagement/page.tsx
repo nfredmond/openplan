@@ -401,7 +401,7 @@ export default async function EngagementPage({
             <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : campaigns.length}</p>
             <p className="module-summary-detail">
               {campaignsUnreadable
-                ? "Your campaigns could not be read, so this is unknown — it is not zero."
+                ? "Your campaigns could not be read, so this is unknown. It is not zero."
                 : hasActiveFilters
                   ? "Matching the current filters."
                   : "Every campaign here, with a history of who changed what."}
@@ -484,14 +484,14 @@ export default async function EngagementPage({
               <StateBlock
                 tone="danger"
                 title="Your campaigns could not be listed"
-                description="This list could not be read, so OpenPlan cannot say whether you have any campaigns. This is not a finding that you have none — reload, and if it keeps failing the error is shown at the top of this page."
+                description="This list could not be read, so OpenPlan cannot say whether you have any campaigns. This is not a finding that you have none. Reload, and if it keeps failing the error is shown at the top of this page."
               />
             ) : (
               <EmptyState
                 title={hasActiveFilters ? "No campaigns match these filters" : "No campaigns yet"}
                 description={
                   hasActiveFilters
-                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
+                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace. An empty filtered list is not a statement that none exist.`
                     : "Engagement is where your agency hears from the public: campaigns collect map comments, survey answers, and feedback on draft plans, and nothing a resident writes appears publicly until you approve it. Create your first campaign to open a public comment window."
                 }
                 action={

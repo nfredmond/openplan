@@ -189,7 +189,7 @@ export function computeTripGeneration(program: TripGenProgramInput): TripGenResu
   // as a "succeeded" run with null-ish KPI values.
   for (const [key, value] of Object.entries(totals)) {
     if (!Number.isFinite(value)) {
-      throw new Error(`Trip-generation total ${key} is not a finite number — check program magnitudes.`);
+      throw new Error(`Trip-generation total ${key} is not a finite number. Check program magnitudes.`);
     }
   }
 

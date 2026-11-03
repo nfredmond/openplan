@@ -65,7 +65,7 @@ export function ProjectPostureUnified({
             <h2 className="module-section-title">Funding and aerial evidence, as last recorded</h2>
             <p className="module-section-description">
               These two lines are saved on the project itself, not recalculated when you open the page. So what you read here
-              is exactly what the last closeout, invoice update, or evidence package wrote — the same thing anyone else on your
+              is exactly what the last closeout, invoice update, or evidence package wrote, the same thing anyone else on your
               team sees.
             </p>
           </div>

@@ -204,7 +204,7 @@ export function ModelCreator({
               flow={flow}
               name="status"
               label="Status"
-              hint="Where this model is in its life — a draft you are setting up, or something people can rely on."
+              hint="Where this model is in its life: a draft you are setting up, or something people can rely on."
             >
               <select className={selectClassName} {...flow.text("status")}>
                 {MODEL_STATUS_OPTIONS.map((option) => (
@@ -246,7 +246,7 @@ export function ModelCreator({
               flow={flow}
               name="assumptionsSummary"
               label="Assumptions"
-              hint="What the model takes as given — how it was calibrated, which policies are baked in, anything that would surprise a reader."
+              hint="What the model takes as given: how it was calibrated, which policies are baked in, anything that would surprise a reader."
             >
               <Textarea
                 {...flow.text("assumptionsSummary")}

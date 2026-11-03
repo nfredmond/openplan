@@ -134,8 +134,8 @@ export function ExploreStudyAreaPanel({
     studyArea.origin === "project"
       ? `Prefilled from the study area of ${
           openedForProject?.name ?? "the project this page was opened for"
-        }${inheritedPlace}. Change or clear it here — the project record itself is not affected.`
-      : `Prefilled from this workspace's home geography${inheritedPlace}. Change or clear it here — the workspace setting itself is not affected.`;
+        }${inheritedPlace}. Change or clear it here. The project record itself is not affected.`
+      : `Prefilled from this workspace's home geography${inheritedPlace}. Change or clear it here. The workspace setting itself is not affected.`;
 
   return (
     <>
@@ -145,7 +145,7 @@ export function ExploreStudyAreaPanel({
             <p className="analysis-studio-label">Study area</p>
             <h3 className="analysis-studio-title">Pick the area to analyze</h3>
             <p className="analysis-studio-description">
-              Search for any US county, city, town, CDP, or metro area — or draw the area on the map. No
+              Search for any US county, city, town, CDP, or metro area, or draw the area on the map. No
               file needed. This sets the boundary for the run; it does not analyze anything on its own.
             </p>
           </div>

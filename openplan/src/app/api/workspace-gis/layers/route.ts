@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
             // a layerId, but the upload wizard is the only way in and it always
             // creates a new layer. Advice that names an unreachable path costs
             // a planner the time it takes to go looking for it.
-            error: `This workspace already has a map layer called "${parsed.data.name}". Give this one a different name — both will be kept as separate layers, so you can compare them and remove whichever is wrong.`,
+            error: `This workspace already has a map layer called "${parsed.data.name}". Give this one a different name. Both will be kept as separate layers, so you can compare them and remove whichever is wrong.`,
           },
           { status: 409 }
         );

@@ -527,7 +527,7 @@ export function describeStageGateBinding(
     };
   }
 
-  const headline = `Interim default gates — not ${known ? `${known}'s` : "your jurisdiction's"}`;
+  const headline = `Interim default gates, not ${known ? `${known}'s` : "your jurisdiction's"}`;
   const consequence = interimDefaultConsequence(binding.jurisdictionLabel);
 
   if (binding.interimDefaultReason === "no_template_for_jurisdiction") {
@@ -574,7 +574,7 @@ export function describeStageGateBinding(
  * that it is not, in the same breath.
  */
 function interimDefaultConsequence(jurisdictionLabel: string): string {
-  return `Its gate names, evidence requirements, and exhibit/form ids are ${jurisdictionLabel}'s — they are not authoritative for this agency and must not be filed or cited as its own requirements.`;
+  return `Its gate names, evidence requirements, and exhibit/form ids are ${jurisdictionLabel}'s. They are not authoritative for this agency and must not be filed or cited as its own requirements.`;
 }
 
 /** "US-OH" / "US" — the readable form of what the resolver was told. */

@@ -273,10 +273,10 @@ describe("the RTP cycle copilot over a failed chapter read", () => {
     const context = await loadAssistantContext(chaptersDenied(), "user-1", RTP_TARGET);
     if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
 
-    expect(buildAssistantPreview(context).facts[0]).toMatch(/^Read failure — this copilot could not read RTP chapters/);
+    expect(buildAssistantPreview(context).facts[0]).toMatch(/^Read failure: this copilot could not read RTP chapters/);
 
     const response = buildAssistantResponse(context, "rtp-brief");
-    expect(response.findings[0]).toMatch(/^Read failure — this copilot could not read RTP chapters/);
+    expect(response.findings[0]).toMatch(/^Read failure: this copilot could not read RTP chapters/);
     expect(response.caution).toContain("Do not state a count, a total, or an absence");
     expect(response.findings.join("\n")).not.toContain("0 chapters are in scope");
 
@@ -286,7 +286,7 @@ describe("the RTP cycle copilot over a failed chapter read", () => {
     // caught: reverting all four evidence lines left that assertion green.
     const generatePlan = buildAssistantResponse(context, "rtp-packet-generate");
     expect(generatePlan.evidence.join("\n")).not.toMatch(/Chapters: \d/);
-    expect(generatePlan.evidence.join("\n")).toContain("Chapters: unknown — RTP chapters could not be read");
+    expect(generatePlan.evidence.join("\n")).toContain("Chapters: unknown, RTP chapters could not be read");
   });
 
   it("still counts a lane that answered — only the failed one goes unknown", async () => {

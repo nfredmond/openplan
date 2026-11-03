@@ -37,7 +37,7 @@ export const INTEGRATION_PROVIDERS: readonly IntegrationProviderDescriptor[] = [
     id: "anthropic",
     label: "Anthropic (Claude)",
     purpose:
-      "AI drafting, the Planner Agent, engagement synthesis, moderation, and translation. With your own key, AI usage from this workspace — including its public engagement portal — is billed to your Anthropic account.",
+      "AI drafting, the Planner Agent, engagement synthesis, moderation, and translation. With your own key, AI usage from this workspace (including its public engagement portal) is billed to your Anthropic account.",
     keySignupUrl: "https://console.anthropic.com/settings/keys",
     envVar: "ANTHROPIC_API_KEY",
     workspaceConfigurable: true,

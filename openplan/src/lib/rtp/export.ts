@@ -401,7 +401,7 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
       // nothing under it — which reads as "the modeling is fine". It means only
       // that no structured modeling evidence was recorded.
       modelingEvidence.length === 0
-        ? '<p class="muted">No county model run is attached to this plan, so no structured claim decision, source manifest or validation check is carried here. This document therefore makes no assignment-model claim — that is the absence of evidence, not evidence of a sound model.</p>'
+        ? '<p class="muted">No county model run is attached to this plan, so no structured claim decision, source manifest or validation check is carried here. This document therefore makes no assignment-model claim. That is the absence of evidence, not evidence of a sound model.</p>'
         : modelingEvidence
       .map((item) => {
         const evidence = item.evidence;
@@ -708,7 +708,7 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
         ? `<p><strong>${esc(rtpFiscalVerdictLabel(fiscal.verdict))}</strong> · ${esc(
             fiscal.dollarBasis === "year_of_expenditure"
               ? "Year-of-expenditure dollars"
-              : "Constant dollars — no inflation rate recorded"
+              : "Constant dollars: no inflation rate recorded"
           )}</p>
     <p>${esc(describeRtpFiscalConstraint(fiscal))}</p>
     ${
@@ -782,7 +782,7 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
                 unpricedCount === group.rows.length
                   ? `No costs recorded for ${group.rows.length} project${group.rows.length === 1 ? "" : "s"}`
                   : unpricedCount > 0
-                    ? `${formatRtpExportCurrency(total)} so far — ${unpricedCount} of ${group.rows.length} projects ${unpricedCount === 1 ? "has" : "have"} no cost recorded`
+                    ? `${formatRtpExportCurrency(total)} so far, ${unpricedCount} of ${group.rows.length} projects ${unpricedCount === 1 ? "has" : "have"} no cost recorded`
                     : `${formatRtpExportCurrency(total)} across ${group.rows.length} project${group.rows.length === 1 ? "" : "s"}`;
 
               return `<div class="card" style="margin-bottom:12px;">
@@ -796,9 +796,9 @@ export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
               // citation is the honest rendering of a hand-entered number.
               const transcription = transcriptions?.[row.id] ?? null;
               const citation = transcription
-                ? `<span class="muted"> — ${esc(exportProvenanceLine(transcription))}</span>`
+                ? `<span class="muted"> (${esc(exportProvenanceLine(transcription))})</span>`
                 : "";
-              return `<li>${esc(row.project?.name ?? "Linked project")} — ${esc(
+              return `<li>${esc(row.project?.name ?? "Linked project")}: ${esc(
                 cost === null ? "no cost recorded" : formatRtpExportCurrency(cost)
               )}${row.cost_basis_year && cost !== null ? esc(` (${row.cost_basis_year} dollars)`) : ""}${citation}</li>`;
             })

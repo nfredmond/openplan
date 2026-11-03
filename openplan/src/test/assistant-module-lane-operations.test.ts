@@ -544,7 +544,7 @@ describe("aerial lane operations", () => {
     const supabase = createRecordingSupabase({ workspaceId: "ws-a2", responses: aerialResponses });
     const context = await loadLane("aerial", supabase, "ws-a2");
     const response = buildAssistantResponse(context, "aerial-jobs");
-    expect(response.findings.join("\n")).toContain("artifact custody complete on 1, partial on 1, none on 0");
+    expect(response.findings.join("\n")).toContain("Artifact custody complete on 1, partial on 1, none on 0");
   });
 });
 

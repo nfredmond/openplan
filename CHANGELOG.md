@@ -25,6 +25,8 @@ a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the
 award terms changed and the review box was cleared, without a new review. Save
 now uses the current state. No migration.
+**No em dashes in planner and public text:** screens, API messages, exports, report text, work-plan and stage-gate templates and the public portal now end the sentence or use a comma, colon or parentheses instead. A table cell with no value still shows a lone dash. Text that saved work is checked against (report narrative facts, grant cover caveats and the byte-pinned grant program and crash source files) keeps its wording, so nothing saved shows as changed. Nothing to do on upgrade; no migration.
+
 **A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
 is not a UUID, now shows the not-found page instead of "could not be read" with
 the database's `invalid input syntax for type uuid` message. 22 record pages and

@@ -392,7 +392,7 @@ export async function ReimbursementLane({
         <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
           <p className="font-semibold text-foreground">Current scope</p>
           <p className="mt-1.5">
-            You can keep the invoice register here — amounts, retention, backup documents, and your own notes. OpenPlan does <strong>not yet</strong> fill out a funder&apos;s exact exhibit packets, claim forms, or certified pay applications for you.
+            You can keep the invoice register here: amounts, retention, backup documents, and your own notes. OpenPlan does <strong>not yet</strong> fill out a funder&apos;s exact exhibit packets, claim forms, or certified pay applications for you.
           </p>
         </div>
       </div>
@@ -400,7 +400,7 @@ export async function ReimbursementLane({
       {reimbursementProfile?.selection === "interim_unconfigured_default" ? (
         <article className={noticeClass("info")}>
           The reimbursement stages shown here come from the {reimbursementProfile.profileName} profile, used as an
-          interim default — {INTERIM_DEFAULT_RATIONALE}
+          interim default: {INTERIM_DEFAULT_RATIONALE}
         </article>
       ) : null}
 
@@ -446,7 +446,7 @@ export async function ReimbursementLane({
             </div>
           ) : invoiceRegisterUnreadable ? (
             <div className="mt-4 border-l-2 border-rose-300/80 bg-rose-50/80 px-4 py-3 text-sm text-rose-950 dark:border-rose-700/60 dark:bg-rose-950/25 dark:text-rose-100">
-              The reimbursement invoice register could not be read, so no register total is shown. Nothing here says this workspace has claimed nothing or is owed nothing — the totals are unknown until the read succeeds.
+              The reimbursement invoice register could not be read, so no register total is shown. Nothing here says this workspace has claimed nothing or is owed nothing. The totals are unknown until the read succeeds.
             </div>
           ) : (
             <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-3">
@@ -719,7 +719,7 @@ export async function ReimbursementLane({
                 ? "No award-linked invoice records are visible in this workspace yet."
                 : linkageFilter === "unlinked"
                   ? "No unlinked invoice records are visible in this workspace right now."
-                  : "This register holds the invoices your agency sends — reimbursement claims to your funders, and bills to your own clients if you consult. Record your first invoice to start tracking what you are owed."}
+                  : "This register holds the invoices your agency sends: reimbursement claims to your funders, and bills to your own clients if you consult. Record your first invoice to start tracking what you are owed."}
             {overdueFilter !== "overdue" && linkageFilter === "all" ? (
               <>
                 {" "}

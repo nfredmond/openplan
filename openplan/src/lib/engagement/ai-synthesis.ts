@@ -82,7 +82,7 @@ export type EngagementSynthesis = {
 };
 
 const SYNTHESIS_CAVEAT =
-  "AI synthesis of submitted comments — a screening-grade summary of what was said, with every claim cited to a source comment. NOT a representativeness, statistical, or legal-sufficiency finding.";
+  "AI synthesis of submitted comments: a screening-grade summary of what was said, with every claim cited to a source comment. NOT a representativeness, statistical, or legal-sufficiency finding.";
 
 function normalizeSentiment(value: unknown): EngagementSentiment {
   const text = String(value ?? "").toLowerCase().trim();

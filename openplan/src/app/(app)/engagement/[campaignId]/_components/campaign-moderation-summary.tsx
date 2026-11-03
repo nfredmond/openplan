@@ -47,7 +47,7 @@ export function CampaignModerationSummary({
           </p>
           <p className="module-summary-detail">
             {projectUnreadable
-              ? "This campaign names a project, but that record could not be read — it is not unlinked."
+              ? "This campaign names a project, but that record could not be read. It is not unlinked."
               : "Project context stays visible so engagement does not float free."}
           </p>
         </div>
@@ -83,12 +83,12 @@ export function CampaignModerationSummary({
         </div>
         <p className="module-operator-copy">
           Comments waiting on review, and comments someone flagged. Work through these before
-          generating a report — anything still pending is left out of it.
+          generating a report. Anything still pending is left out of it.
         </p>
         <div className="module-operator-list">
           {itemsUnreadable ? (
             <div className="module-operator-item">
-              Moderation workload unavailable — the comments could not be read, so these are not counts of zero.
+              Moderation workload unavailable: the comments could not be read, so these are not counts of zero.
             </div>
           ) : (
             <>

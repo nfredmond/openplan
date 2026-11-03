@@ -595,7 +595,7 @@ export default async function MeasureFundPage({ params }: PageProps) {
 
           {claimLedgerResult.ledger.paidWithNoDateCount > 0 ? (
             <StatusBadge tone="danger" className="mt-3">
-              {claimLedgerResult.ledger.paidWithNoDateCount} paid claim(s) carry no payment date — the database
+              {claimLedgerResult.ledger.paidWithNoDateCount} paid claim(s) carry no payment date. The database
               should make that impossible.
             </StatusBadge>
           ) : null}

@@ -51,14 +51,14 @@ export const DEFAULT_CAMERA_KEY = "generic-1-inch-20mp";
 const CAMERA_LIST: readonly CameraDescriptor[] = [
   {
     key: "generic-1-inch-20mp",
-    label: "Generic 1-inch sensor (20 MP) — verify against your camera's spec sheet",
+    label: "Generic 1-inch sensor (20 MP): verify against your camera's spec sheet",
     sensorWidthMm: 13.2,
     sensorHeightMm: 8.8,
     imageWidthPx: 5472,
     imageHeightPx: 3648,
     focalLengthMm: 8.8,
     specSource:
-      "Typical 1-inch-class 20 MP mapping sensor (13.2 x 8.8 mm, 5472 x 3648 px, 8.8 mm lens). Generic values — not any specific aircraft.",
+      "Typical 1-inch-class 20 MP mapping sensor (13.2 x 8.8 mm, 5472 x 3648 px, 8.8 mm lens). Generic values, not any specific aircraft.",
   },
   {
     key: "dji-phantom-4-pro",
@@ -72,7 +72,7 @@ const CAMERA_LIST: readonly CameraDescriptor[] = [
   },
   {
     key: "dji-mavic-3-enterprise-wide",
-    label: "DJI Mavic 3 Enterprise — wide camera (4/3, 20 MP)",
+    label: "DJI Mavic 3 Enterprise, wide camera (4/3, 20 MP)",
     sensorWidthMm: 17.3,
     sensorHeightMm: 13.0,
     imageWidthPx: 5280,
@@ -82,7 +82,7 @@ const CAMERA_LIST: readonly CameraDescriptor[] = [
   },
   {
     key: "sony-rx1r-ii-full-frame",
-    label: "Sony RX1R II payload (full-frame, 42 MP, 35 mm) — e.g. fixed-wing mappers",
+    label: "Sony RX1R II payload (full-frame, 42 MP, 35 mm), e.g. fixed-wing mappers",
     sensorWidthMm: 35.9,
     sensorHeightMm: 24.0,
     imageWidthPx: 7952,

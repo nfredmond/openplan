@@ -172,13 +172,13 @@ async function lookupCejst(geoids: string[]): Promise<EquityDesignationLookup> {
 
 export const cejstNationalAdapter: EquityDesignationAdapter = {
   id: CEJST_NATIONAL_SOURCE_ID,
-  label: "CEJST v1.0 (Justice40) — national",
+  label: "CEJST v1.0 (Justice40), national",
   attribution:
-    "Climate and Economic Justice Screening Tool (CEJST) v1.0, White House Council on Environmental Quality / U.S. Digital Service. Public domain. Discontinued program — frozen 2022-11-22 snapshot.",
+    "Climate and Economic Justice Screening Tool (CEJST) v1.0, White House Council on Environmental Quality / U.S. Digital Service. Public domain. Discontinued program, frozen 2022-11-22 snapshot.",
   license: asset?.meta?.license ?? "Public domain (17 U.S.C. § 105)",
   version: asset?.meta?.version ?? "1.0",
   vintage: asset?.meta?.tractVintage ?? "2010",
-  datasetLabel: asset?.meta?.datasetLabel ?? "CEJST v1.0 (2022-11-22) — discontinued-program snapshot",
+  datasetLabel: asset?.meta?.datasetLabel ?? "CEJST v1.0 (2022-11-22), discontinued-program snapshot",
   coverageState: "cejst_national",
   persistable: false,
   covers: coversCejstGeography,

@@ -124,7 +124,7 @@ export function buildDjiMissionExport(input: BuildDjiMissionExportInput): DjiMis
     source: {
       geometryType: "Polygon",
       ringCount: input.aoiGeojson.coordinates.length,
-      note: "OpenPlan internal DJI waypoint schema. Not a direct DJI Fly/Pilot 2 import format — a consuming converter must map these fields to the target mission spec.",
+      note: "OpenPlan internal DJI waypoint schema. Not a direct DJI Fly/Pilot 2 import format. A consuming converter must map these fields to the target mission spec.",
     },
   };
 }

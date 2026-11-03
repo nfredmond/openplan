@@ -56,7 +56,7 @@ export type BcaCrashInputSuggestion = {
 
 /** The sentence that must appear on every suggestion. Exported so a test can pin its presence, not its prose. */
 export const BCA_OBSERVED_IS_NOT_AVOIDED_CAVEAT =
-  "These are observed annual crash frequencies from the linked acquisition, not crashes avoided — the screening input is the annual crashes a countermeasure is expected to avoid, which the operator must judge (the observed figures are a ceiling, not that estimate).";
+  "These are observed annual crash frequencies from the linked acquisition, not crashes avoided. The screening input is the annual crashes a countermeasure is expected to avoid, which the operator must judge (the observed figures are a ceiling, not that estimate).";
 
 function roundAnnual(value: number): number {
   return Math.round(value * 100) / 100;

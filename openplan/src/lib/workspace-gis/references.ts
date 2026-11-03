@@ -47,7 +47,7 @@ export function describeDeletionRefusal(
   return (
     `"${layerName}" cannot be deleted: ${list} ${references.length === 1 ? "uses" : "use"} it. Deleting it would leave ` +
     `${references.length === 1 ? "that record" : "those records"} pointing at a layer that no longer exists. Archive it ` +
-    `instead — it stops appearing on maps and in the layer list, and everything that cites it keeps resolving.`
+    `instead. It stops appearing on maps and in the layer list, and everything that cites it keeps resolving.`
   );
 }
 

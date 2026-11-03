@@ -124,7 +124,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "This opportunity is a proposal pursuit — it seeds from the proposal response template, not a grant program catalog entry. Initialize without a catalogKey.",
+            "This opportunity is a proposal pursuit. It seeds from the proposal response template, not a grant program catalog entry. Initialize without a catalogKey.",
         },
         { status: 422 }
       );
@@ -156,7 +156,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (catalogKey && !catalogEntry) {
       return NextResponse.json(
         {
-          error: `Unknown catalog key "${catalogKey}". Application templates seed only from an explicit catalog match — initialize without a catalogKey for a custom scaffold.`,
+          error: `Unknown catalog key "${catalogKey}". Application templates seed only from an explicit catalog match. Initialize without a catalogKey for a custom scaffold.`,
         },
         { status: 422 }
       );

@@ -290,10 +290,10 @@ describe("RTP evidence-run picker — every offered and cited run is disclosed, 
     renderEditor();
 
     expect(
-      screen.getByRole("option", { name: /Sketch scenario run — Sketch Activity Model · Succeeded · Claim tier not recorded/ })
+      screen.getByRole("option", { name: /Sketch scenario run: Sketch Activity Model · Succeeded · Claim tier not recorded/ })
     ).toBeTruthy();
     expect(
-      screen.getByRole("option", { name: /Count-calibrated run — Fast Screening · Succeeded · Calibrated to counts/ })
+      screen.getByRole("option", { name: /Count-calibrated run: Fast Screening · Succeeded · Calibrated to counts/ })
     ).toBeTruthy();
   });
 
@@ -325,7 +325,7 @@ describe("RTP evidence-run picker — every offered and cited run is disclosed, 
     // naming this engine, so every warning here carries the "not a block" tail —
     // hence getAllByText. A single-match query would silently start failing the
     // day a second caveat became correct, which is what happened.
-    const notABlock = screen.getAllByText(/the warning is disclosure, not a block/);
+    const notABlock = screen.getAllByText(/The warning is disclosure, not a block/);
     expect(notABlock.length).toBeGreaterThanOrEqual(2);
     expect(
       screen.getByText(/Screening-grade prototype output\. Do not treat it as behavioral demand/)

@@ -103,7 +103,7 @@ export function buildLinkedDatasetQueueItem({
     summary: thematicReady
       ? `Uses real ${geometryLabel} geometry + ${dataset.thematicMetricLabel ?? titleize(dataset.thematicMetricKey)}.`
       : dataset.overlayReady
-        ? "Coverage footprint only — dataset values stay honest until a thematic binding exists."
+        ? "Coverage footprint only. Dataset values stay honest until a thematic binding exists."
         : "Registry record only for now; geometry attachment is not drawable yet.",
     sourceLabel: dataset.connectorLabel ?? "Manual source",
     buttonLabel: buildDatasetButtonLabel({ canRenderCoverage, isActiveOverlay, thematicReady }),

@@ -228,7 +228,7 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
                   </label>
                   {!version ? (
                     <p className="op-cart-layer-item__note" role="note">
-                      No finished upload yet — nothing is drawn for this layer.
+                      No finished upload yet. Nothing is drawn for this layer.
                     </p>
                   ) : null}
                 </li>

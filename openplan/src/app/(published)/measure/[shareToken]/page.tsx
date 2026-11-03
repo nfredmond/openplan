@@ -231,7 +231,7 @@ export default async function PublicMeasureOversightPage({
         >
           <p className="text-sm text-amber-900/90 dark:text-amber-200/90">
             Something went wrong loading this measure&rsquo;s record, so none of it is shown. This is a
-            problem loading the page — it does not mean the record is missing, unpublished, or that the
+            problem loading the page. It does not mean the record is missing, unpublished, or that the
             fund has received nothing.
           </p>
           <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">
@@ -335,15 +335,15 @@ export default async function PublicMeasureOversightPage({
    */
   const allocationsUnavailableSentence = allocationsResult.error
     ? "What has been set aside under each heading could not be loaded, so those amounts are not shown. " +
-      "That is a problem loading the page — it does not mean nothing has been set aside."
+      "That is a problem loading the page. It does not mean nothing has been set aside."
     : null;
   const moeUnavailableSentence = moeResult.error
     ? "The record of what each area promised to keep spending could not be loaded, so it is not shown " +
-      "here. That is a problem loading the page — it does not mean no area promised anything."
+      "here. That is a problem loading the page. It does not mean no area promised anything."
     : null;
   const recipientsUnavailableSentence = recipientsResult.error
     ? "The list of cities and districts this measure pays could not be loaded, so who asked for what " +
-      "cannot be shown. That is a problem loading the page — it does not mean nobody has asked."
+      "cannot be shown. That is a problem loading the page. It does not mean nobody has asked."
     : null;
 
   const claimResult = buildMeasureClaimLedger({
@@ -780,7 +780,7 @@ export default async function PublicMeasureOversightPage({
                       <td className="py-2">
                         {row.notDeterminedSentence ? (
                           <span className="text-muted-foreground">
-                            {MEASURE_OVERSIGHT_COPY.notDeterminedLabel} — {row.notDeterminedSentence}
+                            {MEASURE_OVERSIGHT_COPY.notDeterminedLabel}: {row.notDeterminedSentence}
                           </span>
                         ) : row.isShortfall ? (
                           <span>Spent {row.differenceText} less than required</span>

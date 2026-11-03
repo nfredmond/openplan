@@ -104,7 +104,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     launchLabel: "Fast Screening (prototype)",
     engineLabel: "Fast Screening",
     summaryDetail: "Screening-grade traffic assignment and accessibility review, run by AequilibraE outside this app.",
-    runtimeExpectation: "Keeps working after you leave the page — expect results in a few minutes.",
+    runtimeExpectation: "Keeps working after you leave the page. Expect results in a few minutes.",
     caveatSummary: "Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration.",
     comparisonMessage: "Direct KPI comparison is available when both runs report comparable screening KPIs.",
     availability: "launchable",
@@ -113,7 +113,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     key: "behavioral_demand",
     label: "Behavioral Demand",
     shortLabel: "Behavioral Demand",
-    launchLabel: "Behavioral Demand (readiness check — not a forecast)",
+    launchLabel: "Behavioral Demand (readiness check, not a forecast)",
     engineLabel: "Behavioral Demand",
     // What launching DOES depends on whether this OpenPlan has an ActivitySim
     // runtime configured, and the copy has to carry both cases. It described
@@ -128,7 +128,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     caveatSummary:
       "Launching this checks inputs and prepares the ActivitySim model — it is NOT a behavioral forecast. Do not read readiness-check or uncalibrated output as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
     comparisonMessage:
-      "Comparison shows behavioral outputs and KPI summaries when a run produced them. A run that only reached the readiness check or partial data ingestion is labeled that way — never shown as if it were a complete run.",
+      "Comparison shows behavioral outputs and KPI summaries when a run produced them. A run that only reached the readiness check or partial data ingestion is labeled that way, never shown as if it were a complete run.",
     availability: "preflight",
   },
   {
@@ -158,7 +158,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     key: "ite_trip_generation",
     label: "Trip Generation (ITE-style)",
     shortLabel: "Trip Generation",
-    launchLabel: "Trip Generation (screening worksheet — runs in this app)",
+    launchLabel: "Trip Generation (screening worksheet, runs in this app)",
     engineLabel: "Trip Generation",
     summaryDetail:
       "Runs inside this app: average-rate trip generation over a scenario entry's land-use program, with a rate-based VMT screen.",

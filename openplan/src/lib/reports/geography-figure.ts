@@ -403,14 +403,14 @@ function describeStudyArea(place: PlaceOfRecord): {
 }
 
 const FIGURE_NATURE_CAVEAT =
-  "This drawing is made only from the coordinates on the project record. There is no basemap behind it — no streets, no place names, no aerial imagery — and it is not a survey. Read it for the extent and for how the pieces sit relative to one another, not to locate a line on the ground.";
+  "This drawing is made only from the coordinates on the project record. There is no basemap behind it (no streets, no place names, no aerial imagery), and it is not a survey. Read it for the extent and for how the pieces sit relative to one another, not to locate a line on the ground.";
 
 function readStateSentence(subject: string, state: PacketGeographyReadState): string | null {
   if (state === "ok") return null;
   if (state === "schema_pending") {
-    return `${subject} could not be read at generation time because this deployment's database is missing the columns that hold it. That is not the same as there being none — the packet does not know.`;
+    return `${subject} could not be read at generation time because this deployment's database is missing the columns that hold it. That is not the same as there being none. The packet does not know.`;
   }
-  return `${subject} could not be read at generation time. That is not the same as there being none — the packet does not know.`;
+  return `${subject} could not be read at generation time. That is not the same as there being none. The packet does not know.`;
 }
 
 /**
@@ -456,7 +456,7 @@ export function buildPacketGeographyFigure(input: PacketGeographyInput): PacketG
         rawShapes.push({ kind: "extent-box", rings: [ringFromBbox(box)], closed: true });
         legend.push({
           kind: "extent-box",
-          label: `${studyAreaDescription.title} — recorded extent only`,
+          label: `${studyAreaDescription.title} (recorded extent only)`,
           detail:
             "The dashed rectangle is the extent stored on the project record. The boundary itself is not on the record, so the rectangle is a box around the area and not its shape.",
         });
@@ -498,7 +498,7 @@ export function buildPacketGeographyFigure(input: PacketGeographyInput): PacketG
     const badge = badgeCorridors ? `${index + 1}` : null;
     legend.push({
       kind: "corridor",
-      label: badge ? `${badge} — ${corridor.name}` : corridor.name,
+      label: badge ? `${badge}. ${corridor.name}` : corridor.name,
       detail: `Corridor drawn on this project (${corridorTypeLabel(corridor.corridorType)}).`,
     });
   });
@@ -533,7 +533,7 @@ export function buildPacketGeographyFigure(input: PacketGeographyInput): PacketG
       kind: "marker",
       label: "Project point",
       detail:
-        "The single point recorded on the project — the site, the intersection, the structure. It is not the area the work covers.",
+        "The single point recorded on the project: the site, the intersection, the structure. It is not the area the work covers.",
     });
     contents.push(
       `Project point at ${formatLatitude(marker.latitude)}, ${formatLongitude(marker.longitude)}.`
@@ -559,7 +559,7 @@ export function buildPacketGeographyFigure(input: PacketGeographyInput): PacketG
         ? "Nothing is drawn here, and the packet cannot say whether that is because this project has no geography or because the records could not be read. Treat this section as unanswered, not as empty."
         : input.workspaceFallbackLabel
           ? `This project has no study area, no corridors and no map point on its record, so there is nothing to draw. Anything that needs a place falls back to the workspace's home geography, ${input.workspaceFallbackLabel}.`
-          : "This project has no study area, no corridors and no map point on its record, so there is nothing to draw. Nothing has been left out — there is nothing there yet.",
+          : "This project has no study area, no corridors and no map point on its record, so there is nothing to draw. Nothing has been left out. There is nothing there yet.",
       emptyNextStep: readsFailed
         ? "Open the project record to see whether a study area is set, then generate this packet again."
         : "Set the study area on the project record so every other lane inherits it instead of asking.",
@@ -758,7 +758,7 @@ export function buildPacketGeographyFigure(input: PacketGeographyInput): PacketG
     contents,
     extentStatement,
     orientationStatement:
-      "North is up. The drawing is oriented north-up by construction — latitude runs up the page and longitude across it.",
+      "North is up. The drawing is oriented north-up by construction: latitude runs up the page and longitude across it.",
     scaleStatement,
     caveats,
     emptyStatement: null,

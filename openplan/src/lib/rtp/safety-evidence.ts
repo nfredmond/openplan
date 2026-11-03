@@ -136,7 +136,7 @@ function plural(count: number, one: string, many: string): string {
  */
 export function formatRtpSafetyEvidenceLine(evidence: RtpSafetyEvidence): string {
   if (evidence.countedTotal === null) {
-    return "This acquisition's crash counts could not be read — a lookup failure, not evidence that no collisions occurred.";
+    return "This acquisition's crash counts could not be read: a lookup failure, not evidence that no collisions occurred.";
   }
   if (evidence.countedTotal === 0) {
     return evidence.reportedTotal > 0

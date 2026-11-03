@@ -125,7 +125,7 @@ describe("the run card on a failed run", () => {
     );
 
     expect(screen.queryByTestId("run-failure-summary")).toBeNull();
-    expect(screen.getByText(/Run recorded — no linked analysis results yet/)).toBeInTheDocument();
+    expect(screen.getByText(/Run recorded: no linked analysis results yet/)).toBeInTheDocument();
   });
 });
 
@@ -345,7 +345,7 @@ describe("summarizeRunFailure", () => {
     const summary = summarizeRunFailure({
       status: "failed",
       errorMessage:
-        "No modeling worker picked up this run within 15 minutes. The AequilibraE worker may be offline — start the worker, then re-launch this run.",
+        "No modeling worker picked up this run within 15 minutes. The AequilibraE worker may be offline. Start the worker, then re-launch this run.",
       stages: [stage({ id: "s1", stage_name: "AequilibraE Setup", status: "failed", sort_order: 1, error_message: "KeyError: 'x'" })],
     });
 

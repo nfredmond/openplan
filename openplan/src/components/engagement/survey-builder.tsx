@@ -99,7 +99,7 @@ function ConfigEditor({ type, config, onChange }: { type: SurveyQuestionType; co
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm sm:col-span-2">
-            <span className="text-muted-foreground">Point labels (comma-separated, must match scale — optional)</span>
+            <span className="text-muted-foreground">Point labels (comma-separated, must match scale, optional)</span>
             <Input
               value={Array.isArray(config.labels) ? (config.labels as string[]).join(", ") : ""}
               placeholder="Strongly disagree, Disagree, Neutral, Agree, Strongly agree"
@@ -504,7 +504,7 @@ function QuestionCard({ campaignId, question, earlier, onUpdate, onRemove }: { c
               <StatusBadge tone="info">{def.label}</StatusBadge>
               {question.required ? <StatusBadge tone="warning">Required</StatusBadge> : null}
               {!question.is_active ? <StatusBadge tone="neutral">Archived</StatusBadge> : null}
-              {isDraft(question) ? <StatusBadge tone="warning">Draft — not public</StatusBadge> : null}
+              {isDraft(question) ? <StatusBadge tone="warning">Draft, not public</StatusBadge> : null}
             </span>
             <span className="mt-1 block font-medium text-foreground">{question.prompt}</span>
           </span>

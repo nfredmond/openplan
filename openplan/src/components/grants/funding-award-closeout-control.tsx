@@ -165,7 +165,7 @@ function describeCoverageRefusal(coverage: CloseoutCoverage): string {
   const percent = formatCoveragePercent(coverage);
   return `Paid invoices cover ${formatCurrency(coverage.paidAmount)} of the ${formatCurrency(
     coverage.awardedAmount
-  )} awarded${percent ? ` (${percent})` : ""} — ${formatCurrency(
+  )} awarded${percent ? ` (${percent})` : ""}. ${formatCurrency(
     coverage.outstandingAmount
   )} is still short. Close-out needs the full awarded amount paid.`;
 }
@@ -216,16 +216,16 @@ function CloseoutCoverageBreakdown({ breakdown }: { breakdown: CloseoutInvoiceBr
     <ul className="mt-2 space-y-1 text-xs">
       <li>
         <strong>{breakdown.paidCount}</strong> paid {pluralizeInvoices(breakdown.paidCount)} ·{" "}
-        {formatCurrency(breakdown.paidAmount)} — the only status that counts toward close-out.
+        {formatCurrency(breakdown.paidAmount)}: the only status that counts toward close-out.
       </li>
       <li>
         <strong>{breakdown.activeCount}</strong> {pluralizeInvoices(breakdown.activeCount)} in the
-        payment flow · {formatCurrency(breakdown.activeAmount)} — in internal review, submitted, or
+        payment flow · {formatCurrency(breakdown.activeAmount)}: in internal review, submitted, or
         approved for payment, so not yet paid.
       </li>
       <li>
         <strong>{breakdown.draftCount}</strong> draft {pluralizeInvoices(breakdown.draftCount)} ·{" "}
-        {formatCurrency(breakdown.draftAmount)} — not yet in the payment flow.
+        {formatCurrency(breakdown.draftAmount)}: not yet in the payment flow.
       </li>
     </ul>
   );
@@ -384,7 +384,7 @@ function FundingAwardCloseoutRow({
     if (!reason) {
       setOutcome({
         kind: "refused",
-        message: "Re-opening a closed award needs a written reason — it withdraws a close-out.",
+        message: "Re-opening a closed award needs a written reason. It withdraws a close-out.",
       });
       return;
     }
@@ -507,7 +507,7 @@ function FundingAwardCloseoutRow({
               and author are cleared from the record.
             </li>
             <li>
-              The re-opening itself is kept — date, reason and who did it stay on the award even if it is
+              The re-opening itself is kept: date, reason and who did it stay on the award even if it is
               closed out again later.
             </li>
             <li>
@@ -561,7 +561,7 @@ function FundingAwardCloseoutRow({
                 maxLength={2000}
                 value={reopenReason}
                 onChange={(event) => setReopenReason(event.target.value)}
-                placeholder="Why the close-out is being withdrawn — de-obligation, audit finding, amendment, or a mis-click."
+                placeholder="Why the close-out is being withdrawn: de-obligation, audit finding, amendment, or a mis-click."
               />
             </div>
           </div>
@@ -596,7 +596,7 @@ function FundingAwardCloseoutRow({
           <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
             <li>Marks the award fully spent, and files a close-out milestone on {projectName}.</li>
             <li>
-              Rebuilds {projectName}&rsquo;s RTP funding posture — the funding status this project shows
+              Rebuilds {projectName}&rsquo;s RTP funding posture. The funding status this project shows
               on its own page and in the grants queue is recomputed from the change.
             </li>
             <li>
@@ -689,7 +689,7 @@ function FundingAwardCloseoutRow({
         >
           <p className="text-sm font-semibold">{award.title} was already closed out.</p>
           <p className="mt-1">
-            This view was out of date — nothing changed, and no new milestone or posture rebuild was
+            This view was out of date. Nothing changed, and no new milestone or posture rebuild was
             filed.
           </p>
         </div>
@@ -768,7 +768,7 @@ export function FundingAwardCloseoutPanel({
           route, which settles it per project.
         */}
         {canClose
-          ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and updates how this project's funding is counted in the long-range plan. A closed award can be re-opened with a written reason, and each closed award shows how it was closed — earned against invoices, or recorded on import."
+          ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and updates how this project's funding is counted in the long-range plan. A closed award can be re-opened with a written reason, and each closed award shows how it was closed: earned against invoices, or recorded on import."
           : "Close-out marks an award fully spent once its paid invoices cover the awarded amount. Recording one is a write action and this view is not offering it; the server decides per project who may record a close-out."}
       </p>
       <ul className="mt-3 space-y-3">

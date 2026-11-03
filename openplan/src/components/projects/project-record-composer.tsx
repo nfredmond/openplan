@@ -201,7 +201,7 @@ export function ProjectRecordComposer({
     {
       id: "what",
       title: "What has to happen?",
-      hint: "A milestone is a date the project has to hit — an approval, a hearing, a hand-off.",
+      hint: "A milestone is a date the project has to hit: an approval, a hearing, a hand-off.",
       fields: [
         {
           name: "milestoneTitle",
@@ -262,7 +262,7 @@ export function ProjectRecordComposer({
     {
       id: "who-and-when",
       title: "Who owns it, and when is it due?",
-      hint: "All optional — you can fill these in later.",
+      hint: "All optional. You can fill these in later.",
       fields: [
         { name: "milestoneStatus", label: "a status" },
         { name: "milestoneOwner", label: "an owner" },
@@ -510,7 +510,7 @@ export function ProjectRecordComposer({
     {
       id: "what",
       title: "What are you producing?",
-      hint: "A deliverable is something the project owes somebody — a memo, a drawing set, a dataset.",
+      hint: "A deliverable is something the project owes somebody: a memo, a drawing set, a dataset.",
       fields: [
         {
           name: "deliverableTitle",
@@ -583,7 +583,7 @@ export function ProjectRecordComposer({
                 min="0"
                 step="0.01"
                 {...flow.text("deliverableBudget")}
-                placeholder="Optional — leave blank if not budgeted"
+                placeholder="Optional, leave blank if not budgeted"
               />
             </GuidedFlowRow>
             <GuidedFlowRow flow={flow} name="deliverablePercentComplete" label="How far along is it?">
@@ -593,7 +593,7 @@ export function ProjectRecordComposer({
                 max="100"
                 step="1"
                 {...flow.text("deliverablePercentComplete")}
-                placeholder="Optional — 0 to 100"
+                placeholder="Optional, 0 to 100"
               />
             </GuidedFlowRow>
           </div>

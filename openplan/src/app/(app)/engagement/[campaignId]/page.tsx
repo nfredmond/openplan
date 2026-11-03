@@ -189,7 +189,7 @@ export default async function EngagementCampaignDetailPage({
             title="This campaign could not be read"
             description={`The database refused the query for this campaign: ${
               campaignError.message ?? "no reason was returned"
-            }. That is not the same as the campaign not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the record is gone.`}
+            }. That is not the same as the campaign not existing. OpenPlan cannot tell you either way right now, so do not treat this page as evidence the record is gone.`}
           />
           <p className="mt-4 text-sm">
             <Link href="/engagement" className="underline underline-offset-2 hover:text-foreground">
@@ -635,7 +635,7 @@ export default async function EngagementCampaignDetailPage({
             <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
             <span className="text-label text-muted-foreground">
               {itemsUnreadable
-                ? "Flagged count unavailable — the comments could not be read"
+                ? "Flagged count unavailable: the comments could not be read"
                 : counts.statusCounts.flagged > 0
                   ? `${counts.statusCounts.flagged} flagged`
                   : "No flagged items"}
@@ -977,7 +977,7 @@ export default async function EngagementCampaignDetailPage({
                 <p className="module-section-label">Geometry Review</p>
                 <h2 className="module-section-title">Located comments on the map</h2>
                 <p className="module-section-description">
-                  Every item with a point, line, or area renders here — including pending and flagged items — so moderators can review geometry before approval.
+                  Every item with a point, line, or area renders here, including pending and flagged items, so moderators can review geometry before approval.
                 </p>
               </div>
             </div>
@@ -1007,7 +1007,7 @@ export default async function EngagementCampaignDetailPage({
                 <p className="module-section-label">Moderation</p>
                 <h2 className="module-section-title">Near-duplicate comments</h2>
                 <p className="module-section-description">
-                  Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts) — a
+                  Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts), a
                   screening aid to help collapse duplicates. Nothing is merged automatically.
                 </p>
               </div>
@@ -1026,7 +1026,7 @@ export default async function EngagementCampaignDetailPage({
                 <h2 className="module-section-title">AI moderation assist</h2>
                 <p className="module-section-description">
                   A Claude pass over the review queue that flags possible toxicity, personal info, off-topic, or
-                  spam with a rationale — a triage aid. It never changes a comment&rsquo;s status; a moderator
+                  spam with a rationale, a triage aid. It never changes a comment&rsquo;s status; a moderator
                   decides. Falls back to a deterministic PII/spam check when AI is offline.
                 </p>
               </div>
@@ -1083,7 +1083,7 @@ export default async function EngagementCampaignDetailPage({
                 <StateBlock
                   tone="danger"
                   title="This campaign's comments could not be read"
-                  description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty — reload, and if it keeps failing the error is reported at the top of this page."
+                  description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty. Reload, and if it keeps failing the error is reported at the top of this page."
                 />
               ) : (
                 <EmptyState
@@ -1207,7 +1207,7 @@ export default async function EngagementCampaignDetailPage({
                 <h2 className="module-section-title">Heatmap and spatial hotspots</h2>
                 <p className="module-section-description">
                   Where residents engaged, the mix of what they said, and a screening-grade test for
-                  statistically elevated clusters of negative sentiment — the spatial signal no pure
+                  statistically elevated clusters of negative sentiment, the spatial signal no pure
                   comment tool surfaces. Not an inferential or representativeness finding.
                 </p>
               </div>
@@ -1244,7 +1244,7 @@ export default async function EngagementCampaignDetailPage({
                   The area-based screening infers who was reached from the tracts comments came from; the
                   self-reported screening asks respondents directly. They can disagree, and when they do the
                   area-based inference is the one that can be wrong about individuals. Only race / ethnicity is
-                  comparable across the two — the rest of each vocabulary has no counterpart.
+                  comparable across the two. The rest of each vocabulary has no counterpart.
                 </p>
               </div>
             </div>
@@ -1265,7 +1265,7 @@ export default async function EngagementCampaignDetailPage({
                 <h2 className="module-section-title">Respondent demographics (screening)</h2>
                 <p className="module-section-description">
                   Optional, self-reported demographics of respondents, shown only as k-anonymized aggregates. A
-                  screening cue to check whether outreach reached the whole community — not a statistical sample or a
+                  screening cue to check whether outreach reached the whole community, not a statistical sample or a
                   civil-rights finding.
                 </p>
               </div>
@@ -1284,7 +1284,7 @@ export default async function EngagementCampaignDetailPage({
                 <h2 className="module-section-title">Where engagement came from (screening)</h2>
                 <p className="module-section-description">
                   An ecological, area-based check: did comments come disproportionately from higher- or lower-need
-                  tracts than the study area as a whole? Inferred from geography over a self-selected sample — a cue
+                  tracts than the study area as a whole? Inferred from geography over a self-selected sample. A cue
                   to check outreach reach, not a statistical sample or a civil-rights finding.
                 </p>
               </div>

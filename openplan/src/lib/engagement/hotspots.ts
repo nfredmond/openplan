@@ -34,7 +34,7 @@ export const HOTSPOT_DEFAULT_ALPHA = 0.05;
 export const HOTSPOT_MIN_EXPECTED_NEGATIVE = 5;
 
 export const HOTSPOT_SCREENING_CAVEAT =
-  "Screening-grade spatial hotspots: DBSCAN clusters of resident pins, each tested for an elevated share of negative-sentiment comments versus the campaign baseline. Sentiment is AI-derived (a proxy, not ground truth). Significance is Bonferroni-adjusted across the clusters tested and gated to clusters with a large enough expected count — a signal to investigate, NOT an inferential or representativeness finding.";
+  "Screening-grade spatial hotspots: DBSCAN clusters of resident pins, each tested for an elevated share of negative-sentiment comments versus the campaign baseline. Sentiment is AI-derived (a proxy, not ground truth). Significance is Bonferroni-adjusted across the clusters tested and gated to clusters with a large enough expected count: a signal to investigate, NOT an inferential or representativeness finding.";
 
 /** One row as returned by the `engagement_sentiment_hotspots` RPC. Numeric
  * columns may arrive as strings (bigint) depending on the transport, so every

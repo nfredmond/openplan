@@ -1408,7 +1408,7 @@ export function PublicMapStage({
               {mapUnavailable === "no-background" ? (
                 <p>
                   This deployment offers no map background, so no map can be drawn. Check
-                  OPENPLAN_PUBLIC_BASEMAPS — every id it names is one OpenPlan does not know — or unset it
+                  OPENPLAN_PUBLIC_BASEMAPS (every id it names is one OpenPlan does not know) or unset it
                   to use the default set.
                 </p>
               ) : MAP_ENGINE === "maplibre" ? (

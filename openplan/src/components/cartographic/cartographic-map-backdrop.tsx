@@ -2144,7 +2144,7 @@ export function CartographicMapBackdrop({
       }
       text(
         "op-map-popup__note",
-        "Derived from a published feed, averaged over one service day — a service level, not a timetable.",
+        "Derived from a published feed, averaged over one service day: a service level, not a timetable.",
       );
 
       return root;

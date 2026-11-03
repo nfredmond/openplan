@@ -177,7 +177,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             title="This RTP cycle could not be read"
             description={`The query for this cycle did not complete: ${
               cycleResult.error.message ?? "no reason was returned"
-            }. That is not the same as the cycle not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle is gone.`}
+            }. That is not the same as the cycle not existing. OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle is gone.`}
           />
           <div className="mt-4">
             <Link href="/rtp" className="module-inline-action w-fit">
@@ -846,7 +846,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <StateBlock
               tone="danger"
               title="Linked projects could not be read"
-              description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio — do not re-attach projects on the strength of this page."
+              description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio. Do not re-attach projects on the strength of this page."
             />
           ) : projectLinks.length === 0 ? (
             <EmptyState
@@ -1017,7 +1017,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <StateBlock
               tone="danger"
               title="Chapter sections could not be read"
-              description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters — nothing here should be read as evidence that the shell is missing or that work was lost."
+              description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters. Nothing here should be read as evidence that the shell is missing or that work was lost."
             />
           ) : chapters.length === 0 ? (
             <EmptyState
@@ -1146,7 +1146,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             {publicReviewInputsUnavailable ? (
               <p className="rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 This public-review posture, and the recommendations below it, are computed from records that could
-                not be read. Do not act on a recommendation to create a campaign or a packet from this page — it may
+                not be read. Do not act on a recommendation to create a campaign or a packet from this page. It may
                 already exist and this page cannot currently see it.
               </p>
             ) : null}
@@ -1172,7 +1172,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {packetRecordsUnavailable
-                    ? "The packet records could not be read, so this is not a count of zero — a packet may already be generated."
+                    ? "The packet records could not be read, so this is not a count of zero. A packet may already be generated."
                     : "Current rendered packet artifacts available for review and export."}
                 </p>
               </div>
@@ -1284,7 +1284,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <StateBlock
               tone="danger"
               title="Engagement campaigns could not be read"
-              description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists — creating a second one from this page would duplicate it."
+              description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists. Creating a second one from this page would duplicate it."
             />
           ) : cycleLevelCampaigns.length === 0 ? (
             <EmptyState

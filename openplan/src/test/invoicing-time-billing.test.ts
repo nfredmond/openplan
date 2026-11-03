@@ -89,7 +89,7 @@ describe("groupUnbilledTime", () => {
 
     expect(drafts).toHaveLength(3);
 
-    const senior = drafts.find((d) => d.description === "Senior Planner — J. Doe");
+    const senior = drafts.find((d) => d.description === "Senior Planner: J. Doe");
     expect(senior).toMatchObject({
       quantity: 12.5,
       unit_label: TIME_BILLING_UNIT_LABEL,
@@ -99,7 +99,7 @@ describe("groupUnbilledTime", () => {
       sourceTimeEntryIds: ["t1", "t2"],
     });
 
-    const associate = drafts.find((d) => d.description === "Associate Planner — R. Roe");
+    const associate = drafts.find((d) => d.description === "Associate Planner: R. Roe");
     expect(associate).toMatchObject({ quantity: 6, unit_amount: 120, amount: 720, needsRate: false });
   });
 
@@ -111,7 +111,7 @@ describe("groupUnbilledTime", () => {
       staffNamesById: { s2: "R. Roe" },
     });
 
-    const rateless = drafts.find((d) => d.description === "Drone Pilot — R. Roe");
+    const rateless = drafts.find((d) => d.description === "Drone Pilot: R. Roe");
     expect(rateless).toMatchObject({
       quantity: 3,
       unit_amount: null,

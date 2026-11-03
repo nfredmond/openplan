@@ -115,7 +115,7 @@ const ATTACHMENT_STATUS_TONES: Record<
 };
 
 const NEVER_AI_NOTE =
-  "Drafted by you, never by AI — budget figures, cost estimates, fee schedules, and certifications come from your own estimates, records, and signatories.";
+  "Drafted by you, never by AI. Budget figures, cost estimates, fee schedules, and certifications come from your own estimates, records, and signatories.";
 
 function parseSectionRows(rows: unknown): ApplicationSectionRow[] {
   if (!Array.isArray(rows)) return [];
@@ -605,7 +605,7 @@ export function FundingOpportunityApplicationWorkspace({
             <div className="space-y-3" data-testid="application-init">
               {pursuitKind === "proposal" ? (
                 <p className="text-muted-foreground">
-                  No proposal response is set up yet. Initializing seeds the proposal template —
+                  No proposal response is set up yet. Initializing seeds the proposal template:
                   approach, team and qualifications, past performance, schedule, and the fee
                   placeholder (never AI-drafted). The current solicitation always controls the real
                   structure; add custom sections to match it.
@@ -614,7 +614,7 @@ export function FundingOpportunityApplicationWorkspace({
                 <p className="text-muted-foreground">
                   No application is set up for this opportunity yet. Seed it from a catalog program
                   template (matched by explicit key only, and always verify against the current
-                  NOFO/guidelines) or start a custom scaffold — any funder anywhere works without a
+                  NOFO/guidelines) or start a custom scaffold. Any funder anywhere works without a
                   template.
                 </p>
               )}
@@ -646,7 +646,7 @@ export function FundingOpportunityApplicationWorkspace({
             <>
               {latestDraftsUnavailable ? (
                 <p className="text-muted-foreground">
-                  Stored draft history could not be loaded right now — sections may show no working
+                  Stored draft history could not be loaded right now. Sections may show no working
                   draft even though one exists.
                 </p>
               ) : null}
@@ -662,7 +662,7 @@ export function FundingOpportunityApplicationWorkspace({
                 </p>
                 {sections.length === 0 ? (
                   <p className="text-muted-foreground">
-                    No sections yet — add the first one below.
+                    No sections yet. Add the first one below.
                   </p>
                 ) : null}
                 {sections.map((section, index) => (
@@ -698,7 +698,7 @@ export function FundingOpportunityApplicationWorkspace({
                     <Textarea
                       aria-label="New section guidance"
                       rows={2}
-                      placeholder="Optional guidance — what the current call asks this section to contain."
+                      placeholder="Optional guidance: what the current call asks this section to contain."
                       value={newSectionGuidance}
                       onChange={(event) => setNewSectionGuidance(event.target.value)}
                     />
@@ -708,7 +708,7 @@ export function FundingOpportunityApplicationWorkspace({
                         checked={newSectionAiDrafting}
                         onChange={(event) => setNewSectionAiDrafting(event.target.checked)}
                       />
-                      Allow AI drafting support (uncheck for budget, fee, or certification content —
+                      Allow AI drafting support (uncheck for budget, fee, or certification content:
                       those are always drafted by you)
                     </label>
                     <Button
@@ -731,13 +731,13 @@ export function FundingOpportunityApplicationWorkspace({
                 </p>
                 {attachSourcesDegraded ? (
                   <p className="text-muted-foreground">
-                    Some attachment sources could not be loaded — the pickers below may be missing
+                    Some attachment sources could not be loaded. The pickers below may be missing
                     documents or report artifacts that do exist.
                   </p>
                 ) : null}
                 {attachments.length === 0 ? (
                   <p className="text-muted-foreground">
-                    No checklist items yet — add what the current call requires.
+                    No checklist items yet. Add what the current call requires.
                   </p>
                 ) : null}
                 {attachments.map((attachment) => (
@@ -805,7 +805,7 @@ export function FundingOpportunityApplicationWorkspace({
                               <li key={sentenceIndex}>
                                 {stripFactCitationTokens(sentence.text)}{" "}
                                 <span className="">
-                                  — {sentence.reason.replace(/_/g, " ")}
+                                  ({sentence.reason.replace(/_/g, " ")})
                                 </span>
                               </li>
                             ))}
@@ -818,7 +818,7 @@ export function FundingOpportunityApplicationWorkspace({
                     <div className="mt-2 space-y-1" data-testid="export-result">
                       {exportResult.isDraftStamped ? (
                         <p className="font-semibold text-[color:var(--copper)]">
-                          Stamped DRAFT — {exportResult.outstandingRequiredCount} required
+                          Stamped DRAFT: {exportResult.outstandingRequiredCount} required
                           attachment(s) outstanding.
                         </p>
                       ) : null}
@@ -1153,7 +1153,7 @@ function SectionDetailView({
             <div className="space-y-2">
               <p className="text-label font-semibold text-foreground/70">
                 AI draft{latestDraft.model ? ` · ${latestDraft.model}` : ""} ·{" "}
-                {formatDate(latestDraft.created_at)} — review before use
+                {formatDate(latestDraft.created_at)}. Review before use
               </p>
               <NarrativeGroundingSummaryLine
                 groundingJson={latestDraft.grounding_json}
@@ -1177,8 +1177,8 @@ function SectionDetailView({
             rows={2}
             placeholder={
               latestDraft
-                ? "Revision instructions — tone or emphasis only; revisions can restyle prose but can never add unverified claims."
-                : "Optional drafting instructions — tone or emphasis only."
+                ? "Revision instructions: tone or emphasis only; revisions can restyle prose but can never add unverified claims."
+                : "Optional drafting instructions: tone or emphasis only."
             }
             value={instructions}
             onChange={(event) => setInstructions(event.target.value)}
@@ -1207,7 +1207,7 @@ function SectionDetailView({
             <div className="flex items-start gap-2 rounded-xl border border-[color:var(--copper)]/40 bg-[color:var(--copper)]/10 px-3 py-2.5 text-[color:var(--copper)]">
               <CloudOff className="mt-0.5 h-4 w-4 shrink-0" />
               <p>
-                AI drafting is offline — no Anthropic API key is configured for this deployment.
+                AI drafting is offline: no Anthropic API key is configured for this deployment.
                 Stored drafts remain available; write and finalize your own text below.
               </p>
             </div>
@@ -1293,7 +1293,7 @@ function SectionDetailView({
                     <span className="text-foreground/80">
                       {stripFactCitationTokens(sentence.text)}
                     </span>{" "}
-                    <span className="">— {sentence.reason.replace(/_/g, " ")}</span>
+                    <span className="">({sentence.reason.replace(/_/g, " ")})</span>
                   </li>
                 ))}
               </ul>
@@ -1318,7 +1318,7 @@ function SectionDetailView({
               Save as final
             </Button>
             <p className="text-xs text-muted-foreground">
-              Edited text is your reviewed work product — you, not a stored validation verdict, are
+              Edited text is your reviewed work product. You, not a stored validation verdict, are
               the authority for it.
             </p>
           </div>
@@ -1477,7 +1477,7 @@ function AttachmentRowView({
           {artifactOptions.map((option) => (
             <option key={option.id} value={option.id}>
               {option.reportTitle}
-              {option.artifactKind ? ` — ${option.artifactKind.toUpperCase()}` : ""}
+              {option.artifactKind ? ` · ${option.artifactKind.toUpperCase()}` : ""}
               {option.generatedAt ? ` (${formatDate(option.generatedAt)})` : ""}
             </option>
           ))}

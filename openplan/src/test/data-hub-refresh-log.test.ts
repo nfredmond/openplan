@@ -27,7 +27,7 @@ describe("describeRefreshJobStatus", () => {
 
   it("renders queued as a record with no runner attached", () => {
     const descriptor = describeRefreshJobStatus("queued");
-    expect(descriptor.label).toBe("Recorded — no runner attached");
+    expect(descriptor.label).toBe("Recorded: no runner attached");
     expect(descriptor.tone).toBe("neutral");
     expect(descriptor.caveat).toMatch(/No background runner executes queued refresh jobs/);
   });
@@ -59,7 +59,7 @@ describe("describeRefreshJobStatus", () => {
   it("treats an unknown or missing status as documentation", () => {
     for (const status of ["archived", "", null, undefined]) {
       const descriptor = describeRefreshJobStatus(status);
-      expect(descriptor.label).toBe("Recorded — status unknown");
+      expect(descriptor.label).toBe("Recorded: status unknown");
       expect(descriptor.tone).toBe("neutral");
     }
   });
@@ -111,7 +111,7 @@ describe("buildReportRefreshLogNote", () => {
       },
     ]);
 
-    expect(note).toMatch(/Recorded — no runner attached/);
+    expect(note).toMatch(/Recorded: no runner attached/);
     expect(note).toMatch(/No background runner executes queued refresh jobs/);
   });
 

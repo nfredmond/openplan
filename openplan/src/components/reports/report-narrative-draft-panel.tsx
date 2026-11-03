@@ -206,11 +206,11 @@ function SectionDraftCard({
     draft?.status === "accepted" ? "success" : draft?.status === "dismissed" ? "neutral" : "warning";
   const statusLabel =
     draft?.status === "accepted"
-      ? "Accepted — included in next generation"
+      ? "Accepted: included in next generation"
       : draft?.status === "dismissed"
         ? "Dismissed"
         : draft
-          ? "AI draft — review before accepting"
+          ? "AI draft: review before accepting"
           : "No draft yet";
 
   return (
@@ -276,7 +276,7 @@ function SectionDraftCard({
         <div className="mt-3 flex items-start gap-2 rounded-xl border border-[color:var(--copper)]/40 bg-[color:var(--copper)]/10 px-3 py-2.5 text-xs text-[color:var(--copper)]">
           <CloudOff className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            AI drafting is offline — no Anthropic API key is configured for this deployment. Stored
+            AI drafting is offline: no Anthropic API key is configured for this deployment. Stored
             drafts remain available; new drafts cannot be generated until the key is set.
           </p>
         </div>
@@ -385,10 +385,10 @@ export function DraftGroundingLine({
                 <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
                 <span className="text-label">
                   {sentence.reason === "missing_citation"
-                    ? "— no citation"
+                    ? "(no citation)"
                     : sentence.reason === "unfaithful_citation"
-                      ? `— figure${sentence.unfaithful_claims.length === 1 ? "" : "s"} not in cited facts: ${sentence.unfaithful_claims.join(", ")}`
-                      : `— unknown fact id${sentence.unknown_fact_ids.length === 1 ? "" : "s"}: ${sentence.unknown_fact_ids.join(", ")}`}
+                      ? `(figure${sentence.unfaithful_claims.length === 1 ? "" : "s"} not in cited facts: ${sentence.unfaithful_claims.join(", ")})`
+                      : `(unknown fact id${sentence.unknown_fact_ids.length === 1 ? "" : "s"}: ${sentence.unknown_fact_ids.join(", ")})`}
                 </span>
               </li>
             ))}

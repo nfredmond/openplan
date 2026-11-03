@@ -274,7 +274,7 @@ describe("the RTP safety criterion cites observed crashes", () => {
       )
     );
     expect(
-      screen.getByText(/crash counts could not be read — a lookup failure/)
+      screen.getByText(/crash counts could not be read: a lookup failure/)
     ).toBeTruthy();
   });
 });

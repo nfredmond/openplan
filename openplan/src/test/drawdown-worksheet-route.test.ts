@@ -201,7 +201,7 @@ describe("GET the reimbursement worksheet", () => {
       "reimbursement-worksheet-ridge-corridor-safety-improvements.pdf"
     );
     expect(renderReportPdfMock.mock.calls[0][1]).toMatchObject({
-      title: "Reimbursement worksheet — Ridge Corridor Safety Improvements",
+      title: "Reimbursement worksheet: Ridge Corridor Safety Improvements",
     });
   });
 

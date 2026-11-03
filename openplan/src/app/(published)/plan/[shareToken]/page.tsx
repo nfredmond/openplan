@@ -129,7 +129,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
         >
           <p className={`${PROSE} text-amber-900/90 dark:text-amber-200/90`}>
             Something went wrong reading this plan, so none of it is shown. This is a problem loading
-            the page — it does not mean the plan is missing, unpublished, or withdrawn.
+            the page. It does not mean the plan is missing, unpublished, or withdrawn.
           </p>
           <p className={`mt-2 ${PROSE} text-amber-900/90 dark:text-amber-200/90`}>
             Please try again shortly, or contact the agency that published this plan.
@@ -355,7 +355,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
           Read the full draft plan
         </a>
         <span className="text-muted-foreground">
-          {" — "}the plan&apos;s chapters, its financial element, and the full project lists.
+          {": "}the plan&apos;s chapters, its financial element, and the full project lists.
         </span>
       </p>
 

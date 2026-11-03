@@ -123,7 +123,7 @@ export default async function EditMissionAoiPage({ params, searchParams }: EditM
           <PlaneTakeoff className="h-3 w-3" />
           Mission AOI
         </div>
-        <h1 className="text-2xl font-semibold text-foreground">Draw AOI — {mission.title}</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Draw AOI: {mission.title}</h1>
         <p className="text-sm text-muted-foreground">
           Click to add polygon vertices. Double-click to close. Right-click removes the last vertex.
           Save writes the polygon back to the mission so it can be exported as a DJI waypoint file.
@@ -149,7 +149,7 @@ export default async function EditMissionAoiPage({ params, searchParams }: EditM
             <StateBlock
               className="mb-4"
               title="Project shapes could not be loaded"
-              description="This mission's project may have saved boundary or corridor shapes, but they could not be read just now, so no starting shapes are offered. Drawing and saving the AOI by hand still works — reload the page to try again."
+              description="This mission's project may have saved boundary or corridor shapes, but they could not be read just now, so no starting shapes are offered. Drawing and saving the AOI by hand still works. Reload the page to try again."
               tone="warning"
               compact
             />

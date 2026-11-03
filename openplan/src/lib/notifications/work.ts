@@ -499,8 +499,8 @@ function deadlineSentence(
   const where = context ? ` on ${context}` : "";
   const when = formatWorkDeadlineDate(dueOn) ?? dueOn;
   return isOverdue
-    ? `${noun}${where} — was due ${when} and is now overdue.`
-    : `${noun}${where} — due ${when}.`;
+    ? `${noun}${where} was due ${when} and is now overdue.`
+    : `${noun}${where}, due ${when}.`;
 }
 
 const deliverablesSource: SweepSource = {
@@ -1114,7 +1114,7 @@ export function measureClaimWaitingSentence(input: {
       : "OpenPlan could not read this fund's currency, so the amount is not stated here.";
   return (
     `Submitted ${when} and still waiting on a decision. ${howLong} ${money} ` +
-    "No review deadline is recorded for this measure, so this is not an overdue notice — it is a claim " +
+    "No review deadline is recorded for this measure, so this is not an overdue notice. It is a claim " +
     "nobody has answered yet."
   );
 }
@@ -1424,7 +1424,7 @@ function digestBody(
 ): string {
   const { toReview, overdue, upcoming } = digestBuckets(items);
   const line = (item: Candidate) =>
-    `  - ${item.title} — ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
+    `  - ${item.title}: ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
   const reviewLine = (item: Candidate) =>
     `  - ${item.title}, obligation deadline ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}${item.isOverdue ? " (passed)" : ""}`;
 

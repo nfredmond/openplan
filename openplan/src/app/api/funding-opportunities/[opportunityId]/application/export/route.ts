@@ -251,7 +251,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (sections.length === 0 && attachments.length === 0) {
       return NextResponse.json(
-        { error: "No application is initialized for this opportunity — nothing to export." },
+        { error: "No application is initialized for this opportunity. Nothing to export." },
         { status: 422 }
       );
     }
@@ -464,7 +464,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     const pdf = await renderReportPdf(html, {
-      title: `${opportunityTitle} — ${packetLabel}`,
+      title: `${opportunityTitle}: ${packetLabel}`,
       generatedAt,
       footerLabel: opportunityTitle,
     });

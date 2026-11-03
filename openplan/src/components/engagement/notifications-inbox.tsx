@@ -66,7 +66,7 @@ function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
       <div className="rounded-[0.5rem] border border-amber-300/80 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
         <p className="font-semibold">The email delivery record could not be read</p>
         <p className="mt-1">
-          {maskEmailAddresses(delivery.message)} — so OpenPlan cannot tell you what was or was not sent. That is not the
+          {maskEmailAddresses(delivery.message)}, so OpenPlan cannot tell you what was or was not sent. That is not the
           same as no emails having been sent; do not read this as an empty outbox.
         </p>
       </div>

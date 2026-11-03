@@ -14,7 +14,7 @@ import type { RtpPriorityFrameworkDescriptor } from "../priority-frameworks";
 
 export const US_CA_RTP_PRIORITY_FRAMEWORK: RtpPriorityFrameworkDescriptor = {
   frameworkId: "us-ca",
-  label: "California — SB 743 / SB 375 planning framework",
+  label: "California: SB 743 / SB 375 planning framework",
   jurisdiction: { country: "US", subdivision: "CA" },
   framingNote:
     "Cites California statutes alongside the federal planning factors that also bind California MPOs. Where California adds no distinct authority, the federal citation is kept rather than substituted.",

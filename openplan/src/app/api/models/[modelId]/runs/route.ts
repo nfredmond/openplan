@@ -949,7 +949,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             // history reads "requested sketch, ran on the worker (large area)".
             const rerouteNotice =
               `Study area resolves to ${census.tracts.length} census tracts; the fast in-process sketch lane caps at ${SKETCH_ABM_MAX_ZONES}. ` +
-              `This run was routed to the AequilibraE fast-screening worker (no zone cap) — expect a longer runtime.`;
+              `This run was routed to the AequilibraE fast-screening worker (no zone cap). Expect a longer runtime.`;
             const reroutedAt = new Date().toISOString();
 
             // The run is becoming a WORKER run, so it now needs the same

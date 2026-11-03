@@ -171,7 +171,7 @@ export const EN_PORTAL_MESSAGES = {
   "portal.photoItemAlt": "Photo attached to this community comment",
   "portal.submit": "Send what I wrote",
   "portal.submitting": "Sending…",
-  "portal.submitFailed": "We could not send what you wrote. Nothing has been lost — please try again.",
+  "portal.submitFailed": "We could not send what you wrote. Nothing has been lost. Please try again.",
   "portal.received": "Thank you. We have your comment.",
   "portal.receivedDetail": "What you wrote has gone to the project team.",
   "portal.whatHappensNext": "What happens next",
@@ -398,7 +398,7 @@ export const EN_PORTAL_MESSAGES = {
 
     A named place is never translated: `{place}` is the agency's own name for it.
   */
-  "portal.mapFramingOn": "This map opens on {place} — {source}.",
+  "portal.mapFramingOn": "This map opens on {place}, {source}.",
   "portal.mapFramingOnUnnamed": "This map opens on {source}.",
   "portal.mapFramingSourceCampaign": "the area this page is about",
   "portal.mapFramingSourceProject": "the area of the project this page is about",
@@ -505,7 +505,7 @@ export const EN_PORTAL_MESSAGES = {
   "survey.submit": "Submit survey",
   "survey.submitting": "Submitting…",
   "survey.submitFailed": "Survey submission failed",
-  "survey.received": "Thank you — your survey response has been received.",
+  "survey.received": "Thank you. Your survey response has been received.",
   "survey.selectOne": "Choose one",
   "survey.selectMany": "Choose all that apply",
   "survey.rankHint": "Drag or number the options from most to least important.",
@@ -533,9 +533,9 @@ export const EN_PORTAL_MESSAGES = {
   "survey.draftRestored": "We brought back the answers you saved on {date}.",
   "survey.draftGone": "The answers you saved earlier are no longer available, so this form is starting empty.",
   "survey.draftCheckFailed":
-    "We could not check for saved answers just now. If you saved some, they have not been lost — reload this page to try again.",
+    "We could not check for saved answers just now. If you saved some, they have not been lost. Reload this page to try again.",
   "survey.draftSaveFailed":
-    "Your answers could not be saved just now. Nothing you have typed has been lost — you can try again.",
+    "Your answers could not be saved just now. Nothing you have typed has been lost. You can try again.",
   "survey.draftFilesNotSaved":
     "Files you attached are not saved with your answers. You will need to attach them again.",
   "survey.draftDiscard": "Discard saved answers",

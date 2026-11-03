@@ -265,8 +265,8 @@ const unreadableNextAction =
  * first.
  */
 const NO_COUNTS_DETAIL = {
-  unreadable: "Counts unavailable — this lane's read failed",
-  schemaPending: "Counts unavailable — schema setup pending",
+  unreadable: "Counts unavailable: this lane's read failed",
+  schemaPending: "Counts unavailable: schema setup pending",
 } as const;
 
 function withSourceState(
@@ -293,7 +293,7 @@ function withSourceState(
         "OpenPlan did not treat this as missing evidence; the read failed, and what this lane holds stays unknown until it succeeds.",
       nextAction: unreadableNextAction,
       caveat:
-        "Do not cite this lane in any packet until it can be read — an unreadable lane is not an empty one.",
+        "Do not cite this lane in any packet until it can be read. An unreadable lane is not an empty one.",
     };
   }
 
@@ -348,7 +348,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
     return {
       boardState: "unreadable",
       stateHeadline: "Some spine lanes could not be read",
-      stateDetail: `${unreadableLanes.join(", ")} ${unreadableLanes.length === 1 ? "is" : "are"} unavailable because the read failed.${alsoPending} Anything that depends on them is shown as unavailable rather than as empty — an empty lane here would not mean the records are absent.`,
+      stateDetail: `${unreadableLanes.join(", ")} ${unreadableLanes.length === 1 ? "is" : "are"} unavailable because the read failed.${alsoPending} Anything that depends on them is shown as unavailable rather than as empty. An empty lane here would not mean the records are absent.`,
       stateNextAction:
         "Work the read failure named at the top of this page, reload, and only then decide which evidence is genuinely absent.",
       schemaPendingLanes,
@@ -490,17 +490,17 @@ export function buildProjectSpineCrosslinkSummary(
               : "No study area is set, and the workspace has no home geography either, so every module will ask for a place each time.",
       detail:
         geographyReadiness === "ready"
-          ? "Resolved place — downstream lanes can re-derive the boundary, the county filter and the jurisdiction from it."
+          ? "Resolved place: downstream lanes can re-derive the boundary, the county filter and the jurisdiction from it."
           : geographyReadiness === "attention"
             ? input.geography.isUploaded
               ? "Uploaded shape. Its geometry can scope work, but does not establish a county filter, jurisdiction or adopting authority."
-              : "Drawn shape — no boundary to re-resolve, so no county filter or jurisdiction rule can be derived downstream."
-            : "Unset — each module will ask for a place separately, and two of them may be answered differently.",
+              : "Drawn shape: no boundary to re-resolve, so no county filter or jurisdiction rule can be derived downstream."
+            : "Unset: each module will ask for a place separately, and two of them may be answered differently.",
       evidence:
         "A study area states WHERE this project is, not what is true there. It scopes what other lanes fetch; it is not itself a finding about the place.",
       nextAction:
         geographyReadiness === "ready"
-          ? "The area itself needs nothing — change it only if the project's scope moves. Open model validation from this row to check a model of this study area against real traffic counts."
+          ? "The area itself needs nothing. Change it only if the project's scope moves. Open model validation from this row to check a model of this study area against real traffic counts."
           : geographyReadiness === "attention"
             ? "Re-pick the area from search if a county or place identity is needed downstream; keep the drawn shape if the extent is the point."
             : "Set the study area on the project record so every other lane inherits it instead of asking.",
@@ -665,7 +665,7 @@ export function buildProjectSpineCrosslinkSummary(
       evidence: "Screening/source-context posture only; no validated behavioral forecast or autonomous model decision is implied.",
       nextAction:
         analysisReadiness === "missing"
-          ? "Create the first run in Corridor Analysis — it opens scoped to this project's study area — or attach the model run and scenario comparison this project is allowed to cite."
+          ? "Create the first run in Corridor Analysis (it opens scoped to this project's study area), or attach the model run and scenario comparison this project is allowed to cite."
           : analysisReadiness === "attention"
             ? "Bind the recent run to a scenario entry or comparison-backed report before citing the output."
             : "Open the comparison-backed packet and verify caveats before reusing analysis language.",
@@ -695,7 +695,7 @@ export function buildProjectSpineCrosslinkSummary(
         safetyReadiness === "ready"
           ? `${input.safety.crashCount.toLocaleString("en-US")} crashes ingested, ${input.safety.geocodedCount.toLocaleString("en-US")} geocoded on the latest linked acquisition.`
           : safetyReadiness === "attention"
-            ? "The latest linked acquisition returned no crash records — check its coverage state before reading that as zero crashes."
+            ? "The latest linked acquisition returned no crash records. Check its coverage state before reading that as zero crashes."
             : "No crash acquisition is linked to this project yet.",
       detail: `${pluralize(input.safety.ingestCount, "acquisition")}${
         input.safety.sourceLabel ? ` · ${input.safety.sourceLabel}` : ""

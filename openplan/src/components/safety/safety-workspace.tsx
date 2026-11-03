@@ -1455,7 +1455,7 @@ export function SafetyWorkspace({
             ) : (
               <>Starting from {studyArea.originLabel}.</>
             )}{" "}
-            Search or draw above to analyze somewhere else — this does not change the source.
+            Search or draw above to analyze somewhere else. This does not change the source.
           </p>
         )}
         {bbox && countyCode === null && (
@@ -1507,7 +1507,7 @@ export function SafetyWorkspace({
                 {liveRead.geocodedCount.toLocaleString("en-US")} mappable
               </span>
               <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
-                Live read — not saved
+                Live read (not saved)
               </span>
             </div>
             <p className="text-muted-foreground" data-testid="safety-crash-area-basis">
@@ -1532,7 +1532,7 @@ export function SafetyWorkspace({
                 {liveYears.answered.length > 0
                   ? `Records came back for ${liveYears.answered.join(", ")}, and the counts above cover only ${liveYears.answered.length === 1 ? "that year" : "those years"}. `
                   : "No records came back for any year requested. "}
-                {`The source returned nothing for ${liveYears.silent.join(", ")}. That may mean no qualifying crashes were reported, that none could be mapped, or that the source has not published ${liveYears.silent.length === 1 ? "that year" : "those years"} yet — it is not evidence that no crashes occurred.`}
+                {`The source returned nothing for ${liveYears.silent.join(", ")}. That may mean no qualifying crashes were reported, that none could be mapped, or that the source has not published ${liveYears.silent.length === 1 ? "that year" : "those years"} yet. It is not evidence that no crashes occurred.`}
               </p>
             )}
             {liveRead.truncated && (
@@ -1805,7 +1805,7 @@ export function SafetyWorkspace({
               <p className="text-muted-foreground">
                 The crashes on the map loaded, but OpenPlan could not count how many were fatal
                 or serious across the whole area you picked, so no severe-crash figure is shown.
-                That is a failed count, not a finding — try loading the area
+                That is a failed count, not a finding. Try loading the area
                 again.
               </p>
             )}
@@ -1838,7 +1838,7 @@ export function SafetyWorkspace({
           <p className="text-muted-foreground">
             Choose a study area above to retrieve reported crashes for it. What is available depends
             on where you are: OpenPlan names the source that covers your study area, says what that
-            source does and does not record, and tells you plainly when nothing covers it — rather
+            source does and does not record, and tells you plainly when nothing covers it, rather
             than showing an empty map.
           </p>
         )}

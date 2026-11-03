@@ -230,7 +230,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             className="mt-3 rounded-xl border border-amber-300/80 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
           >
             <p className="font-semibold">
-              This handoff was prepared, not sent — nothing is going to run it
+              This handoff was prepared, not sent. Nothing is going to run it
             </p>
             <p className="mt-2">
               The last attempt found no processing worker configured on this OpenPlan
@@ -240,7 +240,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               and POST the resulting manifest to the callback URL, and this page will pick it up.
               Configuring a worker instead is described in{" "}
               <code>workers/county_onramp_worker/DEPLOY.md</code>. Nothing about this workspace or
-              this county is blocking it, and there is nothing to buy — OpenPlan is free.
+              this county is blocking it, and there is nothing to buy. OpenPlan is free.
             </p>
             <label className="mt-3 flex items-start gap-2 text-xs">
               <input
@@ -251,7 +251,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
               />
               <span>
                 A validation worker has been configured on this OpenPlan installation since that
-                attempt — prepare the handoff again. (This page reads the stored result, not the
+                attempt. Prepare the handoff again. (This page reads the stored result, not the
                 installation&apos;s configuration, so only you can tell it that changed.)
               </span>
             </label>
@@ -292,7 +292,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <div className="font-medium text-foreground">
               {enqueueState.status === "queued"
                 ? "Setup handoff queued on the worker"
-                : "Setup handoff prepared — nothing was sent"}
+                : "Setup handoff prepared. Nothing was sent"}
             </div>
             {enqueueState.status === "prepared" ? (
               <div className="mt-1">
@@ -329,7 +329,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       <StateBlock
         className="mt-4"
         title="How to read this page"
-        description="Use the stage and status badges for the current recorded state, use the guidance card for safe claims and next actions, and read the files below as evidence of what happened — not proof the run finished."
+        description="Use the stage and status badges for the current recorded state, use the guidance card for safe claims and next actions, and read the files below as evidence of what happened, not proof the run finished."
         tone="info"
         compact
       />
