@@ -95,6 +95,8 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
 - [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
   [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
   and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
+- [October 23 S2 cordon experiment](modeling/S2_CORDON_IMPEDANCE_RESULT_2026-10-23.md):
+  opt-in candidate and closed inconclusive execution, with no assignment or accuracy result.
 
 Workers have different environments and contracts. Start with their current
 instructions under `workers/`, linked from the self-hosting guide. A successful

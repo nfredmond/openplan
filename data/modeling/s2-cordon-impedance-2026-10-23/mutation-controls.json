@@ -1,0 +1,256 @@
+{
+  "controls": [
+    {
+      "name": "harmless_comment",
+      "expected_test": null,
+      "exit_code": 0,
+      "outcome": "survived",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "4f4e88f47db78c5e78cc297534b3d60cab6222cbd69d81afcae0ed819a64d4d7"
+    },
+    {
+      "name": "default_identity",
+      "expected_test": "test_default_identity_and_bytes",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "729afc6c293ae51d84f2b90c5b06351a9e2ce612725af7312450a165531af6a5"
+    },
+    {
+      "name": "setting",
+      "expected_test": "test_unknown_setting",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "b734ac9a0d4a81305859fd330751f343696070261bf27770affbadafccdc085d"
+    },
+    {
+      "name": "dimensions",
+      "expected_test": "test_dimensions",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "7dd765f44f97e7ab3940afac24a39df062bb9e883bd302036e784965c4ada610"
+    },
+    {
+      "name": "input_values",
+      "expected_test": "test_input_values",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "46dec8d7ee741917d8618ee779700b9246758a81af1a15f23ae15a5dabf764cd"
+    },
+    {
+      "name": "skim_values",
+      "expected_test": "test_skim_values",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "e063f9657951954f002ac535367adb1cf5f1356fe60734365732f059fe9738c5"
+    },
+    {
+      "name": "conditioning",
+      "expected_test": "test_conditioning_conservation_and_custody",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "1241e071138dc8bfbc7a8fae75e4f3008e68b1bba018dacd501a40b8356e3ac9"
+    },
+    {
+      "name": "convergence",
+      "expected_test": "test_nonconvergence",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "1f3ecd444aed196093449648d943e2b06447b2b9318aa5d6d9d418190483ac74"
+    },
+    {
+      "name": "candidate_values",
+      "expected_test": "test_candidate_values",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "9f40bc479d0112ff70c5d23c921c3ac6ab90af971997c0a9dedca174c91d95b4"
+    },
+    {
+      "name": "fixed_cells",
+      "expected_test": "test_fixed_cells",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "d72d23e95d60797dfbadce24e07c1e671d47297f91bdf0912cc07267e41ce854"
+    },
+    {
+      "name": "support",
+      "expected_test": "test_support",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "a1d1e84774da762fb401eddafd7d96046f01f80befdc53ca75f31fc3e8bf0019"
+    },
+    {
+      "name": "marginals",
+      "expected_test": "test_marginals",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "92a2a377bcd4f7b5f250fbafd8a6a1269a300a7ffa989807a74c8cf35d948290"
+    },
+    {
+      "name": "custody",
+      "expected_test": "test_conditioning_conservation_and_custody",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "4b191d8d6765dd9b5a551764888102787f1922e8abc3cb7a3232d8b3a1289f03"
+    },
+    {
+      "name": "worker_dispatch",
+      "expected_test": "test_worker_call_is_executed",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "a68c06a5e9cb03cd4fbd984ef5eb83b2077bf17ea4b28b6d4a9679be3cad1073"
+    },
+    {
+      "name": "county_dispatch",
+      "expected_test": "test_county_default_bytes_and_opt_in_dispatch",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "19900339f82ad7ed93b54e6d4b8d93a7251b49252a39624a3732e5c621062ab5"
+    },
+    {
+      "name": "evaluation_gate",
+      "expected_test": "test_evaluation_gate",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "e167f4dc4194eecb652c55d8118e7c07463773ef985482eb71c7d20d84860057"
+    },
+    {
+      "name": "diagnosis_gate",
+      "expected_test": "test_diagnosis_gate",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "c9b20b46705937618c74d82342c8a5091164fcf2e59e238c4b084ba024343eb6"
+    },
+    {
+      "name": "stratum_gate",
+      "expected_test": "test_stratum_gate",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "244401e37855f891f91b087318971b08e8cc0c855f73a846bdc5448e2ab6cbbd"
+    },
+    {
+      "name": "coverage_gate",
+      "expected_test": "test_coverage_gate",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "5f281773db1142f01dfb31e86f14a6c12505b6fe622ea9ab99f851e8c7026397"
+    },
+    {
+      "name": "inert_gate",
+      "expected_test": "test_inert_gate",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "762578ff504a028e44557ae371b289a940e46268da0afdc1c6df223cf6d60b41"
+    },
+    {
+      "name": "missing_gate",
+      "expected_test": "test_missing_gate",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "45eaea44e8716d71824b7683625da8313c400d0efd9f5d5ef2623f380bebacbf"
+    },
+    {
+      "name": "archive_hash",
+      "expected_test": "test_source_guards",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "e453652ec381a2dfff57f7c61665d8d05209d86c1031c77fde64aa2284cc5624"
+    },
+    {
+      "name": "archive_membership",
+      "expected_test": "test_source_guards",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "18cc2360b4920d35e4e86342d541b8988e26e0eed5b792b014572d7773be5859"
+    },
+    {
+      "name": "member_hash",
+      "expected_test": "test_source_guards",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "b61e8f2e1b40f2a56de8749db38d946a47e51578b0c9c3dbf32ca0614e44cdb2"
+    },
+    {
+      "name": "holdout_path",
+      "expected_test": "test_forbidden_member",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "eac7a2aa61a2923b29708b09c2ef6c287901758fb5e709ac3eed3ae2a4f25904"
+    },
+    {
+      "name": "validator_promotion",
+      "expected_test": "test_independent_validator",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "383e91340cd07563bbbbab3be6a94956dcff10bafba6be1afab537988ff41a1c"
+    },
+    {
+      "name": "validator_default",
+      "expected_test": "test_independent_validator",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "3c8476005cb47dbf7e76f9991f16673ce55bec85dfe2b6502ae9cc95513b8bc3"
+    },
+    {
+      "name": "validator_match",
+      "expected_test": "test_independent_validator",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "f6f3a4307816ec7192af9e31f0101fc8ea28b767f139ffde3d4fb7a902eaf5f0"
+    },
+    {
+      "name": "validator_convergence",
+      "expected_test": "test_independent_validator",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "8c74e15c94d93fd95caf7b791f6d94eede914b6e8b9aa62dbdba9b9aa2b31d96"
+    },
+    {
+      "name": "validator_repeat",
+      "expected_test": "test_independent_validator",
+      "exit_code": 1,
+      "outcome": "killed",
+      "expected_outcome_confirmed": true,
+      "output_sha256": "f6b6e1b5a11af41dd0c4afd3becbf6d73e8281a9ed04a28d5e86445df1079b1e"
+    }
+  ],
+  "restored": [
+    {
+      "test": "workers/aequilibrae_worker/test_external_distribution.py",
+      "exit_code": 0
+    },
+    {
+      "test": "scripts/modeling/s2_cordon/test_study.py",
+      "exit_code": 0
+    }
+  ],
+  "source_restored_exactly": true,
+  "blind_category": "Synthetic guards do not establish native assignment, observed accuracy, hosted execution or recovery after machine failure."
+}

@@ -1,0 +1,36 @@
+{
+  "synthetic_only": true,
+  "frozen_evaluator_changed": false,
+  "controls": [
+    {
+      "name": "harmless",
+      "exit_code": 0,
+      "outcome": "survived",
+      "output_sha256": "138b9ba41e1613e68605e4f328f5531c9e82c1675f7f09ab4428984c1267b283"
+    },
+    {
+      "name": "invalid_direct_read",
+      "exit_code": 1,
+      "outcome": "intended_failure",
+      "output_sha256": "2a6b39cdc43b28b963674101aee610e11a70387c94fbe84910b3002f04c02c34"
+    },
+    {
+      "name": "wrong_core_values",
+      "exit_code": 1,
+      "outcome": "intended_failure",
+      "output_sha256": "c1f36d360e7eb66c02ce3c4939de1d82f5d2087581c0289c2b9e5439c78ba377"
+    },
+    {
+      "name": "wrong_index",
+      "exit_code": 1,
+      "outcome": "intended_failure",
+      "output_sha256": "9643f7e86ceba374f85599175338d456a2271067109e828e8dd05c601edb1e47"
+    },
+    {
+      "name": "restored",
+      "exit_code": 0,
+      "outcome": "survived",
+      "output_sha256": "138b9ba41e1613e68605e4f328f5531c9e82c1675f7f09ab4428984c1267b283"
+    }
+  ]
+}

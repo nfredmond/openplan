@@ -1,0 +1,26 @@
+[
+  {
+    "path": "/home/nathaniel/.local/bin/python3.11",
+    "exists": true,
+    "sha256": "9e7f0dd93c77a32d07aa66631b48116101db6266701b292ebdc56a30d6cc7924"
+  },
+  {
+    "path": "scripts/modeling/requirements.txt",
+    "exists": true,
+    "sha256": "71b22c224a11dc61c367548b2a8c6700894a905f94365c159f69013c3f86519e"
+  },
+  {
+    "path": "workers/aequilibrae_worker/requirements.txt",
+    "exists": true,
+    "sha256": "e6c0b1da15e4be69ec1071178a61deb24a090f02cd322443914ccae34123b6ad"
+  },
+  {
+    "path": "data/modeling/s2-cordon-impedance-py311-2026-10-23/requirements-exact.txt",
+    "exists": true,
+    "sha256": "cf1a72c17d3a4a6aadc591c4141cbd4dd436103334ad8cce13ec8f7ae67a6205"
+  },
+  {
+    "command": "systemd-run",
+    "resolved": "/usr/bin/systemd-run"
+  }
+]

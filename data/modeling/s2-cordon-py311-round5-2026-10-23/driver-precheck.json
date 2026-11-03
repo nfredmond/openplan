@@ -1,0 +1,2450 @@
+{
+  "files": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+      "exists": true,
+      "sha256": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+      "exists": true,
+      "sha256": "9e7f0dd93c77a32d07aa66631b48116101db6266701b292ebdc56a30d6cc7924"
+    },
+    {
+      "path": "data/modeling/s2-cordon-impedance-2026-10-23/lock.json",
+      "exists": true,
+      "sha256": "37846a58bbfdf5f6621de38225ddb6557b2f172b4e0440cee20382ca253f3b9f"
+    },
+    {
+      "path": "data/modeling/s2-cordon-py311-round5-2026-10-23/verification-driver.py",
+      "exists": true,
+      "sha256": "d453c705cf4de63dda3c9b2577e11a1df4435c941441774e03822b0a894048d3"
+    },
+    {
+      "path": "scripts/modeling/activitysim_accepted_components.py",
+      "exists": true,
+      "sha256": "e87422583794bf56a895f5301e35d6dfc3b0dcb41258b76622af937e88519698"
+    },
+    {
+      "path": "scripts/modeling/activitysim_auto_ownership_estimation.py",
+      "exists": true,
+      "sha256": "459f0b510b0cf645a697dfa6658ce3126258b7ef76fe657a9dbd3877b1700bc1"
+    },
+    {
+      "path": "scripts/modeling/activitysim_auto_ownership_fit.py",
+      "exists": true,
+      "sha256": "696067fc3bfb73d63a44465375aa62913496b400f9ca3d53e124dd6b8f978580"
+    },
+    {
+      "path": "scripts/modeling/activitysim_demand_package.py",
+      "exists": true,
+      "sha256": "0953c70a7654535a36e735befebc2f45d77d152cd3664e042cbb7e2c3701a78a"
+    },
+    {
+      "path": "scripts/modeling/activitysim_mtc_inputs.py",
+      "exists": true,
+      "sha256": "5e9af6b973dc79efee7be1626016c501429f01e7c44dee9c38f7042f3bc37b1e"
+    },
+    {
+      "path": "scripts/modeling/agreement_accuracy_study.py",
+      "exists": true,
+      "sha256": "88b1957485776357ca9c23affa40d4e99cc91806af74c8f27ba8d861f124bff2"
+    },
+    {
+      "path": "scripts/modeling/agreement_study_registry.py",
+      "exists": true,
+      "sha256": "ca2a3c9bb4635ff46b0089fe96d3908dc8a7ea6f264c3cdd75c636f9f9df0b4e"
+    },
+    {
+      "path": "scripts/modeling/auto_counts.py",
+      "exists": true,
+      "sha256": "b2a67809adc915b70ed72cc82a4bfe3bb3a6be57f05fe53adfd9e116baee2f1e"
+    },
+    {
+      "path": "scripts/modeling/auto_ownership_fresh_holdout_registry.py",
+      "exists": true,
+      "sha256": "306d1bbb1de048a4e380f7e7202f1038859fd89d12c2bb4135bf58dadb4ef754"
+    },
+    {
+      "path": "scripts/modeling/bootstrap_county_validation_onramp.py",
+      "exists": true,
+      "sha256": "9d831e1fa2c3358a40b7cb25d3a45f598466d0220d872a03954bd79782776b75"
+    },
+    {
+      "path": "scripts/modeling/build_activitysim_input_bundle.py",
+      "exists": true,
+      "sha256": "7f90c9e0df35902702b2cf7c2949b3e5e3558ea59368d57ba3860e0d973f54d8"
+    },
+    {
+      "path": "scripts/modeling/build_behavioral_demand_evidence_packet.py",
+      "exists": true,
+      "sha256": "a98e6bd9b771d2861a90a6258762bbcf3f01ec174fb16dabd15620093069397e"
+    },
+    {
+      "path": "scripts/modeling/build_demand_package.py",
+      "exists": true,
+      "sha256": "bffd686401651ad1391b007466e33a6137f26168e4f76d86c2983e8f2b0d1eb1"
+    },
+    {
+      "path": "scripts/modeling/build_expanded_aadt_counts.py",
+      "exists": true,
+      "sha256": "b38244604a23403a02490aa1d0fcaac843e3ffb2b3af33bd7669cdd3d4ec5a4a"
+    },
+    {
+      "path": "scripts/modeling/calibrate_to_counts.py",
+      "exists": true,
+      "sha256": "9e5bc14bceeb7b1d462058c4a8be31d2cae8ee6c7b9f34d58b99ef02da2139d4"
+    },
+    {
+      "path": "scripts/modeling/census_pums.py",
+      "exists": true,
+      "sha256": "ef8234a8db8102f015271be5d3bb211b30d7f914afd1d5e14413fdf438204cd2"
+    },
+    {
+      "path": "scripts/modeling/check_county_onramp_manifest.py",
+      "exists": true,
+      "sha256": "070646ee69fd00901b3d0c6073d9529ff6306dbaf8c6a63cce16ccfe494d989b"
+    },
+    {
+      "path": "scripts/modeling/check_hpms_live_contract.py",
+      "exists": true,
+      "sha256": "8cdde660baa5f0d89557897276b198ea4c0a088d6ba4a106885ca670c3d717f3"
+    },
+    {
+      "path": "scripts/modeling/check_screening_runtime_smoke.py",
+      "exists": true,
+      "sha256": "9da74bde7d34f02b9cb389a913e381e3d1b2fcbca8f8c787af35a044f74a1db4"
+    },
+    {
+      "path": "scripts/modeling/common_population.py",
+      "exists": true,
+      "sha256": "51c0263b9ee0640294c9b5089d6e4bb422d908bd2254da514537a8c2674b752f"
+    },
+    {
+      "path": "scripts/modeling/compare_activitysim_auto_ownership.py",
+      "exists": true,
+      "sha256": "223a7d4005fe90d1090a226c39e41663be3523e16b45e319516a3df31055791e"
+    },
+    {
+      "path": "scripts/modeling/compare_behavioral_demand_outputs.py",
+      "exists": true,
+      "sha256": "80f84d1ce81632440fc82acf7331095cf60ec030e8fd0cbe468d2400482b72bc"
+    },
+    {
+      "path": "scripts/modeling/corridor_agreement.py",
+      "exists": true,
+      "sha256": "f1835d015de96001b0982ff3072c61899d898ee15fce48e026c7b6794d6f9254"
+    },
+    {
+      "path": "scripts/modeling/count_sources.py",
+      "exists": true,
+      "sha256": "158eba5e4b9adb826fea070375bffb182d9d4d011a4b1097c8d076e71833b811"
+    },
+    {
+      "path": "scripts/modeling/demand_conservation.py",
+      "exists": true,
+      "sha256": "22f43c0d6f5b049f2c439a78ecc53033bff49d8d44918756408d0815b82b22d8"
+    },
+    {
+      "path": "scripts/modeling/demand_package.py",
+      "exists": true,
+      "sha256": "e74344029a87f0c0a71777fd2f455ca120313fab9b88105ec02b23dd5f1fbcd1"
+    },
+    {
+      "path": "scripts/modeling/development_validation_sources.py",
+      "exists": true,
+      "sha256": "9bc36c840dd6af7c542167ad12232855e7b0e43bfff4cebdc395bc4ee2a9dd7b"
+    },
+    {
+      "path": "scripts/modeling/evaluate_auto_ownership_fresh_holdout.py",
+      "exists": true,
+      "sha256": "0c8df023d7ef4b219b1210d78a5b77910e1b658df111b4a0fbb97ce9ff626333"
+    },
+    {
+      "path": "scripts/modeling/evaluate_gateway_volume_study.py",
+      "exists": true,
+      "sha256": "9f0382e8a20dfc1787d528ea18ef0f12570005cd4d6da41b63579a84bd47e144"
+    },
+    {
+      "path": "scripts/modeling/external_demand_share.py",
+      "exists": true,
+      "sha256": "4dc0f4203ea0ad4aa9012b1517f2d8b150daadf18f45a0b84fd9f9806a44c272"
+    },
+    {
+      "path": "scripts/modeling/extract_activitysim_behavioral_kpis.py",
+      "exists": true,
+      "sha256": "ff267c324862e64cd8a92a8bc0ee4c0ea59127d1a5b3c78c7e88db6fdce9636a"
+    },
+    {
+      "path": "scripts/modeling/faf5_routing.py",
+      "exists": true,
+      "sha256": "d09574a7ae19a59edf9de7ee0baa571e57d102f07f77007b59c3ba9c404f3c14"
+    },
+    {
+      "path": "scripts/modeling/fit_mandatory_tour_frequency_candidate.py",
+      "exists": true,
+      "sha256": "43c44bc516cfb8269b2e5964b9c428bf5892c5c6cc2f187aeaf3e7e3f482f11f"
+    },
+    {
+      "path": "scripts/modeling/gamma_fit_analysis.py",
+      "exists": true,
+      "sha256": "81e8847f96fc9c26ba4c00cf63491022ecfbff81695cff3c59c2f211a0e17b8c"
+    },
+    {
+      "path": "scripts/modeling/gateway_counts.py",
+      "exists": true,
+      "sha256": "a989c14d659145df998e28bedca2562765750acc7c3a716d096cd62f9b49cc90"
+    },
+    {
+      "path": "scripts/modeling/gateway_volume_study_registry.py",
+      "exists": true,
+      "sha256": "4c902403533b036d59ea89a184d795cecdf12c5a661e09de25f5d3c2c58ebe3a"
+    },
+    {
+      "path": "scripts/modeling/generate_validation_scaffold.py",
+      "exists": true,
+      "sha256": "f8b7047a0291aa555c430c45cc15d392269c5f3239326c4ef16de2e1eaf13694"
+    },
+    {
+      "path": "scripts/modeling/hpms_count_source.py",
+      "exists": true,
+      "sha256": "7e1eb10a78d4a8fe14f6a8494d8403b1591146bb41be48a629034f66a00b0ab0"
+    },
+    {
+      "path": "scripts/modeling/hydrate_assignment_geometry.py",
+      "exists": true,
+      "sha256": "a7bc64c21e73fce3314393fdc35ff9ee642bacd81fffb8eff3b325c007744340"
+    },
+    {
+      "path": "scripts/modeling/ingest_activitysim_runtime_outputs.py",
+      "exists": true,
+      "sha256": "a750148903204f3b3dcb8f1b4c8cb8fb96294be5f0ab2ab540c128fdd78d5c3e"
+    },
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_2017_successor.py",
+      "exists": true,
+      "sha256": "be319ab981fc9742a6ba4c31c565a2019625af8f9311e377607fe373f5aa7998"
+    },
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_acceptance.py",
+      "exists": true,
+      "sha256": "1bf7f18e4dfca03d7b0b95b50889fd39c9ba9e9f685e448d1563463956a65e08"
+    },
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_acceptance_protocol.py",
+      "exists": true,
+      "sha256": "dbd13f8e7e1bc05a86d3b0f9575cf7202e3363a13f40b48831b5dea76d51179f"
+    },
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_candidate_registry.py",
+      "exists": true,
+      "sha256": "a21e40210634531aa9d827f2e5d250f26cb282c167be726a1716c4ebade030fe"
+    },
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_outcomes.py",
+      "exists": true,
+      "sha256": "4a039e0560315dec1d79029992a86cff755976c8d49331d7bd848672fcbd574b"
+    },
+    {
+      "path": "scripts/modeling/mandatory_tour_frequency_registry.py",
+      "exists": true,
+      "sha256": "9af1d18b51ea2c59d548e41151982fd02d961fe4da6c76345f6c8d992dd74caa"
+    },
+    {
+      "path": "scripts/modeling/model_validation_structural_diagnosis.py",
+      "exists": true,
+      "sha256": "8f4899377a1ca494d07716cc503d4a6301f0c2425e72d729db6effb1210731eb"
+    },
+    {
+      "path": "scripts/modeling/package_activitysim_coefficients.py",
+      "exists": true,
+      "sha256": "08ff1d47ab7dd9e1e8a3082525008b1bdb6b5dd71ae6d628379cf125f591b61f"
+    },
+    {
+      "path": "scripts/modeling/population_source_registry.py",
+      "exists": true,
+      "sha256": "c6d76d9fbf0fe1a973d8b4091ee9868056c06c74c910593fb7fcea614dd53720"
+    },
+    {
+      "path": "scripts/modeling/population_synthesis.py",
+      "exists": true,
+      "sha256": "c6a16de8255d2158dfdd0bdf2107f21c6457dcdb7c8d2efd951889c4b4294589"
+    },
+    {
+      "path": "scripts/modeling/prepare_auto_ownership_fresh_holdout.py",
+      "exists": true,
+      "sha256": "1eb2f9ffac7502d48edb6e900b4e84c9037568f284ecec685e84b7919d05f477"
+    },
+    {
+      "path": "scripts/modeling/prepare_development_validation_instruments.py",
+      "exists": true,
+      "sha256": "c08a5b60c7bb0b9d34e47f22eaac27dc0bd4ba190101ba546972d5620efbaa22"
+    },
+    {
+      "path": "scripts/modeling/prepare_mandatory_tour_development_source.py",
+      "exists": true,
+      "sha256": "7c8e9a068a51d44396a5331063a7569af69a818ded8efce5b04cc7493e24e963"
+    },
+    {
+      "path": "scripts/modeling/prepare_structural_demand_registry.py",
+      "exists": true,
+      "sha256": "dad4fa54d27e1c832320e11db3349308fb36db94bf7188783278a4b367b8c357"
+    },
+    {
+      "path": "scripts/modeling/prepare_validation_instrument_study.py",
+      "exists": true,
+      "sha256": "afcafc88530d148d80ee3817f6fd1558d4fc7e15debd791741649861923cd9b3"
+    },
+    {
+      "path": "scripts/modeling/prove_comparable_instrument_guards.py",
+      "exists": true,
+      "sha256": "bc61b5409c4c2c86601f2e741070e8a20138c18ab81b1744a529fa9427271de7"
+    },
+    {
+      "path": "scripts/modeling/prove_distributed_work_loading_guards.py",
+      "exists": true,
+      "sha256": "83d515fd8574dd5d5d39b5596f290db5d0e997d5b6c2899623299c067de4d44f"
+    },
+    {
+      "path": "scripts/modeling/prove_structural_demand_guards.py",
+      "exists": true,
+      "sha256": "bd3fc0bbc4fb2df53e4e2cf86c17fef2dccf492cabb5e1fd6cd6937e7f3eb878"
+    },
+    {
+      "path": "scripts/modeling/prove_structural_diagnosis_guards.py",
+      "exists": true,
+      "sha256": "c7f36b42a2133db44d6b9af7efc1ef4dae498cbbc2770db2b16787f9022e4820"
+    },
+    {
+      "path": "scripts/modeling/requirements.txt",
+      "exists": true,
+      "sha256": "71b22c224a11dc61c367548b2a8c6700894a905f94365c159f69013c3f86519e"
+    },
+    {
+      "path": "scripts/modeling/routed_taf_through_trips.py",
+      "exists": true,
+      "sha256": "a85c4ca0c3b76bad903298ea2407ad8c0029f65bb851afd1da4b3eabb7276636"
+    },
+    {
+      "path": "scripts/modeling/run_agreement_study.py",
+      "exists": true,
+      "sha256": "702f35bf37843229a92ba774f526e87263725739aed577b1e04b47a07ae60657"
+    },
+    {
+      "path": "scripts/modeling/run_auto_ownership_transfer_study.py",
+      "exists": true,
+      "sha256": "658a504090b6719be3db878d2783827080350ac7a3efdb108e1892125d6c02fd"
+    },
+    {
+      "path": "scripts/modeling/run_behavioral_demand_prototype.py",
+      "exists": true,
+      "sha256": "6857667c6b14de236cbc378cac3fbeb28099670b4f859f83403fc359f00b0c99"
+    },
+    {
+      "path": "scripts/modeling/run_comparable_observation_study.py",
+      "exists": true,
+      "sha256": "1b6d45bbe5e041ad3c9dbf6c43872afb686bcc4db757ba745b9dea878836226b"
+    },
+    {
+      "path": "scripts/modeling/run_development_validation_study.py",
+      "exists": true,
+      "sha256": "5ab0dc5a43a017bbf8665a6346b447373f917c751efb0bb1caf13056232cd274"
+    },
+    {
+      "path": "scripts/modeling/run_distributed_work_loading_study.py",
+      "exists": true,
+      "sha256": "608c631c249cbeb0f3a712c3ef2537eca0b6bd6fa1bb0df6ec85a34e46e4510a"
+    },
+    {
+      "path": "scripts/modeling/run_gateway_volume_study.py",
+      "exists": true,
+      "sha256": "3135cdbbb3a1ca6042093a5e703e2ed984c7999ba38558f146e2230ffb16284a"
+    },
+    {
+      "path": "scripts/modeling/run_screening_model.py",
+      "exists": true,
+      "sha256": "a611ec9655b1916562d01e066dd8ab37af6e091cbc198c0a6287ee92700f5101"
+    },
+    {
+      "path": "scripts/modeling/run_structural_demand_diagnosis.py",
+      "exists": true,
+      "sha256": "959e0db0629307e54c2a30b0e2c2b782a5f2d41cdf957e8c8ea2b67cfe578614"
+    },
+    {
+      "path": "scripts/modeling/run_validation_structural_diagnosis.py",
+      "exists": true,
+      "sha256": "9730d5e298a28d6228866623fadb1047dc661c6cae35d52615c695da5c15588e"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/evaluate.py",
+      "exists": true,
+      "sha256": "1f178c751d27b53c6f7caad127d5a5786e5b503c14c8b048a77e7d3c1790d003"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/evaluate_py311.py",
+      "exists": true,
+      "sha256": "397428393e07225fa3cebc4a2505380afd4933d63b7a126413096a1f10f98b72"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/evaluate_successor.py",
+      "exists": true,
+      "sha256": "0e5ae3248f81f3b4be7b2d79c3f76de95d42650611bf11fbfe532c7c34573445"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/prove_guards.py",
+      "exists": true,
+      "sha256": "2d866d808290b007710e44cae2819ffc54fc9ad8d65c6bb1c1f76b9861ceaa0a"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/prove_measurement.py",
+      "exists": true,
+      "sha256": "b58b1af1caf84dc647409285412c21964d21c5528f00ae722bd6d5be3768808c"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/prove_native_omx.py",
+      "exists": true,
+      "sha256": "bf00f11f37143ad05f9021ec2a531a37d0bc2416456eaba5c4a399bdb2aa51e5"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/prove_py311_successor.py",
+      "exists": true,
+      "sha256": "3bf159462533b2bc5a86607e6e5f6aaa96a51e4b141920d7b43c5594a8677d90"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/prove_successor.py",
+      "exists": true,
+      "sha256": "8dee7ecb48d2ab24dff2d7801efdb8cbd94f2679f96f88fec829acdfc09c387c"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/test_measurement_contract.py",
+      "exists": true,
+      "sha256": "7040bfcf47b24e2977afe6887b9c082ae04547c2fc6c54acd2f4badcffb046de"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/test_native_omx_contract.py",
+      "exists": true,
+      "sha256": "28365cdceb14c24ea36cfa2fc40df6f0dd622219293b3412c4a2fc80f1fc9631"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/test_py311_successor.py",
+      "exists": true,
+      "sha256": "35ab193ed2f18531b319e8630721b5b2c65095aa55765d7803915c3383c8ec31"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/test_study.py",
+      "exists": true,
+      "sha256": "68948617b481e2d61b2feb06412c484c8213d109e8f11f986836b2065e7ece84"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/test_successor.py",
+      "exists": true,
+      "sha256": "b68536a564d23943c50e796ec30b605e4d568f91f17ea22bcb8515a3a2850df4"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/trace_retained_measurement.py",
+      "exists": true,
+      "sha256": "c5c58097e202c13a45f4b1821141758d5f3aa4b51edcda37da4151cc1d11b4b8"
+    },
+    {
+      "path": "scripts/modeling/s2_cordon/validate.py",
+      "exists": true,
+      "sha256": "e945bdc8faf5f7039beeb19ecb7e63da6a338278d2f64d74a1e21c23f7259d29"
+    },
+    {
+      "path": "scripts/modeling/screening_boundary.py",
+      "exists": true,
+      "sha256": "07c169615bb63a48f3f650a479d3b04af2b12991069cb6855845a7074cf57120"
+    },
+    {
+      "path": "scripts/modeling/screening_bundle.py",
+      "exists": true,
+      "sha256": "c68fbed44735450e6e30edc5f5211c3a3b0ab1c2ce078b0c708367dc114aa8bf"
+    },
+    {
+      "path": "scripts/modeling/screening_metrics.py",
+      "exists": true,
+      "sha256": "0ba6a36bb7aa323408e8957bb14bad15b1dd120b484e8734ba3b4136a3fb7bff"
+    },
+    {
+      "path": "scripts/modeling/screening_runtime.py",
+      "exists": true,
+      "sha256": "98540aae86c5a53168440b6051585201843cf32289b569652e76dc2fd6fedb19"
+    },
+    {
+      "path": "scripts/modeling/synthetic_population.py",
+      "exists": true,
+      "sha256": "6e8b57fcad1d8e1efbc6882e76190c0bc45659b7e8fbc140fd2cf774bd3f0877"
+    },
+    {
+      "path": "scripts/modeling/test_census_key_failure.py",
+      "exists": true,
+      "sha256": "6dcaedc15f64f7112648f4a96837bb0d75101550b16f82f81170bdc63bdb4bd0"
+    },
+    {
+      "path": "scripts/modeling/test_count_sources.py",
+      "exists": true,
+      "sha256": "5cd3a100ad4af75743901e2074e3050034dea1d9355d70df60802426d8eb0c6b"
+    },
+    {
+      "path": "scripts/modeling/test_screening_metrics.py",
+      "exists": true,
+      "sha256": "1797727af5a1b791921ca4eddfadd3f4ac942d330214b2f923fbd12fed06f838"
+    },
+    {
+      "path": "scripts/modeling/tests/test_accuracy_by_road_class.py",
+      "exists": true,
+      "sha256": "9f955a98306a9f994a6acce1c70bdcf2ae88b4e7e9900432258e177cdce247db"
+    },
+    {
+      "path": "scripts/modeling/tests/test_activitysim_accepted_components.py",
+      "exists": true,
+      "sha256": "d0c0a1b263044b121a46b17f2c0ff408e81f3f4cf5e0bc6371ab9ed407e539b5"
+    },
+    {
+      "path": "scripts/modeling/tests/test_activitysim_auto_ownership_estimation.py",
+      "exists": true,
+      "sha256": "0c09dd688eb870e39fc464bbaa4b41b90804b47d6044273a88735cba892ed29c"
+    },
+    {
+      "path": "scripts/modeling/tests/test_activitysim_auto_ownership_fit.py",
+      "exists": true,
+      "sha256": "f6487fe5318098c27f970cc15817ccab9912cb02ce259a14bfd9d79e15950e30"
+    },
+    {
+      "path": "scripts/modeling/tests/test_activitysim_demand_package.py",
+      "exists": true,
+      "sha256": "93feab67d0c0f3a5981b56fbb45a40797dc60821dccd725933f9eb1f44ded87c"
+    },
+    {
+      "path": "scripts/modeling/tests/test_activitysim_mtc_inputs.py",
+      "exists": true,
+      "sha256": "db44076805ae9fd3284bdc814db47aff7ac4f502afaffc17044686ad20d87a16"
+    },
+    {
+      "path": "scripts/modeling/tests/test_agreement_accuracy_study.py",
+      "exists": true,
+      "sha256": "3d3a51fd5d6f79d3b89f58f85370ca2c99346aef4642ae06140b69d54265e729"
+    },
+    {
+      "path": "scripts/modeling/tests/test_agreement_study_registry.py",
+      "exists": true,
+      "sha256": "2fe7c0b52edd83b55a01b0f4bcf89e0653d7580ce9c9f4b56ce69bc438ec2eae"
+    },
+    {
+      "path": "scripts/modeling/tests/test_assignment_convergence.py",
+      "exists": true,
+      "sha256": "45868efaedea8b3b317880d36d3af7dda2ca6b359d87c6f1b6429348391d48b7"
+    },
+    {
+      "path": "scripts/modeling/tests/test_assignment_convergence_settings.py",
+      "exists": true,
+      "sha256": "64da2d796f5c4c19275a5ed5cee78c3e7072c54d3073ece8337be52c559c4fe6"
+    },
+    {
+      "path": "scripts/modeling/tests/test_auto_counts.py",
+      "exists": true,
+      "sha256": "9bde1b64f5659880ec5456853ead8e4fac870549e05afa4ca22f46564a846be2"
+    },
+    {
+      "path": "scripts/modeling/tests/test_auto_ownership_fresh_holdout_execution.py",
+      "exists": true,
+      "sha256": "53045ed18e76302e4cc3a9290536b54403b305c41e222ab141bdc2680344e195"
+    },
+    {
+      "path": "scripts/modeling/tests/test_auto_ownership_fresh_holdout_registry.py",
+      "exists": true,
+      "sha256": "d2af3ea0a133c57b60c562d2ea6c60df8687725474e64ca77848baeb4b5b83f2"
+    },
+    {
+      "path": "scripts/modeling/tests/test_bootstrap_county_validation_onramp.py",
+      "exists": true,
+      "sha256": "3f82dfe8b85fc4a6ce59d8f042fec762b5686298ef66ae82685a63343fcb4047"
+    },
+    {
+      "path": "scripts/modeling/tests/test_build_activitysim_input_bundle.py",
+      "exists": true,
+      "sha256": "2436c426c85f008e358d28d5f485c5149b5b338ce53eef1bc3b1e4a3fafe9567"
+    },
+    {
+      "path": "scripts/modeling/tests/test_build_behavioral_demand_evidence_packet.py",
+      "exists": true,
+      "sha256": "6453be10ded7d1dcddb1a9b3b5e6ca70525c1701cb7afdce663a503a7b0b2ee1"
+    },
+    {
+      "path": "scripts/modeling/tests/test_build_demand_package.py",
+      "exists": true,
+      "sha256": "a5a31b88e7731006e47f57c98c4ac761af2b609b956f97670934e580704d1211"
+    },
+    {
+      "path": "scripts/modeling/tests/test_build_expanded_aadt_counts.py",
+      "exists": true,
+      "sha256": "7a5af6d2ce58f78c584e37e981329e2af39cea093336bd0e5a4af24e5993ab5d"
+    },
+    {
+      "path": "scripts/modeling/tests/test_bundle_population_source.py",
+      "exists": true,
+      "sha256": "54893e48d425b674ce8b9cc83215b50a07d76eeb7af12eb8333ece88d68d21c5"
+    },
+    {
+      "path": "scripts/modeling/tests/test_calibrate_to_counts.py",
+      "exists": true,
+      "sha256": "7e195bab69be84963d3ce9ef5cd482f88331d79cb00568e8d2f5c4fe794c3af5"
+    },
+    {
+      "path": "scripts/modeling/tests/test_census_pums.py",
+      "exists": true,
+      "sha256": "f3b79317d49861bbf5f48622a63c254a8f7fcdbf7c911dba01d0ad4bbde388e4"
+    },
+    {
+      "path": "scripts/modeling/tests/test_common_population.py",
+      "exists": true,
+      "sha256": "1730fbcb3a733b7fb17ba9c2fb242aeda2a8d424b880b7d1186f4f40017dcb1f"
+    },
+    {
+      "path": "scripts/modeling/tests/test_common_population_package.py",
+      "exists": true,
+      "sha256": "4e195840658553c9073ba2b3ed42f033597d83e9199d725dfd0b25de4dc2c2be"
+    },
+    {
+      "path": "scripts/modeling/tests/test_comparable_study_matcher_source.py",
+      "exists": true,
+      "sha256": "1571a1290e9819a6db80756b733acee3fb9d78b04a0d1a1d825b026a3d69ec5d"
+    },
+    {
+      "path": "scripts/modeling/tests/test_compare_activitysim_auto_ownership.py",
+      "exists": true,
+      "sha256": "b2b4424c6ae0827f1634b438130b5bc884ba7f965a8b70d974eacb5417602fbb"
+    },
+    {
+      "path": "scripts/modeling/tests/test_compare_behavioral_demand_outputs.py",
+      "exists": true,
+      "sha256": "1f7d538dc4d02e7bf1cea40a1d02d65c1c9398dbcfd18589d7fd0d9645413d6c"
+    },
+    {
+      "path": "scripts/modeling/tests/test_connector_class_weight.py",
+      "exists": true,
+      "sha256": "8f4ed40a52360c8fc4927d05a33d445f26b1c9bcdf884a921a9769658788fddc"
+    },
+    {
+      "path": "scripts/modeling/tests/test_corridor_agreement.py",
+      "exists": true,
+      "sha256": "4a1aed24987ed9c43914c9c1d7722bf0fa589ced48e9993233d352b107d6b04a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_count_provenance.py",
+      "exists": true,
+      "sha256": "0824db56095aeaf33825f15753c7fc56a89d5049fc8e4666cffa98094bfcdc48"
+    },
+    {
+      "path": "scripts/modeling/tests/test_count_set_clipping.py",
+      "exists": true,
+      "sha256": "e894f9dd62abd772dd4ed0537cf8b980114b0683c8dd593436fc024e11cf3db1"
+    },
+    {
+      "path": "scripts/modeling/tests/test_demand_conservation.py",
+      "exists": true,
+      "sha256": "ecd32f8763f5fc12e9d8a83e984f41a4662ce14f46cdf4b12a4ad05722d3fde1"
+    },
+    {
+      "path": "scripts/modeling/tests/test_demand_package.py",
+      "exists": true,
+      "sha256": "2794536f8e2f68e3a1b2a00d7a99a8f5f75c787c13a1ea2ff8579a30c70e632a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_directional_refusal.py",
+      "exists": true,
+      "sha256": "6bd06cf27f68014b8e7398fe3b6221ba764de3d266b755813fc3121e1cbba675"
+    },
+    {
+      "path": "scripts/modeling/tests/test_distributed_work_loading.py",
+      "exists": true,
+      "sha256": "d49b220445c79887191d5ef7f88e2402a8c83e8463289a447b5b362a3fe7012a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_evaluate_gateway_volume_study.py",
+      "exists": true,
+      "sha256": "c0d20309d0037f8c4d3ca53fa62f2be978665ae8c10b96b817f9dc7e55d84fb9"
+    },
+    {
+      "path": "scripts/modeling/tests/test_expanded_count_spatial_index.py",
+      "exists": true,
+      "sha256": "5ccc977878268e82e33d16c413bd61babe0a86fdf5fca7b8d00ab90e19312ceb"
+    },
+    {
+      "path": "scripts/modeling/tests/test_external_demand_share.py",
+      "exists": true,
+      "sha256": "303b8c266b13b479a4c202c0fb976c22bec81588bd8642260bd4410d12dbfbbd"
+    },
+    {
+      "path": "scripts/modeling/tests/test_external_gateway_zones.py",
+      "exists": true,
+      "sha256": "e46d58a67b3674ec9f80aa8c65a0b88d3fc8168df0df2a85888227200f7cc5ed"
+    },
+    {
+      "path": "scripts/modeling/tests/test_external_passthrough.py",
+      "exists": true,
+      "sha256": "29b9141479bed296d2dcaaf1d7bd5f0bd8871c92279e53abc129e0050bf462f8"
+    },
+    {
+      "path": "scripts/modeling/tests/test_extract_activitysim_behavioral_kpis.py",
+      "exists": true,
+      "sha256": "97dc04d2bd9040d75128abb1d1699d1288e1bc1727d059111eaf543218e57e14"
+    },
+    {
+      "path": "scripts/modeling/tests/test_faf5_routing.py",
+      "exists": true,
+      "sha256": "1daa88907e825d9a7328b9e261b0aab6fca269063b0df29cf2ba1e3066bcf438"
+    },
+    {
+      "path": "scripts/modeling/tests/test_fit_mandatory_tour_frequency_candidate.py",
+      "exists": true,
+      "sha256": "310bef694f6cce564a0502f4ce3e0086ceb3cf9bf5f77a29f97d36f8f693352e"
+    },
+    {
+      "path": "scripts/modeling/tests/test_fresh_osm_mode_import_paths.py",
+      "exists": true,
+      "sha256": "1dc33a2e82a9578b85659d69394d21813386c7c90d6ca3bf87477012059191f5"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gamma_fit_analysis.py",
+      "exists": true,
+      "sha256": "9537e30793f17a13e1e6ac9ce5fd7cf94655bf94e38c228a5869f28ce568d106"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gamma_multiplier.py",
+      "exists": true,
+      "sha256": "3e09f1c660085df108796d1682d95423cc25f50b2df6496f5cadac2e16650d84"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gateway_cap.py",
+      "exists": true,
+      "sha256": "4f7bbabe27180d15c900ccabd41908c683aa2690aacafe85c996923b5dc7f326"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gateway_counts.py",
+      "exists": true,
+      "sha256": "526a58029720f6a357d86633cbe06af6358310f12857c7b12a40ef465208edcd"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gateway_seeding_wiring.py",
+      "exists": true,
+      "sha256": "9ad14f2873f9f7560f6bf5f0170e8b96d2e62f176602655daa54690999fced9a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gateway_volume_driver_wiring.py",
+      "exists": true,
+      "sha256": "34b67f80ca45812fbf52e895e5e08ca3ca44248571f621a32eb56c0191bb65db"
+    },
+    {
+      "path": "scripts/modeling/tests/test_gateway_volume_study_registry.py",
+      "exists": true,
+      "sha256": "4a57d277f3ceb3aefccd25f14a13634755698b0e02b8e561525568a9f132a16f"
+    },
+    {
+      "path": "scripts/modeling/tests/test_generate_validation_scaffold.py",
+      "exists": true,
+      "sha256": "d5281663e856cd79b8cd2f0d5b237ba9f19961cd009fd9af053d77f0269025ab"
+    },
+    {
+      "path": "scripts/modeling/tests/test_hpms_count_source.py",
+      "exists": true,
+      "sha256": "fb02c5cbee58e3fdc85f377bc41bcc2623ebd7a887cc29f4f0cb6cd7e94b9b99"
+    },
+    {
+      "path": "scripts/modeling/tests/test_ingest_activitysim_runtime_outputs.py",
+      "exists": true,
+      "sha256": "3b1c1a35dfad1a281e41d69c1f0d78bed17e25d5ab1863806b918bba38c125fa"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_2017_custody.py",
+      "exists": true,
+      "sha256": "c4e486128e6e5193c75432f4a6ca13fef10609f8713304df78b98afd97d9d808"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_2017_successor.py",
+      "exists": true,
+      "sha256": "657026ca14b518155528571da99f8c175ec88d9267d22ec7792412fa96da5fd2"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_acceptance.py",
+      "exists": true,
+      "sha256": "39273e48a27c5967cbc8508329f1886959018c976bc4fbcbe52368a0d9bd739b"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_acceptance_protocol.py",
+      "exists": true,
+      "sha256": "4b0b8879037dc34135c29748b7c6b4bed81cfd0bc866749272d577c79e1b0806"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_candidate_registry.py",
+      "exists": true,
+      "sha256": "7dc778809cbb27199bd7d56d540b7ab629cd20dc413356663ed47e413ad02b33"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_outcomes.py",
+      "exists": true,
+      "sha256": "1ee4926cacc7df8f6f4c8a6110fa1204bf3a4cb1f3736b98ad8545ab2b3e2f98"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mandatory_tour_frequency_registry.py",
+      "exists": true,
+      "sha256": "ec67c1b392ab0efcca3ffc76ab080c1362d5436ed41e8290202f1ab1e44fdf1e"
+    },
+    {
+      "path": "scripts/modeling/tests/test_mode_split.py",
+      "exists": true,
+      "sha256": "94ba3177606dc0b2a4b84a83416bbe5e10fc229c426063e9c58299784efc393d"
+    },
+    {
+      "path": "scripts/modeling/tests/test_model_structural_input_audit.py",
+      "exists": true,
+      "sha256": "ed23714724f2179b82648984bd8fe72931b5c8ff7fa9e25e0a7a28e52a5055b1"
+    },
+    {
+      "path": "scripts/modeling/tests/test_model_validation_structural_diagnosis.py",
+      "exists": true,
+      "sha256": "d14df11d46850062b59f36dcf75ceb06854f345a7b8a61a8e946c6d3deb24c7a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_no_test_hides_below_its_runner.py",
+      "exists": true,
+      "sha256": "fcd02fb4ca36747910a4064bd3ff240c10b24d63f3edaf7cc5c9015adaea16f4"
+    },
+    {
+      "path": "scripts/modeling/tests/test_package_activitysim_coefficients.py",
+      "exists": true,
+      "sha256": "d2a55dbc7c4ee64be52570cb4c7022e12cab4dcf764069adede3cfc3036b4d03"
+    },
+    {
+      "path": "scripts/modeling/tests/test_person_trips_to_vehicles.py",
+      "exists": true,
+      "sha256": "009f3236d6979e27b48a5a21c5b3cf8765a3626d13df81204df96822c034ea61"
+    },
+    {
+      "path": "scripts/modeling/tests/test_population_source_registry.py",
+      "exists": true,
+      "sha256": "cc31f79163b5e09213ab77507ce111e12894469443e72ab75bf6cc2ce82a7102"
+    },
+    {
+      "path": "scripts/modeling/tests/test_population_synthesis.py",
+      "exists": true,
+      "sha256": "70e2314ec355ad88145edae321a05677497d7851e0af0b806a76bc490fa288c4"
+    },
+    {
+      "path": "scripts/modeling/tests/test_preparation_no_overwrite.py",
+      "exists": true,
+      "sha256": "9af33b6a159614f4eeb04e728f56cb4d949c21fa041dc7cbea5e6aab993239a7"
+    },
+    {
+      "path": "scripts/modeling/tests/test_prepare_mandatory_tour_development_source.py",
+      "exists": true,
+      "sha256": "04e0bc7a5add2297fea4109b0a77eb6759cfbbae5183f443bfb76cf74cc2ec79"
+    },
+    {
+      "path": "scripts/modeling/tests/test_prepare_validation_instrument_study.py",
+      "exists": true,
+      "sha256": "1285a427fd1d05815a7b326c3dbd8888a8194b04d39dd6529fb87d97cc86779b"
+    },
+    {
+      "path": "scripts/modeling/tests/test_reuse_counts_from_run.py",
+      "exists": true,
+      "sha256": "ab3de29e045e958dab04acba41817b1e2f5284e9c81672b58a2252f2fde1b807"
+    },
+    {
+      "path": "scripts/modeling/tests/test_reuse_network_from_run.py",
+      "exists": true,
+      "sha256": "2f233ca4fe4c6e893cf6d4057fcfab6daf82e57f7365ebde72bbed93080303dc"
+    },
+    {
+      "path": "scripts/modeling/tests/test_routed_taf_through_trips.py",
+      "exists": true,
+      "sha256": "3dccc9852167ca7b1e88f957ab84861fca8e09308b9b0821d6b6a3a3f8460f7c"
+    },
+    {
+      "path": "scripts/modeling/tests/test_run_agreement_study.py",
+      "exists": true,
+      "sha256": "58fd80e7b830f6b3f1eb71afd9c4f6cfa176e58361daa87934135c0ee33df463"
+    },
+    {
+      "path": "scripts/modeling/tests/test_run_auto_ownership_transfer_study.py",
+      "exists": true,
+      "sha256": "f34d56f88678fb016d36682ff025d399c5ca757f790f7f14680e658520ae8baa"
+    },
+    {
+      "path": "scripts/modeling/tests/test_run_behavioral_demand_prototype.py",
+      "exists": true,
+      "sha256": "42aeaa4ba72ba38bc546da172cf60d464a82cc0dad54f080fae1365e969ecf98"
+    },
+    {
+      "path": "scripts/modeling/tests/test_run_development_validation_study.py",
+      "exists": true,
+      "sha256": "a3a386b813740e7fee7c4692782312cb17113c74deb2774accf28d24d744e1bc"
+    },
+    {
+      "path": "scripts/modeling/tests/test_run_gateway_volume_study.py",
+      "exists": true,
+      "sha256": "d86318f93b7feb6d4c3fd4798013d925f0cfd8fd43969ce8a4912e971da56563"
+    },
+    {
+      "path": "scripts/modeling/tests/test_screening_runtime_speed.py",
+      "exists": true,
+      "sha256": "41654f0e3d112712e3c7d712250fd92deae89baa5445eef40507566517167b52"
+    },
+    {
+      "path": "scripts/modeling/tests/test_sealed_study_runner.py",
+      "exists": true,
+      "sha256": "17eb36ade7c9641fe0cc08f568468baee935a0c038359e5733dbc18dcd635ffa"
+    },
+    {
+      "path": "scripts/modeling/tests/test_shared_model_links.py",
+      "exists": true,
+      "sha256": "4c599e5704b0b5fad5607ab5127c1f4cefa9e9b5384544d899b77bf57f174b66"
+    },
+    {
+      "path": "scripts/modeling/tests/test_station_role.py",
+      "exists": true,
+      "sha256": "d267237f0c633462f91dec0953a7ddf9c9f160dc9ed15570556072a6c88a7a4b"
+    },
+    {
+      "path": "scripts/modeling/tests/test_streaming_zip_csv.py",
+      "exists": true,
+      "sha256": "80e45b6ab1af3f0bd2274c99e9254704289de1bbc7257a0af3343b556c34b3b5"
+    },
+    {
+      "path": "scripts/modeling/tests/test_structural_preparation_files.py",
+      "exists": true,
+      "sha256": "39056d535630456eb975330c766121af769822ebcfd50f53feae3d1c423867e8"
+    },
+    {
+      "path": "scripts/modeling/tests/test_suites_import_main_without_credentials.py",
+      "exists": true,
+      "sha256": "9b2304eeb3c8d9b862787a7f311522388ecbc30e1c93a80c8901d92fa3def05c"
+    },
+    {
+      "path": "scripts/modeling/tests/test_synthetic_population.py",
+      "exists": true,
+      "sha256": "61d0374637b611dd7fbaf4acda5b88b375ebec41829e63030d6778e46ee9adaf"
+    },
+    {
+      "path": "scripts/modeling/tests/test_through_trips_taf.py",
+      "exists": true,
+      "sha256": "a678d017184501bad773ad67cf535f9894d6b42c01e3fa72c34c5fd427bd3dcc"
+    },
+    {
+      "path": "scripts/modeling/tests/test_tmas_count_source.py",
+      "exists": true,
+      "sha256": "ded2aa4f95a0261a8864d87d8cd83808e83b9d97a1774179e2718b3c7bc23b5a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_us_nhts_diaries.py",
+      "exists": true,
+      "sha256": "fb346f458292bafc938810fefec1fd591248c65bc3546ac9315acd1a5f182642"
+    },
+    {
+      "path": "scripts/modeling/tests/test_us_nhts_survey.py",
+      "exists": true,
+      "sha256": "16efa309d8ed9ca3fb52caf40cd7596417e5d1f247a14a487e991b980d96b12e"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_bundle_identity.py",
+      "exists": true,
+      "sha256": "95284321c013ce4c32d854345121686b26ce08f4bdccb975875252627ea653b3"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_input_custody.py",
+      "exists": true,
+      "sha256": "4726b9b6edd8ef1a590394c5ba538a5b36eb6073dfed783de68b64fed749fca3"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_instrument.py",
+      "exists": true,
+      "sha256": "16de7bd9ddcd039f3d4ad630ffb73c202144b4be53bd11826ff998456b22d407"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_instrument_v2.py",
+      "exists": true,
+      "sha256": "fb577cd88759b5e683fb5984872fe41c8919437c9268d0cbabdb0cfed3ba996b"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_output_alias.py",
+      "exists": true,
+      "sha256": "74ed7f05e69df7db94d0c65fdee8fdabe89208b9f39821c8efb8a0ae1e91ca36"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_output_identity.py",
+      "exists": true,
+      "sha256": "cb213f2c32115e4647e94b2ce55f63f76959a3b4db5e4f8d30d9088101074443"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_prepared_context.py",
+      "exists": true,
+      "sha256": "5b46ad57e3d905a8981b33a25bc943d0fff3b7d27417b54a37aa76467521eaad"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_readiness_records.py",
+      "exists": true,
+      "sha256": "14aed8256e94ce33df90bef8f86ac4415501d8ceb15a26e7071a74f1c3065b32"
+    },
+    {
+      "path": "scripts/modeling/tests/test_validation_source_records.py",
+      "exists": true,
+      "sha256": "686b384355bdacca595a86c356fc1eeaaa5540e188caf131441a2638913b714a"
+    },
+    {
+      "path": "scripts/modeling/tests/test_vmt_sources.py",
+      "exists": true,
+      "sha256": "5dd5467294ad53b555539e8031724d411d5a4c4ec83ed93eb30aee5155066139"
+    },
+    {
+      "path": "scripts/modeling/tests/test_zone_geography.py",
+      "exists": true,
+      "sha256": "02701915142a893508c2bea515a47341c2f697ee86510887a6bfe0a2ac4979d3"
+    },
+    {
+      "path": "scripts/modeling/through_trips_taf.py",
+      "exists": true,
+      "sha256": "a20cdc9a88190a40a30de29ec000029b90f83dbd9b0fa7fd1e300f483715b141"
+    },
+    {
+      "path": "scripts/modeling/tmas_count_source.py",
+      "exists": true,
+      "sha256": "a98d94609b3d91f284a5f0cc7c8eeb4f7ee45cb863082ba4eac085cb08f97218"
+    },
+    {
+      "path": "scripts/modeling/us_census_divisions.py",
+      "exists": true,
+      "sha256": "22e205e63f1deb69cc3fb6d63003a0d5645469649a8de97cf7e6d10314279081"
+    },
+    {
+      "path": "scripts/modeling/us_lodes8_work_loading_adapter.py",
+      "exists": true,
+      "sha256": "e3d5871e095048b065d7b7885472f83fcf74578407baf6522c1009f469829af0"
+    },
+    {
+      "path": "scripts/modeling/us_nhts_diaries.py",
+      "exists": true,
+      "sha256": "64ff0a975c7123df637108d5c5ac3045c3280ed0f5380e8790a235fb29816092"
+    },
+    {
+      "path": "scripts/modeling/us_nhts_survey.py",
+      "exists": true,
+      "sha256": "406dda991526f3dc2ff6390f3cf19b32c9d7ad315b427a4e96f464dedebaf424"
+    },
+    {
+      "path": "scripts/modeling/us_observed_traffic_adapter_v2.py",
+      "exists": true,
+      "sha256": "9654a77c24f55e53bf3a1bdd70e85a1b54902d2f7bca9771ac18b00e64c1e9de"
+    },
+    {
+      "path": "scripts/modeling/validate_screening_observed_counts.py",
+      "exists": true,
+      "sha256": "750d6c54690d1f60f38f73ceb1d26bd4220729ed73aed5c39d425caf5031714b"
+    },
+    {
+      "path": "scripts/modeling/validation_instrument.py",
+      "exists": true,
+      "sha256": "78a67a02125db21eb35d4cdf6fdf4dbd44e15296d5b6d536f8c7377aa51f2aec"
+    },
+    {
+      "path": "scripts/modeling/validation_instrument_v2.py",
+      "exists": true,
+      "sha256": "efcc1b5b7caea645ed5db4af83d6cded1464a1962bdd1abbefa31dbb6e0a848f"
+    },
+    {
+      "path": "scripts/modeling/verify_comparable_observation_study.py",
+      "exists": true,
+      "sha256": "f355a08be847870cf0be9ad0e39bb8fcd6395b01b0f220b20863847454a58424"
+    },
+    {
+      "path": "scripts/modeling/verify_distributed_work_loading_study.py",
+      "exists": true,
+      "sha256": "bc37e044eb2a31ca4d8e2160212724e43e0059b6874d88a8bc4e3791dc44268f"
+    },
+    {
+      "path": "scripts/modeling/vmt_sources.py",
+      "exists": true,
+      "sha256": "fcf73316b3dd33ffacad9374d5f226bc5b935e366e652276cb686feabbac8c64"
+    },
+    {
+      "path": "scripts/research/sealed_study.py",
+      "exists": true,
+      "sha256": "3194d188d27b791ba1e9160ab619329ee95a561dca46b20358eb396534e63ca7"
+    },
+    {
+      "path": "scripts/run-local-modeling.sh",
+      "exists": true,
+      "sha256": "088887ac02464c3e26efb8df4069cef1d731014794f17289bd4e72042f12e996"
+    },
+    {
+      "path": "workers/aequilibrae_worker/Dockerfile",
+      "exists": true,
+      "sha256": "78478d2b74d1235d40f69db2c9ddd52492c2f25fb860fad541244d7d8c69471d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/assignment_progress.py",
+      "exists": true,
+      "sha256": "467a9cb727465aa9e7a22038ffa8c0f4547ec0158bb257ae0dc589894c5dc958"
+    },
+    {
+      "path": "workers/aequilibrae_worker/assignment_runtime.py",
+      "exists": true,
+      "sha256": "4fd82e83b0ac108df83c404bbe048074a94e1843c8c3a37b78c7e2a54a8045fc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/assignment_settings.py",
+      "exists": true,
+      "sha256": "1e88e0417a2949958e0b24a345e1ed38e6e208aed225d503acfcb790db71e75e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/build_block_group_package.py",
+      "exists": true,
+      "sha256": "94b81fcf3b63bbe47e86364c7dc2bc83bae2f439f8e24dd7790d920f74e62c9a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/calibration.py",
+      "exists": true,
+      "sha256": "c62581932cb78d8ab29f9d137421a0b1f53ff9d0964389a39cc1df2ef56129db"
+    },
+    {
+      "path": "workers/aequilibrae_worker/centroid_geometry.py",
+      "exists": true,
+      "sha256": "e0693e3128a8961aa6b6aa85210c82edd041d26d2ed362a2ecd6063bbb9132ea"
+    },
+    {
+      "path": "workers/aequilibrae_worker/check_local_dependencies.py",
+      "exists": true,
+      "sha256": "9715717df2a132821d2e195475c63b80348a5d036a9307893b5d32c1410d453a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/convergence.py",
+      "exists": true,
+      "sha256": "3a79eb6a831e2263e99a21002f1c4853985a5506a5eb51a4b555b40b06b3bddf"
+    },
+    {
+      "path": "workers/aequilibrae_worker/count_validation.py",
+      "exists": true,
+      "sha256": "738516da8ad20c03e236a7e7b8fe579aea1fc14bf0348e47f121019d98be0605"
+    },
+    {
+      "path": "workers/aequilibrae_worker/data_pipeline.py",
+      "exists": true,
+      "sha256": "1c225fd031ce38fddb0828a208b2b581470f551ad30d040443b1ad16a34fe0eb"
+    },
+    {
+      "path": "workers/aequilibrae_worker/distributed_work_loading.py",
+      "exists": true,
+      "sha256": "af153fca213c868115eea93bf78918735378bc050331949a80b3e3e63f97aaa5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/emissions.py",
+      "exists": true,
+      "sha256": "8c7f8c4c206ca4f566e624c0634fa0e7464028399c52a68563f44adacdb3fb3d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/equity.py",
+      "exists": true,
+      "sha256": "59a873bd7e937b8bef6f4616ff6512268a1ac5658fe48d833b91ee2ca80f6362"
+    },
+    {
+      "path": "workers/aequilibrae_worker/external_distribution.py",
+      "exists": true,
+      "sha256": "67d44a5866a99aa5966a3e9a8e4af541938f7ece432aad9b13578a64a8714710"
+    },
+    {
+      "path": "workers/aequilibrae_worker/gateways.py",
+      "exists": true,
+      "sha256": "6463795f6cb3ad3feaf2cb7276f3906e65fa73fbaa9fb4d8ea881a7f57b30d7a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/gtfs_skim.py",
+      "exists": true,
+      "sha256": "0115fe21ff63455560626d7d0e177c69cff533be87fe76b8a03bc99be9129000"
+    },
+    {
+      "path": "workers/aequilibrae_worker/link_vmt.py",
+      "exists": true,
+      "sha256": "898e195e1f29b42f92f53cd32ee24bd57ee23b269078afe4691f798a366f90e0"
+    },
+    {
+      "path": "workers/aequilibrae_worker/lodes.py",
+      "exists": true,
+      "sha256": "45917c8ff841ecca199a39e92105fc97751ef061cefa106f5a6559baf9bd77f7"
+    },
+    {
+      "path": "workers/aequilibrae_worker/main.py",
+      "exists": true,
+      "sha256": "d8ce8ad3ce1bbd5deccdc31032db58437add2053d5fe7536c7d2b6cf98a75339"
+    },
+    {
+      "path": "workers/aequilibrae_worker/mode_choice.py",
+      "exists": true,
+      "sha256": "ccba7eff15fcb8f0348ca098a7f62037e8ea5557495ed6862f3c584b63b1db73"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_activitysim_handoff.py",
+      "exists": true,
+      "sha256": "804a531b724aefe19083add21ca49d919c39a91e2d6cbbb503a74573db7a1a2c"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_agreement_computation.py",
+      "exists": true,
+      "sha256": "78c7fec931a54e44ee47cd8d239fd19517a14b6e8b5deea4dddafa95de29fe73"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assessment_command.py",
+      "exists": true,
+      "sha256": "71dc55668768277f9dcea978fcf586c5c5471f813eed5808bbb35805cea0b464"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assessment_values.py",
+      "exists": true,
+      "sha256": "c2aa8673eeb2bc15ac9b29ef310337c102541799d11b4e045034cc7b5deeb6a0"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_compact_graph.py",
+      "exists": true,
+      "sha256": "7f276d11e7324c627378744a3602dba97af1e3b6284295080f539b1a5fc0c531"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_graph_adapter.py",
+      "exists": true,
+      "sha256": "c5c9893cd933e19e2a0c95c66fb12039360cff9ee42d5c4964f2015fdae83e3e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_input_publication.py",
+      "exists": true,
+      "sha256": "3fee7e7597d5eef1dbc7d095913211f5010db3c9414bee3a77dc19aeca13ad99"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_input_snapshot.py",
+      "exists": true,
+      "sha256": "8c91219b979b86ce7f3007a1e261df58f27f66ef3c3283b1b19b286d0211eb1d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_live_profile.py",
+      "exists": true,
+      "sha256": "ebcea985f900f2ec021b14c16b1afa99ff1629c3646c1aa9106d6a8f2e7d4699"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_network_graph.py",
+      "exists": true,
+      "sha256": "8541f91774058935641185ef12c577c66ca898ac8c7f8acea83485025552c0bf"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_network_source.py",
+      "exists": true,
+      "sha256": "11429fcdcbc39c86fa4e4506f3edfbd120aeee6f9ed4dc0d4f0e79ded6ecafaa"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_assignment_preparation_link.py",
+      "exists": true,
+      "sha256": "54a9a1780e68c4fee1fd455c3e960e62b6cf0b37a37cb93baffe6b32fbc3eee3"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_attempt_invocation.py",
+      "exists": true,
+      "sha256": "6e629d38c1ac7907e5b47300d8d227d6b57edce435534ba420724db160ccd0cb"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_attempt_workspace.py",
+      "exists": true,
+      "sha256": "8d1f755ac6f6a7be25930c6d3dcf3d06b0297896e6a709d4f84800e7e98e6f97"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_attempt_writer.py",
+      "exists": true,
+      "sha256": "4aed950549133734ffd24340f7cd0d0ce959649c35c7e615d331e6ef47588f06"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_command_client.py",
+      "exists": true,
+      "sha256": "63f9031a1562ebc4d8d14f7b05a7f72d42f72aa0738618748972ee20c815b83a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_command_journal.py",
+      "exists": true,
+      "sha256": "24949541db14eccf76eb82e551b0feb285c1479deb916860cab26254c640cad5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_command_recovery.py",
+      "exists": true,
+      "sha256": "03be64ff1b1fa2d29efee48edd559e6f84e93ece8b5894756c71a4666cc9487b"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_common_population_handoff.py",
+      "exists": true,
+      "sha256": "164c63826b8ff67b36035e4fb8cf57c33644e939359a2df962798fd093889c6a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_common_population_package.py",
+      "exists": true,
+      "sha256": "165de71f3918fa22c91e4ecc06f7dac26d9524f1a420a14a68b016831ca7aac5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_common_population_setup_recovery.py",
+      "exists": true,
+      "sha256": "10caa574176adab11a557a31eb540dc0b8bf433e6ef59f1d8c21c7896e6bd8a5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_count_inputs.py",
+      "exists": true,
+      "sha256": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_credibility.py",
+      "exists": true,
+      "sha256": "eadd20cc326be06e2b56d6f0dc8c18ecf6b56dd2c87f5d73192000925e696a3f"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_binding.py",
+      "exists": true,
+      "sha256": "9d52976d12bcbc65ede273278bd001dc7ea4f4f0b3e091b1632fb22ea9294901"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_bootstrap.py",
+      "exists": true,
+      "sha256": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_channel.py",
+      "exists": true,
+      "sha256": "9eced6696938e6ad4783d7e6fbfdc4d7b6c63abb3796944dd9dd18c723c9267f"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_owner_guard.py",
+      "exists": true,
+      "sha256": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_process.py",
+      "exists": true,
+      "sha256": "1c57e57d1b4aba289d85e46186c3f3251a4b5b0db66cd9fbad775e77392daa23"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_recovery.py",
+      "exists": true,
+      "sha256": "21c9dbd76321ecc19ea4fc0a5adb065decb0fe527d907d485ae90835c6d12328"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_scope.py",
+      "exists": true,
+      "sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_engine_supervision.py",
+      "exists": true,
+      "sha256": "ecc1fab72bc799b21a5091f7c3aa00fe80a33e532e2375b57abea2bef9865cd6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_fresh_osm_modes.py",
+      "exists": true,
+      "sha256": "f9c3992ae85db0878357c75136bc11b856d531ff175632664a9e1b4da903bd3a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_geometry_inputs.py",
+      "exists": true,
+      "sha256": "13790ab924a1878c0f75976282ca4ecdc49d514eaf15086a14a57e4a1b8330dd"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_handoff_files.py",
+      "exists": true,
+      "sha256": "76e51c8b88571dcfe42d6fe6ea9f6e2fa10ce7ca3e632451ebba9a72b4059421"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_hosted_artifacts.py",
+      "exists": true,
+      "sha256": "dbed5e8a533aa775e4a9d56db5b2f485b9ae767597db288185de907e0a56082d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_legacy_artifact_command.py",
+      "exists": true,
+      "sha256": "ec057046ea3066fc72c9567d0e5d3e188e6d3d059afaa33b98acb31e141f5fef"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_legacy_kpi_command.py",
+      "exists": true,
+      "sha256": "9a7e4bf7cf4398592c715d98917ab3f9e69a3279707cd0ec0dce83661157bcaf"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_legacy_output_delivery.py",
+      "exists": true,
+      "sha256": "f873392c11780cecfc721f5ddeb67bdfbb36bea621f801fc815186e651c05b05"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_owner_guard_recovery.py",
+      "exists": true,
+      "sha256": "304785df7a27863928b517bb499c7cd115415c29ee5ea570e8d0e844c9dffbd6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_package_inputs.py",
+      "exists": true,
+      "sha256": "1b0119bb66415a05f8a845088d75c7db20b4ee71aaa48298bb9f8f8a628e2ae6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_population_replacement.py",
+      "exists": true,
+      "sha256": "207f12456cb3845df40c3f4c7958e524b87a4cef81a15bc8797c545db671ccf6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_predecessor_inputs.py",
+      "exists": true,
+      "sha256": "8ff02d1a42df1d9869a6ad7c9288ea7d28feaf00a398ac6511d5ee1fde7775e8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_project_inputs.py",
+      "exists": true,
+      "sha256": "a98fe84a9a59b52b009eb5a1c3e91607e45ad2cf937edf8481156cc705765b07"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_publication_values.py",
+      "exists": true,
+      "sha256": "2ab320d218ac38fcbd0f724b23b36862a06dcd6fbb1adbb5c15b472d551a0239"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_receipt_values.py",
+      "exists": true,
+      "sha256": "22ff1176c3ec778c98387a091945485a83481f40818da487d9956ee7e7e92842"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_record_files.py",
+      "exists": true,
+      "sha256": "fe94c78d565cd0db63ca37843e120acd03edf995b3d326e5b630a68e3676d6ef"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_recovery_decision_command.py",
+      "exists": true,
+      "sha256": "b8f09b6162b49dadd9bee171018ecf7ace8e4e717fb435a7bb22ee243c9c117e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_run_state.py",
+      "exists": true,
+      "sha256": "0da94442e2877016fbb6c619e9d85b6396bbacbc3832ef5e8e0b5fb0f7ed15aa"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_skip_command.py",
+      "exists": true,
+      "sha256": "a81b2f41e585ce944521cb8ea4edfdb2b7dd6ae99616253e0de651f306122dbf"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_source_publication_recovery.py",
+      "exists": true,
+      "sha256": "f87f0038a3bc732391c2d585484f3380f5b696133312f57337e778ef0629bb88"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_stage_computation.py",
+      "exists": true,
+      "sha256": "fc091f40d8db12298fed0a9a7a80838042fca6694ecf581cab77fdd66122c369"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_stage_lease.py",
+      "exists": true,
+      "sha256": "59f3c90ae45add069cfa258ddd61239445f70dae2555fcb4bc4bdcfe36e12efe"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_stage_preparation.py",
+      "exists": true,
+      "sha256": "d171b5ae354985f1461497754c8c96a1450f06b1840c05ae2461c4d6c667fef7"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_storage_readback.py",
+      "exists": true,
+      "sha256": "632297c402aa05cdd3867f3337b73f058cbc606ee31f2cd4986836d86abb8494"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_storage_resumable.py",
+      "exists": true,
+      "sha256": "1b1e44ccf65602a67790fea2aeaf983aa6303c15a15384e679ffd5d860bfd988"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_structural_input_audit.py",
+      "exists": true,
+      "sha256": "52d3939123ede5842b418e0fd2d1a27f6bc6bcdd09857547d8b2f2f03ea82872"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_transit_execution.py",
+      "exists": true,
+      "sha256": "32c876e43befd4f43da6f26f6dd3197919c49f4f79778c5f7ab5bafc12022f7e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_transit_inputs.py",
+      "exists": true,
+      "sha256": "6f18a5c498d1fb3cbf793fdde617821ce817f537ae54b044d01eff0986f921ed"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_transit_skim.py",
+      "exists": true,
+      "sha256": "43ffa657c4f668529f1a7e51c56492b10189b60a3b3a3f41d70c3f9c3a6d56c0"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_core.py",
+      "exists": true,
+      "sha256": "49668bcedab7ec6b9b9ce076648ab2013f563e85970acf6a6a300614c36ae5cb"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_core_v5.py",
+      "exists": true,
+      "sha256": "74b84e1281f5ca21bbd2c09a664a038444424f3743829c03e3a8435255aaa379"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_preparation.py",
+      "exists": true,
+      "sha256": "2e585c50371f2aefd7b6c764b8f41fef059073c737c4ae41ae14f363b598848e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_receipts.py",
+      "exists": true,
+      "sha256": "d9db3c35ace9cb9a0243dbbff1c0ee431b33e6b74c19b5065745d4aa9218d5e5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_source_catalog.py",
+      "exists": true,
+      "sha256": "6ed3455d8ee074d001d08e87974aaaceae8b500ee9b4db855e7bcbb6f39b66ee"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_source_files.py",
+      "exists": true,
+      "sha256": "09f42c9bf809e38f4a65a68ae81919a37f7d1aa33e7fe751bd4f3d3e6b0f3a60"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_source_publication.py",
+      "exists": true,
+      "sha256": "ba83af73aa5b49771c82d6d734aebbc4914931b0a2a905ca724f64e4cce78d21"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_validation_structural_diagnosis_v3.py",
+      "exists": true,
+      "sha256": "581bcf32f2c7b2ab46a9ec908e1ddcd07ca25c38ff40d7d8a840cfb6d00bf99d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/model_zone_geometry.py",
+      "exists": true,
+      "sha256": "cae100a2a59cab936e2ebb96e5a8483129d333f88e9b856093c3312818ed71a3"
+    },
+    {
+      "path": "workers/aequilibrae_worker/native_tests/fresh_osm_modes_controls.py",
+      "exists": true,
+      "sha256": "3f74c9f21848f6f39d42ded7bffd0f4736e072de9405330cf33783a4f4c43c64"
+    },
+    {
+      "path": "workers/aequilibrae_worker/native_tests/run_compact_graph.py",
+      "exists": true,
+      "sha256": "ff06dbed7ac6b4212c804503e55738e0cafa94b8db98cf9bd9f363225adb5967"
+    },
+    {
+      "path": "workers/aequilibrae_worker/native_tests/test_assignment_graph_adapter.py",
+      "exists": true,
+      "sha256": "c6707d2d2f239621ac28b291c8ccee8d56d4d09f034484d775ee1bc4a821bf3e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/network_ids.py",
+      "exists": true,
+      "sha256": "f17d584fb9c3352a9d0bc8a7375f4d0f6d34eabb01516c094594c3ed315eaa2d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/network_settings.py",
+      "exists": true,
+      "sha256": "397d5ff52ca6158b4a23acf6c29a1b109861e89a24c510b8486f7baf6eb23458"
+    },
+    {
+      "path": "workers/aequilibrae_worker/refresh_gtfs.py",
+      "exists": true,
+      "sha256": "c732eae2865275dc39165fa5373e75c67dc909282a0d48157227c8f3f579b7f2"
+    },
+    {
+      "path": "workers/aequilibrae_worker/requirements.txt",
+      "exists": true,
+      "sha256": "e6c0b1da15e4be69ec1071178a61deb24a090f02cd322443914ccae34123b6ad"
+    },
+    {
+      "path": "workers/aequilibrae_worker/resident_vmt.py",
+      "exists": true,
+      "sha256": "f97b4b1ac90c2ad3c7f14428013860f452a9600280a87ab8bccf11781cdbd415"
+    },
+    {
+      "path": "workers/aequilibrae_worker/run.sh",
+      "exists": true,
+      "sha256": "3914196f1b677a8df36854ce5c3c14787badd81a697bc6ab74dc115c3052e1e9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/scenario_adjustment.py",
+      "exists": true,
+      "sha256": "5dd0f563f1d15687c93eca706fc70c443221e63fa1815fa3081d1e9ebd983cda"
+    },
+    {
+      "path": "workers/aequilibrae_worker/select_link.py",
+      "exists": true,
+      "sha256": "860b5e9dc6d04f852b9287c87df5b6671e7571553ac0af58f2153919cc061675"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_activity_managed_dispatch.py",
+      "exists": true,
+      "sha256": "5dd995a198ad7585bb9e6e70ff9acf931d601e8d1c79fa7476181af1eafb84e7"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_activitysim_assignment_handoff.py",
+      "exists": true,
+      "sha256": "c8038e8598f3de934214b606122f1cff705f96e765b042c5e812fe80b47bd2d0"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_activitysim_managed_handoff.py",
+      "exists": true,
+      "sha256": "49295b56087f16f51a2653667cf7183ea353ff0e6f022acbfaee562281cec7cc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_artifact_package_reference.py",
+      "exists": true,
+      "sha256": "622aa133cd31a7f4f1c51c21ebb287ee38e5b8f94139767ee751ea578f9d4761"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_compact_graph.py",
+      "exists": true,
+      "sha256": "bbe4031be1528482c8184dfb202cd50f2557a1eded0499fffafa938b16924fa8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_count_mapping.py",
+      "exists": true,
+      "sha256": "194b8f4083fc8ef0090e53e445366a111b6a0bf6d0dab4a1631120f7fa5b19b5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_count_preparation.py",
+      "exists": true,
+      "sha256": "c43ce031042ca415789e8125560dbf54fb320b60a8b830180168f39d94ac3b9f"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_engine_binding.py",
+      "exists": true,
+      "sha256": "d62cd6400a15a7589bd8424f973b30f5b232f9fc1c1e61ed1d3685a8e486bc6b"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_engine_inputs.py",
+      "exists": true,
+      "sha256": "54e8b1a343928ef29d21996e417d445ea5187e4e1f48538f628ac9a3a4b3d653"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_graph_native_contract.py",
+      "exists": true,
+      "sha256": "029269bc7ab4d3ab47c92345b10d5506ab7535d22a4ab01f463e9a1d63126e9d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_input_publication.py",
+      "exists": true,
+      "sha256": "91b28e2645975af5a6bc9117a219fa8e5c080519980203027b4c41bbe6b43cef"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_input_snapshot.py",
+      "exists": true,
+      "sha256": "e7dc97e9f95c5b36dde9ea223a801ffaba0ff5e64a549ef569b7788cd7ff7e5d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_live_profile.py",
+      "exists": true,
+      "sha256": "31d83f3c4640d347a636d3396af70aac3c27196f7edca3f3812ce5026e340c72"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_network_graph.py",
+      "exists": true,
+      "sha256": "9744d34ea58c754103636f67386ac9c1717b550c42eccfbb3000b9bfb9f26a21"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_network_source.py",
+      "exists": true,
+      "sha256": "13e85737b4b27bb5008967b0afdbe60d26872872890413cdac79082e64a275f2"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_output_creation.py",
+      "exists": true,
+      "sha256": "9c2386bda1201b29682d730a53491148a09242ad2992343c41e5a5c15309bb36"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_preparation_link.py",
+      "exists": true,
+      "sha256": "8b6a07f05753397775ec28db42e9cce61ba3ef95b9fba4fddecf1e5d97154b35"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_progress.py",
+      "exists": true,
+      "sha256": "a377a051c598de2308234e340232cf1e5dcb915fcc02403409181c88fdb1aa48"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_retained_transit.py",
+      "exists": true,
+      "sha256": "3ad56c534bdd891f29067008cbf259f32e7ceb8cb962e94fa41616385a904319"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_runtime.py",
+      "exists": true,
+      "sha256": "f9dd3b7d8d91b8ddc12a05144e543f44e52e70fad80b33908008a8d9cfaeb26e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_assignment_settings.py",
+      "exists": true,
+      "sha256": "a4822c497a28750d24acc45a79d5eb43621201faaf55cbc96b152e3ce047f5f9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_calibration.py",
+      "exists": true,
+      "sha256": "fcdea32958d0b6eca6f08f11b5345c73932b399590786a7a73e80df8c3066e7b"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_centroid_geometry.py",
+      "exists": true,
+      "sha256": "9848b06c0c4439527a1dd393f80771a41144b1c55fb9974e6c3008017de298b6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_convergence.py",
+      "exists": true,
+      "sha256": "0c4585e8161f3a834a42f7924fe2eb6872951b535dfcf5e42362bbde71cfc1f0"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_count_coverage.py",
+      "exists": true,
+      "sha256": "829dd67e1eabdb53404cbde36e23f5c5bf77b4c56a425fa76c351eb0c3e9572a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_count_ingest.py",
+      "exists": true,
+      "sha256": "e1b4f6a30c0f28fae108ee6192c7c0813f6d3ff2962371c9516dedb1d6debd30"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_count_input_custody.py",
+      "exists": true,
+      "sha256": "641c9d14628048f050d04374bce305d4f54b38a846d9c41bdd9a8df8acb21392"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_count_manifest_consumption.py",
+      "exists": true,
+      "sha256": "a60ae1b70928f65fc38e8f9c8ff53bb7f937be115f347125ef939a2ad4473178"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_count_source_availability.py",
+      "exists": true,
+      "sha256": "1b6f26f0f0b4d34bc3c7df7db63f8b6ac7d674b5dec660987659e6c2f240f13e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_count_validation.py",
+      "exists": true,
+      "sha256": "cd268bad2931124950bb12a38bb5ec39f9bd5c80640e0bdffa27f212120f39cc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_dependency_pins.py",
+      "exists": true,
+      "sha256": "245f1fae849001e9183133ee8572954b4af6726418670834bda5071723c8cc4c"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_emissions.py",
+      "exists": true,
+      "sha256": "1b153253034bbcc8dc882d2df5a197c0c8cd4303e6ea4ab43175ae35c5005f01"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_count_channel.py",
+      "exists": true,
+      "sha256": "98272934ae9ef3746088d1d2aad460800836e8852327195cdfb4825dea3f028e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_launch_channel.py",
+      "exists": true,
+      "sha256": "a6a3a99b8bac7a55ced0d3abb437aba1ee79c92fd5ac09664d3768e8f76f9610"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_output_channel.py",
+      "exists": true,
+      "sha256": "024132ed78045406f957d9e7ff0e212e7c3c9761997360c62cfb91829edc9ca3"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_path_channel.py",
+      "exists": true,
+      "sha256": "e21b5539aadbf3cd358ca6409ae713391237ae5955626756df2cf2b4f8a7cf46"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_run_channel.py",
+      "exists": true,
+      "sha256": "437c86d01ccc91902f8564fed0236553293d06d3aebc7f4a3fa2b6d026360aab"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_scope_cancellation.py",
+      "exists": true,
+      "sha256": "548eec7eb328ea24365867cb6b5b7ba4bfce915d75bec4f33f2b912220191a8e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_scope_recovery.py",
+      "exists": true,
+      "sha256": "4570159de91b039849f9db13f5293974963b086314f476332945f1620b6942a9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_transit_channel.py",
+      "exists": true,
+      "sha256": "18cb9d5e2ff067b067e6a94e5b43fb9ff9eadfb4c63b9c271362f9379fe4e663"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_engine_unit_boundary.py",
+      "exists": true,
+      "sha256": "bb73c9073a48d1383cf4dad45af81ad15d14868a6aabccd2eef209a6494edba9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_equity.py",
+      "exists": true,
+      "sha256": "b5308268ed3de715fb585597a50a95d34c8b16b163e421537cf321788d00d99a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_external_distribution.py",
+      "exists": true,
+      "sha256": "83cf9141bd4ac9b7f6dedb88465d1d7a8b6f9128ac67fe82d077865a04059602"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_fresh_osm_modes.py",
+      "exists": true,
+      "sha256": "02943aca7160efee75dc8849181ffdb51a9c002079f0959a40acf32556ac7c86"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_gateways.py",
+      "exists": true,
+      "sha256": "a0d658938f30f31d084331f88f16b65aeea1c20439c96d38581002931c9065b6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_gtfs_discovery.py",
+      "exists": true,
+      "sha256": "9a3e8057058154a0bae089f13496d08a05603c931f492cca319aa81b3a84dcd7"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_gtfs_skim.py",
+      "exists": true,
+      "sha256": "7770029f0e831d7f7e593a1b948d27658735c5d15f347795edc8d1d6278ef481"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_immutable_upload_recovery.py",
+      "exists": true,
+      "sha256": "4a8b672e08f640c89dd0ed71c2d28b35459fa57eba4836dc09b268ed2f7d9ee5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_link_endpoint_renumbering.py",
+      "exists": true,
+      "sha256": "bb35b4f53140615a020f4e9f0dfea9eab7b49f50d8243882393dda5ff7785a8d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_link_vmt.py",
+      "exists": true,
+      "sha256": "0f2461d4f828edde9ce791c40db27869d047635b1796efa54f94ceba8bab1646"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_local_launchers.py",
+      "exists": true,
+      "sha256": "6f72cfbc520b8700a47318bb0b23b4983b01a2cd759554949bd109f870581655"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_lodes.py",
+      "exists": true,
+      "sha256": "154ba0b0f8b0d32b6a5fd1aefef7a24efa8987939ce84a212b0471eda56ffa26"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_main_common_population_dispatch.py",
+      "exists": true,
+      "sha256": "1911533bf86db0b3f2420ebf8f18c087087ecb374ff570e06ec897293cbf3aa3"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_count_preparer.py",
+      "exists": true,
+      "sha256": "68e212a71e7feb4baba258f14c37931f933f6476371032ff4cfbf0643d10eeda"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_execution_inputs.py",
+      "exists": true,
+      "sha256": "e44baf2065c96b6c15f9295d50ae6369ce2d2865acc29bfaa22ae93171eb5a7d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_output_handoff.py",
+      "exists": true,
+      "sha256": "6a97fc7971dc3b3bc61f583959ca9a4edcd3ce7e835766967d6cc5a996dc229c"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_output_mapping.py",
+      "exists": true,
+      "sha256": "6d4168eb3b814b4a8213f8bb7504bac00b68ce2ce06c7ef31022778a99208cc8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_package_handoff.py",
+      "exists": true,
+      "sha256": "5b7ae9bf919744701d0d5a035c063beec4c3f1eb9a5b7cc714be7d643cf10e08"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_paired_inputs.py",
+      "exists": true,
+      "sha256": "6905a1202d61da8ae5fe9188eb4a2c05ef206515fc6de1a868d40b21188a5b1a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_project_capture.py",
+      "exists": true,
+      "sha256": "efc4372f82a1c1247159f4ddef63f5e5f7c63d7b471f953ca13c1e954457109d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_project_handoff.py",
+      "exists": true,
+      "sha256": "09db01a178c9d02f84932fea19959787342e36bad4355c1e7c276fc37967ecc6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_run_read.py",
+      "exists": true,
+      "sha256": "0dec2fbe7ca2ca6ae148f40887a5fc1bcb4207eed5f5bec8d401a7de4157a45a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_state_handoff.py",
+      "exists": true,
+      "sha256": "c1668982447892a7da7927ed0c06627768134bf577ed24a1908b178a58502e27"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_transit_geometry.py",
+      "exists": true,
+      "sha256": "0585011b49c9f67284d97ffb2dba2483bebc4004dbc9f976060c8314d07f1fc1"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_transit_origins.py",
+      "exists": true,
+      "sha256": "f2fb27f708f6a7e06466f60db3f66881153ddb70da8058dab9d9251a4ed9ee7e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_managed_transit_retention.py",
+      "exists": true,
+      "sha256": "6980cbeab0d0d2e6a23ba90dd3525647fcf568aff641b2241df613cbc9f9111e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_mode_choice.py",
+      "exists": true,
+      "sha256": "e25ff7c9f9ba1b8be36c16bf45a16233911e1ad2294a511f4e0e1fe4bd5cb0d9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_agreement_computation.py",
+      "exists": true,
+      "sha256": "5fc3768864fd16662d4b7c7fa6c229bedc1f30c9ddbee4276a539e5598644f96"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_agreement_recovery.py",
+      "exists": true,
+      "sha256": "b6876c4163355d6ac86152216cf278b234de6b544225605a8908cd813bc82568"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_assessment_client.py",
+      "exists": true,
+      "sha256": "935ce1c4db05926bd41ef23363ef5369aca720ef1d3b3608176afffad8a7174e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_assessment_command.py",
+      "exists": true,
+      "sha256": "595e884cd3c1eb3253368e9edd10002bd7cf80d9ac6b2a30a1a141cbe49b5460"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_assessment_worker_delivery.py",
+      "exists": true,
+      "sha256": "80635269205e60f662ab64f81c6c309204c28d584230c6f14263be2a006e23fe"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_attempt_instrument_writer.py",
+      "exists": true,
+      "sha256": "39d6b6f061e64fc784d6080a1e71826716c9468b65ddec43c20d6c8c23209309"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_attempt_invocation.py",
+      "exists": true,
+      "sha256": "434b4156c4a798893f5b6640ff3ca2124f2c32becc0fa426043423a37dd15a64"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_attempt_outputs.py",
+      "exists": true,
+      "sha256": "398477a5ca72af6ec2b2aaeeb38a30449584861ab235bcd79d0336f453e038db"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_attempt_workspace.py",
+      "exists": true,
+      "sha256": "27c4ce41b26d25b35b4b15bbd9ccf2289d1823bc2b3d078539eaaeb18d8bdc40"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_attempt_writer.py",
+      "exists": true,
+      "sha256": "2c80cc48c70c95923c58f476243fbf60fe6b86d287cc398c5fbd6543e522c460"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_client.py",
+      "exists": true,
+      "sha256": "618297f889909483a22f51066a88553d6516574fd01c1e663a49b9426e84cf15"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_instrument.py",
+      "exists": true,
+      "sha256": "f373e98a63fe60eb7af8c8da18d210e48a1b75af612b87f3b9a72e8fa143b1f6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_inventory.py",
+      "exists": true,
+      "sha256": "a9db67b56667e2149744cacaf8fedf7c7b8202b47e4cae7a773ddb8f66f3c58d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_journal.py",
+      "exists": true,
+      "sha256": "e0b11936f66948848c4d0d28a890e1100346f5e7028ec1fa76ffc4d7b8ead37c"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_kpi.py",
+      "exists": true,
+      "sha256": "e48bf9c485430528f9acfddc86ae3b4ff38d743159650871a2fa4411f7765802"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_mutations.py",
+      "exists": true,
+      "sha256": "5038747927b2e1dc5ebaa0443252e8f0eab890230507770321e14c27e4ba36e2"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_ownership.py",
+      "exists": true,
+      "sha256": "0698989ffab8fd39d57511ae8a28775c45b1b499b8e6e4c3f93c1065edc7a141"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_recovery.py",
+      "exists": true,
+      "sha256": "65e85cb587fe530da2d9ededa3acf8c7a64bb3d26b622cc0c1f003fcf01ce3db"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_command_saved_ownership.py",
+      "exists": true,
+      "sha256": "e347bab2a05c304445196d167caed03606a51b98fcbb326cb872c62928b18e5d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_common_population_handoff.py",
+      "exists": true,
+      "sha256": "6a628862c9d1ecae5ccef9ccde0adcb4c0837e8b10377308f43520298dfe3b7c"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_common_population_setup_recovery.py",
+      "exists": true,
+      "sha256": "851a2e81024c65466f9f8cfa6fb7bdde573d91eda5dba83ec8cdc52242ed25db"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_computation_inspection.py",
+      "exists": true,
+      "sha256": "e2709a25520522ab8fc33ea44b696c1623038bd981a76264a62c0bfb5a3ad3e8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_count_inputs.py",
+      "exists": true,
+      "sha256": "15c08aaf3d78635906a95233ef79fa1b5c46bf05584752efe35c7e28f8753e12"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_credibility.py",
+      "exists": true,
+      "sha256": "5aca9955202216cad1baa313b1c318fe5759de25f02b1a863839b8811a9bd6ca"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_engine_channel.py",
+      "exists": true,
+      "sha256": "4f0e792011e9150326a166bf64d53b03a7e97e10f35c384852767a923dad69bf"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_engine_process.py",
+      "exists": true,
+      "sha256": "5ab45e5bc45b507c1c7b2580d42af779ec8a1f1b77543d38c6e201b1fd21d87c"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_engine_scope.py",
+      "exists": true,
+      "sha256": "d491c1ae52f4e4b7ca0c3200b844407a25b7c1de2c85344fce163601ae774514"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_engine_supervision.py",
+      "exists": true,
+      "sha256": "67b960a9199d88bc627b78bfe25275a085a908472bc5d9bd5f00f352d7ea1b2d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_evidence_delivery.py",
+      "exists": true,
+      "sha256": "025f241938991b05da94dc44b86fbb8b8cd51e8bf725a74898e63a2ec60536b1"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_geometry_inputs.py",
+      "exists": true,
+      "sha256": "90fc72e796304d10e2bda1c1105668a4618eaac445b4345cba3fb4a273e0bb39"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_handoff_files.py",
+      "exists": true,
+      "sha256": "2a504bdca3064287b15dcc173baee13b379cfc6c897f8db7fb59af943082fc62"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_hosted_artifacts.py",
+      "exists": true,
+      "sha256": "f7306197807598dd9d98eaf58120116be3839f632e5592bb01217e2edbda480e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_kpi_worker_delivery.py",
+      "exists": true,
+      "sha256": "d76dced69cf2b3f2c72b1c452dc190716fdca6fbdc1b074f8b40e7253783327a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_legacy_artifact_client.py",
+      "exists": true,
+      "sha256": "54a6f771024a34217260ccdab762cc324e30471a516dfb260ab6ecf29035aafd"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_legacy_kpi_client.py",
+      "exists": true,
+      "sha256": "42f72fc83c035084c3d3826d2a6bb3f6f29dbb1ce42be3393f9570767679ee72"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_package_inputs.py",
+      "exists": true,
+      "sha256": "51bd7e8ada2f23d0dbf6b6f187f676ba35301feb46c1ccdc216ddeb3b9919168"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_population_replacement.py",
+      "exists": true,
+      "sha256": "606690f668d81c18ff5a6e2ea1174d06a75c8f47579e21e2ba05f2a8a7dd7881"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_predecessor_inputs.py",
+      "exists": true,
+      "sha256": "4334d753508fd6c9275dc8db69b0fcd649c314db162f4638645beca286a33beb"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_preparation_consumption.py",
+      "exists": true,
+      "sha256": "30d9e0634ea62422782f94efda34ac8d0d5304a06f289299c948b1313aa81fc7"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_preparation_handoff.py",
+      "exists": true,
+      "sha256": "ba32f9f8dd764f1d4e902a16e304088e4e0fac30319a63e96f326f6fd8e85f21"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_primary_output_preparation.py",
+      "exists": true,
+      "sha256": "7f8d0ede3f29659359cff545ab5c902bccbf1ac8be49f6c9a61a9dfe25e37497"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_project_inputs.py",
+      "exists": true,
+      "sha256": "efe8183b411ab4f3032a2a5487972e4dcb1e937766645856867eeb3edd7298d0"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_publication_client.py",
+      "exists": true,
+      "sha256": "e4dc0d66c8e763fdcb381e70de2e081d234e1ad75b4592918f5dd65181b0953d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_receipt_values.py",
+      "exists": true,
+      "sha256": "ad8a9dc80d6c05cae83c36c4cf68ead0110717f65b124b0320ced1cc8b77f1fc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_record_files.py",
+      "exists": true,
+      "sha256": "12acac90fe0eb1a622b11596133548dbff69361e2af950967543ba489ad261ff"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_recovery_decision_command.py",
+      "exists": true,
+      "sha256": "b753ff0a4454ef61795bf2c22d95fac477f51dda7ca957507f0f6da2885a51e9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_run_state.py",
+      "exists": true,
+      "sha256": "1725f873d0cfae99021f59a34296279bd9016735f98ae47e074c63ae772d7a76"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_skip_command.py",
+      "exists": true,
+      "sha256": "ebeac8d9901dbac5ef8694ffd4b7fc140cbd808d326a167ae3fcb3a86ccc27bd"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_skip_dispatch.py",
+      "exists": true,
+      "sha256": "8408f0bc6ee6beb5d6f0b8878fd575a041c62c7b3c0194a50c3916cac8690818"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_source_publication_recovery.py",
+      "exists": true,
+      "sha256": "bec24d970b18e76ca6be94250aec6cbe7e6ad8d0cdaf9507739c41fdf19df433"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_stage_computation.py",
+      "exists": true,
+      "sha256": "b7fe6b3191b68bb44bc7d339eb036fe2ffd410e3c73efd6e5c1ffc123f873a8a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_stage_lease.py",
+      "exists": true,
+      "sha256": "d5e0d8eff6407f206056afbd4beb83697ab52d9f9b87428b3802424ae3b2251d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_stage_preparation.py",
+      "exists": true,
+      "sha256": "169b74fb8778fba4238ed3ce415c1e529acf116940ec741b74b547166afb3afc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_stage_source_files.py",
+      "exists": true,
+      "sha256": "d839bf4eb01f932205f40f6f1d73b885b9136255c944d0f5d6084a87f604257e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_storage_readback.py",
+      "exists": true,
+      "sha256": "516b70a794a0dd806d478157816793f6d4e8222c26573f4dad239d421885e1a9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_storage_resumable.py",
+      "exists": true,
+      "sha256": "c37b0bbf6e3bfc0873cdec7da62fbccee19ac2cf524fcfe8b377efe8d2c6b13a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_transit_execution.py",
+      "exists": true,
+      "sha256": "734f43e6b960a683181294abc3206ce556a766fbc8718cab0bc6f2ced329f119"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_transit_inputs.py",
+      "exists": true,
+      "sha256": "5c56b315de9cdc53fe66fb1a8d213809c19c9b11103184e938bf3ed4929c0936"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_core.py",
+      "exists": true,
+      "sha256": "dded9bf02f10f12fe6f892c77215a9046636588e1c8339e21758dec2873b07fd"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_preparation.py",
+      "exists": true,
+      "sha256": "3ceee4c34b3e459e22c98df4d4f889bf2dd9ce1c2a942f2ed508e24e24a1e53a"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_preparation_writer.py",
+      "exists": true,
+      "sha256": "34baee066d3d8f3b83ca7e76d8203540b4fb40d15f3c50954df3da033409ec11"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_publication_custody.py",
+      "exists": true,
+      "sha256": "db71a7263136eb755aa9d06d0b9206bf8d308a7404bd5b8500f999e64d38c3ec"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_publication_writer.py",
+      "exists": true,
+      "sha256": "abf5977451c51664807ffa715b7561ee2489ca735ffba50e45fb2e551a947721"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_receipts.py",
+      "exists": true,
+      "sha256": "151b20d0f88c15cbd9185a735e986fdca1e1f0a883b1c91a85e2d5f8b14e826b"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_source_catalog.py",
+      "exists": true,
+      "sha256": "7abe7776c7810ae42649806726b764ab508e7eeab3b8659b7d630ca9ff5001fb"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_source_files.py",
+      "exists": true,
+      "sha256": "88d10778c5812d7b0f86eb21f534f7ab3164659b603256f55ff92e4db9886a31"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_source_publication.py",
+      "exists": true,
+      "sha256": "c937f2096103ce384af5de94919fa88aaf8cfbaf774f1adbb53a5e90ec7783c2"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_validation_source_writer.py",
+      "exists": true,
+      "sha256": "5334d20f60b72085af9b1f0acd31035acfadf3f849b9febbc89c49a55b5edcd2"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_model_zone_geometry.py",
+      "exists": true,
+      "sha256": "3fa0fac7b49c44de12dece60f1012f97f0b444fd75e31055200953a6748c05d9"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_network_settings.py",
+      "exists": true,
+      "sha256": "6257ff0d96766c48322b0b52480aaf20dfaeba5691e53bc7441bb31747f3a3ff"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_od_matrix.py",
+      "exists": true,
+      "sha256": "ea147c839109ad4d4f062eab7cd3a383e656881a90eaaf7fd09cc2c6beacbb2e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_output_execution_path.py",
+      "exists": true,
+      "sha256": "43645bfd413e186060fe2daeff09b807cfe8e078369bb23674ab8c37aecaa285"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_output_working_copy.py",
+      "exists": true,
+      "sha256": "05f7c06c8e28523e362ef0c57cb0767edc9edcba5be4064d9d36661608ea9883"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_owner_guard_recovery.py",
+      "exists": true,
+      "sha256": "e23a4d3336ed03c74debb922b3cd5c70046609d6929c1d1a089e5ec58e049389"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_package_execution_path.py",
+      "exists": true,
+      "sha256": "0ad73881b957481aa2d503d67910a3a8140e9dbb17c4ac0071613bc60ca2f2b7"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_package_working_copy.py",
+      "exists": true,
+      "sha256": "2ffd8360758d7a2c6c0b9a991d4977b956befc876f2957bfc6b5a4dfc5dcefac"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_population_image_packaging.py",
+      "exists": true,
+      "sha256": "906d70255f30b15852606878ae453cace99c1fccb8e361c20346c9c546610e50"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_population_source_dispatch.py",
+      "exists": true,
+      "sha256": "e864fdaa5a3ee48df4221dcf575d6049ba76c515abb792287ad1f2cf1e6b6772"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_prepared_feed_skim.py",
+      "exists": true,
+      "sha256": "0fc20b99529b5e5aea17425756d058b1f927f30bc98020d0cdea42eb5663a329"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_project_execution_path.py",
+      "exists": true,
+      "sha256": "be1840fb96745b65a7a0131de926d1bc18f2fdfccb3ff5733142aaa099f0e2c8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_project_working_copy.py",
+      "exists": true,
+      "sha256": "bca7cab593551fe06495a22bc6e9d0dc6edfd1cf7265083ab83e5cf6ae9105dc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_push_trigger.py",
+      "exists": true,
+      "sha256": "e59e78493014ffb54a0c14f824b0375659b26c4abd65d9527010022cc6d0062b"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_resident_vmt.py",
+      "exists": true,
+      "sha256": "0f18f294101cdaf2e7c62f155379a8353772d59eb083cfc38cc1514291767d15"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_retained_rules_v4_computation.py",
+      "exists": true,
+      "sha256": "04761ed054425ede7bf368432ede46edf067fc1cd7bfacfbb51496d5761c04d6"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_run_scratch_identity.py",
+      "exists": true,
+      "sha256": "b0fc883c869fbe358fba34d2b5295d4db368a43071fa275bc18284291bce49e5"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_scale.py",
+      "exists": true,
+      "sha256": "db8d2b092bb1668922fb92285901a596e471c498366b97381e19fcbadc37687d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_scenario_adjustment.py",
+      "exists": true,
+      "sha256": "13b4566093fc9f578a4659e1a695d7a8c12c7d1c2718284fce3762300ac720b8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_select_link.py",
+      "exists": true,
+      "sha256": "bba93d50213e333e1364b99e3a2358db2402b7a22b56a14980a381708974fb92"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_select_link_custody.py",
+      "exists": true,
+      "sha256": "78fcfcc0a345f3a6563c2e346027df06884b487f0693b87f4b27c96566636e6b"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_structural_demand_custody.py",
+      "exists": true,
+      "sha256": "775867b81565964eef8b3e0a176589cdd041097e0a98f85e4606cd223bc4b345"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_structural_zone_identity.py",
+      "exists": true,
+      "sha256": "baa786b0e3a0b684bc2cb1199dabbc28eb72c6953fc010860085b5f3df038a23"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_time_of_day.py",
+      "exists": true,
+      "sha256": "ac2021026fab5b983fa8a79f5037cb7c38a00102ef6f486c6587c373990356eb"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_transit_archive_acquisition.py",
+      "exists": true,
+      "sha256": "557cca583bf6b2a0264a437f9106c4b9cfb535eb92f3d2c2747ebae3c3b38860"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_transit_coverage_outcomes.py",
+      "exists": true,
+      "sha256": "4c280d703a868098e99364ff3123c30ce5b81007151e60a55d0e59f0f74ffbe4"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_transit_feed_handoff.py",
+      "exists": true,
+      "sha256": "5b91c1a4b5c26e55ee62e1efa77987fb22ef0f6ff91d9406c277457e0aa7821e"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_transit_skim_module.py",
+      "exists": true,
+      "sha256": "5e4df6b84f9bebfb27d22d6d1bb208532b90bf629968ff2847d34b08b8b50328"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_transit_skim_settings.py",
+      "exists": true,
+      "sha256": "c2ed1adaa73ede52c8a62dc43307a23991cc982fdfd2720d786d4940b584fa5d"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_worker_heartbeat.py",
+      "exists": true,
+      "sha256": "b3e69a9a87013b9a3084febdf1a574fc11f6c010ef13f8a18d985971e98166b1"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_zone_attributes.py",
+      "exists": true,
+      "sha256": "6022a24f07060de6c5b1537790f131fac2bf92fef0c62b8bb28bd12758cab832"
+    },
+    {
+      "path": "workers/aequilibrae_worker/test_zone_resolution.py",
+      "exists": true,
+      "sha256": "932c22c4e5576ad582396f29fa00b5bb0cb71030425f9cbfbee6ae1933aff1a8"
+    },
+    {
+      "path": "workers/aequilibrae_worker/time_of_day.py",
+      "exists": true,
+      "sha256": "c7c32f91df1669afc63488afcd113c7d7bf7a214e36f736c921a7938fae4eebc"
+    },
+    {
+      "path": "workers/aequilibrae_worker/worker_heartbeat.py",
+      "exists": true,
+      "sha256": "6cf37e6aaa625186a000a94088c054a8c238f24549a9bc593b3768f1d4311803"
+    },
+    {
+      "path": "workers/aequilibrae_worker/worker_import_for_tests.py",
+      "exists": true,
+      "sha256": "4a240982e046ac1c9529bf2296fb34f9d9e8f6a1e91b415a3a60caa8e1a55042"
+    },
+    {
+      "path": "workers/county_onramp_worker/Dockerfile",
+      "exists": true,
+      "sha256": "d3943120fb6d69ceabc889447666f34b028f3a522d9919ae4dc8686c55fc9085"
+    },
+    {
+      "path": "workers/hosted-models/Dockerfile",
+      "exists": true,
+      "sha256": "4f5fc5335248ee3c591ef0813240df53babedcb05030ed43621584642afcb30d"
+    },
+    {
+      "path": "workers/hosted-models/verify_graph_compatibility.py",
+      "exists": true,
+      "sha256": "f61baa67f4a3cfa054fbdd7397be92c38fbf705670c7785fa261d218dfb68eba"
+    }
+  ],
+  "commands": {
+    "systemd-run": "/usr/bin/systemd-run",
+    "bash": "/usr/bin/bash",
+    "env": "/usr/bin/env"
+  },
+  "missing": []
+}

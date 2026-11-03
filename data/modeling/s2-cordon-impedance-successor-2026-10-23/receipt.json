@@ -1,0 +1,12 @@
+{
+  "lock_sha256": "d867974ee13a8a92834e99837519f278edc24db49d5da88495ce19ae6c94823a",
+  "required_scratch_bytes": 1725951631,
+  "schema_version": "openplan.sealed-study.receipt.v1",
+  "selected_members_uncompressed_bytes": 217403269,
+  "source_sha256": {
+    "original-development-inputs": "3fcf016c4ba7604fff07851a274e7af225c6cfc3a879c81002ee1ff580afba95"
+  },
+  "status": "source_consumed_before_first_selected_member_read",
+  "study_id": "s2-cordon-impedance-development-successor-20261023",
+  "written_at": "2026-10-23T21:43:59.289592+00:00"
+}

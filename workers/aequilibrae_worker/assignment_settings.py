@@ -41,6 +41,7 @@ import os
 from collections.abc import Mapping, Sequence
 from importlib import metadata as importlib_metadata
 from typing import Any, Callable
+from assignment_runtime import require_assignment_python
 
 
 PROFILE_SCHEMA_VERSION = "openplan.assignment-profile.v1"
@@ -312,6 +313,7 @@ def build_traffic_assignment(
     profile: Mapping[str, Any],
 ) -> Any:
     """Construct and configure every worker TrafficAssignment in one place."""
+    require_assignment_python()
     settings = canonical_assignment_profile(profile)
     _require_local_assignment_engine(settings)
     assignment = traffic_assignment_factory()

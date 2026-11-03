@@ -1,0 +1,58 @@
+{
+  "scope": "synthetic data only; no development source opened",
+  "preparation_steps": [
+    "sealed lock parse and host lease",
+    "exclusive-path preflight",
+    "190-file code closure and archive/member hash verification",
+    "scratch free-space admission",
+    "durable exclusive receipt",
+    "runtime versions and one-core check",
+    "source extraction",
+    "zone and OD ordering",
+    "public OMX core read and centroid-axis composition",
+    "external demand reconstruction and reachability",
+    "candidate conditioning and conservation",
+    "default identity",
+    "native Spatialite geometry read and input-only station matching",
+    "two pre-output audits",
+    "five native BFW assignments including repeat",
+    "raw and unavailable-uncertainty scoring",
+    "independent validator",
+    "exclusive aggregate publication and candidate removal"
+  ],
+  "native_assignments": 5,
+  "synthetic_geographies": 2,
+  "synthetic_members": 12,
+  "tests": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0
+  },
+  "mutation": {
+    "harmless_survivors": 1,
+    "targeted_assertion_failures": 3,
+    "restored_test_passes": 3,
+    "skipped": 0
+  },
+  "prior_fixture_failure": {
+    "type": "SealedStudyError: scratch_directory does not exist",
+    "before_receipt": true,
+    "remedy": "Create synthetic scratch directory before invoking runner"
+  },
+  "original_source_closure": {
+    "matched": 190,
+    "mismatched": 0
+  },
+  "scientific_sections_byte_identical": true,
+  "commands": [
+    "systemd-run --user --scope -p MemoryMax=6G -p MemorySwapMax=0 /home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3 -B scripts/modeling/s2_cordon/test_successor.py -v",
+    "systemd-run --user --scope -p MemoryMax=6G -p MemorySwapMax=0 /home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3 -B scripts/modeling/s2_cordon/prove_successor.py data/modeling/s2-cordon-impedance-successor-2026-10-23/mutation-controls.json"
+  ],
+  "blind_categories": [
+    "real county preparation and assignment",
+    "behavioral and scientific validity",
+    "independent acceptance",
+    "machine crash recovery",
+    "hosted and browser operation"
+  ]
+}

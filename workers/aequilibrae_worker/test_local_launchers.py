@@ -134,6 +134,7 @@ class LauncherTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         for relative in (*LAUNCHERS, "workers/aequilibrae_worker/check_local_dependencies.py",
+                         "workers/aequilibrae_worker/assignment_runtime.py",
                          "workers/aequilibrae_worker/requirements.txt"):
             target = self.root / relative
             target.parent.mkdir(parents=True, exist_ok=True)

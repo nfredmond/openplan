@@ -1,0 +1,53 @@
+{
+  "study_id": "s2-cordon-impedance-development-successor-20261023",
+  "development_decision": "retire",
+  "scientific_accuracy": "inconclusive",
+  "comparison_complete": true,
+  "assignments_planned": 11,
+  "assignments_completed": 11,
+  "all_converged": true,
+  "candidate_available": true,
+  "defaults_changed": false,
+  "holdout_accessed": false,
+  "preregistration_commit": "72a765cd4",
+  "lock_commit": "dfcb80a12a1477b1134a9759384c1b70dcf24289",
+  "geographies": [
+    {
+      "geography": "06047",
+      "split": "diagnosis",
+      "decision": "advance",
+      "reasons": []
+    },
+    {
+      "geography": "06069",
+      "split": "evaluation",
+      "decision": "retire",
+      "reasons": [
+        "evaluation_improvement_below_5_points"
+      ]
+    },
+    {
+      "geography": "06107",
+      "split": "evaluation",
+      "decision": "retire",
+      "reasons": [
+        "evaluation_improvement_below_5_points",
+        "lost_loaded_station"
+      ]
+    },
+    {
+      "geography": "08014",
+      "split": "diagnosis",
+      "decision": "advance",
+      "reasons": []
+    },
+    {
+      "geography": "08101",
+      "split": "evaluation",
+      "decision": "retire",
+      "reasons": [
+        "evaluation_improvement_below_5_points"
+      ]
+    }
+  ]
+}

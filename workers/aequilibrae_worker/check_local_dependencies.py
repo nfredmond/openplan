@@ -3,6 +3,7 @@
 from importlib import import_module, metadata
 from pathlib import Path
 import sys
+from assignment_runtime import require_assignment_python
 
 try:
     from packaging.requirements import InvalidRequirement, Requirement
@@ -70,6 +71,7 @@ def check_versions(requirements: dict[str, Requirement], version=metadata.versio
 def main() -> int:
     requirements_path = Path(__file__).resolve().with_name("requirements.txt")
     try:
+        require_assignment_python()
         requirements = read_requirements(requirements_path)
         errors = check_versions(requirements)
         if errors:

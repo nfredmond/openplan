@@ -1,0 +1,151 @@
+{
+  "interpreters": [
+    {
+      "python": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+      "executable": "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+      "versions": {
+        "aequilibrae": "1.6.2",
+        "numpy": "2.0.2",
+        "pandas": "2.3.3",
+        "scipy": "1.17.1"
+      },
+      "result_adapter_path": "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/lib/python3.14/site-packages/aequilibrae/paths/traffic_assignment.py",
+      "result_adapter_sha256": "1ee79fed2add1d5a78862f30bbef04a1ff8e17efd06135b77c0d4a43f92de666"
+    },
+    {
+      "python": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+      "executable": "/home/nathaniel/.local/state/openplan/s2-cordon-round3-20261023/venv/bin/python3",
+      "versions": {
+        "aequilibrae": "1.6.2",
+        "numpy": "2.0.2",
+        "pandas": "2.3.3",
+        "scipy": "1.17.1"
+      },
+      "result_adapter_path": "/home/nathaniel/.local/state/openplan/s2-cordon-round3-20261023/venv/lib/python3.11/site-packages/aequilibrae/paths/traffic_assignment.py",
+      "result_adapter_sha256": "1ee79fed2add1d5a78862f30bbef04a1ff8e17efd06135b77c0d4a43f92de666"
+    }
+  ],
+  "retained_assignment_signatures": [
+    {
+      "county": "06047",
+      "arm": "baseline",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06047/baseline/link_volumes.csv",
+      "sha256": "4d1456378eca14055f599c4b904c2f2b5458314b634197c797ab663fde08361c",
+      "links": 98750,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 5.329070518200751e-15,
+        "BA": 3.552713678800501e-15
+      }
+    },
+    {
+      "county": "06047",
+      "arm": "candidate",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06047/candidate/link_volumes.csv",
+      "sha256": "4b87098670f9e1574bca4fc919d10643e90e3bc6c7c69f73112adb2b12c95687",
+      "links": 98750,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 5.329070518200751e-15,
+        "BA": 5.329070518200751e-15
+      }
+    },
+    {
+      "county": "06069",
+      "arm": "baseline",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/baseline/link_volumes.csv",
+      "sha256": "21972ecc37a3b2d85b8e78c179cfcb64151af65ba0c51045d3dab56ad49a7427",
+      "links": 34040,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 3.552713678800501e-15,
+        "BA": 7.105427357601002e-15
+      }
+    },
+    {
+      "county": "06069",
+      "arm": "candidate",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/candidate/link_volumes.csv",
+      "sha256": "23ee7843bd6f6c420587c3e5e1b018eaa3093b1d7a6ac1d4db079e9bd880f7b6",
+      "links": 34040,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 5.329070518200751e-15
+      }
+    },
+    {
+      "county": "06069",
+      "arm": "repeat",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/repeat/link_volumes.csv",
+      "sha256": "23ee7843bd6f6c420587c3e5e1b018eaa3093b1d7a6ac1d4db079e9bd880f7b6",
+      "links": 34040,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 5.329070518200751e-15
+      }
+    },
+    {
+      "county": "06107",
+      "arm": "baseline",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06107/baseline/link_volumes.csv",
+      "sha256": "97d0af972edf3817b12abface4cdd31af19d578f49fcb92f28c01d7858f2d06f",
+      "links": 90690,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 7.105427357601002e-15
+      }
+    },
+    {
+      "county": "06107",
+      "arm": "candidate",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06107/candidate/link_volumes.csv",
+      "sha256": "532e072eee50239d805f276f34837d2a3dfa63e0a29ae9244e166159baa96d88",
+      "links": 90690,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 7.105427357601002e-15
+      }
+    },
+    {
+      "county": "08014",
+      "arm": "baseline",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/08014/baseline/link_volumes.csv",
+      "sha256": "ca9d34ec14dc96488f9ca988e5f72c6008ec14c1a26edd51538d4124b88ba2a3",
+      "links": 49226,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 1.7763568394002505e-15,
+        "BA": 1.7763568394002505e-15
+      }
+    },
+    {
+      "county": "08014",
+      "arm": "candidate",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/08014/candidate/link_volumes.csv",
+      "sha256": "3fd84a29ea75d574c02a22dc5121fd7d8a779d7ca2e1bd079b2351735b7c389c",
+      "links": 49226,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 1.7763568394002505e-15
+      }
+    },
+    {
+      "county": "08101",
+      "arm": "baseline",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/08101/baseline/link_volumes.csv",
+      "sha256": "f3e4037c7fdb96a1e3b543acdceb54af973581273a393e446c92057b34c18c9b",
+      "links": 38378,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 5.329070518200751e-15,
+        "BA": 5.329070518200751e-15
+      }
+    },
+    {
+      "county": "08101",
+      "arm": "candidate",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/08101/candidate/link_volumes.csv",
+      "sha256": "7328a84204e94c249c40ee4fcbdd3320d2afd1a9245285c44f35f3318e0f22fd",
+      "links": 38378,
+      "pce_equals_voc_divided_by_0_1_max_abs": {
+        "AB": 5.329070518200751e-15,
+        "BA": 5.329070518200751e-15
+      }
+    }
+  ]
+}
