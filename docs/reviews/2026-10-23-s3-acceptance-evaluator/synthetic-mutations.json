@@ -1,0 +1,644 @@
+{
+  "source_sha256": "df3f77725c74cd9cd5040fd7616cd1f98d68a01b2328107b41e2c643a0bf7a92",
+  "baseline": {
+    "tests": 105,
+    "failures": [],
+    "errors": [],
+    "skipped": 0
+  },
+  "harmless": "survived",
+  "mutations": [
+    {
+      "mutation": "refusal:60:label",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_jurisdictions_empty (test_model_validation_acceptance.AcceptanceTests.test_protocol_jurisdictions_empty)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:61:label",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_jurisdictions_duplicate (test_model_validation_acceptance.AcceptanceTests.test_protocol_jurisdictions_duplicate)",
+        "test_protocol_lineage (test_model_validation_acceptance.AcceptanceTests.test_protocol_lineage)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:78:'freeze time requires a timezone'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_timezone (test_model_validation_acceptance.AcceptanceTests.test_protocol_timezone)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:83:'preregistration hash differs from frozen record'",
+      "outcome": "killed",
+      "assertions": [
+        "test_hash_refusal_before_input_access (test_model_validation_acceptance.AcceptanceTests.test_hash_refusal_before_input_access)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:242:'unknown or averaged method'",
+      "outcome": "killed",
+      "assertions": [
+        "test_unknown_method (test_model_validation_acceptance.AcceptanceTests.test_unknown_method)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:68:'duplicate JSON key'",
+      "outcome": "killed",
+      "assertions": [
+        "test_duplicate_json (test_model_validation_acceptance.AcceptanceTests.test_duplicate_json)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:88:'preregistration must be an object'",
+      "outcome": "killed",
+      "assertions": [
+        "test_not_object (test_model_validation_acceptance.AcceptanceTests.test_not_object)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:89:'unsupported or unfrozen preregistration'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_unfrozen (test_model_validation_acceptance.AcceptanceTests.test_protocol_unfrozen)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:91:'frozen record identity differs'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_identity (test_model_validation_acceptance.AcceptanceTests.test_protocol_identity)",
+        "test_record_identity (test_model_validation_acceptance.AcceptanceTests.test_record_identity)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:94:'both methods must remain separate'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_methods (test_model_validation_acceptance.AcceptanceTests.test_protocol_methods)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:95:'shared input custody missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_shared (test_model_validation_acceptance.AcceptanceTests.test_protocol_shared)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:97:'method code/settings custody missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_method_context (test_model_validation_acceptance.AcceptanceTests.test_protocol_method_context)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:99:'unsupported interval aggregation'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_interval_aggregation (test_model_validation_acceptance.AcceptanceTests.test_protocol_interval_aggregation)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:104:'required cells missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_cells_empty (test_model_validation_acceptance.AcceptanceTests.test_protocol_cells_empty)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:106:'duplicate claim cell'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_cell_duplicate (test_model_validation_acceptance.AcceptanceTests.test_protocol_cell_duplicate)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:107:'cell outside declared scope'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_cell_scope (test_model_validation_acceptance.AcceptanceTests.test_protocol_cell_scope)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:109:'jurisdiction/use scope omitted'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_jurisdiction_scope (test_model_validation_acceptance.AcceptanceTests.test_protocol_jurisdiction_scope)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:111:'archetype/use scope omitted'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_archetype_scope (test_model_validation_acceptance.AcceptanceTests.test_protocol_archetype_scope)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:115:'invalid partition'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_partition (test_model_validation_acceptance.AcceptanceTests.test_protocol_partition)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:240:'unexpected or duplicate observation'",
+      "outcome": "killed",
+      "assertions": [
+        "test_duplicate_observation (test_model_validation_acceptance.AcceptanceTests.test_duplicate_observation)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:127:'observation is not in an acceptance block'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_development (test_model_validation_acceptance.AcceptanceTests.test_protocol_development)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:129:'observation cluster differs from block'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_cluster (test_model_validation_acceptance.AcceptanceTests.test_protocol_cluster)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:130:'observation outside declared scope'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_observation_scope (test_model_validation_acceptance.AcceptanceTests.test_protocol_observation_scope)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:131:'source artifact hash missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_source (test_model_validation_acceptance.AcceptanceTests.test_protocol_source)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:132:'comparison basis missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_basis (test_model_validation_acceptance.AcceptanceTests.test_protocol_basis)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:138:'unsupported gate'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_gate (test_model_validation_acceptance.AcceptanceTests.test_protocol_gate)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:139:'invalid threshold'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_threshold_type (test_model_validation_acceptance.AcceptanceTests.test_protocol_threshold_type)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:140:'metric operator has wrong direction'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_operator (test_model_validation_acceptance.AcceptanceTests.test_protocol_operator)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:142:'threshold outside metric domain'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_threshold_domain (test_model_validation_acceptance.AcceptanceTests.test_protocol_threshold_domain)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:145:'gate evidence missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_source_quote (test_model_validation_acceptance.AcceptanceTests.test_protocol_source_quote)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:146:'invalid evidence minimum'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_sample_minimum (test_model_validation_acceptance.AcceptanceTests.test_protocol_sample_minimum)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:169:'link gate drops registered observations'",
+      "outcome": "killed",
+      "assertions": [
+        "test_dropped_manifest_observation (test_model_validation_acceptance.AcceptanceTests.test_dropped_manifest_observation)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:232:'holdout is consumed, exposed, or not proven sealed'",
+      "outcome": "killed",
+      "assertions": [
+        "test_holdout_refusal_before_input_access (test_model_validation_acceptance.AcceptanceTests.test_holdout_refusal_before_input_access) (key='consumed', value=True)",
+        "test_holdout_refusal_before_input_access (test_model_validation_acceptance.AcceptanceTests.test_holdout_refusal_before_input_access) (key='exposed', value=True)",
+        "test_holdout_refusal_before_input_access (test_model_validation_acceptance.AcceptanceTests.test_holdout_refusal_before_input_access) (key='status', value='unknown')",
+        "test_holdout_refusal_before_input_access (test_model_validation_acceptance.AcceptanceTests.test_holdout_refusal_before_input_access) (key='consumed', value=None)",
+        "test_holdout_refusal_before_input_access (test_model_validation_acceptance.AcceptanceTests.test_holdout_refusal_before_input_access) (key='exposed', value=None)",
+        "test_missing_custody (test_model_validation_acceptance.AcceptanceTests.test_missing_custody)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:234:'holdout custody belongs to another frozen study'",
+      "outcome": "killed",
+      "assertions": [
+        "test_holdout_binding (test_model_validation_acceptance.AcceptanceTests.test_holdout_binding)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:247:'method identity differs'",
+      "outcome": "killed",
+      "assertions": [
+        "test_output_identity (test_model_validation_acceptance.AcceptanceTests.test_output_identity)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:248:'method inputs differ from shared boundary'",
+      "outcome": "killed",
+      "assertions": [
+        "test_output_shared (test_model_validation_acceptance.AcceptanceTests.test_output_shared)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:249:'method code/settings differ from freeze'",
+      "outcome": "killed",
+      "assertions": [
+        "test_output_context (test_model_validation_acceptance.AcceptanceTests.test_output_context)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:250:'unexpected model observation'",
+      "outcome": "killed",
+      "assertions": [
+        "test_output_extra (test_model_validation_acceptance.AcceptanceTests.test_output_extra)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:120:'geographic/source cluster overlaps partitions or blocks'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_overlap (test_model_validation_acceptance.AcceptanceTests.test_protocol_overlap)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:152:'empty comparison group'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_group_empty (test_model_validation_acceptance.AcceptanceTests.test_protocol_group_empty)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:153:'invalid member or weight'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_weight (test_model_validation_acceptance.AcceptanceTests.test_protocol_weight)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:154:'gate double counts a source observation'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_double_count (test_model_validation_acceptance.AcceptanceTests.test_protocol_double_count)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:156:'link gate must retain individual observations'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_link_sum (test_model_validation_acceptance.AcceptanceTests.test_protocol_link_sum)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:158:'gate borrows another stratum'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_borrow_stratum (test_model_validation_acceptance.AcceptanceTests.test_protocol_borrow_stratum)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:161:'aggregation mixes comparison bases'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_mixed_basis (test_model_validation_acceptance.AcceptanceTests.test_protocol_mixed_basis)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:162:'aggregation quantity or weight basis missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_protocol_quantity (test_model_validation_acceptance.AcceptanceTests.test_protocol_quantity)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "refusal:164:'link tolerance missing'",
+      "outcome": "killed",
+      "assertions": [
+        "test_tolerance_required (test_model_validation_acceptance.AcceptanceTests.test_tolerance_required)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "missing-observation",
+      "outcome": "killed",
+      "assertions": [
+        "test_missing_stratum (test_model_validation_acceptance.AcceptanceTests.test_missing_stratum)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "invalid-model-output",
+      "outcome": "killed",
+      "assertions": [
+        "test_bad_outputs_are_inconclusive (test_model_validation_acceptance.AcceptanceTests.test_bad_outputs_are_inconclusive)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "interval-validity",
+      "outcome": "killed",
+      "assertions": [
+        "test_insufficient_interval_reversed (test_model_validation_acceptance.AcceptanceTests.test_insufficient_interval_reversed)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "interval-provenance",
+      "outcome": "killed",
+      "assertions": [
+        "test_insufficient_interval_method_changed (test_model_validation_acceptance.AcceptanceTests.test_insufficient_interval_method_changed)",
+        "test_insufficient_interval_provenance (test_model_validation_acceptance.AcceptanceTests.test_insufficient_interval_provenance)",
+        "test_insufficient_source_changed (test_model_validation_acceptance.AcceptanceTests.test_insufficient_source_changed)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "observation-grade",
+      "outcome": "killed",
+      "assertions": [
+        "test_insufficient_grade_c (test_model_validation_acceptance.AcceptanceTests.test_insufficient_grade_c)",
+        "test_insufficient_grade_d (test_model_validation_acceptance.AcceptanceTests.test_insufficient_grade_d)",
+        "test_insufficient_match (test_model_validation_acceptance.AcceptanceTests.test_insufficient_match)",
+        "test_insufficient_qa (test_model_validation_acceptance.AcceptanceTests.test_insufficient_qa)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "basis-comparability",
+      "outcome": "killed",
+      "assertions": [
+        "test_all_basis_dimensions (test_model_validation_acceptance.AcceptanceTests.test_all_basis_dimensions)",
+        "test_insufficient_basis (test_model_validation_acceptance.AcceptanceTests.test_insufficient_basis)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "independent-evidence",
+      "outcome": "killed",
+      "assertions": [
+        "test_insufficient_clusters (test_model_validation_acceptance.AcceptanceTests.test_insufficient_clusters)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "local-failure",
+      "outcome": "killed",
+      "assertions": [
+        "test_fail_with_another_inconclusive_cell (test_model_validation_acceptance.AcceptanceTests.test_fail_with_another_inconclusive_cell)",
+        "test_local_failure_cannot_be_hidden (test_model_validation_acceptance.AcceptanceTests.test_local_failure_cannot_be_hidden)",
+        "test_use_isolation (test_model_validation_acceptance.AcceptanceTests.test_use_isolation)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "missing-claim",
+      "outcome": "killed",
+      "assertions": [
+        "test_missing_level (test_model_validation_acceptance.AcceptanceTests.test_missing_level)",
+        "test_missing_method_cannot_borrow (test_model_validation_acceptance.AcceptanceTests.test_missing_method_cannot_borrow)",
+        "test_missing_stratum (test_model_validation_acceptance.AcceptanceTests.test_missing_stratum)",
+        "test_uncertainty_only_cannot_pass (test_model_validation_acceptance.AcceptanceTests.test_uncertainty_only_cannot_pass)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "missing-scale",
+      "outcome": "killed",
+      "assertions": [
+        "test_missing_level (test_model_validation_acceptance.AcceptanceTests.test_missing_level)",
+        "test_uncertainty_only_cannot_pass (test_model_validation_acceptance.AcceptanceTests.test_uncertainty_only_cannot_pass)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "max-raw",
+      "outcome": "killed",
+      "assertions": [
+        "test_boundary_operators (test_model_validation_acceptance.AcceptanceTests.test_boundary_operators)",
+        "test_inside_interval_is_not_accuracy (test_model_validation_acceptance.AcceptanceTests.test_inside_interval_is_not_accuracy)",
+        "test_metric_max_raw_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_raw_ape_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_raw_ape')",
+        "test_unloaded_zero_retained (test_model_validation_acceptance.AcceptanceTests.test_unloaded_zero_retained)",
+        "test_use_isolation (test_model_validation_acceptance.AcceptanceTests.test_use_isolation)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "max-excess",
+      "outcome": "killed",
+      "assertions": [
+        "test_metric_max_excess_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_excess_ape_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_excess_ape')"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "raw-residual",
+      "outcome": "killed",
+      "assertions": [
+        "test_boundary_operators (test_model_validation_acceptance.AcceptanceTests.test_boundary_operators)",
+        "test_fail_with_another_inconclusive_cell (test_model_validation_acceptance.AcceptanceTests.test_fail_with_another_inconclusive_cell)",
+        "test_inside_interval_is_not_accuracy (test_model_validation_acceptance.AcceptanceTests.test_inside_interval_is_not_accuracy)",
+        "test_local_failure_cannot_be_hidden (test_model_validation_acceptance.AcceptanceTests.test_local_failure_cannot_be_hidden)",
+        "test_metric_max_raw_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_raw_ape_fail)",
+        "test_metric_raw_percent_rmse_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_raw_percent_rmse_fail)",
+        "test_metric_share_within_tolerance_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_share_within_tolerance_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_raw_ape')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='raw_percent_rmse')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='share_within_tolerance')",
+        "test_share_equality_passes (test_model_validation_acceptance.AcceptanceTests.test_share_equality_passes)",
+        "test_unloaded_zero_retained (test_model_validation_acceptance.AcceptanceTests.test_unloaded_zero_retained)",
+        "test_use_isolation (test_model_validation_acceptance.AcceptanceTests.test_use_isolation)",
+        "test_weighted_residuals_all_levels (test_model_validation_acceptance.AcceptanceTests.test_weighted_residuals_all_levels)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "interval-excess",
+      "outcome": "killed",
+      "assertions": [
+        "test_metric_excess_percent_rmse_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_excess_percent_rmse_fail)",
+        "test_metric_max_excess_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_excess_ape_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_excess_ape')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='excess_percent_rmse')",
+        "test_unloaded_zero_retained (test_model_validation_acceptance.AcceptanceTests.test_unloaded_zero_retained)",
+        "test_weighted_residuals_all_levels (test_model_validation_acceptance.AcceptanceTests.test_weighted_residuals_all_levels)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "raw-ape",
+      "outcome": "killed",
+      "assertions": [
+        "test_boundary_operators (test_model_validation_acceptance.AcceptanceTests.test_boundary_operators)",
+        "test_fail_with_another_inconclusive_cell (test_model_validation_acceptance.AcceptanceTests.test_fail_with_another_inconclusive_cell)",
+        "test_inside_interval_is_not_accuracy (test_model_validation_acceptance.AcceptanceTests.test_inside_interval_is_not_accuracy)",
+        "test_local_failure_cannot_be_hidden (test_model_validation_acceptance.AcceptanceTests.test_local_failure_cannot_be_hidden)",
+        "test_metric_max_raw_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_raw_ape_fail)",
+        "test_metric_share_within_tolerance_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_share_within_tolerance_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_raw_ape')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='share_within_tolerance')",
+        "test_share_equality_passes (test_model_validation_acceptance.AcceptanceTests.test_share_equality_passes)",
+        "test_unloaded_zero_retained (test_model_validation_acceptance.AcceptanceTests.test_unloaded_zero_retained)",
+        "test_weighted_residuals_all_levels (test_model_validation_acceptance.AcceptanceTests.test_weighted_residuals_all_levels)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "excess-ape",
+      "outcome": "killed",
+      "assertions": [
+        "test_metric_max_excess_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_excess_ape_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_excess_ape')",
+        "test_weighted_residuals_all_levels (test_model_validation_acceptance.AcceptanceTests.test_weighted_residuals_all_levels)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "rmse",
+      "outcome": "killed",
+      "assertions": [
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='raw_percent_rmse')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='excess_percent_rmse')"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "share",
+      "outcome": "killed",
+      "assertions": [
+        "test_metric_share_within_tolerance_pass (test_model_validation_acceptance.AcceptanceTests.test_metric_share_within_tolerance_pass)",
+        "test_share_counts_boundary_as_inside (test_model_validation_acceptance.AcceptanceTests.test_share_counts_boundary_as_inside)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "correlation",
+      "outcome": "killed",
+      "assertions": [
+        "test_metric_pearson_correlation_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_pearson_correlation_fail)",
+        "test_negative_correlation_fails (test_model_validation_acceptance.AcceptanceTests.test_negative_correlation_fails)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "threshold",
+      "outcome": "killed",
+      "assertions": [
+        "test_boundary_operators (test_model_validation_acceptance.AcceptanceTests.test_boundary_operators)",
+        "test_fail_with_another_inconclusive_cell (test_model_validation_acceptance.AcceptanceTests.test_fail_with_another_inconclusive_cell)",
+        "test_inside_interval_is_not_accuracy (test_model_validation_acceptance.AcceptanceTests.test_inside_interval_is_not_accuracy)",
+        "test_local_failure_cannot_be_hidden (test_model_validation_acceptance.AcceptanceTests.test_local_failure_cannot_be_hidden)",
+        "test_metric_excess_percent_rmse_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_excess_percent_rmse_fail)",
+        "test_metric_max_excess_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_excess_ape_fail)",
+        "test_metric_max_raw_ape_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_max_raw_ape_fail)",
+        "test_metric_pearson_correlation_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_pearson_correlation_fail)",
+        "test_metric_raw_percent_rmse_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_raw_percent_rmse_fail)",
+        "test_metric_share_within_tolerance_fail (test_model_validation_acceptance.AcceptanceTests.test_metric_share_within_tolerance_fail)",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='max_raw_ape')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='raw_percent_rmse')",
+        "test_metrics (test_model_validation_acceptance.AcceptanceTests.test_metrics) (metric='share_within_tolerance')",
+        "test_negative_correlation_fails (test_model_validation_acceptance.AcceptanceTests.test_negative_correlation_fails)",
+        "test_unloaded_zero_retained (test_model_validation_acceptance.AcceptanceTests.test_unloaded_zero_retained)",
+        "test_use_isolation (test_model_validation_acceptance.AcceptanceTests.test_use_isolation)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "method-averaging",
+      "outcome": "killed",
+      "assertions": [
+        "test_local_failure_cannot_be_hidden (test_model_validation_acceptance.AcceptanceTests.test_local_failure_cannot_be_hidden)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    },
+    {
+      "mutation": "weight",
+      "outcome": "killed",
+      "assertions": [
+        "test_weighted_residuals_all_levels (test_model_validation_acceptance.AcceptanceTests.test_weighted_residuals_all_levels)"
+      ],
+      "additional_errors_not_counted_as_kills": []
+    }
+  ],
+  "restored": {
+    "tests": 105,
+    "failures": [],
+    "errors": [],
+    "skipped": 0
+  },
+  "blind_category": "Synthetic supplied-input arithmetic only; no source authenticity, access-control, native engine, production, or scientific acceptance evidence."
+}
