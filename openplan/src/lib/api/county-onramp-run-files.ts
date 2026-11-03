@@ -62,13 +62,23 @@ const NOT_THERE_CODES = new Set(["ENOENT", "ENOTDIR"]);
  * folder is also missing is a path from another machine. Any other error
  * (bad JSON, bad CSV) is not a reachability question and returns false, so
  * the route keeps its existing error.
+ *
+ * Pass the manifest's `run_dir` as `runDir` whenever the file sits in a
+ * subfolder the worker creates later: `<run_dir>/validation` exists only after
+ * validation runs, so its absence on a shared disk means "not run yet", not
+ * "unreachable". The run folder itself is the anchor in that case.
  */
-export async function isCountyRunFileUnreachable(error: unknown, filePath: string): Promise<boolean> {
+export async function isCountyRunFileUnreachable(
+  error: unknown,
+  filePath: string,
+  runDir?: string | null
+): Promise<boolean> {
   const code = errnoCode(error);
   if (code === null) return false;
   if (NO_ACCESS_CODES.has(code)) return true;
   if (!NOT_THERE_CODES.has(code)) return false;
-  return !(await countyRunFolderIsReachable(dirname(filePath)));
+  if (await countyRunFolderIsReachable(dirname(filePath))) return false;
+  return !(runDir && (await countyRunFolderIsReachable(resolveCountyRunStoredPath(runDir))));
 }
 
 export type CountyRunFileAction =

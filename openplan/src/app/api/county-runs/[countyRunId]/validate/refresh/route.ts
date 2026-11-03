@@ -121,7 +121,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     } catch (readError) {
       // Read before any write, so a file this copy cannot reach leaves the
       // run's stage, summary and artifacts exactly as they were.
-      if (await isCountyRunFileUnreachable(readError, validationSummaryPath)) {
+      if (await isCountyRunFileUnreachable(readError, validationSummaryPath, manifest.run_dir)) {
         audit.warn("county_run_validation_files_unreachable", {
           countyRunId: existingRow.id,
           durationMs: Date.now() - startedAt,

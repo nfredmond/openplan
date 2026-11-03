@@ -120,7 +120,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       try {
         csvSource = await readFile(scaffoldFilePath, "utf8");
       } catch (readError) {
-        if (await isCountyRunFileUnreachable(readError, scaffoldFilePath)) {
+        if (await isCountyRunFileUnreachable(readError, scaffoldFilePath, parsedManifest.data.run_dir)) {
           audit.warn("county_run_scaffold_files_unreachable", {
             countyRunId: parsedParams.data.countyRunId,
             durationMs: Date.now() - startedAt,
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     } catch (writeError) {
       // The file is written before the row is updated, so a write this copy
       // cannot make stops here with the run's stored state untouched.
-      if (await isCountyRunFileUnreachable(writeError, resolvedScaffoldPath)) {
+      if (await isCountyRunFileUnreachable(writeError, resolvedScaffoldPath, manifest.run_dir)) {
         audit.warn("county_run_scaffold_files_unreachable", {
           countyRunId: existingRow.id,
           durationMs: Date.now() - startedAt,

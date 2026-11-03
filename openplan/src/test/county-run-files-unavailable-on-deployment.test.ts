@@ -338,6 +338,20 @@ describe("county run routes on a copy that can see the run's folder", () => {
     expect(writes).toEqual([]);
   });
 
+  it("before the first validation, a run folder with no validation folder yet keeps the not-found answer", async () => {
+    // The worker creates <run_dir>/validation only when validation runs, so on
+    // a shared disk its absence means "not run yet", not "unreachable".
+    const runDir = await folderOnThisHost();
+    await rm(path.join(runDir, "validation"), { recursive: true, force: true });
+    const { writes } = installClient(manifest(runDir));
+
+    const response = await refreshValidation(postRequest("validate/refresh"), routeContext());
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "Validation summary file was not found on disk" });
+    expect(writes).toEqual([]);
+  });
+
   it("validation results with bad content keep the invalid-file answer and change nothing", async () => {
     const runDir = await folderOnThisHost();
     await realWriteFile(path.join(runDir, "validation", "validation_summary.json"), "{ not json", "utf8");
