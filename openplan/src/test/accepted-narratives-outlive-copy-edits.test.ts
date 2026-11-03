@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
@@ -39,6 +39,24 @@ import {
  */
 
 const FIXED = "2026-07-20T00:00:00.000Z";
+
+/**
+ * Claims print timestamps with formatDateTime(), which uses toLocaleString in
+ * the process time zone, so the hash depends on TZ. Other test files set TZ,
+ * and so can a host. Pinned to UTC here, as the hashes were captured.
+ */
+const CAPTURE_TIME_ZONE = "UTC";
+let originalTimeZone: string | undefined;
+
+beforeEach(() => {
+  originalTimeZone = process.env.TZ;
+  process.env.TZ = CAPTURE_TIME_ZONE;
+});
+
+afterEach(() => {
+  if (originalTimeZone === undefined) delete process.env.TZ;
+  else process.env.TZ = originalTimeZone;
+});
 
 function fixture(): ReportSectionFactsInput {
   return {
@@ -98,11 +116,11 @@ function fixture(): ReportSectionFactsInput {
 
 const SECTIONS = ["status_snapshot", "executive_summary", "run_summaries"] as const;
 
-/** factsHash per section for `fixture()`, captured on main at aed8dd948. */
+/** factsHash per section for `fixture()`, captured on main at aed8dd948 with TZ=UTC. */
 const HASH_AT_AED8DD948: Record<(typeof SECTIONS)[number], string> = {
-  status_snapshot: "2b084198dcb62a62d6d1c54e13b177692151c05c1890bc210584cca20a8eecac",
-  executive_summary: "2b084198dcb62a62d6d1c54e13b177692151c05c1890bc210584cca20a8eecac",
-  run_summaries: "ff6158d0ff36ac07a2cc1ec8f7510c7cd09cee7e6e426c4d3c628fa46de398af",
+  status_snapshot: "79136e7e13758afc92072fe071092b79cbd403b37f2d2aec3bb48a832ac86d95",
+  executive_summary: "79136e7e13758afc92072fe071092b79cbd403b37f2d2aec3bb48a832ac86d95",
+  run_summaries: "41643c4ca4a8b7617eb35dc066b43f22f3ca46f72e32f9f8be4015475970c4da",
 };
 
 describe("accepted report narratives outlive copy edits", () => {
