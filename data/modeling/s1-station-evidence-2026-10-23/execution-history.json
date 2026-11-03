@@ -1,0 +1,40 @@
+{
+  "attempts": [
+    {
+      "error": "ValueError: time data '19960800' does not match format '%Y%m%d'",
+      "response": "Retain source date and flag incomplete/invalid calendar dates. Do not infer complete hours.",
+      "status": "failed",
+      "step": "source collection 1"
+    },
+    {
+      "error": "ValueError: source schema missing: aadt",
+      "response": "HPMS nullable AADT may be omitted in JSON. Preserve absence in metadata; no zero substitution.",
+      "status": "failed",
+      "step": "source collection 2"
+    },
+    {
+      "claim": "Pre-consolidation exploratory associations only.",
+      "output_local_path": "/home/nathaniel/.local/state/openplan/s1-station-evidence-20261023/coverage-initial.json",
+      "source_bundle_local_path": "/home/nathaniel/.local/state/openplan/s1-station-evidence-20261023/source-bundle.json",
+      "status": "completed",
+      "step": "source collection 3"
+    },
+    {
+      "output_local_path": "/home/nathaniel/.local/state/openplan/s1-station-evidence-20261023/coverage-v2.json",
+      "status": "completed",
+      "step": "retained-source replay with exact GIS duplicate consolidation"
+    },
+    {
+      "output": "coverage.json",
+      "status": "completed",
+      "step": "final offline audit with bundle file pin and code hashes"
+    },
+    {
+      "error": "HTTP Error 403: Forbidden",
+      "response": "Use indexed official page text with exact response hash unavailable.",
+      "status": "failed",
+      "step": "supplemental terms-page direct request"
+    }
+  ],
+  "date": "2026-10-23"
+}

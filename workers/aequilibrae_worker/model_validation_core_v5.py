@@ -424,6 +424,65 @@ def assess_frozen_instrument_files(
     )
 
 
+def assess_validation_with_uncertainty(
+    observations: Sequence[Mapping[str, Any]],
+    audit: Mapping[str, Any],
+    basis: Mapping[str, Any],
+    modeled_volumes_by_link: Mapping[str | int, float],
+    *,
+    interval_evidence_by_id: Mapping[str, bytes],
+    assessment_id: str,
+    input_bundle_sha256: str,
+    match_audit_sha256: str | None = None,
+    created_at: str | None = None,
+) -> dict[str, Any]:
+    """Explicit study opt-in. Add diagnostics without changing rules-v5 results.
+
+    Freeze interval evidence and per-observation ``uncertainty_comparison``
+    dimensions in a successor's inputs before output access. Existing frozen
+    files must not be rewritten to request this analysis. This in-memory seam
+    does not authorize opening an outcome or establish independent acceptance.
+    """
+    from count_observation_uncertainty import uncertainty_residual
+
+    assessment = assess_validation(
+        observations, audit, basis, modeled_volumes_by_link,
+        assessment_id=assessment_id, input_bundle_sha256=input_bundle_sha256,
+        match_audit_sha256=match_audit_sha256, created_at=created_at,
+    )
+    diagnostics = []
+    for observation, row in zip(observations, assessment["observation_results"]):
+        identifier = observation["observation_id"]
+        facts = basis["observation_facts"][identifier]
+        comparison = facts.get("uncertainty_comparison") or {}
+        diagnostic = uncertainty_residual(
+            observation, row["modeled_value"], comparison,
+            evidence_bytes=interval_evidence_by_id.get(identifier),
+        )
+        # Interval analysis cannot override any original comparability refusal.
+        if not row["basis_findings"] or any(item["status"] != "compatible" for item in row["basis_findings"]):
+            diagnostic["reasons"].append("rules_v5_basis_unproved")
+        if row["match_status"] not in {"matched", "unloaded"}:
+            diagnostic["reasons"].append("match_unavailable")
+        if basis["modeled_quantity"].get("name") != "annual_average_daily_traffic":
+            diagnostic["reasons"].append("model_quantity_not_aadt")
+        if diagnostic["reasons"]:
+            diagnostic.update(status="unavailable", interval_excess_error=None,
+                              interval_excess_percent_error=None, inside_interval=None)
+        diagnostics.append({"observation_id": identifier, **diagnostic})
+    assessment["uncertainty_analysis"] = {
+        "schema": "openplan.count-uncertainty-diagnostics.v1",
+        "observation_results": diagnostics,
+        "available": sum(row["status"] == "available" for row in diagnostics),
+        "unavailable": sum(row["status"] == "unavailable" for row in diagnostics),
+        "unavailable_by_reason": dict(sorted(Counter(
+            reason for row in diagnostics for reason in row["reasons"]
+        ).items())),
+        "claim": "diagnostic_only_original_scoring_and_outcome_unchanged",
+    }
+    return assessment
+
+
 def compare_methods(assessments: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
     """Return separate values, differences, and ratios; never an average."""
     by_method = {str(item.get("method")): item for item in assessments}

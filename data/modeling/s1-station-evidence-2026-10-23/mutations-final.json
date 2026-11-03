@@ -1,0 +1,392 @@
+{
+  "blind_categories": [
+    "publisher truth",
+    "empirical interval coverage",
+    "historical process transfer",
+    "live service completeness",
+    "scientific acceptance"
+  ],
+  "complete": true,
+  "controls": [
+    {
+      "exit_code": 0,
+      "expected": "survive",
+      "name": "baseline",
+      "output": "......................................\n----------------------------------------------------------------------\nRan 38 tests in 0.011s\n\nOK\n",
+      "selector": null,
+      "valid": true
+    },
+    {
+      "exit_code": 0,
+      "expected": "survive",
+      "name": "harmless_station_evidence",
+      "output": "......................................\n----------------------------------------------------------------------\nRan 38 tests in 0.011s\n\nOK\n",
+      "selector": null,
+      "valid": true
+    },
+    {
+      "exit_code": 0,
+      "expected": "survive",
+      "name": "harmless_audit_station_evidence",
+      "output": "......................................\n----------------------------------------------------------------------\nRan 38 tests in 0.011s\n\nOK\n",
+      "selector": null,
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "custody",
+      "output": "F\n======================================================================\nFAIL: test_fetch_and_verify (test_station_evidence.CustodyTests.test_fetch_and_verify)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 86, in test_fetch_and_verify\n    with self.assertRaisesRegex(ValueError,'custody'): s.read_source(Path(td),receipt)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.CustodyTests.test_fetch_and_verify",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "access",
+      "output": "F\n======================================================================\nFAIL: test_registration_refused_before_network (test_station_evidence.CustodyTests.test_registration_refused_before_network)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 90, in test_registration_refused_before_network\n    s.fetch_public('https://example.invalid/',Path('.'),access='registration_required',opener=lambda *a,**k: self.fail('network called'))\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/station_evidence.py\", line 30, in fetch_public\n    with opener(url, timeout=60) as response:\n         ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 90, in <lambda>\n    s.fetch_public('https://example.invalid/',Path('.'),access='registration_required',opener=lambda *a,**k: self.fail('network called'))\n                                                                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: network called\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.CustodyTests.test_registration_refused_before_network",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "redirect",
+      "output": "F\n======================================================================\nFAIL: test_redirect_refused (test_station_evidence.CustodyTests.test_redirect_refused)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 95, in test_redirect_refused\n    with self.assertRaisesRegex(ValueError,'redirect'):\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.CustodyTests.test_redirect_refused",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "workbook_year",
+      "output": "F\n======================================================================\nFAIL: test_workbook_wrong_year (test_station_evidence.AdapterTests.test_workbook_wrong_year)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 111, in test_workbook_wrong_year\n    with self.assertRaisesRegex(ValueError,'edition'): s.caltrans_workbook(workbook(),year=2024,counties={'SYN'})\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_workbook_wrong_year",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "workbook_formula",
+      "output": "F\n======================================================================\nFAIL: test_workbook_formula (test_station_evidence.AdapterTests.test_workbook_formula)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 114, in test_workbook_formula\n    with self.assertRaisesRegex(ValueError,'formula'): s.caltrans_workbook(workbook(formula=True),year=2023,counties={'SYN'})\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_workbook_formula",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "workbook_county",
+      "output": "F\n======================================================================\nFAIL: test_workbook_edition_and_fields (test_station_evidence.AdapterTests.test_workbook_edition_and_fields)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 108, in test_workbook_edition_and_fields\n    self.assertEqual(s.caltrans_workbook(workbook(),year=2023,counties={'OTHER'}),[])\nAssertionError: Lists differ: [{'row': {'RTE': '7', 'CNTY': 'SYN', 'PM':[166 chars]!2'}] != []\n\nFirst list contains 1 additional elements.\nFirst extra element 0:\n{'row': {'RTE': '7', 'CNTY': 'SYN', 'PM': '2.5', 'PM_PFX': '', 'PM_SFX': '', 'RTE_SFX': '', 'DESCRIPTION': 'SYNTHETIC ROAD', 'BACK_AADT': '100', 'AHEAD_AADT': '100'}, 'year': 2023, 'locator': '2023 AADT DATA!2'}\n\n+ []\n- [{'locator': '2023 AADT DATA!2',\n-   'row': {'AHEAD_AADT': '100',\n-           'BACK_AADT': '100',\n-           'CNTY': 'SYN',\n-           'DESCRIPTION': 'SYNTHETIC ROAD',\n-           'PM': '2.5',\n-           'PM_PFX': '',\n-           'PM_SFX': '',\n-           'RTE': '7',\n-           'RTE_SFX': ''},\n-   'year': 2023}]\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_workbook_edition_and_fields",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "caltrans_year",
+      "output": "F\n======================================================================\nFAIL: test_caltrans_preserves_unknown_process_and_sections (test_station_evidence.AdapterTests.test_caltrans_preserves_unknown_process_and_sections)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 122, in test_caltrans_preserves_unknown_process_and_sections\n    self.assertEqual(record['year'],2023)\nAssertionError: 2024 != 2023\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_caltrans_preserves_unknown_process_and_sections",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "caltrans_prefix",
+      "output": "F\n======================================================================\nFAIL: test_caltrans_duplicate_annual_and_prefix_mismatch (test_station_evidence.AdapterTests.test_caltrans_duplicate_annual_and_prefix_mismatch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 128, in test_caltrans_duplicate_annual_and_prefix_mismatch\n    self.assertIsNone(record['year'])\nAssertionError: 2023 is not None\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_caltrans_duplicate_annual_and_prefix_mismatch",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "caltrans_duplicate",
+      "output": "F\n======================================================================\nFAIL: test_caltrans_duplicate_annual_and_prefix_mismatch (test_station_evidence.AdapterTests.test_caltrans_duplicate_annual_and_prefix_mismatch)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 128, in test_caltrans_duplicate_annual_and_prefix_mismatch\n    self.assertIsNone(record['year'])\nAssertionError: 2023 is not None\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_caltrans_duplicate_annual_and_prefix_mismatch",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "cdot_year",
+      "output": "F\n======================================================================\nFAIL: test_cdot_type_years_dates_not_duration (test_station_evidence.AdapterTests.test_cdot_type_years_dates_not_duration)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 149, in test_cdot_type_years_dates_not_duration\n    self.assertEqual((r['collection_type'],r['year'],r['count_year']),('short_duration',2025,2023))\nAssertionError: Tuples differ: ('short_duration', 2025.0, 2025.0) != ('short_duration', 2025, 2023)\n\nFirst differing element 2:\n2025.0\n2023\n\n- ('short_duration', 2025.0, 2025.0)\n?                        --     ^^^\n\n+ ('short_duration', 2025, 2023)\n?                             ^\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_cdot_type_years_dates_not_duration",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "cdot_type",
+      "output": "F\n======================================================================\nFAIL: test_cdot_type_years_dates_not_duration (test_station_evidence.AdapterTests.test_cdot_type_years_dates_not_duration)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 149, in test_cdot_type_years_dates_not_duration\n    self.assertEqual((r['collection_type'],r['year'],r['count_year']),('short_duration',2025,2023))\nAssertionError: Tuples differ: ('continuous', 2025.0, 2023.0) != ('short_duration', 2025, 2023)\n\nFirst differing element 0:\n'continuous'\n'short_duration'\n\n- ('continuous', 2025.0, 2023.0)\n+ ('short_duration', 2025, 2023)\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_cdot_type_years_dates_not_duration",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "cdot_continuous",
+      "output": "F\n======================================================================\nFAIL: test_cdot_continuous_dates_are_not_complete_days (test_station_evidence.AdapterTests.test_cdot_continuous_dates_are_not_complete_days)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 158, in test_cdot_continuous_dates_are_not_complete_days\n    self.assertEqual(r['collection_type'],'continuous')\nAssertionError: 'short_duration' != 'continuous'\n- short_duration\n+ continuous\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_cdot_continuous_dates_are_not_complete_days",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "cdot_duplicate",
+      "output": "F\n======================================================================\nFAIL: test_cdot_refuses_duplicate_aadt_and_ramp (test_station_evidence.AdapterTests.test_cdot_refuses_duplicate_aadt_and_ramp)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 179, in test_cdot_refuses_duplicate_aadt_and_ramp\n    self.assertIsNone(r['year']); self.assertEqual(r['facility'],'unknown')\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 2025.0 is not None\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_cdot_refuses_duplicate_aadt_and_ramp",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "cdot_ramp",
+      "output": "F\n======================================================================\nFAIL: test_cdot_refuses_duplicate_aadt_and_ramp (test_station_evidence.AdapterTests.test_cdot_refuses_duplicate_aadt_and_ramp)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 182, in test_cdot_refuses_duplicate_aadt_and_ramp\n    self.assertEqual(r['facility'],'ramp')\nAssertionError: 'mainline' != 'ramp'\n- mainline\n+ ramp\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_cdot_refuses_duplicate_aadt_and_ramp",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "incomplete_date",
+      "output": "F\n======================================================================\nFAIL: test_incomplete_source_date_retained_and_flagged (test_station_evidence.AdapterTests.test_incomplete_source_date_retained_and_flagged)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 173, in test_incomplete_source_date_retained_and_flagged\n    self.assertEqual(r['incomplete_or_invalid_dates'],['19960800','20230230'])\nAssertionError: Lists differ: [] != ['19960800', '20230230']\n\nSecond list contains 2 additional elements.\nFirst extra element 0:\n'19960800'\n\n- []\n+ ['19960800', '20230230']\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_incomplete_source_date_retained_and_flagged",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "tmas_county",
+      "output": "F\n======================================================================\nFAIL: test_tmas_fields_county_filter_and_method (test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 195, in test_tmas_fields_county_filter_and_method\n    self.assertEqual(s.tmas_metadata(out.getvalue(),members=['synthetic.STA'],counties={'99003'},year=2023),[])\nAssertionError: Lists differ: [{'source': 'tmas', 'station_id': '001', '[597 chars]c'}}] != []\n\nFirst list contains 1 additional elements.\nFirst extra element 0:\n{'source': 'tmas', 'station_id': '001', 'geography': '99001', 'route': '7', 'latitude': 40.0, 'longitude': -100.0, 'year': 2023, 'facility': 'unknown', 'direction': '1', 'lane': '0', 'collection_type': 'continuous', 'member': 'synthetic.STA', 'member_sha256': '2b2053217d7e9c5269164363b21e869dd87aa9713900cd1dbe2934f686d2e207', 'raw': {'station_id': '001', 'state_code': '99', 'county_code': '001', 'year_record': '23', 'method_volume': '3', 'travel_dir': '1', 'travel_lane': '0', 'num_lanes': '2', 'num_lanes_volume': '2', 'latitude': '40000000', 'longitude': '100000000', 'posted_signed_route': '00000007', 'station_location': 'synthetic'}}\n\nDiff is 848 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "tmas_year",
+      "output": "F\n======================================================================\nFAIL: test_tmas_fields_county_filter_and_method (test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 196, in test_tmas_fields_county_filter_and_method\n    with self.assertRaisesRegex(ValueError,'year'):s.tmas_metadata(out.getvalue(),members=['synthetic.STA'],counties={'99001'},year=2024)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "tmas_method",
+      "output": "F\n======================================================================\nFAIL: test_tmas_fields_county_filter_and_method (test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 199, in test_tmas_fields_county_filter_and_method\n    self.assertIsNone(s.tmas_metadata(other.getvalue(),members=['synthetic.STA'],counties={'99001'},year=2023)[0]['collection_type'])\nAssertionError: 'continuous' is not None\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "tmas_longitude",
+      "output": "F\n======================================================================\nFAIL: test_tmas_fields_county_filter_and_method (test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 192, in test_tmas_fields_county_filter_and_method\n    r=parsed[0];self.assertEqual((r['longitude'],r['latitude']),(-100,40))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Tuples differ: (100.0, 40.0) != (-100, 40)\n\nFirst differing element 0:\n100.0\n-100\n\n- (100.0, 40.0)\n?     --    --\n\n+ (-100, 40)\n?  +\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_tmas_fields_county_filter_and_method",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "hpms_year",
+      "output": "F\n======================================================================\nFAIL: test_hpms_section_scope_and_group_duration_refusal (test_station_evidence.AdapterTests.test_hpms_section_scope_and_group_duration_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 205, in test_hpms_section_scope_and_group_duration_refusal\n    self.assertEqual(r['year'],2024);self.assertNotIn('duration',r)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 2023 != 2024\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_hpms_section_scope_and_group_duration_refusal",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_namespace",
+      "output": "F\n======================================================================\nFAIL: test_identity_rule (test_station_evidence.JoinTests.test_identity_rule)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 228, in test_identity_rule\n    self.assertEqual(self.join({**record,key:value},reference)['status'],'unmatched',key)\nAssertionError: 'associated' != 'unmatched'\n- associated\n+ unmatched\n : source\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_identity_rule",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_station_id",
+      "output": "F\n======================================================================\nFAIL: test_identity_rule (test_station_evidence.JoinTests.test_identity_rule)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 228, in test_identity_rule\n    self.assertEqual(self.join({**record,key:value},reference)['status'],'unmatched',key)\nAssertionError: 'associated' != 'unmatched'\n- associated\n+ unmatched\n : station_id\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_identity_rule",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_route_section",
+      "output": "F\n======================================================================\nFAIL: test_identity_rule (test_station_evidence.JoinTests.test_identity_rule)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 228, in test_identity_rule\n    self.assertEqual(self.join({**record,key:value},reference)['status'],'unmatched',key)\nAssertionError: 'associated' != 'unmatched'\n- associated\n+ unmatched\n : route\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_identity_rule",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_facility",
+      "output": "F\n======================================================================\nFAIL: test_location_refusals (test_station_evidence.JoinTests.test_location_refusals)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 232, in test_location_refusals\n    self.assertEqual(self.join({**ca_record(),key:value})['status'],'unmatched',key)\nAssertionError: 'associated' != 'unmatched'\n- associated\n+ unmatched\n : facility\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_location_refusals",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_distance",
+      "output": "F\n======================================================================\nFAIL: test_location_refusals (test_station_evidence.JoinTests.test_location_refusals)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 232, in test_location_refusals\n    self.assertEqual(self.join({**ca_record(),key:value})['status'],'unmatched',key)\nAssertionError: 'associated' != 'unmatched'\n- associated\n+ unmatched\n : longitude\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_location_refusals",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_description",
+      "output": "F\n======================================================================\nFAIL: test_location_refusals (test_station_evidence.JoinTests.test_location_refusals)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 232, in test_location_refusals\n    self.assertEqual(self.join({**ca_record(),key:value})['status'],'unmatched',key)\nAssertionError: 'associated' != 'unmatched'\n- associated\n+ unmatched\n : description\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_location_refusals",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "join_ambiguity",
+      "output": "F\n======================================================================\nFAIL: test_ambiguous_and_empty (test_station_evidence.JoinTests.test_ambiguous_and_empty)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 239, in test_ambiguous_and_empty\n    self.assertEqual(j['reason'],'ambiguous_station_candidates')\nAssertionError: None != 'ambiguous_station_candidates'\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_ambiguous_and_empty",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "year_transfer",
+      "output": "F\n======================================================================\nFAIL: test_year_and_value_mismatch_no_transfer (test_station_evidence.JoinTests.test_year_and_value_mismatch_no_transfer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 263, in test_year_and_value_mismatch_no_transfer\n    self.assertNotIn('vehicle_class',out['vehicle_basis']);self.assertTrue(reasons)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'vehicle_class' unexpectedly found in {'unit': 'vehicles', 'vehicle_definition': 'published AADT', 'conversion': 'unknown', 'vehicle_class': 'all_vehicles'}\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_year_and_value_mismatch_no_transfer",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "value_transfer",
+      "output": "F\n======================================================================\nFAIL: test_year_and_value_mismatch_no_transfer (test_station_evidence.JoinTests.test_year_and_value_mismatch_no_transfer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 263, in test_year_and_value_mismatch_no_transfer\n    self.assertNotIn('vehicle_class',out['vehicle_basis']);self.assertTrue(reasons)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'vehicle_class' unexpectedly found in {'unit': 'vehicles', 'vehicle_definition': 'published AADT', 'conversion': 'unknown', 'vehicle_class': 'all_vehicles'}\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_year_and_value_mismatch_no_transfer",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "preserve_observation",
+      "output": "F\n======================================================================\nFAIL: test_enrichment_preserves_grade_center_and_input (test_station_evidence.JoinTests.test_enrichment_preserves_grade_center_and_input)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 253, in test_enrichment_preserves_grade_center_and_input\n    self.assertEqual(obs,before)\nAssertionError: {'sch[976 chars]nown', 'vehicle_class': 'all_vehicles'}, 'time[1314 chars]'}]}} != {'sch[976 chars]nown'}, 'time_basis': {'year': 2023, 'start_da[1045 chars]ow'}}\nDiff is 4584 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_enrichment_preserves_grade_center_and_input",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "section_scope",
+      "output": "F\n======================================================================\nFAIL: test_unmatched_keeps_input_and_section_ambiguity (test_station_evidence.JoinTests.test_unmatched_keeps_input_and_section_ambiguity)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 275, in test_unmatched_keeps_input_and_section_ambiguity\n    self.assertIn('back_ahead_section_scope_unresolved',reasons)\nAssertionError: 'back_ahead_section_scope_unresolved' not found in ['collection_process_not_published']\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.JoinTests.test_unmatched_keeps_input_and_section_ambiguity",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "external_route",
+      "output": "F\n======================================================================\nFAIL: test_route_scope_distance_refusals (test_station_evidence_audit.ExternalTests.test_route_scope_distance_refusals)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 37, in test_route_scope_distance_refusals\n    self.assertEqual(self.associate(r)['status'],'unmatched')\nAssertionError: 'candidate_only' != 'unmatched'\n- candidate_only\n+ unmatched\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.ExternalTests.test_route_scope_distance_refusals",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "external_scope",
+      "output": "F\n======================================================================\nFAIL: test_route_scope_distance_refusals (test_station_evidence_audit.ExternalTests.test_route_scope_distance_refusals)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 37, in test_route_scope_distance_refusals\n    self.assertEqual(self.associate(r)['status'],'unmatched')\nAssertionError: 'candidate_only' != 'unmatched'\n- candidate_only\n+ unmatched\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.ExternalTests.test_route_scope_distance_refusals",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "external_distance",
+      "output": "F\n======================================================================\nFAIL: test_route_scope_distance_refusals (test_station_evidence_audit.ExternalTests.test_route_scope_distance_refusals)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 37, in test_route_scope_distance_refusals\n    self.assertEqual(self.associate(r)['status'],'unmatched')\nAssertionError: 'candidate_only' != 'unmatched'\n- candidate_only\n+ unmatched\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.ExternalTests.test_route_scope_distance_refusals",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "crosswalk",
+      "output": "F\n======================================================================\nFAIL: test_section_location_is_candidate_not_station (test_station_evidence_audit.ExternalTests.test_section_location_is_candidate_not_station)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 31, in test_section_location_is_candidate_not_station\n    self.assertEqual(result['status'],'candidate_only');self.assertEqual(result['reason'],'publisher_crosswalk_required')\n                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'verified_station' != 'publisher_crosswalk_required'\n- verified_station\n+ publisher_crosswalk_required\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.ExternalTests.test_section_location_is_candidate_not_station",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "registry_custody",
+      "output": "F\n======================================================================\nFAIL: test_registry_hash_refusal (test_station_evidence_audit.AuditTests.test_registry_hash_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 97, in test_registry_hash_refusal\n    with patch.object(a,'ROOT',root),self.assertRaisesRegex(ValueError,'registry hash'):a.matched_inputs(config,rp)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.AuditTests.test_registry_hash_refusal",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "baseline_custody",
+      "output": "F\n======================================================================\nFAIL: test_baseline_and_archive_hash_refusal (test_station_evidence_audit.AuditTests.test_baseline_and_archive_hash_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 103, in test_baseline_and_archive_hash_refusal\n    with patch.object(a,'ROOT',root),self.assertRaisesRegex(ValueError,expected):a.matched_inputs(config,rp)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.AuditTests.test_baseline_and_archive_hash_refusal",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "archive_custody",
+      "output": "F\n======================================================================\nFAIL: test_baseline_and_archive_hash_refusal (test_station_evidence_audit.AuditTests.test_baseline_and_archive_hash_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 103, in test_baseline_and_archive_hash_refusal\n    with patch.object(a,'ROOT',root),self.assertRaisesRegex(ValueError,expected):a.matched_inputs(config,rp)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.AuditTests.test_baseline_and_archive_hash_refusal",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "bundle_custody",
+      "output": "F\n======================================================================\nFAIL: test_bundle_config_and_exclusive_output (test_station_evidence_audit.AuditTests.test_bundle_config_and_exclusive_output)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 132, in test_bundle_config_and_exclusive_output\n    with self.assertRaisesRegex(ValueError,'configuration'):a.coverage(config,registry,selected,receipts,{'config_sha256':'bad','records':{'99001':[ca_record()]}})\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.AuditTests.test_bundle_config_and_exclusive_output",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "gis_duplicate",
+      "output": "F\n======================================================================\nFAIL: test_caltrans_exact_gis_duplicates_keep_all_locators (test_station_evidence.AdapterTests.test_caltrans_exact_gis_duplicates_keep_all_locators)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 136, in test_caltrans_exact_gis_duplicates_keep_all_locators\n    self.assertEqual(len(parsed),1);self.assertEqual(parsed[0]['gis_object_ids'],[1,2])\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 2 != 1\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_caltrans_exact_gis_duplicates_keep_all_locators",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "gis_geometry",
+      "output": "F\n======================================================================\nFAIL: test_caltrans_exact_gis_duplicates_keep_all_locators (test_station_evidence.AdapterTests.test_caltrans_exact_gis_duplicates_keep_all_locators)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence.py\", line 138, in test_caltrans_exact_gis_duplicates_keep_all_locators\n    self.assertEqual(len(s.caltrans_metadata(encoded({'features':[first,second]}),a,county='SYN')),2)\nAssertionError: 1 != 2\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.AdapterTests.test_caltrans_exact_gis_duplicates_keep_all_locators",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "member_custody",
+      "output": "F\n======================================================================\nFAIL: test_member_hash_refusal (test_station_evidence_audit.AuditTests.test_member_hash_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 126, in test_member_hash_refusal\n    with patch.object(a,'ROOT',root),self.assertRaisesRegex(ValueError,'count member hash'):a.matched_inputs(config,rp)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.AuditTests.test_member_hash_refusal",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "exclusive_output",
+      "output": "F\n======================================================================\nFAIL: test_bundle_config_and_exclusive_output (test_station_evidence_audit.AuditTests.test_bundle_config_and_exclusive_output)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-zbjbh70f/scripts/modeling/tests/test_station_evidence_audit.py\", line 134, in test_bundle_config_and_exclusive_output\n    with self.assertRaises(FileExistsError):a.write_new(p,{})\nAssertionError: FileExistsError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence_audit.AuditTests.test_bundle_config_and_exclusive_output",
+      "valid": true
+    }
+  ],
+  "interpreter": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "originals_unchanged": true,
+  "schema": "openplan.station-evidence-mutation-proof.v1",
+  "skips": 0,
+  "source_pins": {
+    "scripts/modeling/audit_station_evidence.py": "d36e7a5349f922e73427c7e2029f0a50771279239647ed0fdcadcc50a3972815",
+    "scripts/modeling/station_evidence.py": "40cb0fd95cce4c3c395c8128c251a45b5ebd3085d2a0bb389b888600dfd0ef45",
+    "scripts/modeling/tests/test_station_evidence.py": "4eb061f53d8ebd64aa45477d2ce924641babf41b8ec417e8fd8935cc54c0652c",
+    "scripts/modeling/tests/test_station_evidence_audit.py": "f26e32037c208551c1ea8b98ac46c8cc74b701a94b0a7c5fa7e3a3fbd2fa27c6",
+    "scripts/modeling/validation_instrument.py": "78a67a02125db21eb35d4cdf6fdf4dbd44e15296d5b6d536f8c7377aa51f2aec",
+    "workers/aequilibrae_worker/count_observation_uncertainty.py": "c59c4e0795933891ce9f83ba748b99589c09ec3800039f32de574327a16da66f"
+  }
+}

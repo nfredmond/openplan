@@ -1,0 +1,4695 @@
+{
+  "all_reason_counts_nonexclusive": {
+    "carriageway_unavailable": 337,
+    "count_type_unavailable": 337,
+    "interval_evidence_unavailable": 337,
+    "lane_unavailable": 337,
+    "qa_unavailable": 337,
+    "vehicle_class_unavailable": 337,
+    "year_unavailable": 101
+  },
+  "archive_sha256": "3fcf016c4ba7604fff07851a274e7af225c6cfc3a879c81002ee1ff580afba95",
+  "assignment_output_files_opened": 0,
+  "available": 0,
+  "counties": [
+    {
+      "all_reason_counts_nonexclusive": {
+        "carriageway_unavailable": 78,
+        "count_type_unavailable": 78,
+        "interval_evidence_unavailable": 78,
+        "lane_unavailable": 78,
+        "qa_unavailable": 78,
+        "vehicle_class_unavailable": 78
+      },
+      "available": 0,
+      "geography": "06047",
+      "match_statuses": {
+        "excluded_ambiguous_link": 13,
+        "matched": 78,
+        "merged_into_shared_link": 10,
+        "unmatched": 4
+      },
+      "matched": 78,
+      "matched_source_rows": [
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8698e87a1049e4e3ef388160272acbf2b47203328f03fa11664523c6bd64119b",
+          "station_id": "CT_RTE140_PM3_199"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e74a7532b0c64c4a3260ef2e210ad4782491efae66bb66412f8e88d572aedc9b",
+          "station_id": "CT_RTE140_PM4_194"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4866932c870365d8676d4c70e417ad67b9b7a67d5ce38bb4c48a39ee23cd7097",
+          "station_id": "CT_RTE140_PM5_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e2d93ce69207cfa500d58e9d8969c272271741e7552f2e158e3359bbfbb1d4e8",
+          "station_id": "CT_RTE140_PM5_790"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "22ab89e4fb9edabea90738ed76679ff2f17937ab7e9e8873a9e24e67125ac9ab",
+          "station_id": "CT_RTE140_PM31_510"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0efc03bbd6ebf556db5b08c388bee0c92c028a560819f7ccb4f628d93c36e0cd",
+          "station_id": "CT_RTE140_PM33_550"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5922430b80b2e7b8ddf5428313b816b37bcab68ec0a741a6909b650581b15aee",
+          "station_id": "CT_RTE140_PM35_030"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1d56c23ebcc0dc9308a9d669a549a3f4d8a506faa29b290af1107ad4028a8588",
+          "station_id": "CT_RTE140_PM35_552"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ddcc06d67a1708afd8a3c70f1a901b69e5e5a642e85aca3b80594a093fd4f546",
+          "station_id": "CT_RTE140_PM35_879"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5091bb56858f8404c41563bbdf429e20b6946d78b5eb1c8981e23bff76abb6fd",
+          "station_id": "CT_RTE140_PM36_700"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a0aca6d36c12259a038abebe84e8e8317ea3a7791fac1222a1330580da9395ce",
+          "station_id": "CT_RTE140_PM37_400"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b9223fd0fd2f85259b6a27849e4d19db33141816cc418fd46da1d135f738abd3",
+          "station_id": "CT_RTE140_PM43_700"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5d10048b3315a8f110fc4cab751dad34a3b374caf56155e2c0ad37adf350dcc8",
+          "station_id": "CT_RTE152_PM19_268"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a0c563b0939a62af19100ebfeec5ea9224f5c2b67254a253005f805420ade560",
+          "station_id": "CT_RTE152_PM19_618"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b7b2262b715224853db9e1cf9d2fa1a7208ca6bd3a6877b8da7c1f9378489c2d",
+          "station_id": "CT_RTE152_PM20_598"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3f20114cd1ae66e716911c9c62ae429bc21a338df638429e841cdba95ca278a7",
+          "station_id": "CT_RTE152_PM21_058"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2a76501038ff9c937e65962da2d6128cdd22b023641cac4adc791db49a4432cf",
+          "station_id": "CT_RTE152_PM22_252"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5dfb6dca9ead7448e308766ed061f42e7b2397f24b78cda415b021b06833e2b8",
+          "station_id": "CT_RTE152_PM23_915"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "fad61eb5b0b95caca485ca68419404fc408f1aff4bf092fe0e64a4af33255002",
+          "station_id": "CT_RTE152_PM40_770"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c288f7f0623f1258bc97e05629747529154065953d70a14dbfd8efbbc850c7f9",
+          "station_id": "CT_RTE152_PM40_949"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f1278b7f8130bb61055b6445d3c5133a267aad3dfd33097367c431a03eebfc09",
+          "station_id": "CT_RTE165_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a6238b9a76ad0ab01543062686668800c7653519d80c0f758dcdd81f6f7b379d",
+          "station_id": "CT_RTE165_PM3_749"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9a5ebd1d0b8427e1632576348f20b9aafac8de66c8be577106872c0d97226bc0",
+          "station_id": "CT_RTE165_PM7_782"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c863237b9806fcebc2093ac229ffa9b9c4909ece3681984ebc12bdb69884dc2b",
+          "station_id": "CT_RTE165_PM8_240"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7bd9af73fe05bcc92b81fe39012c744e178a1e04db9f7742300e64ae6507cafc",
+          "station_id": "CT_RTE165_PM9_469"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "d78ca04ae513a13da507fd6d7ac016ad2ad07b670195c91eeadd8505fd3be4f7",
+          "station_id": "CT_RTE165_PM9_947"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c280a268aceb3d1d8b2781cc011a5aa094e280c773cc114551530ea7fd9320cd",
+          "station_id": "CT_RTE165_PM11_733"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8f997378ceb9b24db676cba15e5e8bfd62f4b2535183f6832bfe699e6811a07d",
+          "station_id": "CT_RTE165_PM27_880"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5f21b2b5d3dbec31c4543d2ed90d52355481f56495527bd4c71133cf8fc8d59d",
+          "station_id": "CT_RTE165_PM32_366"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8180eb6ba9fa3f3cfadb9824fc7a18447ce7d5465f98deada386ec4d34067b32",
+          "station_id": "CT_RTE165_PM33_365"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "507ae83f8bdc56338d55528bd3373f1292ca33329ef6d0b7429d89e24725b995",
+          "station_id": "CT_RTE165_PM33_616"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "bbd4c732409cf7058da480765c9e9d692007857f589c1a4af2910925548418a0",
+          "station_id": "CT_RTE165_PM33_864"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "bc5087405c87729962a7775a453731d3354f931d0f6615104fda6a35b25db510",
+          "station_id": "CT_RTE165_PM36_445"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5d1801e1a67fde94586494f08a7df52f5b124de0f5148e0d8ddec65253115bd0",
+          "station_id": "CT_RTE165_PM36_722"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "078148cec45a55e2ee1a38be521a2733f9d4c8ddb3e99b2d549971a3081ea9ed",
+          "station_id": "CT_RTE33_PM1_170"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "266f6d44d983b19dc923c7bda0dafd839da9bc3c29f1ec8aee09eb823a7dd2cd",
+          "station_id": "CT_RTE33_PM1_232"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "cb53931b4bf698ad4da1882786b2be2c966be863471533594795f27b86145b93",
+          "station_id": "CT_RTE33_PM1_888"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "213e81e0ace6aa18f3c749ca82713b1002e987d23393e926beebde69a3a7e48d",
+          "station_id": "CT_RTE33_PM15_600"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c6fc59fc3513c42568060ff42951d246bb95b73abe64232057655698e89b138d",
+          "station_id": "CT_RTE33_PM16_258"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "06812345b5ff6c4e029065405311fa8c20df29892ddb7f55f4d2c47202507d21",
+          "station_id": "CT_RTE33_PM17_270"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "93d2289e4016a31cb6b7477a4fe7030c7ec92433805c13ff808357eb563da25c",
+          "station_id": "CT_RTE33_PM27_111"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6ec4833c04aff26d572eaf6270d8c9b107c2888de8c3221a68c9908d58ec2a10",
+          "station_id": "CT_RTE5_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "947209108d78911bf1300af76b4ac061802f786385bebbd554b020baaee89b28",
+          "station_id": "CT_RTE5_PM6_280"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3bdfe2ef39ed68b0e589bacb56ff475aebda3bb21998669dee75b048551c035f",
+          "station_id": "CT_RTE5_PM17_578"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "62b60d56900bdac4cba5c7bd3ff8698844c45d2c735aec8405c142b273713523",
+          "station_id": "CT_RTE5_PM23_600"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a3f180492260d80229c10ab01a7aeff5751700da418699947d1e84f98d61eb9c",
+          "station_id": "CT_RTE5_PM32_391"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0e4362c9fac6c135704a03e2dfd84873adc527521f746e0e2c399c9b26ac06b8",
+          "station_id": "CT_RTE5_PM66_159"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "efef19822b5ec3d90bba33bdc5b1d2644fd319a47bd90add32b9f3e1874b97bf",
+          "station_id": "CT_RTE59_PM0_057"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "813ff496065de54d1f8056a19ccfe666a0eb6c3d9533b0d32a52de02b516ad30",
+          "station_id": "CT_RTE59_PM3_530"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0b9ae6814c5d7c1e7fc2bf0792940fa412924110b4178f03ca8701dc482251ba",
+          "station_id": "CT_RTE59_PM7_070"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0a96ef6f903e811c58902f80ca1d4464ec5365e797c2365156ab5fab3eb0f4bf",
+          "station_id": "CT_RTE59_PM13_130"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3eb42b30caa93ab423370319a6f19c2be28e3a0e2e2ef34c1fad155dedbef14b",
+          "station_id": "CT_RTE59_PM14_126"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "afb44eb9617eff2a6186dc08a9a0df28ae8f3810873bdceb3395e2d1fbd0be15",
+          "station_id": "CT_RTE59_PM14_980"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e3c73f2e8c5efe3162f1edc5325ee98257cc09b611ecfdb7ee86331ca4f088ad",
+          "station_id": "CT_RTE59_PM15_350"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6c494a4d827747a13547bf73932dbf60523adadfad6a81c4bf1ad310eb992dc2",
+          "station_id": "CT_RTE59_PM16_100"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "df30a27afdecca435b3f00f4d1cdec5843219b11f56e50e077eefe31d06d8eca",
+          "station_id": "CT_RTE59_PM28_808"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7efe81d0cb1233fedd2bdb11cd877b0a60fd289d124b65e0e67703064de1bb43",
+          "station_id": "CT_RTE59_PM33_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "74c9dff85cfca96da924b958beffee7958a90ceb8d94828aad00ddb107fd9753",
+          "station_id": "CT_RTE99_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "d367297ca506ef9b863e6e19a23c33866743410620745b10bc3f7983ee0d4fdb",
+          "station_id": "CT_RTE99_PM3_366"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "897d4f6b7c5410c06b2cd0d8e027cb6d0b0d9adadf722058f85ed41b82f0bb74",
+          "station_id": "CT_RTE99_PM6_852"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4e2fa736546d0ad8a0736652297da2fdea88ea424355c4e16cbb66782cd5358b",
+          "station_id": "CT_RTE99_PM11_712"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "624f5afff3905df85088213ea2aa80197d1cef7862009de19ede620879f73387",
+          "station_id": "CT_RTE99_PM13_094"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5efdeae282d409d3e10d3baec89cd786c806c2b8ac11bfca9de4aefec90888f0",
+          "station_id": "CT_RTE99_PM13_861"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f347b653486ee00752eb2735dd21a5ef9d596bfe3ab7edee66c29245a9e33a79",
+          "station_id": "CT_RTE99_PM14_411"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c299653415b7bdcdbe9ce7ae9617750af2de6df9c8b4a395cee5afa5462b9803",
+          "station_id": "CT_RTE99_PM14_686"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "d9c034e5320cc80aa9bd9338cd6a42fe42b12909630ff667f2349f2a33788d5d",
+          "station_id": "CT_RTE99_PM15_416"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "80c3e4baa43175dbbee88dbb62af1872a6b960b08615e85c08252fce4cffecc1",
+          "station_id": "CT_RTE99_PM16_538"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c8b9955ae3c5db7c408e33f269235e6740e00909c50fa7361941977f8987e0c7",
+          "station_id": "CT_RTE99_PM16_980"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "88c82987c2098bcd4816cd9b014d1ef783960ed9774c430301e3a7edbc92d40c",
+          "station_id": "CT_RTE99_PM21_612"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f794112e049fc0cfb007f6552d096c8f046469860a8bac0d711e900881a68eb8",
+          "station_id": "CT_RTE99_PM22_755"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "88ac2ee985a7030034bb7e652df17876462ad0645250c6994291876ff5d5fbd1",
+          "station_id": "CT_RTE99_PM23_462"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0ae5a0a1c2142573b7e70913f1b4fc2729aebf922295aa6af7b9cabe61e79af9",
+          "station_id": "CT_RTE99_PM29_001"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a56a90f9c916b902c5904200a15c7acefadf8045beb9994415dfc1cc61bf0e2b",
+          "station_id": "CT_RTE99_PM30_379"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "041043ea47df4c7f18d448e6c167e021d362fd35a9ea95366238d4f23ee782d5",
+          "station_id": "CT_RTE99_PM31_926"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "caadc0cf7582ddb4689f46753f07ad7d2740051c62b85b05f09d4c6edcf8f249",
+          "station_id": "CT_RTE99_PM32_310"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b2fa1efb1eaf2133f4d1609fe02bfe80de7291b6f2cea41dc688a27b5f762b49",
+          "station_id": "CT_RTE99_PM34_429"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "03acbfe0bc13c72a600c388f6dc0886d0cd35a9dc57da92037b3a69814ef062a",
+          "station_id": "CT_RTE99_PM36_343"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c662a795fc2feaf0b4713defe367e10d650dbbd718abc755b3d9ed97285fbef2",
+          "station_id": "CT_RTE99_PM37_302"
+        }
+      ],
+      "metadata_gaps": {},
+      "primary_reason_counts": {
+        "count_type_unavailable": 78
+      },
+      "retained_rows": 105
+    },
+    {
+      "all_reason_counts_nonexclusive": {
+        "carriageway_unavailable": 18,
+        "count_type_unavailable": 18,
+        "interval_evidence_unavailable": 18,
+        "lane_unavailable": 18,
+        "qa_unavailable": 18,
+        "vehicle_class_unavailable": 18
+      },
+      "available": 0,
+      "geography": "06069",
+      "match_statuses": {
+        "excluded_ambiguous_link": 6,
+        "matched": 18,
+        "merged_into_shared_link": 3
+      },
+      "matched": 18,
+      "matched_source_rows": [
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a2359198fdca2dccf9f5c7b70d2a004cbc09872db352402ad3cb714b38838b5c",
+          "station_id": "CT_RTE101_PM0_028"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f2c8dd88f5eba3e67ca15b4de17f0eaaae1280318f17d0cf4604f02a5fb26619",
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0ed451d31521adeeb61e7896df8fbdbf4ead653ed9e0d2067ef0d3ccdac00dc0",
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6a3fd7e2b117295438a6e25d1da3b875a71885e3c1a81f41d6bab9bcfb163a0d",
+          "station_id": "CT_RTE101_PM3_049"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7de3254b8dd267ffb2ee466156f2b3c08ef08bc55683ba2df728be92c8397f0c",
+          "station_id": "CT_RTE101_PM3_173"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "bea01f6620dc4cc3ef7e05671a80043f5b400255e91c67e2137727df686b8c70",
+          "station_id": "CT_RTE101_PM6_485"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "04a6338c6dcceac30acd8d3676b7c8f50f271431ef11dbe192c90beb0b3197a6",
+          "station_id": "CT_RTE101_PM7_550"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ca280d406cb4813a5cc80cca3d53d995780476f54944333d11df7b582abe457a",
+          "station_id": "CT_RTE156_PM3_022"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3d3073ccef8bb49c5643ab84f257c04ad2e9b241e05c3fdef607053ed5666a2c",
+          "station_id": "CT_RTE156_PM7_246"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "d5af1dd3f0f63db74bbe073ddd129647641723e20d694f7aeb96862c997064f4",
+          "station_id": "CT_RTE156_PM13_215"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5932dd3b6bb595407dec7a84bbf4daa3ffe714b7bda9c7b18b2404f5d54d97f1",
+          "station_id": "CT_RTE156_PM16_536"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6103c2f7005955cf4b041f4fab967078ba0fcbb770cfc33fde857b50d03ff9e6",
+          "station_id": "CT_RTE156_PM18_430"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4d4e4e6eb9c2053247077e4ab5a8b7ee252cd99a4df824f6f546679b72e88952",
+          "station_id": "CT_RTE25_PM7_300"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "50a4f95e096b8ee8abe93b4448f2d5f0193a0f72d1daf1d3400d07298974c8a5",
+          "station_id": "CT_RTE25_PM11_750"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "48b7c0e56c3ec4feeced5fd7a80a130b5705299be5d9efed1e69ff5fe296bde9",
+          "station_id": "CT_RTE25_PM39_533"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ab226312ad9274f18890abe76445f9960a6d853c6df231cbb7cd3f4e47a56175",
+          "station_id": "CT_RTE25_PM49_014"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "61cad391ef0f55ef2a13637dad0bf2f1705f3f6e177b2a9e36ba87d509bd862a",
+          "station_id": "CT_RTE25_PM52_194"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "58158481a901bab1d32c44316614125c9421dafab44f51f2f1b96b24358400cd",
+          "station_id": "CT_RTE25_PM55_134"
+        }
+      ],
+      "metadata_gaps": {},
+      "primary_reason_counts": {
+        "count_type_unavailable": 18
+      },
+      "retained_rows": 27
+    },
+    {
+      "all_reason_counts_nonexclusive": {
+        "carriageway_unavailable": 140,
+        "count_type_unavailable": 140,
+        "interval_evidence_unavailable": 140,
+        "lane_unavailable": 140,
+        "qa_unavailable": 140,
+        "vehicle_class_unavailable": 140
+      },
+      "available": 0,
+      "geography": "06107",
+      "match_statuses": {
+        "excluded_ambiguous_link": 23,
+        "matched": 140,
+        "merged_into_shared_link": 9,
+        "unmatched": 10
+      },
+      "matched": 140,
+      "matched_source_rows": [
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b339cd6955dba50b55a8f9d22bc02260c412f57fa56726d9d6e64380a5a66fd6",
+          "station_id": "CT_RTE137_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c8f77899a8d758cbbe7db57a675a73715a3ec81caeb8f590728889f09cc47f4c",
+          "station_id": "CT_RTE137_PM1_860"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "57c946c9193c673d925aa107ee5007d4b04f1f84c396fa57967f98b802ccfdf5",
+          "station_id": "CT_RTE137_PM7_200"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c713c8ecced0043c14ed4c74ba05f24370e9bb3542a5f36f778047c649b77a6b",
+          "station_id": "CT_RTE137_PM13_280"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3a3706633555489d7acab51cc87fae3bb5515056715f69df5a4bcc9b31fe8638",
+          "station_id": "CT_RTE137_PM14_260"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "bbbd4f336ba391d997cdfb2d9cac1d8f36d102bfdaf392f430613e533ae5630b",
+          "station_id": "CT_RTE137_PM14_269"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "07765d6a9b04b2420fd95f65a1088bc02d39ad32792f8a2f682a028832ff4e1f",
+          "station_id": "CT_RTE137_PM14_760"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2c8f62c5b36047f90df259057e2560c76d2ac3899f9f4883c6bb33ea3acc6332",
+          "station_id": "CT_RTE137_PM14_980"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f0bdfb4ea104f817d8f999eca7c38cea0d30bbee6bf34b32305107d378a04d00",
+          "station_id": "CT_RTE137_PM15_381"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "13c9533f171f734587d21368ca4b325e986a1a8663afa3e31f8fecfacf185615",
+          "station_id": "CT_RTE137_PM15_530"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6b842385727202c2b8ea73f6e97dfb24748a1f283a348f1d7a886be792413dcb",
+          "station_id": "CT_RTE137_PM15_600"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "da944b044ce661e62876b6e5292f5b7ea29ddeb7f5e7036029b8d4c97937c854",
+          "station_id": "CT_RTE137_PM15_780"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3201109ba52f25be45a91d481e82998141c95c8d6b98123a18f35b5150130313",
+          "station_id": "CT_RTE137_PM15_940"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b2910e2d1af68dec921b42278681635e24e346186d4f017fe262184ec4a6e584",
+          "station_id": "CT_RTE137_PM16_116"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8bb7e268fdad4375ac3459f123f887a8cfdc7219769786e74620395150052292",
+          "station_id": "CT_RTE137_PM16_489"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6983a8fb27d1eb8d4e98ca040289a012eba01734d0f448f4503c7428fdbfb1a1",
+          "station_id": "CT_RTE137_PM17_010"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "96bb18fa51f440a80be6fa39f3db2ac7ef416ecd7a4525b86a11a1cdde87a5f2",
+          "station_id": "CT_RTE137_PM17_511"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6400dc30d8c55c237d3b77ac9352840497e7c8adc262cbd3c273862290caa325",
+          "station_id": "CT_RTE137_PM20_460"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6ece09ad8181646c5c8659a6597e11ab46a92af967f50353ec725d9ae34e09b6",
+          "station_id": "CT_RTE137_PM23_897"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "290f7a110dfd3a5b79fdd0539bd7a1b633269ff5403e8534bb032aa0bd60f113",
+          "station_id": "CT_RTE137_PM27_396"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "65760fc4e35f986d13f994facc682002840c2b9d3fd41f4f20d0426ac0ee16a2",
+          "station_id": "CT_RTE180_PM109_528"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "39d6fa65f5de5b3039acb2ca9660da5adbfa7da5d128e962994b8feb6e150702",
+          "station_id": "CT_RTE190_PM9_474"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3476c31e11f4e9c62d7ddfd045d0f1d3bbcc95c0b6fa384c3a883399e66e3561",
+          "station_id": "CT_RTE190_PM15_241"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0caedde4f3643dc34330f8e187552dc507ed12caea000044ae031ae0e77eb7bf",
+          "station_id": "CT_RTE190_PM15_950"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a28ace9595e634109a77bfe62b91c8db3b67246801e132ecafa670dccb096653",
+          "station_id": "CT_RTE190_PM16_452"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "233c0b166797b18b1f3186972ea1b687c3c3d75d8809da0563ec84dbdb021594",
+          "station_id": "CT_RTE190_PM16_967"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b764384dc03df1a893a1485095c9896aaa16e5c04dc2420ef0ff0007b114dea2",
+          "station_id": "CT_RTE190_PM18_453"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "06e5403100c0721352064b1c7abf37eb90ee270ae166d0d9163b8c90aea8d951",
+          "station_id": "CT_RTE190_PM21_100"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ae26a92003d72760e7d49b3b424dc9d3f0134d2cb5c8f97eaf6a8f0de048a3c8",
+          "station_id": "CT_RTE190_PM27_295"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "cc3708d225f703c4047d0f50fa4da36fd9498b27ca33e2114278f3018bdda739",
+          "station_id": "CT_RTE190_PM31_701"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0f463e901382706e4b13a7c9cded64610e24fc0e421efeef4208517d8c9bd923",
+          "station_id": "CT_RTE190_PM32_704"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "bde1352c157f240a7b8b16aabecf9a88118e557917107d360a078be0b201c86c",
+          "station_id": "CT_RTE190_PM56_567"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ecc10174ba15f821f71b34ff552c718e7517de7dba6c7fb285e62ca8e3d5470d",
+          "station_id": "CT_RTE198_PM3_711"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6ba8361ff0c944eaac4742f5bbc3e363e9599bc5699ec6fcc8a2d9893bd3d93a",
+          "station_id": "CT_RTE198_PM4_796"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7aff55edafe25242b437d89e00aef4214e0a335929f30b4982de0a99c678b20b",
+          "station_id": "CT_RTE198_PM5_760"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0a3080313a1eb6df919274b39f6c99b70dc03f1380c70ab0d1e35991072ce9f1",
+          "station_id": "CT_RTE198_PM6_760"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5771d067ac70c1a567752133cd91210b1d5c73ae882ee104109cf9f13b49ddab",
+          "station_id": "CT_RTE198_PM7_760"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0cc706214fd035d8b7a03ecb9a69fda586fe133ebfa0829972c609a9cc414a0c",
+          "station_id": "CT_RTE198_PM8_100"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1ab4e6f0f7c3622eb2b1fb3f8601ddb8e8765914557d0702173f15e234aea355",
+          "station_id": "CT_RTE198_PM10_734"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5732b1bdeda94fbd1d4c3aceb786b64c4943157b4ca347befd3ac9e24edd2674",
+          "station_id": "CT_RTE198_PM11_719"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "634b807cca5f41fedb23022466d90958e00f8b74c9563ce2895254ad03675dcf",
+          "station_id": "CT_RTE198_PM13_737"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4f28dfd78951ed0ee5899ca376309c1ee0f9b480a68f8fa25002eab836463995",
+          "station_id": "CT_RTE198_PM14_653"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9afd969777f455fc69138c24583ffb10d48d25f91b4968475a5caf0c43e63719",
+          "station_id": "CT_RTE198_PM26_480"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "334c6b44d9445c360b3a1dbe3ce1a467d8369a35fbf9a68d7c2966f4ca2876ef",
+          "station_id": "CT_RTE198_PM26_931"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ff97d8b9d18aaaf844031b5ba37ca090350d98b1e7c058c99f4ae0c677f8f60e",
+          "station_id": "CT_RTE198_PM30_750"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a155a15e1aee3ee7f2e1a6aee28fde64ca10060445089cc234d345b53073a700",
+          "station_id": "CT_RTE198_PM35_910"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "26cee98d7c11220bf5902e15f4e72190c97881a89231f46c50e2709585fd13ef",
+          "station_id": "CT_RTE198_PM37_401"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a45767c900e35d58116054a414ab45628d9dde46870c5f3bd50c99cbe7e26f7b",
+          "station_id": "CT_RTE198_PM38_130"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "314a72ac5b8ddf3c3540079eb5e93f9756be0e7bc38ca13f63072c1f1f0ddcfe",
+          "station_id": "CT_RTE198_PM38_490"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "453e47e52ac8cce9de4aaa60409587f576cc27a513b5e3b545fa175513873f74",
+          "station_id": "CT_RTE198_PM38_930"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b015e313e5a480fd752efbdfc1e19013fd558820728d5a8de9f17810697079ff",
+          "station_id": "CT_RTE198_PM39_691"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2f22f7d15cbc41161aac3778dc74f1440186978d3edf7bb7cc53f9187deafb42",
+          "station_id": "CT_RTE198_PM42_350"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "da3827850f1e4464c5c23c82ecfdb25908fbec2ac98b24bbb15e6d6a85f04082",
+          "station_id": "CT_RTE198_PM44_163"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1f302c8381091d70fca3500a06ec0afb3dcf47a7c0c649f56b9d0e1918b05bd3",
+          "station_id": "CT_RTE201_PM1_343"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5efd59fd74eb80bd2f2331d429c34988f37e4fe5d90e8b45bf213efe99e8b52b",
+          "station_id": "CT_RTE201_PM1_400"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "64ebeebcf809374dd5a5bbc6e0a60ebfa5bfe4627b4fd037aa0668a85d6d3f35",
+          "station_id": "CT_RTE201_PM1_746"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e701c02f62112840dbee31e05d203bb5a9dbb3a0def050fee963162ee57a1339",
+          "station_id": "CT_RTE201_PM7_950"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b8cd91dbf0e715ca6c5b8312b52faaf8078e5b4a06c34ab86b28194bf3978f51",
+          "station_id": "CT_RTE201_PM16_010"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "63cdbf4946d23b070d89ba6226c9e5c7129c8a6850d0023f9fde218977117241",
+          "station_id": "CT_RTE216_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9685b025e5f283099095266ecebc01110b668719b1106554ed073eba2274f7ed",
+          "station_id": "CT_RTE216_PM0_349"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b910e4535f508a7e80a1d8602b9e7c840f827eab1c3345c9bdd6a2c2f31b3149",
+          "station_id": "CT_RTE216_PM0_488"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "05134487a90e922204767238c535b03e01fceb332b133ec937d534ef6557d94b",
+          "station_id": "CT_RTE216_PM0_824"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4504dfa342f6293a4a0ffc08210ab62364374bf5659e3ab06840498b8fe62751",
+          "station_id": "CT_RTE216_PM0_990"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "027afc89aa08650f0cf2be0e4a2d5e9ceecacd8fc6ff0fac812d03d8465abc61",
+          "station_id": "CT_RTE216_PM2_460"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "016dfe4df92600606330d7d16dbaf7535620efd774d2fffec1b1fc235a21af62",
+          "station_id": "CT_RTE216_PM6_950"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ba5a6f3f3216c62af676b9939abee6cb76f4fda56ee85e5632837edfe2fee287",
+          "station_id": "CT_RTE216_PM11_732"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e3a9033721153cdbad69354aefb5f7800b2462b7a418846889ed2b126afbac18",
+          "station_id": "CT_RTE216_PM12_010"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0d9293ac05159490301fb3d5e0b1cc173d5863ca690ff78a89e964007f4b0b45",
+          "station_id": "CT_RTE216_PM14_006"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6cba5df470e8c7cf83e35f34c1e32ec45b83c5e562a9d8665080049295de1437",
+          "station_id": "CT_RTE216_PM14_510"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "09baf8dacf784cbcd2341d73a206b61e1e307f5fd3754fcd818ae424fc987f41",
+          "station_id": "CT_RTE216_PM14_555"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "35b77d6feceef1b8b6c01b5da3064462be7e6b55cf4d66748ff2cb1a940c6790",
+          "station_id": "CT_RTE216_PM18_670"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "94ad4b873aa9c5d1872c09736dc3b091e79e562e5a1850d14f6c2edc332da737",
+          "station_id": "CT_RTE245_PM8_061"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "96a56ebcff9a4f64c6cb825c6e3c6c7bb0958fd99faf31794e4aa1e7ac01a646",
+          "station_id": "CT_RTE245_PM10_470"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "15b0189a44cb2dbb37b9882e1f6400a7f05f5e8084cd801a5f282b2621e13dae",
+          "station_id": "CT_RTE245_PM19_293"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f40a7207dec226be47c42e9d2f5e0722299442b49e0eb543482cb57a5063e6ff",
+          "station_id": "CT_RTE43_PM7_760"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c1a04fe5b1887072dffe6c34e4988b86f7e3088195fcfcfe72117a7f84f85939",
+          "station_id": "CT_RTE43_PM22_133"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "058af60fa2ba8fe7d33bece4da5066f2b4bb9275d6e836b87292a6cdaa77aac0",
+          "station_id": "CT_RTE43_PM22_674"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "404dc7d128497bab8095e0ca4fc12c99e712be4673c59be07691affaa78cb617",
+          "station_id": "CT_RTE63_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "63057e0fee619f076dfb7432e04036c71b3c610110642d4e8db5564ede7ae72b",
+          "station_id": "CT_RTE63_PM4_010"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9253048637a41fef27c84eb58a795eaae945925adf5d739cb2be164e42d41386",
+          "station_id": "CT_RTE63_PM5_011"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "64332e05d50ffe381c4ef9f095f1bbda6ee60fb88e534b5f88d5f997bc2471ae",
+          "station_id": "CT_RTE63_PM6_010"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "749a69269e90f1a9b3a3bf5acfe6587f3c683bfe480c276517b5445320c035b3",
+          "station_id": "CT_RTE63_PM6_990"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ca3056e339c7bdfeb841a9819c8ffa5acc7c5adeb6519819899595f648bc9ebf",
+          "station_id": "CT_RTE63_PM7_490"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "14add18a0c6df081fb3204189fbfc7684919ff88c3bc374fc7c9e9e8b04822c7",
+          "station_id": "CT_RTE63_PM7_948"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "48e44c086d460b262ecae1d00ef44e2436d476e1ae528609bdbfbd411eef781a",
+          "station_id": "CT_RTE63_PM7_948"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8d14d9d6aafd0d0b00295127a9bde3863f708fff4c4399b312db4caf4050941f",
+          "station_id": "CT_RTE63_PM7_980"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5dbf622e3086bfcc87267dddf95f466c2f05deefce2d69ff8489cad2126cca8e",
+          "station_id": "CT_RTE63_PM8_200"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7065c3fdfdc34869437d5fc6c0f69a5e73a0e69a5705f98195b39a04b10fa359",
+          "station_id": "CT_RTE63_PM8_200"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a4abf053e027a3c31fdd5d21a73b1199a5a6159298baf164057a11fde513bfc2",
+          "station_id": "CT_RTE63_PM8_392"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1b2c906456b0cfe338dd6f297b74d49c22cf9005856c927ef5640142bc611acc",
+          "station_id": "CT_RTE63_PM8_392"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ebd98750508cbb1dbb15a43cf85f03f2334dc8351896d3367832eb5fdc2bf38f",
+          "station_id": "CT_RTE63_PM8_681"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "adf9a9973da00989ae1eea5d4a59ac7744641e325a47249b0986850494497988",
+          "station_id": "CT_RTE63_PM8_775"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4a319ab6eb95eea726c858ee403fcf1d400a7b55b63062211e7631ed920b5c04",
+          "station_id": "CT_RTE63_PM8_916"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7198569c8cb6b74b5ea5446dae9f8feae58cbf071957b1e08762dfe537fb27ee",
+          "station_id": "CT_RTE63_PM9_095"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "fc0445897e87eebd659d2804caf67a04f8a598324c3aea8681dfc661dd9bc250",
+          "station_id": "CT_RTE63_PM9_226"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "598f0742b89d1e031673df0abf0f12a49104d87306a5b878d26b8159a6cce445",
+          "station_id": "CT_RTE63_PM12_130"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8149b3f7ddc4e6073271c03cb2aa3453cb2cd8c239fa7cfc173e6b6adf5f7da7",
+          "station_id": "CT_RTE63_PM15_110"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "25c08e086931063678c6f9796e3bccc0e9420535ea56512e71aea1016b2a037d",
+          "station_id": "CT_RTE63_PM21_568"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ca3b01231204d7cb7fe9e1d45ffea796f1427628bd82d61f7455017769cca78b",
+          "station_id": "CT_RTE63_PM22_370"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b4808c88ef049d3b166173585f0a871d17a86b659cee20b36a26c5839b1ddaa0",
+          "station_id": "CT_RTE63_PM23_572"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "948ff1759c56a10ad21d198325ca75cf83aa254cc4f656c0c509b41bd3745832",
+          "station_id": "CT_RTE63_PM24_322"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b48d9e1cce5361228a9ecf3a97d0535b7fd1d4bcece8afd9832cb54afc473ef5",
+          "station_id": "CT_RTE63_PM25_550"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e49e9e47f436670f38545612af8e20528e954512835b696e90c124c74196fb5f",
+          "station_id": "CT_RTE63_PM29_090"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "62de21b1e539d839706750115c0ccca1f3fcd598ce38823c979f3df8da4d17db",
+          "station_id": "CT_RTE65_PM6_983"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f1f55d895c62a76d4ba3761e2985d1ba0b0d40232e43c2fb79b4231c24800f5c",
+          "station_id": "CT_RTE65_PM11_860"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0e9b792728c822c68deacd5f5d7aa82a9e0948409341181c02747c4507b8bf55",
+          "station_id": "CT_RTE65_PM18_163"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "fe11cadbba85f4fe7753b01f4f5d33afb7ee725e1ec4877d6ecda8a3251176a4",
+          "station_id": "CT_RTE65_PM19_142"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9b528919c8e8e552af71a44115677e9b4d99b31c69d33a991514598d5c044b09",
+          "station_id": "CT_RTE65_PM20_140"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "31a7308ec47317351ddeaab982f694ba8021647f0de937b24afa6380def96003",
+          "station_id": "CT_RTE65_PM21_830"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2af1774555bf0e62d1c5e66cd8d798cd5fbf9572d23a0e584da4c4e2390680a4",
+          "station_id": "CT_RTE65_PM29_489"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5e4235c6e73b1250f679b41faec4a7ca1b185edf81890952457be77f1d7a7415",
+          "station_id": "CT_RTE65_PM30_090"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2eea2a99130b263971ca0b2877e307967329b515f4955b800ad4016b2b5c51bf",
+          "station_id": "CT_RTE65_PM30_540"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "24b005d25989565b60752ebfa977af3b0ce4712c6bee209435f013f824a18bed",
+          "station_id": "CT_RTE65_PM31_546"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a6e9ee7821eb3049c582b98ecb2244fcb9a667459d3c65f7fb4ca938fbcf9624",
+          "station_id": "CT_RTE65_PM37_100"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b06cabcbdbded934d92a1c747a8309c36823e283830b3dc9bfba25336cb6e2b8",
+          "station_id": "CT_RTE65_PM37_650"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8eef7d2a8b3dfaaaf99a6fec587db6441bcbcf985dd37c50b447414251ccc7db",
+          "station_id": "CT_RTE99_PM3_055"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8d3aafd54957047e521f6f9e53019cd48180c6f8a525099ab69648de685e544e",
+          "station_id": "CT_RTE99_PM6_148"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "eda6415b3bbc76bb1745fbd2dcf17c72277e28d9e941b71512c36bff2555fd93",
+          "station_id": "CT_RTE99_PM9_712"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "cc0b20c9604e3a5c56d4ea1e37d724b6dc0b8c7c10051f210fd676870ae4f24b",
+          "station_id": "CT_RTE99_PM12_297"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "fa2884ac7fd17752815775cab5fc510cda44761fc1fa3047f4e7fc86c216fb7d",
+          "station_id": "CT_RTE99_PM12_804"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a0ec12d348ee547b7a9f5d75b0c9398c40a14b71a7724dc5102c1f762aec4c3c",
+          "station_id": "CT_RTE99_PM13_330"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "82e32c4bb3e0ac2bb5dbe3ea71eb0b17e988c4c163818efa5ae1aafa5d55acb7",
+          "station_id": "CT_RTE99_PM15_367"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f76d1be38b528decbc354e57b2fe6aa3f642d3c7aa7d804d0e6acd0d2583089d",
+          "station_id": "CT_RTE99_PM19_463"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "01ed5e1aa2b7ca0f32d9b1014527006f28647e1bb3ae058912ad03d79943f3ff",
+          "station_id": "CT_RTE99_PM23_489"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9fb218bb954673a4a241c7152eeee8e86714b10fcc030986fa6371fbce89da4b",
+          "station_id": "CT_RTE99_PM25_433"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ef342b579e740e25eddeb1c08f4962c6d6c8d4fbe15c3516635d814ed1330e6d",
+          "station_id": "CT_RTE99_PM27_600"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "80cf013479c2e0ac920cfea816fb3c3413a7ad5e616e803ee5a9a523463f5570",
+          "station_id": "CT_RTE99_PM28_605"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "20a6586ac49b41da482d658cebf16e0f487462ea441b36a9434324fe05d6df7d",
+          "station_id": "CT_RTE99_PM30_578"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "082e7dae41394b8a5d7f60e520132a29f8ef7a097c7de5d5200d51d52f663528",
+          "station_id": "CT_RTE99_PM31_849"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "83ce4c8cc4090312dfdb89e78d378bc62c9ee4d34b542cb2e97d1688571d0a97",
+          "station_id": "CT_RTE99_PM33_222"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1543cd22afc0bfbc333e9df2d6b96448e3e85c9dae88ec14f5de86fc4c3c87cc",
+          "station_id": "CT_RTE99_PM33_942"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "736567715c4ecaadb02a8303fdd9f5c3fafb7d27b6b93829603f6f9c8ef79c9a",
+          "station_id": "CT_RTE99_PM36_411"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e51a57c6ef1603c13a77cb325ee0f767fd2e26693971260198ba3f5723394c90",
+          "station_id": "CT_RTE99_PM38_714"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "91b58cda9df99466ba8665ab2b5359ea78d357d6f47a3e6fd094ad16e84df00c",
+          "station_id": "CT_RTE99_PM38_980"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c93016cf06ed232dc7a64dfad0ce0bdfd3058050d0aabe1015b6d22713c32b0c",
+          "station_id": "CT_RTE99_PM40_790"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "249361cecc161ff081b935c5c1d8e82103278dca3f1c635e18e3ef46c4f2d63b",
+          "station_id": "CT_RTE99_PM48_710"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1d65558992369bf93f595ce52ce89e9fd770471e6c2e4cfba5527437f5c1ed92",
+          "station_id": "CT_RTE99_PM51_806"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a09ea2d7b58c5d3f15083247b7addc82a2a5fc4f445cf7ffdbecb186a27b6909",
+          "station_id": "CT_RTE99_PM53_822"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "26c8830985aad942808b259263f1d650df5bb670f2d68122e2e2c3027352c907",
+          "station_id": "CT_RTE99_PM53_939"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3243470037effb1de2a7e99bc53b6fa9abf312946cd66f7a20b977a33536ad1c",
+          "station_id": "CT_RTE99_PM57_581"
+        }
+      ],
+      "metadata_gaps": {},
+      "primary_reason_counts": {
+        "count_type_unavailable": 140
+      },
+      "retained_rows": 182
+    },
+    {
+      "all_reason_counts_nonexclusive": {
+        "carriageway_unavailable": 21,
+        "count_type_unavailable": 21,
+        "interval_evidence_unavailable": 21,
+        "lane_unavailable": 21,
+        "qa_unavailable": 21,
+        "vehicle_class_unavailable": 21,
+        "year_unavailable": 21
+      },
+      "available": 0,
+      "geography": "08014",
+      "match_statuses": {
+        "matched": 21
+      },
+      "matched": 21,
+      "matched_source_rows": [
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9e9005ae29ff685f08afa79a0823f64d758af2085ea1ac05d8f858585b3ab653",
+          "station_id": "CDOT_RTE007D_PM64_144"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7f5462129be3e8afbd79213b0179a9bc654bcfc1f491690380112ab598b35a56",
+          "station_id": "CDOT_RTE007D_PM67_488"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7b9279dc01329be829154acb7b0117e68714026ec6f0785ab9fc45ccc41214c5",
+          "station_id": "CDOT_RTE025A_PM229_107"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "268aed0d580cde62614c84dccdb3da9d6ab43f08da92664b489bebde9866d043",
+          "station_id": "CDOT_RTE036B_PM45_300"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "df29f090ab50dd7e8e3a4b9b562fc27ecb172158f233ab4c40af4339834b683a",
+          "station_id": "CDOT_RTE036B_PM45_825"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "309641c8cc14cba060949568b15e533860454b17fc4b4c5b722d6abaa036d315",
+          "station_id": "CDOT_RTE036B_PM46_578"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6bb98e29047e15273d8e280793ca8d5e7a6300ec5294b3e1a52d33b1a5d1f2e1",
+          "station_id": "CDOT_RTE036B_PM48_035"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5d4713a5834a7e8d4978b617858f0c4039232773809bc1f8ed73df6479f7df6b",
+          "station_id": "CDOT_RTE121A_PM24_332"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "75956e7ac489e41f93f2383446a6a7165a40c415cb987de265db1c115b5a5d68",
+          "station_id": "CDOT_RTE121A_PM25_683"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0561fbbee3d298b55d24a7c3c402e6bd2cebe9c1b17578f82c7ea89091046931",
+          "station_id": "CDOT_RTE121A_PM26_020"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "24f2f115c189909829a132c53ee7e33cf4d1bf247544a65da26d332c74f8ff56",
+          "station_id": "CDOT_RTE128A_PM3_940"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "572f58652a976a8a631aa5256c57195f4533cd4cbc91dc9b186a0dd017f7487a",
+          "station_id": "CDOT_RTE128A_PM6_210"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "59403a05ba26b0fde937c03071ee62cce37208e750f4c43bcf603cb36b1a714a",
+          "station_id": "CDOT_RTE128A_PM6_610"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "33fcdef8a62da2d946af7a3a40c8f39ecc7a7c75f1d0ba40d173182deddf961c",
+          "station_id": "CDOT_RTE128A_PM7_500"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "3f1c21765c982dd41ea30248a1ff84388efa7c9f492bcd9792e72bc058274d3a",
+          "station_id": "CDOT_RTE287C_PM295_071"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1b4d0b3df7462bb73424dab7a628c13969a5d4c6b7f69a97c9642b4964a60b25",
+          "station_id": "CDOT_RTE287C_PM296_087"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "589582582a265fe3ecf0731c9d02737928597ad0d3b652866852eaf55dac2871",
+          "station_id": "CDOT_RTE287C_PM297_011"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6759f95dfd6d212a45452520fc8750fdb75fd1c615b6a83ec1250cf705e7a0dc",
+          "station_id": "CDOT_RTE287C_PM298_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "cb9c55bd4dd209df06b6c57bded938c38f19a1a6447950d723f6ddf600251e2a",
+          "station_id": "CDOT_RTE287C_PM298_082"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "95c38f9e2de5a6b82c20b86032b78af60f9b6a1fe20f1dc3356dc530fd96b8b6",
+          "station_id": "CDOT_RTE287C_PM298_843"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4a96d3b775e7d9b198e45614c081b155ccb28b4a07ebd8ccff3887347e2341f3",
+          "station_id": "CDOT_RTE470N_PM46_398"
+        }
+      ],
+      "metadata_gaps": {
+        "count_year_missing": 21
+      },
+      "primary_reason_counts": {
+        "count_type_unavailable": 21
+      },
+      "retained_rows": 21
+    },
+    {
+      "all_reason_counts_nonexclusive": {
+        "carriageway_unavailable": 80,
+        "count_type_unavailable": 80,
+        "interval_evidence_unavailable": 80,
+        "lane_unavailable": 80,
+        "qa_unavailable": 80,
+        "vehicle_class_unavailable": 80,
+        "year_unavailable": 80
+      },
+      "available": 0,
+      "geography": "08101",
+      "match_statuses": {
+        "excluded_ambiguous_link": 2,
+        "matched": 80,
+        "unmatched": 3
+      },
+      "matched": 80,
+      "matched_source_rows": [
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0e636cf833346adce7c2547534fce33626bad98512776d3904330ee394f7070f",
+          "station_id": "CDOT_RTE025A_PM94_769"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8b875256577193538ae81f4ac04c52221fc1cb0cc0b518d5ce8feaab00f94c02",
+          "station_id": "CDOT_RTE025A_PM95_346"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f1b03ddbb269f43efef57ae6b032b732edfb65fcde310c9eda558a4182d0b062",
+          "station_id": "CDOT_RTE025A_PM95_901"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c2ec685823b9c95b1c1e22ac346862553b9c61e46417b821956eed3c15eeadc0",
+          "station_id": "CDOT_RTE025A_PM96_673"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "395c4a994984c085fd81a18e3445125b00e6d12d883646c8a036d5e8231420a2",
+          "station_id": "CDOT_RTE025A_PM97_862"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5eb1d1f2f5f0cf95710eb4039464f12e84d4ef1497d99544399d8a6ec479d4c5",
+          "station_id": "CDOT_RTE025A_PM98_545"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "59da7a04493ffb3ddfa39411298fc9505b5671f3b623e63463961c6461a9b03b",
+          "station_id": "CDOT_RTE025A_PM98_881"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "43ce34ccee6801773f4bada6723b34c55d2b391f8f0a787eae7ac272e7b25306",
+          "station_id": "CDOT_RTE025A_PM99_388"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7675275a7f509a6a3d2984af2242d93eb444938d0159892b500c39cf638fe676",
+          "station_id": "CDOT_RTE025A_PM99_981"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ffc456566925eb758baff6a206fea4d84a739702d28f317b1942eb60ae031856",
+          "station_id": "CDOT_RTE025A_PM100_681"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c5fda0e4c93810af0644ab3b0840a30359059d8043fa2c8f77a78ab255603487",
+          "station_id": "CDOT_RTE025A_PM101_389"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a2812d55ce9ab964f834667a67c336ca240fc5d27847e4b60ca6ea10f56a3a02",
+          "station_id": "CDOT_RTE045A_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "0f705a63b9ef79f888048ff5171dda7b6a47ccdabee68619685eb7bfbe6f0b90",
+          "station_id": "CDOT_RTE045A_PM0_122"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "838ed760735dc4c63852fe8819ce49163bee633ffa9cdbab59fc1086a7710c77",
+          "station_id": "CDOT_RTE045A_PM0_377"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4be0b01b5f7ce8de7611cc37d99dc6fedd4d2a0d42197029e64a56a848f7935e",
+          "station_id": "CDOT_RTE045A_PM1_306"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "259d1ba1bdacbef0924aefca432e0cfd8092f1f93debc38b24e38a84f7a61bb4",
+          "station_id": "CDOT_RTE045A_PM2_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "114dd38590178f8af3eef7dbe9cb4111925f22964b7905c1d96f8bb1c7110256",
+          "station_id": "CDOT_RTE045A_PM2_971"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "847c50d0cc753c5fec3ffe8ce47d508be6073bde3b6708b97d20e8e5f11d1557",
+          "station_id": "CDOT_RTE045A_PM3_141"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b2a4f4ded3bbd5a40e996660c63d62357fb28f793a4d4022231487b4e7ed3b3a",
+          "station_id": "CDOT_RTE045A_PM3_520"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "88f333e3486bf0be3c59086ec2f54f55f36fbcbbc91d998161a3fa896de17956",
+          "station_id": "CDOT_RTE045A_PM4_267"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "220fde108434c983cbe3e864c5e7cb6c9a13c0c2d00869c1b6096d91b227ecb6",
+          "station_id": "CDOT_RTE045A_PM4_734"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "abe4cf4d2f17011eabf7f0c86d58304da9f805284723901d849cf314f3e22a00",
+          "station_id": "CDOT_RTE045A_PM5_066"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2b27cd90cba2b6d8ceb1d827ff8679cbae6664f45821281c5714f668bbc69201",
+          "station_id": "CDOT_RTE045A_PM6_036"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "2692caccc3a85c2215fe3d0e5c3717734f9509955e8eb5598fb136189e5114e7",
+          "station_id": "CDOT_RTE045A_PM7_120"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "87b8af38d2a5258256b0fe5f1330827e9754b52fb5fa87e07039c3ee534d27ae",
+          "station_id": "CDOT_RTE047A_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "18277373a6cae5ff31f4682c93648a1a746843ab8a92cb665f2ee1cba3ba1454",
+          "station_id": "CDOT_RTE047A_PM0_154"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5432bef61cdf3f568384fe67067be54f79c7538ecf4a92dad1dcc761cc6c94b5",
+          "station_id": "CDOT_RTE047A_PM0_842"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7349cdc8e64f1dfbcf633d887b6900bd7eb6f1c47d9a5dbfde5b4bb22b73c5a2",
+          "station_id": "CDOT_RTE047A_PM1_865"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a2d1503256c8a85fb4705c7856b6519b4796c2a25386b872b9ff57ce45ba040d",
+          "station_id": "CDOT_RTE047A_PM4_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "649ff662ff75ccf0d53626000a7e93c43af7791c28f88ddbec90759991494d1d",
+          "station_id": "CDOT_RTE050A_PM313_524"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "866ca86d9bae0ba319253a1bbbbe5d8c23a1a5cdf6b3e7c63a8f5a08432b5eda",
+          "station_id": "CDOT_RTE050A_PM314_512"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "412ccd350c1b7749c4e7f0cf9d2e7c52a4bb284d96d8315b84e991b14062c837",
+          "station_id": "CDOT_RTE050B_PM315_709"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c145b755d38a5b93791e69eb99b7dd7df2434e27dbefcea962304bd2b4d20be3",
+          "station_id": "CDOT_RTE050B_PM315_960"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5dcb0749f0ad7227cbb8355de7d540743707a3e7173f707c05a1bacf5d2d10ed",
+          "station_id": "CDOT_RTE050B_PM316_551"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7f4df6537031595824896ad786f93e76505f3ae289d959681a6c45fd1d7bb8b5",
+          "station_id": "CDOT_RTE050B_PM317_051"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "e47bd04ca2c1897a5855f050cd936fc4f0a55287a850601c411c47ffe1d4386a",
+          "station_id": "CDOT_RTE050B_PM317_746"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "efc58e4235d92032b3dc4da66afd6146fa835f7b2ecc5f96d16cd9227df29017",
+          "station_id": "CDOT_RTE050B_PM322_935"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "23ded38c6e4f88ce2766a395a3831ebcf0f522154026a966e84c439c84a8f7a8",
+          "station_id": "CDOT_RTE050B_PM335_764"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "895b6eef33b94d0457e98e9b73347c8ccbb4c9445612dc842a2f0b7acddff7b4",
+          "station_id": "CDOT_RTE050C_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1fe63420c4679f253d9ae21692c4867752869172781fb537e328edfe3c7882e8",
+          "station_id": "CDOT_RTE050C_PM0_192"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "daf2254d1649bed20e36e9ef82261a7435b7e4eda29f75944b6c3e7622c66e7c",
+          "station_id": "CDOT_RTE050C_PM0_485"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "19d3d9030f4c43af084ee2711f75d9d31da24db2016468a9e8c2713c2dc2074c",
+          "station_id": "CDOT_RTE050C_PM0_682"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c58af8db18cceb83fae545bcfad3aea13f830d290c1fc79517150003cc563862",
+          "station_id": "CDOT_RTE050C_PM0_824"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "90eebb2f950bb8bc3c0274c03367dcf718d309cf97dc0bd8b5d8f25be55492e5",
+          "station_id": "CDOT_RTE050C_PM1_082"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "99d04bfeb217791f81c7f0f393cc222623d907d9a9abd79716e1825cdb59dafb",
+          "station_id": "CDOT_RTE050C_PM1_278"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "ac6360588149a7f12f7ab5d9ee50fdaa4b3e6aed7db6ce229226c70521e2e409",
+          "station_id": "CDOT_RTE078A_PM14_586"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a63e827f18b931b7817ae394f293ea5fc68e66acc5ecf309e3100abebe775c01",
+          "station_id": "CDOT_RTE078A_PM32_294"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "703b50fe5ca245c5bd23f5d6fcdc4d6affae0a8418577ed256dcf74d027f7ab5",
+          "station_id": "CDOT_RTE078A_PM32_442"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "b7f4bd33ad9840863022c8c2818f1ba62a1ca8b9abec0dc5d22c80aa13e9dc0c",
+          "station_id": "CDOT_RTE078A_PM32_567"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "8a3f4e9234c9d88a3af026906efaf9583965c5839c556c9f05b87f72d6a0e0e1",
+          "station_id": "CDOT_RTE078A_PM33_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6226c0fa5a1fdf36b888254c51c72568d313cb220da88244906df603a6c430f8",
+          "station_id": "CDOT_RTE096A_PM51_738"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1c85107b13ddebc3e02396687e38f6f797bdb92b6da1ee7aa02d749d697ab161",
+          "station_id": "CDOT_RTE096A_PM52_129"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a2af8933791bd15fd01f81e6766465ec40a7e86619b6ffa7054564b049490dbb",
+          "station_id": "CDOT_RTE096A_PM52_376"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "4c63e1034d757fa5965b4048d8d83ef5d8842fc5abd1c4f6d4d140c776271b8b",
+          "station_id": "CDOT_RTE096A_PM52_785"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "64b77730edc9de86ae89d2502d09abae810c027dd344bcee17cde8ca71500646",
+          "station_id": "CDOT_RTE096A_PM53_756"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6f8ec19c8639345fc88dc512e4f2dcdb0250d3b4a62231a1e7a65b262d267cd5",
+          "station_id": "CDOT_RTE096A_PM53_965"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "74a372ac9d0e2a1e4c31050825fbb82fc8bed84162e74d31a1880c715dc1b147",
+          "station_id": "CDOT_RTE096A_PM54_266"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "a5510c5ec49cb4dd0bcf669c463285a36a9716572e3d9fea15ad7021bbad1d34",
+          "station_id": "CDOT_RTE096A_PM54_761"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "6b75625599b7908f2750f4184b92e4a03d86c2d93252e586b0c75a5dc196a66d",
+          "station_id": "CDOT_RTE096A_PM55_452"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "476cace1b99f7b2a7c15565e82e982f614d4d6eb183b9d226b00a28e8eb38aa7",
+          "station_id": "CDOT_RTE096A_PM55_672"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "35d384cf6b82f440813fb6c72c09c35a0535ed88be08985151b3f0a6caf244eb",
+          "station_id": "CDOT_RTE096A_PM55_753"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "f8790b38fc82f1a37b073d99fad5556701c0b9e420072379496ad7bed1f49fbb",
+          "station_id": "CDOT_RTE096A_PM55_839"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "5a9c654f299d7bbd29ef8dd661fced368cb3e4d53a27005253950e6c4d4ab384",
+          "station_id": "CDOT_RTE096A_PM55_922"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "d7082f8bc5af018b5bbbb3f9875ecaf2f25284ad09e64024c1e45dc046efa17c",
+          "station_id": "CDOT_RTE096A_PM56_007"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "1dc1240e4462fcb22c810b0e4ced109d011e81d73d11332e64c40a43eb6976cd",
+          "station_id": "CDOT_RTE096A_PM56_091"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "d2ecd8e62c7e9c1b9104ade68ffabc13ade09b1ef3e2f2df146759c839b07d85",
+          "station_id": "CDOT_RTE096A_PM56_298"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "66d340b1e237d72d9f5d24304b6192561e2b5c8d752a23e36a8c2cadb6860464",
+          "station_id": "CDOT_RTE096A_PM56_333"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "13a89aeec40c20a097af5c0365576e5058561b5b5508b1bf32546943b9f837a3",
+          "station_id": "CDOT_RTE096A_PM56_741"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9bad0a0ad911f8def6ea0903debd1637f2d3b6fb313a0c800439ccbbc139a890",
+          "station_id": "CDOT_RTE096A_PM56_911"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "268d0fb05185ccd796c1abfeab8131d76ecf9ebb44aba7d4f03d1d4f4a59d438",
+          "station_id": "CDOT_RTE096A_PM57_332"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c1ab6b57534a359e75103c6c32904b1fa288836c1d06c66093826d3e180b3b9e",
+          "station_id": "CDOT_RTE096A_PM57_550"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "05e42fc786c053c6985b4dff074e3545e70ad60f4e9587726c3fc815d2062e93",
+          "station_id": "CDOT_RTE096A_PM57_981"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "780648fc5ca4c3df5e10e15c7f6b6c39a432a2162a45a835f45ca2958dc2d6b1",
+          "station_id": "CDOT_RTE096A_PM58_407"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "28e6f640b31581488f837bcae36c89685728aa63e4564e9d088c2080492d9c1d",
+          "station_id": "CDOT_RTE096B_PM75_496"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "c99ac58c1f7619156bb8c919d2d5758a5e9149726decbc9d59ba72bf8fa7fe0d",
+          "station_id": "CDOT_RTE209A_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "9550d7cc600d9fd038bd9cb2f86314a5a9bf4776b8a329bbaf9264a2c6a9c21b",
+          "station_id": "CDOT_RTE209A_PM1_387"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "bb1302bf4272a2664c883dc536231a14daa67aff3c73903b6fa666d6726ceda7",
+          "station_id": "CDOT_RTE227A_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "471381c12528700730b38182bbd95954e63792059cb11a7f9a658907232b4693",
+          "station_id": "CDOT_RTE227A_PM0_125"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "980c23b917e5cfb9f83e3a403e8fe7d0105c0e8792e6acf234b83728a4555fd1",
+          "station_id": "CDOT_RTE231A_PM0_000"
+        },
+        {
+          "interval_status": "unavailable",
+          "reasons": [
+            "count_type_unavailable",
+            "year_unavailable",
+            "lane_unavailable",
+            "carriageway_unavailable",
+            "vehicle_class_unavailable",
+            "qa_unavailable",
+            "interval_evidence_unavailable"
+          ],
+          "source_row_sha256": "7b2c193dacbdbec3021fee4531bde61317447791d3fceb238c3e25b8585588a7",
+          "station_id": "CDOT_RTE231A_PM0_253"
+        }
+      ],
+      "metadata_gaps": {
+        "count_year_missing": 80
+      },
+      "primary_reason_counts": {
+        "count_type_unavailable": 80
+      },
+      "retained_rows": 85
+    }
+  ],
+  "limits": [
+    "Legacy matcher eligibility only, not new matching acceptance.",
+    "Input CSV custody does not recover absent publisher metadata.",
+    "No model year/day alignment or scientific claim is inferred."
+  ],
+  "matched": 337,
+  "matcher_sha256": "738516da8ad20c03e236a7e7b8fe579aea1fc14bf0348e47f121019d98be0605",
+  "opened_members": [
+    {
+      "bytes": 30734,
+      "member": "06047/counts/published_counts.csv",
+      "sha256": "8e62e4ddf48b163754d2e0044da04e88de710fca4d8a0e8c29ce5cf1e08c844d"
+    },
+    {
+      "bytes": 64335872,
+      "member": "06047/work/aeq_project/project_database.sqlite",
+      "sha256": "011721e34e4c0438fe002508551ab5221ae7b0839cff1351913036e671f4a601"
+    },
+    {
+      "bytes": 7917,
+      "member": "06069/counts/published_counts.csv",
+      "sha256": "9ac6aca40f4eb3a2ef678023a34124800773df215b9cc73370d919649eef4fe4"
+    },
+    {
+      "bytes": 28037120,
+      "member": "06069/work/aeq_project/project_database.sqlite",
+      "sha256": "c694293621f577429295ef1d433ca81f478de1fe0233ccde3eca3272b340be01"
+    },
+    {
+      "bytes": 54341,
+      "member": "06107/counts/published_counts.csv",
+      "sha256": "be40eb073386e2f9a4ef79807c73b54da9beed634b9eb5746389bc3748212e6c"
+    },
+    {
+      "bytes": 59826176,
+      "member": "06107/work/aeq_project/project_database.sqlite",
+      "sha256": "8748c97d0f8e822cbbf51af9c617bb17efbe4dc971c512e33b91160f883bafc8"
+    },
+    {
+      "bytes": 6289,
+      "member": "08014/counts/published_counts.csv",
+      "sha256": "3dd5f16047da61f9f7a37876a20e900a5fbaaff6ae38c555b174a955811827fe"
+    },
+    {
+      "bytes": 35688448,
+      "member": "08014/work/aeq_project/project_database.sqlite",
+      "sha256": "057f5c74f9d3bcda6b24b5d45e27b2c5a487b79263f46d69fcd98914330f117d"
+    },
+    {
+      "bytes": 24735,
+      "member": "08101/counts/published_counts.csv",
+      "sha256": "6f66aa59df4bb29d0f5615ab07f5b285095615d4824511d82b3b5fb6c7d743e7"
+    },
+    {
+      "bytes": 28422144,
+      "member": "08101/work/aeq_project/project_database.sqlite",
+      "sha256": "eea1ffa9cbe9e2552f5e964ee41374762873d008d2f56427191bbc1d7771ddf4"
+    }
+  ],
+  "primary_reason_counts": {
+    "count_type_unavailable": 337
+  },
+  "registry_sha256": "9ad0ff220af4b8c97c8bf9c046196dec738c54dfae02d93f7b7b9380e9e276ab",
+  "residuals_computed": 0,
+  "schema": "openplan.input-only-count-interval-coverage.v1",
+  "study_id": "s2-cordon-impedance-development-py311-20261023"
+}
