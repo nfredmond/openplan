@@ -121,7 +121,9 @@ vi.mock("@/components/cartographic/cartographic-selection-link", () => ({
 // The detail client owns its own loading and error states over a separate API
 // call; this file is about the SERVER page's reads, so it is stubbed out.
 vi.mock("@/components/county-runs/county-run-detail-client", () => ({
-  CountyRunDetailClient: () => <div data-testid="county-run-detail-client" />,
+  CountyRunDetailClient: ({ countyOnrampWorkerConfigured }: { countyOnrampWorkerConfigured?: boolean | null }) => (
+    <div data-testid="county-run-detail-client" data-worker-configured={String(countyOnrampWorkerConfigured)} />
+  ),
 }));
 
 vi.mock("@/app/(app)/county-runs/[countyRunId]/_components/county-run-behavioral-kpis", () => ({
@@ -372,6 +374,33 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
 
     expect(screen.queryByTestId("county-run-read-failures")).toBeNull();
     expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
+  });
+});
+
+/*
+ * THE PAGE TELLS THE CLIENT WHETHER THIS COPY HAS A COUNTY WORKER, so the
+ * counts and validation sections can say so before the planner clicks. Varied
+ * both ways: a hard-coded value would pass one of these and fail the other.
+ */
+describe("/county-runs/[countyRunId] passes whether this copy has a county worker", () => {
+  async function renderWithWorkerUrl(workerUrl: string) {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_WORKER_URL", workerUrl);
+    setTable("county_runs", { data: null, error: null });
+    render(
+      await CountyRunDetailPage({
+        params: Promise.resolve({ countyRunId: COUNTY_RUN_ID }),
+        searchParams: Promise.resolve({}),
+      })
+    );
+    return screen.getByTestId("county-run-detail-client").getAttribute("data-worker-configured");
+  }
+
+  it("passes false on a copy with no county worker", async () => {
+    expect(await renderWithWorkerUrl("")).toBe("false");
+  });
+
+  it("passes true on a copy with a county worker", async () => {
+    expect(await renderWithWorkerUrl("https://worker.example.test/jobs")).toBe("true");
   });
 });
 

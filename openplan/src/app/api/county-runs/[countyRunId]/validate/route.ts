@@ -1,11 +1,17 @@
 import { access } from "node:fs/promises";
-import { isAbsolute, join, resolve } from "node:path";
+import { join } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { prepareCountyRunValidationResponseSchema } from "@/lib/api/county-onramp";
 import { countyOnrampManifestSchema } from "@/lib/models/county-onramp";
+import {
+  countyRunFolderIsReachable,
+  describeCountyRunFilesUnavailable,
+  resolveCountyRunStoredPath,
+} from "@/lib/api/county-onramp-run-files";
+import { isCountyOnrampWorkerConfigured } from "@/lib/config/deployment-health-facts";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -14,10 +20,6 @@ const paramsSchema = z.object({
 type RouteContext = {
   params: Promise<{ countyRunId: string }>;
 };
-
-function resolveStoredPath(pathValue: string): string {
-  return isAbsolute(pathValue) ? pathValue : resolve(process.cwd(), "..", pathValue);
-}
 
 const countyCallbackBearerEnvVar = "OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN";
 
@@ -83,23 +85,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const manifest = parsedManifest.data;
     const reasons: string[] = [];
 
-    const runDir = manifest.run_dir ? resolveStoredPath(manifest.run_dir) : null;
+    const runDir = manifest.run_dir ? resolveCountyRunStoredPath(manifest.run_dir) : null;
     const runOutputDir = runDir ? join(runDir, "run_output") : null;
-    const countsCsvPath = manifest.artifacts.scaffold_csv ? resolveStoredPath(manifest.artifacts.scaffold_csv) : null;
+    const countsCsvPath = manifest.artifacts.scaffold_csv ? resolveCountyRunStoredPath(manifest.artifacts.scaffold_csv) : null;
     const outputDir = runDir ? join(runDir, "validation") : null;
     const projectDbCandidate = runDir ? join(runDir, "work", "aeq_project", "project_database.sqlite") : null;
     const projectDbPath = (await pathExists(projectDbCandidate)) ? projectDbCandidate : null;
     const scaffold = manifest.summary.scaffold ?? null;
 
+    // A run folder this copy cannot see is a path from another machine, not a
+    // run with missing output. Saying "missing" there sends a planner to look
+    // for files that are fine where the worker wrote them.
+    const filesUnreachable = runDir !== null && !(await countyRunFolderIsReachable(runDir));
+
     if (!runDir) {
       reasons.push("The worker output file does not record where this run's files were written.");
+    } else if (filesUnreachable) {
+      reasons.push(describeCountyRunFilesUnavailable("check-validation", isCountyOnrampWorkerConfigured()));
     }
-    if (!runOutputDir || !(await pathExists(runOutputDir))) {
+    if (!filesUnreachable && (!runOutputDir || !(await pathExists(runOutputDir)))) {
       reasons.push("County run output directory is missing, so the validator cannot be prepared yet.");
     }
     if (!countsCsvPath) {
       reasons.push("The worker output file does not record where the traffic-count template was written.");
-    } else if (!(await pathExists(countsCsvPath))) {
+    } else if (!filesUnreachable && !(await pathExists(countsCsvPath))) {
       reasons.push("Registered scaffold CSV file was not found on disk.");
     }
     if (!scaffold) {

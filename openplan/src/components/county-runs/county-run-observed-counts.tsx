@@ -59,7 +59,17 @@ function ReadinessLine({ summary }: { summary: CountyOnrampScaffoldSummary }) {
   );
 }
 
-export function CountyRunObservedCounts({ countyRunId }: { countyRunId: string }) {
+/** Shown before the planner clicks, on a copy with no county worker. */
+export const OBSERVED_COUNTS_NO_WORKER_NOTE =
+  "This copy of OpenPlan has no county worker, so these counts may not open or save here.";
+
+export function CountyRunObservedCounts({
+  countyRunId,
+  workerConfigured = null,
+}: {
+  countyRunId: string;
+  workerConfigured?: boolean | null;
+}) {
   const [table, setTable] = useState<CountyValidationScaffoldTable | null>(null);
   const [summary, setSummary] = useState<CountyOnrampScaffoldSummary | null>(null);
   const [path, setPath] = useState<string | null>(null);
@@ -138,6 +148,12 @@ export function CountyRunObservedCounts({ countyRunId }: { countyRunId: string }
           {loading ? "Opening…" : table ? "Reload" : "Open counts"}
         </Button>
       </div>
+
+      {workerConfigured === false ? (
+        <p className="module-note" data-testid="observed-counts-no-worker">
+          {OBSERVED_COUNTS_NO_WORKER_NOTE}
+        </p>
+      ) : null}
 
       {error ? (
         <p role="alert" className="module-empty-state" data-testid="observed-counts-error">
