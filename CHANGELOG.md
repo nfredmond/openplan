@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
+a Save click that landed just after the form updated from the server could run
+with the form's previous state. In the invoice form, that could save after the
+award terms changed and the review box was cleared, without a new review. Save
+now uses the current state. No migration.
 **A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
 is not a UUID, now shows the not-found page instead of "could not be read" with
 the database's `invalid input syntax for type uuid` message. 22 record pages and
