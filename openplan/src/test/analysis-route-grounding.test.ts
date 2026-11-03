@@ -133,7 +133,7 @@ const EQUITY_FIXTURE = {
   federalJustice40: {
     status: "disadvantaged" as const,
     source: "cejst-national",
-    datasetLabel: "CEJST v1.0 (2022-11-22) — discontinued-program snapshot",
+    datasetLabel: "CEJST v1.0 (2022-11-22), discontinued-program snapshot",
     version: "1.0",
     vintage: "2010",
     coverage: { totalTracts: 2, determinedTracts: 2, undeterminedTracts: 0, disadvantagedTracts: 1 },

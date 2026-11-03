@@ -168,7 +168,7 @@ export function AerialImageryPanel({
                 : `${total} photo${total === 1 ? "" : "s"} · ${formatFileSize(totalBytes) ?? `${totalBytes} bytes`} · ` +
                   `${withLocation} of ${total} carry a location recorded by the camera` +
                   (withLocation < total
-                    ? ` — the other ${total - withLocation} recorded none, so they cannot appear on the map`
+                    ? ` (the other ${total - withLocation} recorded none, so they cannot appear on the map)`
                     : "")}
             </p>
           ) : null}
@@ -213,7 +213,7 @@ export function AerialImageryPanel({
             >
               {outcome.ok
                 ? outcome.deduped
-                  ? `${outcome.filename}: already stored for this mission — the existing copy was kept.`
+                  ? `${outcome.filename}: already stored for this mission. The existing copy was kept.`
                   : `${outcome.filename}: stored.`
                 : `${outcome.filename}: ${outcome.message}`}
             </li>

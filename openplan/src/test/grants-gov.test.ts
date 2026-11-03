@@ -255,7 +255,7 @@ describe("describeGrantsGovWindow", () => {
 
   it("labels forecasted notices with the estimated open date", () => {
     expect(describeGrantsGovWindow(opportunity({ status: "forecasted" }), NOW)).toEqual({
-      label: "Forecasted — estimated open Jul 6, 2026",
+      label: "Forecasted: estimated open Jul 6, 2026",
       tone: "info",
     });
     expect(
@@ -268,7 +268,7 @@ describe("describeGrantsGovWindow", () => {
     expect(describeGrantsGovWindow(opportunity(), NOW).tone).toBe("neutral");
     // 25 days out → warning. ceil((08-12T23:59:59Z - 07-18T12:00Z)/day) = 26.
     expect(describeGrantsGovWindow(opportunity({ closeDate: "2026-08-12" }), NOW)).toEqual({
-      label: "Closes Aug 12, 2026 — 26 days left",
+      label: "Closes Aug 12, 2026 (26 days left)",
       tone: "warning",
     });
     // 8 days out → danger.
@@ -288,12 +288,12 @@ describe("describeGrantsGovWindow", () => {
     // On the deadline day itself it still counts 1 day left.
     expect(
       describeGrantsGovWindow(opportunity({ closeDate: "2026-07-18" }), NOW)
-    ).toEqual({ label: "Closes Jul 18, 2026 — 1 day left", tone: "danger" });
+    ).toEqual({ label: "Closes Jul 18, 2026 (1 day left)", tone: "danger" });
   });
 
   it("is honest when a posted notice has no close date", () => {
     expect(describeGrantsGovWindow(opportunity({ closeDate: null }), NOW)).toEqual({
-      label: "Posted — no close date published; check the NOFO",
+      label: "Posted: no close date published; check the NOFO",
       tone: "neutral",
     });
   });
@@ -307,7 +307,7 @@ describe("toFundingOpportunityDraft", () => {
     expect(draft.status).toBe("open");
     expect(draft.opensAt).toBe("2026-07-06T00:00:00.000Z");
     expect(draft.closesAt).toBe("2026-08-31T23:59:59.000Z");
-    expect(draft.cadenceLabel).toBe("grants.gov posted — closes Aug 31, 2026; verify the NOFO.");
+    expect(draft.cadenceLabel).toBe("grants.gov posted: closes Aug 31, 2026; verify the NOFO.");
     expect(draft.summary).toContain("693JF725R000010");
     expect(draft.summary).toContain("20.816");
     expect(draft.summary).toContain("https://www.grants.gov/search-results-detail/362478");
@@ -324,7 +324,7 @@ describe("toFundingOpportunityDraft", () => {
     const draft = toFundingOpportunityDraft(opportunity({ openDate: null, closeDate: null }));
     expect(draft.opensAt).toBeUndefined();
     expect(draft.closesAt).toBeUndefined();
-    expect(draft.cadenceLabel).toBe("grants.gov posted — verify current timing in the NOFO.");
+    expect(draft.cadenceLabel).toBe("grants.gov posted: verify current timing in the NOFO.");
   });
 
   it("leaves forecasted notices on the route's upcoming default", () => {
@@ -346,7 +346,7 @@ describe("toFundingOpportunityDraft", () => {
 describe("caveat literal", () => {
   it("is pinned verbatim", () => {
     expect(GRANTS_GOV_SYNC_CAVEAT).toBe(
-      "Live results from the grants.gov Search API — synopsis-level only. Always verify eligibility, match, and deadlines in the full NOFO on grants.gov before planning an application."
+      "Live results from the grants.gov Search API, synopsis-level only. Always verify eligibility, match, and deadlines in the full NOFO on grants.gov before planning an application."
     );
   });
 });

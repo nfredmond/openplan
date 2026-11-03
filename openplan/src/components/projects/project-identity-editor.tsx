@@ -530,7 +530,7 @@ export function ProjectIdentityEditor({
                 </StatusBadge>
                 {placeIsUnresolvedShape ? (
                   <span className="text-sm text-muted-foreground">
-                    {placeIsUploaded ? "Uploaded file" : "Drawn area"} — modules can inherit its
+                    {placeIsUploaded ? "Uploaded file" : "Drawn area"}. Modules can inherit its
                     shape, but cannot derive a county filter, crash-data scope, or jurisdiction rule
                     from it.
                   </span>

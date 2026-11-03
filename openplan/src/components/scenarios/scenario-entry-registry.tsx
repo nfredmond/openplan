@@ -68,7 +68,7 @@ type ModelRunOption = {
 };
 
 function formatModelRunOptionLabel(option: ModelRunOption): string {
-  return `${option.title} — ${getManagedRunModeDefinition(option.engineKey).engineLabel} · ${titleizeScenarioValue(option.status)}`;
+  return `${option.title} (${getManagedRunModeDefinition(option.engineKey).engineLabel} · ${titleizeScenarioValue(option.status)})`;
 }
 
 type ModelOption = {
@@ -304,7 +304,7 @@ function ScenarioEntryLaunchButton({
       </select>
       {RECORDED_ONLY_ENGINE_KEYS.has(selectedEngineKey) ? (
         <p className="text-xs text-muted-foreground">
-          This engine records the run on the model — it does not attach the run as this entry&apos;s
+          This engine records the run on the model. It does not attach the run as this entry&apos;s
           evidence.
           {selectedEngineKey === "ite_trip_generation"
             ? " The land-use program is read from this entry's assumptions JSON (tripGenProgram)."
@@ -724,7 +724,7 @@ function ScenarioEntryCard({
               ) : null}
             </select>
             <p className="text-xs text-muted-foreground">
-              An entry carries exactly one attachment — an Analysis Studio run or a worker model run.
+              An entry carries exactly one attachment: an Analysis Studio run or a worker model run.
               Clear it here if the evidence is stale or the wrong run was linked.
             </p>
           </div>
@@ -844,7 +844,7 @@ export function ScenarioEntryRegistry({
 
         {unreadable.entries ? (
           <div className="module-empty-state mt-5 text-sm">
-            Alternatives could not be listed — this scenario set&apos;s entries could not be read. An empty registry here
+            Alternatives could not be listed: this scenario set&apos;s entries could not be read. An empty registry here
             is a failed read, not an absence of alternatives.
           </div>
         ) : alternativeEntries.length === 0 ? (
@@ -925,7 +925,7 @@ export function ScenarioEntryRegistry({
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {unreadable.entries
-                ? "Blockers cannot be detected for this render — this set's entries could not be read."
+                ? "Blockers cannot be detected for this render: this set's entries could not be read."
                 : comparisonSummary.primaryBlocker
                   ? `${comparisonSummary.primaryBlocker.label}: ${comparisonSummary.primaryBlocker.reason}`
                   : "No blockers detected. Alternatives with distinct attached runs are ready for evidence review."}

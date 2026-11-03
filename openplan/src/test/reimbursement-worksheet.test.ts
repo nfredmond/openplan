@@ -660,7 +660,7 @@ describe("the packet's honesty furniture", () => {
     });
     expect(html).toContain("This workspace");
     expect(html).toContain("Untitled award");
-    expect(html).toContain("Award to date — no period selected");
+    expect(html).toContain("Award to date (no period selected)");
     // With no period, the invoice table is the whole award, not an empty period.
     expect(html).toContain("Invoice records on this award");
     expect(html).toContain("RB-2026-003");

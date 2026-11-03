@@ -128,7 +128,7 @@ function ImagerySubmitted({ job }: { job: AerialProcessingJobRow }) {
       <span className="font-medium text-foreground">Imagery submitted:</span> {parts.join(" · ")}
       {host ? (
         <span className="block text-label">
-          Only the host is shown — the imagery link is a signed URL supplied at request time.
+          Only the host is shown. The imagery link is a signed URL supplied at request time.
         </span>
       ) : null}
     </p>
@@ -164,7 +164,7 @@ function ArtifactList({
           compact
           tone="warning"
           title="The recorded outputs could not be read"
-          description="This job's artifacts column holds something that is not a list of artifacts. The worker reported outputs, but OpenPlan cannot describe them — treat this as unknown, not as none."
+          description="This job's artifacts column holds something that is not a list of artifacts. The worker reported outputs, but OpenPlan cannot describe them. Treat this as unknown, not as none."
         />
         {hasCustodyFacts ? custodySection : null}
       </div>
@@ -317,7 +317,7 @@ function CustodyNote({
     return (
       <p className="mt-1.5 text-label text-[color:var(--copper)]">
         OpenPlan could not read its own record of which of these outputs it holds, so whether they
-        survive the worker&apos;s links expiring is unestablished — this is not a finding that none are
+        survive the worker&apos;s links expiring is unestablished. This is not a finding that none are
         held. ({unreadableReason})
       </p>
     );
@@ -368,7 +368,7 @@ function BenchmarkSummary({ value }: { value: unknown }) {
   return (
     <details className="mt-3 text-xs">
       <summary className="cursor-pointer text-muted-foreground">
-        Worker benchmark summary — vendor JSON, schema owned by the processing platform
+        Worker benchmark summary: vendor JSON, schema owned by the processing platform
       </summary>
       <pre className="mt-1.5 max-h-64 overflow-auto rounded-[0.4rem] border border-[color:var(--line)] bg-background/60 p-2 text-label leading-relaxed">
         {serialized}
@@ -469,7 +469,7 @@ export function AerialProcessingJobsPanel({
       <StateBlock
         tone="danger"
         title="Processing jobs could not be read"
-        description={`${unreadableReason} This is not the same as this mission having no processing jobs — OpenPlan cannot tell you either way right now, so do not read the absence of a job below as evidence that nothing was dispatched.`}
+        description={`${unreadableReason} This is not the same as this mission having no processing jobs. OpenPlan cannot tell you either way right now, so do not read the absence of a job below as evidence that nothing was dispatched.`}
       />
     );
   }

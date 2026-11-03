@@ -311,7 +311,7 @@ export const SEVERITY_LABELS: Record<CrashSeverity, string> = {
    * as property-damage-only, because a missing count parsed to zero. The label
    * has to say that the classification is missing, not that the outcome was mild.
    */
-  unknown: "Not classified — no casualty count reported",
+  unknown: "Not classified: no casualty count reported",
 };
 
 /**
@@ -320,13 +320,13 @@ export const SEVERITY_LABELS: Record<CrashSeverity, string> = {
  */
 export const COVERAGE_STATE_COPY: Record<string, string> = {
   ccrs_ca_statewide:
-    "California Crash Reporting System (CCRS) — statewide California, reported collisions from 2016 onward.",
+    "California Crash Reporting System (CCRS): statewide California, reported collisions from 2016 onward.",
   fars_fatal_only:
-    "NHTSA FARS — fatal crashes only. Injury and property-damage collisions are not included.",
+    "NHTSA FARS: fatal crashes only. Injury and property-damage collisions are not included.",
   state_injury_file:
     "State crash file with injury severity, read from the state's published layer and not saved in this workspace. Only crashes the state located are included.",
   switrs_legacy_local:
-    "Legacy SWITRS extract — a discontinued system frozen at 2025-01-08. Historical use only.",
+    "Legacy SWITRS extract: a discontinued system frozen at 2025-01-08. Historical use only.",
   /**
    * WORDED FOR WHAT THE STATE ACTUALLY MEANS, which is narrower than it used to
    * claim. This sentence read "No registered crash source covers this study

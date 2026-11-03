@@ -181,7 +181,7 @@ function Comparison({ comparison }: { comparison: ServiceEquityComparison }) {
           ))}
           <li>
             OpenPlan measures a difference and compares it to the threshold your agency adopted. It
-            does not determine that a disparate impact or a disproportionate burden exists — that is
+            does not determine that a disparate impact or a disproportionate burden exists. That is
             your governing body&apos;s determination, on a record that includes public participation.
           </li>
         </ul>
@@ -373,7 +373,7 @@ export function TitleViServiceEquityPanel({
           </p>
         ) : (
           <p className="mt-1 text-sm text-muted-foreground">
-            No adopted policy is recorded. OpenPlan supplies no default thresholds — they are values
+            No adopted policy is recorded. OpenPlan supplies no default thresholds. They are values
             your agency adopts and publishes.
           </p>
         )}
@@ -552,7 +552,7 @@ export function TitleViServiceEquityPanel({
           ))}
         </select>
         <span className="text-xs text-muted-foreground">
-          Days are never combined — a system with no weekend service is a common finding a weekly
+          Days are never combined. A system with no weekend service is a common finding a weekly
           total would erase.
         </span>
       </div>

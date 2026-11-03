@@ -244,7 +244,7 @@ export function awardDrawdown(
         formattedValue: drawnText,
         detail:
           percent > 100
-            ? `${drawnText} drawn against ${authorisedText} authorised — ${percent}%, which is MORE than the award. Check the invoices on it.`
+            ? `${drawnText} drawn against ${authorisedText} authorised (${percent}%), which is MORE than the award. Check the invoices on it.`
             : `${drawnText} drawn against ${authorisedText} authorised (${percent}%)`,
       },
     ];

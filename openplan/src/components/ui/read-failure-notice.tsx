@@ -48,7 +48,7 @@ export const OPERATOR_DETAIL_SUMMARY = "Technical detail for whoever runs this d
  * way, and points at the disclosure that holds what they will need.
  */
 export const READ_FAILURE_PLANNER_ACTION =
-  "Reload the page to try again. If it keeps happening, ask whoever runs this deployment — the technical detail below is for them.";
+  "Reload the page to try again. If it keeps happening, ask whoever runs this deployment. The technical detail below is for them.";
 
 /**
  * The collapsed second register: operator plumbing — a database message, an

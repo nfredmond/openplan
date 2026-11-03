@@ -871,7 +871,7 @@ function main(): void {
         : shift.metres > DATUM_ACKNOWLEDGEMENT_METRES
           ? `This layer is on ${representative.datum}. OpenPlan ships no datum-shift grids, so its coordinates are drawn ` +
             `as given: within this system's area of use that places shapes up to about ${Math.round(shift.metres)} m ` +
-            `from their true WGS 84 position. The shift is systematic, not random — the whole layer moves together.`
+            `from their true WGS 84 position. The shift is systematic, not random: the whole layer moves together.`
           : shift.metres >= 0.5
             ? `This layer is on ${representative.datum}. Coordinates are drawn as given with no datum transformation, ` +
               `which can shift positions by up to about ${shift.metres} m.`

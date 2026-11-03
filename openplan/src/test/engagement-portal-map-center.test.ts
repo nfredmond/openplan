@@ -270,7 +270,7 @@ describe("which area frames a campaign's public map", () => {
 
   it("names the area without letting the name stand in for the explanation", () => {
     const named = resolvePortalMapFraming({ projectPlace: area("Travis County, Texas", AUSTIN) });
-    expect(named.summary).toBe("This map opens on Travis County, Texas — the linked project's study area.");
+    expect(named.summary).toBe("This map opens on Travis County, Texas, the linked project's study area.");
 
     // A drawn area has no name. The sentence must still say WHY, rather than
     // going silent or inventing a label.

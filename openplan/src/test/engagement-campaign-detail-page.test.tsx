@@ -933,7 +933,7 @@ describe("EngagementCampaignDetailPage", () => {
 
     expect(screen.getByText(/1 included · 1 held · 1 internal\/private excluded/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Held for duplicate review/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Excluded — internal\/private note/i)).toBeInTheDocument();
+    expect(screen.getByText(/Excluded: internal\/private note/i)).toBeInTheDocument();
     expect(screen.getByText(/does not establish representativeness, legal sufficiency/i)).toBeInTheDocument();
   });
 
@@ -1162,7 +1162,7 @@ describe("EngagementCampaignDetailPage", () => {
 
       await renderPage({ tab: "setup" });
 
-      expect(screen.getByText(/Machine translation — participants are told/)).toBeInTheDocument();
+      expect(screen.getByText(/Machine translation: participants are told/)).toBeInTheDocument();
       // The consequence, before the click: accepting removes the caveat a
       // resident is reading and publishes the words as the agency's own.
       expect(screen.getByText(/Accepting makes these words your agency's own/)).toBeInTheDocument();

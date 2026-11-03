@@ -72,7 +72,7 @@ describe("the operator can see and set what frames the public map", () => {
     render(<EngagementCampaignControls campaign={campaign} projects={[]} />);
 
     expect(
-      await screen.findByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
+      await screen.findByText(/This map opens on Franklin County, Ohio, the linked project's study area\./i)
     ).toBeInTheDocument();
     expect(screen.getByText("Project study area")).toBeInTheDocument();
   });

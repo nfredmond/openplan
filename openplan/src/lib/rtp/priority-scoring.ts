@@ -159,7 +159,7 @@ function buildNarrative(summary: RtpPriorityScoreSummary, drivers: RtpPriorityDr
   );
   const basisPhrase = bases.length > 0 ? ` (${bases.join("; ")})` : "";
 
-  return `Scores ${summary.composite}/100 — ${TIER_PHRASE[summary.tier]}. Its strongest contributions are ${topPhrase}.${levelPhrase}${basisPhrase}.`;
+  return `Scores ${summary.composite}/100: ${TIER_PHRASE[summary.tier]}. Its strongest contributions are ${topPhrase}.${levelPhrase}${basisPhrase}.`;
 }
 
 export interface RtpPortfolioPrioritySummary {
@@ -240,7 +240,7 @@ function buildPortfolioNarrative(
   );
   const basisPhrase = bases.length > 0 ? ` (${bases.join("; ")})` : "";
 
-  return `Across ${projectCount} linked project${projectCount === 1 ? "" : "s"} (${mix}), this portfolio's strongest collective focus is ${focus} — advancing those priorities${basisPhrase}. Average priority score of scored projects: ${averageComposite}/100.`;
+  return `Across ${projectCount} linked project${projectCount === 1 ? "" : "s"} (${mix}), this portfolio's strongest collective focus is ${focus}, advancing those priorities${basisPhrase}. Average priority score of scored projects: ${averageComposite}/100.`;
 }
 
 export function priorityTierTone(tier: RtpPriorityTier): "success" | "info" | "warning" | "neutral" {

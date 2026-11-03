@@ -193,10 +193,10 @@ function scopeLabelFor(
   scope: GrantProgramBundleScope
 ): string {
   if (scope === "other_jurisdiction") {
-    return `${jurisdiction.label} — not this workspace's jurisdiction`;
+    return `${jurisdiction.label} (not this workspace's jurisdiction)`;
   }
   if (scope === "unknown_jurisdiction") {
-    return `${jurisdiction.label} — coverage unconfirmed`;
+    return `${jurisdiction.label} (coverage unconfirmed)`;
   }
   return jurisdiction.label;
 }
@@ -226,7 +226,7 @@ function buildDisclosure(
     return {
       reason: "no_workspace_subdivision",
       headline: `Program coverage: only ${workspaceJurisdictionLabel} is established for this workspace`,
-      detail: `This workspace's home geography does not establish which subdivision of ${workspaceJurisdictionLabel} it works in — it spans more than one, or its source cannot say — so ${describeBundleList(unconfirmed)} can be neither confirmed nor ruled out for it. Each is labeled with the jurisdiction it is registered for.${nationwide.length > 0 ? ` ${describeBundleList(nationwide)} apply throughout ${workspaceJurisdictionLabel}.` : ""}`,
+      detail: `This workspace's home geography does not establish which subdivision of ${workspaceJurisdictionLabel} it works in (it spans more than one, or its source cannot say), so ${describeBundleList(unconfirmed)} can be neither confirmed nor ruled out for it. Each is labeled with the jurisdiction it is registered for.${nationwide.length > 0 ? ` ${describeBundleList(nationwide)} apply throughout ${workspaceJurisdictionLabel}.` : ""}`,
       action:
         "Set a home geography that names one subdivision to have this catalog answer for it directly.",
     };
@@ -240,8 +240,8 @@ function buildDisclosure(
     return {
       reason: "no_bundle_for_jurisdiction",
       headline: `No grant program bundle is registered for ${workspaceJurisdictionLabel}`,
-      detail: `OpenPlan has not curated ${workspaceJurisdictionLabel}'s own funding programs yet, so ${describeBundleList(scopedElsewhere)} below belong to another jurisdiction — they are listed with that jurisdiction on them, and are not this workspace's funding menu.${nationwide.length > 0 ? ` ${describeBundleList(nationwide)} do apply here.` : ""}`,
-      action: `Track ${workspaceJurisdictionLabel}'s own programs as opportunities directly — the catalog does not carry them yet.`,
+      detail: `OpenPlan has not curated ${workspaceJurisdictionLabel}'s own funding programs yet, so ${describeBundleList(scopedElsewhere)} below belong to another jurisdiction. They are listed with that jurisdiction on them, and are not this workspace's funding menu.${nationwide.length > 0 ? ` ${describeBundleList(nationwide)} do apply here.` : ""}`,
+      action: `Track ${workspaceJurisdictionLabel}'s own programs as opportunities directly. The catalog does not carry them yet.`,
     };
   }
 

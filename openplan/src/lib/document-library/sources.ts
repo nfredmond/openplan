@@ -273,7 +273,7 @@ const invoicePdfsSource: DocumentLibrarySource = {
     hasBytes: false,
     downloadHref: `/api/invoicing/client-invoices/${row.id}/pdf`,
     badge: invoiceBadge(asString(row.status) ?? "draft"),
-    detail: "Rendered on request — OpenPlan stores the invoice record, not a file.",
+    detail: "Rendered on request. OpenPlan stores the invoice record, not a file.",
     groundable: false,
   }),
 };
@@ -365,7 +365,7 @@ const aerialCustodySource: DocumentLibrarySource = {
     return {
       sourceId: "aerial_artifact_custody",
       id: String(row.id),
-      title: missionTitle ? `${kindLabel} — ${missionTitle}` : kindLabel,
+      title: missionTitle ? `${kindLabel}: ${missionTitle}` : kindLabel,
       projectId: asString(job?.project_id),
       createdAt: asString(row.created_at) ?? "",
       byteSize: held ? asNumber(row.byte_size) : null,
@@ -406,7 +406,7 @@ const modelRunArtifactsSource: DocumentLibrarySource = {
     return {
       sourceId: "model_run_artifacts",
       id: String(row.id),
-      title: runTitle ? `${runTitle} — ${artifactType}` : PARENT_UNAVAILABLE,
+      title: runTitle ? `${runTitle}: ${artifactType}` : PARENT_UNAVAILABLE,
       projectId: asString(model?.project_id),
       createdAt: asString(row.created_at) ?? "",
       byteSize: asNumber(row.file_size_bytes),

@@ -243,7 +243,7 @@ function CountyCoverage({
       case "check_failed":
         return [
           `Could not check tract coverage for ${label ?? "this county"}: ${state.message}. This says ` +
-            "nothing about whether tracts are loaded — the check itself did not complete.",
+            "nothing about whether tracts are loaded. The check itself did not complete.",
         ];
       case "loading":
         return [

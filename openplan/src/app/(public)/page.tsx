@@ -48,7 +48,7 @@ const whatYouCanDo = [
   {
     title: "Study a corridor without losing the work",
     description:
-      "Pick a street, a corridor, or a whole city. OpenPlan pulls census, jobs, transit and safety data for that exact area, scores it, and saves the run — so when someone asks in six months where a number came from, you can show them.",
+      "Pick a street, a corridor, or a whole city. OpenPlan pulls census, jobs, transit and safety data for that exact area, scores it, and saves the run, so when someone asks in six months where a number came from, you can show them.",
   },
   {
     title: "Ask the public, and keep track of what they said",
@@ -58,7 +58,7 @@ const whatYouCanDo = [
   {
     title: "Get a first draft of the write-up",
     description:
-      "Turn the analysis and the public comments into draft text you can edit — with the caveats already attached, so nothing quietly becomes more certain than it should on its way into a board packet. AI drafting is optional: it runs on your agency's own AI provider key, and that provider bills you for the usage, not OpenPlan.",
+      "Turn the analysis and the public comments into draft text you can edit, with the caveats already attached, so nothing quietly becomes more certain than it should on its way into a board packet. AI drafting is optional: it runs on your agency's own AI provider key, and that provider bills you for the usage, not OpenPlan.",
   },
 ];
 
@@ -89,7 +89,7 @@ const whereToStart = [
 const theBasics = [
   {
     label: "Cost",
-    value: "Free — all of it",
+    value: "Free, all of it",
     detail:
       "No plans, no per-seat pricing, no limit you have to pay to lift. There is no payment step anywhere in the software.",
   },
@@ -110,7 +110,7 @@ const whatToExpect = [
   "You can read the code. The software behind a public planning decision should be something the public can inspect.",
   "Everyone gets everything. There is no paid tier that unlocks more of it, and no feature held back.",
   "You approve public comments before they count. Nothing a resident writes reaches a report without a person reading it first.",
-  "It tells you what it does not know. Results are screening-grade — good for comparing options, setting priorities, and making a case, and not a substitute for engineering design or a CEQA determination.",
+  "It tells you what it does not know. Results are screening-grade: good for comparing options, setting priorities, and making a case, and not a substitute for engineering design or a CEQA determination.",
   "It works for your area, not a sample one. Pick any city, county, town or metro area in the United States. Where a data source genuinely does not cover you, it says so instead of showing an empty result.",
 ];
 
@@ -147,14 +147,14 @@ export default function PublicLandingPage() {
         <article className="public-hero">
           <p className="public-kicker">Free, open-source planning software</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Your maps, your public comments, and your report — in one place.</h1>
+            <h1 className="public-title">Your maps, your public comments, and your report, in one place.</h1>
             <p className="public-lead max-w-4xl">
               OpenPlan is software for the work planners actually do: studying a corridor, asking the public what they think, keeping track of projects and grants, and writing the documents that come out of all of it. It is free, and the code is public. Designed for city and county planners, MPOs and RTPAs, tribes, non-profits and consultants.
             </p>
           </div>
 
           <div className="public-source-proof" aria-label="Open-source proof path">
-            <span>Do not take our word for it — read the code:</span>
+            <span>Do not take our word for it. Read the code:</span>
             {sourceProofLinks.map((link) => (
               <Link key={link.href} href={link.href} className="public-source-proof-link">
                 {link.label}

@@ -32,7 +32,7 @@ function QuestionResult({ q }: { q: SurveyQuestionAggregation }) {
 
       {lowN ? (
         <p className="mt-2 rounded-[0.5rem] border border-amber-300/70 bg-amber-50/70 px-3 py-2 text-xs text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
-          Based on {agg.n} response{agg.n === 1 ? "" : "s"} — screening input, not a statistically representative sample (below {SURVEY_SMALL_SAMPLE_N}).
+          Based on {agg.n} response{agg.n === 1 ? "" : "s"}: screening input, not a statistically representative sample (below {SURVEY_SMALL_SAMPLE_N}).
         </p>
       ) : null}
 
@@ -128,7 +128,7 @@ export function EngagementSurveyResults({
           <p className="module-section-label">Survey results</p>
           <h2 className="module-section-title">Response summary</h2>
           <p className="module-section-description">
-            {approvedResponseCount} approved response{approvedResponseCount === 1 ? "" : "s"}. Screening-grade tallies of moderated-in survey answers — not a statistically representative sample.
+            {approvedResponseCount} approved response{approvedResponseCount === 1 ? "" : "s"}. Screening-grade tallies of moderated-in survey answers, not a statistically representative sample.
           </p>
         </div>
       </div>

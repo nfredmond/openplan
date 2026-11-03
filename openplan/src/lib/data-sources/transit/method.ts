@@ -105,7 +105,7 @@ export function gtfsServiceLevelMethod(frequencyTermApplied: boolean): TransitAc
         `not counted, so an operator whose feed is missing is absent from these figures rather than absent ` +
         `from the corridor.`
       : `Stop counts come from the GTFS feeds this workspace has ingested. No feed's stops reach across the ` +
-        `whole study area, so no frequency share is reported for it — a share taken over part of an area ` +
+        `whole study area, so no frequency share is reported for it. A share taken over part of an area ` +
         `would describe that part, not the area. The frequency half of the transit term is scored as ZERO ` +
         `rather than credited back as stop density, because an unmeasured half is not an earned one: ` +
         `handing it back made a partly-covered corridor outscore a fully-covered one. This run's ` +
@@ -287,7 +287,7 @@ export function transitFrequencyHalfNote(method: TransitAccessMethod): string {
   if (method.frequencyTermApplied) {
     return (
       "Share of ALL the stops counted above whose median peak headway on a representative service day meets " +
-      "this threshold — a stop with no derivable peak headway that day counts as not meeting it. Half the " +
+      "this threshold. A stop with no derivable peak headway that day counts as not meeting it. Half the " +
       "accessibility score's transit term."
     );
   }
@@ -296,7 +296,7 @@ export function transitFrequencyHalfNote(method: TransitAccessMethod): string {
     return (
       "No single ingested feed's stops span this study area, so no frequency share could be measured for it. " +
       "The frequency half of the accessibility score's transit term is scored as zero rather than credited " +
-      "back as stop density — measuring less must never raise the score — so this run's accessibility score " +
+      "back as stop density (measuring less must never raise the score), so this run's accessibility score " +
       "is up to ten points below what the same corridor would score from a feed that spans it."
     );
   }
@@ -314,5 +314,5 @@ export function transitFrequencyHalfNote(method: TransitAccessMethod): string {
  * the same run's method in two different ways.
  */
 export function transitMethodLine(method: TransitAccessMethod): string {
-  return `${method.label} — ${method.detail}`;
+  return `${method.label}: ${method.detail}`;
 }

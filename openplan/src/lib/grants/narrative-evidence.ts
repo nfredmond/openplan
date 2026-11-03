@@ -259,8 +259,8 @@ function fundingSummaryClaims(
   const projectLabel = projectName ?? "The linked project";
   if (summary.comparableFunding) return [`${projectLabel}: ${comparableFundingDisclosure(summary.comparableFunding)}`];
   return [
-    `${projectLabel} funding posture: ${summary.label} — ${summary.reason}`,
-    `${projectLabel} pipeline posture: ${summary.pipelineLabel} — ${summary.pipelineReason}`,
+    `${projectLabel} funding posture: ${summary.label}. ${summary.reason}`,
+    `${projectLabel} pipeline posture: ${summary.pipelineLabel}. ${summary.pipelineReason}`,
     summary.hasTargetNeed ? `${projectLabel} funding need: ${formatAmount(summary.fundingNeedAmount)}` : null,
     summary.localMatchNeedAmount > 0
       ? `${projectLabel} local match need: ${formatAmount(summary.localMatchNeedAmount)}`
@@ -268,7 +268,7 @@ function fundingSummaryClaims(
     `${projectLabel} committed award dollars: ${formatAmount(summary.committedFundingAmount)} across ${summary.awardCount} award record(s)`,
     `${projectLabel} pursued (likely) opportunity dollars: ${formatAmount(summary.likelyFundingAmount)} across ${summary.pursuedOpportunityCount} pursued opportunit(ies)`,
     `${projectLabel} remaining gap after committed + pursued dollars: ${formatAmount(summary.unfundedAfterLikelyAmount)}`,
-    `${projectLabel} reimbursement posture: ${summary.reimbursementLabel} — ${summary.reimbursementReason}`,
+    `${projectLabel} reimbursement posture: ${summary.reimbursementLabel}. ${summary.reimbursementReason}`,
   ].filter((claim): claim is string => claim !== null);
 }
 
@@ -471,7 +471,7 @@ export async function assembleOpportunityEvidence(
     const readiness = describeProjectGrantModelingReadiness(modelingEvidence);
     modelingReadinessDetail = readiness ? `${readiness.label}: ${readiness.detail}` : null;
     modelingHeadline = modelingEvidence
-      ? `${modelingEvidence.leadComparisonReport.title} — ${modelingEvidence.leadComparisonReport.comparisonDigest.headline}. ${modelingEvidence.leadComparisonReport.comparisonDigest.detail}`
+      ? `${modelingEvidence.leadComparisonReport.title}: ${modelingEvidence.leadComparisonReport.comparisonDigest.headline}. ${modelingEvidence.leadComparisonReport.comparisonDigest.detail}`
       : null;
 
     bcaScreening =
@@ -876,16 +876,16 @@ export function buildOpportunityFactList(
   const hasModelingEvidence = Boolean(bundle.modelingHeadline && bundle.modelingReadinessDetail);
   const dualDemandAgreementClaims = bundle.dualDemandAgreementEvidence
     ? bundle.dualDemandAgreementEvidence.leadReport.agreements.flatMap((agreement) => [
-        `Frozen dual-model agreement aggregate from report "${bundle.dualDemandAgreementEvidence?.leadReport.title}" and source run ${agreement.modelRunId}: ${agreement.methods.first} compared with ${agreement.methods.second}; ${agreement.aggregate.linksCompared} links compared; ${agreement.aggregate.linksCarryingMeaningfulTraffic} carried meaningful traffic; meaningful-link agreement share ${agreement.aggregate.agreeShareMeaningfulLinks === null ? "not available" : `${(agreement.aggregate.agreeShareMeaningfulLinks * 100).toFixed(1)}%`}; median meaningful-link GEH ${agreement.aggregate.medianGehMeaningfulLinks ?? "not available"}; attribution scale ${agreement.permittedAttributionScale}. Packet freshness: ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.label} — ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.detail} ${AGREEMENT_METHOD_SENSITIVITY_STATEMENT} ${AGREEMENT_NO_AVERAGE_STATEMENT}`,
+        `Frozen dual-model agreement aggregate from report "${bundle.dualDemandAgreementEvidence?.leadReport.title}" and source run ${agreement.modelRunId}: ${agreement.methods.first} compared with ${agreement.methods.second}; ${agreement.aggregate.linksCompared} links compared; ${agreement.aggregate.linksCarryingMeaningfulTraffic} carried meaningful traffic; meaningful-link agreement share ${agreement.aggregate.agreeShareMeaningfulLinks === null ? "not available" : `${(agreement.aggregate.agreeShareMeaningfulLinks * 100).toFixed(1)}%`}; median meaningful-link GEH ${agreement.aggregate.medianGehMeaningfulLinks ?? "not available"}; attribution scale ${agreement.permittedAttributionScale}. Packet freshness: ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.label}. ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.detail} ${AGREEMENT_METHOD_SENSITIVITY_STATEMENT} ${AGREEMENT_NO_AVERAGE_STATEMENT}`,
         ...agreement.namedCorridors.map((corridor) =>
-          `Planner-selected corridor evidence frozen in report "${bundle.dualDemandAgreementEvidence?.leadReport.title}": ${corridor.corridor}; ${agreement.methods.first} volume ${corridor.firstVolume}; ${agreement.methods.second} volume ${corridor.secondVolume}; GEH ${corridor.geh}; classification ${corridor.classification}; source run ${agreement.modelRunId}; attribution scale ${agreement.permittedAttributionScale}. Packet freshness: ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.label} — ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.detail} ${AGREEMENT_METHOD_SENSITIVITY_STATEMENT} ${AGREEMENT_NO_AVERAGE_STATEMENT}`
+          `Planner-selected corridor evidence frozen in report "${bundle.dualDemandAgreementEvidence?.leadReport.title}": ${corridor.corridor}; ${agreement.methods.first} volume ${corridor.firstVolume}; ${agreement.methods.second} volume ${corridor.secondVolume}; GEH ${corridor.geh}; classification ${corridor.classification}; source run ${agreement.modelRunId}; attribution scale ${agreement.permittedAttributionScale}. Packet freshness: ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.label}. ${bundle.dualDemandAgreementEvidence?.leadReport.packetFreshness.detail} ${AGREEMENT_METHOD_SENSITIVITY_STATEMENT} ${AGREEMENT_NO_AVERAGE_STATEMENT}`
         ),
       ])
     : [];
   const aerialOrthoClaims = bundle.aerialOrthoEvidence
     ? bundle.aerialOrthoEvidence.leadReport.snapshots.map((snapshot) => {
         const [west, south, east, north] = snapshot.bounds;
-        return `Planner-selected orthophoto evidence frozen in report "${bundle.aerialOrthoEvidence?.leadReport.title}": mission ${snapshot.missionTitle}; captured ${snapshot.collectedAt ?? "not recorded"}; held ${snapshot.heldAt ?? "not recorded"}; frozen ${snapshot.frozenAt}; resolution ${snapshot.pixelSizeM === null ? "not recorded" : `${snapshot.pixelSizeM} meters per pixel`}; map placement west ${west}, south ${south}, east ${east}, north ${north}; source SHA-256 ${snapshot.sourceChecksumSha256}; frozen SHA-256 ${snapshot.frozenChecksumSha256}. Packet freshness: ${bundle.aerialOrthoEvidence?.leadReport.packetFreshness.label} — ${bundle.aerialOrthoEvidence?.leadReport.packetFreshness.detail} ${snapshot.caveat}`;
+        return `Planner-selected orthophoto evidence frozen in report "${bundle.aerialOrthoEvidence?.leadReport.title}": mission ${snapshot.missionTitle}; captured ${snapshot.collectedAt ?? "not recorded"}; held ${snapshot.heldAt ?? "not recorded"}; frozen ${snapshot.frozenAt}; resolution ${snapshot.pixelSizeM === null ? "not recorded" : `${snapshot.pixelSizeM} meters per pixel`}; map placement west ${west}, south ${south}, east ${east}, north ${north}; source SHA-256 ${snapshot.sourceChecksumSha256}; frozen SHA-256 ${snapshot.frozenChecksumSha256}. Packet freshness: ${bundle.aerialOrthoEvidence?.leadReport.packetFreshness.label}. ${bundle.aerialOrthoEvidence?.leadReport.packetFreshness.detail} ${snapshot.caveat}`;
       })
     : [];
 
@@ -919,13 +919,13 @@ export function buildOpportunityFactList(
       ? bundle.rtpProgramming.length > 0
         ? rtpProgrammingClaims(bundle.rtpProgramming, bundle.projectName)
         : [
-            `No regional transportation plan (RTP/MTP) programming is on record for ${bundle.projectName ?? "the linked project"} — the project is not listed in any RTP/MTP cycle in this workspace.`,
+            `No regional transportation plan (RTP/MTP) programming is on record for ${bundle.projectName ?? "the linked project"}. The project is not listed in any RTP/MTP cycle in this workspace.`,
           ]
       : []),
     ...(isProposal && include("project") && bundle.completedProjects
       ? bundle.completedProjects.map(
           (project) =>
-            `Completed project on record (past performance): ${project.name}${project.summary ? ` — ${project.summary}` : ""}${project.deliveryPhase ? ` (delivery phase: ${project.deliveryPhase})` : ""}.`
+            `Completed project on record (past performance): ${project.name}${project.summary ? `: ${project.summary}` : ""}${project.deliveryPhase ? ` (delivery phase: ${project.deliveryPhase})` : ""}.`
         )
       : []),
     include("funding") && opportunity.expected_award_amount != null

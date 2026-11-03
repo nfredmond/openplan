@@ -214,7 +214,7 @@ export function WorkspaceStageGatePanel({
               {choices.boundTemplateId ? `“${choices.boundTemplateId}”` : "no registered template"}
             </span>
             , which this deployment does not register. Project gate boards cannot render, and which
-            gates would leave a board on a rebind cannot be determined — the current template is not
+            gates would leave a board on a rebind cannot be determined: the current template is not
             here to compare against. Recorded decisions are unaffected and stay exactly as signed.
           </p>
         </div>
@@ -292,7 +292,7 @@ export function WorkspaceStageGatePanel({
         <p className="mt-3 text-sm text-muted-foreground">
           This deployment registers {choices.registeredTemplateCount} stage-gate template
           {choices.registeredTemplateCount === 1 ? "" : "s"} and there is no other one to bind to.
-          Registering a pack for another jurisdiction makes it selectable here — no code change is
+          Registering a pack for another jurisdiction makes it selectable here. No code change is
           needed to offer it.
         </p>
       ) : !canManage ? (
@@ -386,7 +386,7 @@ export function WorkspaceStageGatePanel({
                   <span>
                     <span className="font-medium text-foreground">{option.templateName}</span>{" "}
                     <span className="text-muted-foreground">
-                      — {option.jurisdictionLabel}, v{option.templateVersion}
+                      ({option.jurisdictionLabel}, v{option.templateVersion})
                     </span>
                     <span className="ml-1 text-xs text-muted-foreground">
                       (registered for this workspace&apos;s jurisdiction)
@@ -435,11 +435,11 @@ export function WorkspaceStageGatePanel({
                     <span>
                       <span className="font-medium text-foreground">{option.templateName}</span>{" "}
                       <span className="text-muted-foreground">
-                        — {option.jurisdictionLabel}, v{option.templateVersion}
+                        ({option.jurisdictionLabel}, v{option.templateVersion})
                       </span>
                       {option.isInterimDefault ? (
                         <span className="ml-1 text-xs text-muted-foreground">
-                          (the interim default — applied when nothing has chosen)
+                          (the interim default, applied when nothing has chosen)
                         </span>
                       ) : null}
                       {option.templateDescription ? (

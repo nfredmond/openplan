@@ -316,7 +316,7 @@ export function buildSafetyCrashEvidence(
       // NOT "no pedestrians were involved". The distinction the whole module
       // rests on: an unretrieved count is not a zero.
       ingest.partyCompleteness === "not_supported"
-        ? "This source records no person-level detail, so who was involved cannot be counted from it — only whether a collision was flagged as involving a pedestrian, bicyclist or motorcyclist."
+        ? "This source records no person-level detail, so who was involved cannot be counted from it, only whether a collision was flagged as involving a pedestrian, bicyclist or motorcyclist."
         : ingest.partyCompleteness === "retrieved"
           ? "Person-level counts could not be reconciled with this acquisition's stored records. Missing people are not zero."
         : "Person-level records were not retrieved for this acquisition, so nobody is counted by role here. That is missing information, not an absence of people."

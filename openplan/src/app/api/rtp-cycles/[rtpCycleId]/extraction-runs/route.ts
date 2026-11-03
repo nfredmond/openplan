@@ -148,7 +148,7 @@ function refuseUnreadyDocument(
       document.extraction_error?.trim() || "the reason was not recorded"
     }.`,
     stored:
-      "was kept for download and reference only — no text was extracted from it, so there are no pages to quote. Upload it again as a document to be read if you want to transcribe from it.",
+      "was kept for download and reference only: no text was extracted from it, so there are no pages to quote. Upload it again as a document to be read if you want to transcribe from it.",
     archived: "has been archived. Restore it before transcribing from it.",
   };
 

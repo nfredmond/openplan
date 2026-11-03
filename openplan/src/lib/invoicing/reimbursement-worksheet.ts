@@ -338,7 +338,7 @@ function textOr(value: string | null | undefined, fallback: string): string {
 function periodLabel(period: WorksheetPeriod | null): string {
   const start = period?.start?.trim();
   const end = period?.end?.trim();
-  if (!start && !end) return "Award to date — no period selected";
+  if (!start && !end) return "Award to date (no period selected)";
   return `${start ? esc(start) : "…"} to ${end ? esc(end) : "…"}`;
 }
 
@@ -392,12 +392,12 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
     figureRow(
       "Drafted, not yet claimed (net)",
       formatAmount(ledger.draftedNotClaimed, currency),
-      `${ledger.draftedCount} draft${ledger.draftedCount === 1 ? "" : "s"} — not included in any total above`
+      `${ledger.draftedCount} draft${ledger.draftedCount === 1 ? "" : "s"} (not included in any total above)`
     ),
     figureRow(
       "Rejected by the funder (gross)",
       formatAmount(ledger.rejectedGross, currency),
-      `${ledger.rejectedCount} record${ledger.rejectedCount === 1 ? "" : "s"} — not included in any total above`
+      `${ledger.rejectedCount} record${ledger.rejectedCount === 1 ? "" : "s"} (not included in any total above)`
     ),
     figureRow(
       "Local match recorded on the award",
@@ -585,7 +585,7 @@ function profileSection(data: ReimbursementWorksheetData): string {
 
   if (profile.submittedToHint) {
     parts.push(
-      `<p><strong>Typically submitted to:</strong> ${esc(profile.submittedToHint)} — a hint from the process profile, not an address recorded for this award.</p>`
+      `<p><strong>Typically submitted to:</strong> ${esc(profile.submittedToHint)} (a hint from the process profile, not an address recorded for this award).</p>`
     );
   }
 
@@ -704,7 +704,7 @@ export function buildReimbursementWorksheetHtml(data: ReimbursementWorksheetData
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>${esc(WORKSHEET_DOCUMENT_TITLE)} — ${esc(awardTitle)}</title>
+    <title>${esc(WORKSHEET_DOCUMENT_TITLE)}: ${esc(awardTitle)}</title>
     <style>${DOCUMENT_STYLES}</style>
   </head>
   <body>

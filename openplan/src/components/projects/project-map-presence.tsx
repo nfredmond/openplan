@@ -226,7 +226,7 @@ export function ProjectMapPresence({
     }
     if (!isLineString(draft.geometry)) {
       setCorridorError(
-        "Draw the corridor on the map, or upload it from a file — a corridor needs at least two points."
+        "Draw the corridor on the map, or upload it from a file. A corridor needs at least two points."
       );
       return;
     }

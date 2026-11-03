@@ -189,11 +189,11 @@ export function RtpChapterDraftAssist({
             <p className="mt-0.5 text-xs text-muted-foreground">
               Drafts grounded prose from this cycle&apos;s recorded readiness, portfolio, funding,
               engagement, and modeling evidence. Inserted text lands in the editor below for you to
-              edit and save — the chapter content stays operator-authored.
+              edit and save. The chapter content stays operator-authored.
             </p>
           </div>
         </div>
-        <StatusBadge tone="warning">AI draft — review before use</StatusBadge>
+        <StatusBadge tone="warning">AI draft: review before use</StatusBadge>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -250,7 +250,7 @@ export function RtpChapterDraftAssist({
         <div className="mt-3 flex items-start gap-2 rounded-xl border border-[color:var(--copper)]/40 bg-[color:var(--copper)]/10 px-3 py-2.5 text-xs text-[color:var(--copper)]">
           <CloudOff className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
-            AI drafting is offline — no Anthropic API key is configured for this deployment. New
+            AI drafting is offline: no Anthropic API key is configured for this deployment. New
             drafts cannot be generated until the key is set.
           </p>
         </div>

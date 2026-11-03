@@ -79,7 +79,7 @@ describe("FundingAwardCloseoutPanel", () => {
     const refusalText = normalizedTextOf(refusal);
 
     expect(refusalText).toContain(
-      "Paid invoices cover $400,000.00 of the $1,000,000.00 awarded (40%) \u2014 $600,000.00 is still short."
+      "Paid invoices cover $400,000.00 of the $1,000,000.00 awarded (40%). $600,000.00 is still short."
     );
     expect(refusalText).toContain("2 paid invoices · $400,000");
     // The middle bucket holds internal-review, submitted and approved-for-payment

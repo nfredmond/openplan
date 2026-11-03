@@ -57,7 +57,7 @@ export function ReceivableAgingStrip({ aging }: { aging: ReceivableAgingSummary 
 
       {aging.undatedCount > 0 ? (
         <p className="border-l-2 border-amber-300/80 bg-amber-50/80 px-3 py-2 text-xs text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-          {aging.undatedCount} outstanding without a due date ({formatMoney(aging.undatedAmount, { precision: "cents" })}) — these
+          {aging.undatedCount} outstanding without a due date ({formatMoney(aging.undatedAmount, { precision: "cents" })}). These
           cannot be aged without guessing, so they sit outside the buckets until a due date is set.
         </p>
       ) : null}

@@ -517,7 +517,7 @@ export function ChartMeterRows({ series }: { series: InsightSeries }) {
               {over ? (
                 <span className="inline-flex items-center gap-1 font-semibold text-[color:var(--warn)]">
                   <AlertTriangle className="h-3 w-3" aria-hidden="true" />
-                  Over the award —
+                  Over the award:
                 </span>
               ) : null}{" "}
               {point.detail}

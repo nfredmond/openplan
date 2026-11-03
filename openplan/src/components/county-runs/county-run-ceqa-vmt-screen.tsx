@@ -49,12 +49,12 @@ export function CountyRunCeqaVmtScreen({
             <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
             <p className="module-section-description">
               Compares this run&apos;s stored VMT-per-capita KPI against an operator-supplied reference
-              baseline using the OPR percent-below screening threshold. Arithmetic only — no model is
+              baseline using the OPR percent-below screening threshold. Arithmetic only: no model is
               consulted, and nothing is estimated when the KPI set lacks VMT.
             </p>
           </div>
         </div>
-        <StatusBadge tone="warning">Screening-level — not a determination of record</StatusBadge>
+        <StatusBadge tone="warning">Screening-level, not a determination of record</StatusBadge>
       </div>
 
       {kpiReadError ? (
@@ -64,7 +64,7 @@ export function CountyRunCeqaVmtScreen({
         >
           This run&apos;s stored KPIs could not be read ({kpiReadError}), so the CEQA screen has
           nothing it can honestly screen. This is a read failure, not a finding that the run stores
-          no VMT KPI — reload the page or report the error if it persists.
+          no VMT KPI. Reload the page or report the error if it persists.
         </div>
       ) : heldBackByScreeningGate ? (
         <div className="mt-5 rounded-[0.75rem] border border-amber-300/50 bg-amber-50/60 px-5 py-4 text-sm text-foreground dark:border-amber-900/70 dark:bg-amber-950/20">

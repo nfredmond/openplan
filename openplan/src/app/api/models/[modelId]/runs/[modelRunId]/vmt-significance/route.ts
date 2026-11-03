@@ -589,7 +589,7 @@ export async function POST(req: NextRequest, context: RouteContext): Promise<Nex
           `A stored determination keeps its reference baseline to three decimal places, and ${parsed.data.referenceVmtPerCapita} ` +
           `rounds to ${result.reference_vmt_per_capita} there. Recording a reference of 0 would describe a cut line nobody ` +
           "supplied and make the determination unreadable, so nothing was saved. Enter a reference baseline of at least " +
-          "0.001 VMT per capita — a regional or citywide per-capita average is normally in the tens.",
+          "0.001 VMT per capita. A regional or citywide per-capita average is normally in the tens.",
       },
       { status: 422 }
     );
@@ -609,7 +609,7 @@ export async function POST(req: NextRequest, context: RouteContext): Promise<Nex
         details:
           "The run's stored VMT and population could not be screened into a scenario, so there is no " +
           "determination to record and nothing was saved. This is a defect to report rather than an " +
-          "input to correct — the KPI set passed the checks above.",
+          "input to correct: the KPI set passed the checks above.",
       },
       { status: 422 }
     );
@@ -625,7 +625,7 @@ export async function POST(req: NextRequest, context: RouteContext): Promise<Nex
         error: "Could not read this run's modeling claim tier",
         details:
           "A determination records the claim tier it was computed at, and that query failed: " +
-          `${claimTier.readError}. Nothing was saved — storing it as "not recorded" would assert ` +
+          `${claimTier.readError}. Nothing was saved. Storing it as "not recorded" would assert ` +
           "that this run has no claim decision, which this request cannot know.",
       },
       { status: 500 }

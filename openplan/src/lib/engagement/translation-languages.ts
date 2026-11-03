@@ -184,7 +184,7 @@ export function isTranslationLanguage(value: unknown): value is TranslationLangu
  */
 export const MACHINE_TRANSLATION_UNAVAILABLE: Partial<Record<TranslationLanguage, string>> = {
   nv:
-    "OpenPlan does not machine-translate into Diné Bizaad. Machine translation quality for Navajo is not dependable, and a bad translation on a public consultation is worse than none in the one context where an agency's words are legally binding. Navajo translations here are written by people — the portal renders them exactly as any other language.",
+    "OpenPlan does not machine-translate into Diné Bizaad. Machine translation quality for Navajo is not dependable, and a bad translation on a public consultation is worse than none in the one context where an agency's words are legally binding. Navajo translations here are written by people. The portal renders them exactly as any other language.",
 };
 
 /**

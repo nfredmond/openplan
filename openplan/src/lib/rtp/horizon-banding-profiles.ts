@@ -111,7 +111,7 @@ export const HORIZON_BANDING_PROFILES: Record<HorizonBandingProfileKey, HorizonB
     key: "single_period",
     label: "Single period",
     description:
-      "One period covering the whole horizon — the smallest honest starting point for a plan that will refine its periods later.",
+      "One period covering the whole horizon: the smallest honest starting point for a plan that will refine its periods later.",
     computeBands(horizonStartYear, horizonEndYear) {
       assertValidHorizon(horizonStartYear, horizonEndYear);
       return [scaffold(horizonStartYear, horizonEndYear)];

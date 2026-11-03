@@ -256,7 +256,7 @@ export function describeFundingAwardClosureBasis(value: string | null | undefine
     // would state, as fact, a write nobody heard back about — and would
     // contradict the close-out confirmation in the same panel, which says in so
     // many words that it does not report on that write.
-    return "Paid invoices covered the full awarded amount when this award was closed out — a finding from the reimbursement register rather than an assertion.";
+    return "Paid invoices covered the full awarded amount when this award was closed out: a finding from the reimbursement register rather than an assertion.";
   }
 
   if (value === "recorded_on_import") {

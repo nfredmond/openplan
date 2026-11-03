@@ -343,7 +343,7 @@ const PLAIN_WORDS_PROVOCATIONS: readonly PlainWordsProvocation[] = [
     // refused rather than rounded — a rounded percentage is a different
     // ordinance — so this is a sentence a real planner lands on.
     what: "states a share to five decimal places",
-    plainFragment: /at most four decimal places — 33\.3333 is fine/,
+    plainFragment: /at most four decimal places: 33\.3333 is fine/,
     zodWording: /may carry at most four decimal places/,
     provoke: () => categoryWithShare("33.33335"),
   },

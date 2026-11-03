@@ -372,7 +372,7 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     // The exact string that was on screen.
     expect(safetyRow?.detail).not.toContain("0 acquisitions");
     expect(safetyRow?.detail).not.toMatch(/ingested|geocoded/i);
-    expect(safetyRow?.detail).toBe("Counts unavailable — this lane's read failed");
+    expect(safetyRow?.detail).toBe("Counts unavailable: this lane's read failed");
   });
 
   it("stops printing a zero tally on a schema-pending lane too", () => {
@@ -390,7 +390,7 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     const scenarioRow = summary.rows.find((row) => row.id === "scenario_sets");
 
     expect(scenarioRow?.detail).not.toContain("0 scenario sets");
-    expect(scenarioRow?.detail).toBe("Counts unavailable — schema setup pending");
+    expect(scenarioRow?.detail).toBe("Counts unavailable: schema setup pending");
   });
 
   it("still prints the real tally on a lane that answered", () => {

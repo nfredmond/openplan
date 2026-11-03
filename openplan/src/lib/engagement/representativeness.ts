@@ -15,7 +15,7 @@
 import type { CensusTractData } from "@/lib/data-sources/census";
 
 export const REPRESENTATIVENESS_SCREENING_CAVEAT =
-  "Ecological (area-based) screening: compares the ACS demographics of the tracts respondents came from against the study-area population baseline. It infers context from geography, not individuals, over a self-selected, small-N, non-probability sample — a cue to check who outreach reached, NOT a statistical sample, a representativeness finding, or a civil-rights determination.";
+  "Ecological (area-based) screening: compares the ACS demographics of the tracts respondents came from against the study-area population baseline. It infers context from geography, not individuals, over a self-selected, small-N, non-probability sample: a cue to check who outreach reached, NOT a statistical sample, a representativeness finding, or a civil-rights determination.";
 
 export type RepresentativenessMetricKey = "minority" | "belowPoverty" | "zeroVehicle" | "transit";
 

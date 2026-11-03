@@ -237,7 +237,7 @@ describe("buildAssistantChatContextLines", () => {
     expect(lines[0]).toBe("Current surface: workspace");
     expect(joined).toContain("Workspace: Foothill COG · ");
     expect(joined).toContain('Most recent project: "Elm Corridor Study"');
-    expect(joined).toContain("Operations posture: attention — Two funding decisions are overdue.");
+    expect(joined).toContain("Operations posture: attention. Two funding decisions are overdue.");
     expect(joined).toContain("Funding queue: 6 opportunities (3 open, 1 closing soon, 2 overdue decisions)");
     expect(joined).toContain("Command queue depth: 7");
     expect(joined).toContain("Next queued command: Record the SS4A pursue decision");
@@ -248,7 +248,7 @@ describe("buildAssistantChatContextLines", () => {
     const joined = lines.join("\n");
 
     expect(lines[0]).toBe("Current surface: project");
-    expect(joined).toContain('Project: "Elm Corridor Study" — status active, type corridor_plan, phase analysis');
+    expect(joined).toContain('Project: "Elm Corridor Study", status active, type corridor_plan, phase analysis');
     expect(joined).toContain("Project counts: 4 deliverables · 2 risks · 1 issues · 3 decisions · 5 meetings");
     expect(joined).toContain(
       "Funding posture: 5 opportunities (3 open, 1 closing soon, 1 overdue decisions, 2 marked pursue) · 1 award records"
@@ -286,7 +286,7 @@ describe("buildAssistantChatContextLines", () => {
     const joined = lines.join("\n");
 
     expect(lines[0]).toBe("Current surface: rtp cycle");
-    expect(joined).toContain('RTP cycle: "2026 RTP Update" — status public_review, horizon 2026–2046');
+    expect(joined).toContain('RTP cycle: "2026 RTP Update", status public_review, horizon 2026–2046');
     expect(joined).toContain("adoption target 2026-12-01");
     expect(joined).toContain("Cycle counts: 8 chapters (5 ready for review, 2 complete) · 12 linked projects");
     expect(joined).toContain("Packet posture: 3 linked reports · 0 without packets · 1 refresh recommended");
@@ -299,7 +299,7 @@ describe("buildAssistantChatContextLines", () => {
     expect(joined).toContain('Analysis run: "Elm St corridor scan" (created 2026-07-02)');
     expect(joined).toContain("query: Elm Street between 1st and 9th");
     expect(joined).toContain('Run metrics: {"population":5000,"jobs":1200,"crashes":14}');
-    expect(joined).toContain('Baseline run: "Baseline corridor scan" — metrics {"population":4800,"jobs":1100}');
+    expect(joined).toContain('Baseline run: "Baseline corridor scan", metrics {"population":4800,"jobs":1100}');
   });
 
   it("truncates oversized run metrics instead of dumping them", () => {

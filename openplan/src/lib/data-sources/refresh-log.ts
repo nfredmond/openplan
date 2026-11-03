@@ -24,7 +24,7 @@ export type RefreshJobStatusDescriptor = {
 const REFRESH_MODE_NOTES: Record<string, string> = {
   manual: "Logged as a manual refresh an operator performs directly.",
   scheduled:
-    "Logged as scheduled, but OpenPlan runs no scheduler — the cadence is documentation until an operator performs the refresh.",
+    "Logged as scheduled, but OpenPlan runs no scheduler. The cadence is documentation until an operator performs the refresh.",
   pipeline: "Logged as pipeline work executed outside OpenPlan.",
   analysis_runtime: "Logged from an analysis flow that refreshed this source while it ran.",
 };
@@ -41,7 +41,7 @@ export function describeRefreshJobStatus(
   switch (normalizedStatus) {
     case "queued":
       base = {
-        label: "Recorded — no runner attached",
+        label: "Recorded: no runner attached",
         tone: "neutral",
         caveat:
           "No background runner executes queued refresh jobs; this row documents a refresh an operator plans to perform.",
@@ -79,7 +79,7 @@ export function describeRefreshJobStatus(
       break;
     default:
       base = {
-        label: "Recorded — status unknown",
+        label: "Recorded: status unknown",
         tone: "neutral",
         caveat: "This row carries an unrecognized status; treat it as documentation, not orchestrated work.",
       };

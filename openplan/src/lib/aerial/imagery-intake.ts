@@ -100,7 +100,7 @@ export function aerialImageTooLargeResponse(maxBytes: number): NextResponse {
     {
       error:
         `This photo is larger than the ${Math.floor(maxBytes / (1024 * 1024))} MiB per-file ceiling of this ` +
-        `deployment. Whoever operates it can raise ${AERIAL_IMAGE_MAX_BYTES_ENV} — OpenPlan itself is free ` +
+        `deployment. Whoever operates it can raise ${AERIAL_IMAGE_MAX_BYTES_ENV}. OpenPlan itself is free ` +
         "and has no usage tiers.",
       maxBytes,
     },

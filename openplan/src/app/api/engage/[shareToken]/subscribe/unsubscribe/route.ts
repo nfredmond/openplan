@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, _context: RouteContext) {
   }
   if (!result.found) {
     audit.info("token_not_active");
-    return htmlPage("Already unsubscribed", "This link is no longer active — you may already be unsubscribed.");
+    return htmlPage("Already unsubscribed", "This link is no longer active. You may already be unsubscribed.");
   }
   audit.info("unsubscribed");
   return htmlPage("You're unsubscribed", "You will no longer receive email updates for this campaign.");

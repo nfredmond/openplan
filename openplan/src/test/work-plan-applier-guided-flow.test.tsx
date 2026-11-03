@@ -97,7 +97,7 @@ describe("applying a work-plan template", () => {
     // The label is the template's anchor, not a generic "Anchor date".
     expect(screen.queryByLabelText("Anchor date")).toBeNull();
     expect(document.querySelector("dialog")?.textContent ?? "").toContain(
-      "the last one lands 180 days later"
+      "The last one lands 180 days later"
     );
   });
 

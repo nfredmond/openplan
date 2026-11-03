@@ -169,7 +169,7 @@ describe("PlansPage — a failed read may not be rendered as an answer", () => {
     // But "Missing basis: …" would be a fact about the failed read, not the plan.
     expect(screen.queryByText(/^Missing basis:/)).not.toBeInTheDocument();
     expect(
-      screen.getByText("Readiness withheld — the linked records it is computed from could not be read.")
+      screen.getByText("Readiness withheld: the linked records it is computed from could not be read.")
     ).toBeInTheDocument();
   });
 
@@ -177,7 +177,7 @@ describe("PlansPage — a failed read may not be rendered as an answer", () => {
     await renderPage();
 
     expect(
-      screen.queryByText("Readiness withheld — the linked records it is computed from could not be read.")
+      screen.queryByText("Readiness withheld: the linked records it is computed from could not be read.")
     ).not.toBeInTheDocument();
     expect(screen.getByText(/^Missing basis:/)).toBeInTheDocument();
   });

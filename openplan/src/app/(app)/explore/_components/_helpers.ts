@@ -124,7 +124,7 @@ export function getComparisonNarrativeLead(
   if (metricChangeCount > 0 && viewDifferenceCount === 0) {
     return {
       title: "Metric movement is supported by aligned map posture.",
-      detail: "Read the score shifts first — the current run and baseline were reviewed under the same tract, crash, and overlay context.",
+      detail: "Read the score shifts first: the current run and baseline were reviewed under the same tract, crash, and overlay context.",
       tone: "success",
     };
   }

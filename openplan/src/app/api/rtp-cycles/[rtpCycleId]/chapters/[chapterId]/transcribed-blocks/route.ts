@@ -119,7 +119,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         {
           error: "Invalid request",
           details:
-            "Name one passage to put into this chapter. Passages go in one at a time on purpose — each one is a decision about what this plan will say.",
+            "Name one passage to put into this chapter. Passages go in one at a time on purpose: each one is a decision about what this plan will say.",
         },
         { status: 400 }
       );
@@ -227,7 +227,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           error: "That passage has already been reviewed",
           details:
             candidate.status === "accepted"
-              ? "Somebody has already put this passage into a chapter. Nothing was staged — open the chapter to see it."
+              ? "Somebody has already put this passage into a chapter. Nothing was staged. Open the chapter to see it."
               : "Somebody has already set this passage aside. Nothing was staged.",
         },
         { status: 409 }
@@ -399,7 +399,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error: "This passage could not be staged",
-          details: "Nothing was saved. Try again — and if it keeps failing, the chapter draft store is not writable.",
+          details: "Nothing was saved. Try again, and if it keeps failing, the chapter draft store is not writable.",
         },
         { status: 500 }
       );

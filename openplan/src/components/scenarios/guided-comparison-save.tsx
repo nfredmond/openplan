@@ -42,7 +42,7 @@ export function GuidedComparisonSaveButton({
         body: JSON.stringify({
           baselineEntryId,
           candidateEntryId,
-          label: `${candidateEntryLabel} vs ${baselineEntryLabel} — exact guided comparison`,
+          label: `${candidateEntryLabel} vs ${baselineEntryLabel}: exact guided comparison`,
           summary: "AequilibraE and ActivitySim remain separate across the no-build baseline and build scenario. This snapshot binds all four exact outputs without averaging or selecting a winner.",
           narrative: "Read each method's baseline-versus-build result separately. Preserve any disagreement and the recorded validation outcome; neither method rescues the other.",
           caveats: [

@@ -164,8 +164,8 @@ export async function POST(request: NextRequest) {
         {
           error: "An award cannot be created already closed by choosing a spending status",
           details:
-            "Being fully spent is the outcome of a close-out — paid invoices covering the awarded " +
-            "amount, a close-out milestone on the project, the project's funding posture rebuilt — and " +
+            "Being fully spent is the outcome of a close-out (paid invoices covering the awarded " +
+            "amount, a close-out milestone on the project, the project's funding posture rebuilt), and " +
             "a new award has no invoices linked to it yet. Create the award open and close it out when " +
             "its reimbursements are paid, or, if it closed outside OpenPlan, send a " +
             "`recordClosedOnImport` intent with a written basis. That records the closure as your " +

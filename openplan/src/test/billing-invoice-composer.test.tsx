@@ -115,7 +115,7 @@ describe("InvoiceRecordComposer", () => {
     openToMoney();
 
     const postureSelect = screen.getByLabelText(
-      `Reimbursement stage — ${binding.profileName}`
+      `Reimbursement stage: ${binding.profileName}`
     ) as HTMLSelectElement;
     expect(postureSelect.value).toBe(binding.defaultPostureId);
     expect(Array.from(postureSelect.options).map((option) => option.value)).toEqual(

@@ -553,7 +553,7 @@ export function AerialMissionMap({
         </label>
         <span className="flex items-center gap-1.5 text-muted-foreground/80">
           <MapIcon className="h-3.5 w-3.5" aria-hidden="true" />
-          Measurement is not available on this map yet — for measuring, download the GeoTIFF
+          Measurement is not available on this map yet. For measuring, download the GeoTIFF
           orthomosaic from the processing jobs list and open it in GIS.
         </span>
       </div>

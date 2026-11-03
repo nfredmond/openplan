@@ -152,7 +152,7 @@ export function GrantsOpportunityRegistrySection({
         <div className="mt-5">
           <EmptyState
             title="No funding opportunities yet"
-            description="Grants tracks the funding your agency pursues — which programs are open, what you decided about each, what you won, and what has been reimbursed. Add the first opportunity you are watching or pursuing."
+            description="Grants tracks the funding your agency pursues: which programs are open, what you decided about each, what you won, and what has been reimbursed. Add the first opportunity you are watching or pursuing."
             action={
               <a href="#grants-gap-resolution-lane" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
                 Add a funding opportunity

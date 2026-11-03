@@ -59,14 +59,14 @@ export function runsReadNotice(
     return {
       value: "Could not load",
       detail:
-        "The analysis runs could not be read. This is a failed query, not an empty workspace — do not read it as zero. Reload, and tell whoever runs this deployment if it keeps happening.",
+        "The analysis runs could not be read. This is a failed query, not an empty workspace. Do not read it as zero. Reload, and tell whoever runs this deployment if it keeps happening.",
       tone: "attention",
     };
   }
   if (read.truncated) {
     return {
       value: "Too many to count",
-      detail: `This workspace holds at least ${RUN_READ_CAP} analysis runs — more than this page reads in one go — so every total here would be short. Left blank rather than shown low.`,
+      detail: `This workspace holds at least ${RUN_READ_CAP} analysis runs (more than this page reads in one go), so every total here would be short. Left blank rather than shown low.`,
       tone: "attention",
     };
   }

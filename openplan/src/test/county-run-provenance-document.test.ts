@@ -44,7 +44,7 @@ describe("what the run did not do is visible", () => {
     const document = buildCountyRunProvenanceDocument(input());
     expect(document).toContain("never compared against observed traffic counts");
     // And it distinguishes "not measured" from "measured and not reported".
-    expect(document).toContain("nothing was measured, so nothing can be claimed");
+    expect(document).toContain("Nothing was measured, so nothing can be claimed");
   });
 
   it("says a run was not calibrated rather than staying silent", () => {
@@ -90,7 +90,7 @@ describe("what the run did not do is visible", () => {
         }),
       })
     );
-    expect(document).toContain("**NO — the volumes below are from part-way through a calculation**");
+    expect(document).toContain("**NO: the volumes below are from part-way through a calculation**");
     expect(document).toContain("It stopped after 50 iterations");
   });
 
@@ -581,7 +581,7 @@ describe("why fewer stations were matched than published", () => {
 
   it("names ramp counts that were set aside, and why they would mislead", () => {
     const document = withExclusions({ stations_excluded_not_mainline: 12 });
-    expect(document).toContain("Set aside — ramps and connectors:** 12");
+    expect(document).toContain("Set aside (ramps and connectors):** 12");
     expect(document).toContain("mainline it leaves");
   });
 
@@ -589,9 +589,9 @@ describe("why fewer stations were matched than published", () => {
     const document = withExclusions({
       shared_model_links: { stations_merged_away: 9, stations_excluded_as_ambiguous: 12 },
     });
-    expect(document).toContain("several stations on one link:** 9");
+    expect(document).toContain("several stations on one link):** 9");
     expect(document).toContain("compared once at their median");
-    expect(document).toContain("one link, disagreeing counts:** 12");
+    expect(document).toContain("one link, disagreeing counts):** 12");
     expect(document).toContain("nothing in the data says which station belongs");
   });
 
@@ -666,7 +666,7 @@ describe("accuracy figures graded by rules that no longer apply", () => {
     expect(document).toContain("36,096");
     expect(document).toContain("residential");
     // The sentence that stops a planner reading a missing road as a quiet one.
-    expect(document).toContain("no estimate — which is not the same as a low one");
+    expect(document).toContain("no estimate, which is not the same as a low one");
   });
 
   it("says nothing about coverage when the run never measured it", () => {

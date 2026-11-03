@@ -143,7 +143,7 @@ export function contextLayerByteCapMessage(capBytes: number, actualBytes: number
   return (
     `This OpenPlan deployment accepts map layer uploads up to ${mb(capBytes)}, and this file is ${mb(actualBytes)}. ` +
     `Contact whoever operates this deployment to raise or remove the limit, or simplify the layer in your GIS ` +
-    `before uploading — OpenPlan itself is free and has no usage tiers.`
+    `before uploading. OpenPlan itself is free and has no usage tiers.`
   );
 }
 
@@ -175,7 +175,7 @@ export function describeContextLayerCoverage(
   if (disclosure.truncated) {
     notes.push(
       `${layerName}: showing ${disclosure.returnedCount.toLocaleString("en-US")} of ` +
-        `${disclosure.matchedCount.toLocaleString("en-US")} shapes — this deployment stores at most ` +
+        `${disclosure.matchedCount.toLocaleString("en-US")} shapes. This deployment stores at most ` +
         `${disclosure.limit.toLocaleString("en-US")} per layer. The rest are not drawn, which is not a finding ` +
         `that the layer ends here.`
     );
@@ -185,7 +185,7 @@ export function describeContextLayerCoverage(
     const count = disclosure.droppedCount;
     notes.push(
       `${layerName}: ${count.toLocaleString("en-US")} ${count === 1 ? "shape" : "shapes"} in the uploaded file ` +
-        `could not be drawn — the geometry was unusable, or it was a kind OpenPlan will not place on a guess — ` +
+        `could not be drawn (the geometry was unusable, or it was a kind OpenPlan will not place on a guess), ` +
         `so ${count === 1 ? "it is" : "they are"} missing from the map rather than absent from the source.`
     );
   }
@@ -412,8 +412,8 @@ export async function loadCampaignContextLayerSummaries(
  */
 export function contextLayerPublicationWarning(layerName: string): string {
   return (
-    `Showing “${layerName}” to participants publishes it. Anyone with this campaign's public link — no ` +
-    `sign-in, no invitation — can see the geometry and download it. Do not publish parcels, addresses, or ` +
+    `Showing “${layerName}” to participants publishes it. Anyone with this campaign's public link (no ` +
+    `sign-in, no invitation) can see the geometry and download it. Do not publish parcels, addresses, or ` +
     `right-of-way data that carries personal or non-public attributes.`
   );
 }

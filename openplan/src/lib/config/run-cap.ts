@@ -116,7 +116,7 @@ export function currentUtcMonthStartIso(now?: Date): string {
 export function monthlyRunCapMessage(cap: number, usedRuns: number): string {
   return (
     `This OpenPlan deployment limits analysis runs to ${cap} per month, and this workspace has used ${usedRuns}. ` +
-    `Contact whoever operates this deployment to raise or remove the limit — OpenPlan itself is free and has no usage tiers.`
+    `Contact whoever operates this deployment to raise or remove the limit. OpenPlan itself is free and has no usage tiers.`
   );
 }
 

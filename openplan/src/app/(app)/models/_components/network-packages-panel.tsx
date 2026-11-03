@@ -62,7 +62,7 @@ function formatComponentCount(count: number | null): string {
  * unchanged, because none of that changed.
  */
 const INGEST_HOW_TO =
-  "Upload a network package below. It creates the package, adds a version, and sends the nodes/links GeoJSON for QA — which records a QA report and manifest on that version. Ingest does not retain the geometry — the posted features are checked and discarded — so the zone, corridor, and connector records counted here are the ones created from the optional zones, corridors, and connectors files, one record per feature, through the .../zones, .../corridors, and .../connectors endpoints.";
+  "Upload a network package below. It creates the package, adds a version, and sends the nodes/links GeoJSON for QA, which records a QA report and manifest on that version. Ingest does not retain the geometry (the posted features are checked and discarded), so the zone, corridor, and connector records counted here are the ones created from the optional zones, corridors, and connectors files, one record per feature, through the .../zones, .../corridors, and .../connectors endpoints.";
 
 export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: string }) {
   const supabase = await createClient();
@@ -81,7 +81,7 @@ export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: strin
         <StateBlock
           tone="warning"
           title="Network packages could not be loaded"
-          description="The workspace's network package records did not load. Retry, and if this persists check the deployment's database logs — this panel refuses to present a load failure as an empty catalog."
+          description="The workspace's network package records did not load. Retry, and if this persists check the deployment's database logs. This panel refuses to present a load failure as an empty catalog."
         />
       </article>
     );
@@ -141,7 +141,7 @@ export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: strin
         <div className="module-section-heading">
           <h2 className="module-section-title">Network packages</h2>
           <p className="module-section-description">
-            Versioned network bundles ingested for this workspace — the zones, corridors, and connectors a model run can be
+            Versioned network bundles ingested for this workspace: the zones, corridors, and connectors a model run can be
             read against. A model records its network basis via the model update API; each model&apos;s detail page shows
             the version it is bound to.
           </p>

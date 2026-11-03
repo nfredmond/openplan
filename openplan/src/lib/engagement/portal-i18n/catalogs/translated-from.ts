@@ -282,37 +282,54 @@ const ENGLISH_OF_2026_10_10: PortalCatalogSources = {
   "closeLoop.answers": "f440d7eb",
 };
 
+/**
+ * Five English strings changed on 2026-11-02 in punctuation only: an em dash
+ * became a period or a comma, and no word changed. Each translation made from
+ * the English of 2026-10-10 still says what the current English says, so it is
+ * recorded against the current English rather than hidden. A change to the
+ * words of any of these strings still needs a new translation.
+ */
+const PUNCTUATION_ONLY_2026_11_02: PortalCatalogSources = {
+  "portal.submitFailed": "72c204bf",
+  "portal.mapFramingOn": "64180263",
+  "survey.received": "4ba663a5",
+  "survey.draftCheckFailed": "8f3f4a0e",
+  "survey.draftSaveFailed": "cd907407",
+};
+
+const CURRENT_ENGLISH: PortalCatalogSources = { ...ENGLISH_OF_2026_10_10, ...PUNCTUATION_ONLY_2026_11_02 };
+
 export const PORTAL_CATALOG_TRANSLATED_FROM: Partial<Record<PortalLocale, PortalCatalogSources>> = {
   // Spanish was written key by key from July to October 2026. For each entry,
   // git history shows the English it was written against. Two entries predate
   // an English rewrite on 2026-10-10 and keep the fingerprint of the English
   // they were translated from, so they show in English until refreshed.
   es: {
-    ...ENGLISH_OF_2026_10_10,
+    ...CURRENT_ENGLISH,
     // Translated 2026-07-30 from "Submissions open".
     "page.submissionsOpen": "69e547d2",
     // Translated 2026-07-30 from "Submissions closed".
     "page.submissionsClosed": "6969fbd6",
   },
-  am: ENGLISH_OF_2026_10_10,
-  ar: ENGLISH_OF_2026_10_10,
-  bn: ENGLISH_OF_2026_10_10,
-  fa: ENGLISH_OF_2026_10_10,
-  fr: ENGLISH_OF_2026_10_10,
-  hmn: ENGLISH_OF_2026_10_10,
-  ht: ENGLISH_OF_2026_10_10,
-  hy: ENGLISH_OF_2026_10_10,
-  km: ENGLISH_OF_2026_10_10,
-  ko: ENGLISH_OF_2026_10_10,
-  pa: ENGLISH_OF_2026_10_10,
-  pl: ENGLISH_OF_2026_10_10,
-  pt: ENGLISH_OF_2026_10_10,
-  ru: ENGLISH_OF_2026_10_10,
-  so: ENGLISH_OF_2026_10_10,
-  tl: ENGLISH_OF_2026_10_10,
-  ur: ENGLISH_OF_2026_10_10,
-  vi: ENGLISH_OF_2026_10_10,
-  zh: ENGLISH_OF_2026_10_10,
+  am: CURRENT_ENGLISH,
+  ar: CURRENT_ENGLISH,
+  bn: CURRENT_ENGLISH,
+  fa: CURRENT_ENGLISH,
+  fr: CURRENT_ENGLISH,
+  hmn: CURRENT_ENGLISH,
+  ht: CURRENT_ENGLISH,
+  hy: CURRENT_ENGLISH,
+  km: CURRENT_ENGLISH,
+  ko: CURRENT_ENGLISH,
+  pa: CURRENT_ENGLISH,
+  pl: CURRENT_ENGLISH,
+  pt: CURRENT_ENGLISH,
+  ru: CURRENT_ENGLISH,
+  so: CURRENT_ENGLISH,
+  tl: CURRENT_ENGLISH,
+  ur: CURRENT_ENGLISH,
+  vi: CURRENT_ENGLISH,
+  zh: CURRENT_ENGLISH,
 };
 
 /**

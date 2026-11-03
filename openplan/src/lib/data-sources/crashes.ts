@@ -572,7 +572,7 @@ export function buildCrashSourceSnapshot(
 
   const severityNote =
     (crashes.severityCompleteness === "fatal_only"
-      ? " Fatal crashes only — this source records no injury or property-damage crashes, so injury figures are unavailable rather than zero."
+      ? " Fatal crashes only: this source records no injury or property-damage crashes, so injury figures are unavailable rather than zero."
       : "") + ` ${crashSeriousInjury(crashes).statement}`;
 
   const ungeocoded = Math.max(0, crashes.reportedTotal - crashes.mappedTotal);
@@ -585,7 +585,7 @@ export function buildCrashSourceSnapshot(
   // and a reader fills the gap in with "property damage".
   const unclassifiedNote =
     !crashes.truncated && crashes.unclassifiedCrashes > 0
-      ? ` ${crashes.unclassifiedCrashes.toLocaleString("en-US")} of the mapped crashes carry no casualty count from the source and are not classified by severity — they are counted in the total and in no severity band.`
+      ? ` ${crashes.unclassifiedCrashes.toLocaleString("en-US")} of the mapped crashes carry no casualty count from the source and are not classified by severity. They are counted in the total and in no severity band.`
       : "";
 
   const truncationNote = crashes.truncated

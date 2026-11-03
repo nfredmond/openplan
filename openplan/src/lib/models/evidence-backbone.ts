@@ -567,7 +567,7 @@ export function buildCountyRunModelingEvidenceBundle({
       // Neutral counts kind; the agency lives in the label, citation, and metadata.
       sourceKind: "local_public_counts",
       sourceLabel: agencyLabel
-        ? `Observed traffic count validation set — ${agencyLabel}`
+        ? `Observed traffic count validation set: ${agencyLabel}`
         : "Observed traffic count validation set",
       sourceUrl: countsSource,
       sourceVintage: generatedYear,

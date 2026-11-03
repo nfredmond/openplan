@@ -266,7 +266,7 @@ export function generateSurveyGrid(input: SurveyGridInput): SurveyGridResult {
     if (!Number.isFinite(pct) || pct < 0 || pct >= 100) {
       return refuse(
         "invalid_overlap",
-        `The ${label} overlap must be between 0% and 99% — at 100% the aircraft would never move between photos.`
+        `The ${label} overlap must be between 0% and 99%. At 100% the aircraft would never move between photos.`
       );
     }
   }
@@ -279,7 +279,7 @@ export function generateSurveyGrid(input: SurveyGridInput): SurveyGridResult {
   if (!Number.isFinite(input.flightMinutesPerBattery) || input.flightMinutesPerBattery <= 0) {
     return refuse(
       "invalid_battery",
-      "Usable flight minutes per battery must be a positive number — enter the realistic figure for your aircraft, not the brochure maximum."
+      "Usable flight minutes per battery must be a positive number. Enter the realistic figure for your aircraft, not the brochure maximum."
     );
   }
   const turnAllowanceSeconds = input.turnAllowanceSeconds ?? DEFAULT_TURN_ALLOWANCE_SECONDS;
@@ -426,7 +426,7 @@ export function generateSurveyGrid(input: SurveyGridInput): SurveyGridResult {
     if (grid.name === "primary" && insetU < footprintHeightM && insetV < footprintWidthM) {
       return refuse(
         "aoi_smaller_than_one_footprint",
-        `After the ${formatMeters(margin)} m margin, this area (${formatMeters(insetU)} × ${formatMeters(insetV)} m) fits inside a single photo footprint (${formatMeters(footprintHeightM)} × ${formatMeters(footprintWidthM)} m at ${formatCm(gsdCm)} cm/px). A grid would add nothing — capture it as individual photos, or plan a finer ground resolution.`
+        `After the ${formatMeters(margin)} m margin, this area (${formatMeters(insetU)} × ${formatMeters(insetV)} m) fits inside a single photo footprint (${formatMeters(footprintHeightM)} × ${formatMeters(footprintWidthM)} m at ${formatCm(gsdCm)} cm/px). A grid would add nothing. Capture it as individual photos, or plan a finer ground resolution.`
       );
     }
 
@@ -533,7 +533,7 @@ export function generateSurveyGrid(input: SurveyGridInput): SurveyGridResult {
     );
   }
   assumptions.push(
-    "Check the derived altitude against the altitude rules that apply where you fly — this planner applies no regulatory ceiling."
+    "Check the derived altitude against the altitude rules that apply where you fly. This planner applies no regulatory ceiling."
   );
   assumptions.push(
     `Line spacing ${formatMeters(lineSpacingM)} m meets the ${sideOverlapPct}% side overlap; lines are placed evenly, so actual spacing (${formatMeters(primaryActualSpacing)} m) never exceeds it. Photo spacing ${formatMeters(photoSpacingM)} m meets the ${frontOverlapPct}% front overlap the same way.`
@@ -542,13 +542,13 @@ export function generateSurveyGrid(input: SurveyGridInput): SurveyGridResult {
     `Duration assumes a constant ${input.speedMps} m/s ground speed with no wind, plus ${turnAllowanceSeconds} s per turn (${turns} turns).`
   );
   assumptions.push(
-    `Battery legs assume ${input.flightMinutesPerBattery} usable flight minutes per battery, as entered — transit to and from the survey area is not included.`
+    `Battery legs assume ${input.flightMinutesPerBattery} usable flight minutes per battery, as entered. Transit to and from the survey area is not included.`
   );
   assumptions.push(
     "Elevation is treated as flat: altitude is above the takeoff/ground plane, and ground resolution will vary over terrain relief."
   );
   assumptions.push(
-    "Line and photo positions are computed on a local flat-map frame centred on the survey area; the positional error from that flattening stays under about 0.1% of the mission extent at these scales — well inside the margin the overlaps already provide."
+    "Line and photo positions are computed on a local flat-map frame centred on the survey area; the positional error from that flattening stays under about 0.1% of the mission extent at these scales, well inside the margin the overlaps already provide."
   );
   if (corridorMode) {
     assumptions.push(

@@ -74,7 +74,7 @@ export async function readCorridorBoundaryFile(filename: string, bytes: Uint8Arr
     return {
       ok: false,
       message:
-        "This file contains no area (polygon) shapes, so it cannot set a study boundary — a corridor boundary " +
+        "This file contains no area (polygon) shapes, so it cannot set a study boundary. A corridor boundary " +
         "must be an area, not points or lines. Export the corridor as a polygon layer and upload it again.",
     };
   }
@@ -192,7 +192,7 @@ export function CorridorUpload({ onUpload, isCurrentBoundary = true }: CorridorU
           */}
           <p className="analysis-studio-label">The area you are planning for</p>
           <h3 className="analysis-studio-title">Upload a boundary file</h3>
-          <p className="analysis-studio-description">Have the boundary as a GIS file already? Upload it — GeoJSON, KML, KMZ, or a zipped shapefile — and it becomes the area this analysis covers, <strong>replacing whatever is already set</strong>. This does not add a corridor.</p>
+          <p className="analysis-studio-description">Have the boundary as a GIS file already? Upload it (GeoJSON, KML, KMZ, or a zipped shapefile) and it becomes the area this analysis covers, <strong>replacing whatever is already set</strong>. This does not add a corridor.</p>
         </div>
         <StatusBadge tone={fileName && isCurrentBoundary ? "success" : "neutral"}>
           {!fileName ? "Optional" : isCurrentBoundary ? "Boundary loaded" : "Not the area in use"}

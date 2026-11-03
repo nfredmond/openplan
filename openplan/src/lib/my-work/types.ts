@@ -121,7 +121,7 @@ export const MY_WORK_SCOPE_LABELS: Record<MyWorkScope, string> = {
 
 export const MY_WORK_SCOPE_DESCRIPTIONS: Record<MyWorkScope, string> = {
   assigned: "Project records with your name on them.",
-  unassigned: "Dated work nobody currently holds — including anything left behind by a departed member.",
+  unassigned: "Dated work nobody currently holds, including anything left behind by a departed member.",
   all_projects: "Every project in this workspace, whoever is assigned.",
 };
 
@@ -229,5 +229,5 @@ export function groupMyWorkItemsByBlock(
  * this is a per-source cap, not a complete inventory.
  */
 export function describeMyWorkOrdering(limitPerSource: number): string {
-  return `Showing up to the ${limitPerSource} soonest items from each source — overdue first, then by date.`;
+  return `Showing up to the ${limitPerSource} soonest items from each source, overdue first, then by date.`;
 }

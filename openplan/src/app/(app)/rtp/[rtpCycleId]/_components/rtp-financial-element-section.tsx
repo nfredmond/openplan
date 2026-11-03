@@ -104,7 +104,7 @@ export function RtpFinancialElementSection({
         <h2 className="module-section-title">Can this plan be paid for?</h2>
         <p className="module-section-description">
           The constrained programme, the revenue behind it, and the cost of operating and
-          maintaining the system — compared period by period.
+          maintaining the system, compared period by period.
         </p>
       </div>
       <span className="flex h-11 w-11 items-center justify-center rounded-[0.6rem] border border-border/70 bg-muted/40 text-muted-foreground">
@@ -128,7 +128,7 @@ export function RtpFinancialElementSection({
       <StateBlock
         tone="danger"
         title="The financial element could not be fully read"
-        description="Part of this plan's finances could not be loaded, so no fiscal-constraint finding is shown. This is not a finding that the plan has no revenue or no costs — do not re-enter figures on the strength of this page."
+        description="Part of this plan's finances could not be loaded, so no fiscal-constraint finding is shown. This is not a finding that the plan has no revenue or no costs. Do not re-enter figures on the strength of this page."
       />
     ) : (
       <div className="space-y-4">
@@ -140,7 +140,7 @@ export function RtpFinancialElementSection({
             <span className="text-xs text-muted-foreground">
               {constraint.dollarBasis === "year_of_expenditure"
                 ? "Year-of-expenditure dollars"
-                : "Constant dollars — no inflation rate recorded"}
+                : "Constant dollars: no inflation rate recorded"}
             </span>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -150,7 +150,7 @@ export function RtpFinancialElementSection({
             <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
               {constraint.unresolvedProjects.map((item) => (
                 <li key={item.linkId}>
-                  {item.projectName ?? "An unnamed project"} —{" "}
+                  {item.projectName ?? "An unnamed project"}:{" "}
                   {item.reason === "unpriced" ? "no cost recorded" : "not assigned to a period"}
                 </li>
               ))}

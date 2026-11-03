@@ -162,7 +162,7 @@ export function kbDocumentTooLargeResponse(maxBytes: number): NextResponse {
     {
       error:
         `This file is larger than the ${Math.floor(maxBytes / (1024 * 1024))} MiB per-file ceiling of this ` +
-        `deployment. Whoever operates it can raise ${KB_DOCUMENT_MAX_BYTES_ENV} — OpenPlan itself is free ` +
+        `deployment. Whoever operates it can raise ${KB_DOCUMENT_MAX_BYTES_ENV}. OpenPlan itself is free ` +
         "and has no usage tiers.",
       maxBytes,
     },

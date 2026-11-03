@@ -19,7 +19,7 @@ export function DemographicsPanel({ source }: { source: SelfReportedDemographics
   if (source.state === "unreadable") {
     return (
       <p className="text-xs text-amber-700 dark:text-amber-300">
-        Respondent demographics could not be read, so this panel is unavailable rather than empty — an absence here
+        Respondent demographics could not be read, so this panel is unavailable rather than empty. An absence here
         would not mean no one answered. Reported cause: {source.message}
       </p>
     );

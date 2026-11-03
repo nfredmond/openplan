@@ -439,7 +439,7 @@ export function EngagementCampaignControls({
                         <span>
                           {project.name}
                           {isLead ? (
-                            <span className="ml-1.5 text-label text-muted-foreground">lead — always covered</span>
+                            <span className="ml-1.5 text-label text-muted-foreground">lead, always covered</span>
                           ) : null}
                         </span>
                       </label>
@@ -459,7 +459,7 @@ export function EngagementCampaignControls({
           ) : (
             <p className="text-sm text-muted-foreground">
               The list of projects this campaign covers could not be read, so it cannot be changed
-              right now. The stored list, if any, is unchanged — saving this form will not touch it.
+              right now. The stored list, if any, is unchanged. Saving this form will not touch it.
             </p>
           )}
         </div>
@@ -536,7 +536,7 @@ export function EngagementCampaignControls({
           ) : (
             <p className="text-sm text-muted-foreground">
               The RTP cycles in this workspace could not be read, so this attachment cannot be
-              changed right now. The current attachment, if any, is unchanged — saving this form
+              changed right now. The current attachment, if any, is unchanged. Saving this form
               will not touch it.
             </p>
           )}
@@ -577,7 +577,7 @@ export function EngagementCampaignControls({
             <p className="text-sm text-muted-foreground">
               Where the resident-facing map opens. A campaign area set here wins over the linked
               project&apos;s study area, this workspace&apos;s home geography, and the pins already on
-              the map — in that order.
+              the map, in that order.
             </p>
           </div>
           {!editingArea ? (
@@ -646,7 +646,7 @@ export function EngagementCampaignControls({
             />
             <p className="text-sm text-muted-foreground">
               Searching gives the campaign a place identity; drawing sets the shape only. Either way
-              only the bounding box reaches the public page — enough to frame the map, and no more.
+              only the bounding box reaches the public page: enough to frame the map, and no more.
             </p>
             {areaError ? (
               <StateBlock title="That did not save" description={areaError} tone="danger" compact />
@@ -732,12 +732,12 @@ export function EngagementCampaignControls({
               <p className="text-sm text-muted-foreground">
                 {geofence.areaState === "unreadable"
                   ? "This campaign's area could not be read, so it is not known whether a location check could run here."
-                  : "This campaign has no area of its own, so there is nothing to check a dropped pin against. Set the campaign area above first — the linked project's study area and the workspace home geography frame the map, but the check never runs against either."}
+                  : "This campaign has no area of its own, so there is nothing to check a dropped pin against. Set the campaign area above first. The linked project's study area and the workspace home geography frame the map, but the check never runs against either."}
               </p>
             ) : null}
 
             <p className="text-sm text-muted-foreground">
-              Comments sent without a pin are always accepted, whether this is on or off — a comment
+              Comments sent without a pin are always accepted, whether this is on or off. A comment
               with no location is not outside the area, it has no location at all. A resident whose
               pin falls outside is told the comment is outside the area this consultation covers and
               asked to move it or send it without a location; they are never shown the boundary.

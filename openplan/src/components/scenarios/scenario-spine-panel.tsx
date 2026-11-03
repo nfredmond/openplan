@@ -385,7 +385,7 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
       <Section
         {...sectionProps("assumption")}
         title="Assumption sets"
-        description="What a branch assumes — growth rates, network changes, policy levers. A comparison that cannot name its assumptions cannot be defended."
+        description="What a branch assumes: growth rates, network changes, policy levers. A comparison that cannot name its assumptions cannot be defended."
         count={spine.counts.assumptionSets}
         formFields={
           <>
@@ -419,7 +419,7 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
                   <li key={row.id} className="flex flex-wrap items-baseline gap-x-2">
                     <span className="font-medium text-foreground">{row.label}</span>
                     <span className="text-xs text-muted-foreground">{row.status}</span>
-                    {row.summary ? <span className="text-xs text-muted-foreground">— {row.summary}</span> : null}
+                    {row.summary ? <span className="text-xs text-muted-foreground">({row.summary})</span> : null}
                   </li>
                 ))}
               </ul>
@@ -429,7 +429,7 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
       <Section
         {...sectionProps("package")}
         title="Data packages"
-        description="Where the numbers came from — an input file, a reference dataset, a model output, an evidence bundle. Recorded so a reader can go back to the source."
+        description="Where the numbers came from: an input file, a reference dataset, a model output, an evidence bundle. Recorded so a reader can go back to the source."
         count={spine.counts.dataPackages}
         formFields={
           <>
@@ -498,7 +498,7 @@ export function ScenarioSpinePanel({ scenarioSetId }: { scenarioSetId: string })
       <Section
         {...sectionProps("indicator")}
         title="Indicator snapshots"
-        description="A measured value at a point in time, with the geography and source it was measured against — the thing a comparison is actually comparing."
+        description="A measured value at a point in time, with the geography and source it was measured against: the thing a comparison is actually comparing."
         count={spine.counts.indicatorSnapshots}
         formFields={
           <>

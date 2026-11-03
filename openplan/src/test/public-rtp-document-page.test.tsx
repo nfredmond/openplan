@@ -784,7 +784,7 @@ describe("public RTP document page — a resident is never left guessing whether
     await renderPage();
 
     expect(screen.getByText(/The recorded status and the recorded dates disagree/)).toBeTruthy();
-    expect(screen.getByText(/contact the agency before relying on either/)).toBeTruthy();
+    expect(screen.getByText(/Contact the agency before relying on either/)).toBeTruthy();
   });
 
   it("raises no contradiction when status and dates agree", async () => {

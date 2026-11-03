@@ -184,7 +184,7 @@ export function describeRtpCycleProjectMapCoverage(
   if (collection.truncated) {
     notes.push(
       `Showing ${drawn.toLocaleString("en-US")} of ${collection.matchedCount.toLocaleString("en-US")} programmed ` +
-        `projects — the map draws at most ${collection.limit.toLocaleString("en-US")}. The rest are not ` +
+        `projects. The map draws at most ${collection.limit.toLocaleString("en-US")}. The rest are not ` +
         `drawn, which is not a finding that they are not in the plan.`
     );
   }

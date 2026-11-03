@@ -64,7 +64,7 @@ export function CountyRunValidationPrep({ countyRunId }: { countyRunId: string }
         <div>
           <h3 className="text-sm font-semibold text-foreground">Count validation</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Whether this run can be checked against observed traffic counts yet — and, if it can, the
+            Whether this run can be checked against observed traffic counts yet and, if it can, the
             command that does it. Validation is what moves a run from screening output to validated
             screening; until it runs, the volumes are unvalidated.
           </p>
@@ -142,7 +142,7 @@ export function CountyRunValidationPrep({ countyRunId }: { countyRunId: string }
             <p className="text-sm text-muted-foreground">
               Results can be posted back to <code className="break-all">{prep.refreshUrl}</code>, which
               needs a callback bearer token this deployment has not configured. Without it the command
-              above still validates the run — the results just have to be ingested separately.
+              above still validates the run. The results just have to be ingested separately.
             </p>
           ) : null}
         </div>

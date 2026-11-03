@@ -338,7 +338,7 @@ export function KnowledgeBaseWorkspace({
     : unsearchableCount === 0
       ? ""
       : listIsNarrowed
-        ? `Among the documents shown below — a filtered view, not everything the search covers — ${unsearchableCount} ${unsearchableCount === 1 ? "has" : "have"} no readable text yet, so ${unsearchableCount === 1 ? "it was" : "they were"} not searched. Clear the filters to see how many there are in total.`
+        ? `Among the documents shown below (a filtered view, not everything the search covers), ${unsearchableCount} ${unsearchableCount === 1 ? "has" : "have"} no readable text yet, so ${unsearchableCount === 1 ? "it was" : "they were"} not searched. Clear the filters to see how many there are in total.`
         : `${unsearchableCount} of the ${documents.length} document${documents.length === 1 ? "" : "s"} listed below ${unsearchableCount === 1 ? "has" : "have"} no readable text yet, so ${unsearchableCount === 1 ? "it was" : "they were"} not searched. Only documents OpenPlan has finished reading can be searched.`;
 
   function upsertDocument(document: KbDocumentRow) {
@@ -386,7 +386,7 @@ export function KnowledgeBaseWorkspace({
       };
       if (!response.ok) {
         throw new Error(
-          [payload.error, payload.hint].filter(Boolean).join(" — ") || "Failed to load documents"
+          [payload.error, payload.hint].filter(Boolean).join(": ") || "Failed to load documents"
         );
       }
       setDocuments(payload.documents ?? []);
@@ -480,7 +480,7 @@ export function KnowledgeBaseWorkspace({
       };
       if (!response.ok) {
         throw new Error(
-          [payload.error, payload.hint].filter(Boolean).join(" — ") || "The search could not be run"
+          [payload.error, payload.hint].filter(Boolean).join(": ") || "The search could not be run"
         );
       }
       // Only a response the server actually answered 2xx to may become a
@@ -501,7 +501,7 @@ export function KnowledgeBaseWorkspace({
     if (file.size > maxUploadBytes) {
       setError(
         `That file is larger than this deployment's ${maxUploadMiB} MiB per-file ceiling. ` +
-          "Whoever operates this deployment can raise it — OpenPlan itself has no usage tiers."
+          "Whoever operates this deployment can raise it. OpenPlan itself has no usage tiers."
       );
       return;
     }
@@ -528,7 +528,7 @@ export function KnowledgeBaseWorkspace({
         notice?: string;
       };
       if (!response.ok) {
-        throw new Error([payload.error, payload.hint].filter(Boolean).join(" — ") || "Upload failed");
+        throw new Error([payload.error, payload.hint].filter(Boolean).join(": ") || "Upload failed");
       }
       if (payload.document) {
         upsertDocument(payload.document);
@@ -655,8 +655,8 @@ export function KnowledgeBaseWorkspace({
     <section className="module-page">
       <PageHeader title={navLabel("/knowledge-base")} description="Your workspace's file cabinet.">
         <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-          Upload your agency&apos;s own documents — adopted plans, comment letters, prior studies, grant
-          notices — so the Planner Agent and Grant Writer can ground and cite from them; images,
+          Upload your agency&apos;s own documents (adopted plans, comment letters, prior studies, grant
+          notices) so the Planner Agent and Grant Writer can ground and cite from them; images,
           spreadsheets, CAD drawings, and other office files are kept for reference and download.
           Retrieval is keyword-based (<ScreeningGradeLink />); scanned, image-only PDFs without a text
           layer are stored but not indexed yet.
@@ -692,7 +692,7 @@ export function KnowledgeBaseWorkspace({
             </label>
             <label className="grid gap-1 text-sm">
               <span className="text-foreground/70">
-                Title {mode === "upload" ? "(optional — defaults to the filename)" : "(required)"}
+                Title {mode === "upload" ? "(optional, defaults to the filename)" : "(required)"}
               </span>
               <Input
                 value={title}
@@ -705,7 +705,7 @@ export function KnowledgeBaseWorkspace({
             {projects.length > 0 ? (
               <label className="grid gap-1 text-sm sm:col-span-2">
                 <span className="text-foreground/70">
-                  Project (optional — attaches new documents and filters the list below)
+                  Project (optional, attaches new documents and filters the list below)
                 </span>
                 <select
                   className="module-select"
@@ -750,7 +750,7 @@ export function KnowledgeBaseWorkspace({
             />
             <p className="module-note mt-2 flex items-center gap-2">
               {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-              PDF, Word (.docx), plain text, and Markdown are indexed for citation — extraction runs
+              PDF, Word (.docx), plain text, and Markdown are indexed for citation. Extraction runs
               immediately. Images (JPEG/PNG/TIFF), spreadsheets, CAD files, and other office documents
               are kept for reference: findable and downloadable, not citable. Up to {maxUploadMiB} MiB
               per file on this deployment.
@@ -787,7 +787,7 @@ export function KnowledgeBaseWorkspace({
           <h2 className="module-section-title">Search these documents</h2>
           <p className="module-section-description">
             Keyword search across the passages of every document that finished extracting. It matches
-            on any significant word and ranks by relevance — <ScreeningGradeLink />, not semantic —
+            on any significant word and ranks by relevance (<ScreeningGradeLink />, not semantic)
             and
             returns up to {SEARCH_LIMIT} passages.{" "}
             {projectId
@@ -833,7 +833,7 @@ export function KnowledgeBaseWorkspace({
           {search.status === "done" && search.hits.length === 0 ? (
             <div className="module-empty-state">
               No passage in the searched documents matched &ldquo;{search.query}&rdquo;. The search
-              itself succeeded — this is a result, not a failure.
+              itself succeeded. This is a result, not a failure.
               {coverageCaveat ? ` ${coverageCaveat}` : ""}
             </div>
           ) : null}
@@ -863,7 +863,7 @@ export function KnowledgeBaseWorkspace({
                   : " in this workspace"}
                 , best match first
                 {search.hits.length === SEARCH_LIMIT
-                  ? ` — capped at ${SEARCH_LIMIT}, so there may be more`
+                  ? ` (capped at ${SEARCH_LIMIT}, so there may be more)`
                   : ""}
                 .{coverageCaveat ? ` ${coverageCaveat}` : ""}
               </p>
@@ -1035,15 +1035,15 @@ export function KnowledgeBaseWorkspace({
           <div className="module-empty-state">
             {documentList.status === "failed"
               ? listScopeName
-                ? `The list of documents linked to ${listScopeName} could not be read, so it is not shown. This does not mean none are linked — do not re-upload on the strength of this screen.`
-                : "The document list could not be read, so it is not shown. This does not mean the workspace has no documents — do not re-upload on the strength of this screen."
+                ? `The list of documents linked to ${listScopeName} could not be read, so it is not shown. This does not mean none are linked. Do not re-upload on the strength of this screen.`
+                : "The document list could not be read, so it is not shown. This does not mean the workspace has no documents. Do not re-upload on the strength of this screen."
               : listIsNarrowed
                 ? // A filtered empty result is a statement about the FILTERS, not
                   // about the corpus. Saying "no documents yet" here would invite
                   // a planner to re-upload a plan the workspace already holds.
-                  "No documents match these filters. Clearing them will show what is there — this is not a statement that the workspace has none."
+                  "No documents match these filters. Clearing them will show what is there. This is not a statement that the workspace has none."
                 : projectId
-                  ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
+                  ? "No documents are attached to this project yet. Pick it in the selector above and upload, or switch back to all documents. Other workspace documents may still exist."
                   : "No documents yet. Upload a plan or paste text above to start building this workspace's library."}
           </div>
         ) : (
@@ -1155,7 +1155,7 @@ export function KnowledgeBaseWorkspace({
           <div className="module-section-header">
             <h2 className="module-section-title">All files in this workspace</h2>
             <p className="module-section-description">
-              One index across every module that holds files — generated reports, grant application
+              One index across every module that holds files: generated reports, grant application
               exports, client invoices, aerial imagery and deliverables, model run outputs, and the
               documents above. Each file stays where its module keeps it; this list only points at
               it.{" "}
@@ -1170,7 +1170,7 @@ export function KnowledgeBaseWorkspace({
           {libraryScopeStale ? (
             <p className="module-note">
               This file index still shows {libraryScopeName ? `${libraryScopeName}'s files` : "the whole workspace"}
-              {" — it does not follow the project selector above. "}
+              {". It does not follow the project selector above. "}
               <Link
                 className="underline underline-offset-2"
                 href={projectId ? `/knowledge-base?projectId=${projectId}` : "/knowledge-base"}
@@ -1244,7 +1244,7 @@ export function KnowledgeBaseWorkspace({
               {libraryEntries.length > 0
                 ? "No files match the current filters. Clear a source chip or the citable-only filter to see the rest."
                 : library.readFailureSummary || pendingLibrarySources.length > 0
-                  ? "No files are listed — but some sources could not be read (see above), so this is not a statement about what the workspace holds."
+                  ? "No files are listed, but some sources could not be read (see above), so this is not a statement about what the workspace holds."
                   : "No files yet. Files appear here as reports are generated, grant applications are exported, imagery is uploaded, and documents are added above."}
             </div>
           ) : (

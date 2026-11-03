@@ -263,7 +263,7 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
   const recordHoldsCrashes = input.matchedCount > 0;
   if (recordHoldsCrashes) {
     notes.push(
-      `Crashes: this layer draws only what this workspace has acquired — ${input.matchedCount.toLocaleString("en-US")} ` +
+      `Crashes: this layer draws only what this workspace has acquired: ${input.matchedCount.toLocaleString("en-US")} ` +
         `stored ${input.matchedCount === 1 ? "collision" : "collisions"}, covering the areas and years its ` +
         `completed acquisitions asked for. Ground no acquisition asked about is blank because nothing was ` +
         `requested there, not because no crashes occurred there.`
@@ -276,9 +276,9 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
   // the other described a scope the dots reached outside of.
   if (input.scopeState === "out_of_coverage") {
     const checked =
-      `no crash source that OpenPlan can store covers ${placeName(input.scopeLabel)} — ` +
+      `no crash source that OpenPlan can store covers ${placeName(input.scopeLabel)} (` +
       `${sourceList(input.checkedSourceLabels)} ${input.checkedSourceLabels.length === 1 ? "was" : "were"} ` +
-      `checked`;
+      `checked)`;
     notes.push(
       recordHoldsCrashes
         ? // The shared `COVERAGE_STATE_COPY` sentence is NOT reused here: it ends
@@ -361,7 +361,7 @@ export function describeCrashLayerCoverage(input: CrashLayerCoverageInput): stri
   if (input.returnedCount + input.droppedCount < input.matchedCount) {
     notes.push(
       `Crashes: showing ${input.returnedCount.toLocaleString("en-US")} of ${input.matchedCount.toLocaleString("en-US")} ` +
-        `acquired collisions — the ${input.limit.toLocaleString("en-US")} most recent by collision date, not the ` +
+        `acquired collisions: the ${input.limit.toLocaleString("en-US")} most recent by collision date, not the ` +
         `ones nearest you. The rest are not drawn, which is not a finding that they do not exist. The ` +
         `Safety workbench queries the full record.`
     );

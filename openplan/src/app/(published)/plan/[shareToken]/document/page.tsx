@@ -269,9 +269,9 @@ function describePublicReviewWindow({
   const settled = status === "adopted" || status === "archived";
   const conflict =
     settled && state === "open"
-      ? "The agency has recorded this plan as adopted or archived, but the review dates on record say the comment period is still open. These two facts disagree — contact the agency before relying on either."
+      ? "The agency has recorded this plan as adopted or archived, but the review dates on record say the comment period is still open. These two facts disagree. Contact the agency before relying on either."
       : status === "public_review" && state === "closed"
-        ? "The agency has recorded this plan as being in public review, but the review dates on record have passed. These two facts disagree — contact the agency before relying on either."
+        ? "The agency has recorded this plan as being in public review, but the review dates on record have passed. These two facts disagree. Contact the agency before relying on either."
         : null;
 
   if (state === "not_scheduled") {
@@ -509,7 +509,7 @@ export default async function PublicRtpDocumentPage({
           <Notice tone="warning">
             <p>
               Something went wrong reading this plan, so none of it is shown. This is a problem
-              loading the page — it does not mean the plan is missing, unpublished, or withdrawn,
+              loading the page. It does not mean the plan is missing, unpublished, or withdrawn,
               and it does not mean the public review period has ended.
             </p>
             <p>Please try again shortly, or contact the agency that published this plan.</p>
@@ -793,7 +793,7 @@ export default async function PublicRtpDocumentPage({
                 {fiscal.illustrativeProjectCount > 0
                   ? `, and ${fiscal.illustrativeProjectCount} ${
                       fiscal.illustrativeProjectCount === 1 ? "is" : "are"
-                    } on the illustrative list — projects the agency would build if more funding became available, which are outside the constrained programme by regulation`
+                    } on the illustrative list (projects the agency would build if more funding became available, which are outside the constrained programme by regulation)`
                   : ""}
                 .
               </p>

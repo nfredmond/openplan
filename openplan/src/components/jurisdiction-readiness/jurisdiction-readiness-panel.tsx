@@ -127,7 +127,7 @@ export function JurisdictionReadinessPanel({
                 <a className="font-medium text-foreground hover:underline" href={authority.url}>
                   {authority.label}
                 </a>{" "}
-                <span className="text-muted-foreground">— {authority.agency}</span>
+                <span className="text-muted-foreground">({authority.agency})</span>
               </li>
             ))}
           </ul>

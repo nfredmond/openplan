@@ -26,7 +26,7 @@ describe("GrantsProgramCatalogSection coverage labeling", () => {
 
     // Labeled, not hidden: a consultant may legitimately pursue another state's
     // programs, so every catalog entry is still on the page.
-    expect(screen.getAllByText("California — not this workspace's jurisdiction").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("California (not this workspace's jurisdiction)").length).toBeGreaterThan(0);
     for (const program of GRANT_PROGRAM_CATALOG) {
       expect(screen.getByText(program.name)).toBeTruthy();
     }
@@ -41,7 +41,7 @@ describe("GrantsProgramCatalogSection coverage labeling", () => {
     );
 
     expect(screen.queryByTestId("grants-program-coverage-disclosure")).toBeNull();
-    expect(screen.queryByText("California — not this workspace's jurisdiction")).toBeNull();
+    expect(screen.queryByText("California (not this workspace's jurisdiction)")).toBeNull();
     // The jurisdiction is still stated on the program itself.
     expect(screen.getAllByText("California").length).toBeGreaterThan(0);
   });
@@ -52,8 +52,8 @@ describe("GrantsProgramCatalogSection coverage labeling", () => {
     const disclosure = screen.getByTestId("grants-program-coverage-disclosure");
     expect(disclosure.textContent).toContain("has not said where it works");
     expect(disclosure.textContent).toContain("home geography");
-    expect(screen.getAllByText("California — coverage unconfirmed").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("United States — coverage unconfirmed").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("California (coverage unconfirmed)").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("United States (coverage unconfirmed)").length).toBeGreaterThan(0);
   });
 });
 

@@ -1337,7 +1337,7 @@ describe("ProjectDetailPage", () => {
     await renderPage();
 
     expect(
-      screen.getByText(/Interim default gates — not your jurisdiction's/)
+      screen.getByText(/Interim default gates, not your jurisdiction's/)
     ).toBeInTheDocument();
     expect(screen.getByText(/has not stated where it works/)).toBeInTheDocument();
     expect(screen.getByText(/not authoritative for this agency/)).toBeInTheDocument();
@@ -2699,7 +2699,7 @@ describe("ProjectDetailPage", () => {
 
       const panel = document.getElementById("project-documents") as HTMLElement;
       expect(
-        within(panel).getByText(/does not carry knowledge base documents yet — apply the pending/)
+        within(panel).getByText(/does not carry knowledge base documents yet\. Apply the pending/)
       ).toBeInTheDocument();
       expect(within(panel).queryByText(/knowledge base documents could not be read/)).toBeNull();
     });
@@ -2825,10 +2825,10 @@ describe("ProjectDetailPage", () => {
       await renderPage("delivery");
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
-      expect(within(milestones).getByText("Unassigned — previously a member")).toBeInTheDocument();
+      expect(within(milestones).getByText("Unassigned, previously a member")).toBeInTheDocument();
       await rerenderOnTab("record");
       const issues = document.getElementById("project-issues") as HTMLElement;
-      expect(within(issues).getByText("Unassigned — previously a member")).toBeInTheDocument();
+      expect(within(issues).getByText("Unassigned, previously a member")).toBeInTheDocument();
     });
 
     it("says the roster could not be read instead of reporting the whole team departed", async () => {
@@ -2844,9 +2844,9 @@ describe("ProjectDetailPage", () => {
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(
-        within(milestones).getByText("Assignee unavailable — the team roster could not be read")
+        within(milestones).getByText("Assignee unavailable: the team roster could not be read")
       ).toBeInTheDocument();
-      expect(within(milestones).queryByText("Unassigned — previously a member")).toBeNull();
+      expect(within(milestones).queryByText("Unassigned, previously a member")).toBeNull();
       expect(within(milestones).queryByText("priya@example.gov")).toBeNull();
       // And the page's own banner names the failed read for an operator.
       expect(screen.getByText(/could not read this workspace's team roster/i)).toBeInTheDocument();
@@ -2864,9 +2864,9 @@ describe("ProjectDetailPage", () => {
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(within(milestones).queryByText("priya@example.gov")).toBeNull();
-      expect(within(milestones).queryByText("Unassigned — previously a member")).toBeNull();
+      expect(within(milestones).queryByText("Unassigned, previously a member")).toBeNull();
       expect(
-        within(milestones).queryByText("Assignee unavailable — the team roster could not be read")
+        within(milestones).queryByText("Assignee unavailable: the team roster could not be read")
       ).toBeNull();
       // The record itself still renders — silence is about the assignee only.
       expect(within(milestones).getByText("LAPM authorization packet ready")).toBeInTheDocument();

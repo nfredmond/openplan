@@ -154,7 +154,7 @@ export function LayerPlacementPreview({
               */
               <strong className="op-gis-preview__asserted">
                 {" "}
-                This is your statement, not something read from the file — nothing in this file says
+                This is your statement, not something read from the file. Nothing in this file says
                 what coordinate system it is in.
               </strong>
             ) : null}
@@ -169,8 +169,8 @@ export function LayerPlacementPreview({
               {formatLatitude(bbox.north)} {formatDegrees(bbox.east)}
               {homeGeography ? null : (
                 <span className="op-gis-preview__aside">
-                  {" "}
-                  — this workspace has stated no geography, so OpenPlan cannot tell you whether that
+                  {". "}
+                  This workspace has stated no geography, so OpenPlan cannot tell you whether that
                   is near your work.
                 </span>
               )}
@@ -186,7 +186,7 @@ export function LayerPlacementPreview({
               ? `, ${imported.droppedFeatureCount.toLocaleString("en-US")} that could not be placed and will not be`
               : ""}
             {imported.truncated
-              ? ` — of ${imported.sourceFeatureCount.toLocaleString("en-US")} in the file. The rest are beyond this deployment's per-layer limit.`
+              ? ` (of ${imported.sourceFeatureCount.toLocaleString("en-US")} in the file). The rest are beyond this deployment's per-layer limit.`
               : "."}
           </dd>
         </div>
@@ -207,8 +207,8 @@ export function LayerPlacementPreview({
             {imported.attributeEncoding?.basis === "fallback" ? (
               <span className="op-gis-preview__aside">
                 {" "}
-                — the file did not say how its text is encoded, so it was read as{" "}
-                {imported.attributeEncoding.label}. Accented names may be wrong; the geometry is
+                (the file did not say how its text is encoded, so it was read as{" "}
+                {imported.attributeEncoding.label}). Accented names may be wrong; the geometry is
                 unaffected.
               </span>
             ) : null}

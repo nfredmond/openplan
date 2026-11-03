@@ -94,7 +94,7 @@ export default async function SafetyPage({
         <div className="module-intro-card">
           <h1 className="module-section-title">Workspace access required</h1>
           <p className="module-note">
-            You need to belong to a workspace to review its crash data — reported collisions
+            You need to belong to a workspace to review its crash data: reported collisions
             retrieved from the source agency, mapped for screening-level safety analysis.
           </p>
           <div className="module-inline-list">

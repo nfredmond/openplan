@@ -140,7 +140,7 @@ describe("the lapse date is reachable from the project funding lane", () => {
     // Not silence, and not a blank. An award with no lapse date is an award
     // whose money can lapse with no warning, and the row says so.
     expect(
-      screen.getByText(/no lapse date recorded — no expenditure reminder will be sent for this award/)
+      screen.getByText(/no lapse date recorded: no expenditure reminder will be sent for this award/)
     ).toBeInTheDocument();
   });
 

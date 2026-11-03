@@ -10,11 +10,11 @@
   ],
   "description": "A study of one street or highway corridor: what it does today, what it fails to do, what could be changed, and which changes to pursue first.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
-    "It assumes a consultant-led study under a notice to proceed. An in-house study runs the same sequence without the procurement steps — change the anchor to the kickoff date and adjust the early offsets.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
+    "It assumes a consultant-led study under a notice to proceed. An in-house study runs the same sequence without the procurement steps. Change the anchor to the kickoff date and adjust the early offsets.",
     "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "deliverables": [
     {

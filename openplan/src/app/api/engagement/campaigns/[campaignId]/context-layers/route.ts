@@ -193,7 +193,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const name = parsedQuery.data.name ?? filenameStem(parsedQuery.data.filename);
     if (!name) {
       return NextResponse.json(
-        { error: "This layer needs a name — it is the legend entry participants read." },
+        { error: "This layer needs a name. It is the legend entry participants read." },
         { status: 400 }
       );
     }

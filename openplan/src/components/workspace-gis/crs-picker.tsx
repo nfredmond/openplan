@@ -138,14 +138,14 @@ export function CrsPicker({
           <p className="op-crs-picker__scope">
             {regionUnreadable
               ? "OpenPlan could not read this workspace's geography just now, so this list is not narrowed to " +
-                "your area — it is the start of every system OpenPlan carries. That is a failed read, not a " +
+                "your area. It is the start of every system OpenPlan carries. That is a failed read, not a " +
                 "finding that your workspace has no geography set."
               : unscoped
                 ? // SAID OUT LOUD. With no home geography there is nothing to
                   // narrow by, and a long list presented as though it were a
                   // shortlist would invite picking the first plausible row.
-                  "This workspace has not stated a geography, so this list is not narrowed to your area — " +
-                  "it is the start of every system OpenPlan carries. Set your workspace geography to get a " +
+                  "This workspace has not stated a geography, so this list is not narrowed to your area. " +
+                  "It is the start of every system OpenPlan carries. Set your workspace geography to get a " +
                   "list you can actually read."
                 : `${matchedCount.toLocaleString("en-US")} coordinate systems are defined to cover your workspace's ` +
                   `area. OpenPlan does not pick one for you.`}
@@ -156,7 +156,7 @@ export function CrsPicker({
             <input
               type="text"
               value={filter}
-              placeholder="Filter by name, code or area — e.g. “zone 2”, “2226”, “feet”"
+              placeholder="Filter by name, code or area, e.g. “zone 2”, “2226”, “feet”"
               onChange={(event) => setFilter(event.target.value)}
             />
           </label>
@@ -181,7 +181,7 @@ export function CrsPicker({
                     // zone should see which one carries a positional caveat
                     // while they are still deciding.
                     <span className="op-crs-picker__caveat">
-                      Older datum — carries a positional caveat
+                      Older datum: carries a positional caveat
                     </span>
                   ) : null}
                 </button>
@@ -191,8 +191,8 @@ export function CrsPicker({
 
           {shown.length === 0 ? (
             <p className="op-crs-picker__empty">
-              Nothing here matches “{filter}”. That is not a finding that the system does not exist
-              — OpenPlan carries only the systems whose projection it can compute, and it names any
+              Nothing here matches “{filter}”. That is not a finding that the system does not exist.
+              OpenPlan carries only the systems whose projection it can compute, and it names any
               system it cannot rather than substituting a nearby one.
             </p>
           ) : null}

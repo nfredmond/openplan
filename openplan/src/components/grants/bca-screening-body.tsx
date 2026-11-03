@@ -346,7 +346,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
       spreadYears > horizon
     ) {
       issues.push(
-        "Capital spread exceeds the analysis horizon — cost slices past the horizon would be dropped. Shorten the spread or lengthen the horizon."
+        "Capital spread exceeds the analysis horizon. Cost slices past the horizon would be dropped. Shorten the spread or lengthen the horizon."
       );
     }
 
@@ -483,7 +483,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
         : undefined;
     const parameterNotes = (
       Object.keys(DEFAULT_BCA_PARAMETERS) as Array<keyof typeof DEFAULT_BCA_PARAMETERS>
-    ).map((key) => `${key} = ${DEFAULT_BCA_PARAMETERS[key]} — ${BCA_PARAMETER_SOURCE_NOTES[key]}`);
+    ).map((key) => `${key} = ${DEFAULT_BCA_PARAMETERS[key]}: ${BCA_PARAMETER_SOURCE_NOTES[key]}`);
     const markdown = renderBcaMemoMarkdown(result, {
       contextLabel,
       engineVersion: BCA_ENGINE_VERSION,
@@ -597,7 +597,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
 
       {selectedProject ? (
         <p className="text-xs text-muted-foreground">
-          Capital cost is prefilled from the project&apos;s recorded funding need — replace it with
+          Capital cost is prefilled from the project&apos;s recorded funding need. Replace it with
           the full project cost estimate if that differs. OpenPlan does not estimate costs.
         </p>
       ) : null}
@@ -625,7 +625,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
             over <span className="tabular-nums">{selectedProject.latestScreening.analysisHorizonYears}</span>{" "}
             years
             {selectedProject.latestScreening.createdAt
-              ? ` — saved ${formatSavedDate(selectedProject.latestScreening.createdAt)}`
+              ? `, saved ${formatSavedDate(selectedProject.latestScreening.createdAt)}`
               : ""}
             .
           </p>
@@ -640,7 +640,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
             </Button>
           ) : selectedProject.latestScreening.inputs ? (
             <p className="text-xs text-muted-foreground">
-              Saved with options this quick screen can&apos;t reproduce — download its memo or
+              Saved with options this quick screen can&apos;t reproduce. Download its memo or
               re-enter the inputs.
             </p>
           ) : null}
@@ -751,7 +751,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
             />
           </label>
           <label className="block text-xs font-medium text-muted-foreground sm:col-span-2">
-            Annual VMT reduced (mi/yr — monetized as emissions + vehicle operating savings)
+            Annual VMT reduced (mi/yr, monetized as emissions + vehicle operating savings)
             <Input
               className="mt-1"
               inputMode="decimal"
@@ -857,7 +857,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
         >
           <p>
             Enter at least one cost or benefit (and a valid base year, horizon, and discount rate)
-            to run the screen. Every input is operator-supplied — OpenPlan never estimates a missing
+            to run the screen. Every input is operator-supplied. OpenPlan never estimates a missing
             cost or benefit.
           </p>
         </div>
@@ -974,9 +974,9 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
             (key) => (
               <div key={key} className="flex flex-wrap gap-1.5">
                 <dt className="font-semibold text-foreground/70">
-                  {key} = <span className="tabular-nums">{String(DEFAULT_BCA_PARAMETERS[key])}</span>
+                  {key} = <span className="tabular-nums">{String(DEFAULT_BCA_PARAMETERS[key])}</span>:
                 </dt>
-                <dd>— {BCA_PARAMETER_SOURCE_NOTES[key]}</dd>
+                <dd>{BCA_PARAMETER_SOURCE_NOTES[key]}</dd>
               </div>
             )
           )}

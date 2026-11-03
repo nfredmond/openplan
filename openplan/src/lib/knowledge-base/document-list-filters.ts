@@ -215,8 +215,8 @@ export function describeKbDocumentListResult(input: {
 
   if (input.count >= limit) {
     return filtered
-      ? `Showing the first ${limit} ${noun} matching these filters ${where} — there are more. Narrow the name or the date range to see the rest.`
-      : `Showing the first ${limit} ${noun} ${where} — there are more. Search by name or narrow the date range to reach the rest.`;
+      ? `Showing the first ${limit} ${noun} matching these filters ${where}. There are more. Narrow the name or the date range to see the rest.`
+      : `Showing the first ${limit} ${noun} ${where}. There are more. Search by name or narrow the date range to reach the rest.`;
   }
 
   return filtered

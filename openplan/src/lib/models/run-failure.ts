@@ -271,8 +271,8 @@ export function summarizeRunFailure({
     // has already been relaunched after failing, repeating it turns the copy
     // into a treadmill, so a repeat sends the planner to the logs instead.
     const advice = repeat
-      ? "It has already been relaunched after failing — whoever runs your OpenPlan deployment can check the worker's logs."
-      : "Re-launch to retry — if it fails again, whoever runs your OpenPlan deployment can check the worker's logs.";
+      ? "It has already been relaunched after failing. Whoever runs your OpenPlan deployment can check the worker's logs."
+      : "Re-launch to retry. If it fails again, whoever runs your OpenPlan deployment can check the worker's logs.";
     return {
       headline: stageName
         ? `This run failed during ${stageName} and no reason was recorded. ${advice}`
@@ -302,8 +302,8 @@ export function summarizeRunFailure({
   // non-technical planner is most likely to conclude they broke the software.
   return {
     headline: stageName
-      ? `This run failed during ${stageName}. The modeling engine reported an internal error rather than something you can act on — this is not a setting you got wrong. Send this to whoever runs your OpenPlan deployment: ${candidate}`
-      : `This run failed. The modeling engine reported an internal error rather than something you can act on — this is not a setting you got wrong. Send this to whoever runs your OpenPlan deployment: ${candidate}`,
+      ? `This run failed during ${stageName}. The modeling engine reported an internal error rather than something you can act on. This is not a setting you got wrong. Send this to whoever runs your OpenPlan deployment: ${candidate}`
+      : `This run failed. The modeling engine reported an internal error rather than something you can act on. This is not a setting you got wrong. Send this to whoever runs your OpenPlan deployment: ${candidate}`,
     stageName,
     isRawEngineOutput: true,
     rawMessage: stageMessage,

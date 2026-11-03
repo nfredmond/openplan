@@ -328,7 +328,7 @@ export function CeqaVmtScreenBody({
         </label>
       </div>
       <p className="text-xs text-muted-foreground">
-        The reference baseline and threshold are operator-supplied — the stored KPI set cannot
+        The reference baseline and threshold are operator-supplied. The stored KPI set cannot
         provide them.{" "}
         {framework ? (
           <>
@@ -345,10 +345,10 @@ export function CeqaVmtScreenBody({
                 from rather than to launder them as a universal default. */}
             No significance framework has been established for this workspace, so nothing here can
             tell you what your jurisdiction recommends. The pre-filled values are carried over from
-            California&apos;s guidance — a California statewide VMT-per-capita average (
+            California&apos;s guidance: a California statewide VMT-per-capita average (
             {formatNumber(DEFAULT_REFERENCE_VMT_PER_CAPITA, 1)}) and the{" "}
             {formatNumber(OPR_DEFAULT_THRESHOLD_PCT * 100, 0)} percent-below cut line recommended by
-            California&apos;s Governor&apos;s Office of Planning and Research — and they are a
+            California&apos;s Governor&apos;s Office of Planning and Research. They are a
             starting point for the arithmetic only, not a
             baseline adopted for your area. Replace them with your region&apos;s adopted baseline
             and threshold.
@@ -377,7 +377,7 @@ export function CeqaVmtScreenBody({
           <span>
             <span className="font-semibold">Use calibrated (count-tuned) VMT for this determination.</span>{" "}
             Off (default) = screening VMT. On = the calibrated resident VMT/capita from the demand-nudge
-            stage ({formatNumber(calibrated.vmtPerCapita, 3)}), a count-informed refinement — clearly a
+            stage ({formatNumber(calibrated.vmtPerCapita, 3)}), a count-informed refinement, clearly a
             distinct, disclosed calibrated-input determination, not the screening default.
           </span>
         </label>
@@ -414,7 +414,7 @@ export function CeqaVmtScreenBody({
             capita versus a cut line of{" "}
             <span className="tabular-nums">{formatNumber(scenario.threshold_vmt_per_capita, 3)}</span> VMT per
             capita ({formatNumber(result.threshold_pct * 100, 0)}% below the {result.reference_label}{" "}
-            reference of {formatNumber(result.reference_vmt_per_capita, 3)}) —{" "}
+            reference of {formatNumber(result.reference_vmt_per_capita, 3)}),{" "}
             <span className="tabular-nums">{formatNumber(Math.abs(scenario.delta_pct) * 100, 1)}%</span>{" "}
             {scenario.significant ? "above" : "below"} the threshold.
             {scenario.mitigation_required
@@ -464,8 +464,8 @@ export function CeqaVmtScreenBody({
                   has no framework. */}
               <span className="font-semibold">
                 {frameworkResolution
-                  ? "No VMT significance framework has been established for this workspace, so the comparison above is arithmetic — not a significance determination for your area."
-                  : "This screen has not established which VMT significance framework applies here, so the comparison above is arithmetic — not a significance determination for your area."}
+                  ? "No VMT significance framework has been established for this workspace, so the comparison above is arithmetic, not a significance determination for your area."
+                  : "This screen has not established which VMT significance framework applies here, so the comparison above is arithmetic, not a significance determination for your area."}
               </span>{" "}
               {noFrameworkReason}
             </p>
@@ -529,7 +529,7 @@ export function CeqaVmtScreenBody({
           {onSaveDetermination && !framework ? (
             <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-save-blocked">
               Saving is unavailable until a VMT significance framework is established for this
-              workspace — a stored determination has to record whose rules it was issued under.
+              workspace. A stored determination has to record whose rules it was issued under.
             </p>
           ) : null}
           {saveError ? (

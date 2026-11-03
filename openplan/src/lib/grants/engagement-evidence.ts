@@ -38,7 +38,7 @@ const SENTIMENT_VALUES: readonly EngagementSentiment[] = [
  * location where nothing happened.
  */
 export const ENGAGEMENT_CRASH_PROXIMITY_NARRATIVE_CAVEAT =
-  "Collision counts near mapped comments state proximity only — no comment has been established as describing the collisions near it, and mapped comments outside acquired crash data are reported as unmeasured rather than as locations without collisions.";
+  "Collision counts near mapped comments state proximity only: no comment has been established as describing the collisions near it, and mapped comments outside acquired crash data are reported as unmeasured rather than as locations without collisions.";
 
 export const ENGAGEMENT_NARRATIVE_CAVEAT =
   "Community-input statements summarize submitted public comments only — a screening-grade synthesis of who chose to comment, not a statistically representative survey, a vote, or a legal-sufficiency finding.";
