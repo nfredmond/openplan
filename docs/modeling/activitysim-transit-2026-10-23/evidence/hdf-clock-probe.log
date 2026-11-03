@@ -1,0 +1,3 @@
+Running as unit: run-p1922047-i60508897.scope; invocation ID: 63508c34136f439cafb1d98cf0eda60b
+Ordinary OMX bytes differ across two seconds: True
+Controlled-clock OMX bytes match across two seconds: True

@@ -1,0 +1,44 @@
+
+ RUN  v5.0.5 /home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c
+
+ ❯ openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts (2 tests | 2 failed) 5ms
+   ❯ the modeling requirements cover what the modeling code imports (2)
+     × lists every third-party module scripts/modeling imports 4ms
+     × guards the guard — the scan reaches real files and the known dependencies are found 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts > the modeling requirements cover what the modeling code imports > lists every third-party module scripts/modeling imports
+Error: ENOENT: no such file or directory, scandir '/home/nathaniel/.t3/worktrees/openplan/scripts/modeling'
+ ❯ pythonFiles openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts:124:10
+    122|
+    123| function pythonFiles(dir: string): string[] {
+    124|   return readdirSync(dir)
+       |          ^
+    125|     .filter((entry) => entry.endsWith(".py"))
+    126|     .map((entry) => path.join(dir, entry));
+ ❯ importedRootModules openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts:140:22
+ ❯ openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts:193:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts > the modeling requirements cover what the modeling code imports > guards the guard — the scan reaches real files and the known dependencies are found
+Error: ENOENT: no such file or directory, scandir '/home/nathaniel/.t3/worktrees/openplan/scripts/modeling'
+ ❯ pythonFiles openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts:124:10
+    122|
+    123| function pythonFiles(dir: string): string[] {
+    124|   return readdirSync(dir)
+       |          ^
+    125|     .filter((entry) => entry.endsWith(".py"))
+    126|     .map((entry) => path.join(dir, entry));
+ ❯ importedRootModules openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts:140:22
+ ❯ openplan/src/test/modeling-requirements-cover-the-modeling-imports.test.ts:211:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed (2)
+   Start at  15:49:47
+   Duration  142ms (transform 57%, import 28%, tests 9%, worker 5%)
+

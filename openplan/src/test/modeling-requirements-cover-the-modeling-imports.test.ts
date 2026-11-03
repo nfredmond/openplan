@@ -81,7 +81,7 @@ const LOCAL_MODULE_DIRS = [
  * reviewer question — "is this really stdlib?" — which is the point.
  */
 const PYTHON_STDLIB = new Set([
-  "__future__", "argparse", "collections", "concurrent", "contextlib", "copy", "csv",
+  "__future__", "argparse", "bisect", "collections", "concurrent", "contextlib", "copy", "csv",
   "dataclasses", "datetime", "decimal", "functools", "gzip", "hashlib", "importlib", "io",
   "inspect", "itertools", "json", "logging", "math", "os", "pathlib", "platform", "random", "re",
   "shlex", "shutil", "sqlite3", "statistics", "string", "subprocess", "sys",

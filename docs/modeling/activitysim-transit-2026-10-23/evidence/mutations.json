@@ -1,0 +1,207 @@
+{
+  "source_sha256": "db2e85963579cac7c78148561393b9c5870ed905c0cf3e53214236f5468df3a6",
+  "source_unchanged": true,
+  "cases": [
+    {
+      "mutation": "harmless_comment",
+      "expected": "survive",
+      "verified": true,
+      "exit_code": 0,
+      "test": null,
+      "output": "test_access_egress_and_mtc_units (test_activitysim_transit_skims.TransitTests.test_access_egress_and_mtc_units) ... ok\ntest_calendar_removal_and_addition (test_activitysim_transit_skims.TransitTests.test_calendar_removal_and_addition) ... ok\ntest_configuration_and_runtime_guards (test_activitysim_transit_skims.TransitTests.test_configuration_and_runtime_guards) ... ok\ntest_cross_stop_transfer_walk_and_wait (test_activitysim_transit_skims.TransitTests.test_cross_stop_transfer_walk_and_wait) ... ok\ntest_default_bundle_bytes_match_prechange_source (test_activitysim_transit_skims.TransitTests.test_default_bundle_bytes_match_prechange_source) ... ok\ntest_default_full_mtc_bundle_matches_parent_bytes (test_activitysim_transit_skims.TransitTests.test_default_full_mtc_bundle_matches_parent_bytes) ... ok\ntest_default_skim_bytes_match_prechange_source (test_activitysim_transit_skims.TransitTests.test_default_skim_bytes_match_prechange_source) ... ok\ntest_explicit_drive_connectors_both_directions (test_activitysim_transit_skims.TransitTests.test_explicit_drive_connectors_both_directions) ... ok\ntest_ferry_component_stays_separate_from_light_rail (test_activitysim_transit_skims.TransitTests.test_ferry_component_stays_separate_from_light_rail) ... ok\ntest_forbidden_transfer (test_activitysim_transit_skims.TransitTests.test_forbidden_transfer) ... ok\ntest_frequency_and_conditional_boarding_refused (test_activitysim_transit_skims.TransitTests.test_frequency_and_conditional_boarding_refused) ... ok\ntest_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat (test_activitysim_transit_skims.TransitTests.test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat) ... ok\ntest_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods) ... ok\ntest_missed_transfer_is_not_a_possible_itinerary (test_activitysim_transit_skims.TransitTests.test_missed_transfer_is_not_a_possible_itinerary) ... ok\ntest_missing_feed_hash_unmatched_stop_and_no_access_refuse (test_activitysim_transit_skims.TransitTests.test_missing_feed_hash_unmatched_stop_and_no_access_refuse) ... ok\ntest_no_reachable_departures_is_not_unknown_fare (test_activitysim_transit_skims.TransitTests.test_no_reachable_departures_is_not_unknown_fare) ... ok\ntest_onboard_dwell_does_not_add_boarding_or_wait (test_activitysim_transit_skims.TransitTests.test_onboard_dwell_does_not_add_boarding_or_wait) ... ok\ntest_opt_in_omx_and_custody (test_activitysim_transit_skims.TransitTests.test_opt_in_omx_and_custody) ... ok\ntest_opt_in_refuses_incompatible_stock_scale (test_activitysim_transit_skims.TransitTests.test_opt_in_refuses_incompatible_stock_scale) ... ok\ntest_pickup_dropoff_restrictions_and_after_midnight (test_activitysim_transit_skims.TransitTests.test_pickup_dropoff_restrictions_and_after_midnight) ... ok\ntest_primary_mode_required_with_local_feeder (test_activitysim_transit_skims.TransitTests.test_primary_mode_required_with_local_feeder) ... ok\ntest_sourced_fare_override_is_explicit (test_activitysim_transit_skims.TransitTests.test_sourced_fare_override_is_explicit) ... ok\ntest_unknown_fare_is_not_free_or_enabled (test_activitysim_transit_skims.TransitTests.test_unknown_fare_is_not_free_or_enabled) ... ok\ntest_zero_fare_is_measured_and_transfer_expiry_charges_again (test_activitysim_transit_skims.TransitTests.test_zero_fare_is_measured_and_transfer_expiry_charges_again) ... ok\n\n----------------------------------------------------------------------\nRan 24 tests in 0.522s\n\nOK\n"
+    },
+    {
+      "mutation": "no_path_mislabeled",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_no_reachable_departures_is_not_unknown_fare",
+      "output": "test_no_reachable_departures_is_not_unknown_fare (test_activitysim_transit_skims.TransitTests.test_no_reachable_departures_is_not_unknown_fare) ... FAIL\n\n======================================================================\nFAIL: test_no_reachable_departures_is_not_unknown_fare (test_activitysim_transit_skims.TransitTests.test_no_reachable_departures_is_not_unknown_fare)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 310, in test_no_reachable_departures_is_not_unknown_fare\n    self.assertEqual(record['status'],'unavailable')\nAssertionError: 'los_only_fare_unavailable' != 'unavailable'\n- los_only_fare_unavailable\n+ unavailable\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.077s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "ferry_labeled_light_rail",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_ferry_component_stays_separate_from_light_rail",
+      "output": "test_ferry_component_stays_separate_from_light_rail (test_activitysim_transit_skims.TransitTests.test_ferry_component_stays_separate_from_light_rail) ... FAIL\n\n======================================================================\nFAIL: test_ferry_component_stays_separate_from_light_rail (test_activitysim_transit_skims.TransitTests.test_ferry_component_stays_separate_from_light_rail)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 319, in test_ferry_component_stays_separate_from_light_rail\n    self.assertEqual(raw['WLK_LRF_WLK_KEYIVT__AM'][0,2],0)\nAssertionError: 25.0 != 0\n\n----------------------------------------------------------------------\nRan 1 test in 0.084s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "ivt_halved",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_hand_computed_direct_transfer_wait_fare_and_periods",
+      "output": "test_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods) ... FAIL\n\n======================================================================\nFAIL: test_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 90, in test_hand_computed_direct_transfer_wait_fare_and_periods\n    self.assertEqual(value('TOTIVT'),25)\nAssertionError: 12.5 != 25\n\n----------------------------------------------------------------------\nRan 1 test in 0.074s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "wait_erased",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_hand_computed_direct_transfer_wait_fare_and_periods",
+      "output": "test_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods) ... FAIL\n\n======================================================================\nFAIL: test_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 91, in test_hand_computed_direct_transfer_wait_fare_and_periods\n    self.assertEqual(value('IWAIT'),5)\nAssertionError: 0.0 != 5\n\n----------------------------------------------------------------------\nRan 1 test in 0.082s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "transfer_count_erased",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_hand_computed_direct_transfer_wait_fare_and_periods",
+      "output": "test_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods) ... FAIL\n\n======================================================================\nFAIL: test_hand_computed_direct_transfer_wait_fare_and_periods (test_activitysim_transit_skims.TransitTests.test_hand_computed_direct_transfer_wait_fare_and_periods)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 95, in test_hand_computed_direct_transfer_wait_fare_and_periods\n    self.assertEqual(value('TRANSFERS'),1)\nAssertionError: 0.0 != 1\n\n----------------------------------------------------------------------\nRan 1 test in 0.100s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "mtc_scale_wrong",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_access_egress_and_mtc_units",
+      "output": "test_access_egress_and_mtc_units (test_activitysim_transit_skims.TransitTests.test_access_egress_and_mtc_units) ... FAIL\n\n======================================================================\nFAIL: test_access_egress_and_mtc_units (test_activitysim_transit_skims.TransitTests.test_access_egress_and_mtc_units)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 118, in test_access_egress_and_mtc_units\n    self.assertAlmostEqual(ts.mtc_matrix(prefix+c+p,raw,(4,4))[0,2],expected)\nAssertionError: 25.0 != 2500 within 7 places (2475.0 difference)\n\n----------------------------------------------------------------------\nRan 1 test in 0.084s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "access_erased",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_access_egress_and_mtc_units",
+      "output": "test_access_egress_and_mtc_units (test_activitysim_transit_skims.TransitTests.test_access_egress_and_mtc_units) ... FAIL\n\n======================================================================\nFAIL: test_access_egress_and_mtc_units (test_activitysim_transit_skims.TransitTests.test_access_egress_and_mtc_units)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 113, in test_access_egress_and_mtc_units\n    self.assertAlmostEqual(raw[prefix+'WACC'+p][0,2],access)\nAssertionError: 0.0 != 0.18532513373621826 within 7 places (0.18532513373621826 difference)\n\n----------------------------------------------------------------------\nRan 1 test in 0.083s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "missed_connection_allowed",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_missed_transfer_is_not_a_possible_itinerary",
+      "output": "test_missed_transfer_is_not_a_possible_itinerary (test_activitysim_transit_skims.TransitTests.test_missed_transfer_is_not_a_possible_itinerary) ... FAIL\n\n======================================================================\nFAIL: test_missed_transfer_is_not_a_possible_itinerary (test_activitysim_transit_skims.TransitTests.test_missed_transfer_is_not_a_possible_itinerary)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 126, in test_missed_transfer_is_not_a_possible_itinerary\n    self.assertFalse(raw['WLK_LOC_WLK_AVAILABLE__AM'][0,2])\nAssertionError: True is not false\n\n----------------------------------------------------------------------\nRan 1 test in 0.121s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "forbidden_transfer_allowed",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_forbidden_transfer",
+      "output": "test_forbidden_transfer (test_activitysim_transit_skims.TransitTests.test_forbidden_transfer) ... FAIL\n\n======================================================================\nFAIL: test_forbidden_transfer (test_activitysim_transit_skims.TransitTests.test_forbidden_transfer)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 132, in test_forbidden_transfer\n    self.assertFalse(raw['WLK_LOC_WLK_AVAILABLE__AM'][0,2])\nAssertionError: True is not false\n\n----------------------------------------------------------------------\nRan 1 test in 0.083s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "calendar_removal_ignored",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_calendar_removal_and_addition",
+      "output": "test_calendar_removal_and_addition (test_activitysim_transit_skims.TransitTests.test_calendar_removal_and_addition) ... FAIL\n\n======================================================================\nFAIL: test_calendar_removal_and_addition (test_activitysim_transit_skims.TransitTests.test_calendar_removal_and_addition)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 136, in test_calendar_removal_and_addition\n    raw,r=self.build(remove);self.assertEqual(raw,{})\n                             ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'WLK_LOC_WLK_TOTIVT__EA': array([[nan, 10[50013 chars]e]])} != {}\nDiff is 53125 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.181s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "calendar_addition_ignored",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_calendar_removal_and_addition",
+      "output": "test_calendar_removal_and_addition (test_activitysim_transit_skims.TransitTests.test_calendar_removal_and_addition) ... FAIL\n\n======================================================================\nFAIL: test_calendar_removal_and_addition (test_activitysim_transit_skims.TransitTests.test_calendar_removal_and_addition)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 140, in test_calendar_removal_and_addition\n    raw,r=self.build(add);self.assertEqual(r['status'],'available',r);self.assertTrue(raw['WLK_LOC_WLK_AVAILABLE__AM'][0,2])\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'unavailable' != 'available'\n- unavailable\n? --\n+ available\n : {'schema': 'openplan.activitysim-transit.v1', 'status': 'unavailable', 'config': {'feed_path': '/tmp/tmpc9j2fmu1/gtfs.zip', 'feed_url': 'https://example.org/gtfs.zip', 'terms_url': 'https://example.org/terms', 'feed_sha256': '78f255403ca9d607afd6eaa1d489f7b2574eb5c1c292908c0677de3fd89feaf0', 'service_date': '2019-10-08', 'walk_access_m': 100, 'walk_mps': 1, 'min_transfer_seconds': 60, 'max_journey_minutes': 60, 'departures': {'EA': '02:00:00', 'AM': '08:00:00', 'MD': '12:00:00', 'PM': '16:00:00', 'EV': '20:00:00'}}, 'python': '3.11.15', 'numpy': '1.25.2', 'scipy': '1.16.3', 'implementation_sha256': 'db2e85963579cac7c78148561393b9c5870ed905c0cf3e53214236f5468df3a6', 'method': 'scheduled time-expanded directed SciPy Dijkstra; earliest arrival; local feeders plus mandatory primary mode', 'units': {'times': 'minutes', 'DDIST': 'miles', 'FAR': 'nominal USD', 'BOARDS': 'count', 'TRANSFERS': 'count'}, 'missingness': 'NaN components with AVAILABLE=false; fare unknown has FAR=NaN and USABLE=false; zero fare requires a source', 'mtc_encoding': 'times and drive miles multiplied by 100; fares converted to cents; boards unscaled; unavailable TOTIVT=0', 'zone_ids': [1, 2, 3, 4], 'zone_sha256': '9e9bdb939d174a6da3cfe7a00dc09e03066450e3593abc1e7d7a68c7c53fa59f', 'feed_sha256': '78f255403ca9d607afd6eaa1d489f7b2574eb5c1c292908c0677de3fd89feaf0', 'reason': 'No service on 2019-10-08'}\n\n----------------------------------------------------------------------\nRan 1 test in 0.010s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "hash_check_removed",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_missing_feed_hash_unmatched_stop_and_no_access_refuse",
+      "output": "test_missing_feed_hash_unmatched_stop_and_no_access_refuse (test_activitysim_transit_skims.TransitTests.test_missing_feed_hash_unmatched_stop_and_no_access_refuse) ... FAIL\n\n======================================================================\nFAIL: test_missing_feed_hash_unmatched_stop_and_no_access_refuse (test_activitysim_transit_skims.TransitTests.test_missing_feed_hash_unmatched_stop_and_no_access_refuse)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 145, in test_missing_feed_hash_unmatched_stop_and_no_access_refuse\n    raw,r=self.build();self.assertEqual(r['status'],'unavailable');self.assertIn('hash differs',r['reason']);self.assertEqual(raw,{})\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'available' != 'unavailable'\n- available\n+ unavailable\n? ++\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.087s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "unknown_fare_free",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_unknown_fare_is_not_free_or_enabled",
+      "output": "test_unknown_fare_is_not_free_or_enabled (test_activitysim_transit_skims.TransitTests.test_unknown_fare_is_not_free_or_enabled) ... FAIL\n\n======================================================================\nFAIL: test_unknown_fare_is_not_free_or_enabled (test_activitysim_transit_skims.TransitTests.test_unknown_fare_is_not_free_or_enabled)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 154, in test_unknown_fare_is_not_free_or_enabled\n    self.assertEqual(r['status'],'los_only_fare_unavailable')\nAssertionError: 'available' != 'los_only_fare_unavailable'\n- available\n+ los_only_fare_unavailable\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.086s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "drive_time_erased",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_explicit_drive_connectors_both_directions",
+      "output": "test_explicit_drive_connectors_both_directions (test_activitysim_transit_skims.TransitTests.test_explicit_drive_connectors_both_directions) ... FAIL\n\n======================================================================\nFAIL: test_explicit_drive_connectors_both_directions (test_activitysim_transit_skims.TransitTests.test_explicit_drive_connectors_both_directions)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 165, in test_explicit_drive_connectors_both_directions\n    self.assertEqual(raw[f'{prefix}_DTIM__AM'][i,j],dt)\nAssertionError: 0.0 != 3\n\n----------------------------------------------------------------------\nRan 1 test in 0.086s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "primary_mode_not_required",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_primary_mode_required_with_local_feeder",
+      "output": "test_primary_mode_required_with_local_feeder (test_activitysim_transit_skims.TransitTests.test_primary_mode_required_with_local_feeder) ... FAIL\n\n======================================================================\nFAIL: test_primary_mode_required_with_local_feeder (test_activitysim_transit_skims.TransitTests.test_primary_mode_required_with_local_feeder)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 182, in test_primary_mode_required_with_local_feeder\n    self.assertFalse(raw['WLK_LRF_WLK_AVAILABLE__AM'][0,1])\nAssertionError: True is not false\n\n----------------------------------------------------------------------\nRan 1 test in 0.092s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "dwell_classed_wait",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_onboard_dwell_does_not_add_boarding_or_wait",
+      "output": "test_onboard_dwell_does_not_add_boarding_or_wait (test_activitysim_transit_skims.TransitTests.test_onboard_dwell_does_not_add_boarding_or_wait) ... FAIL\n\n======================================================================\nFAIL: test_onboard_dwell_does_not_add_boarding_or_wait (test_activitysim_transit_skims.TransitTests.test_onboard_dwell_does_not_add_boarding_or_wait)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 193, in test_onboard_dwell_does_not_add_boarding_or_wait\n    self.assertEqual(raw['WLK_LOC_WLK_TOTIVT__AM'][0,2],30)\nAssertionError: 25.0 != 30\n\n----------------------------------------------------------------------\nRan 1 test in 0.084s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "frequency_refusal_removed",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_frequency_and_conditional_boarding_refused",
+      "output": "test_frequency_and_conditional_boarding_refused (test_activitysim_transit_skims.TransitTests.test_frequency_and_conditional_boarding_refused) ... FAIL\n\n======================================================================\nFAIL: test_frequency_and_conditional_boarding_refused (test_activitysim_transit_skims.TransitTests.test_frequency_and_conditional_boarding_refused)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 199, in test_frequency_and_conditional_boarding_refused\n    raw,r=self.build(frequency);self.assertEqual(r['status'],'unavailable');self.assertIn('Frequency',r['reason']);self.assertEqual(raw,{})\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'available' != 'unavailable'\n- available\n+ unavailable\n? ++\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.088s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "pickup_ignored",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_pickup_dropoff_restrictions_and_after_midnight",
+      "output": "test_pickup_dropoff_restrictions_and_after_midnight (test_activitysim_transit_skims.TransitTests.test_pickup_dropoff_restrictions_and_after_midnight) ... FAIL\n\n======================================================================\nFAIL: test_pickup_dropoff_restrictions_and_after_midnight (test_activitysim_transit_skims.TransitTests.test_pickup_dropoff_restrictions_and_after_midnight)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 218, in test_pickup_dropoff_restrictions_and_after_midnight\n    raw,r=self.build(no_pickup);self.assertFalse(raw['WLK_LOC_WLK_AVAILABLE__AM'][0,2])\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: True is not false\n\n----------------------------------------------------------------------\nRan 1 test in 0.082s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "dropoff_ignored",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_pickup_dropoff_restrictions_and_after_midnight",
+      "output": "test_pickup_dropoff_restrictions_and_after_midnight (test_activitysim_transit_skims.TransitTests.test_pickup_dropoff_restrictions_and_after_midnight) ... FAIL\n\n======================================================================\nFAIL: test_pickup_dropoff_restrictions_and_after_midnight (test_activitysim_transit_skims.TransitTests.test_pickup_dropoff_restrictions_and_after_midnight)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 222, in test_pickup_dropoff_restrictions_and_after_midnight\n    raw,r=self.build(no_dropoff);self.assertFalse(raw['WLK_LOC_WLK_AVAILABLE__AM'][0,2])\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: True is not false\n\n----------------------------------------------------------------------\nRan 1 test in 0.092s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "transfer_walk_erased",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_cross_stop_transfer_walk_and_wait",
+      "output": "test_cross_stop_transfer_walk_and_wait (test_activitysim_transit_skims.TransitTests.test_cross_stop_transfer_walk_and_wait) ... FAIL\n\n======================================================================\nFAIL: test_cross_stop_transfer_walk_and_wait (test_activitysim_transit_skims.TransitTests.test_cross_stop_transfer_walk_and_wait)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 239, in test_cross_stop_transfer_walk_and_wait\n    self.assertAlmostEqual(raw['WLK_LOC_WLK_WAUX__AM'][0,2],walk)\nAssertionError: 0.0 != 0.18532513373621826 within 7 places (0.18532513373621826 difference)\n\n----------------------------------------------------------------------\nRan 1 test in 0.085s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "fare_expiry_ignored",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_zero_fare_is_measured_and_transfer_expiry_charges_again",
+      "output": "test_zero_fare_is_measured_and_transfer_expiry_charges_again (test_activitysim_transit_skims.TransitTests.test_zero_fare_is_measured_and_transfer_expiry_charges_again) ... FAIL\n\n======================================================================\nFAIL: test_zero_fare_is_measured_and_transfer_expiry_charges_again (test_activitysim_transit_skims.TransitTests.test_zero_fare_is_measured_and_transfer_expiry_charges_again)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 212, in test_zero_fare_is_measured_and_transfer_expiry_charges_again\n    self.assertEqual(raw['WLK_LOC_WLK_FAR__AM'][0,2],5)\nAssertionError: 2.5 != 5\n\n----------------------------------------------------------------------\nRan 1 test in 0.124s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "fare_source_ignored",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_sourced_fare_override_is_explicit",
+      "output": "test_sourced_fare_override_is_explicit (test_activitysim_transit_skims.TransitTests.test_sourced_fare_override_is_explicit) ... FAIL\n\n======================================================================\nFAIL: test_sourced_fare_override_is_explicit (test_activitysim_transit_skims.TransitTests.test_sourced_fare_override_is_explicit)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 260, in test_sourced_fare_override_is_explicit\n    raw,r=self.build();self.assertEqual(raw,{});self.assertIn('sourced',r['reason'])\n                       ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'WLK_LOC_WLK_TOTIVT__EA': array([[nan, 10[50173 chars]e]])} != {}\nDiff is 53285 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.195s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "runtime_guard_removed",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_configuration_and_runtime_guards",
+      "output": "test_configuration_and_runtime_guards (test_activitysim_transit_skims.TransitTests.test_configuration_and_runtime_guards) ... FAIL\n\n======================================================================\nFAIL: test_configuration_and_runtime_guards (test_activitysim_transit_skims.TransitTests.test_configuration_and_runtime_guards)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 251, in test_configuration_and_runtime_guards\n    with self.assertRaisesRegex(ts.TransitUnavailable,'CPython 3.11'):ts.require_runtime()\nAssertionError: TransitUnavailable not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.079s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "mutation": "skim_export_disabled",
+      "expected": "assertion_failure",
+      "verified": true,
+      "exit_code": 1,
+      "test": "test_opt_in_omx_and_custody",
+      "output": "test_opt_in_omx_and_custody (test_activitysim_transit_skims.TransitTests.test_opt_in_omx_and_custody) ... FAIL\n\n======================================================================\nFAIL: test_opt_in_omx_and_custody (test_activitysim_transit_skims.TransitTests.test_opt_in_omx_and_custody)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 353, in test_opt_in_omx_and_custody\n    self.assertEqual(f['WLK_LOC_WLK_TOTIVT__AM'][0,2],2500)\nAssertionError: 0.0 != 2500\n\n----------------------------------------------------------------------\nRan 1 test in 0.202s\n\nFAILED (failures=1)\n"
+    }
+  ],
+  "skipped": 0
+}
