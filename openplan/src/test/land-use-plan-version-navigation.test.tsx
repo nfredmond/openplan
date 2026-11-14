@@ -4,6 +4,13 @@ import Page from "@/app/(app)/land-use-plans/[planId]/page";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/components/models/study-area-picker", () => ({ StudyAreaPicker: () => null }));
+// The page reads the plan's id before mounting the workbench, so a plan the
+// reader cannot see answers 404 (KI-2026-11-14-280). Here the plan is visible.
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => ({
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: "plan" }, error: null }) }) }) }),
+  }),
+}));
 const planId = "11111111-1111-4111-8111-111111111111";
 
 describe("plan version page navigation", () => {

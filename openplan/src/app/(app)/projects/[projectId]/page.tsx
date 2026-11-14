@@ -47,7 +47,6 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
 import { loadRtpHorizonBandsByCycle } from "@/lib/rtp/financial-element-queries";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   loadProjectStageGateBoard,
   type StageGateDecisionQuerySupabaseLike,
@@ -99,6 +98,7 @@ import type {
   WorkspaceRow,
 } from "./_components/_types";
 import { isUuid } from "@/lib/uuid";
+import { loadProjectRecordForRequest } from "./_components/project-record-for-request";
 
 // A pending COLUMN is a pending schema too, and looksLikePendingSchema used to
 // recognise only a pending TABLE. PostgREST answers a select naming a column the
@@ -129,17 +129,16 @@ export default async function ProjectDetailPage({
   const requestedTab = resolvedSearchParams[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The user, the workspace membership and the project row come from one
+  // request-cached read shared with `layout.tsx`, which answers 404 for an
+  // absent project before `loading.tsx` starts the stream.
+  const { user, membership, projectResult } = await loadProjectRecordForRequest(projectId);
 
   if (!user) {
     redirect("/sign-in");
   }
 
-  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
-
-  if (!membership) {
+  if (!membership || !projectResult) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Project workbench"
@@ -151,7 +150,8 @@ export default async function ProjectDetailPage({
     );
   }
 
-  // Read through the caller's RLS client: the projects_read policy already
+  // The project row is read through the caller's RLS client (see
+  // `loadProjectRecordForRequest`): the projects_read policy already
   // restricts this SELECT to workspaces the caller is a member of, so a
   // non-member gets no row and falls through to notFound() below. There is no
   // separate "must equal my CURRENT workspace" check — that older gate stranded
@@ -160,13 +160,6 @@ export default async function ProjectDetailPage({
   // the workspace-per-project fork was removed). Access = membership of the
   // project's own workspace, which RLS enforces; the page scopes every
   // subsequent query to project.workspace_id, not the current one.
-  const projectResult = await supabase
-    .from("projects")
-    .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
-    )
-    .eq("id", projectId)
-    .single();
   const projectData = projectResult.data ?? null;
 
   // A 404 IS A CLAIM, AND A FAILED READ MAY NOT MAKE IT. `.single()` reports
