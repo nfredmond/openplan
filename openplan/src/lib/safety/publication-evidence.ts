@@ -1,5 +1,17 @@
 type Provenance = Record<string, unknown>;
 
+const STAMP = /^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?$/;
+
+/**
+ * A file update as the calendar date the source recorded. Sources such as
+ * CKAN publish stamps with microseconds and no zone; the date part is shown
+ * as recorded, without guessing a zone. Anything else prints as stored.
+ */
+function describeFileUpdateDate(value: string): string {
+  const match = STAMP.exec(value.trim());
+  return match ? match[1] : value;
+}
+
 /** Interpret new and historical publication metadata without changing stored evidence. */
 export function readCrashPublicationEvidence(
   publishedThrough?: string | null,
@@ -16,10 +28,10 @@ export function readCrashPublicationEvidence(
   const retainedProvenance = legacyDate ? { ...provenance, legacyPublishedThrough: legacyDate } : provenance ?? null;
   const updates = Array.isArray(provenance?.resources)
     ? provenance.resources.filter((item): item is Provenance => Boolean(item) && typeof item === "object")
-      .map((item) => `${typeof item.year === "number" ? item.year : "Resource"}: ${typeof item.lastModified === "string" ? item.lastModified : "update date unavailable"}`)
+      .map((item) => `${typeof item.year === "number" ? item.year : "Resource"}: ${typeof item.lastModified === "string" ? describeFileUpdateDate(item.lastModified) : "update date unavailable"}`)
     : [];
   const detail = updates.length > 0 ? `Source file updates: ${updates.join("; ")}.`
-    : legacyDate ? `Recorded file update: ${legacyDate}.` : "Source file update date unavailable.";
+    : legacyDate ? `Recorded file update: ${describeFileUpdateDate(legacyDate)}.` : "Source file update date unavailable.";
   return {
     publishedThrough: null,
     provenance: retainedProvenance,

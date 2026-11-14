@@ -18,6 +18,7 @@ import { describeHighInjuryNetworkUnavailable } from "@/lib/safety/high-injury-n
 import { buildHighInjuryNetworkForIngest, type HighInjuryNetworkSupabaseLike } from "@/lib/safety/high-injury-network-loader";
 import { readSafetyKsiBounds } from "@/lib/safety/ksi-concentrations";
 import { readCachedUsRoadContext } from "@/lib/safety/road-context";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 
 /** Seeded artifacts considered at once. More than this is refused rather than sampled. */
 const MAX_SEEDED_ARTIFACTS = 50;
@@ -26,6 +27,8 @@ const ROAD_CONTEXT_LIMIT = 2000;
 
 const SS4A_ARTIFACT_PROJECTION = "id, report_id, generated_at, metadata_json";
 const SS4A_ROAD_CONTEXT_PROJECTION = "id, road_name, geometry_geojson, source_id, source_vintage";
+/** The name words the engagement claims; the place outline frames the network map. */
+const SS4A_PROJECT_PROJECTION = "id, name, place_geometry_geojson";
 
 async function loadSafetySource(
   client: EvidenceQueryClient,
@@ -150,15 +153,16 @@ export async function loadSs4aEvidenceRecords(
       hinRecompute: { status: "not_attempted" },
       bca: { status: "no_project" },
       engagement: { status: "no_project" },
+      studyArea: { status: "none" },
     };
   }
   const needsSafety = selected.has("hin_map") || selected.has("crash_summary") || selected.has("countermeasures");
   const [safety, bca, engagement, project] = await Promise.all([
     needsSafety ? loadSafetySource(client, { workspaceId, projectId, seedHistory: input.seedHistory }) : Promise.resolve({ status: "absent" } as const),
     selected.has("bca") ? loadProjectBcaRead(client, projectId) : Promise.resolve({ status: "absent" } as const),
-    selected.has("engagement") ? loadProjectEngagementRead(client, projectId) : Promise.resolve({ status: "absent" } as const),
-    selected.has("engagement")
-      ? client.from("projects").select("id, name").eq("id", projectId).eq("workspace_id", workspaceId).maybeSingle()
+    selected.has("engagement") ? loadProjectEngagementRead(client, projectId, workspaceId) : Promise.resolve({ status: "absent" } as const),
+    selected.has("engagement") || selected.has("hin_map")
+      ? client.from("projects").select(SS4A_PROJECT_PROJECTION).eq("id", projectId).eq("workspace_id", workspaceId).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
   ]);
   const hinRecompute = selected.has("hin_map") && safety.status === "ready"
@@ -173,10 +177,15 @@ export async function loadSs4aEvidenceRecords(
       safety,
       hinRecompute,
       bca,
-      engagement: { status: "unreadable", reason: "The linked project could not be read, so its engagement summary was not built." },
+      engagement: selected.has("engagement")
+        ? { status: "unreadable", reason: "The linked project could not be read, so its engagement summary was not built." }
+        : engagement,
+      studyArea: { status: "unreadable" },
     };
   }
-  const projectName = (project.data as { name?: unknown } | null)?.name;
+  const projectRow = project.data as { name?: unknown; place_geometry_geojson?: unknown } | null;
+  const projectName = projectRow?.name;
+  const outline = corridorGeojsonSchema.safeParse(projectRow?.place_geometry_geojson);
   return {
     projectId,
     projectName: typeof projectName === "string" && projectName.trim() ? projectName : null,
@@ -184,5 +193,6 @@ export async function loadSs4aEvidenceRecords(
     hinRecompute,
     bca,
     engagement,
+    studyArea: outline.success ? { status: "ready", geometry: outline.data } : { status: "none" },
   };
 }
