@@ -294,7 +294,9 @@ async function main() {
     await itemRow.waitFor({ timeout: 20000 });
     await itemRow.getByText(/Pending/i).first().waitFor({ timeout: 20000 });
     const moderationReason = 'Synthetic smoke review: public planning feedback checked for inclusion; no actual agency approval.';
-    await itemRow.getByLabel('Moderation notes', { exact: true }).fill(moderationReason);
+    // The field is labeled "Review reason" since the November 14 moderation changes;
+    // the nightly run failed here on the old label, "Moderation notes".
+    await itemRow.getByLabel('Review reason', { exact: true }).fill(moderationReason);
     const [moderationResponse] = await Promise.all([
       page.waitForResponse(
         (response) =>
@@ -317,7 +319,7 @@ async function main() {
     assertEqual(approvedItem.moderation_notes, moderationReason, 'Moderation reason was not retained with the approved item');
     notes.push('Approved the public item through the staff moderation registry and verified durable status.');
     await page.reload({ waitUntil: 'networkidle' });
-    const retainedItemRow = page.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: itemTitle, exact: true }) }).filter({ has: page.getByLabel('Moderation notes', { exact: true }) });
+    const retainedItemRow = page.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: itemTitle, exact: true }) }).filter({ has: page.getByLabel('Review reason', { exact: true }) });
     await retainedItemRow.waitFor({ timeout: 20000 });
     await retainedItemRow.locator('[data-slot=badge]').getByText('Approved', { exact: true }).waitFor({ timeout: 20000 });
     await screenshot(page, 'local-engagement-report-handoff-02-moderation-approved');
