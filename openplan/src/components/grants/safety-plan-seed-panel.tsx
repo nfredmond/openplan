@@ -18,6 +18,14 @@ const SS4A_SECTION_TITLES = new Map(
   (findGrantProgramCatalogEntry("ss4a")?.applicationSections ?? []).map((section) => [section.key, section.title]),
 );
 
+/** "Nov 3, 2026, 5:42 AM" in the reader's time zone; the stamp itself if it is not a date. */
+function formatGeneratedAt(value: string | null): string {
+  if (!value) return "Date not recorded";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  return parsed.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
 /** Selection and apply are explicit; a preview never writes application content. */
 export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
   opportunityId: string; onApplied: () => Promise<void>;
@@ -94,7 +102,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
         onChange={(event) => { setArtifactId(event.target.value); setPreview(null); setMessage(null); setError(null); }}>
         <option value="">Select a generated report</option>
         {artifacts.map((artifact) => <option key={artifact.id} value={artifact.id}>
-          {artifact.reportTitle} · {artifact.sourceVersion === "v2" ? "Input comparison v2, notice mapping unavailable" : artifact.sourceVersion === "invalid" ? "Unsupported or malformed snapshot" : "Safety plan v1"} · {artifact.generatedAt ?? "Date not recorded"} · {artifact.id}
+          {artifact.reportTitle} · {artifact.sourceVersion === "v2" ? "Input comparison v2, notice mapping unavailable" : artifact.sourceVersion === "invalid" ? "Unsupported or malformed snapshot" : "Safety plan v1"} · {formatGeneratedAt(artifact.generatedAt)} · {artifact.id}
         </option>)}
       </select>
     </label>

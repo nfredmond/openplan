@@ -421,14 +421,19 @@ describe("SS4A appendices A, C and the crash sentences (D14, D15, D17, D18)", ()
     expect(evidence.caveats.join(" ")).not.toContain("Person-level records were not retrieved");
   });
 
-  it("lays appendix tables out at a fixed width and wraps long cells (D17)", () => {
+  it("breaks long URLs, ids and hashes anywhere and words only at spaces or hyphens (D17, KI-2026-11-14-114)", () => {
+    const records = completeEvidenceRecords();
+    records.safety = { status: "ready", snapshot: evidenceSnapshot({}, LONG_URL_COUNTERMEASURES), otherSeededArtifactCount: 0 };
     const html = buildGrantApplicationHtml({
       opportunity: { id: EVIDENCE_IDS.opportunity, title: "SS4A application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
       programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-01T00:00:00.000Z",
-      evidenceAppendices: buildSs4aEvidenceAppendices(completeEvidenceRecords(), new Set(SS4A_APPENDIX_KEYS)),
+      evidenceAppendices: buildSs4aEvidenceAppendices(records, new Set(SS4A_APPENDIX_KEYS)),
     });
-    expect(html).toContain(".appendix table { table-layout: fixed; }");
-    expect(html).toContain(".appendix th, .appendix td { overflow-wrap: anywhere; }");
+    expect(html).toContain(".appendix th, .appendix td { padding: 6px 8px; overflow-wrap: normal; word-break: normal; }");
+    expect(html).not.toMatch(/\.appendix th, \.appendix td \{[^}]*anywhere/);
+    expect(html).not.toContain('<td class="wrap-anywhere">');
+    expect(html).toContain(`<td><span class="wrap-anywhere">${getSafetyCountermeasure("lighting")!.sourceUrl}</span></td>`);
+    expect(html).toContain("<td>Enhanced Delineation for Horizontal Curves</td>");
   });
 });
 
@@ -506,6 +511,18 @@ function wordsOffPage(file: string): string[] {
     }
   }
   return offPage;
+}
+
+/** Every word poppler placed on pages `from` onward, in order, lowercased, without edge punctuation. */
+function printedWords(file: string, from = 1): string[] {
+  const xml = execFileSync(tool("pdftotext"), ["-bbox", "-f", String(from), file, "-"]).toString();
+  return [...xml.matchAll(/<word [^>]*>([^<]*)<\/word>/g)].map((word) => plainWord(word[1]));
+}
+function wordsFrom(file: string, from: number): Set<string> {
+  return new Set(printedWords(file, from));
+}
+function plainWord(word: string): string {
+  return word.toLowerCase().replace(/&amp;/g, "&").replace(/&apos;|&#39;/g, "'").replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, "");
 }
 
 function pageWith(pageText: string[], needle: RegExp): number {
@@ -593,5 +610,29 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
       expect(joined, url).toContain(url.replace(/-/g, ""));
     }
     expect(wordsOffPage(doc.file)).toEqual([]);
+    // KI-2026-11-14-114: a fixed-width column split "Delineatio n". Words in
+    // the headers and the countermeasure text break only at spaces or hyphens.
+    const printed = wordsFrom(doc.file, tablePage);
+    const table = buildSs4aEvidenceAppendices(records, new Set(["countermeasures"] as const)).find((appendix) => appendix.key === "countermeasures")!.table!;
+    const words = [...table.headers, ...table.rows.flatMap((row) => row.slice(0, 5))]
+      .flatMap((text) => text.split(/[\s-]+/)).map(plainWord).filter(Boolean);
+    expect(words.filter((word) => !printed.has(word))).toEqual([]);
+    // The same across the evidence appendices, the index included: a printed
+    // word is a word of the source text, or a piece of a long URL, id or hash,
+    // which may break anywhere. (Letter-spaced cover headings read back as
+    // single letters, so the check starts at the appendices.)
+    const text = html.replace(/<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ")
+      .replace(/&amp;/g, "&").replace(/&#39;/g, "'");
+    const tokens = text.split(/\s+/);
+    const vocabulary = new Set([...tokens, ...tokens.flatMap((token) => token.split("-")), "ss4a-countermeasures", "page", "of"].map(plainWord));
+    const longRuns = (text.match(/\S{20,}/g) ?? []).map((run) => run.toLowerCase().replace(/-/g, ""));
+    const all = printedWords(doc.file);
+    const start = all.findIndex((word, index) => word === "evidence" && all[index + 1] === "appendices");
+    const end = all.findIndex((word, index) => word === "provenance" && all[index + 1] === "appendix");
+    expect(start).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(start);
+    const fragments = all.slice(start, end).filter((word) => word && !vocabulary.has(word)
+      && !/^\d+$/.test(word) && !longRuns.some((run) => run.includes(word.replace(/-/g, ""))));
+    expect(fragments).toEqual([]);
   }, 120_000);
 });

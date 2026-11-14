@@ -18,6 +18,14 @@ beforeEach(() => {
 const response = (data: unknown, status = 200) => ({ ok: status < 400, status, json: async () => data });
 
 describe("explicit Safety artifact preview and apply UI", () => {
+  // KI-2026-11-14-114: the picker printed "2026-11-03T05:42:49.644+00:00".
+  it("names each report's generation time as a plain date and time", async () => {
+    sourcesMock.mockResolvedValue(response({ artifacts: [{ ...artifacts[0], generatedAt: "2026-11-03T17:42:49.644+00:00" }], nextCursor: null, requiresProject: false }));
+    render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
+    const option = await screen.findByRole("option", { name: /Example Safety report/ });
+    expect(option.textContent).toMatch(/ · Nov 3, 2026, \d{1,2}:42 (AM|PM) · /);
+    expect(option.textContent).not.toContain("2026-11-03T");
+  });
   it("shows v2 as a recognized input comparison and displays the missing-notice refusal without an apply action", async () => {
     sourcesMock.mockResolvedValue(response({ artifacts: artifacts.map(a => ({ ...a, sourceVersion: "v2" })), nextCursor: null, requiresProject: false }));
     fetchMock.mockResolvedValue(response({ error: SAFETY_V2_NOFO_REFUSAL }, 422));

@@ -16,7 +16,8 @@ const safety: BcaSafetyEvidenceRead = { status: "read", plansNotShown: 0, plans:
     fatalCrashes: 3, seriousInjuryCrashes: null, fatalities: 4, fatalCrashesWithoutPersonCount: 0 }],
 }] };
 const props = { projectId: project, projectName: "Synthetic project", userId: user, canSave: true, models: [],
-  modelReadFailed: false, projectPlace: { status: "available" as const, snapshot: bcaProjectPlace() }, safety };
+  modelReadFailed: false, projectPlace: { status: "available" as const, snapshot: bcaProjectPlace() }, safety,
+  latestSaved: { status: "none" as const } };
 const stored = () => JSON.parse(sessionStorage.getItem(key)!).document;
 
 beforeEach(() => sessionStorage.clear());

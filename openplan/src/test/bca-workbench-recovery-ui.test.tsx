@@ -9,7 +9,7 @@ const user = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const id = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 const key = `openplan:bca:${user}:${project}`;
 const props = {projectId:project,projectName:"Synthetic project",userId:user,canSave:true,models:[],modelReadFailed:false,
-  projectPlace: { status: "available" as const, snapshot: bcaProjectPlace() }};
+  projectPlace: { status: "available" as const, snapshot: bcaProjectPlace() }, latestSaved: { status: "none" as const }};
 beforeEach(() => sessionStorage.clear());
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 it("keeps unfinished edits and all evidence through unmount and reload", async () => {
