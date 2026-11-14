@@ -265,10 +265,17 @@ class VerifyExtractTest(unittest.TestCase):
             path = self.make_tar(root, self.add_capture)
             out = root / "out"
             out.mkdir()
-            with mock.patch.object(verify_capture.tarfile, "data_filter", create=True),                     mock.patch.object(verify_capture.tarfile, "open", OldPythonTarFile.open):
-                del verify_capture.tarfile.data_filter
-                with verify_capture.tarfile.open(path) as tar:
-                    verify_capture.extract_capture(tar, out, "20261115T120000Z")
+            # Hide data_filter if this Python has it; bookworm's 3.11.2 never did.
+            saved = getattr(tarfile, "data_filter", None)
+            if saved is not None:
+                del tarfile.data_filter
+            try:
+                with mock.patch.object(verify_capture.tarfile, "open", OldPythonTarFile.open):
+                    with verify_capture.tarfile.open(path) as tar:
+                        verify_capture.extract_capture(tar, out, "20261115T120000Z")
+            finally:
+                if saved is not None:
+                    tarfile.data_filter = saved
             self.assertEqual((out / "20261115T120000Z" / "storage" / "maps" / "a.zip").read_bytes(), b"zip")
 
     def test_refuses_a_symlink_member(self):
