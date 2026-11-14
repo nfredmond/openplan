@@ -106,7 +106,7 @@ async function manifestCounts(snapshot: EngagementReviewSnapshot): Promise<Count
 /** The public response page, rendered from the public copy's records, read as a resident reads it. */
 function publicPageCounts(snapshot: EngagementReviewSnapshot): Counts {
   const en = resolvePortalLocale({ requested: "en", acceptLanguage: null });
-  const index = emptyPortalTranslationIndex();
+  const index = emptyPortalTranslationIndex("en");
   const text = (id: string, field: string, value: string) => resolveOperatorText(index, { entity: "close_loop_entry", id, field }, value);
   const entries: PublicCloseLoopEntry[] = snapshot.responses.map((row) => ({
     id: String(row.id), themeTitle: String(row.theme_title), youSaid: String(row.you_said), weDid: String(row.we_did), categoryLabel: null,

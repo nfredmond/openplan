@@ -199,7 +199,7 @@ function campaignResponseSourcesText(snapshot: EngagementReviewSnapshot, ids: un
 }
 
 /** A saved snapshot's review counts. A response counts as published when it has a publication time. */
-export function reviewSnapshotCounts(snapshot: EngagementReviewSnapshot): EngagementReviewCounts {
+function reviewSnapshotCounts(snapshot: EngagementReviewSnapshot): EngagementReviewCounts {
   return countEngagementReview({
     items: snapshot.items,
     responses: snapshot.responses.map((row) => ({ sourceItemIds: row.source_item_ids, published: row.published_at != null && row.published_at !== "" })),
@@ -215,7 +215,7 @@ const REVIEW_STATE_MANIFEST_KEY: Record<EngagementReviewState, string> = { appro
  * holds approved contributions only, and a status filter holds one state, so
  * those files say what they leave out instead of printing a zero for it.
  */
-export function reviewFileCounts(snapshot: EngagementReviewSnapshot) {
+function reviewFileCounts(snapshot: EngagementReviewSnapshot) {
   const counts = reviewSnapshotCounts(snapshot);
   const chosen = snapshot.scope === "public" ? "approved" : ENGAGEMENT_REVIEW_STATES.find((state) => state === snapshot.filters.status);
   const states = chosen ? [chosen] : REVIEW_STATE_READING_ORDER;
@@ -238,7 +238,7 @@ const contributionNoun = (count: number) => count === 1 ? "contribution" : "cont
  * ("Approved 3 contributions."), so a reader and a text search of the PDF find
  * the same phrase. A table set the label and its number a column apart.
  */
-export function reviewCountSentences(snapshot: EngagementReviewSnapshot): string[] {
+function reviewCountSentences(snapshot: EngagementReviewSnapshot): string[] {
   const file = reviewFileCounts(snapshot);
   const { counts } = file;
   return [

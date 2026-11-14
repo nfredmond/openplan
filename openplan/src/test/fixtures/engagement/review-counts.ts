@@ -12,6 +12,9 @@
 import { createHash } from "node:crypto";
 import type { EngagementReviewSnapshot } from "@/lib/engagement/review-export";
 
+/** The saved format without private decision history: what a public copy and an earlier internal copy use. */
+export type ReviewCountSnapshot = Extract<EngagementReviewSnapshot, { schema: 1 }>;
+
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 
 export const REVIEW_COUNT_IDS = {
@@ -40,7 +43,7 @@ export const REVIEW_COUNT_EXPECTED = {
 } as const;
 
 /** The internal copy of the campaign's review records. */
-export function internalReviewCountSnapshot(): EngagementReviewSnapshot {
+export function internalReviewCountSnapshot(): ReviewCountSnapshot {
   const ids = REVIEW_COUNT_IDS;
   return {
     schema: 1, capturedAt: "2026-11-14T18:00:00Z", scope: "internal", filters: {},
@@ -68,7 +71,7 @@ export function internalReviewCountSnapshot(): EngagementReviewSnapshot {
  * it: approved contributions without review notes, and published responses
  * whose every source is in the copy.
  */
-export function publicReviewCountSnapshot(): EngagementReviewSnapshot {
+export function publicReviewCountSnapshot(): ReviewCountSnapshot {
   const internal = internalReviewCountSnapshot();
   const items = internal.items.filter((row) => row.status === "approved");
   const kept = new Set(items.map((row) => row.id));
