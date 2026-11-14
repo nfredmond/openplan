@@ -24,6 +24,53 @@ tests had, and he is not a repeatable instrument.
   required to name the run it came from. Cheap, and the only thing that keeps a
   fixed problem fixed.
 
+## First proven job: one repeatable journey
+
+`first-job-journey.js` drives one place through the whole first job on screen:
+sign up, confirm by email, project, study place, crash retrieval, high-injury
+network, safety plan report, countermeasures, a saved BCA from stored crashes,
+a campaign with public comments, moderation, an approved staff review, the
+report PDF, SS4A tracked, seeded, six sections finalized, a budget document
+attached, the SS4A PDF, sign out, then a second account asks for the first
+account's report and application. It uses `puppeteer-core` and axe-core 4.11.1
+from `openplan/node_modules` (axe-core is not a declared dependency). It never
+uses a service-role key, never writes to the database and never calls an API in
+place of a screen step; it only reads responses the screens request, for ids.
+
+- `--mode rehearsal` runs on a local origin only (the local guard in
+  `harness-env.js`). `--mode proof` runs on the hosted proof origin only
+  (`PROOF_ORIGIN` in `openplan/scripts/ops/capability-evidence.mjs`) and also
+  needs `--inputs`, `--budget-file` and `--expected-commit`, so rehearsal values
+  never enter a proof.
+- Confirmation: the link is never an argument. When sign-up asks for
+  confirmation the script waits for the file named by `--confirm-link-file`
+  (and `--second-confirm-link-file` for the second account), opens the link and
+  records only a SHA-256 of its token.
+- Each key screen is checked at 1440 and 390 px, light and dark: screenshot,
+  console errors (scrubbed), page-level horizontal scroll and serious or
+  critical axe nodes (tags wcag2a, wcag2aa, wcag21a, wcag21aa).
+- Each PDF: SHA-256, bytes, pages, DRAFT stamp, the page of each of the five
+  items (text by `pdftotext`, the map by `pdftoppm` and a highlight-red pixel
+  count), and the page and line of any email address.
+- It stops at the first step whose expected state is missing and writes
+  `journey-<role>.json` with the furthest step passed. A step never passes by
+  skipping.
+
+```bash
+# rehearsal, from qa-harness/ (local stack and dev server already running)
+node first-job-journey.js --mode rehearsal --base-url http://localhost:3450 \
+  --place-query "Sierra County, CA" --place-kind county --role california-county \
+  --email journey-1@openplan.test --second-email journey-2@openplan.test \
+  --confirm-link-file ../../journey-confirm-1.txt --second-confirm-link-file ../../journey-confirm-2.txt \
+  --out ../../journey-runs/sierra-1
+# proof: same, with --mode proof --base-url <the hosted origin> --inputs <sourced inputs JSON>
+#   --budget-file <budget document> --expected-commit <40-character commit>
+# assemble three journeys into one record for the evidence checker
+node first-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 hex> \
+  --base-url <the hosted origin> --out record.json
+npm run check:first-job-journey   # unit tests; the PDF tests need Poppler
+```
+
 ## Current scripts
 - `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, verifies the denied session still loads its own workspace URL afterward, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-local-ui-ux-settle-capture.js` — read-only local Playwright capture harness for the UI/UX settle route manifest. It requires an already-authenticated local Playwright storage state, refuses production/Vercel URLs, captures desktop/mobile screenshots for populated local routes, and ledgers fixture-required routes instead of accepting empty-state proof.
