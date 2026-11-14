@@ -20,6 +20,24 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Human feedback never gates OpenPlan, permanently:** on November 13, 2026 Nathaniel
+made the October 17 acceptance policy permanent; direction reviews do not reopen it.
+Agent-run planner, operator and public-participant checks are the acceptance evidence
+for milestones, merges, releases and v1, and each record names the executor. The
+milestones, roadmap, contract, capability matrix, requirements ledger, handoff and
+release policy no longer require real planners, practitioner review, human observation
+or comparative human trials; each such line now names the agent-run task, and a
+screen-reader check is an agent-driven NVDA or VoiceOver run. Agency adoption,
+spending and publication decisions, exact-payload approvals, legal determinations and
+staff moderation stay with people. Under his second November 13 direction, agents make
+product, engineering, scientific and sequencing decisions themselves with a recorded
+reason and a fresh-context review, and do not ask him for decisions or check-ins; the
+fixed limits (no paid services or spending, no shared hosted AI keys, no printed or
+committed credentials, a fresh capture before any hosted migration) are written into
+`AGENTS.md`. A new test (`human-feedback-never-gates.test.ts`) fails if a gate or a
+request for his decision returns to the active guidance. No statuses change; no
+migration.
+
 **Small text is easier to read (KI-2026-11-14-110, KI-2026-11-14-111):** secondary text is slightly darker in the Cartographic, Slate, Harbor, Meadow and Plum light palettes, so labels on tinted and secondary surfaces meet the 4.5:1 contrast standard. Inactive tab labels, the "Return to project" link, the public portal's "map cannot be shown" notice and several chips whose text matched their background are now readable. Dark mode, Signal, the accent colours and the status colours are unchanged. No migration.
 **Safety to report, and single-comment review (KI-2026-11-14-020 to -022):** approving or rejecting one comment now asks for a "Review reason", the name the refusal message uses. A new report saves the crash data chosen in the new-report dialog, so it no longer needs a second save. From Safety, a project with no report gets "Create safety action plan report", which makes the report with this crash pull chosen and stays on Safety. Smaller wording fixes on Safety, the project page, the dashboard, a campaign template and the SS4A seed preview. No migration.
 **Benefit-cost analysis offers Safety crashes (KI-2026-11-14-030, -032):** the Evidence tab lists each saved safety plan and the recorded fatal and serious-injury crashes on its treated segments by year, with source and coverage. A planner adds a safety stream with a crash modification factor and its CMF Clearinghouse ID; nothing is added without that step. The Safety page and grant application card link to the analysis, and the Project place panel shows plain dates. No migration.
