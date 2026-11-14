@@ -9,6 +9,7 @@ import { buildGuidedComparisonResults } from "@/lib/models/guided-comparison-res
 import type { BcaModelEvidence } from "@/lib/bca/workbench/model-evidence";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { BCA_PROJECT_PROJECTION, readBcaProjectPlace } from "@/lib/bca/workbench/project-place";
+import { loadLatestBcaVersion, type BcaLatestVersionClient } from "@/lib/bca/workbench/latest-version";
 import { loadBcaSafetyPlanOffers, type BcaSafetySupabaseLike } from "@/lib/safety/bca-evidence-loader";
 export const metadata = moduleMetadata("Benefit-cost analysis");
 export default async function BcaPage({
@@ -42,6 +43,7 @@ export default async function BcaPage({
     !canAccessWorkspaceAction("programs.read", membership.data.role)
   )
     notFound();
+  const latestSaved = await loadLatestBcaVersion(supabase as unknown as BcaLatestVersionClient, projectId);
   const reads = new ReadFailureLog();
   const sets = await supabase
     .from("scenario_sets")
@@ -94,6 +96,7 @@ export default async function BcaPage({
       projectId={projectId}
       projectName={project.name}
       projectPlace={readBcaProjectPlace(projectId, project)}
+      latestSaved={latestSaved}
       userId={user.id}
       canSave={canAccessWorkspaceAction("programs.write", membership.data.role)}
     />

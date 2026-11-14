@@ -2,7 +2,8 @@
 import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { bcaDraftSchema, bcaRetainedSaveSchema, readBcaDraft } from "@/lib/bca/workbench/draft";
+import { bcaDraftSchema, bcaRetainedSaveSchema, readBcaDraft, type BcaDraftBasis } from "@/lib/bca/workbench/draft";
+import { formatBcaSavedAt, type BcaLatestVersionRead } from "@/lib/bca/workbench/latest-version";
 import {
   bcaDocumentSchema,
   type BcaDocument,
@@ -63,6 +64,25 @@ function PlaceLines({ heading, snapshot }: { heading: string; snapshot: BcaProje
     <p>Jurisdiction: {entries.length ? entries.map(entry => entry.label).join("; ") : "not recorded"}.</p>
   </div>;
 }
+/** Which analysis is open, in plain words, and the choice a blank one needs. */
+function OpenAnalysisLine({ basis, recovered, latest, blankUnchosen, disabled, onOpenLatest }: {
+  basis: BcaDraftBasis; recovered: boolean; latest: BcaLatestVersionRead; blankUnchosen: boolean;
+  disabled: boolean; onOpenLatest: () => void;
+}) {
+  const openLatest = latest.status === "found" && <button className="underline" disabled={disabled} onClick={onOpenLatest}>Open latest saved version</button>;
+  if (blankUnchosen) return <div role="alert" className="space-y-1 rounded border border-amber-600 p-3 text-sm">
+    <p>{latest.status === "failed" ? "Saved versions could not be read. That does not mean none exist."
+      : latest.status === "unreadable" ? `The latest saved version${latest.createdAt ? ` (${formatBcaSavedAt(latest.createdAt)})` : ""} cannot be opened here.`
+      : `This project has a version saved ${latest.status === "found" ? formatBcaSavedAt(latest.createdAt) : ""}.`}</p>
+    <p>{latest.status === "found" ? "Saving is off until you open it or start a blank analysis." : "Saving is off until you reload or start a blank analysis."} {openLatest}</p>
+  </div>;
+  const from = basis.kind === "saved" ? `the version saved ${formatBcaSavedAt(basis.savedAt)}` : null;
+  const newer = latest.status === "found" && !(basis.kind === "saved" && basis.id === latest.id);
+  return <p className="text-sm">
+    {recovered ? `Open: this tab's draft${from ? `, started from ${from}` : ""}.` : from ? `Open: ${from}.` : "Open: a blank analysis."}
+    {newer && <> Latest saved: {formatBcaSavedAt(latest.createdAt)}. {openLatest}</>}
+  </p>;
+}
 export function BcaWorkbench({
   projectId,
   projectName,
@@ -71,6 +91,7 @@ export function BcaWorkbench({
   models,
   modelReadFailed,
   projectPlace,
+  latestSaved,
   safety = { status: "read", plans: [], plansNotShown: 0 },
 }: {
   models: BcaModelEvidence[];
@@ -82,11 +103,17 @@ export function BcaWorkbench({
   userId: string;
   canSave: boolean;
   projectPlace: BcaProjectPlaceRead;
+  /** The project's latest saved version. With no draft in this tab, it opens. */
+  latestSaved: BcaLatestVersionRead;
 }) {
   const {confirm,confirmDialog}=useConfirmDialog();
   const [currentPlace, setCurrentPlace] = useState(projectPlace);
-  const [doc, setDoc] = useState(() => newBcaDocument(projectId,
-    projectPlace.status === "available" ? projectPlace.snapshot : undefined));
+  const [latest, setLatest] = useState(latestSaved);
+  const [doc, setDoc] = useState(() => latestSaved.status === "found" ? latestSaved.document
+    : newBcaDocument(projectId, projectPlace.status === "available" ? projectPlace.snapshot : undefined));
+  const [basis, setBasis] = useState<BcaDraftBasis>(() => latestSaved.status === "found"
+    ? { kind: "saved", id: latestSaved.id, savedAt: latestSaved.createdAt } : { kind: "blank" });
+  const [recovered, setRecovered] = useState(false);
   const [tab, setTab] = useState<(typeof tabs)[number]>(tabs[0]);
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
@@ -106,6 +133,8 @@ export function BcaWorkbench({
         if (restored.document) setDoc(restored.document);
         else if (restored.pending) setDoc(restored.pending.document);
         if (restored.pending) setPending(restored.pending);
+        setBasis(restored.basis);
+        setRecovered(true);
         if (restored.unreadable) {
           setStorageProblem({raw});
           setNotice("Part of this tab's saved draft cannot be read. The original remains preserved. Download it before resuming draft storage.");
@@ -120,15 +149,40 @@ export function BcaWorkbench({
   useEffect(() => {
     if (!loaded || storageProblem) return;
     try {
-      sessionStorage.setItem(key, JSON.stringify({ document: doc, pending }));
+      sessionStorage.setItem(key, JSON.stringify({ document: doc, pending, basis }));
     } catch {
       setNotice(
         "Browser draft storage is unavailable. Download analysis JSON before leaving this page.",
       );
     }
-  }, [doc, pending, key, loaded, storageProblem]);
+  }, [doc, pending, basis, key, loaded, storageProblem]);
   const parsed = bcaDocumentSchema.safeParse(doc);
   const placeReview = bcaPlaceReview(doc, currentPlace);
+  // A blank analysis nobody chose may not replace saved work: the report and
+  // the SS4A appendix print the latest saved version.
+  const blankUnchosen = basis.kind === "blank" && latest.status !== "none";
+  function open(next: BcaDocument, nextBasis: BcaDraftBasis) {
+    setDoc(next);
+    setBasis(nextBasis);
+    setRecovered(false);
+  }
+  async function openLatest() {
+    if (latest.status !== "found" || pending) return;
+    if (!await confirm({headline:"Open the latest saved version?",consequence:"It replaces the analysis open in this tab. Download analysis JSON first to keep unsaved edits.",confirmLabel:"Open saved version"})) return;
+    open(latest.document, { kind: "saved", id: latest.id, savedAt: latest.createdAt });
+    setTab(tabs[0]);
+    setNotice(`Opened the version saved ${formatBcaSavedAt(latest.createdAt)}.`);
+  }
+  async function startBlank() {
+    if (pending) return;
+    if (!await confirm({headline:"Start a blank analysis?",consequence:latest.status === "none"
+      ? "It replaces the analysis open in this tab."
+      : "If you save it, reports print it instead of the saved analysis. Saved versions stay in history.",
+    confirmLabel:"Start blank"})) return;
+    open(newBcaDocument(projectId, currentPlace.status === "available" ? currentPlace.snapshot : undefined), { kind: "other" });
+    setTab(tabs[0]);
+    setNotice("Started a blank analysis.");
+  }
   const set = <K extends keyof BcaDocument>(k: K, v: BcaDocument[K]) =>
     setDoc({ ...doc, [k]: v });
   async function history(older = false) {
@@ -157,6 +211,10 @@ export function BcaWorkbench({
   }
   async function save() {
     if (!canSave || busy || storageProblem) return;
+    if (!pending && blankUnchosen) {
+      setNotice("Open the saved version or start a blank analysis before saving.");
+      return;
+    }
     if (!pending && placeReview.status !== "matched-at-read") {
       setNotice("Review the project place for a new version before saving.");
       return;
@@ -173,7 +231,7 @@ export function BcaWorkbench({
     try {
       sessionStorage.setItem(
         key,
-        JSON.stringify({ document: doc, pending: request }),
+        JSON.stringify({ document: doc, pending: request, basis }),
       );
     } catch {
       setNotice(
@@ -201,6 +259,9 @@ export function BcaWorkbench({
       )
         throw new Error("Save reply did not match the request.");
       setPending(null);
+      setBasis({ kind: "saved", id: request.id, savedAt: payload.version.created_at });
+      setRecovered(false);
+      setLatest({ status: "found", id: request.id, createdAt: payload.version.created_at, document: request.document });
       setNotice(
         `Saved an immutable version at ${new Date(payload.version.created_at).toLocaleString("en-US")}. Further edits create a new version.`,
       );
@@ -276,7 +337,7 @@ export function BcaWorkbench({
       <div className="flex flex-wrap gap-2">
         <button
           className={buttonClass}
-          disabled={busy || !!storageProblem || !canSave || (!pending && (!parsed.success || placeReview.status !== "matched-at-read"))}
+          disabled={busy || !!storageProblem || !canSave || (!pending && (blankUnchosen || !parsed.success || placeReview.status !== "matched-at-read"))}
           onClick={save}
         >
           {pending ? "Retry retained save" : "Save a version"}
@@ -314,7 +375,7 @@ export function BcaWorkbench({
             if (
               await confirm({headline:"Replace this draft with a synthetic example?",consequence:"Download your current analysis first if needed. Saved project versions remain available.",confirmLabel:"Load the example"})
             ) {
-              setDoc(exampleBcaDocument(projectId));
+              open(exampleBcaDocument(projectId), { kind: "other" });
               setNotice(
                 "Synthetic training example loaded. No project evidence or application validity is asserted.",
               );
@@ -322,6 +383,13 @@ export function BcaWorkbench({
           }}
         >
           Try a synthetic example
+        </button>
+        <button
+          className={buttonClass}
+          disabled={!!pending || busy}
+          onClick={() => void startBlank()}
+        >
+          Start a blank analysis
         </button>
         <input
           ref={file}
@@ -341,7 +409,7 @@ export function BcaWorkbench({
                 throw new Error(
                   "This file belongs to a different project. Open that project's analysis.",
                 );
-              setDoc(next);
+              open(next, { kind: "other" });
               if (retained.success) setPending(retained.data);
               setNotice(retained.success ? "Retained save restored. Retry sends its original identifier and exact analysis. Editing remains paused." :
                 "Imported inputs. Calculations and review checks use the current engine.",
@@ -362,6 +430,8 @@ export function BcaWorkbench({
           ? ""
           : "Your workspace role permits reading and local analysis, but not saving project records."}
       </p>
+      {loaded && <OpenAnalysisLine basis={basis} recovered={recovered} latest={latest}
+        blankUnchosen={blankUnchosen} disabled={!!pending || busy} onOpenLatest={() => void openLatest()} />}
       {notice && (
         <p
           role="status"
@@ -945,7 +1015,7 @@ export function BcaWorkbench({
                     );
                     return;
                   }
-                  setDoc(p.data);
+                  open(p.data, { kind: "saved", id: v.id, savedAt: v.created_at });
                   setTab(tabs[0]);
                   setNotice("Loaded a retained version as a local draft.");
                 }}
