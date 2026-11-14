@@ -390,7 +390,8 @@
               "page": { "type": "integer", "minimum": 1 },
               "method": { "enum": ["pdftotext", "page-image"] },
               "text": { "type": "string", "minLength": 1 },
-              "imageSha256": { "$ref": "#/$defs/sha256" }
+              "imageSha256": { "$ref": "#/$defs/sha256" },
+              "pixelSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "page-image items: SHA-256 of the page as binary PPM, rendered by Poppler's pdftoppm at 72 dpi (-singlefile, no -png; openplan/scripts/lib/poppler-pixels.mjs). The checker renders the page again and refuses a different hash. Optional: the first proven job's record predates it; the journey writes it from then on. imageSha256 hashes the PNG, whose bytes differ between Poppler builds, and is not recomputed." }
             }
           }
         }

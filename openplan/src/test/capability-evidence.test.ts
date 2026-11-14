@@ -9,11 +9,14 @@ import { describe, expect, it } from "vitest";
 import { normalizePlaceGeoid } from "@/lib/api/place-geographies";
 import { scrubText } from "@/lib/observability/error-report";
 import { stripSourceComments } from "./helpers/source-text";
+import { ppmWithRed } from "./helpers/ppm";
 import {
+  pdftoppmPagePpm,
   pdftotextPages,
   validateCapabilityEvidence,
   validateProvenJobRecord,
 } from "../../scripts/ops/capability-evidence.mjs";
+import { MIN_RED_PIXELS, analyzePpm } from "../../scripts/lib/poppler-pixels.mjs";
 import { pdfToolVersion } from "../../scripts/lib/poppler-text.mjs";
 
 const root = mkdtempSync(join(tmpdir(), "openplan-capability-evidence-"));
@@ -103,12 +106,15 @@ describe("evidence behind proven capability cells", () => {
 // The committed synthetic example is the base fixture, so the example a
 // journey script copies is the one the checker accepts. Its "PDFs" are text
 // files with a %PDF- first line and form-feed page breaks, read by a fake
-// reader; the real pdftotext reader has its own test below.
+// reader; the real pdftotext reader has its own test below. Their map page
+// is "rendered" by a fake that returns a small PPM with enough highlight red;
+// the real pdftoppm renderer has its own test below too.
 const EXAMPLE = JSON.parse(
   readFileSync(fileURLToPath(new URL("../../../schemas/examples/proven_job_record.v1.synthetic.json", import.meta.url)), "utf8"),
 );
 const jobRoot = mkdtempSync(join(tmpdir(), "openplan-proven-job-"));
 const fakePdfPages = (path: string) => readFileSync(path, "utf8").replace(/^[^\n]*\n/, "").split("\f");
+const fakeRenderPage = () => ppmWithRed(100);
 
 // The headings and map-page words the first job's definition names
 // (itemHeadings, mapPageText), one heading to a line as the exports print them.
@@ -138,7 +144,7 @@ for (const entry of EXAMPLE.journeys) {
 type Json = any;
 const proven = (): Json => structuredClone(EXAMPLE);
 const journey = (record: Json, role: string) => record.journeys.find((entry: Json) => entry.role === role);
-const check = (record: Json) => validateProvenJobRecord(record, { repoRoot: jobRoot, readPdfPages: fakePdfPages });
+const check = (record: Json) => validateProvenJobRecord(record, { repoRoot: jobRoot, readPdfPages: fakePdfPages, renderPdfPage: fakeRenderPage });
 
 /** Rewrite one PDF under a new name and re-pin its hash and size, so only the content rule under test can refuse it. */
 function rewritePdf(record: Json, role: string, kind: string, text: string) {
@@ -341,6 +347,68 @@ describe("the proven job record checker", () => {
   });
 });
 
+// Lane 49 (KI-2026-11-14-303): the checker renders each map item's page and
+// counts its highlight-red pixels with the journey's rule and threshold. These
+// cases change verdicts main's checker gives, so they are not in a case table
+// that proven-job-checker-equivalence.test.ts compares.
+describe("the map item's page is rendered and counted", () => {
+  const withRenderer = (record: Json, renderPdfPage: (path: string, page: number) => Uint8Array) =>
+    validateProvenJobRecord(record, { repoRoot: jobRoot, readPdfPages: fakePdfPages, renderPdfPage });
+  const map = (record: Json, role: string, kind: string) =>
+    journey(record, role).pdfs.find((entry: Json) => entry.kind === kind).items.find((entry: Json) => entry.item === "high-injury-map");
+
+  it("renders each PDF's map page once, by the PDF's path and the item's page", () => {
+    const calls: Array<[string, number]> = [];
+    withRenderer(proven(), (path, page) => {
+      calls.push([path.replace(/\\/g, "/").split("/").pop()!, page]);
+      return ppmWithRed(100);
+    });
+    const expected = EXAMPLE.journeys.flatMap((entry: Json) =>
+      entry.pdfs.map((pdf: Json) => [pdf.path.split("/").pop(), pdf.items.find((item: Json) => item.item === "high-injury-map").page]),
+    );
+    expect(calls).toEqual(expected);
+  });
+
+  it("accepts a map page at the threshold and refuses one with a pixel fewer", () => {
+    expect(MIN_RED_PIXELS).toBe(40);
+    expect(() => withRenderer(proven(), () => ppmWithRed(MIN_RED_PIXELS))).not.toThrow();
+    expect(() => withRenderer(proven(), () => ppmWithRed(MIN_RED_PIXELS - 1))).toThrow(
+      /^proven job record refused: california-county journey safety-action-plan PDF high-injury-map page 2 has 39 highlight-red pixels at 72 dpi; a map page needs at least 40$/,
+    );
+  });
+
+  it("does not count grey or dark red as highlight red", () => {
+    expect(() => withRenderer(proven(), () => ppmWithRed(1000, [128, 128, 128]))).toThrow(/has 0 highlight-red pixels/);
+    expect(() => withRenderer(proven(), () => ppmWithRed(1000, [120, 0, 0]))).toThrow(/has 0 highlight-red pixels/);
+  });
+
+  it("recomputes a pixel hash the record carries and refuses a different one", () => {
+    const page = ppmWithRed(100);
+    const pixelSha256 = createHash("sha256").update(page).digest("hex");
+    const record = proven();
+    map(record, "nevada-county", "ss4a-application").pixelSha256 = pixelSha256;
+    expect(() => withRenderer(record, () => page)).not.toThrow();
+    expect(() => withRenderer(record, () => ppmWithRed(101))).toThrow(
+      new RegExp(`^proven job record refused: nevada-county journey ss4a-application PDF high-injury-map page 2 renders to pixels with SHA-256 [0-9a-f]{64}; the record says ${pixelSha256}$`),
+    );
+  });
+
+  it("refuses a pixel hash on a text item and a pixel hash that is not a SHA-256", () => {
+    const onText = proven();
+    journey(onText, "tribal-area").pdfs[0].items[1].pixelSha256 = "a".repeat(64);
+    expect(() => check(onText)).toThrow(/tribal-area journey safety-action-plan PDF crash-summary needs the text pdftotext found, and no image hash/);
+    const malformed = proven();
+    map(malformed, "tribal-area", "safety-action-plan").pixelSha256 = "A".repeat(64);
+    expect(() => check(malformed)).toThrow(/pixelSha256 is not in the expected form/);
+  });
+
+  it("reads the highlight-red rule at its edges", () => {
+    const one = (rgb: [number, number, number]) => analyzePpm(ppmWithRed(1, rgb)).redPixels;
+    expect([one([140, 50, 50]), one([230, 0, 0]), one([200, 90, 90]), one([180, 90, 0])]).toEqual([1, 1, 1, 1]);
+    expect([one([139, 0, 0]), one([231, 0, 0]), one([200, 91, 0]), one([200, 0, 91]), one([179, 90, 0])]).toEqual([0, 0, 0, 0, 0]);
+  });
+});
+
 describe("proven jobs in the capability registry", () => {
   const recordPath = "docs/product/capability-evidence/synthetic-example/record.json";
 
@@ -361,7 +429,7 @@ describe("proven jobs in the capability registry", () => {
     };
   }
   const validate = (registry: Json) =>
-    validateCapabilityEvidence(registry, jobRoot, "2026-11-21", { readPdfPages: fakePdfPages });
+    validateCapabilityEvidence(registry, jobRoot, "2026-11-21", { readPdfPages: fakePdfPages, renderPdfPage: fakeRenderPage });
 
   it("accepts an empty list and an entry whose record passes", () => {
     expect(() => validate({ reviewedAt: "2026-11-01", dimensions: {}, provenJobs: [] })).not.toThrow();
@@ -449,6 +517,45 @@ describe("the default PDF reader refuses a pdftotext that is not Poppler's", () 
     }) as unknown as typeof execFileSync;
     expect(pdftotextPages("record.pdf", { spawn: poppler, execFile })).toEqual(["Crash summary", "Finalized by Workspace owner"]);
     expect(calls).toEqual([["pdftotext", "-layout", "-enc", "UTF-8", "record.pdf", "-"]]);
+  });
+});
+
+describe("the default page renderer refuses a pdftoppm that is not Poppler's", () => {
+  const neverRun = (() => {
+    throw new Error("rendered a page with the wrong program");
+  }) as unknown as typeof execFileSync;
+
+  it("refuses xpdf's pdftoppm before rendering, and says how to fix PATH", () => {
+    const xpdf = versionStub("pdftoppm version 4.06 [www.xpdfreader.com]\nCopyright 1996-2025 Glyph & Cog, LLC\n");
+    expect(() => pdftoppmPagePpm("record.pdf", 3, { spawn: xpdf, execFile: neverRun })).toThrow(
+      /proven job record refused: the pdftoppm on PATH is not Poppler's: it reports "pdftoppm version 4\.06 \[www\.xpdfreader\.com\]".*ahead of every other folder on PATH/,
+    );
+  });
+
+  it("refuses a missing pdftoppm with the same advice", () => {
+    const missing = (() => ({ error: Object.assign(new Error("spawn pdftoppm ENOENT"), { code: "ENOENT" }) })) as unknown as typeof spawnSync;
+    expect(() => pdftoppmPagePpm("record.pdf", 3, { spawn: missing, execFile: neverRun })).toThrow(/pdftoppm is not on PATH.*poppler-utils/);
+  });
+
+  it("renders one page at 72 dpi to PPM on standard output", () => {
+    const poppler = versionStub("pdftoppm version 24.02.0\nCopyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org\n");
+    const calls: string[][] = [];
+    const execFile = ((tool: string, args: string[]) => {
+      calls.push([tool, ...args]);
+      return ppmWithRed(3);
+    }) as unknown as typeof execFileSync;
+    expect(pdftoppmPagePpm("record.pdf", 3, { spawn: poppler, execFile })).toEqual(ppmWithRed(3));
+    expect(calls).toEqual([["pdftoppm", "-f", "3", "-l", "3", "-r", "72", "-singlefile", "record.pdf"]]);
+  });
+});
+
+describe.skipIf(!pdfToolVersion("pdftoppm").poppler)("the default page renderer (needs Poppler's pdftoppm)", () => {
+  it("renders a letter-size page to a 612 by 792 binary PPM", () => {
+    const path = join(jobRoot, "real-render.pdf");
+    writeFileSync(path, makePdf(["Crash summary", "High-injury network map"]));
+    const ppm = pdftoppmPagePpm(path, 2);
+    expect(ppm.subarray(0, 2).toString("latin1")).toBe("P6");
+    expect(analyzePpm(ppm)).toMatchObject({ width: 612, height: 792, redPixels: 0 });
   });
 });
 

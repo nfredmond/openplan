@@ -12,8 +12,16 @@
  * capability-evidence README and KI-2026-11-14-303 state are executable: a
  * rule that starts refusing one of them fails here and the docs must follow.
  *
- * Skips where `pdftotext` on PATH is not Poppler's, as the other real-PDF
- * tests do; CI installs Poppler (KI-2026-11-14-101).
+ * Lane 49 made the checker render the map item's page with Poppler's
+ * pdftoppm and count its highlight-red pixels, with the journey's own rule
+ * and threshold (scripts/lib/poppler-pixels.mjs). The map cases below point
+ * the map item at each PDF's first page and at its ranked table's page; each
+ * holds no highlight red and is refused for that. A PDF whose map page is
+ * replaced by a blank page is not tried here: the PDF's own SHA-256 in the
+ * record already refuses any changed file.
+ *
+ * Skips where `pdftotext` or `pdftoppm` on PATH is not Poppler's, as the
+ * other real-PDF tests do; CI installs Poppler (KI-2026-11-14-101).
  *
  * Blind category: one change at a time to one real record. A record with two
  * faults may be refused for another of them. The cases show the rules fire on
@@ -28,7 +36,7 @@ import { pdfToolVersion } from "../../scripts/lib/poppler-text.mjs";
 
 const REPO_ROOT = resolve(process.cwd(), "..");
 const RECORD = JSON.parse(readFileSync(resolve(REPO_ROOT, "docs/product/capability-evidence/first-proven-job.v1.json"), "utf8"));
-const hasPoppler = pdfToolVersion("pdftotext").poppler;
+const hasPoppler = ["pdftotext", "pdftoppm"].every((tool) => pdfToolVersion(tool).poppler);
 
 // Each PDF is read once and shared by both checkers; the reader is not under comparison.
 const pageCache = new Map<string, string[]>();
@@ -57,6 +65,18 @@ const changed = (mutate: (record: Json) => void): Json => {
 const journey = (record: Json, role: string) => record.journeys.find((entry: Json) => entry.role === role);
 const pdf = (record: Json, role: string, kind: string) => journey(record, role).pdfs.find((entry: Json) => entry.kind === kind);
 const item = (record: Json, role: string, kind: string, name: string) => pdf(record, role, kind).items.find((entry: Json) => entry.item === name);
+
+// Every PDF of the record with its map page and the page its ranked table
+// ends on: the page before the map in the plan, the page after it in the
+// SS4A appendix.
+const MAP_PDFS: Array<{ role: string; kind: string; path: string; mapPage: number; tablePage: number }> = RECORD.journeys.flatMap((j: Json) =>
+  j.pdfs.map((p: Json) => {
+    const mapPage = item(RECORD, j.role, p.kind, "high-injury-map").page;
+    return { role: j.role, kind: p.kind, path: p.path, mapPage, tablePage: p.kind === "safety-action-plan" ? mapPage - 1 : mapPage + 1 };
+  }),
+);
+const noRed = (role: string, kind: string, page: number) =>
+  new RegExp(`^proven job record refused: ${role} journey ${kind} PDF high-injury-map page ${page} has 0 highlight-red pixels at 72 dpi; a map page needs at least 40$`);
 
 describe.skipIf(!hasPoppler)("gaps in the proven job checker, shown on the real first proven job record (needs Poppler's pdftotext)", () => {
   it("both checkers accept the record unchanged", () => {
@@ -106,15 +126,26 @@ describe.skipIf(!hasPoppler)("gaps in the proven job checker, shown on the real 
       /california-county journey safety-action-plan PDF crash-summary heading "Crash summary" is not a line of its own on page 22/],
     ["the countermeasures item pointed at a table whose column is named Countermeasures", (r) => { item(r, "california-county", "safety-action-plan", "countermeasures").page = 15; },
       /countermeasures heading "Countermeasures" is not a line of its own on page 15/],
-    // The map item's page: words the export prints with its map.
-    ["the plan's map pointed at the page before it", (r) => { item(r, "california-county", "safety-action-plan", "high-injury-map").page = 16; },
-      /california-county journey safety-action-plan PDF high-injury-map page 16 does not carry "High-injury network map", which the export prints with its map/],
+    // The map item's page is rendered and counted (lane 49). The heading
+    // page carries the words "High-injury network map" and no red.
     ["the SS4A map pointed at its heading page, not the map", (r) => { item(r, "tribal-area", "ss4a-application", "high-injury-map").page = 8; },
-      /tribal-area journey ss4a-application PDF high-injury-map page 8 does not carry "Source severity coverage"/],
+      noRed("tribal-area", "ss4a-application", 8)],
+    ...MAP_PDFS.map(({ role, kind }): [string, (record: Json) => void, RegExp] =>
+      [`the ${role} ${kind} map pointed at page 1`, (r) => { item(r, role, kind, "high-injury-map").page = 1; }, noRed(role, kind, 1)]),
+    ...MAP_PDFS.map(({ role, kind, tablePage }): [string, (record: Json) => void, RegExp] =>
+      [`the ${role} ${kind} map pointed at its ranked table on page ${tablePage}`, (r) => { item(r, role, kind, "high-injury-map").page = tablePage; }, noRed(role, kind, tablePage)]),
   ])("main accepts and the current checker refuses %s", (_name, mutate, reason) => {
     const record = changed(mutate);
     expect(verdict(main, record)).toBe("accepted");
     expect(verdict(current, record)).toMatch(reason);
+  });
+
+  it("points the table cases at pages that hold the ranked table and not the map", () => {
+    for (const { path, mapPage, tablePage } of MAP_PDFS) {
+      const pages = readPdfPages(resolve(REPO_ROOT, path));
+      expect(pages[tablePage - 1], `${path} page ${tablePage}`).toMatch(/\bRank\b[^\n]*\bLocation\b/);
+      expect(tablePage, path).not.toBe(mapPage);
+    }
   });
 
   // A check may name its journey (the schema field lane 45 added; main's
@@ -130,7 +161,10 @@ describe.skipIf(!hasPoppler)("gaps in the proven job checker, shown on the real 
   // What the checker still cannot see. Each is accepted by both; the docs
   // say why and what else shows the truth.
   it.each<[string, (record: Json) => void]>([
-    // Pixels differ by Poppler, FreeType and zlib version, so the hash is not recomputed.
+    // The PNG's bytes differ between Poppler builds whose pixels are the
+    // same, so its hash is not recomputed. The checker renders and counts the
+    // map page itself instead, and recomputes pixelSha256 when a record
+    // carries it (the first record predates that field).
     ["the map item's image hash replaced", (r) => { item(r, "california-county", "safety-action-plan", "high-injury-map").imageSha256 = "f".repeat(64); }],
     // No committed table maps a Census id to its name.
     ["a place's Census id changed with its label kept", (r) => { journey(r, "california-county").place.geoid = "06057"; }],

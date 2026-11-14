@@ -4,6 +4,7 @@ import { createRequire } from "node:module";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { joinLetterSpacing, normalizePdfText, pdfTextHasPhrase } from "../lib/pdf-text-match.mjs";
+import { MAP_RENDER_DPI, MIN_RED_PIXELS, analyzePpm, popplerPagePpm } from "../lib/poppler-pixels.mjs";
 import { assertPopplerTool, popplerPdfPages } from "../lib/poppler-text.mjs";
 
 /**
@@ -42,7 +43,7 @@ const PARTICIPANT_REFUSAL_STATUSES = new Set([401, 403, 404]);
  * @param {{reviewedAt: string, dimensions: Record<string, Array<{id: string, status: string, reviewedAt?: string, evidence?: Array<{path: string, sha256: string}>}>>, provenJobs?: Array<Record<string, unknown>>}} registry
  * @param {string} repoRoot
  * @param {string} today
- * @param {{readPdfPages?: (absolutePath: string) => string[], readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>}} [options]
+ * @param {{readPdfPages?: (absolutePath: string) => string[], renderPdfPage?: (absolutePath: string, page: number) => Uint8Array, readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>}} [options]
  */
 export function validateCapabilityEvidence(registry, repoRoot, today, options = {}) {
   const root = realpathSync(repoRoot);
@@ -74,7 +75,12 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
       throw new Error(`${label} needs exactly one ${RECORD_SCHEMA_ID} record among its evidence, found ${records.length}`);
     }
     const record = JSON.parse(records[0].bytes.toString("utf8"));
-    validateProvenJobRecord(record, { repoRoot: root, readPdfPages: options.readPdfPages, readWorkbook: options.readWorkbook });
+    validateProvenJobRecord(record, {
+      repoRoot: root,
+      readPdfPages: options.readPdfPages,
+      renderPdfPage: options.renderPdfPage,
+      readWorkbook: options.readWorkbook,
+    });
     if (record.jobId !== entry.jobId) throw new Error(`${label} names a record for ${record.jobId}`);
     if (record.commit !== entry.commit) throw new Error(`${label} commit does not match its record`);
     const recordPlaces = record.journeys.map(({ place }) => ({ kind: place.kind, geoid: place.geoid, stateFips: place.stateFips }));
@@ -103,12 +109,14 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
  *
  * Blind category: this proves required parts are present, agree with each
  * other and are bound to one commit. It cannot tell whether the PDFs are
- * useful to a planner, whether a map image shows the right network, or
- * whether a label names the place whose Census id it carries.
+ * useful to a planner, whether the red marks on a map page are the right
+ * place's ranked segments, or whether a label names the place whose Census
+ * id it carries.
  * @param {unknown} record
- * @param {{repoRoot: string, readPdfPages?: (absolutePath: string) => string[], readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>}} options
+ * @param {{repoRoot: string, readPdfPages?: (absolutePath: string) => string[], renderPdfPage?: (absolutePath: string, page: number) => Uint8Array, readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>}} options
+ *   readPdfPages and renderPdfPage default to Poppler's pdftotext and pdftoppm; tests may pass stand-ins.
  */
-export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdftotextPages, readWorkbook = xlsxSheets }) {
+export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdftotextPages, renderPdfPage = pdftoppmPagePpm, readWorkbook = xlsxSheets }) {
   const root = realpathSync(repoRoot);
   checkSchema(record, RECORD_SCHEMA, "record", RECORD_SCHEMA);
   scanStrings(record, "record");
@@ -148,7 +156,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkJourneyFields(journey, rule.fields, label);
     checkJourneyFields(journey, job.journeyFields, label);
 
-    checkPdfs(journey, job, label, root, readPdfPages, artifactPaths);
+    checkPdfs(journey, job, label, root, readPdfPages, renderPdfPage, artifactPaths);
     const workbooks = checkWorkbooks(journey, job, label, root, readWorkbook, artifactPaths);
     checkScreens(journey, job, label);
     if (job.campaign) checkCampaign(journey, job, label, workbooks);
@@ -395,7 +403,7 @@ function checkPlace(place, rule, job, label) {
   }
 }
 
-function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
+function checkPdfs(journey, job, label, root, readPdfPages, renderPdfPage, pdfPaths) {
   for (const kind of job.pdfs) {
     const count = journey.pdfs.filter((pdf) => pdf.kind === kind).length;
     if (count !== 1) refuse(`${label} needs exactly one ${kind} PDF, found ${count}`);
@@ -427,7 +435,7 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
       if (entry.method !== method) refuse(`${pdfLabel} ${item} must be found by ${method}`);
       if (entry.page > pages.length) refuse(`${pdfLabel} ${item} names page ${entry.page} of ${pages.length}`);
       if (method === "pdftotext") {
-        if (!entry.text || entry.imageSha256) refuse(`${pdfLabel} ${item} needs the text pdftotext found, and no image hash`);
+        if (!entry.text || entry.imageSha256 || entry.pixelSha256) refuse(`${pdfLabel} ${item} needs the text pdftotext found, and no image hash`);
         const heading = job.itemHeadings?.[pdf.kind]?.[item];
         if (heading !== undefined && entry.text !== heading) refuse(`${pdfLabel} ${item} must name its heading "${heading}", found "${entry.text}"`);
         // The shared matcher the export test and the journey use: case,
@@ -441,9 +449,8 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
         }
       } else {
         if (!entry.imageSha256 || entry.text) refuse(`${pdfLabel} ${item} needs the rendered page image hash, and no text`);
-        // The checker cannot render the page the same way on every platform
-        // (KI-2026-11-14-303), so it reads the words the export prints with
-        // its map on that page instead.
+        checkRenderedPage(entry, `${pdfLabel} ${item}`, source, renderPdfPage);
+        // The words the export prints with its map, on the same page.
         const mapText = job.mapPageText?.[pdf.kind];
         if (mapText !== undefined && !pdfTextHasPhrase(pages[entry.page - 1], mapText)) {
           refuse(`${pdfLabel} ${item} page ${entry.page} does not carry "${mapText}", which the export prints with its map`);
@@ -451,6 +458,31 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
       }
     }
     if (pdf.items.length !== Object.keys(job.items).length) refuse(`${pdfLabel} lists items this job does not define`);
+  }
+}
+
+/**
+ * Render a page-image item's page and count it the way the journey did
+ * (scripts/lib/poppler-pixels.mjs): fewer than MIN_RED_PIXELS highlight-red
+ * pixels refuses the record. When the item carries pixelSha256, the SHA-256
+ * of the page's PPM bytes at MAP_RENDER_DPI, a different hash refuses it.
+ * The PNG hash (imageSha256) is not recomputed: PNG bytes differ between
+ * Poppler builds whose pixels are the same (KI-2026-11-14-303).
+ *
+ * Blind category: enough highlight red on the page is not the right map. A
+ * page of red marks from another place, or a red chart, passes the count.
+ */
+function checkRenderedPage(entry, itemLabel, source, renderPdfPage) {
+  const ppm = renderPdfPage(source, entry.page);
+  const { redPixels } = analyzePpm(ppm);
+  if (redPixels < MIN_RED_PIXELS) {
+    refuse(`${itemLabel} page ${entry.page} has ${redPixels} highlight-red pixels at ${MAP_RENDER_DPI} dpi; a map page needs at least ${MIN_RED_PIXELS}`);
+  }
+  if (entry.pixelSha256 !== undefined) {
+    const found = createHash("sha256").update(ppm).digest("hex");
+    if (found !== entry.pixelSha256) {
+      refuse(`${itemLabel} page ${entry.page} renders to pixels with SHA-256 ${found}; the record says ${entry.pixelSha256}`);
+    }
   }
 }
 
@@ -743,6 +775,27 @@ export function pdftotextPages(absolutePath, options = {}) {
     return popplerPdfPages(absolutePath, options);
   } catch {
     throw new Error(`proven job record refused: pdftotext could not read it: ${absolutePath}`);
+  }
+}
+
+/**
+ * Render one page to binary PPM with Poppler's pdftoppm, the renderer the
+ * journey script uses (scripts/lib/poppler-pixels.mjs). A pdftoppm that is
+ * not Poppler's refuses the record before any page is rendered.
+ * @param {string} absolutePath
+ * @param {number} page
+ * @param {{spawn?: Function, execFile?: Function}} [options] stand-ins for tests
+ */
+export function pdftoppmPagePpm(absolutePath, page, options = {}) {
+  try {
+    assertPopplerTool("pdftoppm", options);
+  } catch (error) {
+    throw new Error(`proven job record refused: ${error.message}`);
+  }
+  try {
+    return popplerPagePpm(absolutePath, page, options);
+  } catch {
+    throw new Error(`proven job record refused: pdftoppm could not render page ${page} of ${absolutePath}`);
   }
 }
 

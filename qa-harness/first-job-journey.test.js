@@ -432,3 +432,17 @@ test('the study place is chosen by its full label only (KI-2026-11-14-230)', () 
   assert.equal(lib.choosePlaceResult('Washington township, OH', ['Washington township, OH', 'Washington township, OH']), -1);
   assert.equal(lib.choosePlaceResult('', tribal), -1);
 });
+
+test('the record carries the map page pixel hash the checker recomputes (KI-2026-11-14-303)', { skip: !hasPoppler() && 'Poppler is not installed' }, () => {
+  const pixels = require('../openplan/scripts/lib/poppler-pixels.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-pdf-'));
+  const file = writePdf(dir, 'pixels.pdf', reportPages());
+  const { pdf, findings } = lib.describePdf('safety-action-plan', file, 'docs/pixels.pdf', dir);
+  const map = pdf.items.find((entry) => entry.item === 'high-injury-map');
+  const ppm = pixels.popplerPagePpm(file, map.page);
+  assert.equal(map.pixelSha256, sha(ppm));
+  assert.notEqual(map.pixelSha256, map.imageSha256);
+  assert.equal(findings.mapRedPixels, pixels.analyzePpm(ppm).redPixels);
+  assert.ok(findings.mapRedPixels >= pixels.MIN_RED_PIXELS);
+  assert.ok(!('redPixels' in map));
+});

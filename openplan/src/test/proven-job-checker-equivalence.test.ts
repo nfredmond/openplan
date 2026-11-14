@@ -31,6 +31,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { ppmWithRed } from "./helpers/ppm";
 import { stripSourceComments } from "./helpers/source-text";
 import * as current from "../../scripts/ops/capability-evidence.mjs";
 import * as main from "./fixtures/proven-job-checker-main-1fbfe95ed/openplan/scripts/ops/capability-evidence.mjs";
@@ -40,6 +41,8 @@ const EXAMPLE = JSON.parse(
 );
 const jobRoot = mkdtempSync(join(tmpdir(), "openplan-proven-job-equivalence-"));
 const fakePdfPages = (path: string) => readFileSync(path, "utf8").replace(/^[^\n]*\n/, "").split("\f");
+// Since lane 49 the current checker renders each map page; main's renders none and ignores a renderer.
+const fakeRenderPage = () => ppmWithRed(100);
 
 // The headings and map-page words the first job's definition names
 // (itemHeadings, mapPageText), one heading to a line as the exports print them.
@@ -92,7 +95,7 @@ function verdict(run: () => void): string {
 
 type Checker = Pick<typeof current, "validateProvenJobRecord">;
 const recordVerdict = (checker: Checker, record: Json) =>
-  verdict(() => checker.validateProvenJobRecord(structuredClone(record), { repoRoot: jobRoot, readPdfPages: fakePdfPages }));
+  verdict(() => checker.validateProvenJobRecord(structuredClone(record), { repoRoot: jobRoot, readPdfPages: fakePdfPages, renderPdfPage: fakeRenderPage }));
 
 /** Both checkers' verdicts on one record. */
 function bothOnRecord(record: Json) {
@@ -287,7 +290,7 @@ describe("the first job's registry verdicts are the same in both checkers", () =
   }
   const both = (registry: Json) => ({
     main: verdict(() => main.validateCapabilityEvidence(structuredClone(registry), jobRoot, "2026-11-21", { readPdfPages: fakePdfPages })),
-    current: verdict(() => current.validateCapabilityEvidence(structuredClone(registry), jobRoot, "2026-11-21", { readPdfPages: fakePdfPages })),
+    current: verdict(() => current.validateCapabilityEvidence(structuredClone(registry), jobRoot, "2026-11-21", { readPdfPages: fakePdfPages, renderPdfPage: fakeRenderPage })),
   });
 
   it("accepts an empty list and an entry whose record passes, in both", () => {
