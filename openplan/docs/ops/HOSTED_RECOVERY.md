@@ -69,7 +69,7 @@ Auth or Storage services, replay worker journals, or cut production over.
 
 The private key for every capture from October 12 onward lived only on the
 Linux workstation that was wiped in October 2026. Every capture made before
-`<ROTATION STAMP, lead fills in>` is encrypted to fingerprint
+`20261114T072635Z` (November 14, 2026, 07:26 UTC) is encrypted to fingerprint
 `A4221F59406B5F299D2DD3FE7213CBBB858160CA` and cannot be decrypted. Those
 captures age out of the bucket within 30 days of the rotation. The installer
 kit that ran the October migration installs was lost the same way.
@@ -83,7 +83,7 @@ bytes, and owner, other-workspace and anonymous probes returning 1, 0 and 0.
 A difference passes only when the source shows rows written after the capture
 started.
 
-The new private key (fingerprint `<NEW FINGERPRINT, lead fills in>`) exists
+The new private key (fingerprint `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`) exists
 only on the operator's Windows workstation: the state folder on C: and a copy
 on D:, a second internal disk. Neither disk is encrypted, and the passphrase
 is stored with the key. If this workstation is lost, stolen, wiped or

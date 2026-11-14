@@ -5,6 +5,12 @@
  * not in components. This module only validates and reads it. A crash
  * modification factor appears only with its CMF Clearinghouse ID; without one
  * the value stays out and the entry carries a visible [VERIFY] note.
+ *
+ * Each entry also records whether it is on FHWA's Proven Safety
+ * Countermeasures list. FHWA removed four items OpenPlan carries between June
+ * 30 and July 10, 2026. They stay so saved plans keep them, and every place
+ * that shows or prints an entry states that fact through
+ * `countermeasureListStatus`.
  */
 
 import { z } from "zod";
@@ -42,6 +48,38 @@ export const COUNTERMEASURE_FOCUS_AREAS = [
 ] as const;
 
 const httpsUrl = z.string().regex(/^https:\/\/[^\s]+$/);
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+/** An Internet Archive capture of an FHWA page. */
+const fhwaCaptureUrl = z.string().regex(/^https:\/\/web\.archive\.org\/web\/\d{8,14}\/https:\/\/highways\.dot\.gov\/[^\s]+$/);
+const LIVE_FHWA_URL = /^https:\/\/highways\.dot\.gov\//;
+
+/** The digits of an ISO date, as they start an Internet Archive timestamp. */
+function captureStamp(date: string): string {
+  return date.replace(/-/g, "");
+}
+
+/**
+ * Whether the item is on FHWA's list. `removed` records the captures that show
+ * the change and the capture of the item's former FHWA page, which the entry
+ * cites in place of a live URL that no longer resolves.
+ */
+const fhwaListSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("on_list") }).strict(),
+  z.object({
+    status: z.literal("removed"),
+    lastSeenOnList: isoDate,
+    firstMissingFromList: isoDate,
+    stillMissingOn: isoDate,
+    listCaptureUrl: fhwaCaptureUrl,
+    formerPageCapturedOn: isoDate,
+    readOn: isoDate,
+  }).strict().refine(
+    (entry) => entry.lastSeenOnList < entry.firstMissingFromList && entry.firstMissingFromList <= entry.stillMissingOn
+      && entry.stillMissingOn <= entry.readOn && entry.formerPageCapturedOn <= entry.lastSeenOnList
+      && entry.listCaptureUrl.startsWith(`https://web.archive.org/web/${captureStamp(entry.stillMissingOn)}`),
+    { message: "A removal must cite captures in date order, and the list capture of its newest date" },
+  ),
+]);
 
 const cmfSchema = z.object({
   value: z.number().positive().lt(10),
@@ -58,6 +96,7 @@ const countermeasureSchema = z
     crashTypes: z.array(z.enum(COUNTERMEASURE_CRASH_TYPES)).min(1),
     addresses: z.string().min(1),
     sourceUrl: httpsUrl,
+    fhwaList: fhwaListSchema,
     cmf: cmfSchema.nullable(),
     cmfNote: z.string().optional(),
   })
@@ -68,6 +107,15 @@ const countermeasureSchema = z
   .refine(
     (entry) => entry.cmf === null || entry.cmf.url.endsWith(`facid=${entry.cmf.cmfId}`),
     { message: "A CMF value must cite its own Clearinghouse entry" },
+  )
+  // An item on the list cites FHWA's live page. A removed item cites the
+  // capture of its former page, so it is never cited as a current list item.
+  .refine(
+    (entry) => entry.fhwaList.status === "on_list"
+      ? LIVE_FHWA_URL.test(entry.sourceUrl)
+      : fhwaCaptureUrl.safeParse(entry.sourceUrl).success
+        && entry.sourceUrl.startsWith(`https://web.archive.org/web/${captureStamp(entry.fhwaList.formerPageCapturedOn)}`),
+    { message: "An item on FHWA's list cites its FHWA page; a removed item cites the capture of its former page" },
   );
 
 export const countermeasureFileSchema = z.object({
@@ -78,7 +126,9 @@ export const countermeasureFileSchema = z.object({
     publisher: z.string().min(1),
     url: httpsUrl,
     terms: z.string().min(1),
-    retrievedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    retrievedOn: isoDate,
+    newestCaptureOn: isoDate,
+    newestCaptureUrl: fhwaCaptureUrl,
     retrievalNote: z.string().min(1),
   }),
   listNote: z.string().min(1),
@@ -107,7 +157,59 @@ export function getSafetyCountermeasure(id: string): SafetyCountermeasure | null
   return SAFETY_COUNTERMEASURES.find((entry) => entry.id === id) ?? null;
 }
 
-/** The source line printed under any countermeasure table. */
-export function describeCountermeasureSource(file: CountermeasureFile = SAFETY_COUNTERMEASURE_FILE): string {
-  return `Source: ${file.source.publisher}, ${file.source.title}, ${file.source.url}. Retrieved ${file.source.retrievedOn}; list version ${file.version}.`;
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** "2026-07-10" as "July 10, 2026", from the string itself so no host time zone applies. */
+function longDate(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return `${MONTHS[month - 1]} ${day}, ${year}`;
+}
+
+function monthYear(date: string): string {
+  const [year, month] = date.split("-").map(Number);
+  return `${MONTHS[month - 1]} ${year}`;
+}
+
+function removedPhrase(entry: SafetyCountermeasure): string | null {
+  if (entry.fhwaList.status !== "removed") return null;
+  return `not on FHWA's Proven Safety Countermeasures list since ${monthYear(entry.fhwaList.firstMissingFromList)}`;
+}
+
+/** One line for an item FHWA removed from its list; null for an item on it. */
+export function countermeasureListStatus(entry: SafetyCountermeasure): string | null {
+  const phrase = removedPhrase(entry);
+  return phrase ? `${phrase.charAt(0).toUpperCase()}${phrase.slice(1)}.` : null;
+}
+
+/** The item's name, followed by its status in parentheses when FHWA removed it. */
+export function countermeasureLabel(entry: SafetyCountermeasure): string {
+  const phrase = removedPhrase(entry);
+  return phrase ? `${entry.name} (${phrase})` : entry.name;
+}
+
+/** The status line with the captures behind it, for printed documents. */
+export function countermeasureListStatusDetail(entry: SafetyCountermeasure): string | null {
+  const line = countermeasureListStatus(entry);
+  if (!line || entry.fhwaList.status !== "removed") return null;
+  const list = entry.fhwaList;
+  return `${line} Internet Archive captures of FHWA's list show it on ${longDate(list.lastSeenOnList)} and not on ${longDate(list.firstMissingFromList)} or ${longDate(list.stillMissingOn)}. The source is FHWA's former page for it, captured ${longDate(list.formerPageCapturedOn)} and read ${longDate(list.readOn)}.`;
+}
+
+/** The one sentence about funding programs, printed only beside a removed item. */
+export const COUNTERMEASURE_FUNDING_CHECK =
+  "Check the current notice of funding opportunity for what a program counts as an eligible or proven countermeasure.";
+
+/**
+ * The source line printed under any countermeasure table. `ids` limits the
+ * note about removed items to the items a plan uses; without it the whole
+ * list is described.
+ */
+export function describeCountermeasureSource(options: { ids?: readonly string[]; file?: CountermeasureFile } = {}): string {
+  const file = options.file ?? SAFETY_COUNTERMEASURE_FILE;
+  const inScope = options.ids
+    ? file.countermeasures.filter((entry) => options.ids!.includes(entry.id))
+    : file.countermeasures;
+  const base = `Source: ${file.source.publisher}, ${file.source.title}, ${file.source.url}, read from Internet Archive captures, newest ${file.source.newestCaptureOn} (${file.source.newestCaptureUrl}). Retrieved ${file.source.retrievedOn}; list version ${file.version}.`;
+  if (!inScope.some((entry) => entry.fhwaList.status === "removed")) return base;
+  return `${base} An item marked as not on FHWA's list cites the Internet Archive capture of its former FHWA page. ${COUNTERMEASURE_FUNDING_CHECK}`;
 }

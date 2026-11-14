@@ -121,6 +121,73 @@ describe("linked-project Safety artifact pages", () => {
   });
 });
 
+// KI-2026-11-14-211: the application said nothing when a Safety report newer
+// than the seeded one existed, so an old plan was exported unknowingly.
+describe("a newer Safety report than the seeded one", () => {
+  const get = (suffix = "") => GET(new NextRequest(`http://localhost/api/source${suffix}`), context());
+  const NEWER = seedId(321);
+  const listing = () => [{ id: rows.artifact.id, artifact_kind: "html", generated_at: rows.artifact.generated_at, metadata_json: rows.artifact.metadata_json, reports: { id: rows.report.id, title: "Safety report" } }];
+  function artifactsWith(seeded: Result, newest: Result) {
+    const q = chain({ data: listing(), error: null });
+    q.maybeSingle.mockReset().mockResolvedValueOnce(seeded).mockResolvedValueOnce(newest);
+    tables.report_artifacts = q;
+    return q;
+  }
+  function seededFrom(artifactId: string) {
+    tables.funding_opportunity_safety_seeds = chain({ data: { artifact_id: artifactId, created_at: "2026-11-04T00:00:00+00:00" }, error: null });
+  }
+
+  it("names both dates when a newer seedable report exists, reading only the columns it needs", async () => {
+    seededFrom(rows.artifact.id);
+    const q = artifactsWith(
+      { data: { id: rows.artifact.id, generated_at: "2026-11-03T17:42:49+00:00" }, error: null },
+      { data: { id: NEWER, generated_at: "2026-11-13T22:21:00+00:00", reports: { id: rows.report.id } }, error: null },
+    );
+    const page = await (await get()).json();
+    expect(page.freshness).toEqual({ status: "newer", seededGeneratedAt: "2026-11-03T17:42:49+00:00", newestGeneratedAt: "2026-11-13T22:21:00+00:00", newestArtifactId: NEWER });
+    const seeds = tables.funding_opportunity_safety_seeds;
+    expect(seeds.select).toHaveBeenCalledWith("artifact_id, created_at");
+    expect(seeds.eq).toHaveBeenCalledWith("workspace_id", rows.opportunity.workspace_id);
+    expect(seeds.eq).toHaveBeenCalledWith("opportunity_id", rows.opportunity.id);
+    expect(seeds.order).toHaveBeenCalledWith("created_at", { ascending: false });
+    expect(seeds.limit).toHaveBeenCalledWith(1);
+    expect(q.select).toHaveBeenCalledWith("id, generated_at");
+    expect(q.eq).toHaveBeenCalledWith("id", rows.artifact.id);
+    expect(q.select).toHaveBeenCalledWith("id, generated_at, reports!inner(id)");
+    expect(q.eq).toHaveBeenCalledWith("reports.project_id", rows.project.id);
+    expect(q.not).toHaveBeenCalledWith("metadata_json->>safetyPlanSnapshotV1", "is", null);
+    expect(q.not).toHaveBeenCalledWith("generated_at", "is", null);
+    expect(q.order).toHaveBeenCalledWith("generated_at", { ascending: false });
+    expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("says current when the seeded report is the newest", async () => {
+    seededFrom(rows.artifact.id);
+    const row = { id: rows.artifact.id, generated_at: "2026-11-03T17:42:49+00:00" };
+    artifactsWith({ data: row, error: null }, { data: { ...row, reports: { id: rows.report.id } }, error: null });
+    expect((await (await get()).json()).freshness).toEqual({ status: "current" });
+  });
+
+  it("says unknown, not current, when a read fails, and still lists the reports", async () => {
+    seededFrom(rows.artifact.id);
+    artifactsWith({ data: { id: rows.artifact.id, generated_at: "2026-11-03T17:42:49+00:00" }, error: null }, { data: null, error: { message: "Unavailable" } });
+    const page = await (await get()).json();
+    expect(page.freshness).toEqual({ status: "unknown" });
+    expect(page.artifacts).toHaveLength(1);
+    tables.funding_opportunity_safety_seeds = chain({ data: null, error: { message: "Unavailable" } });
+    expect((await (await get()).json()).freshness).toEqual({ status: "unknown" });
+  });
+
+  it("says not seeded when no seed exists, and reads nothing on later pages", async () => {
+    tables.report_artifacts = chain({ data: listing(), error: null });
+    expect((await (await get()).json()).freshness).toEqual({ status: "not_seeded" });
+    tables.funding_opportunity_safety_seeds = chain({ data: null, error: null });
+    const later = await (await get(`?before=${rows.artifact.id}`)).json();
+    expect(later.freshness).toBeUndefined();
+    expect(tables.funding_opportunity_safety_seeds.select).not.toHaveBeenCalled();
+  });
+});
+
 describe("Safety seed preview and atomic apply dispatch", () => {
   it("previews the exact artifact with explicit projections and tenant/project filters and no writer", async () => {
     const response = await call({ operation: "preview", artifactId: rows.artifact.id });

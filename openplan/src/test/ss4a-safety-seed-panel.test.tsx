@@ -103,6 +103,23 @@ describe("explicit Safety artifact preview and apply UI", () => {
     await screen.findByText("Link this opportunity to the Safety report project first.");
     expect(fetchMock).not.toHaveBeenCalled();
   });
+  // KI-2026-11-14-211: say when a Safety report newer than the seeded one exists.
+  it("says a newer Safety report exists, with both dates, and points to the picker", async () => {
+    sourcesMock.mockResolvedValue(response({ artifacts, nextCursor: null, requiresProject: false,
+      freshness: { status: "newer", seededGeneratedAt: "2026-11-03T17:42:49+00:00", newestGeneratedAt: "2026-11-13T18:21:00+00:00", newestArtifactId: rows.report.id } }));
+    render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
+    const line = await screen.findByTestId("safety-seed-newer-report");
+    expect(line.textContent).toMatch(/^Seeded from the report generated Nov 3, 2026, \d{1,2}:42 (AM|PM)\. A newer one was generated Nov 13, 2026, \d{1,2}:21 (AM|PM)\. Select it above to re-seed\.$/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+  it("says the check failed rather than that no newer report exists, and is silent when current", async () => {
+    sourcesMock.mockResolvedValueOnce(response({ artifacts, nextCursor: null, requiresProject: false, freshness: { status: "unknown" } }));
+    render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
+    expect((await screen.findByTestId("safety-seed-newer-report")).textContent).toBe("Could not check for a newer Safety report.");
+    sourcesMock.mockResolvedValueOnce(response({ artifacts, nextCursor: null, requiresProject: false, freshness: { status: "current" } }));
+    fireEvent.click(screen.getByRole("button", { name: "Refresh Safety sources" }));
+    await waitFor(() => expect(screen.queryByTestId("safety-seed-newer-report")).toBeNull());
+  });
   it("refuses malformed source responses and aborts its pending source read on unmount", async () => {
     sourcesMock.mockResolvedValueOnce(response({ artifacts: [{ id: "bad" }], nextCursor: null, requiresProject: false }));
     const view = render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);

@@ -22,6 +22,8 @@ import {
 } from "@/lib/safety/high-injury-network";
 import {
   COUNTERMEASURE_CRASH_TYPE_LABELS,
+  countermeasureLabel,
+  countermeasureListStatusDetail,
   describeCountermeasureSource,
   getSafetyCountermeasure,
 } from "@/lib/safety/countermeasures";
@@ -237,6 +239,11 @@ export type SafetyActionPlanTreatment = {
     crashTypes: string[];
     sourceUrl: string;
     cmfNote: string;
+    /**
+     * Present only for an item FHWA removed from its list. Absent in snapshots
+     * frozen before this field existed, which keep their own text.
+     */
+    listStatus?: string;
   }>;
 };
 
@@ -298,7 +305,7 @@ export function buildSafetyActionPlanSection(input: {
   const countermeasureNames = (ids: readonly string[]) =>
     ids.flatMap((id) => {
       const entry = getSafetyCountermeasure(id);
-      return entry ? [entry.name] : [];
+      return entry ? [countermeasureLabel(entry)] : [];
     });
 
   let networkSection: SafetyActionPlanSectionDraft["network"];
@@ -339,6 +346,9 @@ export function buildSafetyActionPlanSection(input: {
     countermeasures: attachment.countermeasureIds.flatMap((id) => {
       const entry = getSafetyCountermeasure(id);
       if (!entry) return [];
+      // Left out, not undefined, for an item on the list: the snapshot hash
+      // refuses undefined values.
+      const listStatus = countermeasureListStatusDetail(entry);
       return [{
         name: entry.name,
         addresses: entry.addresses,
@@ -347,6 +357,7 @@ export function buildSafetyActionPlanSection(input: {
         cmfNote: entry.cmf
           ? `CMF ${entry.cmf.value} for ${entry.cmf.appliesTo} (CMF Clearinghouse ID ${entry.cmf.cmfId}, ${entry.cmf.url})`
           : entry.cmfNote ?? "[VERIFY] No crash modification factor cited.",
+        ...(listStatus ? { listStatus } : {}),
       }];
     }),
   }));
@@ -356,7 +367,9 @@ export function buildSafetyActionPlanSection(input: {
     crashSummary,
     network: networkSection,
     treatments,
-    countermeasureSourceLine: describeCountermeasureSource(),
+    countermeasureSourceLine: describeCountermeasureSource({
+      ids: plan.attachments.flatMap((attachment) => attachment.countermeasureIds),
+    }),
     components: safetyActionPlanComponentCoverage({
       hasCrashSummary: crashSummary.kind === "present",
       hasNetwork: networkSection.kind === "computed",

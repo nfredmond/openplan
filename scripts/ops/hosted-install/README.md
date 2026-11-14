@@ -149,14 +149,16 @@ checks it.
    and `railway variable set BACKUP_GPG_FINGERPRINT=<fpr> --skip-deploys -s offsite-backup -e production`.
    Check names and the fingerprint only. If either set fails, finish the pair
    before leaving; `backup.py` refuses a mismatched pair and uploads nothing.
-8. `railway redeploy -s offsite-backup -e production -y`. Check the deployment
-   succeeded and the instance still reports `cronSchedule` `17 10 * * *` and a
-   `nextCronRunAt` (DEPLOY.md). If the schedule is gone, redeploy from the
-   DEPLOY.md staging folder with `railway up` and check again. **Stop** if it
-   is still missing.
-9. Read `railway cron list`. If the redeploy started a run, wait for it;
-   otherwise `railway cron run -s offsite-backup -e production --yes`
-   `[VERIFY: flags with railway cron run --help]`. The `offsite_capture_complete`
+8. Make a new deployment so the staged values take effect: from the DEPLOY.md
+   staging folder, `railway up --service offsite-backup --ci` with the
+   unchanged worker files from `main`. (`railway redeploy` refused this
+   service on November 14, 2026 with "cannot be redeployed", and a run started
+   before any new deployment still encrypted to the old key.) Check the
+   deployment succeeded and `railway cron list` still shows the schedule
+   `17 10 * * *` and a next run. **Stop** if the schedule is missing.
+9. Read `railway cron list`. If the deployment started a run, wait for it;
+   otherwise `railway cron run --service offsite-backup --environment production --yes`
+   (these flags worked with Railway CLI 5.71.0 on November 14, 2026). The `offsite_capture_complete`
    log line must name the **new** fingerprint and a new stamp, with counts near
    the last run's. **Stop** on `offsite_capture_failed` or the old fingerprint.
    Note the line's `capturedAt`.

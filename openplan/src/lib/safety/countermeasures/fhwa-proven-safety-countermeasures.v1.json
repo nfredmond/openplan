@@ -1,15 +1,17 @@
 {
   "schema": "openplan.safety_countermeasures.v1",
-  "version": "2026-10-13",
+  "version": "2026-11-13",
   "source": {
     "title": "Proven Safety Countermeasures",
     "publisher": "Federal Highway Administration, U.S. Department of Transportation",
     "url": "https://highways.dot.gov/safety/proven-safety-countermeasures",
     "terms": "U.S. federal government work (17 U.S.C. 105). Free to use.",
-    "retrievedOn": "2026-10-13",
-    "retrievalNote": "The FHWA site refused automated download on 2026-10-13 (HTTP 403), as did the CMF Clearinghouse (certificate error). Each name and URL below was confirmed from web search results that returned that FHWA page; crash types summarize those results. [VERIFY] each entry against the live FHWA page before a plan is published."
+    "retrievedOn": "2026-11-13",
+    "newestCaptureOn": "2026-11-04",
+    "newestCaptureUrl": "https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures",
+    "retrievalNote": "FHWA's site refused direct automated reads on 2026-10-13 and 2026-11-13 (HTTP 403), so the live list page could not be read. The list's membership comes from Internet Archive captures of FHWA's list page, read 2026-11-13: the newest capture read is 2026-11-04, and the same 23 items appear in every capture from 2026-07-10 through 2026-11-04. Whether the live page still matches that capture is [VERIFY]. The six Roadway Departure entries and Pavement Friction Management summarize their FHWA pages as read in full on 2026-11-13 through a reader service (r.jina.ai). The other earlier entries' crash types and descriptions come from 2026-10-13 web search results and were not re-read; Roundabouts still points to an older FHWA roundabouts page. [VERIFY] each of those against its FHWA page before a plan is published."
   },
-  "listNote": "FHWA groups its list into speed management, pedestrian and bicyclist, roadway departure, intersections, and crosscutting items. This file carries 14 of them. [VERIFY] the current FHWA count and any items added since the 2021 update.",
+  "listNote": "FHWA's list, read 2026-11-13 from Internet Archive captures (newest 2026-11-04), names 23 countermeasures in four groups: Pedestrian (6), Roadway Departure (6), Intersections (7) and Crosscutting (4). This file carries 16 of those 23, including all six Roadway Departure items. It does not carry Backplates with Retroreflective Borders, Corridor Access Management, Reduced Left-Turn Conflict Intersections, Systemic Application of Multiple Low-Cost Countermeasures at Stop-Controlled Intersections, Yellow Change Intervals, Local Road Safety Plans or Road Safety Audit. FHWA removed five items from the list between the captures of 2026-06-30 and 2026-07-10: Roadway Reconfiguration (road diets), Bicycle Lanes, Appropriate Speed Limits for All Road Users, Speed Safety Cameras and Variable Speed Limits. This file keeps the first four, because saved plans cite them by id, and marks each with its fhwaList status. Variable Speed Limits was never in this file. Focus areas use FHWA's group names before July 2026 (Pedestrian/Bicyclist, Speed Management).",
   "cmfPolicy": "A crash modification factor is shown only with its CMF Clearinghouse ID, after that entry has been read. No entry was read for this version, so every value is left out and marked [VERIFY].",
   "countermeasures": [
     {
@@ -19,16 +21,26 @@
       "crashTypes": ["pedestrian", "intersection_turning"],
       "addresses": "Pedestrian crashes with turning vehicles at signalized intersections.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/leading-pedestrian-interval",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
     {
       "id": "road-diets",
-      "name": "Road Diets (Roadway Configuration)",
+      "name": "Road diets (roadway reconfiguration)",
       "focusArea": "pedestrian_bicyclist",
       "crashTypes": ["rear_end", "intersection_turning", "pedestrian"],
       "addresses": "Rear-end and left-turn crashes on four-lane undivided roads, and long pedestrian crossings.",
-      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/road-diets-roadway-configuration",
+      "sourceUrl": "https://web.archive.org/web/20260506/https://highways.dot.gov/safety/proven-safety-countermeasures/road-diets-roadway-reconfiguration",
+      "fhwaList": {
+        "status": "removed",
+        "lastSeenOnList": "2026-06-30",
+        "firstMissingFromList": "2026-07-10",
+        "stillMissingOn": "2026-11-04",
+        "listCaptureUrl": "https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures",
+        "formerPageCapturedOn": "2026-05-06",
+        "readOn": "2026-11-13"
+      },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -39,6 +51,7 @@
       "crashTypes": ["pedestrian"],
       "addresses": "Pedestrian crashes where people cross multilane urban and suburban roads.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/medians-and-pedestrian-refuge-islands-urban-and-suburban-areas",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -49,6 +62,7 @@
       "crashTypes": ["pedestrian"],
       "addresses": "Pedestrian crashes at uncontrolled marked crosswalks.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/rectangular-rapid-flashing-beacons-rrfb",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -59,6 +73,7 @@
       "crashTypes": ["pedestrian"],
       "addresses": "Pedestrian crashes at midblock and other uncontrolled crossings.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/pedestrian-hybrid-beacons",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse entries for this item, but none was read here; no value given."
     },
@@ -69,6 +84,7 @@
       "crashTypes": ["pedestrian", "nighttime"],
       "addresses": "Pedestrian crashes at crosswalks where drivers cannot see people crossing.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/crosswalk-visibility-enhancements",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -79,6 +95,7 @@
       "crashTypes": ["pedestrian"],
       "addresses": "Pedestrian crashes while walking along the road.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/walkways",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -88,7 +105,16 @@
       "focusArea": "pedestrian_bicyclist",
       "crashTypes": ["bicyclist"],
       "addresses": "Bicyclist crashes along road segments, including drivers overtaking bicyclists.",
-      "sourceUrl": "https://highways.dot.gov/media/19726",
+      "sourceUrl": "https://web.archive.org/web/20260609/https://highways.dot.gov/safety/proven-safety-countermeasures/bicycle-lanes",
+      "fhwaList": {
+        "status": "removed",
+        "lastSeenOnList": "2026-06-30",
+        "firstMissingFromList": "2026-07-10",
+        "stillMissingOn": "2026-11-04",
+        "listCaptureUrl": "https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures",
+        "formerPageCapturedOn": "2026-06-09",
+        "readOn": "2026-11-13"
+      },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -99,8 +125,20 @@
       "crashTypes": ["nighttime", "pedestrian"],
       "addresses": "Nighttime crashes at intersections and along roads, including pedestrian crashes.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "pavement-friction-management",
+      "name": "Pavement Friction Management",
+      "focusArea": "crosscutting",
+      "crashTypes": ["roadway_departure", "rear_end", "pedestrian"],
+      "addresses": "Roadway departure, intersection and pedestrian crashes where friction demand is high, such as horizontal curves, ramps, intersection approaches and places with wet-weather or rear-end crash history.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/pavement-friction-management",
+      "fhwaList": { "status": "on_list" },
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 10342, 10333 and 2259, but none was read here; no value given."
     },
     {
       "id": "enhanced-delineation-horizontal-curves",
@@ -109,8 +147,64 @@
       "crashTypes": ["roadway_departure", "nighttime"],
       "addresses": "Roadway departure crashes at horizontal curves.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/enhanced-delineation-horizontal-curves",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "longitudinal-rumble-strips-and-stripes",
+      "name": "Longitudinal Rumble Strips and Stripes on Two-Lane Roads",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Roadway departure crashes when distracted, drowsy or inattentive drivers drift from their lane, at the shoulder, edge line or center line.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/longitudinal-rumble-strips-and-stripes-two-lane-roads",
+      "fhwaList": { "status": "on_list" },
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 3358, 3356, 3425 and 3648, but none was read here; no value given."
+    },
+    {
+      "id": "median-barriers",
+      "name": "Median Barriers",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Cross-median crashes on divided highways, where a vehicle crosses the median into opposing traffic.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/median-barriers",
+      "fhwaList": { "status": "on_list" },
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse ID 7040, but it was not read here; no value given."
+    },
+    {
+      "id": "roadside-design-improvements-curves",
+      "name": "Roadside Design Improvements at Curves",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Roadway departure crashes on the outside of horizontal curves, including vehicles that roll over or strike a fixed object after leaving the road.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/roadside-design-improvements-curves",
+      "fhwaList": { "status": "on_list" },
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 4627, 4632, 35 and 36, but none was read here; no value given."
+    },
+    {
+      "id": "safetyedge",
+      "name": "SafetyEdge℠",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Crashes where a vehicle leaves the pavement and a vertical pavement edge drop-off keeps it from returning safely.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/safetyedgesm",
+      "fhwaList": { "status": "on_list" },
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 9205, 9211 and 9217, but none was read here; no value given."
+    },
+    {
+      "id": "wider-edge-lines",
+      "name": "Wider Edge Lines",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure", "nighttime"],
+      "addresses": "Roadway departure crashes where drivers cannot clearly see the edge of the travel lane, with the most effect on single-vehicle crashes on rural two-lane highways.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/wider-edge-lines",
+      "fhwaList": { "status": "on_list" },
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse ID 4737, but it was not read here; no value given."
     },
     {
       "id": "dedicated-turn-lanes",
@@ -119,6 +213,7 @@
       "crashTypes": ["intersection_turning", "rear_end"],
       "addresses": "Left-turn and rear-end crashes at intersections.",
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/dedicated-left-and-right-turn-lanes-intersections",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -129,6 +224,7 @@
       "crashTypes": ["intersection_angle", "intersection_turning"],
       "addresses": "Fatal and injury crashes at intersections, by removing high-speed angle and turning conflicts.",
       "sourceUrl": "https://highways.dot.gov/safety/intersection-safety/nrw",
+      "fhwaList": { "status": "on_list" },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given. The source URL is FHWA's roundabouts page that names this a proven countermeasure; the countermeasure's own page was not confirmed."
     },
@@ -138,7 +234,16 @@
       "focusArea": "speed_management",
       "crashTypes": ["speed_related", "pedestrian", "bicyclist"],
       "addresses": "Speed-related crashes, and crash severity for people walking and biking.",
-      "sourceUrl": "https://highways.dot.gov/sites/fhwa.dot.gov/files/2022-08/PSC_New_App%20Speed%20Limits_508.pdf",
+      "sourceUrl": "https://web.archive.org/web/20260611/https://highways.dot.gov/safety/proven-safety-countermeasures/appropriate-speed-limits-all-road-users",
+      "fhwaList": {
+        "status": "removed",
+        "lastSeenOnList": "2026-06-30",
+        "firstMissingFromList": "2026-07-10",
+        "stillMissingOn": "2026-11-04",
+        "listCaptureUrl": "https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures",
+        "formerPageCapturedOn": "2026-06-11",
+        "readOn": "2026-11-13"
+      },
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
@@ -148,9 +253,18 @@
       "focusArea": "speed_management",
       "crashTypes": ["speed_related"],
       "addresses": "Speeding-related crashes where speeding is a demonstrated problem.",
-      "sourceUrl": "https://highways.dot.gov/safety/speed-management/speed-safety-cameras-frequently-asked-questions",
+      "sourceUrl": "https://web.archive.org/web/20260603/https://highways.dot.gov/safety/proven-safety-countermeasures/speed-safety-cameras",
+      "fhwaList": {
+        "status": "removed",
+        "lastSeenOnList": "2026-06-30",
+        "firstMissingFromList": "2026-07-10",
+        "stillMissingOn": "2026-11-04",
+        "listCaptureUrl": "https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures",
+        "formerPageCapturedOn": "2026-06-03",
+        "readOn": "2026-11-13"
+      },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given. The source URL is FHWA's speed safety camera FAQ, which names this a proven countermeasure."
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     }
   ]
 }

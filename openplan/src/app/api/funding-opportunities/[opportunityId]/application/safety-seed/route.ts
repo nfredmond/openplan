@@ -9,6 +9,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { readSafetyArtifactSnapshot } from "@/lib/reports/safety-comparison-snapshot";
 import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
+import { loadSafetySeedFreshness } from "@/lib/grants/safety-seed-freshness";
 import { buildSafetySeedPreview, SafetySeedRefusal, SS4A_SEED_MIGRATION, SS4A_SECTION_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_ACQUISITION_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_ARTIFACT_PROJECTION, type SeedSourceRows } from "@/lib/grants/ss4a-safety-seed";
 
 const bodySchema = z.discriminatedUnion("operation", [
@@ -48,7 +49,14 @@ export async function GET(request: NextRequest, context: Context) {
       .or("metadata_json->>safetyPlanSnapshotV1.not.is.null,metadata_json->>safetyPlanSnapshotV2.not.is.null")
       .order("id", { ascending: false }).limit(51);
     if (before) query = query.lt("id", before);
-    const result = await query;
+    // The first page also says whether a Safety report newer than the seeded
+    // one exists. Reads only; a failed read comes back as "unknown".
+    const [result, freshness] = await Promise.all([
+      query,
+      before ? Promise.resolve(null) : loadSafetySeedFreshness(client, {
+        workspaceId: opportunity.workspace_id, opportunityId: opportunity.id, projectId: opportunity.project_id,
+      }),
+    ]);
     if (result.error) throw new Error("Safety artifact source read failed");
     const parsed = z.array(artifactOptionRow).max(51).safeParse(result.data);
     if (!parsed.success) throw new Error("Safety artifact source shape differs");
@@ -57,6 +65,7 @@ export async function GET(request: NextRequest, context: Context) {
       artifacts: rows.map((row) => ({ id: row.id, reportTitle: row.reports.title, artifactKind: row.artifact_kind, generatedAt: row.generated_at,
         sourceVersion: readSafetyArtifactSnapshot(row.metadata_json).kind })),
       nextCursor: parsed.data.length > 50 ? rows.at(-1)!.id : null, requiresProject: false,
+      ...(freshness ? { freshness } : {}),
     });
   } catch {
     audit.error("safety_artifact_options_failed");

@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   describeHighInjuryNetworkCoverage,
   describeHighInjuryNetworkMethod,
+  describeHighInjuryNetworkTie,
   describeHighInjuryNetworkUnavailable,
   describeHighInjuryNetworkYears,
   highInjuryNetworkCrashWord,
@@ -14,6 +15,7 @@ import {
 } from "@/lib/safety/high-injury-network";
 import {
   COUNTERMEASURE_CRASH_TYPE_LABELS,
+  countermeasureListStatus,
   describeCountermeasureSource,
   SAFETY_COUNTERMEASURE_FILE,
   SAFETY_COUNTERMEASURES,
@@ -24,6 +26,7 @@ import type {
 } from "@/lib/reports/safety-action-plan";
 import { REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
 import { withPlanningContext } from "@/lib/projects/planning-context";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export type HighInjuryNetworkReportTarget = {
   id: string;
@@ -121,6 +124,32 @@ function defaultReportId(reports: readonly HighInjuryNetworkReportTarget[], inge
 }
 
 /**
+ * How many places the report's saved plan treats that the current list does
+ * not show. Saving sends only listed rows, so it drops these. A plan from a
+ * different crash pull counts in full: none of it is loaded here.
+ */
+function unlistedSavedPlanCount(
+  plan: ReportSafetyActionPlan | null | undefined,
+  ingestId: string | null,
+  listedIds: ReadonlySet<string>,
+): number {
+  if (!plan) return 0;
+  if (plan.ingestId !== ingestId) return plan.attachments.length;
+  return plan.attachments.filter((attachment) => !listedIds.has(attachment.segmentId)).length;
+}
+
+/** The item's FHWA list status on its own line, only for an item FHWA removed. */
+function ListStatus({ countermeasure }: { countermeasure: (typeof SAFETY_COUNTERMEASURES)[number] }) {
+  const status = countermeasureListStatus(countermeasure);
+  if (!status) return null;
+  return (
+    <span className="block text-muted-foreground" data-testid="safety-countermeasure-list-status">
+      {status}
+    </span>
+  );
+}
+
+/**
  * The ranked high-injury network beside the map, with method, years, source
  * and coverage stated next to the numbers, and countermeasures a planner can
  * attach to a segment and save into a project report.
@@ -155,14 +184,27 @@ export function HighInjuryNetworkPanel({
     kind: "idle",
   });
 
+  // The page does not reread its reports after a save, so the plan just saved
+  // stands in for the report's stored plan until it does.
+  const [lastSaved, setLastSaved] = useState<{ reportId: string; plan: ReportSafetyActionPlan } | null>(null);
+  const { confirm, confirmDialog } = useConfirmDialog();
   const segments = useMemo(() => (network?.status === "computed" ? network.segments : []), [network]);
-  const attachedCount = Object.values(selections).filter((ids) => ids.length > 0).length;
+  // Only listed rows count. A plan saved against half-mile squares keeps its
+  // square ids in `selections`, but the save sends listed rows only.
+  const attachedCount = segments.filter((segment) => (selections[segment.id]?.length ?? 0) > 0).length;
   const comparisonReport = reports.find((report) => report.id === reportId && report.supportsSafetyComparison)
     ?? reports.find((report) => report.supportsSafetyComparison);
   const selectedReport = reports.find((report) => report.id === reportId);
   const planElsewhere = selectedReport && !holdsPlanFor(selectedReport, ingestId)
     ? reports.find((report) => holdsPlanFor(report, ingestId))
     : undefined;
+  const unlistedCount = unlistedSavedPlanCount(
+    lastSaved?.reportId === reportId ? lastSaved.plan : selectedReport?.safetyActionPlan,
+    ingestId,
+    new Set(segments.map((segment) => segment.id)),
+  );
+  const replacesWithEmpty = unlistedCount > 0 && attachedCount === 0;
+  const placeWord = unlistedCount === 1 ? "place" : "places";
   const selectReport = (id: string) => {
     setReportId(id);
     setSelections(initialSelections(reports, id, ingestId));
@@ -186,6 +228,10 @@ export function HighInjuryNetworkPanel({
   const measure = highInjuryNetworkMeasureLabel(network.basis, network.method);
   const perMileHeader = network.method === "road_segments" ? "Per mile" : "In square";
   const crashHeader = network.basis === "ksi" ? "Fatal / serious" : "Fatal";
+  const tieNote = describeHighInjuryNetworkTie(segments);
+  const itemWord = network.method === "road_segments"
+    ? (attachedCount === 1 ? "segment" : "segments")
+    : (attachedCount === 1 ? "square" : "squares");
 
   const toggle = (segmentId: string, countermeasureId: string) => {
     setSaveState({ kind: "idle" });
@@ -219,6 +265,11 @@ export function HighInjuryNetworkPanel({
 
   const save = async () => {
     if (!ingestId || !reportId) return;
+    if (replacesWithEmpty && !(await confirm({
+      headline: "Replace the saved plan with an empty one?",
+      consequence: `The saved plan treats ${unlistedCount} ${placeWord} this list does not show. No listed row has countermeasures, so the report keeps none.`,
+      confirmLabel: "Replace saved plan",
+    }))) return;
     const attachments: SafetyActionPlanAttachment[] = segments.flatMap((segment) => {
       const ids = selections[segment.id] ?? [];
       return ids.length > 0 ? [{ segmentId: segment.id, segmentLabel: segment.label, countermeasureIds: ids }] : [];
@@ -229,6 +280,7 @@ export function HighInjuryNetworkPanel({
       safetyActionPlan: { ingestId, attachments },
     });
     const title = reports.find((report) => report.id === reportId)?.title ?? "the report";
+    if (result.ok) setLastSaved({ reportId, plan: { ingestId, attachments } });
     setSaveState(result.ok
       ? { kind: "saved", message: `Saved to ${title}.` }
       : { kind: "failed", message: result.error ?? "The report could not be saved." });
@@ -278,6 +330,10 @@ export function HighInjuryNetworkPanel({
             : "No crash could be placed on a road piece, so nothing is ranked. That is not a finding that the roads are safe."}
         </p>
       ) : (
+        <>
+        {tieNote ? (
+          <p className="text-xs font-medium" data-testid="safety-hin-tie">{tieNote}</p>
+        ) : null}
         <table className="w-full text-xs" data-testid="safety-hin-table">
           <thead className="text-left text-muted-foreground">
             <tr>
@@ -316,7 +372,10 @@ export function HighInjuryNetworkPanel({
                                 checked={chosen.includes(countermeasure.id)}
                                 onChange={() => toggle(segment.id, countermeasure.id)}
                               />
-                              <span>{countermeasure.name}</span>
+                              <span>
+                                {countermeasure.name}
+                                <ListStatus countermeasure={countermeasure} />
+                              </span>
                             </label>
                           </li>
                         ))}
@@ -339,6 +398,7 @@ export function HighInjuryNetworkPanel({
             })}
           </tbody>
         </table>
+        </>
       )}
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs text-muted-foreground" data-testid="safety-hin-facts">
@@ -357,7 +417,7 @@ export function HighInjuryNetworkPanel({
 
       <details className="text-xs" data-testid="safety-countermeasure-list">
         <summary className="cursor-pointer font-medium">
-          Countermeasure list ({SAFETY_COUNTERMEASURES.length}, {SAFETY_COUNTERMEASURE_FILE.source.title})
+          Countermeasure list ({SAFETY_COUNTERMEASURES.length})
         </summary>
         <table className="mt-1 w-full">
           <thead className="text-left text-muted-foreground">
@@ -374,6 +434,7 @@ export function HighInjuryNetworkPanel({
                   <a href={countermeasure.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                     {countermeasure.name}
                   </a>
+                  <ListStatus countermeasure={countermeasure} />
                 </td>
                 <td className="py-1 pr-1">
                   {countermeasure.crashTypes.map((type) => COUNTERMEASURE_CRASH_TYPE_LABELS[type]).join(", ")}
@@ -393,6 +454,11 @@ export function HighInjuryNetworkPanel({
           left those places no way to record the plan at all. */}
       {ingestId && reports.length > 0 ? (
           <div className="flex flex-col gap-1 text-xs" data-testid="safety-hin-save">
+            {unlistedCount > 0 && (
+              <p className="font-medium" data-testid="safety-hin-unlisted-plan">
+                The saved plan treats {unlistedCount} {placeWord} this list does not show. Saving replaces it.
+              </p>
+            )}
             <div className="flex flex-wrap items-center gap-2">
               <label htmlFor="safety-hin-report" className="font-medium">Save to report</label>
               <select
@@ -413,9 +479,11 @@ export function HighInjuryNetworkPanel({
               >
                 {saveState.kind === "saving"
                   ? "Saving"
-                  : segments.length === 0
+                  : replacesWithEmpty
+                    ? "Replace saved plan"
+                    : segments.length === 0
                     ? "Save plan with no ranked segments"
-                    : `Save ${attachedCount} ${attachedCount === 1 ? "segment" : "segments"}`}
+                    : `Save ${attachedCount} ${itemWord}`}
               </button>
             </div>
             {planElsewhere && (
@@ -460,6 +528,7 @@ export function HighInjuryNetworkPanel({
             To save countermeasures, open Safety from a project.
           </p>
         )}
+      {confirmDialog}
     </section>
   );
 }

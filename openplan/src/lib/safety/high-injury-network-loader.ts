@@ -140,6 +140,12 @@ export async function loadHighInjuryNetworkCrashes(
 /**
  * Load and rank in one step for a route. Every failure becomes an explicit
  * unavailable state with its reason; none becomes an empty list.
+ *
+ * ROAD LINES FOR THE CRASHES THEMSELVES. When no road lines are stored,
+ * `loadRoads` may fetch and store lines near the crashes being ranked, so a
+ * place ranks on named roads whatever its severity coverage. It is asked once,
+ * only when there are crashes to place. An empty answer, or a throw, keeps
+ * the grid; it never becomes a failed read.
  */
 export async function buildHighInjuryNetworkForIngest(
   supabase: HighInjuryNetworkSupabaseLike,
@@ -153,6 +159,9 @@ export async function buildHighInjuryNetworkForIngest(
     yearFrom?: number;
     yearTo?: number;
     roads: readonly SafetyRoadContextFeature[] | null;
+    loadRoads?: (crashes: readonly HighInjuryNetworkCrash[]) => Promise<readonly SafetyRoadContextFeature[]>;
+    /** Known roads that may name grid squares. They never rank. */
+    namingRoads?: readonly SafetyRoadContextFeature[];
   },
 ): Promise<HighInjuryNetwork> {
   const basis = highInjuryNetworkBasis(input.severityCompleteness);
@@ -173,11 +182,21 @@ export async function buildHighInjuryNetworkForIngest(
   if (read.status === "failed") return { status: "unavailable", reason: "crash_read_failed", basis };
   if (read.status === "too_many") return { status: "unavailable", reason: "too_many_crashes", basis };
 
+  let roads: readonly SafetyRoadContextFeature[] = input.roads;
+  if (roads.length === 0 && input.loadRoads && read.crashes.length > 0) {
+    try {
+      roads = await input.loadRoads(read.crashes);
+    } catch {
+      roads = [];
+    }
+  }
+
   return computeHighInjuryNetwork({
     crashes: read.crashes,
     crashesConsidered: read.count,
     basis,
-    roads: input.roads,
+    roads,
     years,
+    namingRoads: input.namingRoads,
   });
 }
