@@ -39,7 +39,7 @@ const ROUTE_GROUPS = ["(app)", "(portal)"];
  */
 const PAGES_ANSWER_THEMSELVES: Record<string, string> = {
   "(app)/aerial/missions/[missionId]": "Mission and edit pages read the mission and call notFound() for no row.",
-  "(app)/county-runs/[countyRunId]": "The page reads the run in the current workspace and calls notFound() for no row.",
+  "(app)/county-runs/[countyRunId]": "The page reads the run through the reader's client and calls notFound() for no row.",
   "(app)/engagement/[campaignId]": "Campaign and preview pages read the campaign and call notFound() for no row.",
   "(app)/grants/bca/[projectId]": "The page reads the project and the reader's role and calls notFound() for either refusal.",
   "(app)/invoicing/engagements/[engagementId]": "The contract read refuses a missing or unmanaged contract with 403, which the page turns into notFound().",

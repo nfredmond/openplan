@@ -27,22 +27,33 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
 
+/** The reader's current workspace. */
 const READER_WORKSPACE = "11111111-1111-4111-8111-111111111111";
+/** A workspace the reader also belongs to, but is not current. */
+const SECOND_WORKSPACE = "33333333-3333-4333-8333-333333333333";
+/** A workspace the reader does not belong to. */
 const OTHER_WORKSPACE = "22222222-2222-4222-8222-222222222222";
+const READER_MEMBER_OF = [READER_WORKSPACE, SECOND_WORKSPACE];
 const OWN = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const OTHER = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const NO_SUCH = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const IN_SECOND = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 
 const ROWS = [
   { id: OWN, workspace_id: READER_WORKSPACE, run_name: "Own run", geography_type: "county", geography_id: "x" },
   { id: OTHER, workspace_id: OTHER_WORKSPACE, run_name: "Other run", geography_type: "county", geography_id: "y" },
+  { id: IN_SECOND, workspace_id: SECOND_WORKSPACE, run_name: "Second run", geography_type: "county", geography_id: "z" },
 ];
 
 type Query = { table: string; columns: string; filters: Array<[string, unknown]> };
 let queries: Query[] = [];
 let failReads = false;
+let kpiWorkspaceIds: string[] = [];
 
-/** A cookie-scoped client stand-in: the reader sees only their workspace's rows. */
+/**
+ * A cookie-scoped client stand-in: row security shows the reader every row in
+ * a workspace they belong to, current or not, and none in any other.
+ */
 function readerClient() {
   return {
     auth: { getUser: async () => ({ data: { user: { id: "reader" } }, error: null }) },
@@ -60,7 +71,7 @@ function readerClient() {
         },
         async maybeSingle() {
           if (failReads) return { data: null, error: { code: "08006", message: "connection refused" } };
-          const match = ROWS.filter((row) => row.workspace_id === READER_WORKSPACE).find((row) =>
+          const match = ROWS.filter((row) => READER_MEMBER_OF.includes(row.workspace_id)).find((row) =>
             query.filters.every(([column, value]) => row[column as keyof typeof row] === value)
           );
           return { data: match ?? null, error: null };
@@ -76,7 +87,10 @@ vi.mock("@/lib/workspaces/current", () => ({
   loadCurrentWorkspaceMembership: async () => ({ membership: { workspace_id: READER_WORKSPACE, role: "owner" } }),
 }));
 vi.mock("@/lib/models/behavioral-onramp-kpis", () => ({
-  loadBehavioralOnrampKpisForWorkspace: async () => ({ kpis: [], rejectedCountyRunIds: [], error: null }),
+  loadBehavioralOnrampKpisForWorkspace: async ({ workspaceId }: { workspaceId: string }) => {
+    kpiWorkspaceIds.push(workspaceId);
+    return { kpis: [], rejectedCountyRunIds: [], error: null };
+  },
 }));
 
 const contractAccessMock = vi.fn();
@@ -90,6 +104,7 @@ import ContractPage from "@/app/(app)/invoicing/engagements/[engagementId]/page"
 beforeEach(() => {
   queries = [];
   failReads = false;
+  kpiWorkspaceIds = [];
   notFoundMock.mockClear();
   contractAccessMock.mockReset();
 });
@@ -100,11 +115,28 @@ describe("the county run page", () => {
   it("renders for a run in the reader's workspace", async () => {
     await expect(render(OWN)).resolves.toBeTruthy();
     expect(notFoundMock).not.toHaveBeenCalled();
+    expect(kpiWorkspaceIds).toEqual([READER_WORKSPACE]);
+  });
+
+  // Before KI-2026-11-14-280 this page rendered the client view, which loads
+  // the run through `/api/county-runs/[id]` with no workspace filter. Row
+  // security decides here too, so a shared link to a run in the reader's other
+  // workspace still opens, with that workspace's indicators.
+  it("renders for a run in another workspace the reader belongs to, which is not current", async () => {
+    await expect(render(IN_SECOND)).resolves.toBeTruthy();
+    expect(notFoundMock).not.toHaveBeenCalled();
+    expect(kpiWorkspaceIds).toEqual([SECOND_WORKSPACE]);
+    const runRead = queries.find((query) => query.table === "county_runs");
+    expect(runRead).toEqual({
+      table: "county_runs",
+      columns: "id, workspace_id, run_name, geography_type, geography_id",
+      filters: [["id", IN_SECOND]],
+    });
   });
 
   it.each([
     ["a run that does not exist", NO_SUCH],
-    ["another workspace's run", OTHER],
+    ["a run in a workspace the reader does not belong to", OTHER],
   ])("answers not found for %s", async (_label, id) => {
     await expect(render(id)).rejects.toBe(NOT_FOUND);
     expect(notFoundMock).toHaveBeenCalledTimes(1);
@@ -114,6 +146,7 @@ describe("the county run page", () => {
     failReads = true;
     await expect(render(OWN)).resolves.toBeTruthy();
     expect(notFoundMock).not.toHaveBeenCalled();
+    expect(kpiWorkspaceIds).toEqual([READER_WORKSPACE]);
   });
 });
 

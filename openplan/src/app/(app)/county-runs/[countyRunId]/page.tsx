@@ -44,34 +44,39 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
     );
   }
 
-  const kpiResult = await loadBehavioralOnrampKpisForWorkspace({
-    supabase,
-    workspaceId: membership.workspace_id,
-    consent: { acceptScreeningGrade: acceptingScreeningGrade },
-  });
-
-  const isThisRunRejected = kpiResult.rejectedCountyRunIds.includes(countyRunId);
-  const basePathname = `/county-runs/${countyRunId}`;
-
-  // The row gives the run's name and its county. A failed read is disclosed
-  // below as unreadable, never as a run with no name. The county decides
-  // whether the CEQA screen applies, so an unread row shows no CEQA screen.
+  // The row gives the run's name, its workspace and its county. Row security
+  // decides which runs the reader may see, as in `/api/county-runs/[id]`, which
+  // loads the run for the client view: a run in another workspace the reader
+  // belongs to opens here too, not only one in the current workspace. A failed
+  // read is disclosed below as unreadable, never as a run with no name. The
+  // county decides whether the CEQA screen applies, so an unread row shows no
+  // CEQA screen.
   const countyRunResult = await supabase
     .from("county_runs")
-    .select("id, run_name, geography_type, geography_id")
+    .select("id, workspace_id, run_name, geography_type, geography_id")
     .eq("id", countyRunId)
-    .eq("workspace_id", membership.workspace_id)
     .maybeSingle();
 
-  // No row, with no error, is a run this workspace does not have: a real 404
+  // No row, with no error, is a run this reader cannot see: a real 404
   // (KI-2026-11-14-280). This route has no `loading.tsx`, so the status holds.
   if (recordRowIsAbsent(countyRunResult)) notFound();
 
   const reads = new ReadFailureLog();
   reads.check("this county run's record", countyRunResult);
   const countyRun = countyRunResult.data as
-    | ({ id: string; run_name: string | null } & CountyRunGeography)
+    | ({ id: string; workspace_id: string; run_name: string | null } & CountyRunGeography)
     | null;
+
+  // The indicators come from the run's own workspace. When the row could not
+  // be read, the current workspace is the only one known.
+  const kpiResult = await loadBehavioralOnrampKpisForWorkspace({
+    supabase,
+    workspaceId: countyRun?.workspace_id ?? membership.workspace_id,
+    consent: { acceptScreeningGrade: acceptingScreeningGrade },
+  });
+
+  const isThisRunRejected = kpiResult.rejectedCountyRunIds.includes(countyRunId);
+  const basePathname = `/county-runs/${countyRunId}`;
   const runName = countyRun?.run_name ?? null;
   // CEQA is California law. Outside California this page shows no CEQA screen.
   const showsCeqaScreen = countyRunShowsCeqaScreen(countyRun);
