@@ -82,7 +82,22 @@ function readerClient() {
   };
 }
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => readerClient() }));
+type RpcError = { code: string; message: string };
+let contractRead: { data: unknown; error: RpcError | null } = { data: null, error: null };
+let rpcCalls: Array<[string, unknown]> = [];
+
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: async () => readerClient(),
+  // The contract read runs `read_contract_management` through the service client; its errors pass
+  // through the real `contractAccess` and `reportingError`.
+  createServiceRoleClient: () => ({
+    rpc: async (name: string, args: unknown) => {
+      rpcCalls.push([name, args]);
+      return contractRead;
+    },
+  }),
+}));
 vi.mock("@/lib/workspaces/current", () => ({
   loadCurrentWorkspaceMembership: async () => ({ membership: { workspace_id: READER_WORKSPACE, role: "owner" } }),
 }));
@@ -93,8 +108,6 @@ vi.mock("@/lib/models/behavioral-onramp-kpis", () => ({
   },
 }));
 
-const contractAccessMock = vi.fn();
-vi.mock("@/lib/invoicing/contracts/server", () => ({ contractAccess: (id: string) => contractAccessMock(id) }));
 vi.mock("@/lib/time/workspace-calendar", () => ({ loadWorkspaceCalendar: async () => ({ timeZone: "UTC" }) }));
 
 import CountyRunDetailPage from "@/app/(app)/county-runs/[countyRunId]/page";
@@ -106,7 +119,8 @@ beforeEach(() => {
   failReads = false;
   kpiWorkspaceIds = [];
   notFoundMock.mockClear();
-  contractAccessMock.mockReset();
+  contractRead = { data: null, error: null };
+  rpcCalls = [];
 });
 
 describe("the county run page", () => {
@@ -176,29 +190,39 @@ describe("the land use plan page", () => {
 
 describe("the contract management page", () => {
   const render = (engagementId: string) => ContractPage({ params: Promise.resolve({ engagementId }) });
-  const refusal = (status: number) => ({ response: new Response(null, { status }) });
+  const fails = (code: string, message: string) => {
+    contractRead = { data: null, error: { code, message } };
+  };
 
-  it("answers not found when the contract read refuses (missing, another workspace, or not a manager)", async () => {
-    // The read returns 42501, mapped to 403, for all three: one answer, one path.
-    contractAccessMock.mockResolvedValue(refusal(403));
+  // `read_contract_management_v046` raises this for a contract that does not exist and for a reader
+  // with no role on it: one error for both, so one answer.
+  it("answers not found when the contract read refuses the reader", async () => {
+    fails("42501", "Contract access denied");
     await expect(render(NO_SUCH)).rejects.toBe(NOT_FOUND);
     await expect(render(OTHER)).rejects.toBe(NOT_FOUND);
     expect(notFoundMock).toHaveBeenCalledTimes(2);
   });
 
-  it("keeps the unavailable notice when the read did not complete", async () => {
-    contractAccessMock.mockResolvedValue(refusal(503));
+  it.each([
+    ["a missing EXECUTE grant (403)", "42501", "permission denied for function read_contract_management"],
+    ["the delivery layer's own refusal (403)", "42501", "Contract delivery access denied"],
+    ["a read that did not complete (503)", "08006", "connection refused"],
+    ["a duplicate source observation (409)", "23505", "duplicate key value violates unique constraint"],
+  ])("keeps the unavailable notice for %s", async (_label, code, message) => {
+    fails(code, message);
     const page = await render(OWN);
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(JSON.stringify(page)).toContain("Contract management unavailable");
   });
 
-  it("renders the contract for a reader who may manage it", async () => {
-    contractAccessMock.mockResolvedValue({
-      state: { engagement: { id: OWN, workspace_id: READER_WORKSPACE } },
-      service: {},
-    });
-    await expect(render(OWN)).resolves.toBeTruthy();
+  // Access follows the contract's own workspace (`contract_actor_role`), never the current one: the
+  // read takes no workspace, so a contract in the reader's other workspace opens like any other.
+  it("renders a contract the read returns, in any workspace, and passes the read no workspace", async () => {
+    contractRead = { data: { engagement: { id: IN_SECOND, workspace_id: SECOND_WORKSPACE } }, error: null };
+    await expect(render(IN_SECOND)).resolves.toBeTruthy();
     expect(notFoundMock).not.toHaveBeenCalled();
+    expect(rpcCalls).toEqual([
+      ["read_contract_management", { p_engagement_id: IN_SECOND, p_actor_id: "reader" }],
+    ]);
   });
 });

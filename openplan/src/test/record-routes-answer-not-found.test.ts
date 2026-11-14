@@ -42,7 +42,7 @@ const PAGES_ANSWER_THEMSELVES: Record<string, string> = {
   "(app)/county-runs/[countyRunId]": "The page reads the run through the reader's client and calls notFound() for no row.",
   "(app)/engagement/[campaignId]": "Campaign and preview pages read the campaign and call notFound() for no row.",
   "(app)/grants/bca/[projectId]": "The page reads the project and the reader's role and calls notFound() for either refusal.",
-  "(app)/invoicing/engagements/[engagementId]": "The contract read refuses a missing or unmanaged contract with 403, which the page turns into notFound().",
+  "(app)/invoicing/engagements/[engagementId]": "The contract read raises one refusal for a missing contract and a reader with no role on it, which the page turns into notFound().",
   "(app)/land-use-plans/[planId]": "The page reads the plan's id through the reader's client and calls notFound() for no row.",
   "(app)/maps/[packageId]": "The page reads the map package and calls notFound() for no row.",
   "(app)/models/[modelId]": "The page reads the model and calls notFound() for no row.",
