@@ -1270,7 +1270,7 @@ export function describeFundingSnapshot(
   };
 }
 
-export function formatDateTime(value: string | null | undefined): string {
+function formatDateTimeIn(value: string | null | undefined, timeZone: "UTC" | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -1279,5 +1279,21 @@ export function formatDateTime(value: string | null | undefined): string {
       ? parsed.toLocaleDateString("en-US", { timeZone: "UTC" })
       : value;
   }
-  return parsed.toLocaleString("en-US");
+  return timeZone ? parsed.toLocaleString("en-US", { timeZone }) : parsed.toLocaleString("en-US");
+}
+
+/** A timestamp for a screen, in the time zone of whatever renders it. */
+export function formatDateTime(value: string | null | undefined): string {
+  return formatDateTimeIn(value, undefined);
+}
+
+/**
+ * A timestamp inside a stored fact claim. Accepted narratives keep a hash of
+ * their facts, so the text must not move with the server's time zone. Always
+ * UTC, and on a UTC host byte-identical to `formatDateTime`, so hashes stored
+ * by the hosted site (which runs in UTC) still match. No zone label: adding
+ * one would change every stored hash.
+ */
+export function formatFactDateTime(value: string | null | undefined): string {
+  return formatDateTimeIn(value, "UTC");
 }
