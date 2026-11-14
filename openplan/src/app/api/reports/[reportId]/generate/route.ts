@@ -1,6 +1,14 @@
 import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { persistSafetyPlanGeneration } from "@/lib/reports/safety-plan-persistence";
 import { buildSafetyPlanSnapshot, readSafetyPlanEvidenceFence, type SafetyPlanFenceClient, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import {
+  buildSafetyPlanNetworkMap,
+  buildSafetyPlanSupport,
+  loadSafetyPlanSupportReads,
+  safetyPlanEngagementInput,
+  type SafetyPlanSupport,
+} from "@/lib/reports/safety-plan-support";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
@@ -2547,6 +2555,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const savedSafetyActionPlan = readReportSafetyActionPlan(report.metadata_json);
     let safetyPlanSnapshotV1: SafetyPlanSnapshot | null = null;
     let safetyActionPlan: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null = null;
+    let safetyActionPlanSupport: SafetyPlanSupport | null = null;
     if (savedSafetyActionPlan) {
       if (!selectedSafetyIngestIds.includes(savedSafetyActionPlan.ingestId)) {
         safetyActionPlan = { kind: "stale_acquisition" };
@@ -2569,10 +2578,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
               }
             )
           : { status: "unavailable" as const, reason: "crash_read_failed" as const, basis: null };
+        // The project's engagement and benefit-cost records, printed beside
+        // the plan and read the same way the SS4A appendices read them.
+        const supportReads = await loadSafetyPlanSupportReads(supabase, {
+          projectId: projectRow.id,
+          workspaceId: report.workspace_id,
+        });
         safetyActionPlan = buildSafetyActionPlanSection({
           plan: savedSafetyActionPlan,
           evidence: planEvidence,
           network,
+          engagement: safetyPlanEngagementInput(supportReads.engagement),
+        });
+        const planStudyArea = corridorGeojsonSchema.safeParse(
+          projectGeographyReadState === "ok" ? placeOfRecordFromProject(projectRow).geometry : null
+        );
+        safetyActionPlanSupport = buildSafetyPlanSupport({
+          reads: supportReads,
+          projectId: projectRow.id,
+          projectName: typeof projectRow.name === "string" && projectRow.name.trim() ? projectRow.name : null,
+          networkMap: buildSafetyPlanNetworkMap({
+            network,
+            roads: safetyRoadContext,
+            projectGeometry: planStudyArea.success ? planStudyArea.data : null,
+          }),
         });
         if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
           const evidenceFence = await readSafetyPlanEvidenceFence(supabase as unknown as SafetyPlanFenceClient, {
@@ -2611,6 +2640,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       safetyKsiEquityTracts,
       safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
       safetyActionPlan,
+      safetyActionPlanSupport,
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,

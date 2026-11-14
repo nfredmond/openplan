@@ -373,7 +373,7 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
                       <span className="min-w-0">
                         <span className="font-medium">{member.email ?? "Unknown email"}</span>
                         {isSelf ? <span className="text-muted-foreground"> (you)</span> : null}{" "}
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                        <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground">
                           {member.role}
                         </span>
                       </span>

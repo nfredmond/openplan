@@ -272,19 +272,19 @@ export function WorkspaceIntegrationKeysPanel({
             </p>
             <p className="mt-1 text-xs">
               For whoever operates this deployment: the server setting{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
+              <code className="rounded bg-secondary px-1 py-0.5 text-xs">
                 OPENPLAN_INTEGRATION_KEY_SECRET
               </code>{" "}
               has changed since this key was saved
               {provider.envKeyPresent ? (
                 <>
                   , and requests currently fall back to{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>.
+                  <code className="rounded bg-secondary px-1 py-0.5 text-xs">{provider.envVar}</code>.
                 </>
               ) : (
                 <>
                   , and no{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>{" "}
+                  <code className="rounded bg-secondary px-1 py-0.5 text-xs">{provider.envVar}</code>{" "}
                   is set to fall back to.
                 </>
               )}
@@ -308,7 +308,7 @@ export function WorkspaceIntegrationKeysPanel({
       return (
         <p className="mt-2 text-sm text-muted-foreground">
           Ready: running on a key set up by whoever operates this deployment (
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>)
+          <code className="rounded bg-secondary px-1 py-0.5 text-xs">{provider.envVar}</code>)
         </p>
       );
     }
@@ -437,11 +437,11 @@ export function WorkspaceIntegrationKeysPanel({
                     <p className="mt-2 text-xs text-muted-foreground">
                       Per-workspace keys are unavailable on this deployment: its operator has not
                       set{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">
+                      <code className="rounded bg-secondary px-1 py-0.5">
                         OPENPLAN_INTEGRATION_KEY_SECRET
                       </code>
                       . Until that is configured, set{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">{provider.envVar}</code> as a
+                      <code className="rounded bg-secondary px-1 py-0.5">{provider.envVar}</code> as a
                       deployment environment variable instead.
                     </p>
                   )
@@ -454,7 +454,7 @@ export function WorkspaceIntegrationKeysPanel({
                     ) : null}
                     <p className="mt-1 text-xs text-muted-foreground">
                       Deployment environment variable:{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">{provider.envVar}</code>
+                      <code className="rounded bg-secondary px-1 py-0.5">{provider.envVar}</code>
                     </p>
                     <div className="mt-2">
                       <Button

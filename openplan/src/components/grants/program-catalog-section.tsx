@@ -236,9 +236,14 @@ export function GrantsProgramCatalogSection({
 
               <div className="shrink-0 pt-0.5">
                 {isTracked ? (
-                  <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[color:var(--pine)]">
+                  // Tracked in this visit gets a status line, so the click is
+                  // confirmed where it happened (rehearsal D19).
+                  <span
+                    role={locallyTrackedKeys.includes(program.key) ? "status" : undefined}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[color:var(--pine)]"
+                  >
                     <Check className="h-4 w-4" />
-                    Tracked
+                    {locallyTrackedKeys.includes(program.key) ? "Added to opportunities" : "Tracked"}
                   </span>
                 ) : (
                   <Button

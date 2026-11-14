@@ -44,6 +44,9 @@ import {
   SAFETY_ACTION_PLAN_SECTION_TITLE,
   type SafetyActionPlanSectionDraft,
 } from "@/lib/reports/safety-action-plan";
+import type { SafetyPlanSupport } from "@/lib/reports/safety-plan-support";
+import type { EvidenceAppendix } from "@/lib/grants/evidence-appendices";
+import { formatSavedDate } from "@/lib/grants/bca-evidence";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -253,6 +256,12 @@ export type ReportGenerationData = {
    * the report no longer cites; it renders as that notice, never as the old plan.
    */
   safetyActionPlan?: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null;
+  /**
+   * The engagement summary, benefit-cost summary and network map printed in
+   * the safety action plan section. Rendered only, never frozen into the
+   * Safety snapshot. Absent on callers that do not read them.
+   */
+  safetyActionPlanSupport?: SafetyPlanSupport | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   guidedComparison?: GuidedComparisonSelectionV1 | null;
@@ -1321,7 +1330,35 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
  * figure keeps its source line, and the uncovered components are listed so the
  * draft cannot read as a finished plan.
  */
-export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionPlan"]): string {
+/**
+ * One shared evidence block (the SS4A appendix model) inside the safety
+ * action plan section. Absent records print "Missing", failed reads print
+ * "Could not be read", and dates print as calendar dates.
+ */
+function safetyPlanEvidenceBlockMarkup(block: EvidenceAppendix): string {
+  const heading = `<h3>${esc(block.title)}</h3>`;
+  if (block.status !== "included") {
+    return `${heading}<p><strong>${block.status === "unreadable" ? "Could not be read." : "Missing."}</strong> ${esc(block.statusNote ?? "")}</p>`;
+  }
+  const source = block.source
+    ? `<p class="source-line">Source: ${esc(block.source.record)} ${esc(block.source.id)}. ${esc(block.source.dateLabel)} ${esc(block.source.date ? formatSavedDate(block.source.date) : "date not recorded")}. ${esc(block.source.hash ? `${block.source.hashLabel}: ${block.source.hash}.` : `${block.source.hashLabel}.`)}${block.source.details.length > 0 ? ` ${esc(block.source.details.join(" "))}` : ""}</p>`
+    : "";
+  const facts = block.facts.length > 0
+    ? `<dl class="detail-grid">${block.facts.map((fact) => `<div><dt>${esc(fact.label)}</dt><dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
+    : "";
+  const table = block.table
+    ? `<table class="wrap-cells"><thead><tr>${block.table.headers.map((header) => `<th>${esc(header)}</th>`).join("")}</tr></thead>
+      <tbody>${block.table.rows.map((row) => `<tr>${row.map((cell) => `<td>${esc(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`
+    : "";
+  return `${heading}${block.statusNote ? `<p>${esc(block.statusNote)}</p>` : ""}${facts}${table}${
+    block.notes.length > 0 ? `<ul>${block.notes.map((note) => `<li>${esc(note)}</li>`).join("")}</ul>` : ""
+  }${source}`;
+}
+
+export function safetyActionPlanMarkup(
+  plan: ReportGenerationData["safetyActionPlan"],
+  support: SafetyPlanSupport | null = null
+): string {
   if (!plan) return "";
   const heading = `<h2 class="section-title">${esc(SAFETY_ACTION_PLAN_SECTION_TITLE)}</h2>`;
   if ("kind" in plan && plan.kind === "stale_acquisition") {
@@ -1358,6 +1395,7 @@ export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionP
           <td>${row.countermeasureNames.length > 0 ? row.countermeasureNames.map(esc).join("; ") : "None attached"}</td>
         </tr>`).join("")}</tbody>
       </table>` : ""}
+      ${networkMapMarkup(support?.networkMap ?? null, network.rows.length)}
       <p><strong>Method:</strong> ${esc(network.method)}</p>
       <p><strong>Coverage:</strong> ${esc(network.coverage)}</p>
       <p class="source-line">${esc(network.sourceLine)}</p>`;
@@ -1375,7 +1413,21 @@ export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionP
     <ul>${draft.components.map((component) => `<li><strong>${esc(component.component)}:</strong> ${component.status === "partial" ? "Partly covered." : "Not covered."} ${esc(component.gap)}</li>`).join("")}</ul>
     <p class="source-line">${esc(draft.componentSourceLine)}</p>`;
 
-  return `<section id="safety_action_plan">${heading}<p>${esc(draft.draftNotice)}</p>${summary}${networkMarkup}${treatments}${components}</section>`;
+  const evidence = support
+    ? `${safetyPlanEvidenceBlockMarkup(support.engagement)}${safetyPlanEvidenceBlockMarkup(support.bca)}`
+    : "";
+
+  return `<section id="safety_action_plan">${heading}<p>${esc(draft.draftNotice)}</p>${summary}${networkMarkup}${treatments}${evidence}${components}</section>`;
+}
+
+/**
+ * The ranked network as a figure. Its count comes from the same ranked list
+ * as the table, so the text, the numbered marks and the rows agree.
+ */
+function networkMapMarkup(map: SafetyPlanSupport["networkMap"], rowCount: number): string {
+  if (!map) return "";
+  if (map.kind === "not_drawn") return `<p><strong>Map not drawn.</strong> ${esc(map.reason)}</p>`;
+  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red and numbered by rank${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}. The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
@@ -2093,6 +2145,10 @@ const REPORT_DOCUMENT_STYLES = `
       .geo-scale-line { stroke: #13222b; stroke-width: 2; }
       .geo-figure figcaption { margin-top: 12px; font-size: 14px; line-height: 1.55; color: #3b4952; }
       .geo-figure figcaption p { margin: 6px 0 0; }
+      .safety-network-map { margin: 14px 0; break-inside: avoid; }
+      .safety-network-map figcaption { margin-top: 8px; font-size: 13px; line-height: 1.5; color: #3b4952; }
+      table.wrap-cells { width: 100%; table-layout: fixed; }
+      table.wrap-cells th, table.wrap-cells td { overflow-wrap: anywhere; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {
@@ -2171,7 +2227,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           </section>`
         )
         .join("")}
-      ${safetyActionPlanMarkup(data.safetyActionPlan)}
+      ${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}
     </main>
   </body>
 </html>`;

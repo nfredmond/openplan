@@ -62,7 +62,7 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
     <h3 className="font-semibold">Project jurisdiction context</h3>
     <p className="text-sm text-muted-foreground">Declare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.</p>
     {invalid ? <p role="alert">Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable.</p> : saved === null
-      ? <p>No separate declaration. Jurisdiction assessment may show labelled legacy study-place context.</p>
+      ? <p>Jurisdiction not declared.</p>
       : saved.state === "unresolved" ? <p>Jurisdiction explicitly unresolved. Study-place fallback is disabled.</p>
         : <ul>{saved.entries.map((entry, index) => <li key={index}>{entry.label}: {entry.identity === "staff_declared" ? "unverified staff declaration" : "server-resolved identity"}</li>)}</ul>}
     {!editing && canWrite && <Button type="button" onClick={restart}>Edit jurisdiction context</Button>}

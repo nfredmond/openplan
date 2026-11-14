@@ -295,6 +295,18 @@ describe("engagement category and item routes", () => {
     expect(itemUpdateMock).not.toHaveBeenCalled();
   });
 
+  it("accepts the review reason under the name the refusal uses", async () => {
+    const response = await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved", reviewReason: "Checked against the site visit." }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
+    expect(response.status).toBe(200);
+    expect(itemUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "approved", review_reason: "Checked against the site visit.", moderation_notes: "Checked against the site visit." }));
+  });
+
+  it("refuses two different review reasons in one request", async () => {
+    const response = await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ expectedUpdatedAt: "2026-09-06T12:00:00+00:00", status: "approved", reviewReason: "One reason", moderationNotes: "Another reason" }) }), { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111", itemId: "66666666-6666-4666-8666-666666666666" }) });
+    expect(response.status).toBe(400);
+    expect(itemUpdateMock).not.toHaveBeenCalled();
+  });
+
   for(const change of [{categoryId:null},{sourceType:"email"}])it("requires a new explicit reason for category or source changes",async()=>{
     const response=await patchItem(new NextRequest("http://localhost/api/engagement/campaigns/1/items/1",{method:"PATCH",body:JSON.stringify({expectedUpdatedAt:"2026-09-06T12:00:00+00:00",...change})}),{params:Promise.resolve({campaignId:"11111111-1111-4111-8111-111111111111",itemId:"66666666-6666-4666-8666-666666666666"})});
     expect(response.status).toBe(400);expect(itemUpdateMock).not.toHaveBeenCalled();expect(itemSelectMock).toHaveBeenCalledWith(expect.stringContaining("source_type"));

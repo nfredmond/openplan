@@ -336,6 +336,15 @@ export function GrantsOpportunityRegistryCard({
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}
+            {opportunity.project ? (
+              <Link
+                href={`/grants/bca/${opportunity.project.id}`}
+                className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+              >
+                Benefit-cost analysis
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
             {programHref ? (
               <Link
                 href={programHref}
