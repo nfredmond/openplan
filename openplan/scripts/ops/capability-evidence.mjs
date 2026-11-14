@@ -18,6 +18,17 @@ const JOB_DEFINITIONS = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "proven_job_
 const PROVEN_JOB_ENTRY_FIELDS = new Set(["jobId", "places", "commit", "reviewedAt", "evidence"]);
 
 /**
+ * The statuses that show the app refused a signed-in second account another
+ * workspace's record. The report page answers 404 through notFound(); the
+ * report download and the application export answer 404 for a record they
+ * cannot find and 403 for "Workspace access denied". A 401 means the second
+ * account was not signed in, a 5xx means the handler failed before it decided,
+ * and a 400 or 422 either never reached the workspace check or came after it
+ * passed, so none of them is evidence of isolation.
+ */
+const CROSS_WORKSPACE_REFUSAL_STATUSES = new Set([403, 404]);
+
+/**
  * Validate the dated, exact-byte records behind proven coverage cells and
  * proven jobs. Cells are checked for custody and review dates only; a proven
  * job entry also has its record read and checked by validateProvenJobRecord.
@@ -138,6 +149,12 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
       if (check.contentReturned || check.status < 400) {
         refuse(`cross-workspace request for another workspace's ${target} returned content (status ${check.status})`);
       }
+      if (!CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status)) {
+        refuse(
+          `cross-workspace request for another workspace's ${target} answered status ${check.status}, which is inconclusive; ` +
+            "only 403 (workspace access denied) or 404 (not found) shows the app refused it",
+        );
+      }
     }
   }
 
@@ -253,7 +270,10 @@ const SECRET_PATTERNS = [
   ["a plus-address", /[A-Za-z0-9._%-]+\+[A-Za-z0-9._%+-]*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/],
   ["an email address", /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/],
   ["a JWT", /eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]*/],
-  ["a token", /\b(?:sk-ant-|sk_live_|sk_test_|rk_live_|sb_secret_|sb_publishable_|ghp_|gho_|ghs_|ghu_|github_pat_|xox[abpr]-|[ps]k\.eyJ)[A-Za-z0-9_.-]{8,}/],
+  // Every prefix the error-report sanitizer (src/lib/observability/error-report.ts)
+  // scrubs is refused here too; capability-evidence.test.ts reads that file and
+  // fails if one is missing. A bare `sk-` covers `sk-ant-` and `sk-proj-` keys.
+  ["a token", /\b(?:sk-|sk_live_|sk_test_|rk_live_|rk_test_|sb_secret_|sb_publishable_|ghp_|gho_|ghs_|ghu_|github_pat_|xox[abpr]-|[pst]k\.eyJ)[A-Za-z0-9_.-]{8,}/],
   ["a token", /\bre_[A-Za-z0-9]{6,}_[A-Za-z0-9]{8,}/],
   ["a token", /\bBearer\s+[A-Za-z0-9._~+/-]{16,}/],
   ["a token or sign-in link", /(?:access_token|refresh_token|provider_token|token_hash|api_?key)\s*[=:]/i],

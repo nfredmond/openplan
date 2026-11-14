@@ -27,7 +27,7 @@
             "additionalProperties": false,
             "properties": {
               "target": { "$ref": "#/$defs/slug" },
-              "status": { "type": "integer", "minimum": 100 },
+              "status": { "type": "integer", "minimum": 100, "description": "HTTP status the second account received. Only 403 or 404 counts as a refusal; any other status is inconclusive and refuses the record." },
               "contentReturned": { "type": "boolean" }
             }
           }

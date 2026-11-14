@@ -7,6 +7,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { normalizePlaceGeoid } from "@/lib/api/place-geographies";
+import { scrubText } from "@/lib/observability/error-report";
+import { stripSourceComments } from "./helpers/source-text";
 import {
   pdftotextPages,
   validateCapabilityEvidence,
@@ -175,6 +177,10 @@ describe("the proven job record checker", () => {
     ["an unsaved benefit-cost analysis", (r) => { journey(r, "california-county").bcaSaved = false; }, /did not save a benefit-cost analysis/],
     ["another workspace's report served", (r) => { r.crossWorkspace.checks[0] = { target: "safety-action-plan", status: 200, contentReturned: true }; }, /returned content \(status 200\)/],
     ["a missing cross-workspace check", (r) => { r.crossWorkspace.checks.pop(); }, /cross-workspace check for ss4a-application is missing/],
+    ["a server error counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 500; }, /safety-action-plan answered status 500, which is inconclusive/],
+    ["an unavailable service counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[1].status = 503; }, /ss4a-application answered status 503, which is inconclusive/],
+    ["a signed-out second account counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 401; }, /answered status 401, which is inconclusive/],
+    ["a rejected export payload counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[1].status = 422; }, /answered status 422, which is inconclusive/],
     ["a source check that found different counts", (r) => { r.sourceCheck = { status: "differs", checkedOn: "2026-11-21", url: "https://example.gov/query", note: "Counts differ." }; }, /finding, not a pass/],
     ["an unstated limit", (r) => { r.limits = r.limits.filter((limit: Json) => limit.id !== "fars-is-fatal-only"); }, /does not state the fars-is-fatal-only limit/],
     ["an unconfirmed crash count without its limit", (r) => { r.limits = r.limits.filter((limit: Json) => limit.id !== "crash-counts-not-independently-confirmed"); }, /crash-counts-not-independently-confirmed limit/],
@@ -191,6 +197,8 @@ describe("the proven job record checker", () => {
     ["a plus-address", "Account planner+journey3@example.org", /contains a plus-address/],
     ["a JWT", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzeW50aGV0aWMifQ.c2lnbmF0dXJl", /contains a JWT/],
     ["a provider token", "sk-ant-api03-SYNTHETICSYNTHETIC", /contains a token/],
+    ["an OpenAI project key", "sk-proj-SYNTHETICSYNTHETIC0123", /contains a token/],
+    ["a bare sk- key", "sk-SYNTHETICSYNTHETIC0123", /contains a token/],
     ["a sign-in link", "https://project.supabase.co/auth/v1/verify?type=signup", /contains a token or sign-in link/],
     ["a password", "password: correct-horse", /contains a password/],
     ["a cookie", "sb-project-auth-token", /contains a cookie/],
@@ -226,6 +234,48 @@ describe("the proven job record checker", () => {
     const record = proven();
     rewritePdf(record, "tribal-area", "ss4a-application", syntheticPdf("tribal-area", "ss4a-application", "\nFinalized by planner@example.org"));
     expect(() => check(record)).toThrow(/tribal-area journey ss4a-application PDF page 3 contains an email address/);
+  });
+
+  it.each([
+    ["an OpenAI project key", "sk-proj-SYNTHETICSYNTHETIC0123"],
+    ["a bare sk- key", "sk-SYNTHETICSYNTHETIC0123"],
+  ])("refuses a PDF page holding %s, without repeating it", (_name, value) => {
+    const record = proven();
+    rewritePdf(record, "nevada-county", "safety-action-plan", syntheticPdf("nevada-county", "safety-action-plan", `\nModel key ${value}`));
+    let message = "";
+    try {
+      check(record);
+    } catch (error) {
+      message = (error as Error).message;
+    }
+    expect(message).toMatch(/nevada-county journey safety-action-plan PDF page 3 contains a token/);
+    expect(message).not.toContain(value);
+  });
+
+  // The error-report sanitizer and this checker guard the same secrets on two
+  // paths. Read the sanitizer's token prefixes from its code (comments
+  // stripped), so a prefix added there and not here fails this test.
+  it("refuses every token prefix the error-report sanitizer scrubs", () => {
+    const source = stripSourceComments(
+      readFileSync(fileURLToPath(new URL("../lib/observability/error-report.ts", import.meta.url)), "utf8"),
+    );
+    const prefixesFor = (label: string): string[] => {
+      const line = source.split("\n").find((candidate) => candidate.includes(`"[${label}]"`));
+      const group = line?.match(/\(\?:([^)]*)\)/)?.[1];
+      if (!group) throw new Error(`no sanitizer prefix group for [${label}]`);
+      return group.split("|");
+    };
+    const samples = [
+      ...prefixesFor("secret").map((prefix) => `${prefix}SYNTHETIC0123456789`),
+      ...prefixesFor("mapbox-token").map((prefix) => `${prefix}.eyJSYNTHETIC0123.SYNTHETIC0123`),
+    ];
+    expect(samples.length).toBeGreaterThanOrEqual(9);
+    for (const sample of samples) {
+      expect(scrubText(sample, 200), `the sanitizer scrubs ${sample}`).not.toContain(sample);
+      const record = proven();
+      record.limits[0].text = `Value ${sample}`;
+      expect(() => check(record), sample).toThrow(/record\.limits\[0\]\.text contains a token/);
+    }
   });
 });
 

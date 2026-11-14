@@ -49,14 +49,17 @@ the checker refuses a record unless:
 7. Every screen was checked at 1440 and 390 pixels, in light and dark mode,
    and every check reports zero serious and zero critical axe violations.
 8. A second account's requests for the first account's safety action plan and
-   SS4A application returned no content.
+   SS4A application returned no content and answered 403 (workspace access
+   denied) or 404 (not found). Any other status, including a 401, a 5xx or a
+   redirect, is inconclusive and refuses the record: a failed handler does not
+   show that the workspace check refused the request.
 9. The record states its limits: no PDF/UA check, no keyboard or screen-reader
    pass, no human usefulness review, FARS is fatal-only, and, unless a source
    check matched, crash counts not independently confirmed. A source check
    that found different counts refuses the record.
 10. No text field and no PDF page holds an email address, a plus-address, a
-    JWT, a provider token, a sign-in link, a cookie or a password. The refusal
-    names the field or page, never the value.
+    JWT, a provider token (including any `sk-` key), a sign-in link, a cookie
+    or a password. The refusal names the field or page, never the value.
 
 The registry entry holds the job id, the places (kind, Census id, state FIPS,
 in journey order), the commit, a review date and `evidence: [{path, sha256}]`.
