@@ -1,0 +1,234 @@
+%PDF-1.4 stand-in: the pdftotext pages of the rehearsal file named below, joined by form feeds
+run3-tribal/files/tribal-area-public-campaign-review.pdf
+PUBLIC REVIEW COPY
+
+
+
+Road safety comments.
+Demonstration by an automated
+OpenPlan proof run
+Demonstration by an automated OpenPlan proof run. This page is not a real consultation and no agency will
+act on what is entered here.
+
+Campaign snapshot 2026-11-14T22:44:05.964525+00:00. This report describes retained consultation
+records. Publication and a reviewed staff response are separate facts. Participation is not a representative
+survey of the population.
+
+Campaign 2c97c728-1902-4807-9d96-6adaaf5ac4d4
+Snapshot SHA-256 34eb7d988dbf2446a8493bb1c85765f793c32bd3e09f588d0c22484f6c40e02f
+Filters {"status":"approved"}
+
+Record summary · Question summary · Contribution register · Survey answers · Staff responses · Historical
+definitions
+
+
+
+Campaign context
+
+We are studying traffic safety in this area and want to hear from the people who travel here. Share the
+specific places where walking, biking, driving, or reaching transit feels unsafe or uncomfortable, and what
+you think would improve them. Your comments are reviewed by the project team and inform which
+improvements are studied.
+
+Study area: Hopi Reservation, AZ (the project's place, as recorded with the campaign's saved settings). The
+campaign has no study area of its own. Participation opens: No scheduled start. Closes: No scheduled end.
+
+
+
+Selected records
+
+3 contributions, 0 survey sessions, 0 recorded answers and 1 reviewed staff response entries. Category
+filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing
+answers are not zero answers.
+
+Review counts
+
+        This public copy holds approved contributions only. Withheld, pending and flagged contributions are
+        left out, so it does not count them.
+        Approved 3 contributions.
+        Published 1 staff response.
+        Answered 2 contributions with a published staff response. A contribution that two responses answer
+        counts once.
+
+
+
+
+                                                                                     public engagement review | 34eb7d988dbf · Page 1 of 6
+0 contributions have unavailable historical configuration. No current question or category has been
+substituted for their original definition.
+
+Contribution sources
+
+Counts are records, not people. Staff-authored notes are not resident submissions. Intake method does not
+establish identity or representative support.
+
+ Source                                                                        Records
+
+ Public portal                                                                 3
+
+
+
+Question summary
+
+Each row uses the questions available to that session's retained configuration. Unanswered includes
+questions not shown by branching and answers outside the export filters; it does not establish refusal or
+noncompliance. Repeated counts are additional identical answers, retained as separate records.
+
+ Question and configuration                      Sessions          Answered          Redacted          Unanswered          Repeated
+
+
+0 sessions have unavailable historical definitions and are excluded from question denominators. Their
+recorded answers remain in the register.
+
+
+        11                                                                                                                       N↑
+
+
+
+
+                                                       33
+
+   Longitude -110.7542 to -110.6480; latitude 35.9646 to 36.1021
+
+2 mapped contributions. Teal: selected contributions. Gray: reviewed context. WGS84 longitude/latitude overview, north up. Geographic
+degrees are not a distance scale. No external basemap. Numbers match the contribution register. Labels can overlap in dense
+selections; full geometry and IDs are in contributions.geojson. Non-map descriptions remain in the register.
+
+
+
+
+                                                                                                         public engagement review | 34eb7d988dbf · Page 2 of 6
+Contributions
+
+
+1. Untitled contribution
+
+1969d7b3-9555-4679-9cf2-d440e78f7978 | 2026-11-14T22:41:59.83849+00:00 | approved | No category selected
+Source: Public portal
+Configuration: bd99c607-8063-4bbe-bb37-59be8466b47b
+
+Cars come around this corner fast and there is no crosswalk. Entered by an automated proof run; it
+represents no one.
+
+
+
+
+2. Untitled contribution
+
+d2a1735a-1779-4600-99c2-41ae6d4758e2 | 2026-11-14T22:42:09.528882+00:00 | approved | No category selected
+Source: Public portal
+Configuration: bd99c607-8063-4bbe-bb37-59be8466b47b
+
+
+People walk in the road because the shoulder is narrow. Entered by an automated proof run; it represents no
+one.
+
+
+
+
+3. Untitled contribution
+
+0afbb345-80b3-4a1a-9a16-fd5d5e3bc79b | 2026-11-14T22:42:24.349838+00:00 | approved | No category selected
+Source: Public portal
+Configuration: bd99c607-8063-4bbe-bb37-59be8466b47b
+
+A marked crossing near the school would help children cross. Entered by an automated proof run; it
+represents no one.
+
+
+
+
+Survey answer register
+
+Reviewed staff responses
+
+
+Crossings and walking space
+
+You said: Proof run summary: demonstration comments asked for safer crossings and walking space.
+
+Agency response: Proof run response: the demonstration project records a proposed decision to study a
+safer crossing. This text speaks for no agency.
+
+Response e662efc6-f355-416e-b426-338453aaae20 | Published 2026-11-14T22:43:15.418024+00:00
+Answers contribution 2, Untitled contribution (d2a1735a-1779-4600-99c2-41ae6d4758e2); contribution 1, Untitled contribution
+
+
+
+                                                                                                      public engagement review | 34eb7d988dbf · Page 3 of 6
+(1969d7b3-9555-4679-9cf2-d440e78f7978)
+
+
+
+
+                                         public engagement review | 34eb7d988dbf · Page 4 of 6
+Historical definitions
+
+Configuration bd99c607-8063-4bbe-bb37-59be8466b47b
+
+Definition SHA-256 303445da68bbfa0292f060b941954533c82b8fe3052c6360182ba863c2982ec4
+
+We are studying traffic safety in this area and want to hear from the people who travel here. Share the
+specific places where walking, biking, driving, or reaching transit feels unsafe or uncomfortable, and what
+you think would improve them. Your comments are reviewed by the project team and inform which
+improvements are studied.
+
+Categories
+
+Crossing safety: Crosswalk visibility, crossing distance, signal timing, turning conflicts, and near-miss
+locations.
+6f63887b-5e0a-42ac-90bf-1ab941f5c63d
+
+
+Sidewalks and accessibility: Sidewalk gaps, narrow walkways, ADA barriers, surface conditions, and curb
+ramp issues.
+d772cc1d-0338-4ab0-a319-2e9de5671de1
+
+
+Bicycle comfort and network gaps: Bicycle stress points, missing links, uncomfortable crossings, and route
+continuity concerns.
+623fdcff-8b1d-42aa-986d-2fbcf145a2bf
+
+
+Transit access and stops: Stop placement, stop amenities, crossings to stops, and first/last-mile access.
+400e5a4c-6ec5-4730-9574-a900a2e949ff
+
+
+Driver behavior and speed: Speeding, red-light and stop-sign running, aggressive turning, and passing too
+close.
+25140796-c217-4e77-8986-aba9930047b6
+
+
+Maintenance, lighting, and visibility: Vegetation, pavement, drainage, lighting, signage, striping, and sight-line
+maintenance issues.
+1e1d14e3-5e7d-4d93-9157-cee0294ab9ec
+
+
+Other / needs follow-up: Useful comments that are still too broad, mixed, or ambiguous for a tighter category
+assignment.
+56af280a-b846-4ac5-b547-101d0c11461d
+
+
+Questions
+
+Retained translations
+
+No translations in this definition.
+
+
+
+
+                                                                                       public engagement review | 34eb7d988dbf · Page 5 of 6
+Portable record
+
+Download the engagement companion ZIP for this snapshot from its Reports record. A project evidence
+bundle containing this PDF alone does not include every engagement companion. The engagement ZIP
+contains this PDF, the XLSX workbook, exact snapshot JSON, complete contribution CSV/GeoJSON,
+answer CSV and reviewed photographs. Workbook long text is split into ordered companion rows.
+Concatenate parts by record ID, field and part number to recover it exactly. Formula-like participant text
+remains literal text in XLSX and JSON; CSV protects spreadsheet users by prefixing dangerous formulas.
+
+
+
+
+                                                                                     public engagement review | 34eb7d988dbf · Page 6 of 6

@@ -144,29 +144,59 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
 4. Every comment a staff review theme lists was approved; the response answers
    only comments the themes hold and links to a decision on the campaign's
    project.
-5. The internal review PDF and XLSX are committed files that match the
-   record. The PDF reads "Internal review copy" and the phrases "Approved N",
-   "Withheld N" and "Answered N" with the journey's counts, each found on its
-   page with the shared matcher. The XLSX, read by cell, has the status the
-   journey recorded for each moderated comment, the same approved and
-   rejected totals, and published responses answering the same comments.
-6. The public response page was read at 1440 and 390 pixels in light and dark
+5. The internal and public review PDFs and XLSX files are committed files
+   that match the record. The internal PDF reads "Internal review copy" and
+   the phrases "Approved N", "Withheld N" and "Answered N" with the journey's
+   counts, each found on its page with the shared matcher, and states each
+   count sentence ("Received 4 contributions.", "Published 1 staff
+   response." and the rest) with the journey's number and no other. The
+   internal XLSX, read by cell, has the status the journey recorded for each
+   moderated comment, the same approved and rejected totals, and published
+   responses answering the same comments. Its Summary rows (Received,
+   Approved, Withheld, Published staff responses, Answered by a published
+   staff response) agree with its own cells, with the PDF's sentences and
+   with the journey.
+6. The public review PDF reads "Public review copy", says it leaves out
+   withheld, pending and flagged contributions, states the approved,
+   published and answered counts with the journey's numbers, and states no
+   received or withheld count. The public XLSX has scope public, the same
+   Summary counts and no Received or Withheld row, and its Contributions
+   sheet holds exactly the approved comments.
+7. The record holds each rejected comment's text beside its hash (a test
+   entry that represents no one). The checker searches every review file
+   for each rejected text and its comment id itself: the PDFs page by page
+   with the shared matcher, the workbooks cell by cell. A public file that
+   holds one is refused, and so is an internal file that does not, since a
+   search that cannot find the text where it is would pass a leak too.
+8. The public response page was read at 1440 and 390 pixels in light and dark
    mode, shows the same approved and answered counts, was searched for every
-   rejected text (by hash in the record) and shows none.
-7. The portal and staff campaign screens have zero serious and critical axe
+   rejected text and shows none.
+9. The portal and staff campaign screens have zero serious and critical axe
    violations at both widths and modes.
-8. A second account was refused the review PDF and XLSX downloads and the
-   campaign read as data checks, and the staff campaign page as a page check.
-   Each check names the journey it was made for, and each journey has each
-   of the four once.
-9. An anonymous participant was refused the campaign read, the staff item list
-   and both downloads (401, 403 or 404), and the public portal read carried no
-   staff-only field.
-10. The record states the job's limits (see the definition entry).
+10. A second account was refused the review PDF and XLSX downloads, the
+    campaign read, the campaign export and the rejected comment's history as
+    data checks, and the staff campaign page as a page check. Each check
+    names the journey it was made for, and each journey has each of the six
+    once.
+11. An anonymous participant was refused the campaign read, the campaign
+    export, the rejected comment's history and both downloads (401, 403 or
+    404), and the public portal read carried no staff-only field. The
+    definition named a staff item list until November 14, 2026, but that
+    route has no read, so it answered 405 (KI-2026-11-14-370).
+12. The record states the job's limits (see the definition entry).
 
-No record of this job can pass yet: the review PDF prints its counts in a
-table the matcher reads as a column gap and prints no answered count
-(KI-2026-11-14-310, -311), and no journey script exists (KI-2026-11-14-313).
+What the checker repeats for this job and what it takes on trust: it reads
+all four review files again, so their counts, scope, approved-only rows and
+the absence of every rejected text and id are its own findings. The portal
+and the public response page are live screens it cannot read again: it keeps
+the journey's reading of their counts, its search of them for the rejected
+text and the status of each participant and second-account request. It
+cannot tell whether the rejected text is the one the participant typed, only
+that it matches its hash, and a rejected text reworded or split across two
+cells is not found.
+
+No hosted record of this job exists yet (KI-2026-11-14-313). The checker
+refuses lane 53's local rehearsal record for its local origin only.
 
 ## What it cannot tell
 
