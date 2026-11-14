@@ -12,6 +12,8 @@ import {
 } from "@/lib/models/verified-dual-demand-agreement";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
+import { listStageGateTemplates } from "@/lib/stage-gates/template-loader";
+import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
 import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
 import {
   extractEngagementHandoffProvenance,
@@ -394,13 +396,13 @@ function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdiction
   if (payload.schema === "openplan.report-project-jurisdiction-schema-pending.v1") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
       <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}.</p>
-      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
+      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope.replace(/_/g, " "))}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
   }
 
   if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
       <p>${"projectRevision" in payload ? `Project revision: ${esc(payload.projectRevision ?? "Unavailable")}.` : "Jurisdiction context and registry inputs; project evidence revision is recorded separately."} Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
-      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
+      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope.replace(/_/g, " "))}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
       ${payload.entries.length ? payload.entries.map(entry => `<article><h3>${esc(entry.declaration?.label ?? "Legacy study-place context")}</h3><p>${esc(entry.assessmentScope)}</p>
         ${entry.declaration ? `<p>Kind: ${esc(entry.declaration.kind)}. Source reference: ${esc(entry.declaration.reference ?? "None")}. Identity: ${esc(entry.declaration.identity === "staff_declared" ? "Unverified staff declaration" : "Server-resolved identity")}.</p><p>Declared country: ${esc(entry.declaration.countryCode ?? "Unspecified")}; subdivision: ${esc(entry.declaration.subdivisionCode ?? "Unspecified")}; scope: ${esc(entry.declaration.scope)}.</p>` : ""}
         ${jurisdictionReadinessMarkup(entry.assessment)}
@@ -1448,6 +1450,28 @@ function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt
   </section>`;
 }
 
+/**
+ * The stage-gate template's name, as authored in the registry. The snapshot
+ * stores only the template's id (for example `us_federal_aid_stage_gates_v0_1`),
+ * which no reader should have to decode. An id this installation does not
+ * register prints as such, never as a guessed name.
+ */
+function stageGateTemplateName(templateId: string): string {
+  return listStageGateTemplates().find((descriptor) => descriptor.templateId === templateId)?.templateName
+    ?? "A template this installation does not register";
+}
+
+/**
+ * A missing artifact as its template titles it. Decisions store the template's
+ * evidence id (for example `G02_E03`); a value the template does not list was
+ * typed by staff and prints as stored.
+ */
+function stageGateEvidenceTitle(templateId: string, evidenceId: string): string {
+  return stageGateTemplateRegistry.get(templateId)?.document.gates
+    .flatMap((gate) => gate.required_evidence)
+    .find((evidence) => evidence.evidence_id === evidenceId)?.title ?? evidenceId;
+}
+
 function stageGateProvenanceMarkup(data: ReportGenerationData): string {
   const { stageGateSnapshot } = data;
   const blockedGate = stageGateSnapshot.blockedGate;
@@ -1459,18 +1483,18 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
     <div class="metrics-stack">
       <article class="metric-card">
         <span class="metric-label">Template</span>
-        <strong>${esc(stageGateSnapshot.templateId)}</strong>
+        <strong>${esc(stageGateTemplateName(stageGateSnapshot.templateId))}</strong>
         <p>Version ${esc(stageGateSnapshot.templateVersion)} • ${stageGateSnapshot.passCount} pass • ${stageGateSnapshot.holdCount} hold • ${stageGateSnapshot.notStartedCount} not started</p>
         <p><a href="/projects/${esc(data.project.id)}#project-governance">Open governance</a></p>
       </article>
       <article class="metric-card">
         <span class="metric-label">Blocked gate</span>
-        <strong>${esc(blockedGate ? `${blockedGate.gateId} · ${blockedGate.name}` : "No gate on hold")}</strong>
+        <strong>${esc(blockedGate ? blockedGate.name : "No gate on hold")}</strong>
         <p>${
           blockedGate
             ? `${esc(blockedGate.rationale)}${
                 blockedGate.missingArtifacts.length > 0
-                  ? ` Missing artifacts: ${esc(blockedGate.missingArtifacts.join(", "))}.`
+                  ? ` Missing artifacts: ${esc(blockedGate.missingArtifacts.map((id) => stageGateEvidenceTitle(stageGateSnapshot.templateId, id)).join(", "))}.`
                   : ""
               }`
             : "No formal HOLD decision is recorded in this snapshot."
@@ -1478,7 +1502,7 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
       </article>
       <article class="metric-card">
         <span class="metric-label">Next gate</span>
-        <strong>${esc(nextGate ? `${nextGate.gateId} · ${nextGate.name}` : "Gate sequence complete")}</strong>
+        <strong>${esc(nextGate ? nextGate.name : "Gate sequence complete")}</strong>
         <p>${
           nextGate
             ? `${nextGate.requiredEvidenceCount} required evidence item${

@@ -113,9 +113,9 @@ export function buildEvidenceChainSummary(input: {
           : "Complete",
     stageGatePassCount: input.stageGateSnapshot.passCount,
     stageGateHoldCount: input.stageGateSnapshot.holdCount,
-    stageGateBlockedGateLabel: blockedGate
-      ? `${blockedGate.gateId} · ${blockedGate.name}`
-      : null,
+    // The gate's name only: its id ("G02_AGREEMENTS_...") is a key, not a
+    // label (KI-2026-11-14-340). Summaries stored earlier keep their text.
+    stageGateBlockedGateLabel: blockedGate ? blockedGate.name : null,
     modelingEvidenceCount,
     modelingEvidenceClaimLabel,
     safetyAcquisitionCount: input.safetyAcquisitionCount ?? 0,

@@ -4,7 +4,6 @@ import { buildSafetyPlanSnapshot, readSafetyPlanEvidenceFence, type SafetyPlanFe
 import {
   buildSafetyPlanNetworkMap,
   buildSafetyPlanSupport,
-  safetyPlanSegmentLocations,
   loadSafetyPlanSupportReads,
   safetyPlanEngagementInput,
   type SafetyPlanSupport,
@@ -2603,7 +2602,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             roads: safetyRoadContext,
             projectGeometry: planStudyArea.success ? planStudyArea.data : null,
           }),
-          segmentLocations: safetyPlanSegmentLocations(network),
+          network,
         });
         if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
           const evidenceFence = await readSafetyPlanEvidenceFence(supabase as unknown as SafetyPlanFenceClient, {

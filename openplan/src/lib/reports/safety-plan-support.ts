@@ -16,6 +16,7 @@ import type { CorridorGeojson } from "@/lib/models/run-launch";
 import {
   bcaEvidenceAppendix,
   engagementEvidenceAppendix,
+  type BcaSegmentRow,
   type EvidenceAppendix,
   type ProjectBcaRead,
   type ProjectEngagementRead,
@@ -46,7 +47,7 @@ export type SafetyPlanSupport = {
 };
 
 /** The printed location of every listed segment that has a usable position. */
-export function safetyPlanSegmentLocations(network: HighInjuryNetwork | undefined): Record<string, string> {
+function safetyPlanSegmentLocations(network: HighInjuryNetwork | undefined): Record<string, string> {
   if (!network || network.status !== "computed") return {};
   return Object.fromEntries(network.segments.flatMap((segment) => {
     const location = describeHighInjuryNetworkLocation(segment.geometry);
@@ -113,13 +114,20 @@ export function buildSafetyPlanSupport(input: {
   projectId: string;
   projectName: string | null;
   networkMap: SafetyPlanNetworkMap | null;
-  /** From `safetyPlanSegmentLocations`. Absent prints no location. */
-  segmentLocations?: Readonly<Record<string, string>>;
+  /**
+   * The network the plan's table was built from. Its rows give each segment
+   * its number and location; absent prints neither.
+   */
+  network?: HighInjuryNetwork;
 }): SafetyPlanSupport {
+  const segmentLocations = safetyPlanSegmentLocations(input.network);
+  const segmentRows = new Map<string, BcaSegmentRow>(input.network?.status === "computed"
+    ? input.network.segments.map((segment, index) => [segment.id, { number: index + 1, location: segmentLocations[segment.id] ?? null }])
+    : []);
   return {
     engagement: engagementEvidenceAppendix({ key: "engagement", letter: "", title: TITLES.engagement }, input.reads.engagement, input.projectName),
-    bca: bcaEvidenceAppendix({ key: "bca", letter: "", title: TITLES.bca }, input.reads.bca, input.projectId),
+    bca: bcaEvidenceAppendix({ key: "bca", letter: "", title: TITLES.bca }, input.reads.bca, input.projectId, segmentRows),
     networkMap: input.networkMap,
-    segmentLocations: input.segmentLocations ?? {},
+    segmentLocations,
   };
 }

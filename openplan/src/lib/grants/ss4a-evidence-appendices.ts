@@ -51,6 +51,7 @@ import {
   describeSeverityCoverage,
   engagementEvidenceAppendix,
   NO_PROJECT_REASON,
+  type BcaSegmentRow,
   type EvidenceAppendix,
   type EvidenceAppendixFrame,
   type EvidenceAppendixSource,
@@ -199,12 +200,8 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
   const seriousInjury = acquisitionSeriousInjury(safety.snapshot.acquisition);
   if (network.kind === "unavailable") return absentAppendix(key, index, "missing", network.reason);
 
-  // Locations come from the export-time recomputation, and only when it
-  // reproduces the frozen ranking: the snapshot's rows carry no geometry.
   const recompute = records.hinRecompute;
-  const locations = network.rows.length > 0 && recompute.status === "computed" && recomputedNetworkMatchesSnapshot(safety.snapshot, recompute.network)
-    ? new Map(recompute.network.segments.map((segment) => [segment.id, describeHighInjuryNetworkLocation(segment.geometry)]))
-    : new Map<string, string | null>();
+  const locations = snapshotRowLocations(safety.snapshot, recompute);
   const table = network.rows.length > 0
     ? {
         headers: ["No.", "Rank", "Location", "Miles", "Fatal", "Serious injury", "Per mile"],
@@ -262,6 +259,25 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
       network.sourceLine,
     ],
   };
+}
+
+/**
+ * Each frozen row's location, from the export-time recomputation, and only
+ * when it reproduces the frozen ranking: the snapshot's rows carry no geometry.
+ */
+function snapshotRowLocations(snapshot: SafetyPlanSnapshot, recompute: Ss4aHinRecomputeRead): Map<string, string | null> {
+  const network = snapshot.draft.network;
+  if (network.kind !== "computed" || network.rows.length === 0 || recompute.status !== "computed"
+    || !recomputedNetworkMatchesSnapshot(snapshot, recompute.network)) return new Map();
+  return new Map(recompute.network.segments.map((segment) => [segment.id, describeHighInjuryNetworkLocation(segment.geometry)]));
+}
+
+/** Appendix A's rows by segment id, so Appendix D's safety inputs name the same row. */
+function snapshotSegmentRows(records: Ss4aEvidenceRecords): Map<string, BcaSegmentRow> {
+  if (records.safety.status !== "ready" || records.safety.snapshot.draft.network.kind !== "computed") return new Map();
+  const locations = snapshotRowLocations(records.safety.snapshot, records.hinRecompute);
+  return new Map(records.safety.snapshot.draft.network.rows.map((row, rowIndex) =>
+    [row.segmentId, { number: rowIndex + 1, location: locations.get(row.segmentId) ?? null }]));
 }
 
 /** The same tie line the Safety page prints, when every listed row shares one rank. */
@@ -376,7 +392,7 @@ function safetyNotReady(
 }
 
 function bcaAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix {
-  return bcaEvidenceAppendix(shell("bca", index), records.bca, records.projectId);
+  return bcaEvidenceAppendix(shell("bca", index), records.bca, records.projectId, snapshotSegmentRows(records));
 }
 
 function engagementAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix {

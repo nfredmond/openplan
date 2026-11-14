@@ -32,7 +32,8 @@ it("renders each declaration and its payload hash with escaped labels and no aut
     report: { id: "report", title: "Report", summary: null, report_type: "board_packet", created_at: project.created_at }, workspace: { id: "workspace", name: "Workspace" }, project, runs: [], sections: [{ id: "section", section_key: "project_overview", title: "Overview", enabled: true, sort_order: 0, config_json: {} }], jurisdictionReadiness };
   const html = buildReportHtml(data);
   expect(html, "Report discloses external schema").toContain(jurisdictionReadiness.schema);
-  expect(html, "Report discloses external scope").toContain(jurisdictionReadiness.scope);
+  // The scope prints in words (KI-2026-11-14-340): "external_handoff" reads "external handoff".
+  expect(html, "Report discloses external scope").toContain(`Scope: ${jurisdictionReadiness.scope.replace(/_/g, " ")}.`);
   expect(html, "Report retains recorded time").toContain(context.recordedAt);
   expect(html, "Report identifies the registry").toContain(jurisdictionReadiness.registrySha256);
   expect(html).not.toContain(context.recordedBy);

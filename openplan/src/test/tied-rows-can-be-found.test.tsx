@@ -35,7 +35,7 @@ import { buildReportHtml, safetyActionPlanMarkup, type ReportGenerationData } fr
 import { renderHtmlToPdf } from "@/lib/reports/pdf";
 import { buildSafetyActionPlanSection } from "@/lib/reports/safety-action-plan";
 import { buildSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
-import { buildSafetyPlanNetworkMap, buildSafetyPlanSupport, safetyPlanSegmentLocations } from "@/lib/reports/safety-plan-support";
+import { buildSafetyPlanNetworkMap, buildSafetyPlanSupport } from "@/lib/reports/safety-plan-support";
 import { buildSafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import {
   computeHighInjuryNetwork,
@@ -95,7 +95,7 @@ function planSection() {
   const support = buildSafetyPlanSupport({
     reads: { engagement: { status: "absent" }, bca: { status: "absent" } }, projectId: EVIDENCE_IDS.project, projectName: "Example safety project",
     networkMap: buildSafetyPlanNetworkMap({ network, roads: ROADS, projectGeometry: null }),
-    segmentLocations: safetyPlanSegmentLocations(network),
+    network,
   });
   return { network, plan, draft, support };
 }
