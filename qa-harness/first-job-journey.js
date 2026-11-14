@@ -329,7 +329,9 @@ async function main() {
   async function signUpAndConfirm(targetPage, email, accountPassword, confirmFile, label) {
     await targetPage.goto(new URL('/sign-up', origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await settle(targetPage);
-    await targetPage.type('#org-name', inputs.organization || `${options.placeQuery} ${label}`);
+    const organization = inputs.organization || `${options.placeQuery} ${label}`;
+    if (label === 'journey') ids.workspaceName = organization;
+    await targetPage.type('#org-name', organization);
     await targetPage.type('#email', email);
     await targetPage.type('#password', accountPassword);
     const createdAt = lib.utcNow();
@@ -502,6 +504,7 @@ async function main() {
       const body = await readJson(response);
       if (response.status() !== 201 || !body) throw new Error(`Report create returned ${response.status()}`);
       ids.reportId = body.reportId || (body.report && body.report.id) || body.id;
+      ids.reportTitle = body.report && body.report.title ? body.report.title : null;
       if (!ids.reportId) throw new Error('The report create response named no report.');
       await page.waitForSelector('[data-testid=safety-hin-save]', { timeout: 60000 });
       const status = await page.$eval('[data-testid=safety-hin-save]', (el) => el.innerText.replace(/\s+/g, ' '));
@@ -643,7 +646,8 @@ async function main() {
       await page.select('#engagement-campaign-creator-templateId', 'corridor-safety-study');
       await clickText(page, 'dialog[open] button', 'Next', { exact: true });
       await page.waitForSelector('#engagement-campaign-creator-title');
-      await page.type('#engagement-campaign-creator-title', inputs.campaignTitle || `${options.placeQuery} road safety comments`);
+      ids.campaignTitle = inputs.campaignTitle || `${options.placeQuery} road safety comments`;
+      await page.type('#engagement-campaign-creator-title', ids.campaignTitle);
       await clickText(page, 'dialog[open] button', 'Next', { exact: true });
       await page.waitForSelector('#engagement-campaign-creator-projectId');
       const linked = await page.$eval('#engagement-campaign-creator-projectId', (el) => el.value);
@@ -1018,22 +1022,38 @@ async function main() {
       const other = await browser.createBrowserContext();
       const second = await other.newPage();
       await signUpAndConfirm(second, options.secondEmail, secondPassword, options.secondConfirmLinkFile, 'second account');
+      // The first account's identifying strings. A page check answering 200
+      // counts only if none of them is anywhere in the page text or HTML
+      // (KI-2026-11-14-060, the lead's decision); the record keeps hashes only.
+      const identifying = lib.identifyingStrings({ reportTitle: ids.reportTitle, projectName: ids.projectName, workspaceName: ids.workspaceName, campaignTitle: ids.campaignTitle });
       const checks = [
-        { target: 'safety-action-plan', label: 'report page', run: async () => {
+        { target: 'safety-action-plan', request: 'report-page', kind: 'page', run: async () => {
           const response = await second.goto(new URL(`/reports/${ids.reportId}`, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
-          await settle(second);
-          const text = await second.evaluate(() => document.body.innerText);
-          return { status: response.status(), contentReturned: text.includes(ids.projectName) || /Generate PDF packet|Section narrative drafts/.test(text) };
+          await settle(second, 2500);
+          const reading = lib.readPageForRecord({
+            text: await second.evaluate(() => document.body.innerText),
+            html: await second.content(),
+            strings: identifying,
+          });
+          const reportTools = /Generate PDF packet|Section narrative drafts/.test(reading.textForTools);
+          return {
+            status: response.status(),
+            contentReturned: reading.recordTextFound || reportTools,
+            notFoundRendered: reading.notFoundRendered,
+            recordTextFound: reading.recordTextFound,
+            searchedStringSha256: reading.searchedStringSha256,
+            searchedStringCount: reading.searchedStringSha256.length,
+          };
         } },
-        { target: 'safety-action-plan', label: 'report PDF download', run: async () => {
+        { target: 'safety-action-plan', request: 'report-pdf-download', kind: 'data', run: async () => {
           const result = await appFetch(`/api/reports/${ids.reportId}/artifacts/${ids.artifactId}/download`, null, 'GET', second);
           return { status: result.status, contentReturned: result.isPdf || result.text.includes(ids.projectName) };
         } },
-        { target: 'ss4a-application', label: 'application read', run: async () => {
+        { target: 'ss4a-application', request: 'application-read', kind: 'data', run: async () => {
           const result = await appFetch(`/api/funding-opportunities/${ids.opportunityId}/application`, null, 'GET', second);
           return { status: result.status, contentReturned: result.status < 400 && /section_key|final_markdown/.test(result.text) };
         } },
-        { target: 'ss4a-application', label: 'SS4A PDF download', run: async () => {
+        { target: 'ss4a-application', request: 'application-pdf-download', kind: 'data', run: async () => {
           const result = await appFetch(`/api/funding-opportunities/${ids.opportunityId}/application/export/${ids.exportId}/download`, null, 'GET', second);
           return { status: result.status, contentReturned: result.isPdf };
         } },
@@ -1041,14 +1061,20 @@ async function main() {
       const detail = [];
       for (const check of checks) {
         const result = await check.run();
-        crossChecks.push({ target: check.target, status: result.status, contentReturned: Boolean(result.contentReturned) });
-        detail.push(`${check.label} ${result.status}${result.contentReturned ? ' CONTENT RETURNED' : ''}`);
+        crossChecks.push({ target: check.target, request: check.request, kind: check.kind, ...result, contentReturned: Boolean(result.contentReturned) });
+        const page = check.kind === 'page' ? ` (not-found screen ${result.notFoundRendered ? 'shown' : 'NOT shown'}, ${result.searchedStringCount} strings searched, ${result.recordTextFound ? 'RECORD TEXT FOUND' : 'none found'})` : '';
+        detail.push(`${check.request} ${result.status}${page}${result.contentReturned ? ' CONTENT RETURNED' : ''}`);
       }
       await other.close();
       if (crossChecks.some((check) => check.contentReturned)) {
         findings.push({ id: 'cross-workspace-returned-content', text: `A second account received the first account's content: ${detail.join('; ')}` });
-      } else if (crossChecks.some((check) => check.status < 400)) {
-        findings.push({ id: 'cross-workspace-success-status', text: `A second account got no content, but at least one request answered with a success status, which the record checker refuses: ${detail.join('; ')}` });
+      }
+      const inconclusive = crossChecks.filter((check) => ![403, 404].includes(check.status) && !(check.kind === 'page' && check.status === 200 && check.notFoundRendered && check.recordTextFound === false && check.searchedStringCount >= 3));
+      if (inconclusive.length) {
+        findings.push({ id: 'cross-workspace-inconclusive-status', text: `The record checker will refuse these cross-workspace answers: ${inconclusive.map((check) => `${check.request} ${check.status}`).join('; ')}` });
+      }
+      if (crossChecks.some((check) => check.kind === 'page' && check.status === 200)) {
+        findings.push({ id: 'report-page-answers-200-with-not-found-screen', text: 'Another workspace\'s report page answered HTTP 200 with the not-found screen (it streams); the record must state this limit (KI-2026-11-14-060).' });
       }
       return detail.join('; ');
     });

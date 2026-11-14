@@ -23,12 +23,18 @@
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["target", "status", "contentReturned"],
+            "required": ["target", "request", "kind", "status", "contentReturned"],
             "additionalProperties": false,
             "properties": {
               "target": { "$ref": "#/$defs/slug" },
-              "status": { "type": "integer", "minimum": 100, "description": "HTTP status the second account received. Only 403 or 404 counts as a refusal; any other status is inconclusive and refuses the record." },
-              "contentReturned": { "type": "boolean" }
+              "request": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "What the second account asked for, for example report-page, report-pdf-download, application-read or application-pdf-download." },
+              "kind": { "enum": ["page", "data"], "description": "data: an API route or a file download; only 403 or 404 counts. page: an HTML page; 403 or 404 counts, and 200 counts only with notFoundRendered true, recordTextFound false and at least three searched strings." },
+              "status": { "type": "integer", "minimum": 100, "description": "HTTP status the second account received. Any status the rule for its kind does not accept is inconclusive and refuses the record." },
+              "contentReturned": { "type": "boolean" },
+              "notFoundRendered": { "type": "boolean", "description": "Page checks: the app's not-found screen is on the rendered page." },
+              "recordTextFound": { "type": "boolean", "description": "Page checks: any of the first account's identifying strings appears in the page text or HTML." },
+              "searchedStringSha256": { "type": "array", "items": { "$ref": "#/$defs/sha256" }, "description": "Page checks: SHA-256 of each identifying string searched (report title, project name, workspace name, campaign title), never the text." },
+              "searchedStringCount": { "$ref": "#/$defs/count" }
             }
           }
         }

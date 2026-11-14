@@ -20,9 +20,10 @@ const PROVEN_JOB_ENTRY_FIELDS = new Set(["jobId", "places", "commit", "reviewedA
 
 /**
  * The statuses that show the app refused a signed-in second account another
- * workspace's record. The report page answers 404 through notFound(); the
- * report download and the application export answer 404 for a record they
- * cannot find and 403 for "Workspace access denied". A 401 means the second
+ * workspace's record. The report download and the application export answer
+ * 404 for a record they cannot find and 403 for "Workspace access denied".
+ * The report page calls notFound() after its loading screen has streamed, so
+ * it answers 200 with the not-found screen (checkCrossWorkspace). A 401 means the second
  * account was not signed in, a 5xx means the handler failed before it decided,
  * and a 400 or 422 either never reached the workspace check or came after it
  * passed, so none of them is evidence of isolation.
@@ -143,21 +144,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkScreens(journey, job, label);
   }
 
-  for (const target of job.crossWorkspaceTargets) {
-    const checks = record.crossWorkspace.checks.filter((check) => check.target === target);
-    if (checks.length === 0) refuse(`cross-workspace check for ${target} is missing`);
-    for (const check of checks) {
-      if (check.contentReturned || check.status < 400) {
-        refuse(`cross-workspace request for another workspace's ${target} returned content (status ${check.status})`);
-      }
-      if (!CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status)) {
-        refuse(
-          `cross-workspace request for another workspace's ${target} answered status ${check.status}, which is inconclusive; ` +
-            "only 403 (workspace access denied) or 404 (not found) shows the app refused it",
-        );
-      }
-    }
-  }
+  const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace);
 
   const { sourceCheck } = record;
   if (sourceCheck.status === "differs") refuse("the crash source check found different counts; that is a finding, not a pass");
@@ -167,9 +154,61 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
   const limitIds = new Set(record.limits.map((limit) => limit.id));
   const requiredLimits = [...job.requiredLimits];
   if (sourceCheck.status !== "matched") requiredLimits.push(job.unconfirmedCrashCountLimit);
+  if (pageAnsweredOk) requiredLimits.push(job.crossWorkspace.pageAnsweredOkLimit);
   for (const id of requiredLimits) {
     if (!limitIds.has(id)) refuse(`record does not state the ${id} limit`);
   }
+}
+
+/**
+ * The cross-workspace rule (KI-2026-11-14-060, the lead's decision of
+ * November 14). A `data` check (an API route or a file download) counts only
+ * with 403 or 404. A `page` check counts with 403 or 404, or with 200 when
+ * the record carries notFoundRendered true, recordTextFound false and the
+ * hashes of at least `minSearchedStrings` distinct identifying strings: the
+ * report page streams, so it can answer 200 while it renders the not-found
+ * screen. Each target needs its download refused as a data check, so a page
+ * check alone never satisfies the rule. Returns whether a page check was
+ * accepted on 200, which the record must then state as a limit.
+ *
+ * Blind category: the checker trusts the journey's reading of the rendered
+ * page. It cannot see the page, so it cannot tell whether the strings
+ * searched were the right ones, only that enough distinct ones were.
+ */
+function checkCrossWorkspace(checks, rule) {
+  let pageAnsweredOk = false;
+  for (const check of checks) {
+    const label = `cross-workspace ${check.kind} request ${check.request} for another workspace's ${check.target}`;
+    if (check.contentReturned) refuse(`${label} returned content (status ${check.status})`);
+    if (CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status)) continue;
+    if (check.kind === "page" && check.status === 200) {
+      const hashes = check.searchedStringSha256 ?? [];
+      if (check.notFoundRendered !== true) refuse(`${label} answered 200 without the journey reading the not-found screen on it`);
+      if (check.recordTextFound !== false) refuse(`${label} answered 200 and the journey found the first account's text on it, or did not look`);
+      if (hashes.length !== check.searchedStringCount || new Set(hashes).size !== hashes.length) {
+        refuse(`${label} must list one distinct hash per identifying string searched`);
+      }
+      if (hashes.length < rule.minSearchedStrings) {
+        refuse(`${label} searched ${hashes.length} identifying strings; at least ${rule.minSearchedStrings} required`);
+      }
+      pageAnsweredOk = true;
+      continue;
+    }
+    refuse(
+      `${label} answered status ${check.status}, which is inconclusive; only 403 (workspace access denied) or 404 (not found) ` +
+        "shows the app refused it, or for a page, 200 with the not-found screen and none of the first account's text",
+    );
+  }
+  for (const target of rule.targets) {
+    const forTarget = checks.filter((check) => check.target === target);
+    if (forTarget.length === 0) refuse(`cross-workspace check for ${target} is missing`);
+    const download = rule.requiredDataRequests[target];
+    const refused = forTarget.some(
+      (check) => check.kind === "data" && check.request === download && CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status),
+    );
+    if (!refused) refuse(`cross-workspace checks for ${target} need its ${download} refused as a data check with 403 or 404`);
+  }
+  return pageAnsweredOk;
 }
 
 function checkPlace(place, rule, label) {

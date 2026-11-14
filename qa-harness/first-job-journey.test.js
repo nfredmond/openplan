@@ -267,6 +267,55 @@ test('the PDF readers accept Poppler and split its output into pages', () => {
   assert.equal(poppler.assertPopplerTool('pdftoppm', { spawn: versionStub(POPPLER_VERSION.replace('pdftotext', 'pdftoppm')) }), 'pdftoppm version 25.07.0');
 });
 
+test('the cross-workspace page reading finds the not-found screen and any of the first account\'s strings, keeping only hashes', () => {
+  const strings = lib.identifyingStrings({ reportTitle: 'Sierra County local roads safety action plan', projectName: 'Sierra County local roads', workspaceName: "O'Brien & Sons Planning", campaignTitle: 'Road safety comments' });
+  assert.equal(strings.length, 4);
+  const notFound = `<main><h2>${lib.NOT_FOUND_TITLE}</h2></main>`;
+  const clean = lib.readPageForRecord({ text: `${lib.NOT_FOUND_TITLE}\nThe web address may have a small mistake in it.`, html: notFound, strings });
+  assert.equal(clean.notFoundRendered, true);
+  assert.equal(clean.recordTextFound, false);
+  assert.deepEqual(clean.searchedStringSha256, strings.map((value) => sha(value)));
+  // In the visible text, in another case, across a line break.
+  assert.equal(lib.readPageForRecord({ text: `${lib.NOT_FOUND_TITLE}\nSIERRA COUNTY\nlocal roads`, html: notFound, strings }).recordTextFound, true);
+  // Only in the HTML: a streamed payload the screen does not show, raw or escaped.
+  assert.equal(lib.readPageForRecord({ text: lib.NOT_FOUND_TITLE, html: `${notFound}<script>self.__next_f.push([1,"Road safety comments"])</script>`, strings }).recordTextFound, true);
+  assert.equal(lib.readPageForRecord({ text: lib.NOT_FOUND_TITLE, html: `${notFound}<title>O&#x27;Brien &amp; Sons Planning</title>`, strings }).recordTextFound, true);
+  // The report page itself is not the not-found screen.
+  assert.equal(lib.readPageForRecord({ text: 'Generate PDF packet', html: '<main></main>', strings }).notFoundRendered, false);
+});
+
+test('the not-found title the journey looks for is the one the app prints', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'openplan', 'src', 'app', 'not-found.tsx'), 'utf8');
+  assert.ok(source.includes(`title="${lib.NOT_FOUND_TITLE}"`));
+});
+
+test('a page check carries only fields the record schema defines', () => {
+  const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'proven_job_record.v1.schema.json'), 'utf8'));
+  const allowed = Object.keys(schema.properties.crossWorkspace.properties.checks.items.properties).sort();
+  assert.deepEqual(allowed, ['contentReturned', 'kind', 'notFoundRendered', 'recordTextFound', 'request', 'searchedStringCount', 'searchedStringSha256', 'status', 'target']);
+  const source = fs.readFileSync(path.join(__dirname, 'first-job-journey.js'), 'utf8');
+  for (const key of ['notFoundRendered', 'recordTextFound', 'searchedStringSha256', 'searchedStringCount']) assert.ok(source.includes(`${key}:`), key);
+});
+
+test('identifying strings drop blanks and repeats, so the stated count is the count searched', () => {
+  assert.deepEqual(lib.identifyingStrings({ reportTitle: null, projectName: ' A ', workspaceName: 'A', campaignTitle: 'B' }), ['A', 'B']);
+});
+
+test('an assembled record states the page limit only when a page answered 200', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-assemble-'));
+  const write = (name, checks) => {
+    const file = path.join(dir, name);
+    fs.writeFileSync(file, JSON.stringify({ journey: { role: name }, crossWorkspace: { checks } }));
+    return file;
+  };
+  const data = { target: 'safety-action-plan', request: 'report-pdf-download', kind: 'data', status: 404, contentReturned: false };
+  const base = { jobId: 'job', commit: '0'.repeat(40), baseUrl: 'http://localhost:3450', recordedOn: '2026-11-14', sourceCheck: {}, limits: [{ id: 'no-pdf-ua-check', text: 'x' }] };
+  const withPage = lib.assembleRecord({ ...base, journeyFiles: [write('a', [{ target: 'safety-action-plan', request: 'report-page', kind: 'page', status: 200, contentReturned: false }, data])] });
+  assert.deepEqual(withPage.limits.map((limit) => limit.id), ['no-pdf-ua-check', 'report-page-answers-200-with-not-found-screen']);
+  const without = lib.assembleRecord({ ...base, journeyFiles: [write('b', [{ target: 'safety-action-plan', request: 'report-page', kind: 'page', status: 404, contentReturned: false }, data])] });
+  assert.deepEqual(without.limits.map((limit) => limit.id), ['no-pdf-ua-check']);
+});
+
 test('the journey keeps exactly the record fields lane 10 defines', () => {
   const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'proven_job_record.v1.schema.json'), 'utf8'));
   const journey = lib.buildJourney({ role: 'x', extra: 'dropped' });

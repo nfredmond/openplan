@@ -357,6 +357,13 @@ function buildJourney(state) {
 /** Combine three journey files into one proven job record for the checker. */
 function assembleRecord({ journeyFiles, jobId, commit, baseUrl, recordedOn, sourceCheck, limits }) {
   const runs = journeyFiles.map((file) => JSON.parse(fs.readFileSync(file, 'utf8')));
+  const checks = runs.flatMap((run) => run.crossWorkspace.checks);
+  const stated = [...limits];
+  // A page that answered 200 with the not-found screen is a fact of the build
+  // the record must state (KI-2026-11-14-060).
+  if (checks.some((check) => check.kind === 'page' && check.status === 200) && !stated.some((limit) => limit.id === PAGE_ANSWERED_OK_LIMIT.id)) {
+    stated.push(PAGE_ANSWERED_OK_LIMIT);
+  }
   return {
     schema: 'openplan.proven_job_record.v1',
     jobId,
@@ -364,9 +371,57 @@ function assembleRecord({ journeyFiles, jobId, commit, baseUrl, recordedOn, sour
     baseUrl,
     recordedOn,
     journeys: runs.map((run) => run.journey),
-    crossWorkspace: { checks: runs.flatMap((run) => run.crossWorkspace.checks) },
+    crossWorkspace: { checks },
     sourceCheck,
-    limits,
+    limits: stated,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Cross-workspace page check (KI-2026-11-14-060)
+// ---------------------------------------------------------------------------
+
+const PAGE_ANSWERED_OK_LIMIT = {
+  id: 'report-page-answers-200-with-not-found-screen',
+  text: 'Another workspace\'s report page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account\'s identifying strings was in its text or HTML. The report and application downloads answered 403 or 404.',
+};
+
+/** The title of the app's not-found screen (openplan/src/app/not-found.tsx). */
+const NOT_FOUND_TITLE = 'We could not find that page.';
+
+/**
+ * The first account's identifying strings for the page check: report title,
+ * project name, workspace name and campaign title. Blank and repeated values
+ * are dropped, so the count the record states is the count searched.
+ */
+function identifyingStrings({ reportTitle, projectName, workspaceName, campaignTitle }) {
+  const values = [reportTitle, projectName, workspaceName, campaignTitle].map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean);
+  return [...new Set(values)];
+}
+
+function escapeHtml(value) {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+}
+
+/**
+ * Read a page another workspace's account received: is the not-found screen
+ * on it, and does any identifying string appear anywhere in its text or HTML
+ * (raw or HTML-escaped, ignoring case and runs of whitespace)? Returns the
+ * strings' SHA-256 hashes, never the strings.
+ */
+function readPageForRecord({ text, html, strings }) {
+  const squash = (value) => String(value).replace(/\s+/g, ' ').toLowerCase();
+  const pageText = squash(text);
+  const pageHtml = squash(html);
+  const recordTextFound = strings.some((value) => {
+    const wanted = squash(value);
+    return pageText.includes(wanted) || pageHtml.includes(wanted) || pageHtml.includes(squash(escapeHtml(value)));
+  });
+  return {
+    notFoundRendered: pageText.includes(squash(NOT_FOUND_TITLE)),
+    recordTextFound,
+    searchedStringSha256: strings.map((value) => sha256(Buffer.from(value, 'utf8'))),
+    textForTools: String(text),
   };
 }
 
@@ -381,6 +436,7 @@ module.exports = {
   ITEMS,
   ITEM_RULES,
   MODES,
+  NOT_FOUND_TITLE,
   PDF_KINDS,
   SCREEN_MODES,
   SCREEN_WIDTHS,
@@ -393,10 +449,12 @@ module.exports = {
   describePdf,
   draftPages,
   findPdfItems,
+  identifyingStrings,
   loadProofOrigin,
   locateEmails,
   parseJourneyArgs,
   pdfPages,
+  readPageForRecord,
   renderPdfPage,
   scrubText,
   sha256,

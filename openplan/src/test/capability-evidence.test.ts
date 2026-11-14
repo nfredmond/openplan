@@ -146,6 +146,13 @@ describe("the proven job record checker", () => {
     expect(() => check(proven())).not.toThrow();
   });
 
+  it("accepts a report page that answers 404, without the 200 limit", () => {
+    const record = proven();
+    record.crossWorkspace.checks[0] = { target: "safety-action-plan", request: "report-page", kind: "page", status: 404, contentReturned: false };
+    record.limits = record.limits.filter((limit: Json) => limit.id !== "report-page-answers-200-with-not-found-screen");
+    expect(() => check(record)).not.toThrow();
+  });
+
   it.each<[string, (record: Json) => void, RegExp]>([
     ["a preview origin", (r) => { r.baseUrl = "https://openplan-git-work-natford.vercel.app"; }, /not the hosted origin/],
     ["a local origin", (r) => { r.baseUrl = "https://localhost:3450"; }, /not the hosted origin/],
@@ -176,10 +183,24 @@ describe("the proven job record checker", () => {
     ["an unknown journey field", (r) => { journey(r, "california-county").confirmationLink = "kept out"; }, /has unknown field confirmationLink/],
     ["an unknown top-level field", (r) => { r.cookies = []; }, /record has unknown field cookies/],
     ["an unsaved benefit-cost analysis", (r) => { journey(r, "california-county").bcaSaved = false; }, /did not save a benefit-cost analysis/],
-    ["another workspace's report served", (r) => { r.crossWorkspace.checks[0] = { target: "safety-action-plan", status: 200, contentReturned: true }; }, /returned content \(status 200\)/],
-    ["a missing cross-workspace check", (r) => { r.crossWorkspace.checks.pop(); }, /cross-workspace check for ss4a-application is missing/],
+    ["another workspace's report served", (r) => { r.crossWorkspace.checks[1] = { target: "safety-action-plan", request: "report-pdf-download", kind: "data", status: 200, contentReturned: true }; }, /returned content \(status 200\)/],
+    ["a missing cross-workspace check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.target !== "ss4a-application"); }, /cross-workspace check for ss4a-application is missing/],
     ["a server error counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 500; }, /safety-action-plan answered status 500, which is inconclusive/],
-    ["an unavailable service counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[1].status = 503; }, /ss4a-application answered status 503, which is inconclusive/],
+    ["an unavailable service counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[3].status = 503; }, /ss4a-application answered status 503, which is inconclusive/],
+    // KI-2026-11-14-060, the lead's decision: page and data checks differ.
+    ["a page answering 200 without the not-found screen", (r) => { r.crossWorkspace.checks[0].notFoundRendered = false; }, /report-page for another workspace's safety-action-plan answered 200 without the journey reading the not-found screen/],
+    ["a page answering 200 that carries the first account's text", (r) => { r.crossWorkspace.checks[0].recordTextFound = true; }, /answered 200 and the journey found the first account's text on it/],
+    ["a page answering 200 whose text was not searched", (r) => { delete r.crossWorkspace.checks[0].recordTextFound; }, /answered 200 and the journey found the first account's text on it, or did not look/],
+    ["a page answering 200 with two strings searched", (r) => { const page = r.crossWorkspace.checks[0]; page.searchedStringSha256 = page.searchedStringSha256.slice(0, 2); page.searchedStringCount = 2; }, /searched 2 identifying strings; at least 3 required/],
+    ["a page answering 200 with one string hashed twice", (r) => { const page = r.crossWorkspace.checks[0]; page.searchedStringSha256[3] = page.searchedStringSha256[0]; }, /one distinct hash per identifying string/],
+    ["a page answering 200 whose hash list disagrees with its count", (r) => { r.crossWorkspace.checks[0].searchedStringCount = 5; }, /one distinct hash per identifying string/],
+    ["a data request answering 200 with no content", (r) => { r.crossWorkspace.checks[3].status = 200; }, /data request application-pdf-download for another workspace's ss4a-application answered status 200, which is inconclusive/],
+    ["a data request answering 200 that claims the not-found screen", (r) => { Object.assign(r.crossWorkspace.checks[1], { status: 200, notFoundRendered: true, recordTextFound: false, searchedStringSha256: r.crossWorkspace.checks[0].searchedStringSha256, searchedStringCount: 4 }); }, /data request report-pdf-download .* answered status 200, which is inconclusive/],
+    ["a target held only by a page check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.target !== "safety-action-plan" || c.kind === "page"); }, /checks for safety-action-plan need its report-pdf-download refused as a data check/],
+    ["an application held only by its read, not its download", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.request !== "application-pdf-download"); }, /checks for ss4a-application need its application-pdf-download refused as a data check/],
+    ["a download recorded as a page check", (r) => { r.crossWorkspace.checks[1].kind = "page"; }, /need its report-pdf-download refused as a data check/],
+    ["a page answering 200 without its stated limit", (r) => { r.limits = r.limits.filter((limit: Json) => limit.id !== "report-page-answers-200-with-not-found-screen"); }, /does not state the report-page-answers-200-with-not-found-screen limit/],
+    ["a check without a kind", (r) => { delete r.crossWorkspace.checks[2].kind; }, /record\.crossWorkspace\.checks\[2\] is missing kind/],
     ["a signed-out second account counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 401; }, /answered status 401, which is inconclusive/],
     ["a rejected export payload counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[1].status = 422; }, /answered status 422, which is inconclusive/],
     ["a source check that found different counts", (r) => { r.sourceCheck = { status: "differs", checkedOn: "2026-11-21", url: "https://example.gov/query", note: "Counts differ." }; }, /finding, not a pass/],
