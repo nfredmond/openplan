@@ -165,6 +165,26 @@ covered only by other evidence:
 
 KI-2026-11-14-303 lists these for the checker's next change.
 
+### Rechecked with the strengthened checker, November 14, 2026
+
+The checker was then changed to refuse eight of those changes: the map item
+pointed at another page, cross-workspace checks cut to one journey, screens
+cut to one page, a "matched" source check with any address or a trivial note,
+a journey with no crash, ranked segment or countermeasure (which covers both
+the California county and the tribal area rows above), a text item that is
+not its item's own heading, and a journey with no approved comment or staff
+review. This record, unchanged, was run through the strengthened checker with
+its six PDFs: it is still accepted. The same eleven changed copies the lead
+tried before are now all refused, the wrong map page among them. A test in
+the repository (`first-proven-job-record-accepted.test.ts`) repeats this on
+every run where Poppler is installed.
+
+Two changes the checker still accepts: a replaced map image hash (the hash
+can be recomputed on one workstation, but the image bytes depend on the PDF
+tools' versions, so it is not checked) and a place's Census id changed with
+its label kept. Had this record failed the strengthened checker, its entry
+would have been withdrawn from the registry until a rerun passed.
+
 ## After the run
 
 The five public comment pages the three attempts created were taken offline
