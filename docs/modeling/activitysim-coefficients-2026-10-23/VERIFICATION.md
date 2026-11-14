@@ -23,7 +23,7 @@ The 32 unit mutations remove refusals or corrupt transferred values, means,
 uncertainty, defaults, census, probability conservation, replay, unchanged joint
 behavior, runtime identity, frozen candidate identity and retirement rules.
 Every mutation fails through an assertion in its named test; none fails through
-an unrelated import or orchestration error. `evidence/unit-mutations.json`
+an unrelated import or orchestration error. [`evidence/unit-mutations.json`](evidence/unit-mutations.json)
 records each assertion, output hash and exact restoration hash. A harmless
 source comment passes the whole 16-test suite. Reordered chooser rows and extra
 nonoperative result metadata also survive.
@@ -31,14 +31,16 @@ nonoperative result metadata also survive.
 Two preparation mutations allow an existing source archive or a holdout/output
 path. Each fails `test_archive_member_allowlist` at the intended refusal
 assertion. The restored preparation source passes 16 tests. Exact code and
-results are retained under `evidence/preparation-controls.*`.
+results are retained in [`evidence/preparation-controls.py`](evidence/preparation-controls.py)
+and [`evidence/preparation-controls.json`](evidence/preparation-controls.json).
 
 The native mutation routes the candidate branch through the baseline overlay.
 The synthetic native stages run, but the evaluator refuses identical baseline
 and candidate probabilities with `candidate has no probability effect`.
 The sealed runner publishes an inconclusive failure. A separate synthetic-only
 comparison of retained probability frames confirms that exact reason. The source
-is restored before both final successful runs. See `evidence/native-control.*`.
+is restored before both final successful runs. See [`evidence/native-control.py`](evidence/native-control.py)
+and [`evidence/native-control.json`](evidence/native-control.json).
 
 The final synthetic fixture contains 60 households, 240 people, six zones,
 284 primary tours and nine joint tours. It creates numeric land use and skims
@@ -70,6 +72,24 @@ later successful synthetic records. None consumes a real survey or acceptance
 partition. Historical synthetic locks identify their own code hashes and are
 not reusable instructions against the final source.
 
+The five synthetic run folders (environment, input manifest, lock, receipt and
+compressed aggregate for each) are not kept in git. Each repeated the same
+357-line environment record. [`evidence/synthetic-summary.json`](evidence/synthetic-summary.json)
+keeps every run's status, error kind, aggregate SHA-256, tour count and peak
+memory, and [`evidence/postrun-verification.json`](evidence/postrun-verification.json)
+keeps the post-run checks. The real development run's lock, receipt and
+aggregate remain in
+[`data/modeling/activitysim-walk-transfer-study-2026-10-23/`](../../../data/modeling/activitysim-walk-transfer-study-2026-10-23/receipt.json).
+The removed synthetic receipts and locks had these SHA-256 values:
+
+| Run | `receipt.json` SHA-256 | `lock.json` SHA-256 |
+|---|---|---|
+| `initial_native_failure` | `c4f2a30d97119bf7c7175a3e16783ce9878d8a5f490124206fba99ba66a03529` | `b2b632802b99cb8974645a3ceebf98bdbd35af063d22cc345dd3d6295043e98a` |
+| `first_native_pass` | `aa2516868720e78f93931952ba620a6db13dae6f95f221d478aa612bee1579f6` | `2d3312681f168bc444bf0757cfb6b2f6e5bce09b2f4ba48ada258b8530b9f4ce` |
+| `native_fault` | `54315b1b9e0e3bc12bc68828ace16de057b398f12c4b801988e89a2202e093de` | `2faf0715c86fe6a2700ac14a3c627237064ee50b77def59ea497ddf55a1e82a7` |
+| `final_synthetic_1` | `024c35897705956d6efe952f8244849d3fa9fe68257bd723b1dc889915fa891f` | `40fa37106fc3730a23e2d2c9e1f28847bdbe0a05536540e20af5d77cd7f4c28f` |
+| `final_synthetic_2` | `4b28cdff32a40bc6c28ee7d3459b43d40f81f0858b1dc9ac3582e28132e2810b` | `8f454f1326745b435826137ebfee4bffc0e20370be94d2f86ac1bec0e0c92f37` |
+
 ## Exact commands recorded
 
 Working directory:
@@ -95,7 +115,7 @@ systemd-run --user --scope -p MemoryMax=6G -p MemorySwapMax=0 /home/nathaniel/co
 systemd-run --user --scope -p MemoryMax=6G -p MemorySwapMax=0 /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python /tmp/openplan-walk-native-control.py > /tmp/openplan-walk-native-control.json
 ```
 
-The temporary control scripts are preserved byte-for-byte in `evidence/`.
+The temporary control scripts are preserved byte-for-byte in [`evidence/`](evidence/native-control.py).
 The mutation harness records its exact child unittest command and per-control
 results. Initial test runs contained 12 tests; the final suite contains 16.
 
