@@ -5,7 +5,7 @@ import { formatReviewWorkbook } from "@/lib/export/review-workbook-layout";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
-import { ENGAGEMENT_REVIEW_STATES, countContributionsByReviewState, engagementReviewStateLabel } from "./review-counts";
+import { ENGAGEMENT_REVIEW_STATES, countEngagementReview, engagementReviewStateLabel, type EngagementReviewCounts, type EngagementReviewState } from "./review-counts";
 import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
 import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 import { decisionSynthesisReport, decisionSynthesisExportRows, decisionSynthesisCoverageFields, decisionSynthesisEventFields, decisionSynthesisMemberFields } from "./decision-synthesis-export";
@@ -198,20 +198,71 @@ function campaignResponseSourcesText(snapshot: EngagementReviewSnapshot, ids: un
   }).join("; ");
 }
 
+/** A saved snapshot's review counts. A response counts as published when it has a publication time. */
+export function reviewSnapshotCounts(snapshot: EngagementReviewSnapshot): EngagementReviewCounts {
+  return countEngagementReview({
+    items: snapshot.items,
+    responses: snapshot.responses.map((row) => ({ sourceItemIds: row.source_item_ids, published: row.published_at != null && row.published_at !== "" })),
+  });
+}
+
+/** The order a reader meets the review states in the PDF, the workbook and the manifest. */
+const REVIEW_STATE_READING_ORDER: readonly EngagementReviewState[] = ["approved", "rejected", "pending", "flagged"];
+const REVIEW_STATE_MANIFEST_KEY: Record<EngagementReviewState, string> = { approved: "approved", rejected: "withheld", pending: "pending", flagged: "flaggedForReview" };
+
+/**
+ * Which counts one review file states, and what it leaves out. A public copy
+ * holds approved contributions only, and a status filter holds one state, so
+ * those files say what they leave out instead of printing a zero for it.
+ */
+export function reviewFileCounts(snapshot: EngagementReviewSnapshot) {
+  const counts = reviewSnapshotCounts(snapshot);
+  const chosen = snapshot.scope === "public" ? "approved" : ENGAGEMENT_REVIEW_STATES.find((state) => state === snapshot.filters.status);
+  const states = chosen ? [chosen] : REVIEW_STATE_READING_ORDER;
+  const leftOut = snapshot.scope === "public"
+    ? "This public copy holds approved contributions only. Withheld, pending and flagged contributions are left out, so it does not count them."
+    : chosen ? `This selection holds ${engagementReviewStateLabel(chosen).toLowerCase()} contributions only. Contributions in other review states are left out, so it does not count them.` : null;
+  return {
+    counts,
+    /** Null when the file holds only some review states: the received total would be one of them. */
+    received: chosen ? null : counts.received,
+    states: states.map((state) => ({ state, label: engagementReviewStateLabel(state), count: counts.byState[state], manifestKey: REVIEW_STATE_MANIFEST_KEY[state] })),
+    leftOut,
+  };
+}
+
+const contributionNoun = (count: number) => count === 1 ? "contribution" : "contributions";
+
+/**
+ * The review counts as sentences, each led by the state's word and its number
+ * ("Approved 3 contributions."), so a reader and a text search of the PDF find
+ * the same phrase. A table set the label and its number a column apart.
+ */
+export function reviewCountSentences(snapshot: EngagementReviewSnapshot): string[] {
+  const file = reviewFileCounts(snapshot);
+  const { counts } = file;
+  return [
+    ...(file.leftOut ? [file.leftOut] : []),
+    ...(file.received === null ? [] : [`Received ${file.received} ${contributionNoun(file.received)}.`]),
+    ...file.states.map(({ label, count }) => `${label} ${count} ${contributionNoun(count)}.`),
+    `Published ${counts.publishedResponses} staff ${counts.publishedResponses === 1 ? "response" : "responses"}.`,
+    `Answered ${counts.answered} ${contributionNoun(counts.answered)} with a published staff response. A contribution that two responses answer counts once.`,
+  ];
+}
+
 export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, checksum: string, photos: Map<string,Buffer> = new Map()): string {
   const questionSummary = campaignQuestionSummary(snapshot);
   const missing = snapshot.items.filter((row) => !row.configuration_version_id).length;
-  const byState = countContributionsByReviewState(snapshot.items);
-  const counts = ENGAGEMENT_REVIEW_STATES.map((state) => `<tr><th>${engagementReviewStateLabel(state)}</th><td>${byState[state]}</td></tr>`).join('');
+  const counts = reviewCountSentences(snapshot).map((sentence) => `<li>${escape(sentence)}</li>`).join('');
   const context = snapshot.definitions.find((row) => row.id === snapshot.campaign.configurationVersionId)?.definition.campaign;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(snapshot.campaign.title)} engagement review</title><style>
-  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>
+  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}.review-counts{break-inside:avoid}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>
   <p class="badge">${snapshot.scope.toUpperCase()} REVIEW COPY</p><h1>${escape(snapshot.campaign.title)}</h1><p>${escape(snapshot.campaign.summary)}</p>
   <p>Campaign snapshot ${escape(snapshot.capturedAt)}. This report describes retained consultation records. Publication and a reviewed staff response are separate facts. Participation is not a representative survey of the population.</p>
   <p class="meta">Campaign ${escape(snapshot.campaign.id)}<br>Snapshot SHA-256 ${checksum}<br>Filters ${escape(JSON.stringify(snapshot.filters))}</p>
   <nav><a href="#summary">Record summary</a> · <a href="#questions">Question summary</a> · <a href="#contributions">Contribution register</a> · <a href="#answers">Survey answers</a> · <a href="#responses">Staff responses</a> · <a href="#definitions">Historical definitions</a>${snapshot.scope === "internal" ? ' · <a href="#decision-history">Decision history</a>' : ""}</nav>
   <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>Study area: ${escape(context?.place_label ?? 'Not supplied')}. Participation opens: ${escape(context?.participation_starts_at ?? 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ?? 'No scheduled end')}.</p>
-  <h2 id="summary">Selected records</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><table><tbody>${counts}</tbody></table><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
+  <h2 id="summary">Selected records</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><h3>Review counts</h3><ul class="review-counts">${counts}</ul><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
   <h3>Contribution sources</h3><p>Counts are records, not people. Staff-authored notes are not resident submissions. Intake method does not establish identity or representative support.</p><table aria-label="Contribution sources"><thead><tr><th>Source</th><th>Records</th></tr></thead><tbody>${contributionSourceCounts(snapshot).map(([label,count])=>`<tr><td>${escape(label)}</td><td>${count}</td></tr>`).join('')}</tbody></table>
   <h2 id="questions">Question summary</h2><p>Each row uses the questions available to that session's retained configuration. Unanswered includes questions not shown by branching and answers outside the export filters; it does not establish refusal or noncompliance. Repeated counts are additional identical answers, retained as separate records.</p>
   <table class="question-summary"><thead><tr><th>Question and configuration</th><th>Sessions</th><th>Answered</th><th>Redacted</th><th>Unanswered</th><th>Repeated</th></tr></thead><tbody>${questionSummary.map(row=>`<tr><td>${escape(row.prompt)}<br><span class="meta">${escape(row.version)}</span></td><td>${row.sessions}</td><td>${row.answered}</td><td>${row.redacted}</td><td>${row.unanswered}</td><td>${row.repeated}</td></tr>`).join('')}</tbody></table><p>${snapshot.sessions.filter(session=>!snapshot.definitions.some(version=>version.id===session.configuration_version_id)).length} sessions have unavailable historical definitions and are excluded from question denominators. Their recorded answers remain in the register.</p>
