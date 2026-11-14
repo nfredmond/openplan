@@ -51,7 +51,8 @@ refuse only writes the old routes already refuse.
 
 A live request that touches a locked table waits in the lock queue until the
 install commits or its own statement times out. While the install waits for
-a lock (at most 3 s), every new reader of that table queues behind it too.
+a lock (at most 1 s, the kit's `lock_timeout` for the dry run and install),
+every new reader of that table queues behind it too.
 The install holds the Safety, export and invoice locks and asks for
 `projects` last, so a request that already holds a `projects` lock and then
 waits on a Safety table closes a cycle; after 1 s the deadlock detector ends

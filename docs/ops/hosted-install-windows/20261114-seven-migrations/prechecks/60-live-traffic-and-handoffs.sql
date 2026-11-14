@@ -4,7 +4,7 @@
 --   bash $KIT/kit.sh hosted $W read /work/prechecks/60-live-traffic-and-handoffs.sql
 --
 -- Review 27, N3: the install takes ACCESS EXCLUSIVE locks on the tables below
--- and waits at most 3 s for each. A transaction already open on one of them
+-- and waits at most 1 s for each. A transaction already open on one of them
 -- makes the install wait, every new reader queues behind the install, and a
 -- lock timeout or deadlock rolls the whole window back to 448. The first query
 -- lists transactions open for more than 1 s that hold a lock on one of these
