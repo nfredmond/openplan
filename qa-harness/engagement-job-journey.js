@@ -616,7 +616,7 @@ async function main() {
       await sleep(800);
       const status = await staff.waitForSelector('#campaign-control-status', { visible: true, timeout: 30000 });
       await status.select('closed');
-      const saved = staff.waitForResponse((r) => r.url().endsWith(`/api/engagement/campaigns/${ids.campaignId}`) && r.request().method() === 'PATCH', { timeout: 60000 });
+      const saved = staff.waitForResponse((r) => r.url().includes(`/api/engagement/campaigns/${ids.campaignId}`) && r.request().method() === 'PATCH', { timeout: 60000 });
       await staff.evaluate(() => {
         const form = document.querySelector('#campaign-control-status').closest('form');
         const button = [...form.querySelectorAll('button[type=submit]')].find((b) => b.innerText.trim() === 'Save campaign');
