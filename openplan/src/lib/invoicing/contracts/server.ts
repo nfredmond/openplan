@@ -7,14 +7,23 @@ import { normalizeContractCommand } from "./calculation";
 import { contractCommandSchema } from "./schema";
 import { reportingError } from "@/lib/programs/work-program/reporting-server";
 import { isUuid } from "@/lib/uuid";
+/**
+ * Whether the contract read refused the reader itself. `read_contract_management_v046`, the innermost
+ * layer of the read, raises this one message with 42501 both for a contract that does not exist and for a
+ * reader with no role on it (`20260924000001_contract_staff_import_visibility.sql`). Other 42501 errors,
+ * such as a missing EXECUTE grant or the delivery layer's own refusal, are faults, not this answer.
+ */
+function contractReadRefusedReader(error: { code?: string; message: string }): boolean {
+ return error.code === "42501" && error.message === "Contract access denied";
+}
 export async function contractAccess(engagementId: string) {
- if (!isUuid(engagementId)) return { response: NextResponse.json({ error: "Invalid engagement id" }, { status: 400 }) };
+ if (!isUuid(engagementId)) return { response: NextResponse.json({ error: "Invalid engagement id" }, { status: 400 }), refusedReader: false };
  const client = await createClient();
  const { data: { user } } = await client.auth.getUser();
- if (!user) return { response: NextResponse.json({ error: "Sign in to manage this contract" }, { status: 401 }) };
+ if (!user) return { response: NextResponse.json({ error: "Sign in to manage this contract" }, { status: 401 }), refusedReader: false };
  const service = createServiceRoleClient();
  const result = await service.rpc("read_contract_management", { p_engagement_id: engagementId, p_actor_id: user.id });
- if (result.error) return { response: reportingError(result.error) };
+ if (result.error) return { response: reportingError(result.error), refusedReader: contractReadRefusedReader(result.error) };
  return { user, client, service, state: result.data };
 }
 export async function saveContractCommand(request: NextRequest, engagementId: string, input: unknown) {
