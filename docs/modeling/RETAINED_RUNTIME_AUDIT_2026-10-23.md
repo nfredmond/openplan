@@ -14,8 +14,11 @@ including compressed assessments, results, closure manifests, locks and evidence
 review records containing AequilibraE, ActivitySim or NumPy under `docs/reviews`.
 `scripts/research` has no retained output; the three `scripts/research` Python
 modules are source, and their retained outputs appear under `data/modeling`.
-The machine-readable [inventory](../../data/modeling/s2-runtime-audit-2026-10-23/inventory.json)
-binds every included file by SHA-256 and extracts exact JSON runtime fields.
+The machine-readable inventory
+`data/modeling/s2-runtime-audit-2026-10-23/inventory.json` (10,328 lines;
+SHA-256 `2034d06d46ad0dc23a326d074cae2b363ddd8957d25580980d3618e63aaad923`;
+removed from the tree before merge and kept in this branch's history at commit
+`953641422`) binds every included file by SHA-256 and extracts exact JSON runtime fields.
 Five original development run summaries supplement the tracked records.
 
 Counts below use **file records**, not independent experiments. A lock, its result

@@ -698,9 +698,12 @@ A new isolated environment lives at
 It uses CPython 3.11.15 without system-site packages. All nine numerical package
 versions match round 1: AequilibraE 1.6.2, NumPy 2.0.2, pandas 2.3.3,
 SciPy 1.17.1, Shapely 2.2.0, OpenMatrix 0.3.5.0, tables 3.11.1,
-GeoPandas 1.2.0 and pyproj 3.7.2. The
-[runtime manifest](../../data/modeling/s2-cordon-impedance-py311-2026-10-23/runtime-manifest.json)
-records the interpreter hash, exact versions, all 48 installed distribution
+GeoPandas 1.2.0 and pyproj 3.7.2. The runtime manifest
+`data/modeling/s2-cordon-impedance-py311-2026-10-23/runtime-manifest.json`
+(33,908 lines; SHA-256
+`d7eb2639bbf71e2c88a6cfd1608166d1dfc351847ccbe1674a647bdad2e6c75b`; removed
+from the tree before merge and kept in this branch's history at commit
+`953641422`) records the interpreter hash, exact versions, all 48 installed distribution
 wheel hashes and installed-file hashes excluding bytecode. It also hashes
 both repository requirement files. No package or interpreter in the old
 scientific environments changes.
@@ -819,9 +822,10 @@ The new venv uses CPython 3.11.15, AequilibraE 1.6.2, NumPy 2.0.2,
 pandas 2.3.3, SciPy 1.17.1, Shapely 2.2.0, OpenMatrix 0.3.5.0,
 tables 3.11.1, GeoPandas 1.2.0 and pyproj 3.7.2. Both repository requirement
 files and the retained exact-version list supply installation constraints.
-No installed library is patched. The
-[runtime manifest](../../data/modeling/s2-cordon-py311-round5-2026-10-23/runtime-manifest.json)
-records all 48 distribution archive hashes and installed-file hashes, excluding
+No installed library is patched. The runtime manifest
+`data/modeling/s2-cordon-py311-round5-2026-10-23/runtime-manifest.json`
+(33,860 lines; removed from the tree before merge and kept in this branch's
+history at commit `953641422`) records all 48 distribution archive hashes and installed-file hashes, excluding
 bytecode. Interpreter SHA-256:
 `9e7f0dd93c77a32d07aa66631b48116101db6266701b292ebdc56a30d6cc7924`.
 Manifest SHA-256:
