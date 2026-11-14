@@ -44,8 +44,21 @@ describe("the recurring product-direction review", () => {
     );
     expect(registry.dimensions.state).toHaveLength(56);
     expect(registry.schemaVersion).toBe(3);
-    // No job is proven yet; the direction check passes with the empty list.
-    expect(registry.provenJobs).toEqual([]);
+    // One job is proven (November 14, 2026): the safety action plan and SS4A
+    // application in three places, run by an agent on the hosted site. The
+    // direction check above read its record and its six PDFs and accepted them.
+    expect(registry.provenJobs).toHaveLength(1);
+    expect(registry.provenJobs[0]).toMatchObject({
+      jobId: "safety-action-plan-and-ss4a-in-three-places",
+      commit: "ccf88a9219fa58b67842a8f1dd41dbe3b371f8e5",
+      places: [
+        { kind: "county", geoid: "06091", stateFips: ["06"] },
+        { kind: "county", geoid: "32017", stateFips: ["32"] },
+        { kind: "aiannh", geoid: "3010R", stateFips: ["32"] },
+      ],
+    });
+    // The record, six PDFs, the record's README and the four inputs files.
+    expect(registry.provenJobs[0].evidence).toHaveLength(12);
     expect(registry.readinessRegistry).toMatchObject({
       schema: "openplan.jurisdiction-readiness.v1",
       path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
