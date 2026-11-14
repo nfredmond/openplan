@@ -26,7 +26,12 @@ const patchItemSchema = z
     latitude: z.union([z.number().min(-90).max(90), z.null()]).optional(),
     longitude: z.union([z.number().min(-180).max(180), z.null()]).optional(),
     metadata: z.union([z.record(z.string(), z.unknown()), z.null()]).optional(),
+    reviewReason: z.union([z.string().trim().max(2000), z.null()]).optional(),
+    // Older name for reviewReason, still sent by some clients.
     moderationNotes: z.union([z.string().trim().max(2000), z.null()]).optional(),
+  })
+  .refine((value) => value.reviewReason === undefined || value.moderationNotes === undefined || value.reviewReason === value.moderationNotes, {
+    message: "Send one review reason",
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field must be updated",
@@ -113,6 +118,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (existingItem.updated_at !== parsed.data.expectedUpdatedAt) {
       return NextResponse.json({ error: "This contribution changed since you opened it. Refresh and review the current version." }, { status: 409 });
     }
+    const reviewReason = parsed.data.reviewReason !== undefined ? parsed.data.reviewReason : parsed.data.moderationNotes;
     const changesPublicCopy = (parsed.data.categoryId !== undefined && parsed.data.categoryId !== existingItem.category_id)
       || (parsed.data.sourceType !== undefined && parsed.data.sourceType !== existingItem.source_type)
       || (parsed.data.body !== undefined && parsed.data.body !== existingItem.body)
@@ -121,7 +127,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       || parsed.data.removePhoto || parsed.data.removeGeometry
       || (parsed.data.latitude !== undefined && parsed.data.latitude !== existingItem.latitude)
       || (parsed.data.longitude !== undefined && parsed.data.longitude !== existingItem.longitude);
-    if ((changesPublicCopy || (parsed.data.status !== undefined && parsed.data.status !== existingItem.status)) && !parsed.data.moderationNotes?.trim()) {
+    if ((changesPublicCopy || (parsed.data.status !== undefined && parsed.data.status !== existingItem.status)) && !reviewReason?.trim()) {
       return NextResponse.json({ error: "Record a review reason before changing the public copy or moderation state." }, { status: 400 });
     }
 
@@ -147,7 +153,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Engagement category not found for this campaign" }, { status: 400 });
     }
 
-    const updates: Record<string, unknown> = { review_expected_updated_at: parsed.data.expectedUpdatedAt, review_reason: parsed.data.moderationNotes ?? null };
+    const updates: Record<string, unknown> = { review_expected_updated_at: parsed.data.expectedUpdatedAt, review_reason: reviewReason ?? null };
     if (parsed.data.removePhoto) updates.photo_path = null;
     if (parsed.data.categoryId !== undefined) updates.category_id = parsed.data.categoryId;
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
@@ -169,7 +175,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
     if (parsed.data.metadata !== undefined) updates.metadata_json = parsed.data.metadata ?? {};
-    if (parsed.data.moderationNotes !== undefined) updates.moderation_notes = parsed.data.moderationNotes;
+    if (reviewReason !== undefined) updates.moderation_notes = reviewReason;
 
     const { data: changed, error: updateError } = await supabase.from("engagement_items").update(updates)
       .eq("id", existingItem.id).eq("campaign_id", access.campaign.id)

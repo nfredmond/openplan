@@ -27,7 +27,7 @@ export function PlanningContextStrip({
               ? "OpenPlan could not read the requested project. This page has not treated the failure as an empty project or a valid workspace-wide result."
               : "The requested project is missing or does not belong to the active workspace. This page has not silently switched to another project."}
           </p>
-          <Link href="/projects" className="mt-2 inline-flex items-center gap-1 font-semibold text-primary hover:underline">
+          <Link href="/projects" className="mt-2 inline-flex items-center gap-1 font-semibold text-foreground underline decoration-primary underline-offset-4 hover:decoration-2">
             <ArrowLeft className="h-3.5 w-3.5" />
             Open projects
           </Link>
@@ -52,7 +52,7 @@ export function PlanningContextStrip({
       </div>
       <Link
         href={`/projects/${context.project.id}`}
-        className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-foreground underline decoration-primary underline-offset-4 hover:decoration-2"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Return to project

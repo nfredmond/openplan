@@ -7,7 +7,7 @@ import {
   readSafetyCrashEvidenceIngest,
   SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION,
 } from "@/lib/safety/crash-evidence";
-import { BCA_VERSION_ROW, CAMPAIGN_ROW, EVIDENCE_IDS } from "./ss4a-evidence";
+import { BCA_VERSION_ROW, CAMPAIGN_ROW, COMMENT_COUNTS, EVIDENCE_IDS, NO_STAFF_REVIEW } from "./ss4a-evidence";
 import { seedId } from "./safety-seed";
 
 /**
@@ -119,7 +119,10 @@ export function completeAtpRecords(): AtpEvidenceRecords {
     run: { status: "ready", run: atpRun() },
     crash: { status: "ready", evidence: atpCrashEvidence(), retrievedAt: "2026-11-02T15:00:00+00:00" },
     bca: { status: "workbench", row: BCA_VERSION_ROW() },
-    engagement: { status: "ready", evidence: buildProjectEngagementEvidenceByProjectId([CAMPAIGN_ROW]).get(ATP_IDS.project)!, truncated: false },
+    engagement: {
+      status: "ready", evidence: buildProjectEngagementEvidenceByProjectId([CAMPAIGN_ROW]).get(ATP_IDS.project)!, truncated: false,
+      comments: COMMENT_COUNTS, staffReview: NO_STAFF_REVIEW,
+    },
     generatedAt: ATP_GENERATED_AT,
     timeZone: "UTC",
   };

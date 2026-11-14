@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-appendices";
 import { SS4A_APPENDIX_KEYS } from "@/lib/grants/ss4a-appendix-keys";
 import {
   buildSs4aEvidenceAppendices,
@@ -226,5 +227,36 @@ describe("SS4A evidence appendices", () => {
     const records = completeEvidenceRecords();
     records.bca = { status: "workbench", row: { ...BCA_VERSION_ROW(), document_json: { ...BCA_VERSION_ROW().document_json, projectId: EVIDENCE_IDS.workspace } } };
     expect(byKey(buildSs4aEvidenceAppendices(records, ALL), "bca").status).toBe("unreadable");
+  });
+
+  // The rehearsal exports printed "Generated: 2026-11-03T05:42:49.644Z" and
+  // "retrieved 2026-11-03T05:28:56.422225+00:00" in every appendix source line.
+  it("prints source dates as a planner reads them, never as raw stamps", () => {
+    expect(formatEvidenceTimestamp("2026-11-03T05:42:49.644Z")).toBe("Nov 3, 2026, 05:42 UTC");
+    expect(formatEvidenceTimestamp("2026-11-03T05:28:56.422225+00:00")).toBe("Nov 3, 2026, 05:28 UTC");
+    // An offset is converted, not dropped: 22:30 at UTC-8 is the next day in UTC.
+    expect(formatEvidenceTimestamp("2026-11-03T22:30:00-08:00")).toBe("Nov 4, 2026, 06:30 UTC");
+    expect(formatEvidenceTimestamp("2026-11-03")).toBe("Nov 3, 2026");
+    expect(formatEvidenceTimestamp(null)).toBe("Not recorded");
+    expect(formatEvidenceTimestamp("  ")).toBe("Not recorded");
+    // Not a date: printed as stored, nothing invented.
+    expect(formatEvidenceTimestamp("after adoption")).toBe("after adoption");
+
+    const text = packetText(buildSs4aEvidenceAppendices(completeEvidenceRecords(), ALL));
+    expect(text).not.toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:/);
+    expect(text).toMatch(/Generated: [A-Z][a-z]{2} \d{1,2}, \d{4}, \d{2}:\d{2} UTC/);
+    expect(text).toMatch(/retrieved [A-Z][a-z]{2} \d{1,2}, \d{4}, \d{2}:\d{2} UTC/);
+  });
+
+  // At a county's scale a half-mile piece is smaller than its marker, and the
+  // rehearsal map hid rank 1 under a rank 5 marker drawn after it.
+  it("draws the rank markers in the highlight red, with the best rank on top", () => {
+    const svg = byKey(buildSs4aEvidenceAppendices(completeEvidenceRecords(), ALL), "hin_map").figureSvg!;
+    const markers = [...svg.matchAll(/<circle r="9" fill="(#[0-9a-f]{6})"[^>]*\/><text[^>]*>(\d+)<\/text>/g)];
+    expect(markers.map((marker) => marker[1])).toEqual(["#b42318", "#b42318"]);
+    // Drawn worst rank first, so rank 1 is last and on top.
+    expect(markers.map((marker) => Number(marker[2]))).toEqual([2, 1]);
+    // Every segment shape comes before the first marker.
+    expect(svg.lastIndexOf('stroke-width="5"')).toBeLessThan(svg.indexOf('<circle r="9"'));
   });
 });

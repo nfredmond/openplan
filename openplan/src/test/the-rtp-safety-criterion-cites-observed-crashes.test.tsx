@@ -264,7 +264,7 @@ describe("the RTP safety criterion cites observed crashes", () => {
       )
     );
     expect(screen.queryByText(/0 people walking/)).toBeNull();
-    expect(screen.getByText(/Person-level records were not retrieved/)).toBeTruthy();
+    expect(screen.getByText(/Party records, which name each driver, pedestrian and bicyclist involved, were not retrieved/)).toBeTruthy();
   });
 
   it("names a failed count read as a failure, not as an absence of collisions", () => {

@@ -1,6 +1,8 @@
 import { exampleBcaDocument } from "@/lib/bca/workbench/document";
 import { buildSs4aSafetyDrafts } from "@/lib/grants/ss4a-safety-seed";
 import type { Ss4aEvidenceRecords } from "@/lib/grants/ss4a-evidence-appendices";
+import type { CampaignCommentCountsRead } from "@/lib/grants/evidence-appendices";
+import type { ApprovedStaffReviewFinding, StaffReviewRead } from "@/lib/engagement/staff-review-finding";
 import { buildProjectEngagementEvidenceByProjectId } from "@/lib/grants/engagement-evidence";
 import { buildSafetyActionPlanSection } from "@/lib/reports/safety-action-plan";
 import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
@@ -64,10 +66,10 @@ export function evidenceAcquisition(overrides: Record<string, unknown> = {}) {
 }
 
 /** The frozen v1 snapshot a Safety report generation would have stored. */
-export function evidenceSnapshot(acquisitionOverrides: Record<string, unknown> = {}): SafetyPlanSnapshot {
+export function evidenceSnapshot(acquisitionOverrides: Record<string, unknown> = {}, countermeasureIds: string[] = ["walkways"]): SafetyPlanSnapshot {
   const network = fixtureNetwork();
   const acquisition = evidenceAcquisition(acquisitionOverrides);
-  const plan = { ingestId: EVIDENCE_IDS.ingest, attachments: [{ segmentId: network.segments[0].id, segmentLabel: network.segments[0].label, countermeasureIds: ["walkways"] }] };
+  const plan = { ingestId: EVIDENCE_IDS.ingest, attachments: [{ segmentId: network.segments[0].id, segmentLabel: network.segments[0].label, countermeasureIds }] };
   const completeness = typeof acquisition.severity_completeness === "string" ? acquisition.severity_completeness : "";
   const evidence = buildSafetyCrashEvidence({
     id: EVIDENCE_IDS.ingest, projectId: EVIDENCE_IDS.project, status: "ready", severityCompleteness: completeness,
@@ -93,10 +95,39 @@ export const BCA_VERSION_ROW = () => ({
 });
 
 export const CAMPAIGN_ROW = {
-  id: EVIDENCE_IDS.campaign, project_id: EVIDENCE_IDS.project, title: "Corridor listening session", status: "closed",
+  id: EVIDENCE_IDS.campaign, project_id: EVIDENCE_IDS.project, title: "Corridor listening session", status: "closed", engagement_type: "map_feedback",
   updated_at: "2026-10-21T10:00:00+00:00", ai_synthesized_at: "2026-10-21T09:00:00+00:00",
   ai_synthesis_json: { source: "deterministic-fallback", analyzed_item_count: 12, overall_sentiment: "mixed", themes: [{ label: "Crossing safety", item_count: 7, sentiment: "negative" }] },
   representativeness_json: null, representativeness_computed_at: null,
+};
+
+/** Four comments received over two days, two approved. */
+export const COMMENT_COUNTS: CampaignCommentCountsRead = {
+  status: "ready", received: 4, approved: 2,
+  firstReceivedAt: "2026-10-19T15:00:00+00:00", lastReceivedAt: "2026-10-20T16:30:00+00:00",
+};
+
+export const NO_STAFF_REVIEW: StaffReviewRead = { status: "none", checkedReviewCount: 0, limitReached: false };
+
+/** An approved staff review of the two approved comments, sorted into two themes. */
+export function staffReviewFinding(overrides: Partial<ApprovedStaffReviewFinding> = {}): ApprovedStaffReviewFinding {
+  return {
+    reviewId: seedId(95), revisionNo: 2, approvedAt: "2026-10-22T18:00:00+00:00",
+    sourceId: seedId(94), sourceCapturedAt: "2026-10-21T17:00:00+00:00",
+    selectionStatuses: ["approved"], includesComments: true, includesSurveys: false,
+    commentCount: 2, surveyAnswerCount: 0, assignedCount: 2, unassignedCount: 0,
+    themes: [
+      { label: "Speeding near the school", recordCount: 1, sentiment: "negative" },
+      { label: "Shoulder width", recordCount: 1, sentiment: "not_assessed" },
+    ],
+    ...overrides,
+  };
+}
+
+/** The project's study area: a square around the fixture acquisition. */
+export const STUDY_AREA = {
+  type: "Polygon" as const,
+  coordinates: [[[-100.04, 39.96], [-99.96, 39.96], [-99.96, 40.04], [-100.04, 40.04], [-100.04, 39.96]]] as [number, number][][],
 };
 
 /** Every record present and consistent: the shape the loader returns for a complete project. */
@@ -108,6 +139,10 @@ export function completeEvidenceRecords(): Ss4aEvidenceRecords {
     safety: { status: "ready", snapshot, otherSeededArtifactCount: 0 },
     hinRecompute: { status: "computed", network: fixtureNetwork(), roads: evidenceRoads() },
     bca: { status: "workbench", row: BCA_VERSION_ROW() },
-    engagement: { status: "ready", evidence: buildProjectEngagementEvidenceByProjectId([CAMPAIGN_ROW]).get(EVIDENCE_IDS.project)!, truncated: false },
+    engagement: {
+      status: "ready", evidence: buildProjectEngagementEvidenceByProjectId([CAMPAIGN_ROW]).get(EVIDENCE_IDS.project)!, truncated: false,
+      comments: COMMENT_COUNTS, staffReview: NO_STAFF_REVIEW,
+    },
+    studyArea: { status: "ready", geometry: STUDY_AREA },
   };
 }

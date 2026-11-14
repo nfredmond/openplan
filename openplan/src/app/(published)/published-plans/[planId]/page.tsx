@@ -56,7 +56,7 @@ export default async function PublishedLandUsePlanPage({ params }: { params: Pro
         <p className="text-sm font-semibold text-muted-foreground">Published {packet.descriptor?.terminology.plan ?? "land use plan"} · frozen version {packet.version.versionNumber}</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight">{packet.plan.title}</h1>
         <p className="mt-3 text-lg text-muted-foreground">{packet.plan.authorityLabel} · {packet.plan.geographyLabel}</p>
-        <p className="mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs">Content hash: {packet.version.contentHash}</p>
+        <p className="mt-4 break-all rounded-lg bg-secondary p-3 font-mono text-xs">Content hash: {packet.version.contentHash}</p>
         <a className="mt-4 inline-block text-sm font-medium underline" href={`/api/public/land-use-plans/${planId}`} download={`openplan-adopted-v${packet.version.versionNumber}.json`}>Download the frozen plan data</a>
       </header>
 

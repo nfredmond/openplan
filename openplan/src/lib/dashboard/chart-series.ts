@@ -142,7 +142,8 @@ export function commentsReceivedOverTime(
 
   if (counted === 0) {
     return blocked(
-      `No comments have come in since ${dayLabel(windowStart)}. Once people start responding to a campaign, their comments show up here week by week.`,
+      // No date here: on a new workspace the window start predates the workspace.
+      `No comments in the last ${COMMENT_WINDOW_WEEKS} weeks. Comments from your campaigns show up here week by week.`,
       "empty"
     );
   }

@@ -443,7 +443,7 @@ export function PublicMapShell({
           <div
             id="engagement-map-unavailable"
             data-testid="engagement-map-unavailable"
-            className="mx-5 mt-4 rounded-lg border border-dashed border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
+            className="mx-5 mt-4 rounded-lg border border-dashed border-border bg-secondary px-4 py-3 text-sm text-foreground"
           >
             <p className="font-medium text-foreground">{t("portal.mapMissingTitle")}</p>
             <p className="mt-1.5">{t("portal.mapMissingBody")}</p>
@@ -475,7 +475,7 @@ export function PublicMapShell({
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
               acceptingSubmissions
                 ? "bg-[color:var(--pine)]/15 text-foreground"
-                : "bg-muted text-muted-foreground"
+                : "bg-secondary text-muted-foreground"
             )}
             data-testid="portal-status-chip"
           >

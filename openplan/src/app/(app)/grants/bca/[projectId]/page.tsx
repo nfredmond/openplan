@@ -9,6 +9,7 @@ import { buildGuidedComparisonResults } from "@/lib/models/guided-comparison-res
 import type { BcaModelEvidence } from "@/lib/bca/workbench/model-evidence";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { BCA_PROJECT_PROJECTION, readBcaProjectPlace } from "@/lib/bca/workbench/project-place";
+import { loadBcaSafetyPlanOffers, type BcaSafetySupabaseLike } from "@/lib/safety/bca-evidence-loader";
 export const metadata = moduleMetadata("Benefit-cost analysis");
 export default async function BcaPage({
   params,
@@ -81,10 +82,15 @@ export default async function BcaPage({
           result,
         })),
       );
+  const safety = await loadBcaSafetyPlanOffers(supabase as unknown as BcaSafetySupabaseLike, {
+    workspaceId: project.workspace_id,
+    projectId,
+  });
   return (
     <BcaWorkbench
       models={models}
       modelReadFailed={reads.any}
+      safety={safety}
       projectId={projectId}
       projectName={project.name}
       projectPlace={readBcaProjectPlace(projectId, project)}

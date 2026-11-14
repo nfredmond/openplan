@@ -1639,11 +1639,19 @@ describe("POST /api/reports/[reportId]/generate", () => {
         expect(network.coverage).toContain("do not establish complete observation coverage or an annual denominator");
         expect(result.artifact.metadata_json.htmlContent).toContain(network.years);
         expect(result.artifact.metadata_json.htmlContent).toContain("do not establish complete observation coverage");
+        // The ranked network is drawn, and the caption counts the table's rows.
+        if (network.rows.length > 0) {
+          expect(result.artifact.metadata_json.htmlContent).toContain(`High-injury network map. All ${network.rows.length} ranked segment`);
+        }
         expect(network.sourceLine).not.toContain("2020–2022");
         expect(network.measureLabel).toContain("fatal crashes only");
         expect(network.rows.every((row) => row.seriousInjuryCrashCount === null)).toBe(true);
       }
       expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
+      // The plan section prints the project's engagement and benefit-cost
+      // blocks. This fake answers neither read, so each says it could not be read.
+      expect(result.artifact.metadata_json.htmlContent).toMatch(/<h3>Engagement summary<\/h3><p><strong>Could not be read\.<\/strong>/);
+      expect(result.artifact.metadata_json.htmlContent).toMatch(/<h3>Benefit-cost summary<\/h3><p><strong>Could not be read\.<\/strong>/);
       const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
         project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt, ...SEED_PROJECT_PLACE },
         report: { ...fixture.report, id: reportId, project_id: projectId, workspace_id: workspaceId, updated_at: result.reportUpdatedAt },
