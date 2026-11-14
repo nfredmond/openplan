@@ -582,6 +582,27 @@ class RunnerTest(unittest.TestCase):
         refused = json.loads(next((self.root / "slow").glob("dryrun-*.json")).read_text())
         self.assertEqual(refused["status"], "refused-lock-estimate")
 
+    def test_the_estimate_uses_only_a_dry_run_that_completed(self):
+        # Review 31, N6. A failed or too-slow dry run of the same file, with a
+        # short lock time on record, is still not a rehearsal.
+        for index, status in enumerate(("dry-run-failed", "dry-run-too-slow", "dry-run-unknown")):
+            rehearsed = self.root / f"rehearsed-{index}.json"
+            rehearsed.write_text(json.dumps({"status": status, "sha256": self.bundle["dryrunSha256"],
+                                             "target": "copy:c", "lock": {"lockHeldMs": 300}}))
+            with self.subTest(status=status), self.fake_psql(3, DRY_OK, "ERROR:  " + kc.DRYRUN_SENTINEL):
+                with self.assertRaisesRegex(kc.KitError, "is not a completed dry run of this bundle"):
+                    self.hosted_dryrun(f"ev{index}", rtt=self.write_rtt(name=f"rtt-{index}.json"), rehearsed=rehearsed)
+        self.assertEqual(self.sent, [])
+
+    def test_an_install_with_a_result_but_no_lock_line_is_not_installed(self):
+        # Review 31, N6: the lock line is the last statement before COMMIT, so
+        # without it the kit cannot say the transaction reached COMMIT.
+        self.write_go()
+        with self.fake_psql(code=0, stdout=kc.RESULT_PREFIX + '{"kind": "install"}\n'):
+            code, envelope = self.install()
+        self.assertEqual((code, envelope["status"]), (1, "install-unknown"))
+        self.assertNotIn("lockHeldMs", envelope)
+
     def test_a_refused_estimate_does_not_use_up_the_install_attempt(self):
         self.write_go(target="hosted")
         args = args_for("install", self.root / "ev", self.bundle_dir, rtt=self.write_rtt(),
