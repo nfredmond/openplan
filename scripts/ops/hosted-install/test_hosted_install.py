@@ -244,6 +244,15 @@ class BuilderTest(unittest.TestCase):
         self.assertEqual("\n".join(first_lines) + "\n", kc.TIMEOUTS)
         self.assertLess(text.index(kc.DRYRUN_SENTINEL), text.rindex("ROLLBACK;"))
 
+    def test_the_review_timeouts_are_exact(self):
+        # Review 15, B5. The builder test above checks that every file opens with
+        # these lines; this one pins the values themselves.
+        self.assertEqual(kc.TIMEOUTS, "SET LOCAL lock_timeout = '3s';\n"
+                                      "SET LOCAL statement_timeout = '60s';\n"
+                                      "SET LOCAL idle_in_transaction_session_timeout = '30s';\n"
+                                      "SET LOCAL transaction_timeout = '120s';\n")
+        self.assertEqual((kc.CAPTURE_QUIET_START, kc.CAPTURE_QUIET_END), ((10, 5), (10, 50)))
+
     def test_install_needs_pins_from_a_completed_dry_run_of_the_same_plan(self):
         plan_path = self.fx.write_plan()
         bundle = self.fx.build("dryrun", plan_path, self.fx.root / "out")
