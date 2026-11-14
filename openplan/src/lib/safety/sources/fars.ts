@@ -64,9 +64,11 @@
  *
  * FIELD NOTES — read this before "fixing" the tolerant parsing below.
  *   - The CrashAPI location endpoint accepts state and county, not a bounding
- *     box. OpenPlan therefore reads NHTSA's immutable annual CSV files and
- *     applies the requested bbox locally. This is slower on a cold cache, but
- *     it works for arbitrary project geometry without guessing a county.
+ *     box. OpenPlan therefore reads NHTSA's annual CSV files and applies the
+ *     requested bbox locally, which works for arbitrary project geometry
+ *     without guessing a county. A National archive is 33 to 35 MB, so the
+ *     files of every year are read at once under one deadline and a checked,
+ *     reduced copy is kept between acquisitions (`fars-annual-files.ts`).
  *   - Column casing is NOT stable across CrashAPI endpoints (ST_CASE vs
  *     StCase, LONGITUD vs Longitude). Every field is looked up through a
  *     case-insensitive, separator-insensitive key map instead of one guessed
@@ -77,7 +79,9 @@
  *     are rejected — plotted literally they land in the Arctic Ocean.
  *   - Annual files publish roughly two years in arrears, so a requested year
  *     that returns nothing usable is skipped rather than treated as an outage.
- *     Only an ALL-years failure is reported as `source_unavailable`.
+ *     Only an ALL-years failure is reported as `source_unavailable`. Each
+ *     file's receipt (URL, SHA-256, read date, or why it failed) rides in the
+ *     published-cutoff provenance, so a skipped year stays visible as failed.
  *
  * NETWORK NOTE (2026-08): crashviewer.nhtsa.dot.gov answers 403 from this
  * development network. The official static annual files remain reachable and
@@ -86,7 +90,6 @@
  */
 
 import { parse as parseCsv } from "csv-parse/sync";
-import JSZip from "jszip";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import { STATE_FIPS_TO_USPS, stateFipsFromUsps } from "@/lib/geographies/state-fips";
 import { CRASH_LEVEL_ONLY_DIMENSION_SUPPORT } from "@/lib/safety/vocabulary";
@@ -97,6 +100,7 @@ import {
   type CrashRecord,
   type CrashSourceAdapter,
 } from "./types";
+import { FARS_FILE_TIMING, readFarsAnnualFile, type FarsFileTiming } from "./fars-annual-files";
 
 export const FARS_SOURCE_ID = "fars-national";
 
@@ -127,9 +131,6 @@ export const FARS_PUBLISHED_CUTOFF = {
   },
 } as const;
 
-const REQUEST_TIMEOUT_MS = 20_000;
-const MAX_ARCHIVE_BYTES = 48 * 1024 * 1024;
-const MAX_ACCIDENT_CSV_BYTES = 36 * 1024 * 1024;
 const LATEST_PUBLISHED_YEAR = Number(FARS_PUBLISHED_CUTOFF.publishedThrough.slice(0, 4));
 
 /**
@@ -417,48 +418,10 @@ export function parseFarsAnnualCsv(
   return { matchedTotal: records.length, records };
 }
 
-async function fetchWithTimeout(url: string, signal?: AbortSignal): Promise<Response | null> {
-  const controller = new AbortController();
-  const onAbort = () => controller.abort(signal?.reason);
-  signal?.addEventListener("abort", onAbort, { once: true });
-  const timeout = setTimeout(() => controller.abort("FARS annual archive timed out"), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, { cache: "force-cache", signal: controller.signal });
-    return response.ok ? response : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
-    signal?.removeEventListener("abort", onAbort);
-  }
-}
-
-async function fetchFarsAnnualCsv(url: string, signal?: AbortSignal): Promise<string | null> {
-  const response = await fetchWithTimeout(url, signal);
-  if (!response) return null;
-
-  const declaredBytes = Number(response.headers.get("content-length"));
-  if (Number.isFinite(declaredBytes) && declaredBytes > MAX_ARCHIVE_BYTES) return null;
-
-  const archiveBytes = await response.arrayBuffer();
-  if (archiveBytes.byteLength > MAX_ARCHIVE_BYTES) return null;
-
-  try {
-    const archive = await JSZip.loadAsync(archiveBytes);
-    const accidentEntry = Object.values(archive.files).find(
-      (entry) => !entry.dir && /(?:^|\/)accident\.csv$/i.test(entry.name)
-    );
-    if (!accidentEntry) return null;
-
-    const csv = await accidentEntry.async("string");
-    return Buffer.byteLength(csv, "utf8") <= MAX_ACCIDENT_CSV_BYTES ? csv : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashFetchResult> {
+export async function fetchFarsCrashes(
+  params: CrashFetchParams,
+  timing: FarsFileTiming = FARS_FILE_TIMING
+): Promise<CrashFetchResult> {
   const years = Array.from(new Set(params.years))
     .filter(
       (year) => Number.isFinite(year) && year >= FARS_EARLIEST_YEAR && year <= LATEST_PUBLISHED_YEAR
@@ -472,19 +435,40 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
 
   const files = farsFilesForBbox(params.bbox);
 
-  for (const year of years) {
-    // A year counts as answered only when every file the study area needs
-    // answered it. A year one file cannot answer (not published, no
-    // coordinates, unreachable) is skipped whole, so a partial read is never
-    // reported as the study area's full count.
+  // A year counts as answered only when every file the study area needs
+  // answered it, so a partial read is never reported as the study area's full
+  // count. A year one file cannot answer at all (before its first year with
+  // coordinates) is not asked of any file.
+  const answerable = years.filter((year) => files.every((file) => year >= file.earliestYear));
+
+  // Every file of every year starts at once and shares one deadline, so an
+  // acquisition waits for its slowest file, not the sum of all of them. A file
+  // that fails or misses the deadline is a failed year, recorded in its
+  // receipt, never a year with no crashes.
+  const reads = await Promise.all(
+    answerable.map((year) =>
+      Promise.all(
+        files.map((file) =>
+          readFarsAnnualFile({
+            url: file.archiveUrl(year),
+            year,
+            keptFiles: params.keptFiles,
+            signal: params.signal,
+            timing,
+          })
+        )
+      )
+    )
+  );
+  const sourceFiles = reads.flat().map((read) => read.receipt);
+
+  answerable.forEach((year, index) => {
+    const yearReads = reads[index];
     const parsedFiles: Array<{ matchedTotal: number; records: CrashRecord[] }> = [];
-    for (const file of files) {
-      if (year < file.earliestYear) break;
-      const csv = await fetchFarsAnnualCsv(file.archiveUrl(year), params.signal);
-      if (csv === null) break;
-      parsedFiles.push(parseFarsAnnualCsv(csv, year, params.bbox));
+    for (const read of yearReads) {
+      if (!read.ok) return;
+      parsedFiles.push(parseFarsAnnualCsv(read.csv, year, params.bbox));
     }
-    if (parsedFiles.length < files.length) continue;
 
     yearsAnswered.push(year);
     for (const parsed of parsedFiles) {
@@ -497,12 +481,17 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
         }
       }
     }
-  }
+  });
 
   if (years.length > 0 && yearsAnswered.length === 0) {
+    const failures = sourceFiles
+      .filter((receipt) => receipt.status === "failed")
+      .map((receipt) => `${receipt.year}: ${receipt.failure}`);
     throw new CrashSourceUnavailableError(
       FARS_SOURCE_ID,
-      "NHTSA annual FARS files returned no usable response for any published requested year"
+      `NHTSA annual FARS files returned no usable response for any published requested year${
+        failures.length > 0 ? ` (${failures.join("; ")})` : ""
+      }`
     );
   }
 
@@ -515,7 +504,10 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
     ).sort((a, b) => a - b),
     yearsQueried: [...yearsAnswered].sort((a, b) => a - b),
     truncated: typeof params.maxRecords === "number" && geocodedTotal > params.maxRecords,
-    publishedCutoff: FARS_PUBLISHED_CUTOFF,
+    publishedCutoff: {
+      ...FARS_PUBLISHED_CUTOFF,
+      provenance: { ...FARS_PUBLISHED_CUTOFF.provenance, sourceFiles },
+    },
   };
 }
 
@@ -523,7 +515,7 @@ export const farsAdapter: CrashSourceAdapter = {
   id: FARS_SOURCE_ID,
   label: "NHTSA Fatality Analysis Reporting System (FARS)",
   attribution:
-    "U.S. Department of Transportation, National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS). Public domain — U.S. Government work.",
+    "U.S. Department of Transportation, National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS). Public domain (U.S. Government work).",
   license: "U.S. Government Work (public domain)",
   coverageState: "fars_fatal_only",
   severityCompleteness: "fatal_only",

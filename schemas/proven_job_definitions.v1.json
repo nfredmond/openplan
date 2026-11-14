@@ -1,0 +1,42 @@
+{
+  "schema": "openplan.proven_job_definitions.v1",
+  "note": "What each named planning job must show before a proven job record is accepted. Places are rules (kind and state), never a named place: the record names the places a run actually used.",
+  "geoidPatterns": {
+    "source": "openplan/src/lib/api/place-geographies.ts (PLACE_GEOID_PATTERNS)",
+    "county": "^\\d{5}$",
+    "aiannh": "^\\d{4}[RT]$"
+  },
+  "jobs": [
+    {
+      "id": "safety-action-plan-and-ss4a-in-three-places",
+      "decidedIn": "docs/reviews/product-direction/2026-11-01-first-proven-job-review.md",
+      "journeys": [
+        { "role": "california-county", "placeKind": "county", "stateFips": "06" },
+        {
+          "role": "nevada-county",
+          "placeKind": "county",
+          "stateFips": "32",
+          "crashes": { "sourceId": "fars-national", "minStoredCount": 1 }
+        },
+        { "role": "tribal-area", "placeKind": "aiannh" }
+      ],
+      "pdfs": ["safety-action-plan", "ss4a-application"],
+      "items": {
+        "high-injury-map": "page-image",
+        "crash-summary": "pdftotext",
+        "countermeasures": "pdftotext",
+        "bca": "pdftotext",
+        "engagement-summary": "pdftotext"
+      },
+      "screens": { "widths": [1440, 390], "modes": ["light", "dark"] },
+      "crossWorkspaceTargets": ["safety-action-plan", "ss4a-application"],
+      "requiredLimits": [
+        "no-pdf-ua-check",
+        "no-keyboard-or-screen-reader-pass",
+        "no-human-usefulness-review",
+        "fars-is-fatal-only"
+      ],
+      "unconfirmedCrashCountLimit": "crash-counts-not-independently-confirmed"
+    }
+  ]
+}

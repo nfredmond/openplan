@@ -108,6 +108,18 @@ function initialSelections(
   return Object.fromEntries(plan.attachments.map((attachment) => [attachment.segmentId, attachment.countermeasureIds]));
 }
 
+function holdsPlanFor(report: HighInjuryNetworkReportTarget, ingestId: string | null): boolean {
+  return !!ingestId && report.safetyActionPlan?.ingestId === ingestId;
+}
+
+/**
+ * Reports arrive newest first. Open the newest one holding a saved plan for
+ * this crash pull, so a newer empty report does not hide the plan.
+ */
+function defaultReportId(reports: readonly HighInjuryNetworkReportTarget[], ingestId: string | null): string {
+  return (reports.find((report) => holdsPlanFor(report, ingestId)) ?? reports[0])?.id ?? "";
+}
+
 /**
  * The ranked high-injury network beside the map, with method, years, source
  * and coverage stated next to the numbers, and countermeasures a planner can
@@ -135,9 +147,9 @@ export function HighInjuryNetworkPanel({
   const reports = createdReport && !reportsFromPage.some((report) => report.id === createdReport.id)
     ? [...reportsFromPage, createdReport]
     : reportsFromPage;
-  const [reportId, setReportId] = useState(reports[0]?.id ?? "");
+  const [reportId, setReportId] = useState(() => defaultReportId(reports, ingestId));
   const [selections, setSelections] = useState<Record<string, string[]>>(() =>
-    initialSelections(reports, reports[0]?.id ?? "", ingestId),
+    initialSelections(reports, defaultReportId(reports, ingestId), ingestId),
   );
   const [saveState, setSaveState] = useState<{ kind: "idle" | "saving" | "saved" | "failed"; message?: string }>({
     kind: "idle",
@@ -147,6 +159,15 @@ export function HighInjuryNetworkPanel({
   const attachedCount = Object.values(selections).filter((ids) => ids.length > 0).length;
   const comparisonReport = reports.find((report) => report.id === reportId && report.supportsSafetyComparison)
     ?? reports.find((report) => report.supportsSafetyComparison);
+  const selectedReport = reports.find((report) => report.id === reportId);
+  const planElsewhere = selectedReport && !holdsPlanFor(selectedReport, ingestId)
+    ? reports.find((report) => holdsPlanFor(report, ingestId))
+    : undefined;
+  const selectReport = (id: string) => {
+    setReportId(id);
+    setSelections(initialSelections(reports, id, ingestId));
+    setSaveState({ kind: "idle" });
+  };
 
   if (network === undefined) return null;
   if (network === null) return null;
@@ -377,11 +398,7 @@ export function HighInjuryNetworkPanel({
               <select
                 id="safety-hin-report"
                 value={reportId}
-                onChange={(event) => {
-                  setReportId(event.target.value);
-                  setSelections(initialSelections(reports, event.target.value, ingestId));
-                  setSaveState({ kind: "idle" });
-                }}
+                onChange={(event) => selectReport(event.target.value)}
                 className="rounded-md border border-border bg-background px-2 py-1"
               >
                 {reports.map((report) => (
@@ -401,6 +418,14 @@ export function HighInjuryNetworkPanel({
                     : `Save ${attachedCount} ${attachedCount === 1 ? "segment" : "segments"}`}
               </button>
             </div>
+            {planElsewhere && (
+              <p data-testid="safety-hin-plan-elsewhere">
+                The saved plan is in {planElsewhere.title}.{" "}
+                <button type="button" className="underline" onClick={() => selectReport(planElsewhere.id)}>
+                  Switch
+                </button>
+              </p>
+            )}
             <p className="text-muted-foreground">
               Saving also selects this crash acquisition as the report&apos;s crash evidence.
             </p>

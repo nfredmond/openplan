@@ -423,6 +423,15 @@ function sourceMarkup(source: EvidenceAppendixSource): string {
       ${source.details.map(esc).join(" ")}</p>`;
 }
 
+/**
+ * A table cell's text. Ordinary words break only at spaces or hyphens; a long
+ * unbroken run (a URL, an id, a hash) may break anywhere so it fits its column.
+ */
+function cellText(text: string): string {
+  return text.split(/(\S{20,})/).map((part, index) =>
+    index % 2 === 1 ? `<span class="wrap-anywhere">${esc(part)}</span>` : esc(part)).join("");
+}
+
 function appendixMarkup(appendix: EvidenceAppendix): string {
   const heading = `<h3>Appendix ${esc(appendix.letter)}. ${esc(appendix.title)}</h3>`;
   if (appendix.status !== "included") {
@@ -433,8 +442,8 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
     ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div><dt>${esc(fact.label)}</dt><dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
     : "";
   const table = appendix.table
-    ? `<div class="table-scroll"><table><thead><tr>${appendix.table.headers.map((header) => `<th>${esc(header)}</th>`).join("")}</tr></thead>
-      <tbody>${appendix.table.rows.map((row) => `<tr>${row.map((cell) => `<td>${esc(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+    ? `<div class="table-scroll"><table><thead><tr>${appendix.table.headers.map((header) => `<th>${cellText(header)}</th>`).join("")}</tr></thead>
+      <tbody>${appendix.table.rows.map((row) => `<tr>${row.map((cell) => `<td>${cellText(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
     : "";
   // The SVG is built by code from numbers only; it is not escaped text.
   const figure = appendix.figureSvg ? `<figure>${appendix.figureSvg}</figure>` : "";
@@ -461,9 +470,9 @@ export function evidenceAppendicesMarkup(
       <tbody>${appendices.map((appendix) => `<tr>
         <td>${esc(appendix.letter)}. ${esc(appendix.title)}</td>
         <td>${esc(STATUS_LABELS[appendix.status])}${appendix.key === "hin_map" && appendix.status === "included" && !appendix.figureSvg ? "; map not drawn" : ""}</td>
-        <td class="wrap-anywhere">${esc(appendix.source ? `${appendix.source.record} ${appendix.source.id}` : appendix.statusNote ?? "")}</td>
-        <td class="wrap-anywhere">${esc(appendix.source ? dateText(appendix.source.date) : "Not recorded")}</td>
-        <td class="wrap-anywhere">${esc(appendix.source?.hash ?? "None stored")}</td>
+        <td>${cellText(appendix.source ? `${appendix.source.record} ${appendix.source.id}` : appendix.statusNote ?? "")}</td>
+        <td>${cellText(appendix.source ? dateText(appendix.source.date) : "Not recorded")}</td>
+        <td>${cellText(appendix.source?.hash ?? "None stored")}</td>
       </tr>`).join("")}</tbody>
     </table></div>
     ${appendices.map(appendixMarkup).join("\n    ")}
