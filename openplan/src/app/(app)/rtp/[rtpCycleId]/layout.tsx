@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { recordMetadata } from "@/lib/ui/page-title";
+import { requireRecordRow } from "@/lib/routing/record-not-found";
+import { readRtpCycleRowForRequest } from "./_components/rtp-cycle-record-for-request";
 
 /**
  * The browser-tab title for this record.
@@ -24,7 +26,23 @@ export async function generateMetadata({
   });
 }
 
-// Pass-through: this layout exists to name the tab, not to add chrome.
-export default function RtpCycleRecordLayout({ children }: { children: ReactNode }) {
+/**
+ * Answers a real HTTP 404 for an RTP cycle the reader cannot see, before
+ * `loading.tsx` starts the stream (see `requireRecordRow`). The `document`,
+ * `extraction` and `extraction/chapters` pages sit under this layout and
+ * inherit the answer; each adds the layout's three round trips (user,
+ * membership, row) to its own reads. The cycle is read in the current
+ * workspace only, as every RTP page reads it, so a cycle in the reader's other
+ * workspace answers 404 here as the pages already refused it.
+ */
+export default async function RtpCycleRecordLayout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ rtpCycleId: string }>;
+}) {
+  const { rtpCycleId } = await params;
+  await requireRecordRow(rtpCycleId, readRtpCycleRowForRequest);
   return children;
 }

@@ -68,6 +68,9 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
     throw new Error("redirect");
   }),
+  notFound: vi.fn(() => {
+    throw new Error("NEXT_HTTP_ERROR_FALLBACK;404");
+  }),
   // ModelCreator is rendered for real below, and it calls useRouter on mount.
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
 }));
@@ -367,13 +370,12 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
     expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
   });
 
-  it("says nothing about a read failure when the row simply is not there", async () => {
+  it("answers not found, not a read failure, when the row simply is not there", async () => {
+    // KI-2026-11-14-280: an absent run used to render the page under HTTP 200.
     setTable("county_runs", { data: null, error: null });
 
-    await renderCountyRun();
-
+    await expect(renderCountyRun()).rejects.toThrow("NEXT_HTTP_ERROR_FALLBACK;404");
     expect(screen.queryByTestId("county-run-read-failures")).toBeNull();
-    expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
   });
 });
 
@@ -385,7 +387,10 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
 describe("/county-runs/[countyRunId] passes whether this copy has a county worker", () => {
   async function renderWithWorkerUrl(workerUrl: string) {
     vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_WORKER_URL", workerUrl);
-    setTable("county_runs", { data: null, error: null });
+    setTable("county_runs", {
+      data: { id: COUNTY_RUN_ID, run_name: null, geography_type: null, geography_id: null } as never,
+      error: null,
+    });
     render(
       await CountyRunDetailPage({
         params: Promise.resolve({ countyRunId: COUNTY_RUN_ID }),
