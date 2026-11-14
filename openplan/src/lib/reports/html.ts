@@ -39,6 +39,7 @@ import {
 import { SAFETY_KSI_COVERAGE_UNAVAILABLE, safetyEvidenceSeriousInjury, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
+import { describeHighInjuryNetworkTie } from "@/lib/safety/high-injury-network";
 import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import {
   SAFETY_ACTION_PLAN_SECTION_TITLE,
@@ -1383,6 +1384,7 @@ export function safetyActionPlanMarkup(
     ? `<h3>High-injury network</h3><p>${esc(network.reason)}</p>`
     : `<h3>High-injury network</h3>
       <p><strong>${esc(network.measureLabel)}</strong>, ${esc(network.years)}.</p>
+      ${describeHighInjuryNetworkTie(network.rows) ? `<p>${esc(describeHighInjuryNetworkTie(network.rows) ?? "")}</p>` : ""}
       ${network.rows.length > 0 ? `<table>
         <thead><tr><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
         <tbody>${network.rows.map((row) => `<tr>

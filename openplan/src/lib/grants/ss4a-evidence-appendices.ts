@@ -26,7 +26,7 @@
 
 import type { CorridorGeojson } from "@/lib/models/run-launch";
 import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
-import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
+import { describeHighInjuryNetworkTie, type HighInjuryNetwork } from "@/lib/safety/high-injury-network";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import {
   type SeriousInjuryAvailability,
@@ -238,6 +238,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     source: safetySource(safety),
     facts: [
       { label: "Measure", value: network.measureLabel },
+      ...tieFact(network.rows),
       { label: "Source severity coverage", value: describeSeverityCoverage(seriousInjury) },
       { label: "Years", value: network.years },
       { label: "Method", value: network.method },
@@ -251,6 +252,12 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
       network.sourceLine,
     ],
   };
+}
+
+/** The same tie line the Safety page prints, when every listed row shares one rank. */
+function tieFact(rows: Parameters<typeof describeHighInjuryNetworkTie>[0]): Array<{ label: string; value: string }> {
+  const note = describeHighInjuryNetworkTie(rows);
+  return note ? [{ label: "Ties", value: note }] : [];
 }
 
 function studyAreaNote(studyArea: Ss4aStudyAreaRead): string {

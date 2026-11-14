@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   describeHighInjuryNetworkCoverage,
   describeHighInjuryNetworkMethod,
+  describeHighInjuryNetworkTie,
   describeHighInjuryNetworkUnavailable,
   describeHighInjuryNetworkYears,
   highInjuryNetworkCrashWord,
@@ -186,6 +187,10 @@ export function HighInjuryNetworkPanel({
   const measure = highInjuryNetworkMeasureLabel(network.basis, network.method);
   const perMileHeader = network.method === "road_segments" ? "Per mile" : "In square";
   const crashHeader = network.basis === "ksi" ? "Fatal / serious" : "Fatal";
+  const tieNote = describeHighInjuryNetworkTie(segments);
+  const itemWord = network.method === "road_segments"
+    ? (attachedCount === 1 ? "segment" : "segments")
+    : (attachedCount === 1 ? "square" : "squares");
 
   const toggle = (segmentId: string, countermeasureId: string) => {
     setSaveState({ kind: "idle" });
@@ -278,6 +283,10 @@ export function HighInjuryNetworkPanel({
             : "No crash could be placed on a road piece, so nothing is ranked. That is not a finding that the roads are safe."}
         </p>
       ) : (
+        <>
+        {tieNote ? (
+          <p className="text-xs font-medium" data-testid="safety-hin-tie">{tieNote}</p>
+        ) : null}
         <table className="w-full text-xs" data-testid="safety-hin-table">
           <thead className="text-left text-muted-foreground">
             <tr>
@@ -339,6 +348,7 @@ export function HighInjuryNetworkPanel({
             })}
           </tbody>
         </table>
+        </>
       )}
 
       <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-xs text-muted-foreground" data-testid="safety-hin-facts">
@@ -415,7 +425,7 @@ export function HighInjuryNetworkPanel({
                   ? "Saving"
                   : segments.length === 0
                     ? "Save plan with no ranked segments"
-                    : `Save ${attachedCount} ${attachedCount === 1 ? "segment" : "segments"}`}
+                    : `Save ${attachedCount} ${itemWord}`}
               </button>
             </div>
             {planElsewhere && (
