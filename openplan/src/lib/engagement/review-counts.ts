@@ -2,9 +2,17 @@
 export const ENGAGEMENT_REVIEW_STATES = ["pending", "flagged", "approved", "rejected"] as const;
 export type EngagementReviewState = (typeof ENGAGEMENT_REVIEW_STATES)[number];
 
-/** How the review files and the project packet name a state. A rejected comment reads as withheld. */
+/**
+ * How the review files name a state: the words of the review status picker on
+ * the campaign's review files panel. A rejected comment reads as withheld.
+ */
 export function engagementReviewStateLabel(state: EngagementReviewState): string {
-  return state === "approved" ? "Approved" : state === "rejected" ? "Withheld" : state;
+  switch (state) {
+    case "approved": return "Approved";
+    case "rejected": return "Withheld";
+    case "pending": return "Pending";
+    case "flagged": return "Flagged for review";
+  }
 }
 
 /**
@@ -22,4 +30,44 @@ export function countContributionsByReviewState(
     }
   }
   return counts;
+}
+
+export type EngagementReviewCounts = {
+  /** Contributions in the selection, in any state. */
+  received: number;
+  byState: Record<EngagementReviewState, number>;
+  /** Staff responses that are published. */
+  publishedResponses: number;
+  /** Contributions in the selection that at least one published response answers, each counted once. */
+  answered: number;
+};
+
+/**
+ * The counts a review file or the public response page states: received, by
+ * review state, published responses, and contributions answered by a published
+ * response. The review PDF, the review workbook, the review ZIP's manifest and
+ * the public response page all count here, so the numbers cannot drift apart.
+ *
+ * A contribution two responses answer is one answered contribution. A source
+ * identifier outside `items` (another selection) is not counted.
+ */
+export function countEngagementReview(input: {
+  items: ReadonlyArray<{ id?: unknown; status?: unknown }>;
+  responses: ReadonlyArray<{ sourceItemIds: unknown; published: boolean }>;
+}): EngagementReviewCounts {
+  const itemIds = new Set(input.items.map((item) => item.id));
+  const answered = new Set<unknown>();
+  let publishedResponses = 0;
+  for (const response of input.responses) {
+    if (!response.published) continue;
+    publishedResponses += 1;
+    if (!Array.isArray(response.sourceItemIds)) continue;
+    for (const id of response.sourceItemIds) if (itemIds.has(id)) answered.add(id);
+  }
+  return {
+    received: input.items.length,
+    byState: countContributionsByReviewState(input.items),
+    publishedResponses,
+    answered: answered.size,
+  };
 }
