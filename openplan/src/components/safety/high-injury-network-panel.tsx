@@ -424,7 +424,7 @@ export function HighInjuryNetworkPanel({
             <tr>
               <th scope="col" className="py-1 pr-1 font-medium">Countermeasure</th>
               <th scope="col" className="py-1 pr-1 font-medium">Crash types</th>
-              <th scope="col" className="py-1 font-medium">CMF</th>
+              <th scope="col" className="py-1 font-medium">CMF entries</th>
             </tr>
           </thead>
           <tbody>
@@ -439,7 +439,20 @@ export function HighInjuryNetworkPanel({
                 <td className="py-1 pr-1">
                   {countermeasure.crashTypes.map((type) => COUNTERMEASURE_CRASH_TYPE_LABELS[type]).join(", ")}
                 </td>
-                <td className="py-1">{countermeasure.cmf ? countermeasure.cmf.value : "[VERIFY]"}</td>
+                <td className="py-1" data-testid="safety-countermeasure-cmf">
+                  {countermeasure.cmf
+                    ? countermeasure.cmf.value
+                    : countermeasure.cmfEntries
+                      ? countermeasure.cmfEntries.map((entry, index) => (
+                        <span key={entry.id}>
+                          {index > 0 ? ", " : ""}
+                          <a href={entry.url} target="_blank" rel="noreferrer" title={countermeasure.cmfNote} className="underline underline-offset-2">
+                            {entry.id}
+                          </a>
+                        </span>
+                      ))
+                      : "[VERIFY]"}
+                </td>
               </tr>
             ))}
           </tbody>

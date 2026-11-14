@@ -160,7 +160,8 @@ describe("crashes offered on a saved safety plan's treated segments", () => {
       { year: 2023, fatalCrashes: 1, seriousInjuryCrashes: 0 },
     ]);
     expect(a).toMatchObject({ fatalCrashes: 3, seriousInjuryCrashes: 4, fatalities: 4, fatalCrashesWithoutPersonCount: 0 });
-    expect(a.countermeasures[0].cmfNote).toContain("[VERIFY]");
+    // The catalog note names the CMF Clearinghouse entries read for the item (KI-2026-11-14-290).
+    expect(a.countermeasures[0].cmfNote).toMatch(/^CMF Clearinghouse, read November 14, 2026: entry \d+/);
 
     // Projections and scope filters the counts depend on.
     const crashReads = calls.filter((c) => c.table === "safety_crashes" && c.columns === BCA_SEGMENT_CRASH_PROJECTION);
