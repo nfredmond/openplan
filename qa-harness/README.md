@@ -94,6 +94,77 @@ node first-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <4
 npm run check:first-job-journey   # unit tests; the PDF tests need Poppler
 ```
 
+## Second proven job: the engagement journey
+
+`engagement-job-journey.js` runs one place through the engagement job
+(`engagement-campaign-review-and-response-in-three-places` in
+`schemas/proven_job_definitions.v1.json`) on screen, with the first journey's
+guards: rehearsal on a local origin only, proof on the hosted proof origin
+only, the confirmation link read from a file, health readbacks against
+`--expected-commit`, axe-core 4.11.1 at 1440 and 390 px in light and dark, the
+shared PDF matcher and Poppler reader, and a run file with no email address
+and no secret. Per journey:
+
+- A staff account signs up and confirms, makes a project, sets its place by
+  the full label the search shows, records a proposed decision, and creates
+  and activates a campaign. The campaign's title and invitation must say
+  "Demonstration by an automated OpenPlan proof run", in both modes.
+- Anonymous participants, each in a fresh browser context: one map point and
+  one comment with no map point at 1440 px by pointer, one contribution at
+  390 px with the keyboard only (Tab, Enter, Space; the focus trail is saved),
+  and one comment that staff then reject. The kind recorded is what the
+  portal sent (a point or none), not what the script meant to send.
+- Staff approve three and reject one, each with a review reason that must be
+  in the request; correct and approve the staff review so one group holds the
+  two comments the response will answer; publish the response linked to those
+  comments; link it to the decision and the group.
+- Staff request the internal and public review files and wait for the
+  document-export worker (`--export-timeout-minutes`, default 15).
+- Counts: received, approved, withheld, published responses and answered are
+  read from both PDFs (their count sentences), both workbooks (Summary rows
+  and the cells the checker counts) and the public response page (the
+  Comments and "You said / We did" tabs and the "Answers these comments"
+  links) at both widths and modes. Any disagreement with the journey's own
+  counts stops the run.
+- The rejected comment's text and id are searched for in the public PDF, every
+  cell of the public workbook, the portal and response pages (text and HTML)
+  and every same-origin response those pages fetched. The same search must
+  find the text in the internal PDF and workbook, or the run stops: a search
+  that cannot find it where it is would pass a leak too.
+- Axe on the portal, the public response page and the four staff campaign
+  tabs. An anonymous participant asks for the campaign, its items and both
+  internal downloads (401, 403 or 404 expected) and reads the public portal
+  API for staff-only field names. A second account asks for the same
+  downloads and the campaign (data checks) and opens the staff campaign page
+  (page check).
+- Close at the end: finished or stopped early, the journey sets the campaign
+  to Closed in its settings form and reads the portal and its about page as a
+  participant; both must show only the ended notice. The run file's `close`
+  says whether it tried and whether it worked, and a close that did not work
+  fails the run.
+- No AI feature is used, and the run file says so.
+
+Inputs: `--inputs` names a JSON file of every string typed
+(`fixtures/engagement-job-rehearsal-inputs.json` shows the shape). Every
+comment must say it was entered by an automated proof run and represents no
+one; no string may hold an email address, DRAFT or a `[VERIFY]` marker; the
+comment to be rejected must not contain, or be contained in, any other string.
+A proof refuses the rehearsal fixture.
+
+```bash
+# rehearsal, from qa-harness/ (local stack, dev server, document-export worker and mail catcher running)
+node engagement-job-journey.js --mode rehearsal --base-url http://localhost:3482 \
+  --place-query "Coos County, OR" --place-kind county --role county \
+  --email staff-1@openplan.test --second-email second-1@openplan.test \
+  --confirm-link-file ../../confirm-1.link --second-confirm-link-file ../../confirm-2.link \
+  --out ../../engagement-runs/county
+# roles and place kinds: county (county), city-or-town (city or cousub), tribal-area (aiannh)
+# assemble three journeys into one record for the evidence checker
+node engagement-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 hex> \
+  --base-url <the hosted origin> --out record.json
+npm run check:engagement-job-journey   # unit tests
+```
+
 ## Current scripts
 - `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, verifies the denied session still loads its own workspace URL afterward, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-local-ui-ux-settle-capture.js` — read-only local Playwright capture harness for the UI/UX settle route manifest. It requires an already-authenticated local Playwright storage state, refuses production/Vercel URLs, captures desktop/mobile screenshots for populated local routes, and ledgers fixture-required routes instead of accepting empty-state proof.
