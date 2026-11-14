@@ -279,6 +279,23 @@ function engagementFindingSources(read: Extract<ProjectEngagementRead, { status:
   return sources;
 }
 
+/**
+ * A failed staff-review read is unknown, not absent, whether or not another
+ * finding source exists. The fact and the note both say so.
+ */
+function findingSourceText(sources: readonly string[], staffReviewUnreadable: boolean): string {
+  if (!staffReviewUnreadable) return sources.length > 0 ? sources.join("; ") : "None";
+  return sources.length > 0
+    ? `${sources.join("; ")}. Saved staff reviews could not be checked, so whether an approved review also exists is unknown`
+    : "Unknown. Saved staff reviews could not be checked";
+}
+
+function findingStatusNote(read: Extract<ProjectEngagementRead, { status: "ready" }>, sources: readonly string[]): string | null {
+  if (sources.length === 0) return noFindingNote(read);
+  if (read.staffReview.status !== "unreadable") return null;
+  return `Saved staff reviews could not be checked. ${read.staffReview.reason} The finding stated here does not include a staff review.`;
+}
+
 function noFindingNote(read: Extract<ProjectEngagementRead, { status: "ready" }>): string {
   const staff = read.staffReview;
   if (staff.status === "unreadable") {
@@ -310,7 +327,7 @@ export function engagementEvidenceAppendix<K extends string>(
   return {
     ...shell,
     status: "included",
-    statusNote: sources.length > 0 ? null : noFindingNote(read),
+    statusNote: findingStatusNote(read, sources),
     source: {
       record: "Engagement campaign",
       id: lead.id,
@@ -338,7 +355,7 @@ export function engagementEvidenceAppendix<K extends string>(
         label: "Comments approved",
         value: read.comments.status === "ready" ? read.comments.approved.toLocaleString("en-US") : "Could not be read",
       },
-      { label: "Community-input finding source", value: sources.length > 0 ? sources.join("; ") : "None" },
+      { label: "Community-input finding source", value: findingSourceText(sources, read.staffReview.status === "unreadable") },
     ],
     table: null,
     figureSvg: null,

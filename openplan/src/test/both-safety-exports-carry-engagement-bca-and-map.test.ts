@@ -35,6 +35,7 @@ import { applySynthesisReviewChange, createSynthesisReviewContent, type Synthesi
 import type { SynthesisReviewRecord } from "@/lib/engagement/synthesis-review-records";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
 import { engagementEvidenceAppendix, type EvidenceAppendix, type ProjectEngagementRead } from "@/lib/grants/evidence-appendices";
+import { buildProjectEngagementEvidenceByProjectId } from "@/lib/grants/engagement-evidence";
 import { ENGAGEMENT_COMMENT_COUNT_PROJECTION, loadProjectEngagementRead, type EvidenceQueryClient } from "@/lib/grants/evidence-appendix-reads";
 import { SS4A_APPENDIX_KEYS } from "@/lib/grants/ss4a-appendix-keys";
 import { buildSs4aEvidenceAppendices } from "@/lib/grants/ss4a-evidence-appendices";
@@ -57,6 +58,7 @@ import {
   evidenceRoads,
   evidenceSnapshot,
   fixtureNetwork,
+  NO_STAFF_REVIEW,
   STUDY_AREA,
 } from "./fixtures/grants/ss4a-evidence";
 
@@ -273,6 +275,28 @@ describe("SS4A Appendix E states the staff finding when no AI synthesis exists",
     const appendix = engagementEvidenceAppendix({ key: "engagement", letter: "E", title: "Engagement summary" }, await engagementRead("list_fails"), null);
     expect(appendix.statusNote).toContain("saved staff reviews could not be checked");
     expect(appendix.statusNote).toContain("That is a failed read, not an absence of review.");
+    // "None" would say no approved review exists. The read failed, so that is unknown.
+    expect(fact(appendix, "Community-input finding source")).toBe("Unknown. Saved staff reviews could not be checked");
+  });
+
+  it("still says the staff-review read failed when a saved synthesis supplies a finding", async () => {
+    const failed = await engagementRead("list_fails");
+    if (failed.status !== "ready" || failed.staffReview.status !== "unreadable") throw new Error("fixture: expected an unreadable staff review");
+    const read: ProjectEngagementRead = {
+      ...failed,
+      evidence: buildProjectEngagementEvidenceByProjectId([CAMPAIGN_ROW]).get(EVIDENCE_IDS.project)!,
+    };
+    const appendix = engagementEvidenceAppendix({ key: "engagement", letter: "E", title: "Engagement summary" }, read, null);
+    const source = fact(appendix, "Community-input finding source");
+    expect(source).toMatch(/^Keyword-based synthesis saved /);
+    expect(source).toContain("Saved staff reviews could not be checked, so whether an approved review also exists is unknown");
+    expect(appendix.statusNote).toContain("Saved staff reviews could not be checked.");
+    expect(appendix.statusNote).toContain(failed.staffReview.reason);
+
+    // The same campaign with a staff-review read that found none says nothing about a failure.
+    const none = engagementEvidenceAppendix({ key: "engagement", letter: "E", title: "Engagement summary" }, { ...read, staffReview: NO_STAFF_REVIEW }, null);
+    expect(none.statusNote).toBeNull();
+    expect(fact(none, "Community-input finding source")).toMatch(/^Keyword-based synthesis saved [^.]*$/);
   });
 });
 
