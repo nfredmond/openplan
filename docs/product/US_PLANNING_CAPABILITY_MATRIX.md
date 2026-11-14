@@ -48,15 +48,19 @@ current synthesis. The detailed source inventory below originated in the dated
 fresh execution or legal-currentness audit. Source dates and sampled commits
 remain material; no capability status is promoted by this reconciliation.
 
-The destination remains every core planning job across all 50 states and DC, California as the deepest implementation, scientifically validated **separate AequilibraE and ActivitySim** results for every published use, accessible human-controlled workflows, and durable free operation. No deadline, runtime target, or release count reduces that destination. Territory support is explicitly unassessed; the precise v1 depth is awaiting Nathaniel's scope decision. No existing territory cell is removed or promoted by this reconciliation.
+The destination remains every core planning job across all 50 states and DC, California as the deepest implementation, scientifically validated **separate AequilibraE and ActivitySim** results for every published use, accessible human-controlled workflows, and durable free operation. No deadline, runtime target, or release count reduces that destination. Territory support is explicitly unassessed; the precise v1 depth is an open scope decision that agents settle with a recorded reason and a fresh-context review. No existing territory cell is removed or promoted by this reconciliation.
 
 ## Status and evidence rules
 
-**October 17, 2026 acceptance policy.** Agent-run checks can establish planner
-and public-participant workflow acceptance for v1 under the
-[contract](V1_PRODUCT_CONTRACT.md#v1-acceptance-evidence). Human feedback is
-post-v1. This policy supersedes older human-observation requirements in the
-matrix without promoting any existing status or changing required coverage.
+**November 13, 2026 acceptance policy (permanent).** Human feedback never gates
+OpenPlan development, milestones, merges, releases or v1. Agent-run planner,
+operator and public-participant checks are the acceptance evidence: an agent
+performs the named role's task on permitted records or labeled fixtures, and the
+record names the executor. Nathaniel made this permanent on November 13, 2026.
+It settles his October 17, 2026 direction, and direction reviews do not reopen
+it. See the [contract](V1_PRODUCT_CONTRACT.md#v1-acceptance-evidence). Human
+feedback after v1 stays optional research. The matrix names agent-run checks
+without promoting any existing status or changing required coverage.
 
 The unchanged machine-readable inventory is `docs/product/US_PLANNING_CAPABILITY_REGISTRY.json`. Its 99 dimension entries contain **37 partial, 62 not-assessed, and zero proven**. These are independent planner, organization, state/territory, practice, artifact, accessibility, and operations entries; they are not 99 completed jobs or a complete set of their interactions. This reconciliation does not change those statuses.
 
@@ -91,7 +95,7 @@ This is a source inventory of all authenticated application module families, wit
 |---|---|---|
 | Dashboard | Orient to current work and next action | Useful prioritization across actual roles/cases; current source and stale/failed evidence clear at desktop, mobile, and keyboard entry. |
 | Projects | Maintain the shared case, geography, sources, funding, analysis, review and delivery context | Authoritative fact ownership across plan types; correct authority independent of workspace home; second-person handoff without re-entry. [P1, P3] |
-| Plans | Assemble linked planning outputs and a work plan | Its six presence checks must remain distinguishable from legal completeness or adopted readiness. Meaning relative to Land Use Plans and RTP needs an observed case. [P2] |
+| Plans | Assemble linked planning outputs and a work plan | Its six presence checks must remain distinguishable from legal completeness or adopted readiness. Meaning relative to Land Use Plans and RTP needs an agent-run case. [P2] |
 | Land Use Plans and public plan/review routes | Draft, map, review, adopt and implement a land-use decision | Workspace/plan authority defect and California plan-kind mismatch; housing/development depth; accurate public and internal derivatives. [P1-P3] |
 | RTP, extraction and document workspaces | Build a regional transportation plan from sources through review and publication | Source extraction accuracy; complete cycle and fiscal consistency; statutory applicability; comments and partner acceptance. [P6] |
 | Programs and measure pages/public measures | Prioritize and maintain an investment program and related measure | Defensible scoring, fiscal basis, amendments, authorization, project delivery and public accountability in one case. |
@@ -133,7 +137,7 @@ California needs statewide, metropolitan, suburban, rural, mountain, coastal, bo
 
 For each real job, record the planner and organization, governing authorities, exact geography, input/source/rule versions, candidate and deployment identity, intended artifact and recipient, permitted claim/use, and unresolved limits. Join that record to the dimension ledger; do not infer the interactions from green independent dimensions.
 
-Required proof includes visible entry through completion, human usefulness, artifact reuse, exact approvals and role/public boundaries, source uncertainty, keyboard/screen-reader/mobile/print/public accessibility, imports/exports, interruption/restore/upgrade, and a government-eligible free operating route. Missing, skipped, expired, failed or wrong-candidate evidence leaves the relevant cell open. The final outcome and maintenance records retain their own exact candidate identities; neither establishes the complete v1 contract.
+Required proof includes visible entry through completion, planning usefulness shown in agent-run tasks, artifact reuse, exact approvals and role/public boundaries, source uncertainty, keyboard/screen-reader/mobile/print/public accessibility, imports/exports, interruption/restore/upgrade, and a government-eligible free operating route. Missing, skipped, expired, failed or wrong-candidate evidence leaves the relevant cell open. The final outcome and maintenance records retain their own exact candidate identities; neither establishes the complete v1 contract.
 
 A proven job entry (`provenJobs` in the registry, schema version 3) records that one named job ran to completion on one hosted commit in named places. Each entry points to a checked record, described in [capability-evidence/README.md](capability-evidence/README.md); the direction check refuses a record that lacks a required place, PDF item, health readback or accessibility result. An entry does not by itself change any dimension's status. A reviewer reads the record against this section and records any cell change separately, with its own evidence.
 
@@ -158,7 +162,7 @@ Repository paths are relative to the checkout root; line numbers identify the sa
 - **S4:** `scripts/modeling/synthetic_population.py:140-222`; `scripts/modeling/activitysim_mtc_inputs.py:703-705,900-915`; `docs/modeling/ACTIVITYSIM_RUNTIME_GAP.md:64-88`. existing population synthesis, borrowed behavior and limited skims.
 - **S5:** `openplan/src/lib/models/published-distributed-work-loading.ts:88-156`; `openplan/src/app/(app)/models/page.tsx:161-164`; `openplan/src/lib/reports/html.ts:543-559`; `openplan/src/lib/assistant/chat-tools.ts:966-985`. current disclosure and display/custody limitations. No frontend observation was performed.
 - **O1:** Engineering review findings R5/R8 in `docs/reviews/2026-09-04-pre-handoff/REVIEW_DRAFT.md`. source-based lifecycle, checked-write, CI-family and recovery gaps; the consolidation review owns their reconciliation; runtime fault proof remains separate.
-- **O2:** `README.md:71-139`; `openplan/src/lib/integrations/anthropic-access.ts:19-49`; [Docker Desktop licensing](https://docs.docker.com/subscription/desktop-license/); [Supabase self-hosting guidance](https://supabase.com/docs/guides/self-hosting). free-operation and outbound-service claims need corrected instructions and an observed agency operating route.
+- **O2:** `README.md:71-139`; `openplan/src/lib/integrations/anthropic-access.ts:19-49`; [Docker Desktop licensing](https://docs.docker.com/subscription/desktop-license/); [Supabase self-hosting guidance](https://supabase.com/docs/guides/self-hosting). free-operation and outbound-service claims need corrected instructions and an agent-run agency operating route.
 
 ## September 4 early product priorities
 
@@ -166,9 +170,9 @@ Nathaniel explicitly prioritizes engagement mapping superior to Social Pinpoint,
 
 | Priority | Current foundation and limit | Required evidence |
 |---|---|---|
-| Better public mapping input | Existing geometry/survey/moderation/public-response code; superiority unproved. | Real campaign setup and participation through decision response; comparable current-platform human tasks; accessible geometry/non-map parity and portable exports. |
+| Better public mapping input | Existing geometry/survey/moderation/public-response code; superiority unproved. | Real campaign setup and participation through decision response; comparable current-platform agent-run tasks; accessible geometry/non-map parity and portable exports. |
 | User-selected agent backend | v0.52 adds a narrow project-record task with actual installed Codex 0.154.0 ChatGPT-account journeys and scripted Anthropic API transport parity, private retained requests and recovery. Broader chat remains Anthropic-specific; additional backends and live API service acceptance remain open. T3 has native adapter reuse references. | Same planning task across supported API and all three installed CLIs; correct account mode, installation discovery, scoped data/actions, interrupt/recovery and no silent billed fallback. |
-| Full capital delivery | Project delivery, documents, stage gates, funding and reimbursement foundations; exact Caltrans forms/lifecycle not established. | Actual case from planning or mid-project intake through environmental, ROW/utilities, PS&E, procurement, construction, payments/reimbursement, acceptance and closeout; dated applicable rules and practitioner/finance review. |
+| Full capital delivery | Project delivery, documents, stage gates, funding and reimbursement foundations; exact Caltrans forms/lifecycle not established. | Actual case from planning or mid-project intake through environmental, ROW/utilities, PS&E, procurement, construction, payments/reimbursement, acceptance and closeout; dated applicable rules and agent-run practitioner and finance reviewer tasks. |
 
 Detailed primary-source findings live in the dated pre-handoff priority reports. California office bulletins and inactive exhibits must be checked alongside manuals. Native CLI authentication and optional provider charges are distinct from OpenPlan's free software license. Personal CLI access must not become an unattended public-engagement account pool.
 
@@ -179,7 +183,7 @@ Current user instructions and the recovered August decisions require these as co
 | Outcome | Present foundation and gap | Completion evidence |
 |---|---|---|
 | Contract drawdown and proactive PM | Engagements, staff/time, rates, delivery/budget records and invoices exist. Task/staff allocations, approved historical baselines and remaining-work forecasts are incomplete; financial bases and attribution need repair. | Weekly PM review by project/contract/task/person/deliverable, reconciled hours/cost/fee/cash, explainable fee/date warning and authorized change; staff and finance permissions tested. |
-| Complete RTP update | Regional cycles, fiscal/project/measure records, chapters, extraction and public/adoption machinery exist. Complete applicability, narrative/financial consistency and a full real update remain unproved. | Entire applicable policy/action/financial/narrative and review/adoption/implementation workflow with practitioner-checked tables and artifacts. |
+| Complete RTP update | Regional cycles, fiscal/project/measure records, chapters, extraction and public/adoption machinery exist. Complete applicability, narrative/financial consistency and a full real update remain unproved. | Entire applicable policy/action/financial/narrative and review/adoption/implementation workflow with tables and artifacts checked in agent-run practitioner-role reviews. |
 | Begin from adopted predecessor | Source bytes/pages, extraction proposals, conflict review and verbatim chapter staging exist. Normal launcher omits chapter extraction. | Previous PDF/scan through complete coverage disclosure, reviewed chapter/table/figure/project reuse and source-preserving revisions; no silent overwrite, invented values or inaccessible step. |
 
 ## Local measure and grant program administration
@@ -219,7 +223,7 @@ M15 and CORE-HOST-01/CORE-SERVICES-01 connect a fully functioning hosted evaluat
 
 The [core requirements ledger](CORE_REQUIREMENTS_LEDGER.md) now maps the practice families and organizational cases that broad module headings could conceal. M2a-c explicitly owns comprehensive work plans, shared files/human documents and daily work; M5a-b owns named-format intake and the full aerial/ODM lane; M6a-c separates modal service planning, BCA/TDM and agency prioritization; M7/M8 require named complete land-use/development/environmental/climate/Title VI cases; M13e preserves grant pursuit and alerts before administration. Shared acceptance retains localization, contrast, print and constrained-network use.
 
-These are restored or clarified documentation obligations, not new implementation proof or a claim that existing modules are absent. Every complete case remains open pending current acceptance and appropriate practitioner observation. The initial family list must expand through source/practitioner review and cannot become a convenient ceiling. Distinct small/rural and sovereign tribal cases remain required alongside the other organization contexts.
+These are restored or clarified documentation obligations, not new implementation proof or a claim that existing modules are absent. Every complete case remains open pending current agent-run acceptance. The initial family list must expand through agent-run source review and cannot become a convenient ceiling. Distinct small/rural and sovereign tribal cases remain required alongside the other organization contexts.
 
 CORE-AGENTIC-01 / A1a-d now explicitly tracks substantial delegated planning assignments, separate from A0 backend choice. Current read/proposal tools and twelve registered actions are partial foundations. Require authenticated agent scope, truthful effect/audit records, persistent review/job recovery, all-core-operation coverage, optional external-client parity and usable artifacts. Existing human-only authority and scientific evidence boundaries remain. The detailed agentic research records a source-established false-success audit path and unproved orchestration/interoperability; it establishes no live agent completion.
 
@@ -261,7 +265,7 @@ CORE-ENG-04 requires polished PDF and typed/filterable XLSX engagement exports, 
 
 ## Explicit OWP administration priority
 
-CORE-OWP-01/M2d requires a discoverable agency program workflow spanning preparation from the prior adopted program, work elements and resources, adoption/approval, amendments, actual delivery, progress reports and claims, expenditure certification and carryover/closeout. Existing Programs, work plans, project controls and finance records are foundations; the complete OWP/UPWP outcome is **not assessed**, not proven. Bounded source-name searches at dd7b4f4d found no named OWP/UPWP workflow; that does not establish every underlying operation absent. California MPO/RTPA and a two-year non-California program need separate observed cases. Details and current-source caveats: [OWP research](../reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md).
+CORE-OWP-01/M2d requires a discoverable agency program workflow spanning preparation from the prior adopted program, work elements and resources, adoption/approval, amendments, actual delivery, progress reports and claims, expenditure certification and carryover/closeout. Existing Programs, work plans, project controls and finance records are foundations; the complete OWP/UPWP outcome is **not assessed**, not proven. Bounded source-name searches at dd7b4f4d found no named OWP/UPWP workflow; that does not establish every underlying operation absent. California MPO/RTPA and a two-year non-California program need separate agent-run cases. Details and current-source caveats: [OWP research](../reviews/2026-09-04-pre-handoff/OWP_ADMINISTRATION_REQUIREMENTS_RESEARCH.md).
 
 The low-priority [DOT Dashboard comparison](../reviews/2026-09-04-pre-handoff/DOT_DASHBOARD_COMPARISON.md) adds an eventual coverage check without claiming live parity. Signal is an additive appearance option in M2c, not an implemented theme or a substitute for accessibility evidence. Existing palettes and default remain required.
 
@@ -285,8 +289,7 @@ those production callers remains a separate source-level limitation.
 The September 6 direction record also retains assigned plan actions without
 My Work deadlines and campaign evidence omitted from non-lead project handoffs
 as source-review gaps. This reconciliation does not establish their live behavior.
-Use [workflow handoffs](WORKFLOW_HANDOFFS.md) and the
-[observation protocol](PLANNER_OBSERVATION_PROTOCOL.md) to define recipient proof.
+Use [workflow handoffs](WORKFLOW_HANDOFFS.md) to define agent-run recipient proof.
 
 TimesFM 3 is the researched successor-development option. Its research and
 licensing limits remain in the dated [technical research](../reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md).

@@ -38,22 +38,6 @@ jobs:
       - name: Install
         run: npm ci
 
-      # The proven job record checker reads PDF text with Poppler's pdftotext,
-      # and the export test renders both safety PDFs with Chrome and reads them
-      # back with pdftotext and pdftoppm. The ubuntu-latest image (24.04,
-      # 20261111) ships Google Chrome but not Poppler, so without this step the
-      # export test's PDF block and the real-reader test skip (KI-2026-11-14-101).
-      # The checks fail the job if either tool goes missing, rather than letting
-      # those tests skip without notice.
-      - name: Poppler for PDF checks
-        run: |
-          test -s /etc/apt/sources.list.d/ubuntu.sources
-          control_apt_sources=(-o Dir::Etc::sourcelist=sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=-)
-          sudo apt-get "${control_apt_sources[@]}" update -qq
-          sudo apt-get "${control_apt_sources[@]}" install -y poppler-utils
-          for tool in pdftotext pdftoppm pdfinfo; do command -v "$tool"; done
-          test -x /usr/bin/google-chrome
-
       - name: Hosted queue supervisor
         run: node --test ../workers/hosted-node/supervise.test.mjs
 
@@ -114,22 +98,6 @@ jobs:
 
       - name: Install
         run: npm ci
-
-      # The proven job record checker reads PDF text with Poppler's pdftotext,
-      # and the export test renders both safety PDFs with Chrome and reads them
-      # back with pdftotext and pdftoppm. The ubuntu-latest image (24.04,
-      # 20261111) ships Google Chrome but not Poppler, so without this step the
-      # export test's PDF block and the real-reader test skip (KI-2026-11-14-101).
-      # The checks fail the job if either tool goes missing, rather than letting
-      # those tests skip without notice.
-      - name: Poppler for PDF checks
-        run: |
-          test -s /etc/apt/sources.list.d/ubuntu.sources
-          control_apt_sources=(-o Dir::Etc::sourcelist=sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=-)
-          sudo apt-get "${control_apt_sources[@]}" update -qq
-          sudo apt-get "${control_apt_sources[@]}" install -y poppler-utils
-          for tool in pdftotext pdftoppm pdfinfo; do command -v "$tool"; done
-          test -x /usr/bin/google-chrome
 
       # The qa gate above always walks test files in the same order, so it
       # cannot see a test that depends on another test having run first. Vitest
