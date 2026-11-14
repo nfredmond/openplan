@@ -14,7 +14,17 @@ import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 import { listStageGateTemplates } from "@/lib/stage-gates/template-loader";
 import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
-import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
+import { formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
+
+/**
+ * Every date and time a report prints: "Nov 14, 2026, 17:33 UTC", or the date
+ * alone for a stored date. The cover used to print "11/14/2026, 5:33:55 PM"
+ * in the server's zone with no zone named, which on the hosted site was UTC
+ * and read as local time (KI-2026-11-14-340). The SS4A packet's appendices
+ * print through the same formatter.
+ */
+const formatDateTime = formatEvidenceTimestamp;
 import {
   extractEngagementHandoffProvenance,
   type ReportEngagementSummary,
@@ -402,7 +412,7 @@ function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdiction
   if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
       <p>${"projectRevision" in payload ? `Project revision: ${esc(payload.projectRevision ?? "Unavailable")}.` : "Jurisdiction context and registry inputs; project evidence revision is recorded separately."} Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
-      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope.replace(/_/g, " "))}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
+      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope.replace(/_/g, " "))}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ? formatDateTime(payload.context.recordedAt) : "No separate declaration")}.</p>` : ""}
       ${payload.entries.length ? payload.entries.map(entry => `<article><h3>${esc(entry.declaration?.label ?? "Legacy study-place context")}</h3><p>${esc(entry.assessmentScope)}</p>
         ${entry.declaration ? `<p>Kind: ${esc(entry.declaration.kind)}. Source reference: ${esc(entry.declaration.reference ?? "None")}. Identity: ${esc(entry.declaration.identity === "staff_declared" ? "Unverified staff declaration" : "Server-resolved identity")}.</p><p>Declared country: ${esc(entry.declaration.countryCode ?? "Unspecified")}; subdivision: ${esc(entry.declaration.subdivisionCode ?? "Unspecified")}; scope: ${esc(entry.declaration.scope)}.</p>` : ""}
         ${jurisdictionReadinessMarkup(entry.assessment)}

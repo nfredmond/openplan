@@ -34,7 +34,8 @@ it("renders each declaration and its payload hash with escaped labels and no aut
   expect(html, "Report discloses external schema").toContain(jurisdictionReadiness.schema);
   // The scope prints in words (KI-2026-11-14-340): "external_handoff" reads "external handoff".
   expect(html, "Report discloses external scope").toContain(`Scope: ${jurisdictionReadiness.scope.replace(/_/g, " ")}.`);
-  expect(html, "Report retains recorded time").toContain(context.recordedAt);
+  // The recorded time prints with its zone, not as the stored stamp (KI-2026-11-14-340).
+  expect(html, "Report retains recorded time").toContain("Recorded at: Oct 15, 2026, 00:00 UTC.");
   expect(html, "Report identifies the registry").toContain(jurisdictionReadiness.registrySha256);
   expect(html).not.toContain(context.recordedBy);
   expect(html).toContain("Sovereign &lt;context&gt;"); expect(html).toContain(jurisdictionReadiness.payloadSha256);
