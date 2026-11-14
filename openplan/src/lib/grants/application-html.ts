@@ -12,6 +12,10 @@ import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-ori
  *  - Missing required attachments stamp the document DRAFT prominently; they
  *    do not block assembly, because an operator legitimately packages a work
  *    in progress — but the reader must never mistake it for submittable.
+ *    Final section text that still holds `[VERIFY]` markers or the Safety
+ *    seed's unfilled placeholders stamps it DRAFT too, with the count
+ *    (`application-draft-stamps.ts`). Both reasons print when both apply.
+ *  - No email address prints: finalizers are named by workspace role.
  *  - The standing evidence caveats travel on the cover verbatim, for the
  *    evidence the document actually carries (`applicableStandingCaveats`), and
  *    every section's provenance (origin, model, grounding verdict, who
@@ -33,6 +37,7 @@ import {
   type EvidenceAppendixFrame,
 } from "@/lib/grants/evidence-appendices";
 import { SS4A_APPENDIX_FRAME } from "@/lib/grants/ss4a-evidence-appendices";
+import { applicationDraftStamps } from "@/lib/grants/application-draft-stamps";
 import {
   formatRecordedMoment,
   timeZoneInputLabel,
@@ -69,8 +74,9 @@ export type GrantApplicationSectionProvenance = {
   totalSentenceCount: number | null;
   /**
    * Who finalized the section, as the document prints it: the workspace
-   * member's name from `loadFinalizerNames`, or that module's sentence when
-   * the person is not on record. Never a user id. Sourced from the section's
+   * member's role from `loadFinalizerNames`, or that module's sentence when
+   * the person is not on record. Never a user id or an email address.
+   * Sourced from the section's
    * finalized_by EVENT column (never updated_by, which any later touch
    * overwrites). For sections finalized before finalizer tracking existed,
    * this carries the disclosure "finalized before finalizer tracking; not
@@ -174,18 +180,6 @@ function formatAmount(value: number | string | null | undefined): string {
   return formatMoney(numeric, { precision: "whole" });
 }
 
-/** Required checklist items with nothing behind them: neither attached nor N/A. */
-export function countOutstandingRequiredAttachments(
-  attachments: readonly ApplicationAttachmentRow[]
-): number {
-  return attachments.filter(
-    (attachment) =>
-      attachment.required &&
-      attachment.status !== "attached" &&
-      attachment.status !== "not_applicable"
-  ).length;
-}
-
 const DOCUMENT_STYLES = `
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
@@ -257,7 +251,7 @@ export function applicableStandingCaveats(data: GrantApplicationExportData): str
   return APPLICATION_EXPORT_STANDING_CAVEATS.filter((caveat) => applies[caveat]);
 }
 
-function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount: number): string {
+function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly string[]): string {
   const { opportunity } = data;
   const calendar = data.calendar ?? UTC_CALENDAR;
   const caveats = applicableStandingCaveats(data);
@@ -290,11 +284,7 @@ function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount:
     )}</p>
     <div class="facts" style="margin-top: 18px;">${coverFacts}
     </div>
-    ${
-      outstandingRequiredCount > 0
-        ? `<div class="draft-stamp">DRAFT: ${outstandingRequiredCount} required attachment(s) outstanding</div>`
-        : ""
-    }
+    ${draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")}
     ${
       caveats.length > 0
         ? `<div class="warning-box">
@@ -405,7 +395,10 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
   const orderedSections = [...data.sections].sort(
     (left, right) => left.section.sort_order - right.section.sort_order
   );
-  const outstandingRequiredCount = countOutstandingRequiredAttachments(data.attachments);
+  const draftStamps = applicationDraftStamps(
+    orderedSections.map((entry) => entry.section),
+    data.attachments
+  );
 
   return `<!doctype html>
 <html lang="en">
@@ -418,7 +411,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
   </head>
   <body>
     <main>
-      ${coverMarkup({ ...data, sections: orderedSections }, outstandingRequiredCount)}
+      ${coverMarkup({ ...data, sections: orderedSections }, draftStamps)}
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
       ${attachmentsMarkup(data.attachments)}
       ${evidenceAppendicesMarkup(data.evidenceAppendices, data.evidenceAppendixFrame ?? SS4A_APPENDIX_FRAME)}

@@ -27,10 +27,10 @@ import {
   type ApplicationAttachmentRow,
   type ApplicationSectionRow,
 } from "@/lib/grants/application";
+import { applicationDraftStamps, countOutstandingRequiredAttachments } from "@/lib/grants/application-draft-stamps";
 import {
   applicationExportPacketLabel,
   buildGrantApplicationHtml,
-  countOutstandingRequiredAttachments,
   type GrantApplicationExportSection,
   type GrantApplicationSectionProvenance,
 } from "@/lib/grants/application-html";
@@ -55,15 +55,17 @@ import {
  * operator's own work product and is never re-judged by a stored verdict.)
  * Missing required attachments do NOT block — the document is stamped DRAFT
  * prominently instead, because packaging a work in progress is legitimate as
- * long as no reader can mistake it for submittable.
+ * long as no reader can mistake it for submittable. Final section text that
+ * still holds `[VERIFY]` markers or unfilled Safety seed placeholders stamps it
+ * DRAFT the same way, and the response lists every stamp reason.
  *
  * An application seeded from a program that declares evidence appendices
  * (SS4A, California ATP; `evidence-appendix-keys.ts`) also carries appendices
  * drawn from the linked project's saved records. The optional JSON body
  * `{ appendices: [...] }` chooses which; no body means all of them. A
  * deselected or missing appendix is still listed in the document, never
- * dropped. Finalizers print as workspace members' names, and times print on
- * the workspace calendar.
+ * dropped. Finalizers print as workspace roles, never email addresses, and
+ * times print on the workspace calendar.
  */
 
 const EXPORT_BUCKET = "grant-application-exports";
@@ -419,7 +421,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     const evidenceAppendices = assembled?.appendices;
 
-    // Finalizers print as this workspace's members, never as user ids. The
+    // Finalizers print as this workspace's roles, never as user ids or emails. The
     // roster is read with the service role behind its own membership check.
     const finalizers = await loadFinalizerNames(
       createServiceRoleClient(),
@@ -538,6 +540,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const outstandingRequiredCount = countOutstandingRequiredAttachments(attachments);
+    const draftStamps = applicationDraftStamps(sections, attachments);
 
     audit.info("application_exported", {
       opportunityId: opportunity.id,
@@ -550,6 +553,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       byteLength: pdfBytes.byteLength,
       appendices: appendixSummary,
       outstandingRequiredCount,
+      draftStamps,
       durationMs: Date.now() - startedAt,
     });
 
@@ -562,7 +566,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // to the caller exactly as it is disclosed inside the document.
         engineDisclosure: pdf.disclosure,
         outstandingRequiredCount,
-        isDraftStamped: outstandingRequiredCount > 0,
+        isDraftStamped: draftStamps.length > 0,
+        draftStamps,
         sha256,
         byteLength: pdfBytes.byteLength,
         appendices: appendixSummary,
