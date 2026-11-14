@@ -252,6 +252,7 @@ async function main() {
       contributions: [],
       moderation: [],
       rejectedTextSha256: [],
+      rejectedTexts: [],
       staffReview: null,
       response: null,
     },
@@ -1036,16 +1037,27 @@ async function main() {
       state.pdfs.push({ kind: job.campaign.reviewPdf, path: rel(internalPdf), sha256: first.sha256(internalBytes), bytes: internalBytes.length, pages: internalPages.length, draftStamp: draft.length > 0, items });
       if (draft.length) findings.push({ id: 'review-pdf-draft-stamp', text: `The internal review PDF carries DRAFT on pages ${draft.join(', ')}.` });
       if (emails.length) findings.push({ id: 'review-pdf-prints-email', text: `The internal review PDF prints an email address at ${emails.map((entry) => `page ${entry.page} line ${entry.line}`).join(', ')}.` });
-      // Public review PDF and both workbooks: read, not recorded as the job's files.
-      const publicPages = first.pdfPages(ids.files['public-pdf']);
+      // Public review PDF: recorded beside the internal one, so the checker
+      // can read it again (KI-2026-11-14-371).
+      const publicPdf = ids.files['public-pdf'];
+      const publicPdfBytes = fs.readFileSync(publicPdf);
+      if (publicPdfBytes.subarray(0, 5).toString('latin1') !== '%PDF-') throw new Error('The public review download is not a PDF.');
+      const publicPages = first.pdfPages(publicPdf);
       ids.publicPages = publicPages;
       const publicRead = lib.readReviewPdfCounts(publicPages);
+      const publicItems = lib.publicReviewPdfItems(publicPages, job.campaign.publicCopy);
+      const publicDraft = first.draftPages(publicPages);
+      state.pdfs.push({ kind: job.campaign.publicCopy.pdf, path: rel(publicPdf), sha256: first.sha256(publicPdfBytes), bytes: publicPdfBytes.length, pages: publicPages.length, draftStamp: publicDraft.length > 0, items: publicItems.items });
+      if (publicDraft.length) findings.push({ id: 'public-review-pdf-draft-stamp', text: `The public review PDF carries DRAFT on pages ${publicDraft.join(', ')}.` });
+      missing.push(...publicItems.missing.map((entry) => ({ ...entry, item: `public ${entry.item}` })));
       const internalBook = workbookSheets(ids.files['internal-xlsx']);
       const publicBook = workbookSheets(ids.files['public-xlsx']);
       ids.internalBookText = workbookText(internalBook);
       ids.publicBookText = workbookText(publicBook);
       const internalBookBytes = fs.readFileSync(ids.files['internal-xlsx']);
       state.workbooks.push({ kind: job.campaign.workbook.kind, path: rel(ids.files['internal-xlsx']), sha256: first.sha256(internalBookBytes), bytes: internalBookBytes.length });
+      const publicBookBytes = fs.readFileSync(ids.files['public-xlsx']);
+      state.workbooks.push({ kind: job.campaign.publicCopy.workbook, path: rel(ids.files['public-xlsx']), sha256: first.sha256(publicBookBytes), bytes: publicBookBytes.length });
       const scopeRow = (internalBook[job.campaign.workbook.scopeCell.sheet] || []).find((row) => row[0] === job.campaign.workbook.scopeCell.field);
       if (!scopeRow || scopeRow[1] !== job.campaign.workbook.scopeCell.value) throw new Error('The internal workbook does not say its scope is internal.');
       const internalCells = lib.readReviewWorkbookCounts(internalBook);
@@ -1087,7 +1099,7 @@ async function main() {
       countTable.unshift(...surfaces.slice(0, 6).map((row) => ({ surface: row.surface, counts: row.counts })));
       countTable.unshift({ surface: 'journey (moderation outcomes and the published response)', counts: expected });
       ids.countPages = { internal: internalRead.pages, public: publicRead.pages };
-      if (missing.length) throw new Error(`The internal review PDF is missing ${missing.map((entry) => `${entry.item} (${entry.reason})`).join('; ')}.`);
+      if (missing.length) throw new Error(`The review PDFs are missing ${missing.map((entry) => `${entry.item} (${entry.reason})`).join('; ')}.`);
       lib.assertCountsAgree(expected, surfaces);
       return `received ${expected.received}, approved ${expected.approved}, rejected ${expected.rejected}, published ${expected.publishedResponses}, answered ${expected.answered}: ${surfaces.length} surfaces agree`;
     }),
@@ -1133,6 +1145,9 @@ async function main() {
       const result = lib.assertRejectedTextAbsent({ texts: [inputs.comments.rejected], ids: [ids.submissions.rejected.id], publicSurfaces, controlSurfaces });
       rejectedSearch = { searchedSha256: result.searchedSha256, searched: result.searched, controls: result.controls, hits: result.hits };
       state.campaign.rejectedTextSha256 = result.searchedSha256;
+      // The text itself, so the checker can search the review files for it.
+      // It is a test entry this journey typed and represents no one.
+      state.campaign.rejectedTexts = [inputs.comments.rejected];
       return `${publicSurfaces.length} public surfaces searched, none holds the rejected text or id; found in ${controlSurfaces.length} internal controls`;
     }),
 
@@ -1183,15 +1198,19 @@ async function main() {
       const tab = await visitor.newPage();
       await go(ids.portalPath, tab);
       const base = `/api/engagement/campaigns/${ids.campaignId}`;
+      // Staff reads only (KI-2026-11-14-370): the export holds every
+      // contribution with its moderation notes, and the history holds the
+      // rejected comment's moderation record.
       const requests = {
         'campaign-read': `${base}`,
-        'campaign-items-read': `${base}/items`,
+        'campaign-export-read': `${base}/export`,
+        'rejected-item-history-read': `${base}/items/${ids.submissions.rejected.id}/history`,
         'review-pdf-download': `${base}/reports/${ids.jobs.internal}/download?format=pdf`,
         'review-xlsx-download': `${base}/reports/${ids.jobs.internal}/download?format=xlsx`,
       };
       for (const request of job.participantChecks.requiredRequests) {
         const result = await pageFetch(tab, requests[request]);
-        const contentReturned = result.head === '%PDF-' || result.head.startsWith('PK') || result.text.includes(inputs.campaign.title) || result.text.includes(ids.submissions.rejected.id);
+        const contentReturned = result.head === '%PDF-' || result.head.startsWith('PK') || result.text.includes(inputs.campaign.title) || result.text.includes(ids.submissions.rejected.id) || result.text.includes(inputs.comments.rejected);
         participantChecks.refusals.push({ request, status: result.status, contentReturned });
       }
       const read = await pageFetch(tab, `/api/engage/${tokenOf()}`);
@@ -1217,11 +1236,13 @@ async function main() {
         ['campaign-review-pdf', 'review-pdf-download', `${base}/reports/${ids.jobs.internal}/download?format=pdf`],
         ['campaign-review-workbook', 'review-xlsx-download', `${base}/reports/${ids.jobs.internal}/download?format=xlsx`],
         ['staff-campaign', 'campaign-read', base],
+        ['campaign-export', 'campaign-export-read', `${base}/export`],
+        ['rejected-item-history', 'rejected-item-history-read', `${base}/items/${ids.submissions.rejected.id}/history`],
       ];
       const detail = [];
       for (const [target, request, route] of dataChecks) {
         const result = await pageFetch(second, route);
-        const contentReturned = result.head === '%PDF-' || result.head.startsWith('PK') || result.text.includes(ids.campaignTitle);
+        const contentReturned = result.head === '%PDF-' || result.head.startsWith('PK') || result.text.includes(ids.campaignTitle) || result.text.includes(ids.submissions.rejected.id) || result.text.includes(inputs.comments.rejected);
         crossChecks.push({ journey: options.role, target, request, kind: 'data', status: result.status, contentReturned });
         detail.push(`${request} ${result.status}${contentReturned ? ' CONTENT RETURNED' : ''}`);
       }

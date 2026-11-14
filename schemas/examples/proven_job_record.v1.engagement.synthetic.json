@@ -51,7 +51,8 @@
           {"commentId": "00000000-0000-4000-8000-000000000105", "outcome": "approved", "reasonRecorded": true},
           {"commentId": "00000000-0000-4000-8000-000000000106", "outcome": "rejected", "reasonRecorded": true}
         ],
-        "rejectedTextSha256": ["0909a2532808735f2bcd29dd27617af9aade406364aeaea21b5580bb52d5edc5"],
+        "rejectedTextSha256": ["8d71eb98581493e6c48f8357c643e854e2d36369ac17cb87b2868c7ce4c7046b"],
+        "rejectedTexts": ["Please fix my synthetic water bill (county). A test entry that represents no one."],
         "staffReview": {
           "reviewId": "00000000-0000-4000-8000-000000000107",
           "revision": 2,
@@ -75,9 +76,9 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review.pdf",
-          "sha256": "94ab955dda86fae733f16f8e0b57a317c02df1edd2195824403642ee745a9380",
-          "bytes": 206,
-          "pages": 2,
+          "sha256": "abd8dda88076a6367e0fd1dcf5706ce2630fbd2f922c6bd87c409d6698c328e1",
+          "bytes": 508,
+          "pages": 3,
           "draftStamp": false,
           "items": [
             {"item": "scope-badge", "page": 1, "method": "pdftotext", "text": "Internal review copy"},
@@ -85,14 +86,29 @@
             {"item": "rejected-count", "page": 1, "method": "pdftotext", "text": "Withheld 1"},
             {"item": "responded-count", "page": 2, "method": "pdftotext", "text": "Answered 2"}
           ]
+        },
+        {
+          "kind": "campaign-review-public",
+          "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review-public.pdf",
+          "sha256": "02d00e5935c2fd0ccb5808c07f9a2170da0e9e36cb612b6d53bc993532967ad7",
+          "bytes": 399,
+          "pages": 1,
+          "draftStamp": false,
+          "items": [{"item": "scope-badge", "page": 1, "method": "pdftotext", "text": "Public review copy"}]
         }
       ],
       "workbooks": [
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review.xlsx",
-          "sha256": "95c2c460d46ff24242fdcf141886acd3b4eae10cd3ec5e05656fc0da24771b4f",
-          "bytes": 866
+          "sha256": "9bd070709543eeeeff22dc914fd80c3b5441ac327f1d729d89076c8086000317",
+          "bytes": 1137
+        },
+        {
+          "kind": "campaign-review-public",
+          "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review-public.xlsx",
+          "sha256": "1616da88f701ce801fc138c3fce405074c0266636e84b885e033a9b6cb465d24",
+          "bytes": 989
         }
       ],
       "publicPage": {
@@ -216,7 +232,8 @@
           {"commentId": "00000000-0000-4000-8000-000000000205", "outcome": "approved", "reasonRecorded": true},
           {"commentId": "00000000-0000-4000-8000-000000000206", "outcome": "rejected", "reasonRecorded": true}
         ],
-        "rejectedTextSha256": ["1edcdc8c30b3c012264d3d394db9ed5888e924e7604d85db6491d6982967536c"],
+        "rejectedTextSha256": ["ce4bc721dd63054fdac9e2cb535ba71eea2ac60f02ea14d29f7c70c2097aa287"],
+        "rejectedTexts": ["Please fix my synthetic water bill (city-or-town). A test entry that represents no one."],
         "staffReview": {
           "reviewId": "00000000-0000-4000-8000-000000000207",
           "revision": 2,
@@ -240,9 +257,9 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review.pdf",
-          "sha256": "4f6a8b41dbb65e08706b4d9948b29ea9c7651709ab2863cd98689caa26ab8898",
-          "bytes": 212,
-          "pages": 2,
+          "sha256": "5e3adbe812f8d9ae4113a86dd3123618a87b95ba7aa4a2d297e0a25735595dbd",
+          "bytes": 520,
+          "pages": 3,
           "draftStamp": false,
           "items": [
             {"item": "scope-badge", "page": 1, "method": "pdftotext", "text": "Internal review copy"},
@@ -250,14 +267,29 @@
             {"item": "rejected-count", "page": 1, "method": "pdftotext", "text": "Withheld 1"},
             {"item": "responded-count", "page": 2, "method": "pdftotext", "text": "Answered 2"}
           ]
+        },
+        {
+          "kind": "campaign-review-public",
+          "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review-public.pdf",
+          "sha256": "039e5a5a5f3e9dcb45c607bb6185220628a312bb0e8ff6ea03c57fe1edcd6d94",
+          "bytes": 405,
+          "pages": 1,
+          "draftStamp": false,
+          "items": [{"item": "scope-badge", "page": 1, "method": "pdftotext", "text": "Public review copy"}]
         }
       ],
       "workbooks": [
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review.xlsx",
-          "sha256": "f5746af9bfd25916ebc307401100b683880bb426a082ac1bf3fa3e605186b555",
-          "bytes": 872
+          "sha256": "bf6c11df429040f219485901968ca0a5e97aeaf3a3f6e1092ca4c4c020c1b83a",
+          "bytes": 1149
+        },
+        {
+          "kind": "campaign-review-public",
+          "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review-public.xlsx",
+          "sha256": "c0b62e9e44307646dc52f7cf1e957ca671ae22c4642e076a74aa9fd961e17af6",
+          "bytes": 995
         }
       ],
       "publicPage": {
@@ -381,7 +413,8 @@
           {"commentId": "00000000-0000-4000-8000-000000000305", "outcome": "approved", "reasonRecorded": true},
           {"commentId": "00000000-0000-4000-8000-000000000306", "outcome": "rejected", "reasonRecorded": true}
         ],
-        "rejectedTextSha256": ["3bbffca64a6567e60099c5bae69b025daeacbf65ae3ceddb5dfd8d369bf9f541"],
+        "rejectedTextSha256": ["d579f6e6b51f7e9ab9f8db6e96c4d4c6a8226c42bd5919f53c58baa0854bd6c9"],
+        "rejectedTexts": ["Please fix my synthetic water bill (tribal-area). A test entry that represents no one."],
         "staffReview": {
           "reviewId": "00000000-0000-4000-8000-000000000307",
           "revision": 2,
@@ -405,9 +438,9 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review.pdf",
-          "sha256": "87bdeff4ce7b96b897832ea62a7bde1a913a958454bfe59fd846955505c88f01",
-          "bytes": 211,
-          "pages": 2,
+          "sha256": "07a6524e7a2307cace2810b579f4655d84bb338541500957f7273e724a14267a",
+          "bytes": 518,
+          "pages": 3,
           "draftStamp": false,
           "items": [
             {"item": "scope-badge", "page": 1, "method": "pdftotext", "text": "Internal review copy"},
@@ -415,14 +448,29 @@
             {"item": "rejected-count", "page": 1, "method": "pdftotext", "text": "Withheld 1"},
             {"item": "responded-count", "page": 2, "method": "pdftotext", "text": "Answered 2"}
           ]
+        },
+        {
+          "kind": "campaign-review-public",
+          "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review-public.pdf",
+          "sha256": "667d687ffa6568b5774cbf54f2c8d77e523ee5dd411f11cde5b34f3adf168acb",
+          "bytes": 404,
+          "pages": 1,
+          "draftStamp": false,
+          "items": [{"item": "scope-badge", "page": 1, "method": "pdftotext", "text": "Public review copy"}]
         }
       ],
       "workbooks": [
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review.xlsx",
-          "sha256": "e31a99c4e651ae8ace3229f5fa85cc34a5b61be71cc5afb9c09d64ab883b3364",
-          "bytes": 871
+          "sha256": "847a9bc17c16a4be669d14cad4f09606a349d6374a6bc9019b67740e1f5f883a",
+          "bytes": 1147
+        },
+        {
+          "kind": "campaign-review-public",
+          "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review-public.xlsx",
+          "sha256": "c3d0c47fe27967260257a4f3d5f89c7b7223049554fd14a0d136cfdf4bb0ed7b",
+          "bytes": 994
         }
       ],
       "publicPage": {
@@ -529,13 +577,20 @@
       {"journey": "tribal-area", "target": "campaign-review-pdf", "request": "review-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
       {"journey": "tribal-area", "target": "campaign-review-workbook", "request": "review-xlsx-download", "kind": "data", "status": 404, "contentReturned": false},
       {"journey": "tribal-area", "target": "staff-campaign", "request": "campaign-read", "kind": "data", "status": 403, "contentReturned": false},
-      {"journey": "tribal-area", "target": "staff-campaign", "request": "campaign-page", "kind": "page", "status": 404, "contentReturned": false}
+      {"journey": "tribal-area", "target": "staff-campaign", "request": "campaign-page", "kind": "page", "status": 404, "contentReturned": false},
+      {"journey": "county", "target": "campaign-export", "request": "campaign-export-read", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "county", "target": "rejected-item-history", "request": "rejected-item-history-read", "kind": "data", "status": 403, "contentReturned": false},
+      {"journey": "city-or-town", "target": "campaign-export", "request": "campaign-export-read", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "city-or-town", "target": "rejected-item-history", "request": "rejected-item-history-read", "kind": "data", "status": 403, "contentReturned": false},
+      {"journey": "tribal-area", "target": "campaign-export", "request": "campaign-export-read", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "tribal-area", "target": "rejected-item-history", "request": "rejected-item-history-read", "kind": "data", "status": 403, "contentReturned": false}
     ]
   },
   "participantChecks": {
     "refusals": [
       {"request": "campaign-read", "status": 401, "contentReturned": false},
-      {"request": "campaign-items-read", "status": 401, "contentReturned": false},
+      {"request": "campaign-export-read", "status": 401, "contentReturned": false},
+      {"request": "rejected-item-history-read", "status": 401, "contentReturned": false},
       {"request": "review-pdf-download", "status": 401, "contentReturned": false},
       {"request": "review-xlsx-download", "status": 401, "contentReturned": false}
     ],

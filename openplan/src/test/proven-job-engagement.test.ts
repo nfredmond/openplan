@@ -41,11 +41,23 @@ function idsFor(index: number) {
   };
 }
 
-function reviewPdf(role: string, page1 = "INTERNAL REVIEW COPY\nSelected records\nApproved 3\nWithheld 1", page2 = "Reviewed staff responses\nAnswered 2"): string {
+/** Each journey's rejected comment, as the example records it (rejectedTexts). */
+const rejectedText = (role: string) => `Please fix my synthetic water bill (${role}). A test entry that represents no one.`;
+const LEFT_OUT = "This public copy holds approved contributions only. Withheld, pending and flagged contributions are left out, so it does not count them.";
+const INTERNAL_COUNTS = "Received 4 contributions.\nApproved 3 contributions.\nWithheld 1 contribution.\nPending 0 contributions.\nPublished 1 staff response.";
+
+/** The internal review PDF: its counts, its answered count, and a register page that prints the rejected comment and its id. */
+function reviewPdf(role: string, page1 = `INTERNAL REVIEW COPY\nReview counts\n${INTERNAL_COUNTS}`, page2 = "Reviewed staff responses\nAnswered 2 contributions with a published staff response."): string {
   return [
     `%PDF-1.4 synthetic test file for the proven job checker, not a real PDF\ncampaign-review for the ${role} journey\n${page1}`,
     page2,
+    `Contribution register\n${ids(role).d} withheld\n${rejectedText(role)}`,
   ].join("\f");
+}
+
+/** The public review copy: approved comments only, and a sentence saying what it leaves out. */
+function publicPdf(role: string, counts = "Approved 3 contributions.\nPublished 1 staff response.\nAnswered 2 contributions with a published staff response."): string {
+  return `%PDF-1.4 synthetic test file for the proven job checker, not a real PDF\ncampaign-review-public for the ${role} journey\nPUBLIC REVIEW COPY\nReview counts\n${LEFT_OUT}\n${counts}`;
 }
 
 function reviewSheets(role: string, ids: ReturnType<typeof idsFor>): Sheets {
@@ -56,14 +68,29 @@ function reviewSheets(role: string, ids: ReturnType<typeof idsFor>): Sheets {
       [ids.a, "approved", "Synthetic map point"],
       [ids.b, "approved", "Synthetic comment"],
       [ids.c, "approved", "Synthetic keyboard comment"],
-      [ids.d, "rejected", "Synthetic rejected comment"],
+      [ids.d, "rejected", rejectedText(role)],
     ],
     "Staff responses": [
       ["id", "theme_title", "you_said", "we_did", "source_item_ids", "published_at"],
       [ids.response, "Synthetic theme", "Synthetic", "Synthetic", JSON.stringify([ids.a, ids.b]), "2026-11-20T10:30:00Z"],
     ],
     "Long text": [["Record type", "Record ID", "Field", "Part", "Text"]],
+    Summary: [
+      ["Record set", "Count"], ["Contributions", 4], ["Received", 4], ["Approved", 3], ["Withheld", 1], ["Pending", 0],
+      ["Flagged for review", 0], ["Published staff responses", 1], ["Answered by a published staff response", 2],
+    ],
   };
+}
+
+function publicSheets(role: string, ids: ReturnType<typeof idsFor>): Sheets {
+  const sheets = reviewSheets(role, ids);
+  sheets["Read me"][2][1] = "public";
+  sheets.Contributions.pop();
+  sheets.Summary = [
+    ["Record set", "Count"], ["Contributions", 3], ["Approved", 3], ["Withheld, pending and flagged", "Not in the public copy"],
+    ["Published staff responses", 1], ["Answered by a published staff response", 2],
+  ];
+  return sheets;
 }
 
 const workbookText = (sheets: Sheets) =>
@@ -73,17 +100,31 @@ const jobRoot = mkdtempSync(join(tmpdir(), "openplan-proven-engagement-"));
 const fakePdfPages = (path: string) => readFileSync(path, "utf8").replace(/^[^\n]*\n/, "").split("\f");
 const fakeWorkbook = (path: string): Sheets => JSON.parse(readFileSync(path, "utf8").replace(/^[^\n]*\n/, ""));
 
-EXAMPLE.journeys.forEach((entry: Json, index: number) => {
-  const ids = idsFor(index);
-  for (const [path, text] of [[entry.pdfs[0].path, reviewPdf(entry.role)], [entry.workbooks[0].path, workbookText(reviewSheets(entry.role, ids))]]) {
-    mkdirSync(join(jobRoot, dirname(path)), { recursive: true });
-    writeFileSync(join(jobRoot, path), text);
+const ids = (role: string) => idsFor(ROLES.indexOf(role));
+/** The four synthetic files of one journey, by the record entry's kind. */
+const syntheticFiles = (role: string): Record<string, [string, string]> => ({
+  pdf: [`campaign-review`, reviewPdf(role)],
+  publicPdf: [`campaign-review-public`, publicPdf(role)],
+  workbook: [`campaign-review`, workbookText(reviewSheets(role, ids(role)))],
+  publicWorkbook: [`campaign-review-public`, workbookText(publicSheets(role, ids(role)))],
+});
+
+EXAMPLE.journeys.forEach((entry: Json) => {
+  const files = syntheticFiles(entry.role);
+  const writes: Array<[Json, string]> = [
+    [entry.pdfs.find((pdf: Json) => pdf.kind === files.pdf[0]), files.pdf[1]],
+    [entry.pdfs.find((pdf: Json) => pdf.kind === files.publicPdf[0]), files.publicPdf[1]],
+    [entry.workbooks.find((book: Json) => book.kind === files.workbook[0]), files.workbook[1]],
+    [entry.workbooks.find((book: Json) => book.kind === files.publicWorkbook[0]), files.publicWorkbook[1]],
+  ];
+  for (const [file, text] of writes) {
+    mkdirSync(join(jobRoot, dirname(file.path)), { recursive: true });
+    writeFileSync(join(jobRoot, file.path), text);
   }
 });
 
 const proven = (): Json => structuredClone(EXAMPLE);
 const journey = (record: Json, role: string) => record.journeys.find((entry: Json) => entry.role === role);
-const ids = (role: string) => idsFor(ROLES.indexOf(role));
 const check = (record: Json) =>
   validateProvenJobRecord(record, { repoRoot: jobRoot, readPdfPages: fakePdfPages, readWorkbook: fakeWorkbook });
 
@@ -194,8 +235,8 @@ describe("the engagement job refuses", () => {
     ["a cross-workspace check naming a journey the record does not hold", (r) => { r.crossWorkspace.checks[4].journey = "borough"; }, /names the borough journey, which the record does not hold/],
     ["a campaign page answering 200 without its limit", (r) => { r.limits = r.limits.filter((l: Json) => l.id !== "campaign-page-answers-200-with-not-found-screen"); }, /does not state the campaign-page-answers-200-with-not-found-screen limit/],
     // The public participant
-    ["staff items served to the public participant", (r) => { r.participantChecks.refusals[1] = { request: "campaign-items-read", status: 200, contentReturned: true }; }, /public participant request campaign-items-read returned content \(status 200\)/],
-    ["a participant request that failed on the server", (r) => { r.participantChecks.refusals[2].status = 500; }, /review-pdf-download answered status 500, which is inconclusive/],
+    ["the campaign export served to the public participant", (r) => { r.participantChecks.refusals[1] = { request: "campaign-export-read", status: 200, contentReturned: true }; }, /public participant request campaign-export-read returned content \(status 200\)/],
+    ["a participant request that failed on the server", (r) => { r.participantChecks.refusals[3].status = 500; }, /review-pdf-download answered status 500, which is inconclusive/],
     ["a missing participant request", (r) => { r.participantChecks.refusals.pop(); }, /public participant check review-xlsx-download is missing/],
     ["a public read carrying a staff-only field", (r) => { r.participantChecks.publicRead.staffFieldsFound = true; }, /public-portal-read carried a staff-only field/],
     ["a public read not searched for review reasons", (r) => { r.participantChecks.publicRead.staffFieldsSearched = ["moderation_notes"]; }, /was not searched for the staff-only field review_reason/],
@@ -256,7 +297,7 @@ describe("a real review workbook from the product's export", () => {
     return {
       schema: 1, capturedAt: "2026-11-20T10:40:00Z", scope: "internal", filters: {},
       campaign: { id: ids.campaign, title: "Synthetic county campaign", summary: null, configurationVersionId: null },
-      items: [item(ids.a, "approved", "Map point"), item(ids.b, "approved", "Comment"), item(ids.c, "approved", "Keyboard comment"), item(ids.d, rejectedStatus, "Rejected comment")],
+      items: [item(ids.a, "approved", "Map point"), item(ids.b, "approved", "Comment"), item(ids.c, "approved", "Keyboard comment"), item(ids.d, rejectedStatus, rejectedText(role))],
       sessions: [], answers: [], definitions: [],
       responses: [{ id: ids.response, theme_title: "Access", you_said: "Synthetic", we_did: "Synthetic", source_item_ids: sources, published_at: "2026-11-20T10:30:00Z" }],
     };

@@ -279,6 +279,18 @@ function reviewPdfItems(pages, counts, campaignRule) {
   return { items, missing };
 }
 
+/**
+ * The record's items for the public review copy: its scope badge only, found
+ * with the shared matcher. The checker reads the copy's counts and the
+ * sentence saying what it leaves out from the file itself.
+ */
+function publicReviewPdfItems(pages, publicCopyRule) {
+  const scope = publicCopyRule.scopeItem;
+  const found = findPdfPhrase(pages, scope.text);
+  if (found.length) return { items: [{ item: scope.item, page: found[0], method: 'pdftotext', text: scope.text }], missing: [] };
+  return { items: [], missing: [{ item: scope.item, reason: `"${scope.text}" not found` }] };
+}
+
 /** The Summary sheet's count rows (review-export.ts, buildCampaignReviewWorkbook) by their labels. */
 const SUMMARY_LABELS = {
   Received: 'received',
@@ -578,7 +590,7 @@ const LIMIT_TEXTS = {
   'no-translation-or-ai-synthesis': 'No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope.',
 };
 
-const PAGE_ANSWERED_OK_TEXT = 'Another workspace\'s campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account\'s identifying strings was in its text or HTML. The campaign read and both review downloads were refused.';
+const PAGE_ANSWERED_OK_TEXT = 'Another workspace\'s campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account\'s identifying strings was in its text or HTML. The campaign read, the campaign export, the rejected comment\'s history and both review downloads were refused.';
 
 /**
  * Combine three journey files into one record. Cross-workspace checks keep the
@@ -643,6 +655,7 @@ module.exports = {
   loadEngagementInputs,
   loadJobDefinition,
   parseEngagementArgs,
+  publicReviewPdfItems,
   readPublicPageCounts,
   readReviewPdfCounts,
   readReviewWorkbookCounts,

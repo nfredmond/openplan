@@ -113,17 +113,21 @@
         { "field": "campaign.response.status", "equals": "published", "refusal": "response is {found}, not {expected}" },
         { "field": "campaign.response.aiAssisted", "equals": false, "refusal": "response was drafted with AI assistance" }
       ],
-      "pdfs": ["campaign-review"],
+      "pdfs": ["campaign-review", "campaign-review-public"],
       "items": {
         "scope-badge": "pdftotext",
         "approved-count": "pdftotext",
         "rejected-count": "pdftotext",
         "responded-count": "pdftotext"
       },
-      "workbooks": ["campaign-review"],
+      "pdfItems": {
+        "note": "Items for a PDF kind that does not carry the job's items. The public review copy carries only its scope badge; the checker reads its counts and left-out sentence itself (campaign.publicCopy).",
+        "campaign-review-public": { "scope-badge": "pdftotext" }
+      },
+      "workbooks": ["campaign-review", "campaign-review-public"],
       "screens": { "widths": [1440, 390], "modes": ["light", "dark"], "required": ["portal", "staff-campaign"] },
       "campaign": {
-        "note": "Counts come from the journey's moderation outcomes and published response. The review PDF must carry each count as the phrase below, found on its page with the shared matcher (scripts/lib/pdf-text-match.mjs). The workbook is read by cell: one Contributions row per comment with its status, one Staff responses row per response with its sources. The public response page is read by the journey at every width and mode.",
+        "note": "Counts come from the journey's moderation outcomes and published response. The internal review PDF must carry each count as the phrase below, found on its page with the shared matcher (scripts/lib/pdf-text-match.mjs), and every count sentence (countSentences) with the journey's number and no other. The workbook is read by cell: one Contributions row per comment with its status, one Staff responses row per response with its sources, and the Summary rows, which must agree with those cells, the PDF's sentences and the journey. The public copy is read the same way (publicCopy). Each rejected comment's text, which the record holds, must be in the internal PDF and workbook and in neither public file. The public response page is read by the journey at every width and mode.",
         "contributions": { "requiredKinds": ["map-point", "no-map-point"], "keyboardOnlyWidth": 390 },
         "moderation": { "minApproved": 1, "minRejected": 1 },
         "reviewPdf": "campaign-review",
@@ -144,16 +148,45 @@
             "statusValues": { "approved": "approved", "rejected": "rejected" }
           },
           "responses": { "sheet": "Staff responses", "idColumn": "id", "sourcesColumn": "source_item_ids", "publishedColumn": "published_at" },
-          "longText": { "sheet": "Long text" }
+          "longText": { "sheet": "Long text" },
+          "summary": {
+            "sheet": "Summary",
+            "rows": {
+              "received": "Received",
+              "approved": "Approved",
+              "rejected": "Withheld",
+              "publishedResponses": "Published staff responses",
+              "answered": "Answered by a published staff response"
+            }
+          }
+        },
+        "countSentences": {
+          "source": "openplan/src/lib/engagement/review-export.ts (reviewCountSentences). {contributions} and {responses} read in the singular for a count of one.",
+          "received": "Received {count} {contributions}.",
+          "approved": "Approved {count} {contributions}.",
+          "rejected": "Withheld {count} {contributions}.",
+          "publishedResponses": "Published {count} staff {responses}.",
+          "answered": "Answered {count} {contributions} with a published staff response."
+        },
+        "publicCopy": {
+          "pdf": "campaign-review-public",
+          "workbook": "campaign-review-public",
+          "scopeItem": { "item": "scope-badge", "text": "Public review copy" },
+          "scopeCell": { "sheet": "Read me", "field": "Scope", "value": "public" },
+          "counts": ["approved", "publishedResponses", "answered"],
+          "leftOut": ["received", "rejected"],
+          "leftOutSentence": "This public copy holds approved contributions only. Withheld, pending and flagged contributions are left out, so it does not count them."
         }
       },
       "crossWorkspace": {
-        "note": "The same rule as the first job (KI-2026-11-14-060). The staff campaign target needs its API read refused as a data check and its page checked as a page check.",
-        "targets": ["campaign-review-pdf", "campaign-review-workbook", "staff-campaign"],
+        "note": "The same rule as the first job (KI-2026-11-14-060). The staff campaign target needs its API read refused as a data check and its page checked as a page check. The campaign export and the rejected comment's history are staff reads, refused as data checks (KI-2026-11-14-370).",
+        "targets": ["campaign-review-pdf", "campaign-review-workbook", "staff-campaign", "campaign-export", "rejected-item-history"],
         "requiredDataRequests": {
           "campaign-review-pdf": "review-pdf-download",
           "campaign-review-workbook": "review-xlsx-download",
-          "staff-campaign": "campaign-read"
+          "staff-campaign": "campaign-read",
+          "campaign-export": "campaign-export-read",
+          "rejected-item-history": "rejected-item-history-read"
         },
         "requiredPageRequests": { "staff-campaign": "campaign-page" },
         "perJourney": "role",
@@ -161,8 +194,8 @@
         "pageAnsweredOkLimit": "campaign-page-answers-200-with-not-found-screen"
       },
       "participantChecks": {
-        "note": "Requests an anonymous participant sends with no session. campaign-read is GET /api/engagement/campaigns/<id>; campaign-items-read is GET /api/engagement/campaigns/<id>/items; review-pdf-download and review-xlsx-download are GET /api/engagement/campaigns/<id>/reports/<jobId>/download with format pdf or xlsx. public-portal-read is GET /api/engage/<shareToken>, which answers 200 and must carry none of the staff-only field names.",
-        "requiredRequests": ["campaign-read", "campaign-items-read", "review-pdf-download", "review-xlsx-download"],
+        "note": "Requests an anonymous participant sends with no session. campaign-read is GET /api/engagement/campaigns/<id>; campaign-export-read is GET /api/engagement/campaigns/<id>/export, every contribution with its moderation notes; rejected-item-history-read is GET /api/engagement/campaigns/<id>/items/<itemId>/history for the comment the journey rejected, its moderation history; review-pdf-download and review-xlsx-download are GET /api/engagement/campaigns/<id>/reports/<jobId>/download with format pdf or xlsx. public-portal-read is GET /api/engage/<shareToken>, which answers 200 and must carry none of the staff-only field names.",
+        "requiredRequests": ["campaign-read", "campaign-export-read", "rejected-item-history-read", "review-pdf-download", "review-xlsx-download"],
         "publicRead": {
           "request": "public-portal-read",
           "staffOnlyFields": ["moderation_notes", "review_reason", "metadata_json", "respondent_fingerprint"]

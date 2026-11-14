@@ -301,6 +301,15 @@ test('close at the end: a close that fails or does not verify fails a finished j
   assert.equal(thrown.failure.journeyStep, 'close-campaign');
 });
 
+test('the public review PDF records its scope badge only, found with the shared matcher', () => {
+  const rule = job.campaign.publicCopy;
+  assert.deepEqual(lib.publicReviewPdfItems(['Cover', 'PUBLIC REVIEW\nCOPY\nApproved 3 contributions.'], rule), {
+    items: [{ item: 'scope-badge', page: 2, method: 'pdftotext', text: 'Public review copy' }],
+    missing: [],
+  });
+  assert.deepEqual(lib.publicReviewPdfItems(['INTERNAL REVIEW COPY'], rule).missing, [{ item: 'scope-badge', reason: '"Public review copy" not found' }]);
+});
+
 // ---------------------------------------------------------------------------
 // Assembly, against the checker itself
 // ---------------------------------------------------------------------------
@@ -313,21 +322,33 @@ function exampleRuns() {
   const files = [];
   EXAMPLE.journeys.forEach((journey, index) => {
     const base = 100 * (index + 1);
-    const pdf = `%PDF-1.4 stand-in\nINTERNAL REVIEW COPY\nApproved 3\nWithheld 1\fAnswered 2`;
-    const book = `PK\u0003\u0004 stand-in\n${JSON.stringify({
-      'Read me': [['Field', 'Value'], ['Scope', 'internal']],
-      Contributions: [['id', 'status'], [id(base + 3), 'approved'], [id(base + 4), 'approved'], [id(base + 5), 'approved'], [id(base + 6), 'rejected']],
+    const rejected = journey.campaign.rejectedTexts[0];
+    const leftOut = job.campaign.publicCopy.leftOutSentence;
+    const counts = 'Approved 3 contributions.\nPublished 1 staff response.\nAnswered 2 contributions with a published staff response.';
+    const sheets = (scope, rows, summary) => `PK\u0003\u0004 stand-in\n${JSON.stringify({
+      'Read me': [['Field', 'Value'], ['Scope', scope]],
+      Contributions: [['id', 'status', 'title'], ...rows],
       'Staff responses': [['id', 'source_item_ids', 'published_at'], [id(base + 8), JSON.stringify([id(base + 3), id(base + 4)]), '2026-11-20T10:30:00Z']],
       'Long text': [['Record type', 'Record ID', 'Field', 'Part', 'Text']],
+      Summary: summary,
     })}`;
+    const approvedRows = [[id(base + 3), 'approved', 'a'], [id(base + 4), 'approved', 'b'], [id(base + 5), 'approved', 'c']];
+    const texts = {
+      'campaign-review.pdf': `%PDF-1.4 stand-in\nINTERNAL REVIEW COPY\nReceived 4 contributions.\nWithheld 1 contribution.\n${counts}\fRegister\n${id(base + 6)}\n${rejected}`,
+      'campaign-review-public.pdf': `%PDF-1.4 stand-in\nPUBLIC REVIEW COPY\n${leftOut}\n${counts}`,
+      'campaign-review.xlsx': sheets('internal', [...approvedRows, [id(base + 6), 'rejected', rejected]], [['Received', 4], ['Approved', 3], ['Withheld', 1], ['Published staff responses', 1], ['Answered by a published staff response', 2]]),
+      'campaign-review-public.xlsx': sheets('public', approvedRows, [['Approved', 3], ['Published staff responses', 1], ['Answered by a published staff response', 2]]),
+    };
     const copy = JSON.parse(JSON.stringify(journey));
-    for (const [entry, text] of [[copy.pdfs[0], pdf], [copy.workbooks[0], book]]) {
+    for (const entry of [...copy.pdfs, ...copy.workbooks]) {
+      const text = texts[`${entry.kind}${path.extname(entry.path)}`];
       fs.mkdirSync(path.join(root, path.dirname(entry.path)), { recursive: true });
       fs.writeFileSync(path.join(root, entry.path), text);
       entry.sha256 = sha(text);
       entry.bytes = Buffer.byteLength(text);
     }
     copy.pdfs[0].pages = 2;
+    copy.pdfs[0].items = copy.pdfs[0].items.map((item) => ({ ...item, page: 1 }));
     const run = {
       journey: copy,
       crossWorkspace: { checks: EXAMPLE.crossWorkspace.checks.filter((check) => check.journey === journey.role) },
@@ -348,7 +369,7 @@ test('assembly: three journey files make a record the checker accepts on the pro
   const { root, files } = exampleRuns();
   const record = lib.assembleEngagementRecord({ journeyFiles: files, commit: EXAMPLE.commit, baseUrl: checker.PROOF_ORIGIN, recordedOn: '2026-11-20' });
   assert.deepEqual(record.limits.map((limit) => limit.id), [...job.requiredLimits, job.crossWorkspace.pageAnsweredOkLimit]);
-  assert.equal(record.participantChecks.refusals.length, 12, 'every journey\'s refusals are kept');
+  assert.equal(record.participantChecks.refusals.length, 15, 'every journey\'s refusals are kept');
   assert.equal(record.participantChecks.publicRead.staffFieldsFound, false);
   assert.doesNotThrow(() => checker.validateProvenJobRecord(record, { repoRoot: root, readPdfPages: fakePdfPages, readWorkbook: fakeWorkbook }));
   const local = { ...record, baseUrl: 'http://localhost:3482' };

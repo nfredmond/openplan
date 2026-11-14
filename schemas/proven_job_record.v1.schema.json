@@ -248,7 +248,7 @@
         "health": { "$ref": "#/$defs/health" },
         "campaign": {
           "type": "object",
-          "required": ["campaignId", "projectId", "portalAddressKind", "aiFeaturesUsed", "contributions", "moderation", "rejectedTextSha256", "staffReview", "response"],
+          "required": ["campaignId", "projectId", "portalAddressKind", "aiFeaturesUsed", "contributions", "moderation", "rejectedTextSha256", "rejectedTexts", "staffReview", "response"],
           "additionalProperties": false,
           "properties": {
             "campaignId": { "$ref": "#/$defs/uuid" },
@@ -284,7 +284,8 @@
                 }
               }
             },
-            "rejectedTextSha256": { "type": "array", "items": { "$ref": "#/$defs/sha256" }, "description": "SHA-256 of each rejected comment's text, searched for on the public response page. Never the text." },
+            "rejectedTextSha256": { "type": "array", "items": { "$ref": "#/$defs/sha256" }, "description": "SHA-256 of each rejected comment's text, in the order of rejectedTexts." },
+            "rejectedTexts": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Each rejected comment's text as the participant typed it: a test entry the journey wrote, which represents no one. The journey searched the public response page for it; the checker searches the public review files for it and must find it in the internal ones (KI-2026-11-14-371)." },
             "staffReview": {
               "type": "object",
               "required": ["reviewId", "revision", "approved", "themes"],
