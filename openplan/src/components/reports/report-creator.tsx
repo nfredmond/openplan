@@ -447,11 +447,6 @@ export function ReportCreator({
                           </option>
                         ))}
                       </select>
-                      {flowState.values.safetyIngestId ? (
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                          The report opens with this crash pull selected. Save it there before generating.
-                        </p>
-                      ) : null}
                     </>
                   ) : (
                     <p className="text-xs leading-relaxed text-muted-foreground">
@@ -583,6 +578,13 @@ export function ReportCreator({
     ],
     onSubmit: async (values) => {
       const project = projects.find((entry) => entry.id === values.projectId) ?? null;
+      // Only an acquisition offered for this project is sent; the route
+      // checks the project again and saves it with the new report.
+      const safetyIngestId = (safetyIngestOptionsByProject[values.projectId] ?? []).some(
+        (option) => option.id === values.safetyIngestId
+      )
+        ? values.safetyIngestId
+        : "";
       const response = await fetch("/api/reports", {
         method: "POST",
         headers: {
@@ -603,6 +605,7 @@ export function ReportCreator({
           ...(values.modelingCountyRunId
             ? { modelingCountyRunId: values.modelingCountyRunId }
             : {}),
+          ...(safetyIngestId ? { safetyIngestSelections: [{ ingestId: safetyIngestId }] } : {}),
         }),
       });
 
@@ -614,21 +617,7 @@ export function ReportCreator({
 
       // After the await, so the sheet closes before the page moves under it.
       router.refresh();
-      // The crash acquisition is carried to the report's own evidence control,
-      // which saves it with the rest of the report's choices.
-      const safetyIngestId = (safetyIngestOptionsByProject[values.projectId] ?? []).some(
-        (option) => option.id === values.safetyIngestId
-      )
-        ? values.safetyIngestId
-        : "";
-      router.push(
-        withPlanningContext(
-          safetyIngestId
-            ? `/reports/${payload.reportId}?safetyIngestId=${encodeURIComponent(safetyIngestId)}#report-controls`
-            : `/reports/${payload.reportId}`,
-          values.projectId
-        )
-      );
+      router.push(withPlanningContext(`/reports/${payload.reportId}`, values.projectId));
     },
   });
 

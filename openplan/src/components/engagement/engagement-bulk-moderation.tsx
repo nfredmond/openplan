@@ -85,7 +85,7 @@ export function EngagementBulkModeration({
         const response = await fetch(`/api/engagement/campaigns/${campaignId}/items/${itemId}`, {
           method: "PATCH",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ status: newStatus, expectedUpdatedAt: selectedVersions.current.get(itemId), moderationNotes: reason }),
+          body: JSON.stringify({ status: newStatus, expectedUpdatedAt: selectedVersions.current.get(itemId), reviewReason: reason }),
         });
 
         if (response.ok) {

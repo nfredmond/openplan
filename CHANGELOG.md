@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety to report, and single-comment review (KI-2026-11-14-020 to -022):** approving or rejecting one comment now asks for a "Review reason", the name the refusal message uses. A new report saves the crash data chosen in the new-report dialog, so it no longer needs a second save. From Safety, a project with no report gets "Create safety action plan report", which makes the report with this crash pull chosen and stays on Safety. Smaller wording fixes on Safety, the project page, the dashboard, a campaign template and the SS4A seed preview. No migration.
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the

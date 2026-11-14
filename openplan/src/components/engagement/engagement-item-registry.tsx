@@ -79,7 +79,7 @@ function ItemRow({
   const [sourceType, setSourceType] = useState(item.source_type);
   const [status, setStatus] = useState(item.status);
   const [categoryId, setCategoryId] = useState(item.category_id ?? "");
-  const [moderationNotes, setModerationNotes] = useState("");
+  const [reviewReason, setReviewReason] = useState("");
   const [latitude, setLatitude] = useState(item.latitude?.toString() ?? "");
   const [longitude, setLongitude] = useState(item.longitude?.toString() ?? "");
   const [definition, setDefinition] = useState<{id:string;campaign:{instructions?:string};categories:Array<{id:string;label:string;description:string|null}>}|null|undefined>(undefined);
@@ -116,7 +116,7 @@ function ItemRow({
           sourceType,
           status: nextStatus ?? status,
           categoryId: categoryId || null,
-          moderationNotes: moderationNotes || null,
+          reviewReason: reviewReason || null,
           latitude: nextLatitude,
           longitude: nextLongitude,
         }),
@@ -319,14 +319,15 @@ function ItemRow({
       </div>
 
       <div className="mt-4 space-y-1.5">
-        <label className="text-compact font-semibold" htmlFor={`engagement-item-notes-${item.id}`}>
-          Moderation notes
+        <label className="text-compact font-semibold" htmlFor={`engagement-item-reason-${item.id}`}>
+          Review reason
         </label>
         <Textarea
-          id={`engagement-item-notes-${item.id}`}
+          id={`engagement-item-reason-${item.id}`}
           className="min-h-24"
-          value={moderationNotes}
-          onChange={(event) => setModerationNotes(event.target.value)}
+          placeholder="Required to approve, flag or edit"
+          value={reviewReason}
+          onChange={(event) => setReviewReason(event.target.value)}
         />
       </div>
 
@@ -516,7 +517,7 @@ export function EngagementItemRegistry({
             <option value="needs_review">Pending + flagged</option>
             <option value="uncategorized">Needs category</option>
             <option value="geolocated">Geolocated</option>
-            <option value="with_notes">Has moderation notes</option>
+            <option value="with_notes">Has review reason</option>
           </select>
         </label>
       </div>
