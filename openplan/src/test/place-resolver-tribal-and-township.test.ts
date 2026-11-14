@@ -240,7 +240,7 @@ describe("a multi-state reservation as a home geography", () => {
     for (const report of reports) {
       expect(report.status, report.job.id).toBe("unassessed");
       expect(report.applicability, report.job.id).toBe(
-        "This place has no single state, DC or territory on record. OpenPlan records none for a tribal area, even one inside one state, and assesses readiness only for states, DC and territories, so this job is not assessed for this place.",
+        "This place has no single state, DC or territory on record. OpenPlan records none for a tribal area, a metropolitan or micropolitan area or a multistate region, even one inside one state, and assesses readiness only for states, DC and territories, so this job is not assessed for this place.",
       );
       expect(JSON.stringify(report), report.job.id).not.toMatch(/subdivision claim|Nevada/);
     }

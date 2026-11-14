@@ -37,7 +37,9 @@ in another tribe's plan would read as coverage OpenPlan has not assessed.
 tribal area.
 
 Blind category: the resolver gets no place kind, so the same sentence prints
-for any place with no state on record, such as a multistate region.
+for any place with no state on record: a metropolitan or micropolitan
+area or a multistate region as well as a tribal area. The sentence names
+all of them.
 
 ## What a tribal-area row should be keyed by
 

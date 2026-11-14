@@ -375,6 +375,20 @@ describe("rows the first proven job record changes", () => {
     }
   });
 
+  it("names the journey in every limit, because limits print under their own heading in each project's plan", () => {
+    // Review 54: "The county's 12 stored crashes ... No planner reviewed the plan." read as the
+    // reader's own county and plan on every Nevada project.
+    for (const claim of JURISDICTION_READINESS_REGISTRY.claims.filter((row) => row.sourceIds.includes(RECORD_SOURCE))) {
+      for (const limitation of claim.limitations) {
+        expect(limitation, claim.id).not.toMatch(/^The county|\bits plan\b|reviewed the plan\./);
+        if (/case numbers|not checked against the source independently/.test(limitation)) {
+          expect(limitation, claim.id).toMatch(/^In the November 14, 2026 journey,/);
+          expect(limitation, claim.id).toMatch(/the plan that journey exported/);
+        }
+      }
+    }
+  });
+
   it("no longer says no Nevada journey is retained, and still does not assess the handoff", () => {
     const claim = claimFor("US-NV", "project-evidence-handoff");
     expect(claim.applicability).not.toMatch(/no Nevada journey/i);

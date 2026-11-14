@@ -20,7 +20,7 @@ const STATUS_LABELS: Record<JurisdictionReadinessStatus, string> = {
 
 /** What a place with no single state, DC or territory on record reads for every job. */
 const NO_SUBDIVISION_APPLICABILITY =
-  "This place has no single state, DC or territory on record. OpenPlan records none for a tribal area, even one inside one state, and assesses readiness only for states, DC and territories, so this job is not assessed for this place.";
+  "This place has no single state, DC or territory on record. OpenPlan records none for a tribal area, a metropolitan or micropolitan area or a multistate region, even one inside one state, and assesses readiness only for states, DC and territories, so this job is not assessed for this place.";
 
 function normalizedCode(value: string | null | undefined): string | null {
   const normalized = value?.trim().toUpperCase();

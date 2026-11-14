@@ -637,7 +637,7 @@
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
         }
       ],
-      "limitations": ["CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible.", "The county journey's crash counts were not checked against the source independently, and no planner reviewed its plan."]
+      "limitations": ["CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible.", "In the November 14, 2026 journey, the crash counts were not checked against the source independently, and no planner reviewed the plan that journey exported."]
     },
     {
       "id": "US-CA/grants-and-reimbursement",
@@ -2648,7 +2648,7 @@
       "limitations": [
         "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
         "OpenPlan reads no Nevada crash source with injury severity. The November 1, 2026 state source review rated Nevada not usable: Both open crash services answered 'not started' on 2026-11-01 and the TrafficSafety folder lists no crash service; current access is a request form.",
-        "The county's 12 stored crashes are the same 12 case numbers NHTSA's published FARS files for 2022 through 2024 hold for that county. No planner reviewed the plan."
+        "In the November 14, 2026 journey, the 12 crashes stored for that one county are the same 12 case numbers NHTSA's published FARS files for 2022 through 2024 hold for it. No planner reviewed the plan that journey exported."
       ]
     },
     {
