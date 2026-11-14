@@ -5,7 +5,7 @@
 #     scripts/ops/hosted-install/kit.sh <command> WINDOW_DIR [args...]
 #
 # Commands:
-#   hosted WINDOW_DIR MODE [run_sql.py args]   read, catalog, dryrun, install or probe on hosted.
+#   hosted WINDOW_DIR MODE [run_sql.py args]   rtt, read, catalog, dryrun, install or probe on hosted.
 #                                               WINDOW_DIR is /work in the container; kit files are /kit.
 #   verify WINDOW_DIR STAMP KEY_DIR             download, decrypt and check one capture into WINDOW_DIR/decrypted.
 #   keycheck KEY_DIR                            encrypt to the key's public half and decrypt with its secret half

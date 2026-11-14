@@ -9,21 +9,29 @@ builder refuses a wrong hash, any top-level transaction or session control
 (sqllex), and an install without pins from a completed dry run of the same
 plan on the same target.
 
-Both files run under psql --single-transaction with ON_ERROR_STOP (run_sql.py):
+run_sql.py sends each file to the server as one message (one network round
+trip), inside BEGIN and, for the install, COMMIT, with ON_ERROR_STOP. No round
+trip happens while a lock is held. Each file holds, in order:
 
-  1. B5 timeouts, then a guard row holding the transaction id.
-  2. The whole catalog map before any change (catalog_keys.sql).
+  1. B5 timeouts, then a guard row holding the transaction id, a count of
+     statement checks and the server's lock clock.
+  2. The whole catalog map before any change (catalog_keys.sql). The dry run
+     sends that map to the client here, before any lock is taken.
   3. Preconditions: session and current user postgres, postgres not a
      superuser, read-write, history count and newest version as planned, no
      planned version present. The install also requires the history tuple
      hash and whole-catalog digest the dry run read (B3.4).
   4. Each migration statement, each followed by a check that the transaction
-     id has not changed (B2.2), then the file's history row.
+     id has not changed (B2.2), then the file's history row. The same check
+     counts itself and records, on the server's clock, when the transaction
+     first holds an ACCESS EXCLUSIVE lock on a non-temporary relation.
   5. NOTIFY pgrst (N9), then one statement that reads the catalog map again
      and, in the install, requires the changed-key map (added, removed and
      changed keys with their new value hashes) to equal the dry run's (B3.2).
   6. Post-checks from the plan, if any.
-  7. The dry run prints its result, raises, and only then rolls back (B2.3).
+  7. The result, then a check that every statement check ran (so the server
+     received the statements exactly as built), then the lock clock line.
+  8. The dry run raises, and only then rolls back (B2.3).
 """
 
 from __future__ import annotations
@@ -133,11 +141,26 @@ def history_array(item: dict) -> str:
     return "ARRAY[" + ", ".join(kc.sql_literal(p) for p in parts) + "]::text[]"
 
 
+# True when this transaction holds an ACCESS EXCLUSIVE lock on a relation other
+# sessions can see. The kit's own temporary tables are excluded.
+LOCK_HELD = (
+    "EXISTS (SELECT 1 FROM pg_catalog.pg_locks l JOIN pg_catalog.pg_class c ON c.oid = l.relation "
+    "WHERE l.pid = pg_catalog.pg_backend_pid() AND l.locktype = 'relation' "
+    "AND l.mode = 'AccessExclusiveLock' AND l.granted AND c.relpersistence <> 't')"
+)
+
+
 def xid_guard(label: str) -> str:
+    """After each statement: the transaction id is unchanged (B2.2); count this
+    check; and if the first ACCESS EXCLUSIVE lock appeared during the statement
+    just run, record that statement's start as the lock start."""
     return (
         "DO $openplan_xid$ BEGIN IF pg_catalog.pg_current_xact_id()::text IS DISTINCT FROM "
         "(SELECT g.xid FROM pg_temp.openplan_install_guard g) THEN RAISE EXCEPTION "
-        f"'openplan install: the transaction changed after {label}'; END IF; END $openplan_xid$;\n"
+        f"'openplan install: the transaction changed after {label}'; END IF; "
+        "UPDATE pg_temp.openplan_install_guard SET guards = guards + 1, "
+        f"lock_first = COALESCE(lock_first, CASE WHEN {LOCK_HELD} THEN step_started END), "
+        "step_started = pg_catalog.clock_timestamp(); END $openplan_xid$;\n"
     )
 
 
@@ -166,7 +189,8 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
         "  pg_catalog.clock_timestamp() AS started,",
         f"  {HISTORY_HASH} AS history_hash,",
         "  (SELECT pg_catalog.count(*) FROM supabase_migrations.schema_migrations) AS history_count,",
-        "  (SELECT pg_catalog.max(version) FROM supabase_migrations.schema_migrations) AS history_newest;",
+        "  (SELECT pg_catalog.max(version) FROM supabase_migrations.schema_migrations) AS history_newest,",
+        "  0 AS guards, NULL::timestamptz AS lock_first, pg_catalog.clock_timestamp() AS step_started;",
         "CREATE TEMP TABLE openplan_before (k text PRIMARY KEY, h text NOT NULL, v text NOT NULL) ON COMMIT DROP;",
         "CREATE TEMP TABLE openplan_after (k text PRIMARY KEY, h text NOT NULL, v text NOT NULL) ON COMMIT DROP;",
         "SELECT pg_catalog.set_config('search_path', 'pg_catalog, pg_temp', true);",
@@ -175,6 +199,11 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
         ") q;",
         "SELECT pg_catalog.set_config('search_path', (SELECT g.search_path FROM pg_temp.openplan_install_guard g), true);",
     ]
+    if kind == "dryrun":
+        # The whole before map is large. Sent here, before the first lock, its
+        # transfer to the client never happens while a lock is held.
+        lines.append(f"SELECT '{kc.BEFORE_PREFIX}' || pg_catalog.jsonb_build_object('before', "
+                     "(SELECT pg_catalog.jsonb_object_agg(b.k, b.h) FROM pg_temp.openplan_before b))::text;")
     pin_checks = ""
     if kind == "install":
         assert pins is not None
@@ -215,6 +244,7 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
         "    RAISE EXCEPTION 'openplan install: planned versions already present: %', openplan_present;\n"
         "  END IF;\n"
         + pin_checks +
+        "  UPDATE pg_temp.openplan_install_guard SET step_started = pg_catalog.clock_timestamp();\n"
         "END $openplan_pre$;"
     )
     for item in files:
@@ -272,6 +302,7 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
     for index, stmt in enumerate(postchecks, 1):
         lines.append(stmt.text)
         lines.append(xid_guard(f"post-check {index}").rstrip("\n"))
+    checks = statement_checks(files, postchecks)
     result = (
         f"SELECT '{kc.RESULT_PREFIX}' || pg_catalog.jsonb_build_object(\n"
         f"  'kind', {kc.sql_literal(kind)}, 'window', {kc.sql_literal(plan['window'])}, 'capture', {kc.sql_literal(plan['capture'])},\n"
@@ -280,18 +311,41 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
         "  'historyCountBefore', (SELECT g.history_count FROM pg_temp.openplan_install_guard g),\n"
         "  'beforeDigest', (SELECT pg_catalog.md5(pg_catalog.string_agg(b.k || '=' || b.h, E'\\n' ORDER BY b.k COLLATE \"C\")) FROM pg_temp.openplan_before b),\n"
         "  'afterDigest', (SELECT pg_catalog.md5(pg_catalog.string_agg(a.k || '=' || a.h, E'\\n' ORDER BY a.k COLLATE \"C\")) FROM pg_temp.openplan_after a),\n"
-        + ("  'before', (SELECT pg_catalog.jsonb_object_agg(b.k, b.h) FROM pg_temp.openplan_before b),\n" if kind == "dryrun" else "")
-        + "  'delta', (SELECT COALESCE(pg_catalog.jsonb_object_agg(COALESCE(a.k, b.k), pg_catalog.jsonb_build_object(\n"
+        "  'delta', (SELECT COALESCE(pg_catalog.jsonb_object_agg(COALESCE(a.k, b.k), pg_catalog.jsonb_build_object(\n"
         "      'before', b.h, 'after', a.h, 'value', a.v, 'beforeValue', b.v)), '{}'::jsonb)\n"
         "    FROM pg_temp.openplan_before b FULL JOIN pg_temp.openplan_after a ON a.k = b.k WHERE a.h IS DISTINCT FROM b.h),\n"
         "  'elapsedMs', (SELECT (EXTRACT(EPOCH FROM pg_catalog.clock_timestamp() - g.started) * 1000)::bigint FROM pg_temp.openplan_install_guard g)\n"
         ")::text;"
     )
     lines.append(result)
+    # Every statement check must have run exactly once. If psql or the server
+    # had split the file differently from the kit's lexer, the count differs
+    # and the transaction stops before it can commit.
+    lines.append(
+        "DO $openplan_count$ BEGIN IF (SELECT g.guards FROM pg_temp.openplan_install_guard g) IS DISTINCT FROM "
+        f"{checks} THEN RAISE EXCEPTION 'openplan install: % of {checks} statement checks ran; the file did not reach "
+        "the server as built', (SELECT g.guards FROM pg_temp.openplan_install_guard g); END IF; END $openplan_count$;"
+    )
+    # The lock clock, read last so it includes the time to hand the result to
+    # the network. Nothing but the raise (dry run) or COMMIT (install) follows.
+    lines.append(
+        f"SELECT '{kc.LOCK_PREFIX}' || pg_catalog.jsonb_build_object(\n"
+        "  'statementChecks', s.guards, 'firstLockAt', s.lock_first, 'endAt', s.t,\n"
+        "  'lockHeldMs', CASE WHEN s.lock_first IS NULL THEN 0 ELSE\n"
+        "    (EXTRACT(EPOCH FROM s.t - s.lock_first) * 1000)::bigint END,\n"
+        "  'serverMs', (EXTRACT(EPOCH FROM s.t - s.started) * 1000)::bigint\n"
+        ")::text FROM (SELECT g.*, pg_catalog.clock_timestamp() AS t FROM pg_temp.openplan_install_guard g) s;"
+    )
     if kind == "dryrun":
         lines.append(f"DO $openplan_end$ BEGIN RAISE EXCEPTION '{kc.DRYRUN_SENTINEL}'; END $openplan_end$;")
         lines.append("ROLLBACK;")
     return "\n".join(lines) + "\n"
+
+
+def statement_checks(files: list[dict], postchecks: list[sqllex.Statement]) -> int:
+    """How many transaction checks render() writes: one per migration statement,
+    one per history row, one after the catalog check and one per post-check."""
+    return sum(len(f["body"].statements) + 1 for f in files) + 1 + len(postchecks)
 
 
 def bundle_files(plan: dict, files: list[dict], plan_sha: str, post_sha: str) -> list[dict]:
@@ -312,7 +366,8 @@ def build(args: argparse.Namespace) -> dict:
         kc.write_new(out / "DRYRUN.sql", dryrun_text)
         bundle = {"window": plan["window"], "capture": plan["capture"], "purpose": plan["purpose"],
                   "planSha256": plan_sha, "postchecksSha256": post_sha, "dryrunSha256": dryrun_sha,
-                  "history": plan["history"], "files": bundle_files(plan, files, plan_sha, post_sha)}
+                  "history": plan["history"], "statementChecks": statement_checks(files, postchecks),
+                  "files": bundle_files(plan, files, plan_sha, post_sha)}
         kc.write_new(out / "bundle.json", json.dumps(bundle, indent=2) + "\n")
         return bundle
     bundle = kc.read_json(out / "bundle.json")

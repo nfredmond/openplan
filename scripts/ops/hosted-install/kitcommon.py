@@ -11,6 +11,12 @@ import re
 
 KIT_DIR = pathlib.Path(__file__).resolve().parent
 RESULT_PREFIX = "OPENPLAN_RESULT "
+# The dry run's whole "before" map, sent before the first lock is taken so its
+# transfer never happens while a lock is held.
+BEFORE_PREFIX = "OPENPLAN_BEFORE "
+# The server's own lock clock: when the first ACCESS EXCLUSIVE lock on a
+# non-temporary relation was taken, and the time just before the transaction ends.
+LOCK_PREFIX = "OPENPLAN_LOCK "
 DRYRUN_SENTINEL = "openplan dry run complete, rolling back"
 PROBE_SENTINEL = "openplan probe complete, rolling back"
 
@@ -27,6 +33,17 @@ TIMEOUTS = (
 # write path runs between 10:05 and 10:50 UTC (review 15, B5).
 CAPTURE_QUIET_START = (10, 5)
 CAPTURE_QUIET_END = (10, 50)
+
+# Lock-holding limit (lane 28). Live requests on a locked table wait in the lock
+# queue. Supabase's default statement timeout for the anon role is 3 s and for
+# authenticated 8 s (supabase.com/docs/guides/database/postgres/timeouts, read
+# 2026-11-14), and the kit's own lock_timeout is 3 s. Two seconds leaves a
+# second of margin under the shortest of those. A hosted dry run or install
+# refuses to start when its estimate is over this, and a dry run whose measured
+# lock time is over it reads dry-run-too-slow.
+LOCK_LIMIT_MS = 2000
+# A round-trip measurement older than this is not used for an estimate.
+RTT_MAX_AGE_SECONDS = 30 * 60
 
 
 class KitError(Exception):
@@ -84,11 +101,11 @@ def map_digest(mapping: dict[str, str]) -> str:
     return hashlib.md5(body.encode("utf-8")).hexdigest()
 
 
-def parse_results(stdout: str) -> list[dict]:
+def parse_results(stdout: str, prefix: str = RESULT_PREFIX) -> list[dict]:
     out = []
     for line in stdout.splitlines():
-        if line.startswith(RESULT_PREFIX):
-            out.append(json.loads(line[len(RESULT_PREFIX):]))
+        if line.startswith(prefix):
+            out.append(json.loads(line[len(prefix):]))
     return out
 
 

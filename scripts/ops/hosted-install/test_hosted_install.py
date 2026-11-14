@@ -6,10 +6,14 @@ The pure tests need only Python and git. The live tests also need a
 PostgreSQL 17 database where `postgres` is a non-superuser with CREATEDB, and
 run only when OPENPLAN_INSTALL_KIT_PSQL holds a JSON list for the psql command
 prefix (for example ["psql"] with PG* set, or ["docker", "exec", "-i", "-u",
-"postgres", "<container>", "psql"]). CI sets it in the worker job.
+"postgres", "<container>", "psql"]). CI sets it in the worker job. The latency
+tests also need OPENPLAN_INSTALL_KIT_TCP, the database's host:port as seen from
+this process, and a psql prefix that accepts a later -h and -p: they put a
+delaying TCP proxy between psql and the database.
 
 Blind categories: no test reaches hosted Supabase, the session pooler, Railway
-or a real capture; the rehearsal in rehearsal/README.md covers a local stack
+or a real capture; the proxy delays only client-to-server bytes, so it does not
+model bandwidth, TCP windows or a slow server-to-client path; the rehearsal in rehearsal/README.md covers a local stack
 end to end. The lexer is tested against psql's splitting rules as written in
 psqlscan.l, not against every psql version. The credential guard reads this
 folder's scripts; it cannot see a command the operator types by hand.
@@ -23,11 +27,17 @@ import io
 import json
 import os
 import pathlib
+import collections
+import queue
 import re
 import shutil
+import socket
+import struct
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 import uuid
 from unittest import mock
@@ -150,6 +160,42 @@ class ReadAndProbeTest(unittest.TestCase):
         self.assertTrue(text.startswith(kc.TIMEOUTS))
 
 
+# ---------------------------------------------------- one message (lane 28)
+
+class OneMessageTest(unittest.TestCase):
+    def test_every_top_level_semicolon_but_the_last_is_escaped(self):
+        sql = ("SELECT 'a;b';\n-- c;\nDO $x$ BEGIN PERFORM 1; END $x$;\n"
+               "SELECT \"q;\" FROM t; /* ; */\nSELECT 2;\n-- trailing\n")
+        message = run_sql.transaction_message(sql, commit=True)
+        self.assertTrue(message.startswith("BEGIN\\;\n"))
+        self.assertTrue(message.endswith("COMMIT;\n"))
+        # Six statements: BEGIN, four in the file, COMMIT. Only COMMIT's
+        # semicolon ends the message, so psql sends it once.
+        self.assertEqual(message.count("\\;"), 5)
+        self.assertIn("'a;b'", message)
+        self.assertIn("PERFORM 1; END $x$\\;", message)
+        self.assertEqual(run_sql.one_message("SELECT 1;\n-- trailing\n"), "SELECT 1;\n")
+
+    def test_a_dry_run_has_no_commit(self):
+        message = run_sql.transaction_message("SELECT 1;\nROLLBACK;\n", commit=False)
+        self.assertEqual(message, "BEGIN\\;\nSELECT 1\\;\nROLLBACK;\n")
+
+    def test_psql_shows_every_result_and_stops_on_error(self):
+        for flag in ("ON_ERROR_STOP=1", "SHOW_ALL_RESULTS=on"):
+            self.assertIn(flag, run_sql.PSQL_FLAGS)
+        self.assertNotIn("--single-transaction", run_sql.PSQL_FLAGS)
+
+    def test_rtt_reads_one_time_per_probe(self):
+        script = run_sql.rtt_script(3)
+        self.assertEqual(script.count("SELECT 1;"), 3)
+        self.assertIn("SET TRANSACTION READ ONLY;", script)
+        stdout = "1\nTime: 25.500 ms\n1\nTime: 24.000 ms\n1\nTime: 26.250 ms\nTime: 0.2 ms\n"
+        done = subprocess.CompletedProcess([], 0, stdout.encode(), b"")
+        with mock.patch.object(subprocess, "run", return_value=done):
+            code, samples, _, _ = run_sql.run_rtt(FakeTarget(), probes=3)
+        self.assertEqual((code, samples[:3]), (0, [25.5, 24.0, 26.25]))
+
+
 # ------------------------------------------------------------- the builder
 
 def git(repo: pathlib.Path, *args: str) -> str:
@@ -236,6 +282,9 @@ class BuilderTest(unittest.TestCase):
         statements = 2 + 1  # the first file's two, the second file's one after its wrapper is removed
         rows = 2
         self.assertEqual(text.count("$openplan_xid$ BEGIN IF"), statements + rows + 1)
+        bundle = json.loads((self.fx.root / "out" / "bundle.json").read_text())
+        self.assertEqual(bundle["statementChecks"], statements + rows + 1)
+        self.assertIn(f"IS DISTINCT FROM {statements + rows + 1} THEN RAISE EXCEPTION", text)
         # Read the generated file with the same lexer: the only top-level
         # transaction control is the dry run's final ROLLBACK, after the raise.
         control = [s.words for s in sqllex.split_statements(text) if sqllex.refusal(s) == "transaction control"]
@@ -287,12 +336,24 @@ class FakeTarget(run_sql.Target):
     def __init__(self, kind="copy"):
         self.kind = kind
 
+    def command(self):
+        return ["psql"]
+
     def describe(self):
         return f"fake-{self.kind}"
 
 
-def args_for(mode, out, bundle=None, file=None, var=None):
-    return mock.Mock(mode=mode, out=str(out), bundle=bundle and str(bundle), file=file and str(file), var=var or [])
+def args_for(mode, out, bundle=None, file=None, var=None, rtt=None, rehearsed=None):
+    return mock.Mock(mode=mode, out=str(out), bundle=bundle and str(bundle), file=file and str(file), var=var or [],
+                     rtt=rtt and str(rtt), rehearsed=rehearsed and str(rehearsed))
+
+
+def lock_line(held=40, checks=6):
+    return kc.LOCK_PREFIX + json.dumps({"lockHeldMs": held, "statementChecks": checks,
+                                        "firstLockAt": "2026-11-15T18:00:00+00", "serverMs": held + 10}) + "\n"
+
+
+DRY_OK = kc.BEFORE_PREFIX + '{"before": {"a": "1"}}\n' + kc.RESULT_PREFIX + '{"kind": "dryrun"}\n' + lock_line()
 
 
 class RunnerTest(unittest.TestCase):
@@ -309,14 +370,16 @@ class RunnerTest(unittest.TestCase):
                                                "delta": {}}}))
         self.bundle = self.fx.build("install", self.plan_path, self.bundle_dir, pins)
         self.sent = []
+        self.commits = []
 
     def tearDown(self):
         self.tmp.cleanup()
 
-    def fake_psql(self, code=0, stdout="", stderr=""):
-        def fake(target, sql, variables=None):
+    def fake_psql(self, code=0, stdout="", stderr="", elapsed=12):
+        def fake(target, sql, variables=None, *, commit):
             self.sent.append(sql)
-            return code, stdout, stderr, 12
+            self.commits.append(commit)
+            return code, stdout, stderr, elapsed
         return mock.patch.object(run_sql, "run_psql", side_effect=fake)
 
     def write_go(self, **changes):
@@ -345,9 +408,11 @@ class RunnerTest(unittest.TestCase):
 
     def test_install_is_sent_once_and_never_again_from_the_same_bundle(self):
         self.write_go()
-        with self.fake_psql(code=0, stdout=kc.RESULT_PREFIX + '{"kind": "install"}\n'):
+        with self.fake_psql(code=0, stdout=kc.RESULT_PREFIX + '{"kind": "install"}\n' + lock_line()):
             code, envelope = self.install()
         self.assertEqual((code, envelope["status"]), (0, "installed"))
+        self.assertEqual(self.commits, [True])
+        self.assertEqual(envelope["lockHeldMs"], 40)
         with self.fake_psql():
             with self.assertRaisesRegex(kc.KitError, "refusing to overwrite"):
                 self.install()
@@ -386,15 +451,94 @@ class RunnerTest(unittest.TestCase):
         self.assertEqual(code, 0)
 
     def test_dry_run_counts_only_a_raise_with_the_sentinel_as_complete(self):
-        result = kc.RESULT_PREFIX + '{"kind": "dryrun"}\n'
-        cases = ((3, result, "ERROR:  " + kc.DRYRUN_SENTINEL, "dry-run-complete"),
-                 (0, result, "", "dry-run-failed"),
-                 (3, result, "ERROR:  relation does not exist", "dry-run-failed"),
-                 (3, "", "ERROR:  " + kc.DRYRUN_SENTINEL, "dry-run-failed"))
+        sentinel = "ERROR:  " + kc.DRYRUN_SENTINEL
+        cases = ((3, DRY_OK, sentinel, "dry-run-complete"),
+                 (0, DRY_OK, "", "dry-run-failed"),
+                 (3, DRY_OK, "ERROR:  relation does not exist", "dry-run-failed"),
+                 (3, "", sentinel, "dry-run-failed"),
+                 (3, DRY_OK.replace(kc.BEFORE_PREFIX, "x"), sentinel, "dry-run-failed"),
+                 (3, DRY_OK.replace(kc.LOCK_PREFIX, "x"), sentinel, "dry-run-failed"))
         for index, (code, out, err, status) in enumerate(cases):
-            with self.subTest(status=status, code=code), self.fake_psql(code, out, err):
+            with self.subTest(status=status, code=code, index=index), self.fake_psql(code, out, err):
                 _, envelope = run_sql.execute(args_for("dryrun", self.root / f"ev{index}", self.bundle_dir), FakeTarget(), NOW_OK)
                 self.assertEqual(envelope["status"], status)
+        self.assertEqual(set(self.commits), {False})
+
+    def test_a_complete_dry_run_carries_the_before_map_and_the_lock_clock(self):
+        with self.fake_psql(3, DRY_OK, "ERROR:  " + kc.DRYRUN_SENTINEL):
+            code, envelope = run_sql.execute(args_for("dryrun", self.root / "ev", self.bundle_dir), FakeTarget(), NOW_OK)
+        self.assertEqual((code, envelope["status"]), (0, "dry-run-complete"))
+        self.assertEqual(envelope["result"]["before"], {"a": "1"})
+        self.assertEqual(envelope["lock"]["lockHeldMs"], 40)
+
+    def test_dry_run_too_slow_is_judged_on_the_server_lock_clock(self):
+        # Lane 28: a long wall time with a short lock passes; a long lock does not.
+        sentinel = "ERROR:  " + kc.DRYRUN_SENTINEL
+        with self.fake_psql(3, DRY_OK, sentinel, elapsed=9000):
+            code, envelope = run_sql.execute(args_for("dryrun", self.root / "ev1", self.bundle_dir), FakeTarget(), NOW_OK)
+        self.assertEqual((code, envelope["status"]), (0, "dry-run-complete"))
+        slow = DRY_OK.replace(lock_line(), lock_line(held=kc.LOCK_LIMIT_MS + 1))
+        with self.fake_psql(3, slow, sentinel, elapsed=100):
+            code, envelope = run_sql.execute(args_for("dryrun", self.root / "ev2", self.bundle_dir), FakeTarget(), NOW_OK)
+        self.assertEqual((code, envelope["status"]), (1, "dry-run-too-slow"))
+        self.assertEqual(kc.LOCK_LIMIT_MS, 2000)
+
+    def write_rtt(self, name="rtt.json", target="fake-hosted", rtt=25.0, at=NOW_OK, status="measured"):
+        path = self.root / name
+        path.write_text(json.dumps({"mode": "rtt", "status": status, "target": target, "rttMs": rtt,
+                                    "startedAt": at.strftime("%Y%m%dT%H%M%SZ")}))
+        return path
+
+    def write_rehearsed(self, held=300, sha=None, name="rehearsed.json"):
+        path = self.root / name
+        path.write_text(json.dumps({"status": "dry-run-complete", "sha256": sha or self.bundle["dryrunSha256"],
+                                    "target": "copy:c", "lock": {"lockHeldMs": held}}))
+        return path
+
+    def hosted_dryrun(self, ev, **kw):
+        return run_sql.execute(args_for("dryrun", self.root / ev, self.bundle_dir, **kw), FakeTarget("hosted"), NOW_OK)
+
+    def test_a_hosted_dry_run_or_install_needs_a_fresh_round_trip_and_a_rehearsed_lock_time(self):
+        cases = (({}, "needs --rtt"),
+                 ({"rtt": self.write_rtt()}, "needs --rtt"),
+                 ({"rtt": self.write_rtt(at=NOW_OK - dt.timedelta(minutes=31), name="old.json"),
+                   "rehearsed": self.write_rehearsed()}, "old; measure again"),
+                 ({"rtt": self.write_rtt(target="copy:c", name="copy.json"), "rehearsed": self.write_rehearsed()}, "measured to copy:c"),
+                 ({"rtt": self.write_rtt(status="rtt-failed", name="failed.json"), "rehearsed": self.write_rehearsed()}, "not a completed"),
+                 ({"rtt": self.write_rtt(), "rehearsed": self.write_rehearsed(sha="0" * 64, name="other.json")}, "not a completed dry run"))
+        for index, (kw, message) in enumerate(cases):
+            with self.subTest(message=message), self.fake_psql(3, DRY_OK, "ERROR:  " + kc.DRYRUN_SENTINEL):
+                with self.assertRaisesRegex(kc.KitError, message):
+                    self.hosted_dryrun(f"ev{index}", **kw)
+        self.assertEqual(self.sent, [])
+
+    def test_the_lock_estimate_refuses_a_slow_window_before_sending_and_prints_either_way(self):
+        out = io.StringIO()
+        with self.fake_psql(3, DRY_OK, "ERROR:  " + kc.DRYRUN_SENTINEL), contextlib.redirect_stdout(out):
+            code, envelope = self.hosted_dryrun("ok", rtt=self.write_rtt(), rehearsed=self.write_rehearsed(held=1900))
+        self.assertEqual(code, 0)
+        self.assertEqual(envelope["lockEstimate"]["estimateMs"], 1900)
+        self.assertEqual(envelope["lockEstimate"]["roundTripsUnderLock"], 0)
+        self.assertIn('"lockEstimate"', out.getvalue())
+        self.assertEqual(len(self.sent), 1)
+        out = io.StringIO()
+        with self.fake_psql(), contextlib.redirect_stdout(out):
+            with self.assertRaisesRegex(kc.KitError, "over the 2000 ms limit; nothing was sent"):
+                self.hosted_dryrun("slow", rtt=self.write_rtt(), rehearsed=self.write_rehearsed(held=2001, name="slow.json"))
+        self.assertIn('"estimateMs": 2001', out.getvalue())
+        self.assertEqual(len(self.sent), 1)
+        refused = json.loads(next((self.root / "slow").glob("dryrun-*.json")).read_text())
+        self.assertEqual(refused["status"], "refused-lock-estimate")
+
+    def test_a_refused_estimate_does_not_use_up_the_install_attempt(self):
+        self.write_go(target="hosted")
+        args = args_for("install", self.root / "ev", self.bundle_dir, rtt=self.write_rtt(),
+                        rehearsed=self.write_rehearsed(held=5000))
+        with self.fake_psql(), contextlib.redirect_stdout(io.StringIO()):
+            with self.assertRaisesRegex(kc.KitError, "over the"):
+                run_sql.execute(args, FakeTarget("hosted"), NOW_OK)
+        self.assertFalse((self.bundle_dir / "install-attempt-hosted.json").exists())
+        self.assertEqual(self.sent, [])
 
     def test_read_mode_refuses_a_write_before_sending(self):
         query = self.root / "w.sql"
@@ -669,15 +813,15 @@ class CommandTarget(run_sql.Target):
         return f"live:{self.database}"
 
 
-@unittest.skipUnless(LIVE, "set OPENPLAN_INSTALL_KIT_PSQL to run the live PostgreSQL tests")
-class LiveInstallTest(unittest.TestCase):
-    """Runs the generated SQL on a real PostgreSQL 17 database as postgres."""
+class LiveBase(unittest.TestCase):
+    """A fresh database per test on a real PostgreSQL 17, used as postgres."""
 
     SETUP = ("CREATE SCHEMA supabase_migrations;\n"
              "CREATE TABLE supabase_migrations.schema_migrations (version text PRIMARY KEY, statements text[], name text);\n"
              "INSERT INTO supabase_migrations.schema_migrations VALUES ('20990101000000', ARRAY['x'], 'base');\n"
              "CREATE TABLE public.kit_items (id int PRIMARY KEY, label text);\n"
-             "INSERT INTO public.kit_items VALUES (1, 'one');\n")
+             "INSERT INTO public.kit_items VALUES (1, 'one');\n"
+             "CREATE SEQUENCE public.kit_seq;\n")
 
     def setUp(self):
         self.prefix = json.loads(LIVE)
@@ -704,13 +848,16 @@ class LiveInstallTest(unittest.TestCase):
     def history(self):
         return self.sql(self.target, "SELECT count(*) || ' ' || max(version) FROM supabase_migrations.schema_migrations")
 
-    def dry_run(self, fixture, plan_path, out):
+    def dry_run(self, fixture, plan_path, out, target=None):
         bundle = fixture.build("dryrun", plan_path, out)
-        code, stdout, stderr, elapsed = run_sql.run_psql(self.target, (out / "DRYRUN.sql").read_text())
+        code, stdout, stderr, elapsed = run_sql.run_psql(target or self.target, (out / "DRYRUN.sql").read_text(), commit=False)
         self.assertEqual(code, 3, stderr)
         self.assertIn(kc.DRYRUN_SENTINEL, stderr)
         result = kc.parse_results(stdout)[0]
-        envelope = {"status": "dry-run-complete", "sha256": bundle["dryrunSha256"], "target": "live", "result": result}
+        result["before"] = kc.parse_results(stdout, kc.BEFORE_PREFIX)[0]["before"]
+        lock = kc.parse_results(stdout, kc.LOCK_PREFIX)[0]
+        envelope = {"status": "dry-run-complete", "sha256": bundle["dryrunSha256"], "target": "live",
+                    "result": result, "lock": lock, "elapsedMs": elapsed}
         pins = out.parent / f"{out.name}-pins.json"
         pins.write_text(json.dumps(envelope))
         return envelope, pins
@@ -718,6 +865,11 @@ class LiveInstallTest(unittest.TestCase):
     def make(self, files=MIGRATIONS):
         fixture = Fixture(self.root / uuid.uuid4().hex[:6], files=files)
         return fixture, fixture.write_plan()
+
+
+@unittest.skipUnless(LIVE, "set OPENPLAN_INSTALL_KIT_PSQL to run the live PostgreSQL tests")
+class LiveInstallTest(LiveBase):
+    """Runs the generated SQL on a real PostgreSQL 17 database as postgres."""
 
     def test_dry_run_rolls_back_and_records_the_new_column_by_value(self):
         fixture, plan = self.make()
@@ -734,10 +886,10 @@ class LiveInstallTest(unittest.TestCase):
         fixture, plan = self.make()
         envelope, pins = self.dry_run(fixture, plan, fixture.root / "b")
         fixture.build("install", plan, fixture.root / "b", pins)
-        code, stdout, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text())
+        code, stdout, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
         self.assertEqual(code, 0, stderr)
         self.assertEqual(self.history(), "3 20990101000002")
-        catalog = run_sql.run_psql(self.target, run_sql.read_wrapper(kc.catalog_map_select()))
+        catalog = run_sql.run_psql(self.target, run_sql.read_wrapper(kc.catalog_map_select()), commit=True)
         current = kc.parse_results(catalog[1])[0]
         check = postverify.check(envelope, {"status": "read", "result": current})
         self.assertTrue(check["pass"], check)
@@ -748,7 +900,7 @@ class LiveInstallTest(unittest.TestCase):
         envelope["result"]["delta"]["col:public.kit_items.note"]["after"] = "0" * 32
         pins.write_text(json.dumps(envelope))
         fixture.build("install", plan, fixture.root / "b", pins)
-        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text())
+        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
         self.assertEqual(code, 3)
         self.assertIn("differs from the dry run at: col:public.kit_items.note", stderr)
         self.assertEqual(self.history(), "1 20990101000000")
@@ -758,7 +910,7 @@ class LiveInstallTest(unittest.TestCase):
         _, pins = self.dry_run(fixture, plan, fixture.root / "b")
         fixture.build("install", plan, fixture.root / "b", pins)
         self.sql(self.target, "CREATE TABLE public.kit_unrelated (x int);")
-        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text())
+        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
         self.assertEqual(code, 3)
         self.assertIn("the catalog changed since the dry run", stderr)
         self.assertEqual(self.history(), "1 20990101000000")
@@ -768,14 +920,19 @@ class LiveInstallTest(unittest.TestCase):
         _, pins = self.dry_run(fixture, plan, fixture.root / "b")
         fixture.build("install", plan, fixture.root / "b", pins)
         self.sql(self.target, "UPDATE supabase_migrations.schema_migrations SET statements = ARRAY['y'];")
-        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text())
+        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
         self.assertEqual(code, 3)
         self.assertIn("migration history changed since the dry run", stderr)
 
     def test_a_stray_commit_stops_the_run_at_the_next_statement(self):
         # The lexer refuses this file; the transaction guard is the second layer,
-        # so the lexer is bypassed here to prove the guard alone.
+        # so the lexer is bypassed here to prove the guard alone. In one message
+        # the statements after a stray COMMIT run in a new implicit block that a
+        # later error rolls back, so table state alone cannot tell whether they
+        # ran. A sequence is not transactional: nextval after the COMMIT would
+        # stay advanced. It must not run at all.
         files = {"20990101000001_stray": "CREATE TABLE public.kit_before (x int);\nCOMMIT;\n"
+                                         "SELECT pg_catalog.nextval('public.kit_seq');\n"
                                          "CREATE TABLE public.kit_after_commit (x int);\n",
                  "20990101000002_later": "CREATE TABLE public.kit_later (x int);\n"}
         fixture, plan = self.make(files)
@@ -787,20 +944,305 @@ class LiveInstallTest(unittest.TestCase):
         with mock.patch.object(sqllex, "prepare_migration", side_effect=lenient):
             fixture.build("dryrun", plan, fixture.root / "b")
         self.assertIs(sqllex.prepare_migration, real)
-        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "DRYRUN.sql").read_text())
+        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "DRYRUN.sql").read_text(), commit=False)
         self.assertEqual(code, 3)
         self.assertNotIn(kc.DRYRUN_SENTINEL, stderr)
         tables = self.sql(self.target, "SELECT string_agg(relname, ',' ORDER BY relname) FROM pg_class WHERE relname LIKE 'kit\\_%' AND relkind = 'r'")
         # The inner COMMIT kept what came before it; the guard stopped everything after it.
         self.assertEqual(tables, "kit_before,kit_items")
+        self.assertEqual(self.sql(self.target, "SELECT is_called FROM public.kit_seq"), "f")
         self.assertEqual(self.history(), "1 20990101000000")
 
     def test_read_mode_is_read_only_in_the_database_too(self):
         code, _, stderr, _ = run_sql.run_psql(
-            self.target, run_sql.read_wrapper("WITH x AS (INSERT INTO public.kit_items VALUES (2, 'two') RETURNING 1) SELECT * FROM x;\n"))
+            self.target, run_sql.read_wrapper("WITH x AS (INSERT INTO public.kit_items VALUES (2, 'two') RETURNING 1) SELECT * FROM x;\n"),
+            commit=True)
         self.assertEqual(code, 3)
         self.assertIn("read-only transaction", stderr)
         self.assertEqual(self.sql(self.target, "SELECT count(*) FROM public.kit_items"), "1")
+
+    # ------------------------------------------- one message (lane 28)
+
+    def test_the_review_timeouts_hold_inside_the_one_message(self):
+        query = ("SELECT 'S ' || current_setting('lock_timeout') || ',' || current_setting('statement_timeout') || ',' || "
+                 "current_setting('idle_in_transaction_session_timeout') || ',' || current_setting('transaction_timeout') "
+                 "|| ',' || current_setting('transaction_read_only');\n")
+        code, stdout, stderr, _ = run_sql.run_psql(self.target, run_sql.read_wrapper(query), commit=True)
+        self.assertEqual(code, 0, stderr)
+        self.assertIn("S 3s,1min,30s,2min,on", stdout)
+        self.assertNotIn("WARNING", stderr)
+
+    def test_a_held_lock_stops_the_dry_run_at_the_lock_timeout(self):
+        fixture, plan = self.make()
+        fixture.build("dryrun", plan, fixture.root / "b")
+        blocker = subprocess.Popen(self.target.command() + ["-X", "-q", "-c",
+                                   "BEGIN; LOCK TABLE public.kit_items IN ACCESS SHARE MODE; SELECT pg_sleep(12); COMMIT;"],
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            for _ in range(100):
+                held = self.sql(self.target, "SELECT count(*) FROM pg_locks l JOIN pg_class c ON c.oid = l.relation "
+                                             "WHERE c.relname = 'kit_items' AND l.pid <> pg_backend_pid() AND l.granted")
+                if held == "1":
+                    break
+                time.sleep(0.1)
+            self.assertEqual(held, "1", "the blocking session never took its lock")
+            code, _, stderr, elapsed = run_sql.run_psql(self.target, (fixture.root / "b" / "DRYRUN.sql").read_text(), commit=False)
+        finally:
+            blocker.kill()
+            blocker.wait()
+        self.assertEqual(code, 3)
+        self.assertIn("lock timeout", stderr)
+        self.assertLess(elapsed, 9000)
+        self.assertEqual(self.history(), "1 20990101000000")
+
+    def test_the_lock_clock_starts_at_the_first_exclusive_lock(self):
+        files = {"20990101000001_sleep_lock_sleep": "SELECT pg_catalog.pg_sleep(0.6);\n"
+                                                    "ALTER TABLE public.kit_items ADD COLUMN note text;\n"
+                                                    "SELECT pg_catalog.pg_sleep(0.4);\n"}
+        fixture, plan = self.make(files)
+        envelope, _ = self.dry_run(fixture, plan, fixture.root / "b")
+        lock = envelope["lock"]
+        self.assertIsNotNone(lock["firstLockAt"])
+        # The 0.6 s before the ALTER is outside the lock; the 0.4 s after it is inside.
+        self.assertGreaterEqual(lock["lockHeldMs"], 400)
+        self.assertLess(lock["lockHeldMs"], 900)
+        self.assertGreaterEqual(lock["serverMs"], 1000)
+        self.assertEqual(lock["statementChecks"], 3 + 1 + 1)
+
+    def test_a_bundle_split_differently_from_the_build_never_commits(self):
+        fixture, plan = self.make()
+        real = build_install.statement_checks
+        with mock.patch.object(build_install, "statement_checks", side_effect=lambda f, p: real(f, p) + 1):
+            fixture.build("dryrun", plan, fixture.root / "b")
+        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "DRYRUN.sql").read_text(), commit=False)
+        self.assertEqual(code, 3)
+        self.assertIn("statement checks ran", stderr)
+        self.assertNotIn(kc.DRYRUN_SENTINEL, stderr)
+
+    def test_a_failing_post_check_stops_the_install_before_it_commits(self):
+        fixture, _ = self.make()
+        (fixture.root / "post.sql").write_text(
+            "DO $p$ BEGIN IF EXISTS (SELECT 1 FROM public.kit_items WHERE label = 'block') THEN "
+            "RAISE EXCEPTION 'openplan post-check says no'; END IF; END $p$;\n")
+        plan = fixture.write_plan("post-plan.json", postchecks="post.sql")
+        _, pins = self.dry_run(fixture, plan, fixture.root / "b")
+        fixture.build("install", plan, fixture.root / "b", pins)
+        self.sql(self.target, "INSERT INTO public.kit_items VALUES (2, 'block');")
+        code, _, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
+        self.assertEqual(code, 3)
+        self.assertIn("post-check says no", stderr)
+        self.assertEqual(self.history(), "1 20990101000000")
+        self.assertEqual(self.sql(self.target, "SELECT count(*) FROM pg_attribute WHERE attrelid = 'public.kit_items'::regclass "
+                                               "AND attname = 'note'"), "0")
+        self.assertEqual(self.sql(self.target, "SELECT is_called FROM public.kit_seq"), "f")
+
+    def test_an_error_stops_the_message_and_nothing_after_it_runs(self):
+        files = {"20990101000001_ok": "ALTER TABLE public.kit_items ADD COLUMN note text;\n",
+                 "20990101000002_bad": "ALTER TABLE public.kit_missing ADD COLUMN x int;\n"
+                                       "SELECT pg_catalog.nextval('public.kit_seq');\n"}
+        fixture, plan = self.make(files)
+        fixture.build("dryrun", plan, fixture.root / "b")
+        code, stdout, stderr, _ = run_sql.run_psql(self.target, (fixture.root / "b" / "DRYRUN.sql").read_text(), commit=False)
+        self.assertEqual(code, 3)
+        self.assertIn("kit_missing", stderr)
+        self.assertEqual(kc.parse_results(stdout), [])
+        self.assertEqual(self.sql(self.target, "SELECT is_called FROM public.kit_seq"), "f")
+        self.assertEqual(self.history(), "1 20990101000000")
+
+
+# ------------------------------------------ latency: a delaying proxy (lane 28)
+
+TCP = os.environ.get("OPENPLAN_INSTALL_KIT_TCP")
+
+
+class _FrontendCounter:
+    """Counts PostgreSQL frontend messages by type in a client-to-server byte stream."""
+
+    STARTUP, SSL, GSS, CANCEL = 196608, 80877103, 80877104, 80877102
+
+    def __init__(self, counts):
+        self.counts, self.buf, self.started = counts, b"", False
+
+    def feed(self, data):
+        self.buf += data
+        while True:
+            if not self.started:
+                if len(self.buf) < 8:
+                    return
+                length, code = struct.unpack("!II", self.buf[:8])
+                if len(self.buf) < length:
+                    return
+                self.buf = self.buf[length:]
+                if code in (self.SSL, self.GSS):
+                    raise AssertionError("the proxy test needs a plain connection (PGSSLMODE=disable)")
+                self.started = code == self.STARTUP
+            else:
+                if len(self.buf) < 5:
+                    return
+                length = struct.unpack("!I", self.buf[1:5])[0]
+                if len(self.buf) < 1 + length:
+                    return
+                self.counts[self.buf[:1].decode()] += 1
+                self.buf = self.buf[1 + length:]
+
+
+class DelayProxy:
+    """A TCP proxy that holds every client-to-server chunk for `delay` seconds
+    before passing it on, in order, so each request waits one extra delay; the
+    server's replies pass straight through. It counts the client's messages."""
+
+    def __init__(self, upstream: tuple[str, int], delay: float):
+        self.upstream, self.delay = upstream, delay
+        self.counts: collections.Counter = collections.Counter()
+        self.listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.listener.bind(("127.0.0.1", 0))
+        self.listener.listen(8)
+        self.port = self.listener.getsockname()[1]
+        threading.Thread(target=self._accept, daemon=True).start()
+
+    def close(self):
+        self.listener.close()
+
+    def _accept(self):
+        while True:
+            try:
+                client, _ = self.listener.accept()
+            except OSError:
+                return
+            server = socket.create_connection(self.upstream)
+            for s in (client, server):
+                s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            pending: queue.Queue = queue.Queue()
+            counter = _FrontendCounter(self.counts)
+            threading.Thread(target=self._read_client, args=(client, pending, counter), daemon=True).start()
+            threading.Thread(target=self._write_server, args=(server, pending), daemon=True).start()
+            threading.Thread(target=self._pipe, args=(server, client), daemon=True).start()
+
+    def _read_client(self, client, pending, counter):
+        try:
+            while True:
+                data = client.recv(65536)
+                if not data:
+                    break
+                counter.feed(data)
+                pending.put((time.monotonic() + self.delay, data))
+        except OSError:
+            pass
+        pending.put(None)
+
+    @staticmethod
+    def _write_server(server, pending):
+        try:
+            while True:
+                item = pending.get()
+                if item is None:
+                    server.shutdown(socket.SHUT_WR)
+                    return
+                due, data = item
+                wait = due - time.monotonic()
+                if wait > 0:
+                    time.sleep(wait)
+                server.sendall(data)
+        except OSError:
+            pass
+
+    @staticmethod
+    def _pipe(src, dst):
+        try:
+            while True:
+                data = src.recv(65536)
+                if not data:
+                    break
+                dst.sendall(data)
+            dst.shutdown(socket.SHUT_WR)
+        except OSError:
+            pass
+
+
+class ProxyTarget(run_sql.Target):
+    kind = "copy"
+
+    def __init__(self, prefix, database, port):
+        self.prefix, self.database, self.port = prefix, database, port
+
+    def command(self):
+        return self.prefix + ["-h", "127.0.0.1", "-p", str(self.port), "-d", self.database]
+
+    def environment(self):
+        return {**os.environ, "PGSSLMODE": "disable", "PGGSSENCMODE": "disable"}
+
+    def describe(self):
+        return f"proxy:{self.port}"
+
+
+# Twelve statements that each take an ACCESS EXCLUSIVE lock, so the old path
+# holds the lock across about thirty round trips.
+MANY = {"20990101000001_many": "".join(f"ALTER TABLE public.kit_items ADD COLUMN c{i} int;\n" for i in range(12))}
+
+
+@unittest.skipUnless(LIVE and TCP, "set OPENPLAN_INSTALL_KIT_PSQL and OPENPLAN_INSTALL_KIT_TCP to run the latency tests")
+class LatencyTest(LiveBase):
+    """The lock is held for server time only, whatever the round trip costs."""
+
+    def proxy(self, delay):
+        host, port = TCP.rsplit(":", 1)
+        proxy = DelayProxy((host, int(port)), delay)
+        self.addCleanup(proxy.close)
+        return proxy, ProxyTarget(self.prefix, self.database, proxy.port)
+
+    def old_path(self, target, sql):
+        """The kit's send before lane 28: psql -1 -f, one statement per round trip."""
+        command = target.command() + ["-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "--single-transaction", "-f", "-"]
+        result = subprocess.run(command, input=sql.encode(), capture_output=True, env=target.environment())
+        self.assertEqual(result.returncode, 3, result.stderr.decode(errors="replace"))
+        return kc.parse_results(result.stdout.decode(), kc.LOCK_PREFIX)[0]["lockHeldMs"]
+
+    def new_path(self, target, sql):
+        code, stdout, stderr, _ = run_sql.run_psql(target, sql, commit=False)
+        self.assertEqual(code, 3, stderr)
+        self.assertIn(kc.DRYRUN_SENTINEL, stderr)
+        return kc.parse_results(stdout, kc.LOCK_PREFIX)[0]["lockHeldMs"]
+
+    def test_old_path_lock_time_grows_with_latency_and_the_new_one_does_not(self):
+        fixture, plan = self.make(MANY)
+        fixture.build("dryrun", plan, fixture.root / "b")
+        sql = (fixture.root / "b" / "DRYRUN.sql").read_text()
+        held, queries = {}, {}
+        for delay in (0.025, 0.100):
+            for name, send in (("old", self.old_path), ("new", self.new_path)):
+                proxy, target = self.proxy(delay)
+                held[(name, delay)] = send(target, sql)
+                queries[(name, delay)] = proxy.counts["Q"]
+        print(f"\nlock held (ms): {held}\nquery messages: {queries}", file=sys.stderr)
+        # The old path waits a round trip per statement while the lock is held.
+        self.assertGreater(held[("old", 0.100)] - held[("old", 0.025)], 20 * 75)
+        self.assertGreater(queries[("old", 0.100)], 30)
+        # The new path sends one message, so the extra 75 ms per round trip never
+        # reaches the lock time.
+        self.assertEqual(queries[("new", 0.025)], 1)
+        self.assertEqual(queries[("new", 0.100)], 1)
+        self.assertLess(held[("new", 0.100)] - held[("new", 0.025)], 75)
+        self.assertLess(held[("new", 0.100)], 100)
+
+    def test_the_install_is_one_message_through_the_proxy_too(self):
+        fixture, plan = self.make(MANY)
+        _, pins = self.dry_run(fixture, plan, fixture.root / "b")
+        fixture.build("install", plan, fixture.root / "b", pins)
+        proxy, target = self.proxy(0.100)
+        code, stdout, stderr, _ = run_sql.run_psql(target, (fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
+        self.assertEqual(code, 0, stderr)
+        self.assertEqual(proxy.counts["Q"], 1)
+        self.assertLess(kc.parse_results(stdout, kc.LOCK_PREFIX)[0]["lockHeldMs"], 100)
+        self.assertEqual(self.history(), "2 20990101000001")
+
+    def test_rtt_measures_the_round_trip(self):
+        proxy, target = self.proxy(0.025)
+        with tempfile.TemporaryDirectory() as raw, contextlib.redirect_stdout(io.StringIO()):
+            code, envelope = run_sql.execute(args_for("rtt", pathlib.Path(raw)), target, NOW_OK)
+        self.assertEqual((code, envelope["status"]), (0, "measured"))
+        self.assertGreaterEqual(envelope["rttMs"], 24)
+        self.assertLess(envelope["rttMs"], 60)
+        self.assertEqual(proxy.counts["Q"], 2 + 4 + run_sql.RTT_PROBES + 1)
 
 
 if __name__ == "__main__":

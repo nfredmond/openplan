@@ -22,7 +22,7 @@ the change-map check.
 | `kit.sh` | Host wrapper: `hosted` (any `run_sql.py` mode on hosted), `verify` (download, decrypt and check a capture) and `keycheck` (prove a key folder decrypts in the image). Fails if a kit container is left behind. |
 | `image/build.sh`, `image/Dockerfile` | Builds `openplan-hosted-install:<commit>` from committed bytes only: the backup worker's base (PostgreSQL 17 client tools, Python 3.11, gpg, boto3), `backup.py`, `verify_capture.py` and this folder. Never pushed or deployed. |
 | `keys/new_capture_key.sh` | Makes the capture key pair, checks it, prints only the fingerprint. |
-| `run_sql.py` | The only path to a database. Modes `read`, `catalog`, `dryrun`, `install`, `probe`. One transaction, sent once, with an envelope of the result. |
+| `run_sql.py` | The only path to a database. Modes `rtt`, `read`, `catalog`, `dryrun`, `install`, `probe`. One transaction, sent once as one message, with an envelope of the result. |
 | `build_install.py` | Builds `DRYRUN.sql` from the window plan, then `INSTALL.sql` pinned to a completed dry run. |
 | `sqllex.py` | Splits SQL as psql does and refuses transaction control, psql meta-commands and session changes. |
 | `catalog_keys.sql` | The catalog key reader: one key and value per object. |
@@ -46,6 +46,34 @@ the change-map check.
   id and the whole catalog, runs every migration statement followed by a check
   that the transaction id is unchanged, reads the catalog again, runs the
   post-checks, prints the result, raises, and only then rolls back.
+- **One message (lane 28).** `run_sql.py` sends each transaction, from
+  `BEGIN` to `COMMIT` or to the dry run's raise, as one simple-query message:
+  psql's backslash-semicolon joins the statements, and the kit's lexer decides
+  where they join. The server runs them in order and stops at the first
+  error. So no network round trip happens while a lock is held. Before this,
+  psql sent one statement per round trip: at the 25 ms measured from the
+  operator's workstation to hosted, the seven-file dry run held the Safety
+  tables for about 4.6 s. A count of statement checks must match the build,
+  or the transaction stops before it can commit.
+- **Lock time (lane 28).** The guard after each statement records, on the
+  server's clock, when the transaction first holds an ACCESS EXCLUSIVE lock on
+  a non-temporary table; the last statement reads the clock again. The
+  envelope's `lockHeldMs` is the difference. It does not include the commit or
+  rollback itself, which needs no round trip. The limit is **2,000 ms**
+  (`kitcommon.LOCK_LIMIT_MS`): one second under Supabase's 3 s default
+  statement timeout for the `anon` role and under the kit's own 3 s
+  `lock_timeout`. A dry run whose lock time is over it reads
+  `dry-run-too-slow` and exits 1.
+- **Measure before acting (lane 28).** `rtt` sends 20 `SELECT 1` statements
+  one at a time in a read-only transaction and records psql's time for each;
+  the median is the round trip. A hosted `dryrun` or `install` needs `--rtt`
+  (a `rtt` envelope to the same target, under 30 minutes old) and
+  `--rehearsed` (a completed dry run of the same `DRYRUN.sql`). It prints
+  `estimate = round trips under lock x round trip + rehearsed lock time`,
+  records it in the envelope, and refuses to send anything when the estimate
+  is over 2,000 ms. With one message there are no round trips under lock, so
+  the estimate is the rehearsed lock time; the round trip still decides how
+  long the connection and the large result take, outside the lock.
 - **Install (B3.4).** `INSTALL.sql` is the same file pinned to one dry run on
   the same target. Before any change it requires session and current user
   `postgres`, `postgres` not a superuser, a read-write transaction, history
@@ -74,7 +102,7 @@ W=$HOME/.local/state/openplan/hosted-install/<window-id>   # private; plaintext 
 "Stop" means end the window, leave hosted as it is, record the state in
 `$HOME/.local/state/openplan/COORDINATION.md` and do not retry in that window.
 The lead runs every hosted step. Every hosted read goes through
-`kit.sh hosted ... read` or `catalog`. After every `kit.sh` step,
+`kit.sh hosted ... rtt`, `read` or `catalog`. After every `kit.sh` step,
 `docker ps -a --filter label=openplan-hosted-install` must be empty; `kit.sh`
 checks it.
 
@@ -162,26 +190,43 @@ checks it.
 16. On the restored copy: `python $KIT/rehearse_copy.py --plan $W/plan.json --repo . --container openplan-install-copy-<stamp> --window $W`.
     It runs the dry run, requires an unchanged catalog digest and 448 rows
     after it, then installs and post-verifies. **Stop** on any failure.
+    `copy-run/summary.json` records `dryRunLockMs`; the copy's dry-run
+    envelope (`copy-run/dryrun-*.json`) is the `--rehearsed` input in step 18.
+    **Stop** if `dryRunLockMs` is over 2,000 ms: the window would hold its
+    locks too long even with no network.
 17. Hosted pre-checks: each packet's read-only pre-checks through
     `kit.sh hosted $W read <file>`. **Stop** on any difference.
-18. Read `railway cron list` (no run in progress). Build and run the hosted
-    dry run:
+18. Read `railway cron list` (no run in progress). Measure the round trip,
+    then build and run the hosted dry run:
 
     ```bash
+    bash $KIT/kit.sh hosted $W rtt
     python $KIT/build_install.py dryrun --plan $W/plan.json --repo . --out $W/bundle-hosted
-    bash $KIT/kit.sh hosted $W dryrun --bundle /work/bundle-hosted
+    bash $KIT/kit.sh hosted $W dryrun --bundle /work/bundle-hosted \
+      --rtt /work/evidence/rtt-<stamp>.json --rehearsed /work/copy-run/dryrun-<stamp>.json
     python $KIT/compare_maps.py --copy $W/copy-run/dryrun-*.json --hosted $W/evidence/dryrun-<stamp>.json \
       --allowed $W/allowed_differences.json --out $W/evidence/compare-maps.json
     python $KIT/build_install.py install --plan $W/plan.json --repo . --out $W/bundle-hosted \
       --pins $W/evidence/dryrun-<stamp>.json
     ```
 
-    The dry-run envelope must read `dry-run-complete` (over 5 s reads
-    `dry-run-too-slow`); `compare_maps.py` must exit 0. **Stop** otherwise.
+    The `rtt` envelope must read `measured`; write its `rttMs` in the window
+    notes. The dry run prints its lock-time estimate before it sends anything.
+    If it refuses (`estimated lock time ... is over the 2000 ms limit; nothing
+    was sent`), **stop**: hosted was not touched, and the copy's own lock time
+    is too long for this window. A refusal because the measurement is missing,
+    older than 30 minutes or to another target means: run `rtt` again, then
+    the dry run. The dry-run envelope must read `dry-run-complete`, judged on
+    its server-measured `lockHeldMs` (over 2,000 ms reads `dry-run-too-slow`);
+    record `lockHeldMs` and `elapsedMs`. `compare_maps.py` must exit 0.
+    **Stop** otherwise.
 19. Write `$W/bundle-hosted/GO.json` with `capture`, `installSha256` from
-    `bundle.json` and `"target": "hosted"`. Install once:
-    `bash $KIT/kit.sh hosted $W install --bundle /work/bundle-hosted`. It must
-    read `installed`. On any error the transaction has rolled back; the kit
+    `bundle.json` and `"target": "hosted"`. Measure again and install once:
+    `bash $KIT/kit.sh hosted $W rtt`, then
+    `bash $KIT/kit.sh hosted $W install --bundle /work/bundle-hosted --rtt /work/evidence/rtt-<new stamp>.json --rehearsed /work/evidence/dryrun-<stamp>.json`
+    (the rehearsed lock time is now the hosted dry run's own). A refused
+    estimate sends nothing and does not use up the bundle's one attempt. It
+    must read `installed`; record `lockHeldMs`. On any error the transaction has rolled back; the kit
     will not resend from that bundle. If psql died after sending, read
     `catalog`: 455 rows and the dry run's after state means installed, continue;
     448 and the before digest means not installed, stop; anything else, stop

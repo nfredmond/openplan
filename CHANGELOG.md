@@ -30,6 +30,7 @@ restore passes only on exact counts, key hashes, Storage reconciliation and
 access probes; migrations install in one transaction after a rollback-only
 dry run, with timeouts and no retry. Hosted operations no longer use
 `supabase migration up --linked`. No migration.
+**The install kit holds no lock across a network round trip (KI-2026-11-14-240):** `scripts/ops/hosted-install/run_sql.py` now sends each transaction as one message instead of one statement per round trip. A new `rtt` step measures the round trip before the hosted dry run; the dry run and install print a lock-time estimate and refuse to start above 2 seconds; and the dry run's too-slow check reads the lock time measured on the server. In the local seven-file rehearsal at a 25 ms round trip, the dry run's lock time fell from 4.6 s to 0.26 s. No migration.
 **Human feedback never gates OpenPlan, permanently:** on November 13, 2026 Nathaniel
 made the October 17 acceptance policy permanent; direction reviews do not reopen it.
 Agent-run planner, operator and public-participant checks are the acceptance evidence
