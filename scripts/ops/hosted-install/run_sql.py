@@ -275,7 +275,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", required=True)
     parser.add_argument("--bundle")
     parser.add_argument("--var", action="append")
-    args = parser.parse_args(argv)
+    args = parser.parse_intermixed_args(argv)
     if args.mode in {"read", "probe"} and not args.file:
         parser.error(f"{args.mode} needs a SQL file")
     if args.mode in {"dryrun", "install"} and not args.bundle:
