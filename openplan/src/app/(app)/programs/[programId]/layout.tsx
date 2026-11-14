@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { recordMetadata } from "@/lib/ui/page-title";
+import { requireRecordRow } from "@/lib/routing/record-not-found";
+import { loadProgramRowForRequest } from "./_components/program-row-for-request";
 
 /**
  * The browser-tab title for this record.
@@ -24,7 +26,19 @@ export async function generateMetadata({
   });
 }
 
-// Pass-through: this layout exists to name the tab, not to add chrome.
-export default function ProgramRecordLayout({ children }: { children: ReactNode }) {
+/**
+ * Answers a real HTTP 404 for a program the reader cannot see, before
+ * `loading.tsx` starts the stream (see `requireRecordRow`). The `measure` and
+ * `work-program` pages sit under this layout and inherit the answer.
+ */
+export default async function ProgramRecordLayout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ programId: string }>;
+}) {
+  const { programId } = await params;
+  await requireRecordRow(programId, loadProgramRowForRequest);
   return children;
 }

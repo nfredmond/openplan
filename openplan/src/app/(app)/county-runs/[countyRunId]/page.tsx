@@ -9,6 +9,7 @@ import { countyRunShowsCeqaScreen, type CountyRunGeography } from "@/lib/models/
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { CountyRunBehavioralKpisSection } from "./_components/county-run-behavioral-kpis";
 import { isUuid } from "@/lib/uuid";
+import { recordRowIsAbsent } from "@/lib/routing/record-not-found";
 import { isCountyOnrampWorkerConfigured } from "@/lib/config/deployment-health-facts";
 
 type CountyRunDetailPageProps = {
@@ -61,6 +62,10 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
     .eq("id", countyRunId)
     .eq("workspace_id", membership.workspace_id)
     .maybeSingle();
+
+  // No row, with no error, is a run this workspace does not have: a real 404
+  // (KI-2026-11-14-280). This route has no `loading.tsx`, so the status holds.
+  if (recordRowIsAbsent(countyRunResult)) notFound();
 
   const reads = new ReadFailureLog();
   reads.check("this county run's record", countyRunResult);

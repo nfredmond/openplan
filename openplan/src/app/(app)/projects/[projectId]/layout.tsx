@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { recordMetadata } from "@/lib/ui/page-title";
+import { requireRecordRow } from "@/lib/routing/record-not-found";
+import { readProjectRowForRequest } from "./_components/project-record-for-request";
 
 /**
  * The browser-tab title for this record.
@@ -24,7 +26,19 @@ export async function generateMetadata({
   });
 }
 
-// Pass-through: this layout exists to name the tab, not to add chrome.
-export default function ProjectRecordLayout({ children }: { children: ReactNode }) {
+/**
+ * Answers a real HTTP 404 for a project the reader cannot see, before
+ * `loading.tsx` starts the stream (see `requireRecordRow`). The `management`
+ * page sits under this layout and inherits the answer.
+ */
+export default async function ProjectRecordLayout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  await requireRecordRow(projectId, readProjectRowForRequest);
   return children;
 }

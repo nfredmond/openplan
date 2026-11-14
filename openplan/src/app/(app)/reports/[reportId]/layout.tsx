@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-import { notFound } from "next/navigation";
 import { recordMetadata } from "@/lib/ui/page-title";
-import { isUuid } from "@/lib/uuid";
+import { requireRecordRow } from "@/lib/routing/record-not-found";
 import { loadReportDetailRowForRequest } from "./_components/report-row-for-request";
 
 /**
@@ -56,8 +55,6 @@ export default async function ReportRecordLayout({
   params: Promise<{ reportId: string }>;
 }) {
   const { reportId } = await params;
-  if (!isUuid(reportId)) notFound();
-  const { data, error } = await loadReportDetailRowForRequest(reportId);
-  if (!error && !data) notFound();
+  await requireRecordRow(reportId, loadReportDetailRowForRequest);
   return children;
 }

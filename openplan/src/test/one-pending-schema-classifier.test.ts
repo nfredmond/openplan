@@ -149,7 +149,7 @@ function localCopyCounts(): Map<string, number> {
 const ALLOWED_VARIANTS: ReadonlyArray<string> = [
   "looksLikePendingAssemblySchema@src/lib/grants/application.ts",
   "looksLikePendingAuthorshipColumns@src/lib/observability/action-audit.ts",
-  "looksLikePendingColumn@src/app/(app)/grants/page.tsx",
+  "looksLikePendingColumn@src/app/(app)/grants/(overview)/page.tsx",
   "looksLikePendingFinalizerSchema@src/lib/grants/application.ts",
   "looksLikePendingNetworkLinkColumn@src/app/(app)/models/[modelId]/page.tsx",
   "looksLikePendingPlaceColumns@src/app/(app)/county-runs/page.tsx",

@@ -85,7 +85,6 @@ import {
 import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { PageTabNav } from "@/components/ui/page-tab-nav";
 import { PageTabPanel } from "@/components/ui/page-tab-panel";
 import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
@@ -94,6 +93,7 @@ import { RtpCycleOverviewSummary } from "./_components/rtp-cycle-overview-summar
 import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 import { isUuid } from "@/lib/uuid";
+import { loadRtpCycleRecordForRequest } from "./_components/rtp-cycle-record-for-request";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
@@ -134,17 +134,16 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
   if (!isUuid(rtpCycleId)) notFound();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The user, the workspace membership and the cycle row come from one
+  // request-cached read shared with `layout.tsx`, which answers 404 for an
+  // absent cycle before `loading.tsx` starts the stream.
+  const { user, membership, workspace, cycleResult } = await loadRtpCycleRecordForRequest(rtpCycleId);
 
   if (!user) {
     redirect("/sign-in");
   }
 
-  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
-
-  if (!membership || !workspace) {
+  if (!membership || !workspace || !cycleResult) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
@@ -153,15 +152,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
       />
     );
   }
-
-  const cycleResult = await supabase
-    .from("rtp_cycles")
-    .select(
-      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, anchor_latitude, anchor_longitude, public_share_token, public_share_enabled, created_at, updated_at"
-    )
-    .eq("id", rtpCycleId)
-    .eq("workspace_id", membership.workspace_id)
-    .maybeSingle();
 
   // A FAILED READ IS NOT A MISSING CYCLE. The error and the empty row were one
   // branch, so any database failure on `rtp_cycles` rendered the 404 page — this

@@ -69,7 +69,12 @@ describe("CountyRunDetailPage — modeling caveat page consent", () => {
         select: vi.fn(() => ({
           eq: vi.fn(() => ({
             eq: vi.fn(() => ({
-              maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+              // The run exists: a missing run is a 404 now (KI-2026-11-14-280),
+              // and this file is about the consent flag, not absence.
+              maybeSingle: vi.fn(async () => ({
+                data: { id: "run", run_name: null, geography_type: null, geography_id: null },
+                error: null,
+              })),
             })),
           })),
         })),
