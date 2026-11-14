@@ -2498,7 +2498,7 @@
     "status": "matched",
     "checkedOn": "2026-11-14",
     "url": "https://static.nhtsa.gov/nhtsa/downloads/FARS/2024/National/FARS2024NationalCSV.zip",
-    "note": "Lincoln County, Nevada only. The 12 fatal crashes the hosted journey stored for 2022 through 2024 (6, 4 and 2; 12 people killed) are the same 12 state case numbers that NHTSA's FARS national annual files for 2022, 2023 and 2024 hold for state 32, county 17, read with a script that uses no OpenPlan code. NHTSA's query service answered HTTP 403 to an automated request, so this compares OpenPlan with the published files it reads, not with a second NHTSA product. Sierra County (CCRS) and the tribal area were not checked this way."
+    "note": "Lincoln County, Nevada only. After the hosted journey, the case numbers it stored were read from the hosted database, read-only: 12 fatal crashes (6 in 2022, 4 in 2023, 2 in 2024; 12 people killed). They are the same 12 state case numbers that NHTSA's FARS national annual files for 2022, 2023 and 2024 hold for state 32, county 17, read with a script that uses no OpenPlan code. NHTSA's query service answered HTTP 403 to an automated request, so this compares OpenPlan with the published files it reads, not with a second NHTSA product. Sierra County (CCRS) and the tribal area were not checked this way."
   },
   "limits": [
     {
@@ -2532,6 +2532,14 @@
     {
       "id": "exports-carry-product-verify-markers",
       "text": "The exported PDFs carry the product's own [VERIFY] markers on items it did not read from a primary source: the countermeasure list's factor notes, the attachment list and the action plan component names."
+    },
+    {
+      "id": "campaign-comments-are-demonstration",
+      "text": "The two comments in each campaign were entered by the proof run and say so in their own text. They represent no one. Each safety action plan counts them as approved public comments toward its engagement component without that label."
+    },
+    {
+      "id": "exports-print-stored-identifiers",
+      "text": "The declared hand check for stored codes was not met. The severity-coverage code it was written for is gone, but the PDFs print other stored identifiers as they are kept (a benefit-cost status and ledger name, crash source ids, a segment id, template and schema names, repository file paths), and each plan's cover prints its creation time in UTC with no zone named."
     },
     {
       "id": "map-page-not-rechecked-by-the-checker",

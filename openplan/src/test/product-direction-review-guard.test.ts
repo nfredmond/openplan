@@ -57,7 +57,8 @@ describe("the recurring product-direction review", () => {
         { kind: "aiannh", geoid: "3010R", stateFips: ["32"] },
       ],
     });
-    expect(registry.provenJobs[0].evidence).toHaveLength(7);
+    // The record, six PDFs, the record's README and the four inputs files.
+    expect(registry.provenJobs[0].evidence).toHaveLength(12);
     expect(registry.readinessRegistry).toMatchObject({
       schema: "openplan.jurisdiction-readiness.v1",
       path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",

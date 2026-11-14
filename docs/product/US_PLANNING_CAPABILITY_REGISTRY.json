@@ -41,7 +41,7 @@
       "evidence": [
         {
           "path": "docs/product/capability-evidence/first-proven-job.v1.json",
-          "sha256": "12fd413b620985c06de388024ac666d7b05ac2b1c4b841b456f3b33ada2c091c"
+          "sha256": "b8d1beac045d8d99ec3afcc55db469d15995875b4c3c5584fd5b41fb126971c8"
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/california-county-safety-action-plan.pdf",
@@ -66,6 +66,26 @@
         {
           "path": "docs/product/capability-evidence/first-proven-job/tribal-area-ss4a-application.pdf",
           "sha256": "83f592feb9b354f2491e3f94aafbfc0b94ae795e0ef473acec14f59e34137b46"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/README.md",
+          "sha256": "132e0d0febbcaf711dcee569f81b7809fe943ce22087eed1f0e1e6915d44db9a"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/sierra-county-ca.inputs.json",
+          "sha256": "5f00887cbe5573dc23c2ee038b145bb47859381591b019c02751b84b719079b6"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/lincoln-county-nv.inputs.json",
+          "sha256": "a44db134df84e78ac4d6b0bfb3c5039caa22a054ed093384d255abd19411bf7a"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/pyramid-lake-paiute-reservation.inputs.json",
+          "sha256": "264c91b172a4db633f841c5b25090307c94d66f28c638477b3e8080db91ce0b3"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/budget-demonstration.csv",
+          "sha256": "a38dac9e7b8086dc8bc214c531d31d04278dd445b537731a32cf346fd1b5c32e"
         }
       ]
     }
