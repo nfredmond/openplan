@@ -394,8 +394,25 @@ function esc(value: string): string {
 }
 
 /** The stored timestamp as stored, so a reader can match it to the record. */
+/**
+ * A stored timestamp as a planner reads it: "Nov 3, 2026, 05:42 UTC". A value
+ * with no time of day prints as the date alone. A value that is not a date
+ * prints as stored, so nothing is invented.
+ */
+export function formatEvidenceTimestamp(value: string | null | undefined): string {
+  const text = value?.trim() ?? "";
+  if (!text) return "Not recorded";
+  const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(text);
+  const parsed = new Date(dateOnly ? `${text}T00:00:00Z` : text);
+  if (Number.isNaN(parsed.getTime()) || !/^\d{4}-\d{2}-\d{2}/.test(text)) return text;
+  const day = parsed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  if (dateOnly) return day;
+  const time = parsed.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" });
+  return `${day}, ${time} UTC`;
+}
+
 function dateText(value: string | null): string {
-  return value && value.trim() ? value : "Not recorded";
+  return formatEvidenceTimestamp(value);
 }
 
 function sourceMarkup(source: EvidenceAppendixSource): string {

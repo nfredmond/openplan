@@ -127,13 +127,18 @@ const scalePixels = scaleMeters * pixelsPerMeter;
       return unwrapped >= startLon - marginLon && unwrapped <= maxLon + marginLon
         && lat >= minLat - marginLat && lat <= maxLat + marginLat;
     }));
-  const highlightMarkup = highlights.map((highlight) => {
+  // Shapes first, then the rank markers, so no marker sits under a later
+  // segment. At a county's scale a half-mile piece is smaller than its marker,
+  // so the marker carries the highlight red, and the best rank is drawn last:
+  // where markers overlap, rank 1 is the one a reader sees.
+  const highlightShapes = highlights.map((highlight) => highlight.geometry.type === "LineString"
+    ? `<polyline points="${points(highlight.geometry.coordinates)}" fill="none" stroke="#b42318" stroke-width="5" stroke-linecap="round"/>`
+    : highlight.geometry.coordinates.map((ring) => `<polygon points="${points(ring)}" fill="rgba(180,35,24,0.22)" stroke="#b42318" stroke-width="2"/>`).join("")).join("");
+  const highlightMarkers = [...highlights].sort((a, b) => b.rank - a.rank).map((highlight) => {
     const label = highlightPositions(highlight)[0];
-    const shape = highlight.geometry.type === "LineString"
-      ? `<polyline points="${points(highlight.geometry.coordinates)}" fill="none" stroke="#b42318" stroke-width="5" stroke-linecap="round"/>`
-      : highlight.geometry.coordinates.map((ring) => `<polygon points="${points(ring)}" fill="rgba(180,35,24,0.22)" stroke="#b42318" stroke-width="2"/>`).join("");
-    return `${shape}<g transform="translate(${x(label[0]).toFixed(2)} ${y(label[1]).toFixed(2)})"><circle r="9" fill="#18242d"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${Math.trunc(highlight.rank)}</text></g>`;
+    return `<g transform="translate(${x(label[0]).toFixed(2)} ${y(label[1]).toFixed(2)})"><circle r="9" fill="#b42318" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${Math.trunc(highlight.rank)}</text></g>`;
   }).join("");
+  const highlightMarkup = `${highlightShapes}${highlightMarkers}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${input.ariaLabel ? input.ariaLabel.replace(/[&<>"']/g, "") : "Local street context"}" style="display:block;width:100%;height:auto;background:#fffdf8;border:1px solid #d5d7da${highlights.length > 0 ? ";overflow:hidden" : ""}">
     <desc>${SAFETY_STREET_CONTEXT_PROJECTION_NOTE}</desc>

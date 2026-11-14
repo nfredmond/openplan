@@ -103,8 +103,10 @@ afterEach(() => {
 });
 
 const PROJECTS = [
-  { id: "11111111-1111-4111-8111-111111111111", name: "Sierra County roads", status: "active" },
-  { id: "22222222-2222-4222-8222-222222222222", name: "Downieville Main Street", status: "active" },
+  { id: "11111111-1111-4111-8111-111111111111", name: "Sierra County roads", status: "active", reportTitle: "Sierra County roads safety action plan" },
+  { id: "22222222-2222-4222-8222-222222222222", name: "Downieville Main Street", status: "active", reportTitle: "Downieville Main Street safety action plan" },
+  // A project already named for its plan keeps its name; the browser check found the words doubled.
+  { id: "33333333-3333-4333-8333-333333333333", name: "Pyramid Lake Reservation Safety Action Plan", status: "active", reportTitle: "Pyramid Lake Reservation Safety Action Plan" },
 ];
 
 describe("D5: Safety creates the report it needs", () => {
@@ -140,11 +142,11 @@ describe("D5: Safety creates the report it needs", () => {
       body: {
         projectId: project.id,
         reportType: "project_status",
-        title: `${project.name} safety action plan`,
+        title: project.reportTitle,
         safetyIngestSelections: [{ ingestId: INGEST_ID }],
       },
     });
-    expect(screen.getByRole("status").textContent).toBe(`Created ${project.name} safety action plan.`);
+    expect(screen.getByRole("status").textContent).toBe(`Created ${project.reportTitle}.`);
     expect((screen.getByLabelText("Save to report") as HTMLSelectElement).value).toBe("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
 
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Save plan with no ranked segments" })); });

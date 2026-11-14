@@ -46,6 +46,7 @@ import {
   acquisitionSeriousInjury,
   describeSeverityCoverage,
   engagementEvidenceAppendix,
+  formatEvidenceTimestamp,
   NO_PROJECT_REASON,
   type EvidenceAppendix,
   type EvidenceAppendixFrame,
@@ -158,7 +159,7 @@ function safetySource(safety: Extract<Ss4aSafetySourceRead, { status: "ready" }>
     link: `/reports/${snapshot.reportId}#artifact-${snapshot.artifactId}`,
     details: [
       `Report ${snapshot.reportId}.`,
-      `Crash acquisition ${String(acquisition.id)}, retrieved ${String(acquisition.created_at)}.`,
+      `Crash acquisition ${String(acquisition.id)}, retrieved ${formatEvidenceTimestamp(typeof acquisition.created_at === "string" ? acquisition.created_at : null)}.`,
       ...(otherSeededArtifactCount > 0
         ? [`This is the most recently generated of ${otherSeededArtifactCount + 1} seeded Safety artifacts; all are listed under Safety seed sources.`]
         : []),

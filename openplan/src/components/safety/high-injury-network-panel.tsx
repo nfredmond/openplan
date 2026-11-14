@@ -93,6 +93,8 @@ function safetyActionPlanReportTitle(projectName: string | null | undefined): st
   const suffix = "safety action plan";
   const name = projectName?.trim() ?? "";
   if (!name) return "Safety action plan";
+  // A project already named "... Safety Action Plan" keeps its own name.
+  if (name.toLowerCase().endsWith(suffix)) return name.slice(0, REPORT_TITLE_MAX_LENGTH).trim();
   return `${name.slice(0, REPORT_TITLE_MAX_LENGTH - suffix.length - 1).trim()} ${suffix}`;
 }
 
