@@ -123,7 +123,7 @@ export function AerialMissionCreator({
       {
         id: "where",
         title: "Where and when?",
-        hint: "All optional — a mission is still worth logging without them.",
+        hint: "All optional. A mission is still worth logging without them.",
         fields: [
           { name: "geographyLabel", label: "the area flown" },
           { name: "collectedAt", label: "a collection date" },
@@ -138,7 +138,7 @@ export function AerialMissionCreator({
               hint={
                 defaultGeographyLabel
                   ? "Starting from this project's study area. Narrow it to what was actually flown."
-                  : "In your own words — a corridor, a segment, a bridge approach."
+                  : "In your own words: a corridor, a segment, a bridge approach."
               }
             >
               <Input {...flow.text("geographyLabel")} placeholder="Study corridor, Segment A" />

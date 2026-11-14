@@ -22,6 +22,29 @@ class WorkerHeartbeatTest(unittest.TestCase):
         self.assertEqual(payload["worker_kind"], "activitysim")
         self.assertEqual(payload["runtime_mode"], "preflight_only")
 
+    def test_secret_key_goes_only_on_apikey_and_legacy_jwt_keeps_bearer(self):
+        # Synthetic values. This copy reaches the shared helper beside the
+        # AequilibraE worker, which is what the ActivitySim images carry.
+        legacy = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c3ludGhldGljLXNpZ25hdHVyZQ"
+        secret = "sb_secret_synthetic-unit-test-only_0000"
+        sent = {}
+        for key in (legacy, secret):
+            heartbeat = WorkerHeartbeat(
+                supabase_url="http://db.test",
+                service_key=key,
+                worker_kind="activitysim",
+                supported_stages=("ActivitySim Bundle & Preflight",),
+                runtime_mode="preflight_only",
+            )
+            response = Mock()
+            response.raise_for_status.return_value = None
+            with patch("worker_heartbeat.requests.post", return_value=response) as post:
+                self.assertTrue(heartbeat.emit_once())
+            sent[key] = post.call_args.kwargs["headers"]
+        self.assertEqual((sent[legacy]["apikey"], sent[legacy]["Authorization"]), (legacy, "Bearer " + legacy))
+        self.assertEqual(sent[secret]["apikey"], secret)
+        self.assertNotIn("Authorization", sent[secret])
+
     def test_failed_heartbeat_does_not_raise(self):
         heartbeat = WorkerHeartbeat(
             supabase_url="http://db.test",

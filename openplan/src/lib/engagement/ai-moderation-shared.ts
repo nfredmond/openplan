@@ -51,7 +51,7 @@ export type ModerationResult = {
 };
 
 export const MODERATION_CAVEAT =
-  "AI moderation is a screening ASSIST: it flags possible toxicity, personal information, off-topic, spam, or instructions aimed at the screen with a rationale to help a human moderator triage. It NEVER auto-rejects — a person decides — and is not a definitive content judgment.";
+  "AI moderation is a screening ASSIST: it flags possible toxicity, personal information, off-topic, spam, or instructions aimed at the screen with a rationale to help a human moderator triage. It NEVER auto-rejects (a person decides) and is not a definitive content judgment.";
 
 /** How much of a comment the flagged list quotes back to the moderator. */
 const MODERATION_SNIPPET_CHARS = 120;

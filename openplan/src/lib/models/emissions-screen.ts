@@ -22,7 +22,7 @@ export type EmissionsScreen = {
 };
 
 export const EMISSIONS_SCREENING_CAVEAT =
-  "Screening-level GHG estimate: network VMT × an EMFAC-style fleet-average running-CO2e rate, annualized. Uncalibrated to a specific air district or vehicle mix — NOT an EMFAC run of record and NOT a project-level GHG determination.";
+  "Screening-level GHG estimate: network VMT × an EMFAC-style fleet-average running-CO2e rate, annualized. Uncalibrated to a specific air district or vehicle mix. NOT an EMFAC run of record and NOT a project-level GHG determination.";
 
 function num(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? value : null;

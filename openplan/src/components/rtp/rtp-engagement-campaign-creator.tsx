@@ -107,7 +107,7 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
               const workspaceName = workspaceNameOf(row);
               return {
                 id: row.id,
-                name: workspaceCount > 1 && workspaceName ? `${row.name} — ${workspaceName}` : row.name,
+                name: workspaceCount > 1 && workspaceName ? `${row.name} (${workspaceName})` : row.name,
               };
             })
           );
@@ -136,7 +136,7 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
             name: "title",
             label: "Title",
             required: true,
-            requiredMessage: "Give the campaign a title — this is what residents see first.",
+            requiredMessage: "Give the campaign a title. This is what residents see first.",
           },
           { name: "engagementType", label: "Engagement type", required: true },
         ],
@@ -300,8 +300,8 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
         <div className="module-section-heading">
           <h2 className="module-section-title">Ask the public about this plan</h2>
           <p className="module-section-description">
-            A campaign started here files its comments against this plan — the whole thing, or one
-            chapter of it — so you can answer them chapter by chapter later.
+            A campaign started here files its comments against this plan (the whole thing, or one
+            chapter of it) so you can answer them chapter by chapter later.
           </p>
         </div>
         <Button type="button" onClick={flow.open}>

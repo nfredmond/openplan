@@ -35,9 +35,10 @@
  * category without a model is a real, honest answer. There is no honest
  * offline answer to "what does page 112 say".)
  *
- * EVERY MODEL CALL IS METERED. `onModelCall` fires once per call, not once per
- * run: a three-hundred-page plan is many calls, and per-run metering would
- * understate spend by an order of magnitude.
+ * EVERY MODEL CALL IS METERED BEFORE IT IS MADE. `reserveModelCall` runs once
+ * per call, not once per run: a three-hundred-page plan is many calls, and
+ * per-run metering would understate spend by an order of magnitude. A refused
+ * or unmeterable call ends the run as `failed` with no call made.
  */
 
 import {
@@ -69,6 +70,8 @@ export const RTP_EXTRACTION_FAILURE_REASONS = [
   "model_error",
   "unreadable_model_answer",
   "call_budget_exhausted",
+  "usage_limit_reached",
+  "usage_meter_unavailable",
 ] as const;
 
 export type RtpExtractionFailureReason = (typeof RTP_EXTRACTION_FAILURE_REASONS)[number];
@@ -90,6 +93,10 @@ export function describeExtractionFailure(
       "The reading service answered in a form this deployment could not read, so nothing was transcribed from this document.",
     call_budget_exhausted:
       "This run reached the limit on how much of a document it may read in one go, before it finished.",
+    usage_limit_reached:
+      "This workspace reached its limit on AI requests for the next few minutes before the run finished, so nothing was kept. Wait a few minutes and run it again.",
+    usage_meter_unavailable:
+      "AI use could not be counted, so the run stopped before its next read and nothing was kept.",
   };
   const trimmed = (detail ?? "").trim();
   return trimmed ? `${base[reason]} (${trimmed})` : base[reason];
@@ -167,14 +174,36 @@ function batch<T>(items: readonly T[], size: number): T[][] {
   return batches;
 }
 
+/**
+ * How many model calls {@link runRtpExtraction} will make for these passages
+ * and kinds if every call succeeds, so a caller can refuse a run the
+ * workspace's AI allowance cannot finish before any of it is spent.
+ */
+export function plannedExtractionModelCalls(
+  passages: readonly ExtractionPassage[],
+  targetKinds: readonly RtpExtractionTargetKind[],
+  maxModelCalls: number = EXTRACTION_MAX_MODEL_CALLS
+): number {
+  let calls = 0;
+  for (const targetKind of targetKinds) {
+    const { selected } = selectPassagesForTarget(passages, targetKind);
+    calls += batch(selected, EXTRACTION_CHUNKS_PER_CALL).length;
+  }
+  return Math.min(calls, maxModelCalls);
+}
+
 export async function runRtpExtraction(params: {
   passages: readonly ExtractionPassage[];
   targetKinds: readonly RtpExtractionTargetKind[];
   /** The cycle's own bands. For the VERIFIER's label resolution — never the prompt. */
   bands?: readonly ExtractionBand[];
   generate: ExtractionGenerator;
-  /** Fires once per model call, before the answer is read. Metering. */
-  onModelCall?: (targetKind: RtpExtractionTargetKind) => void;
+  /**
+   * Counts one model call before it is made. `false` refuses the call (the
+   * allowance is used up); a throw means usage could not be counted. Either
+   * ends the run as failed with no call made.
+   */
+  reserveModelCall: (targetKind: RtpExtractionTargetKind) => Promise<boolean>;
   maxModelCalls?: number;
 }): Promise<RtpExtractionRunOutcome> {
   const maxCalls = params.maxModelCalls ?? EXTRACTION_MAX_MODEL_CALLS;
@@ -212,10 +241,31 @@ export async function runRtpExtraction(params: {
 
       const { system, prompt } = buildExtractionPrompt({ targetKind, passages: passageBatch });
 
+      // The meter's own error stays with the caller's log: it is a database
+      // message, not words for the planner.
+      let reserved: boolean;
+      try {
+        reserved = await params.reserveModelCall(targetKind);
+      } catch {
+        return {
+          status: "failed",
+          failureReason: "usage_meter_unavailable",
+          failureMessage: describeExtractionFailure("usage_meter_unavailable"),
+          modelCalls,
+        };
+      }
+      if (!reserved) {
+        return {
+          status: "failed",
+          failureReason: "usage_limit_reached",
+          failureMessage: describeExtractionFailure("usage_limit_reached"),
+          modelCalls,
+        };
+      }
+
       modelCalls += 1;
       outcome.modelCalls += 1;
       outcome.passagesRead += passageBatch.length;
-      params.onModelCall?.(targetKind);
 
       let text: string;
       try {

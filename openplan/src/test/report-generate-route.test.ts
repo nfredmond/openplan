@@ -6,8 +6,8 @@ vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
   verifyGuidedComparisonReport: (...args: unknown[]) => verifyGuidedReportMock(...args),
 }));
 import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
-import { safetySeedFixture } from "./fixtures/grants/safety-seed";
-import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { safetySeedFixture, SEED_PROJECT_PLACE } from "./fixtures/grants/safety-seed";
+import { readSafetyPlanSnapshot, safetyProjectPlaceHash, SAFETY_PLAN_FENCE_INGEST_SELECT } from "@/lib/reports/safety-plan-snapshot";
 import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
 import type { HighInjuryNetworkCrashQuery } from "@/lib/safety/high-injury-network-loader";
 import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
@@ -25,6 +25,8 @@ import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 import { pagingFake } from "./helpers/paging-fake";
+import decisionLinkNative from "./fixtures/decision-link-native.json";
+import { address as traceAddress, row as traceDecisionRow } from "./fixtures/engagement/decision-synthesis";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import { createHash } from "node:crypto";
 import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
@@ -136,20 +138,49 @@ const fundingProfilesInMock = vi.fn();
 const fundingProfilesEqMock = vi.fn(() => ({ maybeSingle: fundingProfilesMaybeSingleMock }));
 const fundingProfilesSelectMock = vi.fn(() => ({ eq: fundingProfilesEqMock, in: fundingProfilesInMock }));
 
+type FundingReadResult = { data: unknown[] | null; error: unknown; count?: unknown };
+type FundingSelectOptions = { count?: string };
+
+/** Return counts only when requested; retain explicit incomplete/error fixtures. */
+async function countedFundingRead(read: Promise<FundingReadResult>, options?: FundingSelectOptions): Promise<FundingReadResult> {
+  const result = await read;
+  if (options?.count !== "exact") return { ...result, count: null };
+  if ("count" in result) return result;
+  return { ...result, count: !result.error && Array.isArray(result.data) ? result.data.length : null };
+}
+
 const fundingAwardsOrderMock = vi.fn();
 const fundingAwardsInMock = vi.fn();
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
-const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock, in: fundingAwardsInMock }));
+const fundingAwardsEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingAwardsEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+  in: (...args: unknown[]) => countedFundingRead(fundingAwardsInMock(...args), options),
+}));
 
 const fundingOpportunitiesOrderMock = vi.fn();
 const fundingOpportunitiesInMock = vi.fn();
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock, in: fundingOpportunitiesInMock }));
+const fundingOpportunitiesEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingOpportunitiesEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+  in: (...args: unknown[]) => countedFundingRead(fundingOpportunitiesInMock(...args), options),
+}));
 
 const billingInvoicesOrderMock = vi.fn();
 const billingInvoicesInMock = vi.fn();
-const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
-const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: billingInvoicesInMock }));
+const billingInvoicesEqMock = vi.fn((..._args: unknown[]) => ({ order: billingInvoicesOrderMock }));
+const billingInvoicesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = billingInvoicesEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+  in: (...args: unknown[]) => countedFundingRead(billingInvoicesInMock(...args), options),
+}));
 
 // Aerial provenance for the packet. Loaded through the aerial module's own
 // provider, so the packet's aerial claims trace to mission + evidence-package
@@ -1377,12 +1408,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
     const htmlUpload = serviceStorageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
     expect(String(htmlUpload?.[1])).toContain("data:image/png;base64");
-    // The frozen preview is checked as "already at the limit?" before it is
-    // copied, then the packet is checked with its own byte count.
+    // "Already at the limit?" before the preview is read, then the preview's
+    // own byte count before it is copied, then the packet's byte count.
     expect(checkWorkspaceStorageRoomMock.mock.calls.map((call) => [call[1], call[2]])).toEqual([
       ["33333333-3333-4333-8333-333333333333", 0],
+      ["33333333-3333-4333-8333-333333333333", previewBytes.byteLength],
       ["33333333-3333-4333-8333-333333333333", (htmlUpload?.[1] as Buffer).byteLength],
     ]);
+    expect(serviceStorageRemoveMock).not.toHaveBeenCalled();
     expect(memberStorageUploadMock).not.toHaveBeenCalled();
   });
 
@@ -1540,7 +1573,16 @@ describe("POST /api/reports/[reportId]/generate", () => {
       return query;
     });
     const member = await createClientMock();
-    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect } : fromMock(table) });
+    // The evidence fence read is scoped to the plan's acquisition. Every other
+    // ingest read keeps the shared mock.
+    const fenceEq = vi.fn((_column: string, _value: string) => fenceQuery);
+    const fenceQuery = { eq: fenceEq, maybeSingle: vi.fn(async () => ({ data: { id: fixture.acquisition.id, evidence_revision: 41 }, error: null })) };
+    const ingestSelect = vi.fn((columns: string) => columns === SAFETY_PLAN_FENCE_INGEST_SELECT ? fenceQuery
+      : (safetyIngestSelectMock as unknown as (columns: string) => unknown)(columns));
+    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect }
+      : table === "safety_crash_ingests" ? { select: ingestSelect } : fromMock(table) });
+    const projectRow = { ...(await projectMaybeSingleMock()).data, ...SEED_PROJECT_PLACE, place_geometry_geojson: null };
+    projectMaybeSingleMock.mockResolvedValue({ data: projectRow, error: null });
     const acquisition: typeof fixture.acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
       years_requested: requestedYears, crash_count: crashRows.length, geocoded_count: crashRows.length, stored_count: crashRows.length };
     safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
@@ -1559,7 +1601,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
         schema_version: SAFETY_PLAN_PERSISTENCE_VERSION, snapshot_hash: snapshot.hash,
         source_project_updated_at: snapshot.projectUpdatedAt, persisted_project_updated_at: projectUpdatedAt,
         source_report_updated_at: snapshot.reportUpdatedAt, report_updated_at: reportUpdatedAt };
-      persisted.push({ artifact: { ...args.p_artifact, metadata_json: { ...args.p_artifact.metadata_json,
+      // PostgREST persists JSON bytes, not JavaScript-only undefined properties.
+      const wireArtifact = JSON.parse(JSON.stringify(args.p_artifact)) as typeof args.p_artifact;
+      persisted.push({ artifact: { ...wireArtifact, metadata_json: { ...wireArtifact.metadata_json,
         generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt } } }, reportUpdatedAt, projectUpdatedAt, persistence });
       return { data: persistence, error: null };
     });
@@ -1576,6 +1620,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect(snapshot).not.toBeNull(); expect(snapshot.draft).toEqual(builder.mock.results.at(-1)!.value);
       expect(snapshot.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
       expect(snapshot.acquisition.years_requested).toEqual(requestedYears);
+      expect(snapshot.evidenceFence).toEqual({ acquisitionEvidenceRevision: "41", projectPlaceHash: safetyProjectPlaceHash(SEED_PROJECT_PLACE) });
+      expect(ingestSelect).toHaveBeenCalledWith("id, evidence_revision");
+      expect(fenceEq.mock.calls).toEqual([["workspace_id", workspaceId], ["project_id", projectId], ["id", acquisition.id]]);
       if (selectedYears === null) {
         expect(crashSelect).not.toHaveBeenCalled();
         expect(snapshot.draft.network).toMatchObject({ kind: "unavailable", reason: expect.stringContaining("Requested crash years are missing") });
@@ -1592,20 +1639,36 @@ describe("POST /api/reports/[reportId]/generate", () => {
         expect(network.coverage).toContain("do not establish complete observation coverage or an annual denominator");
         expect(result.artifact.metadata_json.htmlContent).toContain(network.years);
         expect(result.artifact.metadata_json.htmlContent).toContain("do not establish complete observation coverage");
+        // The ranked network is drawn, and the caption counts the table's rows.
+        if (network.rows.length > 0) {
+          expect(result.artifact.metadata_json.htmlContent).toContain(`High-injury network map. All ${network.rows.length} ranked segment`);
+        }
         expect(network.sourceLine).not.toContain("2020–2022");
         expect(network.measureLabel).toContain("fatal crashes only");
         expect(network.rows.every((row) => row.seriousInjuryCrashCount === null)).toBe(true);
       }
       expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
+      // The plan section prints the project's engagement and benefit-cost
+      // blocks. This fake answers neither read, so each says it could not be read.
+      expect(result.artifact.metadata_json.htmlContent).toMatch(/<h3>Engagement summary<\/h3><p><strong>Could not be read\.<\/strong>/);
+      expect(result.artifact.metadata_json.htmlContent).toMatch(/<h3>Benefit-cost summary<\/h3><p><strong>Could not be read\.<\/strong>/);
       const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
-        project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt },
+        project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt, ...SEED_PROJECT_PLACE },
         report: { ...fixture.report, id: reportId, project_id: projectId, workspace_id: workspaceId, updated_at: result.reportUpdatedAt },
-        artifact: result.artifact, acquisition, persistence: result.persistence,
+        artifact: result.artifact, acquisition: { ...acquisition, evidence_revision: 41 }, persistence: result.persistence,
         sections: fixture.sections.map((section) => ({ ...section, workspace_id: workspaceId })) };
       expect(buildSafetySeedPreview(rows).sections).toHaveLength(6);
+      // KI-2026-11-02-022: a write outside Safety (logging the linked
+      // opportunity) moves the project revision and must not refuse the seed.
       rows.project.updated_at = "2026-10-18T12:00:03.000004+00:00";
-      rows.project.name = "Genuine later source edit";
-      expect(() => buildSafetySeedPreview(rows)).toThrow(/custody.*stale/);
+      rows.project.name = "Renamed after generation";
+      expect(buildSafetySeedPreview(rows).sections).toHaveLength(6);
+      // A crash, party or acquisition write moves the evidence revision.
+      rows.acquisition = { ...rows.acquisition, evidence_revision: 42 };
+      expect(() => buildSafetySeedPreview(rows)).toThrow(/crash records or project place/);
+      rows.acquisition = { ...rows.acquisition, evidence_revision: 41 };
+      rows.project = { ...rows.project, place_label: "Moved place", place_set_at: "2026-10-18T12:00:04+00:00" };
+      expect(() => buildSafetySeedPreview(rows)).toThrow(/crash records or project place/);
       expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
       expect(serviceArtifactsInsertMock, "Safety insertion stays inside its persistence RPC").not.toHaveBeenCalled();
       expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
@@ -1834,6 +1897,137 @@ describe("POST /api/reports/[reportId]/generate", () => {
         expect(response.status).toBe(200);
         expect(serviceStorageUploadMock).not.toHaveBeenCalled();
         expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
+      });
+    }
+
+    // A report with one selected, intact held aerial preview of `previewBytes`.
+    const previewBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 7, 7, 7, 7]);
+    const FROZEN_PATH = `${WORKSPACE_ID}/11111111-1111-4111-8111-111111111111/`;
+    function selectHeldAerialPreview() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: WORKSPACE_ID,
+          project_id: "44444444-4444-4444-8444-444444444444",
+          rtp_cycle_id: null,
+          modeling_county_run_id: null,
+          title: "Project Status Packet",
+          summary: "Packet summary",
+          report_type: "project_status",
+          status: "draft",
+          created_at: "2026-03-14T00:00:00.000Z",
+          generated_at: null,
+          metadata_json: { aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }] },
+        },
+        error: null,
+      });
+      aerialCustodyMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "55555555-5555-4555-8555-555555555555",
+          workspace_id: WORKSPACE_ID,
+          mission_id: "66666666-6666-4666-8666-666666666666",
+          kind: "ortho_preview",
+          state: "held",
+          storage_bucket: "aerial-artifacts",
+          storage_path: `${WORKSPACE_ID}/66666666-6666-4666-8666-666666666666/job/ortho-preview.png`,
+          byte_size: previewBytes.byteLength,
+          checksum_sha256: createHash("sha256").update(previewBytes).digest("hex"),
+          content_type: "image/png",
+          held_at: "2026-08-21T17:00:00.000Z",
+          bounds_west: -121.2,
+          bounds_south: 39.1,
+          bounds_east: -121.1,
+          bounds_north: 39.2,
+          crs: "EPSG:32610",
+          pixel_size_m: 0.08,
+          aerial_missions: {
+            id: "66666666-6666-4666-8666-666666666666",
+            workspace_id: WORKSPACE_ID,
+            project_id: "44444444-4444-4444-8444-444444444444",
+            title: "River crossing flight",
+            collected_at: "2026-08-20T17:00:00.000Z",
+            projects: { name: "Project" },
+          },
+        },
+        error: null,
+      });
+      serviceStorageDownloadMock.mockResolvedValueOnce({ data: new Blob([previewBytes]), error: null });
+    }
+    const roomFor = { status: "room", usedBytes: 0, quotaBytes: QUOTA };
+
+    it("refuses a selected aerial preview whose own bytes would pass the limit, and copies nothing", async () => {
+      selectHeldAerialPreview();
+      const usedBytes = QUOTA - 5;
+      checkWorkspaceStorageRoomMock
+        .mockResolvedValueOnce(roomFor)
+        .mockResolvedValueOnce({
+          status: "full",
+          usedBytes,
+          quotaBytes: QUOTA,
+          message: workspaceStorageFullMessage(usedBytes, QUOTA, previewBytes.byteLength),
+        });
+
+      const response = await generate("html");
+
+      expect(response.status).toBe(413);
+      expect(await response.json()).toEqual({
+        error: workspaceStorageFullMessage(usedBytes, QUOTA, previewBytes.byteLength),
+        usedBytes,
+        quotaBytes: QUOTA,
+      });
+      expect(checkWorkspaceStorageRoomMock.mock.calls.map((call) => [call[0], call[1], call[2]])).toEqual([
+        [serviceClient(), WORKSPACE_ID, 0],
+        [serviceClient(), WORKSPACE_ID, previewBytes.byteLength],
+      ]);
+      expect(serviceStorageDownloadMock).toHaveBeenCalledTimes(1);
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+      expect(mockAudit.warn).toHaveBeenCalledWith(
+        "report_artifact_storage_refused",
+        expect.objectContaining({ stage: "aerial_preview", status: "full", usedBytes, quotaBytes: QUOTA }),
+      );
+    });
+
+    it("refuses a selected aerial preview when storage use cannot be read for its bytes", async () => {
+      selectHeldAerialPreview();
+      checkWorkspaceStorageRoomMock
+        .mockResolvedValueOnce(roomFor)
+        .mockResolvedValueOnce({ status: "unreadable", message: WORKSPACE_STORAGE_UNREADABLE_MESSAGE, detail: "rpc failed" });
+
+      const response = await generate("html");
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ error: WORKSPACE_STORAGE_UNREADABLE_MESSAGE });
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+    });
+
+    for (const format of ["pdf", "html"] as const) {
+      it(`removes the frozen aerial preview when the ${format} packet itself is refused by the limit`, async () => {
+        selectHeldAerialPreview();
+        serviceStorageUploadMock.mockResolvedValueOnce({ error: null });
+        serviceStorageRemoveMock.mockResolvedValueOnce({ data: [], error: null });
+        checkWorkspaceStorageRoomMock
+          .mockResolvedValueOnce(roomFor)
+          .mockResolvedValueOnce(roomFor)
+          .mockResolvedValueOnce({
+            status: "full",
+            usedBytes: QUOTA - 1,
+            quotaBytes: QUOTA,
+            message: workspaceStorageFullMessage(QUOTA - 1, QUOTA, 100),
+          });
+
+        const response = await generate(format);
+
+        expect(response.status).toBe(413);
+        expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+        const frozenPath = String(serviceStorageUploadMock.mock.calls[0][0]);
+        expect(frozenPath.startsWith(FROZEN_PATH)).toBe(true);
+        expect(frozenPath.endsWith("/aerial/55555555-5555-4555-8555-555555555555.png")).toBe(true);
+        expect(serviceStorageRemoveMock).toHaveBeenCalledTimes(1);
+        expect(serviceStorageRemoveMock).toHaveBeenCalledWith([frozenPath]);
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
       });
     }
 
@@ -2446,6 +2640,22 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(200);
     const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
     const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+
+    expect(fundingAwardsSelectMock).toHaveBeenCalledWith(
+      "id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",
+      { count: "exact" },
+    );
+    expect(fundingOpportunitiesSelectMock).toHaveBeenCalledWith(
+      "id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",
+      { count: "exact" },
+    );
+    expect(billingInvoicesSelectMock).toHaveBeenCalledWith(
+      "id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",
+      { count: "exact" },
+    );
+    expect(fundingAwardsEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
+    expect(fundingOpportunitiesEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
+    expect(billingInvoicesEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
 
     expect(sourceContext.projectFundingSnapshot).toMatchObject({
       fundingNeedAmount: 2_000_000,
@@ -4008,8 +4218,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
 
   describe("a campaign with more comments than the server returns in one response", () => {
     const CAMPAIGN_ID = "99999999-9999-4999-8999-999999999999";
+    // `title` names an approved contribution in the comment-to-decision trace.
     const ITEM_COLUMNS =
-      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
+      "id, campaign_id, category_id, title, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
 
     // 1,234 comments: past PostgREST's 1,000-row cap, so a read that stops
     // after one request counts 1,000 and reports no error.
@@ -4160,6 +4371,134 @@ describe("POST /api/reports/[reportId]/generate", () => {
       );
       expect(artifactsInsertMock).not.toHaveBeenCalled();
       expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("a packet traces a contribution to its response, theme and decision (KI-2026-11-02-010)", () => {
+    const CROSSING = "d90d2cdc-483f-45c7-83d1-d403c5ba75c6";
+    const BILLING = "c0fa4477-9d37-4d75-bccc-1630e2b28ab8";
+    const traceItems = [
+      { id: CROSSING, campaign_id: traceAddress.campaignId, category_id: "category-1", title: "Near misses crossing Fifth at Cedar", status: "approved",
+        source_type: "public", latitude: null, longitude: null, moderation_notes: null, created_at: "2026-11-02T07:01:00Z", updated_at: "2026-11-02T07:10:00Z" },
+      { id: BILLING, campaign_id: traceAddress.campaignId, category_id: null, title: "Utility billing question", status: "rejected",
+        source_type: "public", latitude: null, longitude: null, moderation_notes: "SYNTHETIC off-topic reason", created_at: "2026-11-02T07:05:00Z", updated_at: "2026-11-02T07:12:00Z" },
+    ];
+    const published = {
+      id: traceAddress.responseId, campaign_id: traceAddress.campaignId, category_id: null, theme_title: "Walking safety on Fifth Avenue",
+      you_said: "SYNTHETIC crossings feel unsafe", we_did: "SYNTHETIC crosswalk proposed", status: "published", ai_assisted: false,
+      source_item_ids: [CROSSING], sort_order: 0, published_at: "2026-11-02T07:24:46Z", created_at: "2026-11-02T07:20:00Z", updated_at: "2026-11-02T07:24:46Z",
+    };
+
+    function decisionLinksPacket() {
+      const saved = traceDecisionRow();
+      return { ...structuredClone(decisionLinkNative.initial), campaignId: traceAddress.campaignId, workspaceId: traceAddress.workspaceId,
+        entries: [saved], entryCount: 1,
+        current: [{ linkId: saved.id, sourceState: "unchanged", currentContextSha256: saved.context_sha256, unavailableReason: null }], currentCount: 1 };
+    }
+
+    function answerTraceReads(responses: { data: unknown; error: unknown }) {
+      rpcMock.mockImplementation(async (name: string) => {
+        if (name === "read_engagement_response_snapshot") return responses;
+        if (name === "read_engagement_decision_links") return { data: decisionLinksPacket(), error: null };
+        return { data: [], error: null };
+      });
+    }
+
+    function projectPacketCitingTheCampaign() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111", workspace_id: traceAddress.workspaceId,
+          project_id: "44444444-4444-4444-8444-444444444444", rtp_cycle_id: null, title: "Engagement Handoff Packet",
+          summary: null, report_type: "project_status", status: "draft", created_at: "2026-11-02T08:00:00.000Z", generated_at: null, metadata_json: {},
+        },
+        error: null,
+      });
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [{ id: "section-1", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 0,
+          config_json: { campaignId: traceAddress.campaignId } }],
+        error: null,
+      });
+      engagementCampaignMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: traceAddress.campaignId, title: "Fifth Avenue listening", summary: null, status: "active", engagement_type: "map_feedback",
+          share_token: null, updated_at: "2026-11-02T08:00:00.000Z", demographics_enabled: false },
+        error: null,
+      });
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: traceItems, error: null });
+    }
+
+    async function generatedHtml() {
+      const response = await postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+      expect(response.status).toBe(200);
+      const html = String(artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent ?? "");
+      return html.replace(/<[^>]+>/g, " ").replace(/&#39;/g, "'").replace(/\s+/g, " ");
+    }
+
+    it("prints the response, the contribution it answers and the decision link in the project packet", async () => {
+      projectPacketCitingTheCampaign();
+      answerTraceReads({ data: { campaignId: traceAddress.campaignId, publishedOnly: false, count: 1, entries: [published] }, error: null });
+
+      const text = await generatedHtml();
+      const saved = traceDecisionRow();
+
+      expect(rpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: traceAddress.campaignId, p_published_only: false });
+      expect(rpcMock).toHaveBeenCalledWith("read_engagement_decision_links", { p_campaign: traceAddress.campaignId });
+      expect(engagementItemsSelectMock).toHaveBeenCalledWith(
+        "id, campaign_id, category_id, title, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+      );
+      expect(text).toContain("2 contributions: 1 approved, 1 withheld, 0 pending, 0 flagged. 1 published staff response. 1 decision-link action");
+      expect(text).toContain(`Walking safety on Fifth Avenue Response ${traceAddress.responseId}`);
+      expect(text).toContain(`Answers 1 contribution Near misses crossing Fifth at Cedar (${CROSSING})`);
+      expect(text).toContain(`SYNTHETIC decision · Proposed · SYNTHETIC linked project`);
+      expect(text).toContain(`Link record ${saved.id} · link`);
+      expect(text).not.toContain("Utility billing question");
+      expect(text).not.toContain("SYNTHETIC off-topic reason");
+    });
+
+    it("prints the same trace in a packet that targets the campaign itself", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111", workspace_id: traceAddress.workspaceId, project_id: null, rtp_cycle_id: null,
+          engagement_campaign_id: traceAddress.campaignId, title: "Campaign packet", summary: null, report_type: "project_status",
+          status: "draft", created_at: "2026-11-02T08:00:00.000Z",
+        },
+        error: null,
+      });
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [{ id: "section-1", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 0, config_json: {} }],
+        error: null,
+      });
+      reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+      engagementCampaignMaybeSingleMock.mockResolvedValueOnce({
+        data: { id: traceAddress.campaignId, workspace_id: traceAddress.workspaceId, title: "Fifth Avenue listening", summary: null, status: "active",
+          engagement_type: "map_feedback", share_token: null, updated_at: "2026-11-02T08:00:00.000Z", demographics_enabled: false },
+        error: null,
+      });
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: traceItems, error: null });
+      answerTraceReads({ data: { campaignId: traceAddress.campaignId, publishedOnly: false, count: 1, entries: [published] }, error: null });
+
+      const text = await generatedHtml();
+
+      expect(rpcMock).toHaveBeenCalledWith("read_engagement_decision_links", { p_campaign: traceAddress.campaignId });
+      expect(text).toContain(`Answers 1 contribution Near misses crossing Fifth at Cedar (${CROSSING})`);
+      expect(text).toContain(`Link record ${traceDecisionRow().id} · link`);
+    });
+
+    it("still generates, and says the responses are unknown, when the response read fails", async () => {
+      projectPacketCitingTheCampaign();
+      answerTraceReads({ data: null, error: { message: "permission denied for function read_engagement_response_snapshot", code: "42501" } });
+
+      const text = await generatedHtml();
+
+      expect(text).toContain("Staff responses could not be read. They are unknown here, not zero. Reported cause: permission denied for function read_engagement_response_snapshot");
+      expect(text).not.toContain("No staff response has been published");
+      expect(text).not.toContain("Walking safety on Fifth Avenue");
     });
   });
 

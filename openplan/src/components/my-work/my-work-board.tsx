@@ -82,7 +82,7 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   deadlines: "Overdue first, then soonest.",
   undated: "Project issues and plan actions without a due date. Set a date in the original record when one is known.",
   blocked_projects:
-    "Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list — so this block reads the same for everyone here.",
+    "Stage gates whose latest decision was a hold. A hold is a fact about the project, not an item on one person's list, so this block reads the same for everyone here.",
   needs_review:
     "Work awaiting a review or decision. Contract items appear only when your designated role can take that next step.",
   workspace_deadlines:
@@ -94,7 +94,7 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
   deadlines: ["deliverables", "milestones", "submittals", "land_use_plan_actions", "contract_tasks"],
   undated: ["issues", "land_use_plan_actions", "contract_tasks"],
   blocked_projects: ["stage_gate_holds"],
-  needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
+  needs_review: ["engagement_moderation", "failed_model_runs", "stalled_model_runs", "failed_county_runs", "aerial_processing", "stale_report_packets", "stale_ss4a_seeds", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
   workspace_deadlines: ["grant_decisions", "grant_application_due", "award_obligations", "invoice_windows"],
 };
 
@@ -109,6 +109,11 @@ const NEEDS_REVIEW_SOURCE_LABELS: Record<string, string> = {
   contract_pending_reviews:"contract approvals and accounting or invoice reviews",
   engagement_moderation: "comments to moderate",
   failed_model_runs: "failed model runs",
+  stalled_model_runs: "running model runs",
+  failed_county_runs: "county runs",
+  aerial_processing: "aerial processing jobs",
+  stale_report_packets: "report packets",
+  stale_ss4a_seeds: "seeded SS4A applications",
   narrative_drafts: "narrative drafts awaiting review",
   decision_package_reviews: "decision packages awaiting review or replacement",
 };
@@ -223,7 +228,7 @@ export function MyWorkBoard({
         {assigneeColumnPending ? (
           <div className="module-alert" role="status">
             <p>
-              This copy of OpenPlan cannot yet tell whose work is whose — that part of the
+              This copy of OpenPlan cannot yet tell whose work is whose. That part of the
               database is not set up. Whoever installed OpenPlan for your agency can finish the
               setup, and then assignment will work here.
             </p>
@@ -235,7 +240,7 @@ export function MyWorkBoard({
         {scope === "unassigned" && !departedIncludedInUnassigned ? (
           <p className="module-note">
             This list shows work with nobody assigned to it. Work left behind by someone who has
-            since left the team could not be included — the team roster was unavailable, or the
+            since left the team could not be included: the team roster was unavailable, or the
             team is larger than this filter can carry. Switch to{" "}
             {MY_WORK_SCOPE_LABELS.all_projects} to see it.
           </p>
@@ -265,14 +270,14 @@ export function MyWorkBoard({
             <p>
               {scope === "assigned"
                 ? isViewer
-                  ? "Nothing is assigned to you. Viewers can read everything here but are not given project work — the shared deadlines below are what this page can show you."
+                  ? "Nothing is assigned to you. Viewers can read everything here but are not given project work. The shared deadlines below are what this page can show you."
                   : "Nothing dated is assigned to you right now."
                 : scope === "unassigned"
                   ? "Every piece of dated project work here has someone on it."
                   : "No project here has any dated work open."}
             </p>
             <p className="module-note">
-              Try another view — unassigned work and other people&apos;s deadlines are one click
+              Try another view. Unassigned work and other people&apos;s deadlines are one click
               away, and work is assigned from its own project page.
             </p>
             <MyWorkScopeToggles scope={scope} />
@@ -316,8 +321,8 @@ export function MyWorkBoard({
           </div>
         ) : blockHasUnreadableSource("blocked_projects") ? (
           <p className="module-empty-state">
-            The stage-gate decision log could not be read. Whether any project is held is unknown
-            — not that none is.
+            The stage-gate decision log could not be read. Whether any project is held is unknown,
+            not that none is.
           </p>
         ) : (
           <p className="module-empty-state">
@@ -342,13 +347,15 @@ export function MyWorkBoard({
             {`${unreadableReviewLanes.join(" and ")} could not be read, so `}
             {blocks.needs_review.length > 0
               ? "this list is incomplete rather than complete."
-              : "whether anything is waiting is unknown — not that nothing is."}
+              : "whether anything is waiting is unknown, not that nothing is."}
           </p>
         ) : blocks.needs_review.length === 0 ? (
           <p className="module-empty-state">
             No items are listed in this review section: no comment is pending moderation, no model run failed
-            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days, no drafted narrative is awaiting a
-            decision, and no contract approval, remaining-work update, accounting import or invoice review is pending.
+            in the last {FAILED_RUN_QUEUE_WINDOW_DAYS} days or stopped, no county run or aerial processing job
+            failed, no report packet needs a refresh, no seeded SS4A application has changed or unchecked Safety
+            evidence, no drafted narrative is awaiting a decision, and no contract approval, remaining-work update,
+            accounting import or invoice review is pending.
           </p>
         ) : null}
       </article>

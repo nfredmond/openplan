@@ -254,8 +254,8 @@ export function WorkspaceIntegrationKeysPanel({
             <p>
               <span className="font-medium">
                 Stored workspace key ••••{provider.storedKey.keyLast4} can no longer be read
-              </span>{" "}
-              — the key this workspace saved is no longer usable, through no action of yours.
+              </span>{". "}
+              The key this workspace saved is no longer usable, through no action of yours.
             </p>
             <p className="mt-1">
               {provider.envKeyPresent ? (
@@ -272,19 +272,19 @@ export function WorkspaceIntegrationKeysPanel({
             </p>
             <p className="mt-1 text-xs">
               For whoever operates this deployment: the server setting{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">
+              <code className="rounded bg-secondary px-1 py-0.5 text-xs">
                 OPENPLAN_INTEGRATION_KEY_SECRET
               </code>{" "}
               has changed since this key was saved
               {provider.envKeyPresent ? (
                 <>
                   , and requests currently fall back to{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>.
+                  <code className="rounded bg-secondary px-1 py-0.5 text-xs">{provider.envVar}</code>.
                 </>
               ) : (
                 <>
                   , and no{" "}
-                  <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>{" "}
+                  <code className="rounded bg-secondary px-1 py-0.5 text-xs">{provider.envVar}</code>{" "}
                   is set to fall back to.
                 </>
               )}
@@ -307,14 +307,14 @@ export function WorkspaceIntegrationKeysPanel({
     if (provider.envKeyPresent) {
       return (
         <p className="mt-2 text-sm text-muted-foreground">
-          Ready — running on a key set up by whoever operates this deployment (
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">{provider.envVar}</code>)
+          Ready: running on a key set up by whoever operates this deployment (
+          <code className="rounded bg-secondary px-1 py-0.5 text-xs">{provider.envVar}</code>)
         </p>
       );
     }
     return (
       <p className="mt-2 text-sm text-amber-800 dark:text-amber-200">
-        Not configured — {provider.label} features will be unavailable or degraded. Whoever
+        Not configured: {provider.label} features will be unavailable or degraded. Whoever
         operates this deployment can set it up{provider.workspaceConfigurable && storageAvailable ? ", or paste a workspace key below" : ""}.
       </p>
     );
@@ -384,7 +384,7 @@ export function WorkspaceIntegrationKeysPanel({
                 provider.storedKey &&
                 provider.storedKey.decryptable !== false ? (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    AI usage from this workspace — including its public engagement portal — bills
+                    AI usage from this workspace, including its public engagement portal, bills
                     this workspace&apos;s own Anthropic account.
                   </p>
                 ) : null}
@@ -437,11 +437,11 @@ export function WorkspaceIntegrationKeysPanel({
                     <p className="mt-2 text-xs text-muted-foreground">
                       Per-workspace keys are unavailable on this deployment: its operator has not
                       set{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">
+                      <code className="rounded bg-secondary px-1 py-0.5">
                         OPENPLAN_INTEGRATION_KEY_SECRET
                       </code>
                       . Until that is configured, set{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">{provider.envVar}</code> as a
+                      <code className="rounded bg-secondary px-1 py-0.5">{provider.envVar}</code> as a
                       deployment environment variable instead.
                     </p>
                   )
@@ -454,7 +454,7 @@ export function WorkspaceIntegrationKeysPanel({
                     ) : null}
                     <p className="mt-1 text-xs text-muted-foreground">
                       Deployment environment variable:{" "}
-                      <code className="rounded bg-muted px-1 py-0.5">{provider.envVar}</code>
+                      <code className="rounded bg-secondary px-1 py-0.5">{provider.envVar}</code>
                     </p>
                     <div className="mt-2">
                       <Button

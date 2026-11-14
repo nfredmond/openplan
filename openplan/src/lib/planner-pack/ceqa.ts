@@ -167,7 +167,7 @@ export function ceqaVmtFactBlocks(result: CeqaVmtResult, sourcePath: string): Fa
     const deltaPctDisplay = Math.abs(scenario.delta_pct) * 100;
     const claim =
       `Under CEQA §15064.3, scenario ${scenario.scenario_id} VMT per ` +
-      `capita is ${formatFixedPython(scenario.vmt_per_capita, 1)} — ${scenario.determination}, ` +
+      `capita is ${formatFixedPython(scenario.vmt_per_capita, 1)}: ${scenario.determination}, ` +
       `${formatFixedPython(deltaPctDisplay, 1)}% ${direction} the ` +
       `${formatFixedPython(result.threshold_pct * 100, 0)}%-below-` +
       `${result.reference_label} threshold of ` +

@@ -118,10 +118,10 @@ export function EngagementSynthesisPanel({ initialSynthesis: synthesis, initialS
                     <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
                     <span className="text-label uppercase tracking-wide">
                       {sentence.reason === "missing_citation"
-                        ? "— no citation"
+                        ? "(no citation)"
                         : sentence.reason === "unfaithful_citation"
-                          ? `— figures not in cited comments: ${sentence.unfaithful_claims.join(", ")}`
-                          : `— unknown fact ids: ${sentence.unknown_fact_ids.join(", ")}`}
+                          ? `(figures not in cited comments: ${sentence.unfaithful_claims.join(", ")})`
+                          : `(unknown fact ids: ${sentence.unknown_fact_ids.join(", ")})`}
                     </span>
                   </li>
                 ))}

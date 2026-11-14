@@ -1,0 +1,102 @@
+import type { ReactElement } from "react";
+import { beforeEach, expect, it, vi } from "vitest";
+import { BCA_PROJECT_PROJECTION, type BcaProjectPlaceRead } from "@/lib/bca/workbench/project-place";
+import { PROJECT_PLACE_SCOPE_COLUMNS } from "@/lib/projects/project-place";
+import { bcaActorId, bcaProjectId, bcaProjectRow } from "./fixtures/bca/project-place";
+
+const mocks = vi.hoisted(() => ({ client: vi.fn(), getUser: vi.fn(), from: vi.fn() }));
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client }));
+vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("not found"); }, redirect: () => { throw new Error("sign in"); } }));
+vi.mock("@/components/grants/bca-workbench/workbench", () => ({ BcaWorkbench: () => null }));
+vi.mock("@/lib/models/guided-comparison-evidence-server", () => ({ loadGuidedComparisonEvidence: vi.fn().mockResolvedValue({}) }));
+vi.mock("@/lib/models/guided-comparison-results", () => ({ buildGuidedComparisonResults: vi.fn().mockReturnValue([]) }));
+import { authorizeBcaProject } from "@/lib/bca/workbench/access";
+import BcaPage from "@/app/(app)/grants/bca/[projectId]/page";
+
+function query(result: { data: unknown; error: unknown }) {
+  return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue(result),
+    then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve) };
+}
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.getUser.mockResolvedValue({ data: { user: { id: bcaActorId } } });
+  mocks.client.mockResolvedValue({ auth: { getUser: mocks.getUser }, from: mocks.from });
+});
+it("reads the complete scope projection through route-local actor, workspace and write checks", async () => {
+  const project = query({ data: bcaProjectRow(), error: null });
+  const membership = query({ data: { workspace_id: bcaProjectRow().workspace_id, role: "viewer" }, error: null });
+  mocks.from.mockImplementation(table => table === "projects" ? project : membership);
+  expect((await authorizeBcaProject(bcaProjectId, false)).error).toBeUndefined();
+  expect((await authorizeBcaProject(bcaProjectId, true)).error?.status).toBe(403);
+  expect(project.select).toHaveBeenCalledWith(BCA_PROJECT_PROJECTION);
+  expect(BCA_PROJECT_PROJECTION).toBe(`id, workspace_id, name, updated_at, jurisdiction_context, ${PROJECT_PLACE_SCOPE_COLUMNS}`);
+  expect(BCA_PROJECT_PROJECTION).not.toContain("place_geometry_geojson");
+  expect(project.eq).toHaveBeenCalledWith("id", bcaProjectId);
+  expect(membership.select).toHaveBeenCalledWith("workspace_id, role");
+  expect(membership.eq).toHaveBeenCalledWith("workspace_id", bcaProjectRow().workspace_id);
+  expect(membership.eq).toHaveBeenCalledWith("user_id", bcaActorId);
+  mocks.getUser.mockResolvedValueOnce({ data: { user: null } });
+  expect((await authorizeBcaProject(bcaProjectId, false)).error?.status).toBe(401);
+});
+it("passes the actual project snapshot from the server page with the same full projection", async () => {
+  const project = query({ data: bcaProjectRow(), error: null });
+  const membership = query({ data: { role: "member" }, error: null });
+  const sets = query({ data: [], error: null });
+  mocks.from.mockImplementation(table => table === "projects" ? project : table === "workspace_members" ? membership : sets);
+  const page = await BcaPage({ params: Promise.resolve({ projectId: bcaProjectId }) }) as ReactElement<{ projectId: string; projectPlace: BcaProjectPlaceRead }>;
+  expect(project.select).toHaveBeenCalledWith(BCA_PROJECT_PROJECTION);
+  expect(project.eq).toHaveBeenCalledWith("id", bcaProjectId);
+  expect(membership.eq).toHaveBeenCalledWith("workspace_id", bcaProjectRow().workspace_id);
+  expect(membership.eq).toHaveBeenCalledWith("user_id", bcaActorId);
+  expect(page.props.projectId).toBe(bcaProjectId);
+  expect(page.props.projectPlace).toMatchObject({ status: "available", snapshot: { projectId: bcaProjectId,
+    projectUpdatedAt: bcaProjectRow().updated_at, status: "missing" } });
+});
+// The project page refuses an id with `isUuid` (src/lib/uuid.ts), which accepts any hexadecimal value in
+// uuid shape because fixtures and older rows are not all RFC 4122. The BCA page must accept exactly the same
+// ids: one its project page opens may not answer 404 here before the project is even read.
+it("reads the project for exactly the ids the project page accepts", async () => {
+  const { isUuid } = await import("@/lib/uuid");
+  const candidates = [
+    bcaProjectId,
+    "00000000-0000-0000-0000-000000000001",
+    "11111111-1111-1111-1111-111111111111",
+    "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA",
+    "not-a-project",
+    "new",
+    "00000000000000000000000000000001",
+    "{00000000-0000-0000-0000-000000000001}",
+  ];
+  for (const projectId of candidates) {
+    vi.clearAllMocks();
+    mocks.getUser.mockResolvedValue({ data: { user: { id: bcaActorId } } });
+    mocks.client.mockResolvedValue({ auth: { getUser: mocks.getUser }, from: mocks.from });
+    mocks.from.mockImplementation(() => query({ data: null, error: null }));
+    await expect(BcaPage({ params: Promise.resolve({ projectId }) })).rejects.toThrow("not found");
+    const readTheProject = mocks.from.mock.calls.some(([table]) => table === "projects");
+    expect([projectId, readTheProject]).toEqual([projectId, isUuid(projectId)]);
+  }
+});
+it("hands the workbench the project's own latest saved version, and a failed read as failed", async () => {
+  const { exampleBcaDocument, reviewBcaProjectPlace } = await import("@/lib/bca/workbench/document");
+  const { bcaProjectPlace } = await import("./fixtures/bca/project-place");
+  const document = reviewBcaProjectPlace(exampleBcaDocument(bcaProjectId), bcaProjectPlace());
+  const render = async (result: { data: unknown; error: unknown }) => {
+    const versions = query(result);
+    const project = query({ data: bcaProjectRow(), error: null });
+    const membership = query({ data: { role: "member" }, error: null });
+    const sets = query({ data: [], error: null });
+    mocks.from.mockImplementation(table => table === "projects" ? project : table === "workspace_members" ? membership
+      : table === "project_bca_versions" ? versions : sets);
+    const page = await BcaPage({ params: Promise.resolve({ projectId: bcaProjectId }) }) as ReactElement<{ latestSaved: unknown }>;
+    return { page, versions };
+  };
+  for (const id of ["cccccccc-cccc-4ccc-8ccc-cccccccccccc", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"]) {
+    const { page, versions } = await render({ data: [{ id, project_id: bcaProjectId, created_at: "2026-11-13T12:00:00Z", document_json: document }], error: null });
+    expect(versions.eq).toHaveBeenCalledWith("project_id", bcaProjectId);
+    expect(page.props.latestSaved).toEqual({ status: "found", id, createdAt: "2026-11-13T12:00:00Z", document });
+  }
+  expect((await render({ data: null, error: { message: "timeout" } })).page.props.latestSaved).toEqual({ status: "failed" });
+});

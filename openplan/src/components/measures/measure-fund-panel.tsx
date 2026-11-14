@@ -105,7 +105,7 @@ export function MeasureFundPanel({
     ? `Name the edition of the figures in force before applying the ordinance. ` +
       `${vintageDependentCategoryLabels.join(", ")} ` +
       `${vintageDependentCategoryLabels.length === 1 ? "is" : "are"} divided between the cities and ` +
-      `districts using the recorded figures, and with no edition named nothing matches — ` +
+      `districts using the recorded figures, and with no edition named nothing matches: ` +
       `${vintageDependentCategoryLabels.length === 1 ? "that category" : "those categories"} would be ` +
       `held undistributed and the recipients would be allocated nothing.`
     : null;
@@ -348,7 +348,7 @@ export function MeasureFundPanel({
             {periods.length === 0 ? (
               <tr>
                 <td colSpan={canWrite ? 6 : 5} className="py-6 text-center text-sm text-muted-foreground">
-                  No periods have been opened yet. A fund with no periods has not been told anything — which is
+                  No periods have been opened yet. A fund with no periods has not been told anything, which is
                   not the same as a fund that has received nothing.
                 </td>
               </tr>

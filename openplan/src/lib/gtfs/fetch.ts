@@ -624,7 +624,7 @@ function emptyBodyRefusal(options: CappedFetchOptions): GtfsFetchFailure {
     ok: false,
     code: "fetch_failed",
     detail:
-      `That address answered, but sent no ${options.subjectLabel} at all — the response was empty. ` +
+      `That address answered, but sent no ${options.subjectLabel} at all: the response was empty. ` +
       `The address may point at a placeholder, or the file may not have been published yet.`,
     hops: [],
   };

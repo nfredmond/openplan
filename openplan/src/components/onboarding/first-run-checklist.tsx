@@ -372,12 +372,12 @@ export function FirstRunChecklist({
         status={runsUnreadable ? "todo" : hasRuns ? "done" : "todo"}
         state={
           runsUnreadable
-            ? "Could not check whether this workspace has any runs — that read failed. It is not the same as having none."
+            ? "Could not check whether this workspace has any runs. That read failed. It is not the same as having none."
             : hasRuns
               ? "This workspace has saved analysis runs."
               : "No analysis runs yet."
         }
-        unlocks="Corridor Analysis scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade — they support prioritization and narrative, not final engineering."
+        unlocks="Corridor Analysis scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade. They support prioritization and narrative, not final engineering."
         action={hasRuns ? undefined : { href: "/explore", label: "Open Corridor Analysis" }}
       />
 
@@ -416,7 +416,7 @@ export function FirstRunChecklist({
           title="Invite your team"
           status="optional"
           state="A workspace works fine alone, and teammates can join at any time."
-          unlocks="Everyone you invite works in this same workspace — the same projects, runs, engagement campaigns, and packets — with the role you give them. Invitations are links you send yourself; OpenPlan does not email them."
+          unlocks="Everyone you invite works in this same workspace (the same projects, runs, engagement campaigns, and packets) with the role you give them. Invitations are links you send yourself; OpenPlan does not email them."
           action={{ href: "/workspace#workspace-team", label: "Open the team panel" }}
         />
       ) : null}

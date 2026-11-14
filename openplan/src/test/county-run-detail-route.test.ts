@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("server-only", () => ({}));
+
+const mutationMock = vi.fn(() => ({ eq: () => ({ eq: async () => ({ error: null }) }) }));
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
@@ -38,6 +41,9 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 import { GET as getCountyRunDetail } from "@/app/api/county-runs/[countyRunId]/route";
+
+import { GET as getCountyRunProvenance } from "@/app/api/county-runs/[countyRunId]/provenance/route";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 
 function request() {
   return new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", {
@@ -170,6 +176,7 @@ describe("GET /api/county-runs/[countyRunId]", () => {
           screening_gate: {
             status_label: "bounded screening-ready",
           },
+          metrics: { median_absolute_percent_error: 16.01, max_absolute_percent_error: 49.48 },
         },
       },
       error: null,
@@ -273,7 +280,7 @@ describe("GET /api/county-runs/[countyRunId]", () => {
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
-      from: fromMock,
+      from: (table: string) => ({ ...fromMock(table), delete: mutationMock, insert: mutationMock, update: mutationMock, upsert: mutationMock }),
     });
   });
 
@@ -306,7 +313,7 @@ describe("GET /api/county-runs/[countyRunId]", () => {
     expect(payload.modelingEvidence.sourceManifests).toHaveLength(1);
   });
 
-  it("keeps county-run detail available when modeling evidence tables are not migrated yet", async () => {
+  it("reports unavailable evidence when modeling evidence tables are not migrated yet", async () => {
     claimDecisionMaybeSingleMock.mockResolvedValue({
       data: null,
       error: { message: 'relation "modeling_claim_decisions" does not exist', code: "42P01" },
@@ -316,9 +323,9 @@ describe("GET /api/county-runs/[countyRunId]", () => {
       params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(503);
     const payload = await response.json();
-    expect(payload.modelingEvidence).toBeNull();
+    expect(payload.error).toContain("Modeling evidence could not be read");
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "county_run_modeling_evidence_lookup_failed",
       expect.objectContaining({ missingSchema: true })
@@ -345,4 +352,76 @@ describe("GET /api/county-runs/[countyRunId]", () => {
 
     expect(response.status).toBe(401);
   });
+  it.each([
+    ["pass", 4, "recorded", "screening_grade"],
+    ["fail", 4, "recorded", "prototype_only"],
+    ["inconclusive", 4, "recorded", "prototype_only"],
+    ["pass", 3, "recorded", "prototype_only"],
+    ["pass", 4, "pending", "prototype_only"],
+    [null, 4, null, "prototype_only"],
+  ])("keeps display and download tiers identical for outcome %s, rules %s, custody %s", async (outcome, version, write, tier) => {
+    const { data: row } = await countyRunMaybeSingleMock();
+    const validation = {
+      ...row.validation_summary_json,
+      validation_rules_version: version,
+      model_validation_assessment: outcome ? { scientific_outcome: outcome, validation_evidence_write: write, reasons: ["Synthetic outcome reason."] } : null,
+    };
+    countyRunMaybeSingleMock.mockResolvedValue({ data: {
+      ...row, validation_summary_json: validation,
+      manifest_json: { ...row.manifest_json, summary: { ...row.manifest_json.summary, validation } },
+      basis_rules_version: version, basis_outcome: outcome, basis_evidence_write: write, basis_reasons: ["Synthetic outcome reason."],
+    }, error: null });
+    const context = { params: Promise.resolve({ countyRunId: row.id }) };
+    const displayed = await getCountyRunDetail(request(), context);
+    expect(displayed.status).toBe(200);
+    const detail = await displayed.json();
+    expect(detail.modelingEvidence.claimDecision.claimStatus).toBe(tier);
+    const downloaded = await getCountyRunProvenance(request(), context);
+    expect(mutationMock).not.toHaveBeenCalled();
+    expect(downloaded.status).toBe(200);
+    expect(downloaded.headers.get("content-type")).toContain("text/markdown");
+    expect(downloaded.headers.get("cache-control")).toBe("no-store");
+    const document = await downloaded.text();
+    expect(document).toContain(`Assignment claim tier: ${modelingClaimStatusLabel(detail.modelingEvidence.claimDecision.claimStatus)}`);
+    expect(document).toContain(detail.modelingEvidence.claimDecision.statusReason);
+    expect(document).toContain(detail.modelingEvidence.sourceManifests[0].citationText);
+    expect(document).not.toContain("met OpenPlan's screening thresholds");
+    // Mutation methods are instrumented separately from the read projections.
+    expect(claimDecisionSelectMock).toHaveBeenCalledTimes(2);
+    expect(sourceManifestSelectMock).toHaveBeenCalledWith("id, source_key, source_kind, source_label, source_url, source_vintage, geography_id, geography_label, license_note, citation_text");
+    expect(claimDecisionEqCountyRunIdMock).toHaveBeenCalledWith("county_run_id", row.id);
+  });
+
+  it.each([getCountyRunDetail, getCountyRunProvenance])("refuses malformed and conflicting retained metadata before reading evidence", async handler => {
+    const { data: row } = await countyRunMaybeSingleMock();
+    for (const [change, message] of [
+      [{ manifest_json: { schema_version: "broken" } }, "manifest metadata is malformed"],
+      [{ validation_summary_json: [] }, "validation metadata is malformed"],
+      [{ validation_summary_json: { stations_matched: 999 } }, "summaries disagree"],
+    ] as const) {
+      countyRunMaybeSingleMock.mockResolvedValue({ data: { ...row, ...change }, error: null });
+      const response = await handler(request(), { params: Promise.resolve({ countyRunId: row.id }) });
+      expect(response.status).toBe(409);
+      expect((await response.json()).error).toContain(message);
+    }
+    expect(claimDecisionSelectMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps a missing claim explicit in the download without rebuilding one", async () => {
+    claimDecisionMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    const response = await getCountyRunProvenance(request(), { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) });
+    expect(response.status).toBe(200);
+    const document = await response.text();
+    expect(document).toContain("Assignment claim tier: Untiered");
+    expect(document).toContain("No assignment claim decision is recorded");
+    expect(document).not.toContain("met OpenPlan's screening thresholds");
+  });
+
+  it.each([getCountyRunDetail, getCountyRunProvenance])("refuses a failed source read instead of reporting no sources", async handler => {
+    sourceManifestOrderMock.mockResolvedValue({ data: null, error: { message: "Synthetic read failure" } });
+    const response = await handler(request(), { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) });
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("Modeling evidence could not be read");
+  });
+
 });

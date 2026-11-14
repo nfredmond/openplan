@@ -977,7 +977,7 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
 
     expect(response.status).toBe(409);
     expect(await response.json()).toMatchObject({
-      error: expect.stringContaining("void it and reissue"),
+      error: expect.stringContaining("Void it and reissue"),
     });
     expect(lineDeleteMock).not.toHaveBeenCalled();
     expect(rpcMock).not.toHaveBeenCalled();

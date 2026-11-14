@@ -37,6 +37,6 @@ export function workspaceLayerFeatureCapMessage(cap: number, featureCount: numbe
   return (
     `This OpenPlan deployment stores at most ${cap.toLocaleString("en-US")} shapes in one map layer, and this file holds ` +
     `${featureCount.toLocaleString("en-US")}. Nothing was stored. Contact whoever operates this deployment to raise or remove the ` +
-    `limit (${WORKSPACE_LAYER_FEATURE_CAP_ENV}), or upload an extract clipped to your study area — OpenPlan itself is free and has no usage tiers.`
+    `limit (${WORKSPACE_LAYER_FEATURE_CAP_ENV}), or upload an extract clipped to your study area. OpenPlan itself is free and has no usage tiers.`
   );
 }

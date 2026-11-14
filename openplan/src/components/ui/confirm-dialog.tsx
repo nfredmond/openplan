@@ -240,7 +240,7 @@ export function ConfirmDialog({
                       <span className="font-medium">{reference.label}</span>
                     )}
                     {reference.detail ? (
-                      <span className="text-muted-foreground"> — {reference.detail}</span>
+                      <span className="text-muted-foreground">: {reference.detail}</span>
                     ) : null}
                   </li>
                 ))}

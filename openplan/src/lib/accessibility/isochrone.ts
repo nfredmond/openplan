@@ -121,7 +121,7 @@ export function classifyWalkBikeAccess(inputs: WalkBikeAccessInputs): WalkBikeAc
     `zero-vehicle households ${roundPct(inputs.pctZeroVehicle)}%, ` +
     (stopDensityMeasured
       ? `transit stop density ${roundPct(inputs.transitStopsPerSqMile as number)}/sq mi.`
-      : "transit stop density not available — scored without it, not as zero.");
+      : "transit stop density not available (scored without it, not as zero).");
 
   return {
     tier,

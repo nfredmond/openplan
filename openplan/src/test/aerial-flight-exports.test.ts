@@ -311,7 +311,7 @@ describe("generic KML export", () => {
 
   it("escapes the mission title", () => {
     const kml = buildGenericKml({ missionTitle: "Cliff & Cove", snapshot: snapshot() });
-    expect(kml).toContain("Cliff &amp; Cove — flight plan");
+    expect(kml).toContain("Cliff &amp; Cove: flight plan");
   });
 });
 

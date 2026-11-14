@@ -182,7 +182,7 @@ describe("county run launch control on a deployment with no worker", () => {
     // elements above it: the shared prepared help text does not say that
     // nothing is going to run this handoff, and the card override does.
     expect(screen.queryByText(/prepared but has not been sent anywhere/i)).toBeNull();
-    expect(screen.getByText(/prepared, not sent/i)).toBeInTheDocument();
+    expect(screen.getByText(/handoff is prepared, not sent/i)).toBeInTheDocument();
   });
 
   /**

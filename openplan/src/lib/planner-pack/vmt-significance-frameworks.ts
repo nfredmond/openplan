@@ -366,7 +366,7 @@ export function createVmtSignificanceFrameworkRegistry(
               `(${blockedBySubdivision.map(describeFramework).join("; ")}). Rather than assume one, ` +
               "OpenPlan issues no determination: a framework applied to the wrong subdivision would " +
               "state something about the law that is not true where you work. Set the workspace's home " +
-              "geography to a place whose subdivision is unambiguous — a metro or micro area has none, " +
+              "geography to a place whose subdivision is unambiguous. A metro or micro area has none, " +
               "because it is not subdivision-scoped and may span several.",
           };
         }

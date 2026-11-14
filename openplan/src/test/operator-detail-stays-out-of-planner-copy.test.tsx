@@ -1,3 +1,5 @@
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
 /**
  * A PLANNER MAY NOT BE HANDED A DATABASE ERROR OR AN ENV VAR THEY CANNOT SET.
  *
@@ -294,7 +296,7 @@ const SWEPT_PAGES = [
   "app/(app)/scenarios/[scenarioSetId]/page.tsx",
   "app/(app)/invoicing/_components/reimbursement-lane.tsx",
   "app/(app)/aerial/missions/[missionId]/page.tsx",
-  "app/(app)/grants/page.tsx",
+  "app/(app)/grants/(overview)/page.tsx",
   // The report detail page reaches the same defect through its own component.
   "components/reports/report-read-failure-notice.tsx",
 ];

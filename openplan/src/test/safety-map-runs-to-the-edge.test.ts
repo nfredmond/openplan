@@ -25,7 +25,10 @@
  * inline style, and both of which a later edit could silently undo:
  *
  *   1. On this route the surface gives up its insets, so the map reaches the
- *      window's edge.
+ *      window's right and bottom edges, and on the left it meets the rail.
+ *      (Until 2026-11-02 it ran under the rail to x=0. That stopped being
+ *      harmless once the rail became solid: 60px of the page was hidden under
+ *      it. See `the-page-starts-beside-the-rail.test.ts`.)
  *   2. The nav rail is NOT removed to buy them. It collapses and floats. A
  *      planner is not a member of the public with one errand — they came from
  *      another module and are going to another module — and a full-screen map
@@ -122,9 +125,14 @@ describe("safety's map reaches the edge of the window", () => {
       the test proves nothing, and this one proved nothing until the lookbehind
       was added.
     */
-    // The left inset is the 272px the nav column used to reserve — the single
-    // largest thing between the map and the window.
+    // The left inset is the 272px the nav column used to reserve, the single
+    // largest thing between the map and the window. It is given up as far as
+    // the collapsed rail's edge and no further: past it, the page is under the
+    // rail.
     expect(combined, "the surface never gives up its left inset on this route").toMatch(
+      /(?<![-\w])left:\s*var\(--op-cart-rail-edge\)\s*;/
+    );
+    expect(combined, "the surface runs under the rail again").not.toMatch(
       /(?<![-\w])left:\s*0(px)?\s*;/
     );
     expect(combined, "the surface never gives up its bottom inset").toMatch(
@@ -141,9 +149,8 @@ describe("safety's map reaches the edge of the window", () => {
    * THE TWO SPELLINGS WE HAVE ACTUALLY SEEN — not the door guard.
    *
    * Read the file header before trusting this. It is cheap to "improve" the
-   * measurement above by deleting the rail: the map would grow by nothing at all
-   * (it already runs underneath) and the planner would lose every route out of
-   * the page. This catches the two crudest ways of doing that, inside the gate,
+   * measurement above by deleting the rail: the map would grow by 60px and the
+   * planner would lose every route out of the page. This catches the two crudest ways of doing that, inside the gate,
    * for nothing. It cannot catch the third, and one of the third's spellings has
    * already been shipped past it in a mutation. The check that can is
    * `qa-harness/openplan-local-escape-hatch-audit.js`.
@@ -167,8 +174,8 @@ describe("safety's map reaches the edge of the window", () => {
       expect(
         rule.body,
         `${rule.selector} takes the nav rail off /safety. The rail is the only always-visible way ` +
-          `from a full-screen map to any other module; the surface already runs underneath it, so ` +
-          `hiding it buys the map no pixels and strands the planner. Collapse it, do not remove it. ` +
+          `from a full-screen map to any other module; hiding it buys the map 60px and ` +
+          `strands the planner. Collapse it, do not remove it. ` +
           `(And if you are here because you found another way to hide it that this did not catch: ` +
           `that is expected — run qa-harness/openplan-local-escape-hatch-audit.js, which will.)`
       ).not.toMatch(/display:\s*none/);
@@ -205,23 +212,18 @@ describe("safety's map reaches the edge of the window", () => {
     expect(railRule![1]).toMatch(/width:\s*var\(--op-cart-rail-width\)/);
   });
 
-  it("offsets safety's own map controls by that edge rather than by a copy of it", () => {
+  it("leaves safety's own map controls at the map's corner, with no rail offset", () => {
     const workspace = read("src/components/safety/safety-workspace.tsx");
-    // The background picker sits over the map's top-left corner, which is now
-    // underneath a rail painted at a higher z-index than the whole surface. A
-    // literal offset here would be correct today and wrong the first time the
-    // rail changed width — with the only symptom being a control nobody can see.
-    // The LEFT specifically, not merely "the variable appears somewhere in the
-    // file": it appears twice (the offset and the width that pays for it), so a
-    // hardcoded `left: "92px"` left the looser check green.
-    expect(
-      workspace,
-      "the map control stack's left offset is not derived from the rail's own edge"
-    ).toMatch(/left:\s*"calc\(var\(--op-cart-rail-edge/);
+    // The background picker sits over the map's top-left corner. While the map
+    // ran under the rail it had to be pushed past it; now the map starts beside
+    // the rail, so any rail offset here is a gap of empty map, and on a phone
+    // (where the rail is a bottom bar) it pushed the picker 76px in for nothing.
+    expect(workspace.length).toBeGreaterThan(1000);
+    expect(workspace, "the map controls still measure from the rail").not.toMatch(/--op-cart-rail-edge/);
+    expect(workspace).toMatch(/absolute left-3 top-3 z-10/);
     // The severity key moved out of the bottom-left corner, which on a
     // full-bleed map is where the account card floats.
     expect(workspace).toMatch(/absolute bottom-8 right-3[^"]*safety|bottom-8 right-3/);
-    expect(workspace.length).toBeGreaterThan(1000);
   });
 
   /**

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { readEveryPageAsResult } from "@/lib/supabase/paged-read";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   aggregateCorridorEngagement,
@@ -65,11 +66,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ summary: null, reason: "no_corridor_geometry" });
     }
 
-    const { data: rows, error: rpcError } = await supabase.rpc("engagement_items_near_geometry", {
-      p_workspace_id: run.workspace_id,
-      p_geometry: geometry,
-      p_buffer_meters: bufferMeters,
-    });
+    // Paged: the function returns one row per nearby comment, and PostgREST
+    // stops a function result at 1,000 rows with no error, which would cap the
+    // corridor's comment total. Distance then `id` is a total order.
+    const { data: rows, error: rpcError } = await readEveryPageAsResult<CorridorEngagementItem, { message: string; code?: string | null }>(
+      (from, toInclusive) =>
+        supabase
+          .rpc("engagement_items_near_geometry", {
+            p_workspace_id: run.workspace_id,
+            p_geometry: geometry,
+            p_buffer_meters: bufferMeters,
+          })
+          .order("distance_meters", { ascending: true })
+          .order("id", { ascending: true })
+          .range(from, toInclusive),
+      "the corridor's nearby comments could not be read in full"
+    );
     if (rpcError) {
       audit.error("corridor_join_rpc_failed", { message: rpcError.message, code: rpcError.code ?? null });
       return NextResponse.json({ error: "Spatial join failed" }, { status: 500 });

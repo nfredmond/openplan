@@ -57,7 +57,8 @@ async function fixture(answer: string, invalidReceipt = false) {
     cleanup: () => rm(directory, { recursive: true, force: true }) };
 }
 
-describe("real connector and native handler recovery", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("real connector and native handler recovery", () => {
   it("delivers a valid synthetic answer and preserves the actual receipt", async () => {
     const f = await fixture(validAnswer);
     try {

@@ -95,7 +95,7 @@ const BANDS: ReadonlyArray<{
     describe: (share, zones) =>
       `${share}% of trips begin and end in the same zone across ${zones} zones, so that share of all ` +
       `travel is invisible to every link by construction. Comparing modelled link volumes to traffic ` +
-      `counts cannot establish whether this model is right — the gap it would show is mostly the zone ` +
+      `counts cannot establish whether this model is right. The gap it would show is mostly the zone ` +
       `system, not the demand. Use trip totals, mode share and VMT, which do count intrazonal travel, ` +
       `or split the zone system finer and run again.`,
   },
@@ -106,7 +106,7 @@ const BANDS: ReadonlyArray<{
     describe: (share, zones) =>
       `${share}% of trips begin and end in the same zone across ${zones} zones. More than a third of ` +
       `all travel never reaches a link, which is the situation OpenPlan's own county validation hit ` +
-      `at 26 zones and 36% — link-level comparison to counts failed there for this reason and not ` +
+      `at 26 zones and 36%. Link-level comparison to counts failed there for this reason and not ` +
       `because of the demand. Treat link volumes as unvalidatable at this resolution. Trip totals, ` +
       `mode share and VMT remain usable; a finer zone system is what would make link comparison mean ` +
       `something.`,

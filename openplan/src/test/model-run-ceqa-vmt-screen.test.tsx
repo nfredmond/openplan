@@ -84,7 +84,7 @@ describe("ModelRunCeqaVmtScreen", () => {
     expect(screen.getByTestId("ceqa-vmt-caveat")).toHaveTextContent(
       "not a CEQA determination of record"
     );
-    expect(screen.getByText("Screening-level — not a determination of record")).toBeInTheDocument();
+    expect(screen.getByText("Screening-level, not a determination of record")).toBeInTheDocument();
   });
 
   it("labels the calibration holdout as selection evidence, not independent accuracy", async () => {
@@ -461,7 +461,7 @@ describe("ModelRunCeqaVmtScreen — jurisdiction basis, claim tier, and persiste
       expect(memo).toContain(
         "- **Jurisdiction basis:** CEQA §15064.3 VMT significance screening, California, United States."
       );
-      expect(memo).toContain("**Modeling claim tier:** Screening-grade — recorded for this run.");
+      expect(memo).toContain("**Modeling claim tier:** Screening-grade, recorded for this run.");
       expect(memo).not.toContain("none established");
     } finally {
       delete (URL as unknown as Record<string, unknown>).createObjectURL;

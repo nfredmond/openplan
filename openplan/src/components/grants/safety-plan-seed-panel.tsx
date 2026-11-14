@@ -4,13 +4,31 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
+import { findGrantProgramCatalogEntry } from "@/lib/grants/application";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import type { ReportArtifactAttachOption } from "./funding-opportunity-application-workspace";
 
 type Preview = { artifactId: string; previewHash: string; snapshotHash: string; sections: { section_key: string; draft_markdown: string }[] };
 const sourcePageSchema = z.object({
   artifacts: z.array(z.object({ id: z.string().uuid(), reportTitle: z.string(), artifactKind: z.enum(["html", "pdf"]), generatedAt: z.string().nullable(), sourceVersion: z.enum(["v1", "v2", "invalid", "absent"]).optional() })).max(50),
   nextCursor: z.string().uuid().nullable(), requiresProject: z.boolean(),
+  freshness: z.discriminatedUnion("status", [
+    z.object({ status: z.literal("not_seeded") }), z.object({ status: z.literal("current") }), z.object({ status: z.literal("unknown") }),
+    z.object({ status: z.literal("newer"), seededGeneratedAt: z.string(), newestGeneratedAt: z.string(), newestArtifactId: z.string().uuid() }),
+  ]).optional(),
 });
+type Freshness = NonNullable<z.infer<typeof sourcePageSchema>["freshness"]>;
+
+/** The SS4A catalog's own section titles, so the preview shows names, not keys. */
+const SS4A_SECTION_TITLES = new Map(
+  (findGrantProgramCatalogEntry("ss4a")?.applicationSections ?? []).map((section) => [section.key, section.title]),
+);
+
+/** "Nov 3, 2026, 05:42 UTC", as the application's appendices date the same artifact; the stamp itself if it is not a date. */
+function formatGeneratedAt(value: string | null): string {
+  if (!value) return "Date not recorded";
+  return formatEvidenceTimestamp(value);
+}
 
 /** Selection and apply are explicit; a preview never writes application content. */
 export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
@@ -21,6 +39,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
   const [loadingSources, setLoadingSources] = useState(true);
   const [sourceError, setSourceError] = useState<string | null>(null);
   const [requiresProject, setRequiresProject] = useState(false);
+  const [freshness, setFreshness] = useState<Freshness | null>(null);
   const sourceRequest = useRef<AbortController | null>(null);
   const [artifactId, setArtifactId] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -44,6 +63,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
       if (signal.aborted) return;
       setArtifacts((previous) => cursor ? [...previous, ...payload.artifacts.filter((row: ReportArtifactAttachOption) => !previous.some((prior) => prior.id === row.id))] : payload.artifacts);
       setNextCursor(payload.nextCursor); setRequiresProject(payload.requiresProject);
+      if (!cursor) setFreshness(payload.freshness ?? null);
     } catch (caught) {
       if (!signal.aborted) setSourceError(caught instanceof Error ? caught.message : "Safety source read failed");
     } finally { if (!signal.aborted) setLoadingSources(false); }
@@ -73,6 +93,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
         setMessage(payload.replayed ? "This seed was already applied. Its existing six drafts are retained." : "Six working drafts added. Final text, prior drafts and attachments are retained.");
         setPreview(null);
         await onApplied();
+        void loadSources(null);
       }
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Safety seed request failed");
@@ -88,10 +109,15 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
         onChange={(event) => { setArtifactId(event.target.value); setPreview(null); setMessage(null); setError(null); }}>
         <option value="">Select a generated report</option>
         {artifacts.map((artifact) => <option key={artifact.id} value={artifact.id}>
-          {artifact.reportTitle} · {artifact.sourceVersion === "v2" ? "Input comparison v2, notice mapping unavailable" : artifact.sourceVersion === "invalid" ? "Unsupported or malformed snapshot" : "Safety plan v1"} · {artifact.generatedAt ?? "Date not recorded"} · {artifact.id}
+          {artifact.reportTitle} · {artifact.sourceVersion === "v2" ? "Input comparison v2, notice mapping unavailable" : artifact.sourceVersion === "invalid" ? "Unsupported or malformed snapshot" : "Safety plan v1"} · {formatGeneratedAt(artifact.generatedAt)} · {artifact.id}
         </option>)}
       </select>
     </label>
+    {freshness?.status === "newer" ? <p className="text-sm font-medium" data-testid="safety-seed-newer-report">
+      Seeded from the report generated {formatGeneratedAt(freshness.seededGeneratedAt)}. A newer one was generated {formatGeneratedAt(freshness.newestGeneratedAt)}. Select it above to re-seed.
+    </p> : freshness?.status === "unknown" ? <p className="text-sm text-muted-foreground" data-testid="safety-seed-newer-report">
+      Could not check for a newer Safety report.
+    </p> : null}
     {loadingSources ? <p className="text-sm">Loading linked-project Safety reports.</p> : null}
     {sourceError ? <p role="alert" className="text-sm text-destructive">{sourceError}</p> : null}
     {!loadingSources && !sourceError && !artifacts.length ? <p className="text-sm">{requiresProject ? "Link this opportunity to the Safety report project first." : "No Safety reports are listed for this project. Generate a Safety report for the selected acquisition first."}</p> : null}
@@ -104,7 +130,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
       <p className="break-all text-xs">Report source {preview.artifactId}. Snapshot SHA-256 {preview.snapshotHash}.</p>
       <p className="text-sm">Review all six working drafts. Apply appends history and keeps existing final text.</p>
       {preview.sections.map((section) => <details key={section.section_key} className="rounded border p-2">
-        <summary>{section.section_key}</summary>
+        <summary>{SS4A_SECTION_TITLES.get(section.section_key) ?? section.section_key}</summary>
         <pre className="mt-2 whitespace-pre-wrap break-words text-sm">{section.draft_markdown}</pre>
       </details>)}
       <Button type="button" disabled={busy} onClick={() => void operate("apply")}>Apply six working drafts</Button>

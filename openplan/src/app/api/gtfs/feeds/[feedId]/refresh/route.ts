@@ -277,7 +277,7 @@ export async function POST(
           error: "An uploaded feed cannot be refreshed",
           detail:
             "This feed was ingested from a file, so there is no address to fetch it from again. " +
-            "Upload the agency's newer archive to this feed instead — the upload door takes a " +
+            "Upload the agency's newer archive to this feed instead. The upload door takes a " +
             "feedId and adds a version to the feed named here rather than registering a second " +
             "one for the same agency.",
         },
@@ -344,7 +344,8 @@ export async function POST(
 
     // Before an agent approval is spent: a fetched archive's size is unknown
     // until it arrives, so this refuses a workspace already at its storage
-    // limit; the per-archive ceiling bounds the rest.
+    // limit. The ingest checks the fetched archive's actual size before
+    // storing it.
     const room = await checkWorkspaceStorageRoom(service, workspaceId, 0);
     if (room.status !== "room") {
       audit.warn("gtfs_feed_workspace_storage_refused", {
@@ -500,6 +501,17 @@ export async function POST(
           versionId: result.versionId ?? null,
         },
       });
+      if (result.storageRoom) {
+        const room = result.storageRoom;
+        audit.warn("gtfs_feed_workspace_storage_refused", {
+          workspaceId,
+          feedId,
+          versionId: result.versionId,
+          status: room.status,
+          ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+        });
+        return workspaceStorageRefusal(room);
+      }
       return NextResponse.json(
         {
           error: "This transit feed could not be refreshed",

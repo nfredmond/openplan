@@ -132,8 +132,9 @@ describe("logging a consulting invoice record", () => {
     next();
     fireEvent.click(screen.getByRole("button", { name: "Save the invoice record" }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => url === "/api/invoicing/invoices" && init?.method === "POST")).toBe(true));
+    const post = fetchMock.mock.calls.find(([url, init]) => url === "/api/invoicing/invoices" && init?.method === "POST") as [string, RequestInit];
+    const body = JSON.parse(String(post[1].body));
     expect(body.projectId).toBe("p-2");
     expect(body.fundingAwardId).toBeUndefined();
   });
@@ -167,8 +168,8 @@ describe("logging a consulting invoice record", () => {
     expect(body.workspaceId).toBe(WORKSPACE);
     expect(body.invoiceNumber).toBe("OP-2026-001");
     expect(body.projectId).toBe("p-1");
-    expect(body.amount).toBe(12500);
-    expect(body.retentionPercent).toBe(5);
+    expect(body.amount).toBe("12500");
+    expect(body.retentionPercent).toBe("5");
     expect(body.status).toBe("draft");
     expect(body.supportingDocsStatus).toBe("pending");
     // Raw, as the inline form sent them.

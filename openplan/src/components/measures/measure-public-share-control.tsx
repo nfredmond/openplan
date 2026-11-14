@@ -85,7 +85,7 @@ export function MeasurePublicShareControl({
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError("Couldn't copy — select and copy the link manually.");
+      setError("Couldn't copy. Select and copy the link manually.");
     }
   }
 
@@ -141,7 +141,7 @@ export function MeasurePublicShareControl({
             </button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Anyone with this link can read the page — it is the key, and there is no sign-in in front of it.
+            Anyone with this link can read the page. It is the key, and there is no sign-in in front of it.
             Search engines are asked not to index it. Taking the page down keeps the same link for next time.
           </p>
         </>
@@ -186,7 +186,7 @@ export function MeasurePublicShareControl({
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
           One year of this fund as a printable page. It says which reporting periods it has and which are still
-          unreported — it is not an audited financial statement.
+          unreported. It is not an audited financial statement.
         </p>
       </div>
 

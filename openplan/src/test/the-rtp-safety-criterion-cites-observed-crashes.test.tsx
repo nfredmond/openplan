@@ -247,8 +247,10 @@ describe("the RTP safety criterion cites observed crashes", () => {
   it("refuses to print a KSI figure from a source that cannot separate serious injuries", () => {
     // Zero would read as "no serious injuries", on the exact measure a safety
     // grant is scored on. The line says the source cannot separate them instead.
-    renderEditor(evidenceFor({ severityCompleteness: "fatal_injury_only" }));
-    expect(screen.getByText(/serious injuries not separated by this source/)).toBeTruthy();
+    // CCRS recorded as fatal_injury_only: its injured-person join did not run,
+    // and the line names that rather than blaming the source.
+    renderEditor(evidenceFor({ sourceId: "ccrs-ca", severityCompleteness: "fatal_injury_only" }));
+    expect(screen.getByText(/serious injuries: not separated \(injured-person records not joined\)/)).toBeTruthy();
     expect(screen.queryByText(/killed or seriously injured/)).toBeNull();
   });
 
@@ -262,7 +264,7 @@ describe("the RTP safety criterion cites observed crashes", () => {
       )
     );
     expect(screen.queryByText(/0 people walking/)).toBeNull();
-    expect(screen.getByText(/Person-level records were not retrieved/)).toBeTruthy();
+    expect(screen.getByText(/Party records, which name each driver, pedestrian and bicyclist involved, were not retrieved/)).toBeTruthy();
   });
 
   it("names a failed count read as a failure, not as an absence of collisions", () => {
@@ -272,7 +274,7 @@ describe("the RTP safety criterion cites observed crashes", () => {
       )
     );
     expect(
-      screen.getByText(/crash counts could not be read — a lookup failure/)
+      screen.getByText(/crash counts could not be read: a lookup failure/)
     ).toBeTruthy();
   });
 });

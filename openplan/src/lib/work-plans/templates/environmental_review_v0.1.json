@@ -1,6 +1,6 @@
 {
   "template_id": "environmental_review_v0.1",
-  "template_name": "Environmental review — phased work plan",
+  "template_name": "Environmental review: phased work plan",
   "version": "0.1",
   "practice_area": "general",
   "anchor": "notice_to_proceed",
@@ -8,15 +8,15 @@
     "environmental_review",
     "environmental_document"
   ],
-  "description": "The phases an environmental review passes through — scoping, baseline studies, impact analysis, a public draft, responses to comments, and a determination — with no statute assumed.",
+  "description": "The phases an environmental review passes through (scoping, baseline studies, impact analysis, a public draft, responses to comments, and a determination), with no statute assumed.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
     "No law is named here on purpose. The length of public review, the notices required, the form of the determination and who issues it are set by the law your project is reviewed under. Enter those dates and records yourself.",
     "Environmental review precedes final design. If your work plan has design deliverables, they belong after the determination milestone, not beside it.",
     "Consultation with resource agencies and with tribes or indigenous nations is a real and often long-lead task. It appears here as one milestone; your context may require several.",
     "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "deliverables": [
     {

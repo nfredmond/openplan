@@ -27,7 +27,7 @@ export function ProjectUnreadableNotice({ message }: { message?: string | null }
         title="This project could not be read"
         description={
           "The database refused the read for this project, so nothing below could be loaded. " +
-          "This is not a statement that the project is missing — it may exist and be perfectly " +
+          "This is not a statement that the project is missing. It may exist and be perfectly " +
           "intact. Reload, and if it keeps happening send an operator this message: " +
           (message?.trim() ? message.trim() : "no message reported")
         }

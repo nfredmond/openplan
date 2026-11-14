@@ -464,7 +464,7 @@ export function WorkspaceGisUploadWizard({
           <span className="op-gis-wizard__drop-title">Add a map layer</span>
           <span className="op-gis-wizard__drop-hint">
             GeoJSON, KML, KMZ, or a shapefile zipped with its .shp, .shx, .dbf and .prj together.
-            A shapefile with no .prj still works — OpenPlan will ask you which coordinate system it
+            A shapefile with no .prj still works. OpenPlan will ask you which coordinate system it
             is in rather than guessing.
           </span>
           <input
@@ -491,7 +491,7 @@ export function WorkspaceGisUploadWizard({
           <p>
             This shapefile has no .prj file, so nothing in it says what its numbers mean. OpenPlan
             will record whichever system you choose as <strong>your statement</strong>, not as
-            something read from the file — and it will show you where the layer lands before storing
+            something read from the file, and it will show you where the layer lands before storing
             anything.
           </p>
           <CrsPicker
@@ -576,7 +576,7 @@ export function WorkspaceGisUploadWizard({
               }
               onClick={() => void confirmUpload(stage)}
             >
-              Yes — add this layer
+              Yes, add this layer
             </button>
           </div>
         </div>
@@ -585,7 +585,7 @@ export function WorkspaceGisUploadWizard({
       {stage.kind === "uploading" ? (
         <div className="op-gis-wizard__progress" role="status">
           <p>
-            Uploading {stage.filename} — {stage.sent.toLocaleString("en-US")} of{" "}
+            Uploading {stage.filename}: {stage.sent.toLocaleString("en-US")} of{" "}
             {stage.total.toLocaleString("en-US")} shapes.
           </p>
           <progress value={stage.sent} max={Math.max(stage.total, 1)} />
@@ -606,7 +606,7 @@ export function WorkspaceGisUploadWizard({
             layer's own row below carries the "Show on the map" link.
           */}
           <p>
-            <strong>{stage.layerName}</strong> is stored and switched on —{" "}
+            <strong>{stage.layerName}</strong> is stored and switched on:{" "}
             {stage.featureCount.toLocaleString("en-US")} shapes. Use{" "}
             <strong>Show on the map</strong> on its row below to go and look at it.
           </p>

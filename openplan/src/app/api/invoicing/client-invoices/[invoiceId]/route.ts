@@ -23,7 +23,7 @@ const LINE_ITEM_SELECT =
 // document's content. Correction is by voiding and reissuing, never by editing
 // what was sent.
 const IMMUTABLE_LINES_REFUSAL =
-  "Line items are immutable once an invoice has been sent — void it and reissue a corrected invoice";
+  "Line items are immutable once an invoice has been sent. Void it and reissue a corrected invoice";
 
 const paramsSchema = z.object({
   invoiceId: z.string().uuid(),
@@ -537,7 +537,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         return NextResponse.json(
           {
             error:
-              "The invoice was voided, but its time entries could not be returned to the unbilled pool — retry voiding to release them",
+              "The invoice was voided, but its time entries could not be returned to the unbilled pool. Retry voiding to release them",
           },
           { status: 500 }
         );

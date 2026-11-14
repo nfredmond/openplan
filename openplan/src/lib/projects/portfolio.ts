@@ -134,7 +134,7 @@ function laneReason(outcome: PortfolioLaneOutcome | undefined, subject: string):
   if (laneAnswered(outcome)) return null;
   if (!outcome) return `${subject} were not read.`;
   if (outcome.pending) {
-    return `${subject} are not available on this deployment yet — a migration has not been applied. This is not a finding that there are none.`;
+    return `${subject} are not available on this deployment yet. A migration has not been applied. This is not a finding that there are none.`;
   }
   if (outcome.failed) {
     return `${subject} could not be read, so this is unavailable rather than zero.`;
@@ -227,7 +227,7 @@ function buildBurnColumn(inputs: ProjectPortfolioInputs, projectId: string): Por
 
   if (inputs.deliverableBudgetColumnsPending) {
     return unavailableBurn(
-      "Deliverable budgets are not available on this deployment yet — a migration has not been applied. This is not a finding that no budgets were entered.",
+      "Deliverable budgets are not available on this deployment yet. A migration has not been applied. This is not a finding that no budgets were entered.",
       null
     );
   }
@@ -336,7 +336,7 @@ export function describePortfolioDisclosures(
 
   if (truncatedLanes.length > 0) {
     disclosures.push(
-      `This workspace has more ${truncatedLanes.join(", ")} than one page can summarize (${inputs.rowLimitPerLane} rows each), so the affected columns show “—” rather than a figure that could be wrong. Open a project for its own totals.`
+      `This workspace has more ${truncatedLanes.join(", ")} than one page can summarize (${inputs.rowLimitPerLane} rows each), so the affected columns show a dash rather than a figure that could be wrong. Open a project for its own totals.`
     );
   }
 

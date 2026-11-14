@@ -93,7 +93,7 @@ describe("buildOpportunityFactList — proposal pursuits", () => {
     expect(
       facts.some((claim) =>
         claim.includes(
-          "Completed project on record (past performance): Downtown circulation plan — Adopted 2025 circulation element update. (delivery phase: closeout)."
+          "Completed project on record (past performance): Downtown circulation plan: Adopted 2025 circulation element update. (delivery phase: closeout)."
         )
       )
     ).toBe(true);

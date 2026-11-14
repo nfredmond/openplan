@@ -1,0 +1,51 @@
+{
+  "schema": "openplan.proven_job_definitions.v1",
+  "note": "What each named planning job must show before a proven job record is accepted. Places are rules (kind and state), never a named place: the record names the places a run actually used.",
+  "geoidPatterns": {
+    "source": "openplan/src/lib/api/place-geographies.ts (PLACE_GEOID_PATTERNS)",
+    "county": "^\\d{5}$",
+    "aiannh": "^\\d{4}[RT]$"
+  },
+  "jobs": [
+    {
+      "id": "safety-action-plan-and-ss4a-in-three-places",
+      "decidedIn": "docs/reviews/product-direction/2026-11-01-first-proven-job-review.md",
+      "journeys": [
+        { "role": "california-county", "placeKind": "county", "stateFips": "06" },
+        {
+          "role": "nevada-county",
+          "placeKind": "county",
+          "stateFips": "32",
+          "crashes": { "sourceId": "fars-national", "minStoredCount": 1 }
+        },
+        { "role": "tribal-area", "placeKind": "aiannh" }
+      ],
+      "pdfs": ["safety-action-plan", "ss4a-application"],
+      "items": {
+        "high-injury-map": "page-image",
+        "crash-summary": "pdftotext",
+        "countermeasures": "pdftotext",
+        "bca": "pdftotext",
+        "engagement-summary": "pdftotext"
+      },
+      "screens": { "widths": [1440, 390], "modes": ["light", "dark"] },
+      "crossWorkspace": {
+        "note": "Lead decision 2026-11-14 (KI-2026-11-14-060). A data check (an API route or a file download) counts only with 403 or 404. A page check also counts with 200 when the journey read the rendered page and found the not-found screen and none of the first account's identifying strings. Each target needs its download refused as a data check; a page check alone never satisfies the rule.",
+        "targets": ["safety-action-plan", "ss4a-application"],
+        "requiredDataRequests": {
+          "safety-action-plan": "report-pdf-download",
+          "ss4a-application": "application-pdf-download"
+        },
+        "minSearchedStrings": 3,
+        "pageAnsweredOkLimit": "report-page-answers-200-with-not-found-screen"
+      },
+      "requiredLimits": [
+        "no-pdf-ua-check",
+        "no-keyboard-or-screen-reader-pass",
+        "no-human-usefulness-review",
+        "fars-is-fatal-only"
+      ],
+      "unconfirmedCrashCountLimit": "crash-counts-not-independently-confirmed"
+    }
+  ]
+}

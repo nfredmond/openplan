@@ -1,0 +1,59 @@
+Engagement summary
+C A M PA I G N S O N R E C O R D
+
+1
+L E A D C A M PA I G N
+
+Corridor listening session (closed)
+METHOD
+
+Map comments
+COMMENTS RECEIVED
+
+4, received from Oct 19, 2026 to Oct 20, 2026
+C O M M E N T S A P P R OV E D
+
+2
+C O M M U N I T Y- I N P U T F I N D I N G S O U R C E
+
+Approved staff review e5000000-0000-4000-8000-000000000001, revision 1,
+approved Jan 2, 2026
+1 public engagement campaign(s) are on record for the Example safety project project; the
+lead campaign is "Corridor listening session" (status: closed).
+An approved staff review (revision 1, approved Jan 2, 2026) sorts 3 comment(s) and
+survey answer(s) from "Corridor listening session" into 1 theme(s); 0 are not assigned to a
+theme. A staff review sorts the public input that was submitted into themes. It is not a
+statistically representative survey, a vote, or a legal-sufficiency finding.
+Themes in that staff review, with the number of comment(s) and survey answer(s) in each:
+"SYNTHETIC retained category" (3, staff sentiment not assessed).
+The review covers a source set saved Jan 2, 2026 that took in comment(s) and survey
+answer(s) with review state approved.
+Source: Engagement campaign c0000000-0000-4000-8000-000000000001. Staff review
+approved Jan 2, 2026. No content hash is stored for this record. Approved staff review
+e5000000-0000-4000-8000-000000000001, revision 1, of source set d0000000-0000-40008000-000000000001.
+
+Benefit-cost summary
+A N A LY S I S
+
+Synthetic example: corridor travel time
+PROGRAM PROFILE
+
+USDOT discretionary grants, 2026 method, edition USDOT December 2025 / 2026
+update
+C A L C U L AT I O N S TAT U S
+
+review-required
+B E N E F I T- C O S T R AT I O
+
+1.594
+N E T P R E S E N T VA LU E
+
+$1,188,105
+P R E S E N T-VA LU E N U M E R AT O R
+
+$3,188,105
+P R E S E N T-VA LU E D E N O M I N AT O R
+
+safety-action-plan-report · Page 6 of 7
+
+

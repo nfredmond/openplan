@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import type { createClient } from "@/lib/supabase/server";
 
-const manifestSchema = z.object({
+export const retainedAdoptionManifestSchema = z.object({
   planId: z.string().uuid(),
   versionId: z.string().uuid(),
   versionContentHash: z.string().regex(/^[a-f0-9]{64}$/),
@@ -30,7 +30,7 @@ type Input = {
 /** Verify the complete retained decision against its native append-only record. */
 export async function loadReportAdoption({ supabase, metadata, planId, versionId, contentHash }: Input) {
   if (metadata.adoptionManifest == null && metadata.adoptionManifestHash == null) return { status: "absent" as const };
-  const parsed = manifestSchema.safeParse(metadata.adoptionManifest);
+  const parsed = retainedAdoptionManifestSchema.safeParse(metadata.adoptionManifest);
   const manifestHash = typeof metadata.adoptionManifestHash === "string" && /^[a-f0-9]{64}$/.test(metadata.adoptionManifestHash)
     ? metadata.adoptionManifestHash : null;
   const result = parsed.success && manifestHash ? await supabase.from("land_use_plan_decisions")

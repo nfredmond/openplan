@@ -129,7 +129,7 @@ describe("FirstRunChecklist", () => {
     );
 
     expect(
-      screen.getByText(/Results are screening-grade — they support prioritization and narrative, not final engineering\./)
+      screen.getByText(/Results are screening-grade\. They support prioritization and narrative, not final engineering\./)
     ).toBeInTheDocument();
   });
 

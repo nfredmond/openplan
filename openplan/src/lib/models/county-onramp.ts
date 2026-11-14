@@ -426,7 +426,7 @@ function populationCaveat(manifest: CountyOnrampManifest | null): string {
 export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): string {
   switch (status) {
     case "prepared":
-      return "Prepared — not sent";
+      return "Prepared, not sent";
     case "queued":
       return "Queued";
     case "running":

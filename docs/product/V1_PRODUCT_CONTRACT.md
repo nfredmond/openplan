@@ -3,7 +3,7 @@
 <!-- openplan-v1-product-contract
 decided: 2026-08-25
 current_release: v0.72.0
-direction_review: docs/reviews/product-direction/2026-10-06-integration-review.md
+direction_review: docs/reviews/product-direction/2026-11-01-first-proven-job-review.md
 review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md
 validation_research: docs/modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md
@@ -86,7 +86,7 @@ These clarify the practice floor and preserve Nathaniel's current and recovered 
 - **Overall Work Program administration:** a high-priority agency workflow from importing the prior adopted OWP/UPWP and amendments through preparing work elements, staffing/funding and products, review/adoption and external approvals, daily delivery, quarterly reporting/reimbursement, amendments, expenditure certification and reconciled carryover/closeout. Connect the same records across Projects, Programs, staff effort, contracts, funding, Documents, Reports and My Work. Preserve California MPO/RTPA distinctions, actual one- or two-year cycles, planning-fund eligibility, approved baselines and public/internal records; a generic work-plan template is insufficient.
 - **Planning project management:** original/current contracted budgets and approved changes, task/work-package and employee allocations, deliverable commitments, actual hours/costs, remaining work, forecast cost and completion dates, dependencies and review/acceptance deadlines. Distinguish internal cost, client fee/billing, cash and funder reimbursement. Support small practices as well as agency contracts, with proportional effort and preserved financial history.
 - **Complete RTP updates:** create, adjust and track every applicable policy/action/financial and narrative element, mapped short/long-term projects and funding, performance, public review/comment responses, adoption and implementation. Begin with the previous adopted RTP, retaining reviewed source figures, tables, chapter text, provenance, conflicts and differences between cycles. No element is complete merely because a template or record type exists.
-- **Public engagement:** mapping participation and agency administration demonstrably better than Social Pinpoint for observed planning work, with accessible participation, useful receipt/response, accountable decisions and portable complete records.
+- **Public engagement:** mapping participation and agency administration demonstrably better than Social Pinpoint for planning work, shown in comparative agent-run tasks, with accessible participation, useful receipt/response, accountable decisions and portable complete records.
 - **Planner Agent provider choice:** supported user-selected APIs/models and locally installed Codex, Claude Code and OpenCode using appropriate native authentication/account modes. Reuse the relevant T3 Code implementation where justified. Preserve installation disclosures, user/device/workspace boundaries, exact human approvals and provider-specific conditions; no silent API-billing fallback.
 - **Platform-wide agentic work:** a planner can assign substantial work across the product, see progress and sources, review exact proposed consequences, recover after interruption and use the resulting artifacts. Extend the existing Planner Agent and shared capability/approval system, with optional Buzz or other compatible clients. Provider choice alone does not satisfy this outcome; agent work must join the complete planning workflows while the product remains fully usable without any agent.
 - **Local tax measures and grant administration:** administering organizations configure actual program rules and reporting requirements; recipient cities/agencies use the hosted instance to report projects, expenditures, delivery quantities and evidence under scoped access. Staff review/correct/certify, administer distributions or reimbursement as applicable, reconcile balances, publish oversight records and preserve successor-measure history. Post-award administration is distinct from funding discovery and application writing.
@@ -199,15 +199,21 @@ evidence must have one implementation used by all consumers.
 
 ## V1 acceptance evidence
 
-**October 17, 2026 acceptance policy.** Agent-run planner and public-participant
-workflow checks can satisfy milestone and v1 acceptance. Human feedback moves
-after v1 and does not gate implementation, merging, releases or milestone
-closure. Apply this policy to older human-observation requirements throughout
-the active product guidance. Do not recruit human reviewers or ask Nathaniel
-for feedback as a prerequisite. Report agent-run results as agent-run results.
-The complete capability, geography, scientific, accessibility, security and
-operating requirements remain in force. This policy does not grant an agent
-authority to make an agency's adoption, spending or publication decisions.
+**November 13, 2026 acceptance policy (permanent).** Human feedback never gates
+OpenPlan development, milestones, merges, releases or v1. Agent-run planner,
+operator and public-participant checks are the acceptance evidence: an agent
+performs the named role's task on permitted records or labeled fixtures, and the
+record names the executor. Nathaniel made this permanent on November 13, 2026.
+It settles his October 17, 2026 direction, and direction reviews do not reopen
+it. Active product guidance names the agent-run equivalent wherever it once
+required a human observer. A screen-reader check is an agent-driven NVDA or
+VoiceOver run. Do not recruit human reviewers or ask Nathaniel for feedback.
+Human feedback after v1 stays optional research under the [observation
+protocol](PLANNER_OBSERVATION_PROTOCOL.md). Report agent-run results as
+agent-run results. The complete capability, geography, scientific,
+accessibility, security and operating requirements remain in force. This policy
+does not grant an agent authority to make an agency's adoption, spending or
+publication decisions.
 
 The v1 tag requires all of the following on one candidate commit:
 

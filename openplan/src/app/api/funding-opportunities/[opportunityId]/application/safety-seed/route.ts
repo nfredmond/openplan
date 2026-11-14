@@ -7,10 +7,10 @@ import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
 import { readSafetyArtifactSnapshot } from "@/lib/reports/safety-comparison-snapshot";
 import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
-import { buildSafetySeedPreview, SafetySeedRefusal, SS4A_SEED_MIGRATION, SS4A_SECTION_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_ARTIFACT_PROJECTION, type SeedSourceRows } from "@/lib/grants/ss4a-safety-seed";
+import { loadSafetySeedFreshness } from "@/lib/grants/safety-seed-freshness";
+import { buildSafetySeedPreview, SafetySeedRefusal, SS4A_SEED_MIGRATION, SS4A_SECTION_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_ACQUISITION_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_ARTIFACT_PROJECTION, type SeedSourceRows } from "@/lib/grants/ss4a-safety-seed";
 
 const bodySchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("preview"), artifactId: z.string().uuid() }).strict(),
@@ -49,7 +49,14 @@ export async function GET(request: NextRequest, context: Context) {
       .or("metadata_json->>safetyPlanSnapshotV1.not.is.null,metadata_json->>safetyPlanSnapshotV2.not.is.null")
       .order("id", { ascending: false }).limit(51);
     if (before) query = query.lt("id", before);
-    const result = await query;
+    // The first page also says whether a Safety report newer than the seeded
+    // one exists. Reads only; a failed read comes back as "unknown".
+    const [result, freshness] = await Promise.all([
+      query,
+      before ? Promise.resolve(null) : loadSafetySeedFreshness(client, {
+        workspaceId: opportunity.workspace_id, opportunityId: opportunity.id, projectId: opportunity.project_id,
+      }),
+    ]);
     if (result.error) throw new Error("Safety artifact source read failed");
     const parsed = z.array(artifactOptionRow).max(51).safeParse(result.data);
     if (!parsed.success) throw new Error("Safety artifact source shape differs");
@@ -58,6 +65,7 @@ export async function GET(request: NextRequest, context: Context) {
       artifacts: rows.map((row) => ({ id: row.id, reportTitle: row.reports.title, artifactKind: row.artifact_kind, generatedAt: row.generated_at,
         sourceVersion: readSafetyArtifactSnapshot(row.metadata_json).kind })),
       nextCursor: parsed.data.length > 50 ? rows.at(-1)!.id : null, requiresProject: false,
+      ...(freshness ? { freshness } : {}),
     });
   } catch {
     audit.error("safety_artifact_options_failed");
@@ -117,7 +125,7 @@ export async function POST(request: NextRequest, context: Context) {
     const snapshot = recognized.snapshot;
     const [report, acquisition, drafts, persistence] = await Promise.all([
       client.from("reports").select(SS4A_REPORT_PROJECTION).eq("id", artifact.data.report_id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
-      client.from("safety_crash_ingests").select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION).eq("id", snapshot.acquisition.id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
+      client.from("safety_crash_ingests").select(SS4A_ACQUISITION_PROJECTION).eq("id", snapshot.acquisition.id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
       client.from("funding_opportunity_section_drafts").select("id, section_id", { count: "exact" }).eq("opportunity_id", o.id).eq("workspace_id", o.workspace_id).order("id").limit(1001),
       client.from("report_safety_snapshot_persistence").select(SAFETY_PLAN_PERSISTENCE_SELECT)
         .eq("artifact_id", parsed.data.artifactId).eq("report_id", artifact.data.report_id)

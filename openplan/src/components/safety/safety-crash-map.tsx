@@ -19,7 +19,11 @@ import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import type { WorkspaceGisMapTarget } from "@/lib/cartographic/workspace-gis-map-layers";
 import { applyFitInstruction, type FitInstruction } from "@/lib/cartographic/geometry-bbox";
-import type { HighInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
+import {
+  HIGH_INJURY_NETWORK_COLOR,
+  highInjuryNetworkMarkerCollection,
+  type HighInjuryNetworkFeatureCollection,
+} from "@/lib/safety/high-injury-network";
 
 // The shared engine choice: Mapbox with a public key (either env name), else
 // MapLibre with the operator's open style, else no map and the notice below.
@@ -43,8 +47,13 @@ const CRASH_CORE_LAYER_ID = "safety-crash-core";
 export const HIGH_INJURY_NETWORK_SOURCE_ID = "safety-high-injury-network";
 export const HIGH_INJURY_NETWORK_LINE_LAYER_ID = "safety-high-injury-network-line";
 export const HIGH_INJURY_NETWORK_FILL_LAYER_ID = "safety-high-injury-network-fill";
-/** One color, outside the severity palette, so the layer never reads as a severity. */
-const HIGH_INJURY_NETWORK_COLOR = "#6d28d9";
+/**
+ * One marker per listed segment. A half-mile piece is a pixel or two long at
+ * the zoom a county opens on, so the line alone does not show there (D7); the
+ * markers fade out once the lines are wide enough to read.
+ */
+const HIGH_INJURY_NETWORK_MARKER_SOURCE_ID = "safety-high-injury-network-marker";
+const HIGH_INJURY_NETWORK_MARKER_LAYER_ID = "safety-high-injury-network-marker";
 const EMPTY_NETWORK: HighInjuryNetworkFeatureCollection = { type: "FeatureCollection", features: [] };
 
 /**
@@ -307,13 +316,36 @@ export function SafetyCrashMap({
             layout: { "line-cap": "round", "line-join": "round" },
             paint: {
               "line-color": HIGH_INJURY_NETWORK_COLOR,
-              "line-width": ["interpolate", ["linear"], ["zoom"], 8, 3, 14, 8],
+              "line-width": ["interpolate", ["linear"], ["zoom"], 6, 4, 14, 8],
               "line-opacity": 0.8,
+            },
+          });
+        }
+        if (!map.getSource(HIGH_INJURY_NETWORK_MARKER_SOURCE_ID)) {
+          map.addSource(HIGH_INJURY_NETWORK_MARKER_SOURCE_ID, {
+            type: "geojson",
+            data: highInjuryNetworkMarkerCollection(networkRef.current),
+          });
+        }
+        if (!map.getLayer(HIGH_INJURY_NETWORK_MARKER_LAYER_ID)) {
+          map.addLayer({
+            id: HIGH_INJURY_NETWORK_MARKER_LAYER_ID,
+            type: "circle",
+            source: HIGH_INJURY_NETWORK_MARKER_SOURCE_ID,
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 8, 13, 6],
+              "circle-color": HIGH_INJURY_NETWORK_COLOR,
+              "circle-opacity": ["interpolate", ["linear"], ["zoom"], 12, 0.85, 14, 0],
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": 1.5,
+              "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 12, 1, 14, 0],
             },
           });
         }
         const networkSource = map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
         networkSource?.setData(networkRef.current ?? EMPTY_NETWORK);
+        const markerSource = map.getSource(HIGH_INJURY_NETWORK_MARKER_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+        markerSource?.setData(highInjuryNetworkMarkerCollection(networkRef.current));
 
         if (!map.getSource(CRASH_SOURCE_ID)) {
           map.addSource(CRASH_SOURCE_ID, {
@@ -509,6 +541,8 @@ export function SafetyCrashMap({
     return whenStyleAccepts(map, () => {
       const source = map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
       source?.setData(highInjuryNetwork ?? EMPTY_NETWORK);
+      const markers = map.getSource(HIGH_INJURY_NETWORK_MARKER_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+      markers?.setData(highInjuryNetworkMarkerCollection(highInjuryNetwork));
     });
   }, [highInjuryNetwork]);
 
@@ -556,7 +590,7 @@ export function SafetyCrashMap({
         ) : (
           <p>
             This OpenPlan deployment has no map key configured. The crash counts and rates on this
-            page are unaffected — only the map is missing. Whoever runs this deployment can add the
+            page are unaffected. Only the map is missing. Whoever runs this deployment can add the
             key.
           </p>
         )}

@@ -42,7 +42,7 @@ type CapturedUpdate = {
     rtp_posture: unknown;
     rtp_posture_updated_at: string;
   };
-  where: Array<[string, string]>;
+  where: Array<[string, string | number]>;
 };
 
 function buildSupabase({
@@ -53,6 +53,8 @@ function buildSupabase({
   profileError,
   awardsError,
   updateError,
+  advanceEpochAfterAwardRead = false,
+  invalidationResult,
 }: {
   profile: ProjectFundingProfileRow | null;
   awards: FundingAwardRow[];
@@ -61,79 +63,82 @@ function buildSupabase({
   profileError?: { message: string; code?: string };
   awardsError?: { message: string; code?: string };
   updateError?: { message: string; code?: string };
+  advanceEpochAfterAwardRead?: boolean;
+  invalidationResult?: { data: { funding_source_epoch: number } | null; error: { code: string; details?: string; message: string } | null };
 }) {
   const capturedUpdate: CapturedUpdate = { values: undefined, where: [] };
+  let epoch=7; let persisted:unknown=null;
+  const projections:Record<string,string>={};
 
   const from = vi.fn((table: string) => {
     if (table === "project_funding_profiles") {
       return {
-        select: vi.fn(() => ({
+        select: vi.fn((projection:string) => { projections[table]=projection; return ({
           eq: vi.fn(() => ({
             maybeSingle: vi.fn(async () => ({
               data: profile,
               error: profileError ?? null,
             })),
           })),
-        })),
+        }); }),
       };
     }
 
     if (table === "funding_awards") {
       return {
-        select: vi.fn(() => ({
+        select: vi.fn((projection:string) => { projections[table]=projection; return ({
           eq: vi.fn(() => ({
             eq: vi.fn(async () => ({
-              data: awards,
+              data: (advanceEpochAfterAwardRead ? (epoch++,awards) : awards),
+              count:awards.length,
               error: awardsError ?? null,
             })),
           })),
-        })),
+        }); }),
       };
     }
 
     if (table === "funding_opportunities") {
       return {
-        select: vi.fn(() => ({
+        select: vi.fn((projection:string) => { projections[table]=projection; return ({
           eq: vi.fn(() => ({
             eq: vi.fn(async () => ({
               data: opportunities ?? [],
+              count:(opportunities??[]).length,
               error: null,
             })),
           })),
-        })),
+        }); }),
       };
     }
 
     if (table === "billing_invoice_records") {
       return {
-        select: vi.fn(() => ({
+        select: vi.fn((projection:string) => { projections[table]=projection; return ({
           eq: vi.fn(() => ({
             eq: vi.fn(async () => ({
               data: invoices ?? [],
+              count:(invoices??[]).length,
               error: null,
             })),
           })),
-        })),
+        }); }),
       };
     }
 
     if (table === "projects") {
-      return {
-        update: vi.fn((values: CapturedUpdate["values"]) => {
-          capturedUpdate.values = values;
-          return {
-            eq: vi.fn((col1: string, val1: string) => {
-              capturedUpdate.where.push([col1, val1]);
-              return {
-                eq: vi.fn(async (col2: string, val2: string) => {
-                  capturedUpdate.where.push([col2, val2]);
-                  return { error: updateError ?? null };
-                }),
-              };
-            }),
-          };
-        }),
-      };
+      return {update:vi.fn((values:CapturedUpdate["values"])=>{
+        const where:Array<[string,string|number]>=[];
+        const isFinal=values?.rtp_posture!==null;
+        if(isFinal)capturedUpdate.values=values;
+        const query={eq:(column:string,value:string|number)=>{where.push([column,value]);return query;},select:()=>query,maybeSingle:async()=>{
+          if(!isFinal){if(invalidationResult)return invalidationResult;persisted=null;return {data:{funding_source_epoch:epoch},error:null};}
+          capturedUpdate.where=where;
+          const matched=where.some(([column,value])=>column==='funding_source_epoch' && value===epoch);
+          if(matched && !updateError)persisted=values?.rtp_posture;
+          return {data:matched?{id:'project-1'}:null,error:updateError??null};
+        }};return query;
+      })};
     }
 
     throw new Error(`Unexpected table: ${table}`);
@@ -141,7 +146,7 @@ function buildSupabase({
 
   return {
     supabase: { from } as unknown as Parameters<typeof rebuildProjectRtpPosture>[0]["supabase"],
-    capturedUpdate,
+    capturedUpdate, projections, persisted:()=>persisted,
   };
 }
 
@@ -187,6 +192,7 @@ describe("rebuildProjectRtpPosture", () => {
     expect(capturedUpdate.where).toEqual([
       ["id", "project-1"],
       ["workspace_id", "workspace-1"],
+      ["funding_source_epoch",7],
     ]);
   });
 
@@ -332,4 +338,30 @@ describe("rebuildProjectRtpPosture", () => {
     expect(result.posture).toBeNull();
     expect(result.updatedAt).toBeNull();
   });
+  it("refuses stale funded persistence when a source changes after the award read",async()=>{
+    const {supabase,persisted,capturedUpdate,projections}=buildSupabase({profile:{funding_need_amount:100,local_match_need_amount:0,updated_at:null},awards:[{awarded_amount:100,match_amount:0,risk_flag:'none',obligation_due_at:null,updated_at:null,created_at:null}],advanceEpochAfterAwardRead:true});
+    const result=await rebuildProjectRtpPosture({supabase,projectId:'project-1',workspaceId:'workspace-1'});
+    expect(result.error?.code).toBe('PT409');expect(result.posture).toBeNull();expect(persisted()).toBeNull();
+    expect(capturedUpdate.where).toContainEqual(['funding_source_epoch',7]);
+    for(const field of ['id','current_handoff_revision_id','latest_handoff_revision_id','currency_code','has_source_backed_issuance'])expect(projections.funding_awards.split(', ')).toContain(field);
+  });
+
+  it.each([
+    { data: null, error: null },
+    { data: null, error: { code: "PGRST116", details: "The result contains 0 rows", message: "No rows" } },
+  ])("refuses a zero-row invalidation before reading funding or persisting ($error)", async (invalidationResult) => {
+    const { supabase, capturedUpdate, projections } = buildSupabase({ profile: null, awards: [], invalidationResult });
+    const result = await rebuildProjectRtpPosture({ supabase, projectId: "project-1", workspaceId: "workspace-1" });
+    expect(result).toEqual({ posture: null, updatedAt: null, error: { code: "PT409", message: "No project matched posture invalidation. No rebuild was persisted." } });
+    expect(projections).toEqual({});
+    expect(capturedUpdate.values).toBeUndefined();
+  });
+
+  it("keeps a real invalidation failure distinct from zero matched rows", async () => {
+    const { supabase, projections } = buildSupabase({ profile: null, awards: [], invalidationResult: { data: null, error: { code: "42501", message: "Permission denied" } } });
+    const result = await rebuildProjectRtpPosture({ supabase, projectId: "project-1", workspaceId: "workspace-1" });
+    expect(result.error).toEqual({ code: "42501", message: "Cannot invalidate previous RTP posture before rebuild" });
+    expect(projections).toEqual({});
+  });
+
 });

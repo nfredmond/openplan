@@ -103,7 +103,7 @@ export async function POST(
       return NextResponse.json(
         {
           error: "Document not found in this workspace",
-          details: "Upload it to the Knowledge Base first — this attaches a document the workspace already holds.",
+          details: "Upload it to the Knowledge Base first. This attaches a document the workspace already holds.",
         },
         { status: 404 }
       );

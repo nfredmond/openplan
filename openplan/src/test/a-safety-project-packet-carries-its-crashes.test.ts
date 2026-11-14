@@ -12,6 +12,7 @@ import {
   buildProjectStageGateSummary,
 } from "@/lib/stage-gates/summary";
 import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { seriousInjuryAvailabilityForRecord } from "@/lib/safety/serious-injury-availability";
 
 /**
  * A PROJECT'S PACKET MUST CARRY THE CRASH EVIDENCE ATTACHED TO IT.
@@ -108,12 +109,24 @@ describe("a safety project's packet carries its crashes", () => {
   });
 
   it("prints no KSI figure when the source cannot separate serious injuries", () => {
-    const built = buildPacketSafetyEvidence([evidence({ ksi: null })]);
+    // A CCRS acquisition whose injured-person join did not run.
+    const seriousInjury = seriousInjuryAvailabilityForRecord({ sourceId: "ccrs-ca", severityCompleteness: "fatal_injury_only" });
+    const built = buildPacketSafetyEvidence([evidence({ ksi: null, severityCompleteness: "fatal_injury_only", seriousInjury })]);
     if (built.kind !== "present") throw new Error("expected present");
     const ksi = built.acquisitions[0].figures.find((f) => /fatal or serious-injury crashes/i.test(f.label));
     expect(ksi?.value).toBeNull();
     // The reason travels with the absence — a blank cell teaches nobody.
-    expect(ksi?.absentBecause).toMatch(/does not separate/i);
+    expect(ksi?.absentBecause).toMatch(/were not joined for these crashes/i);
+  });
+
+  it("says a separable count that is missing could not be read, not that the source cannot separate it", () => {
+    // Before 2026-11-02 this case printed "This source does not separate ...",
+    // a false statement about a source that does.
+    const built = buildPacketSafetyEvidence([evidence({ ksi: null })]);
+    if (built.kind !== "present") throw new Error("expected present");
+    const ksi = built.acquisitions[0].figures.find((f) => /fatal or serious-injury crashes/i.test(f.label));
+    expect(ksi?.value).toBeNull();
+    expect(ksi?.absentBecause).toBe("The severity breakdown could not be read.");
   });
 
   it("prints no severity numbers when the counts could not be read", () => {
@@ -130,7 +143,8 @@ describe("a safety project's packet carries its crashes", () => {
     for (const label of ["Serious-injury crashes", "Fatal or serious-injury crashes"]) {
       const figure = built.acquisitions[0].figures.find(item => item.label === label);
       expect(figure?.value).toBeNull();
-      expect(figure?.absentBecause).toMatch(/does not separate/i);
+      expect(figure?.absentBecause).toMatch(/serious injur/i);
+      expect(figure?.absentBecause).toMatch(/cannot be (?:derived|formed)|not zero/i);
     }
     expect(built.acquisitions[0].figures.find(item => item.label === "Fatal crashes")?.value).toBe(4);
   });
@@ -385,8 +399,8 @@ describe("a safety project's packet carries its crashes", () => {
     });
 
     it("says why a figure is absent instead of printing a zero", () => {
-      const html = buildReportHtml(packetData([evidence({ ksi: null })]));
-      expect(html).toMatch(/does not separate crashes involving suspected serious injuries/i);
+      const html = buildReportHtml(packetData([evidence({ ksi: null, severityCompleteness: "fatal_injury_only" })]));
+      expect(html).toMatch(/does not establish separately counted suspected serious injuries/i);
     });
 
     it("distinguishes an empty packet selection from a failed read without denying project evidence", () => {

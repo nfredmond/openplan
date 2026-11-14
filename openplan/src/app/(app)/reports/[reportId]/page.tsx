@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { completeReportSourceReviewSummary } from "@/lib/reports/source-review-posture";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { objectRecord, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
@@ -5,13 +6,11 @@ import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparis
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
+import { isUuid } from "@/lib/uuid";
 import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components/reports/report-read-failure-notice";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
-import {
-  buildPortfolioFundingSnapshot,
-  buildProjectFundingSnapshot,
-} from "@/lib/projects/funding";
+import { buildPortfolioFundingSnapshot, buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -69,10 +68,10 @@ import {
   formatCompactDateTime,
   loadAiNarrativeDraftPanelInputs,
   loadProjectFundingSourceRows,
-  loadReportDetailRow,
   maxTimestamp,
   summarizeProjectRecordDrift,
 } from "./_components/_helpers";
+import { loadReportDetailRowForRequest } from "./_components/report-row-for-request";
 import type {
   CurrentProjectRecordEntry,
   DriftItem,
@@ -102,9 +101,9 @@ import {
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 import { loadSpecializedReportPage } from "@/components/reports/specialized-report-page";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
-
+import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
-  const { reportId } = await params; const query = searchParams ? await searchParams : {}; const supabase = await createClient();
+  const { reportId } = await params; if (!isUuid(reportId)) notFound(); const query = searchParams ? await searchParams : {}; const supabase = await createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -112,7 +111,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     redirect("/sign-in");
   }
 
-  const reportResult = await loadReportDetailRow(supabase, reportId);
+  const reportResult = await loadReportDetailRowForRequest(reportId); // one read, shared with layout.tsx
 
   // A 404 on a FAILED read is the same defect wearing a different face: it tells
   // a planner "this report does not exist" when the truth is "this report could
@@ -316,15 +315,15 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
             .in("project_id", rtpLinkedProjectIds),
           supabase
             .from("funding_awards")
-            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
             .in("project_id", rtpLinkedProjectIds),
           supabase
             .from("funding_opportunities")
-            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
             .in("project_id", rtpLinkedProjectIds),
           supabase
             .from("billing_invoice_records")
-            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
             .in("project_id", rtpLinkedProjectIds),
         ])
       : [
@@ -545,6 +544,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       current.push(invoice);
       rtpFundingInvoicesByProjectId.set(invoice.project_id, current);
     }
+    // Failed reads keep their named disclosure below; successful partial sets still refuse.
+    if (rtpLinkedProjectIds.length) assertCompleteFundingRead(...[rtpFundingAwardsResult, rtpFundingOpportunitiesResult, rtpBillingInvoicesResult].filter((result) => !result.error));
     const currentRtpFundingSnapshot = buildPortfolioFundingSnapshot({
       projects: rtpLinkedProjectIds.map((projectId) => ({
         profile: rtpFundingProfileByProjectId.get(projectId) ?? null,
@@ -561,14 +562,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     const currentRtpProjectLinks = (rtpProjectLinks ?? []) as Array<{ id: string }>;
     const currentRtpCampaigns = (rtpCampaigns ?? []) as Array<{ id: string; rtp_cycle_chapter_id: string | null }>;
     const currentRtpCampaignIds = currentRtpCampaigns.map((campaign) => campaign.id);
-    const rtpEngagementItemsResult = currentRtpCampaignIds.length
-      ? await supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-          )
-          .in("campaign_id", currentRtpCampaignIds)
-      : { data: [], error: null };
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    const rtpEngagementItemsResult = await readEveryCampaignItem(
+      supabase,
+      currentRtpCampaignIds,
+      CAMPAIGN_ITEM_SUMMARY_COLUMNS
+    );
     // The comment counts below drive this cycle's public-review posture. An
     // unread items table would report a zero pending queue — "nothing is waiting
     // on you" — from a broken query, so the failure is disclosed AND the counts
@@ -792,15 +791,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true })
       : Promise.resolve({ data: [], error: null }),
-    engagementCampaign
-      ? supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-          )
-          .eq("campaign_id", engagementCampaign.id)
-          .order("updated_at", { ascending: false })
-      : Promise.resolve({ data: [], error: null }),
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    readEveryCampaignItem(
+      supabase,
+      engagementCampaign ? [engagementCampaign.id] : [],
+      CAMPAIGN_ITEM_SUMMARY_COLUMNS
+    ),
     liveScenarioSetIds.length > 0
       ? supabase
           .from("scenario_sets")

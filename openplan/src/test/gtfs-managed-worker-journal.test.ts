@@ -39,7 +39,8 @@ async function fixture() {
   return { directory, controller, options, payload, path, saved, identity, send, verify, run };
 }
 
-describe("managed GTFS private command journal", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("managed GTFS private command journal", () => {
   it("syncs attempt and exact command before dispatch, then revalidates a retained receipt without sending", async () => {
     const f=await fixture(); f.send.mockImplementation(async commandId => {
       expect(await f.identity()).toMatchObject({versionId:id(2),installationId:id(1),target:"http://localhost:29821"});

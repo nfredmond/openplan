@@ -84,7 +84,7 @@ describe("a draft is visibly not public, and a person is the one who publishes i
       />
     );
 
-    expect(screen.getByText(/Draft — not public/i)).toBeTruthy();
+    expect(screen.getByText(/Draft, not public/i)).toBeTruthy();
     expect(screen.getByText(/1 question on the public survey/i)).toBeTruthy();
     expect(screen.getByText(/1 draft nobody outside this workspace can see/i)).toBeTruthy();
   });

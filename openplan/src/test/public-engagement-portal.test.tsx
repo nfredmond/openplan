@@ -427,6 +427,33 @@ describe("PublicEngagementPortal", () => {
     expect(screen.getByAltText("Photo attached to this community comment")).toBeInTheDocument();
   });
 
+  it("tells assistive technology which view is open, not only by an underline", () => {
+    renderPortal({ approvedItems: APPROVED_ITEMS });
+    const submit = screen.getByRole("button", { name: /^Add a comment/ });
+    const comments = screen.getByRole("button", { name: /^Comments/ });
+    expect(submit).toHaveAttribute("aria-pressed", "true");
+    expect(comments).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(comments);
+    expect(screen.getByRole("button", { name: /^Comments/ })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /^Add a comment/ })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("prints a comment's original topic definition only when the topic has since changed", () => {
+    const category = categoryFrom(emptyPortalTranslationIndex("en"), { label: "Crossing safety" });
+    const [unchanged, renamed] = APPROVED_ITEMS;
+    renderPortal({
+      acceptingSubmissions: false,
+      categories: [category],
+      approvedItems: [
+        { ...unchanged, categoryId: category.id, historicalCategoryLabel: "Crossing safety" },
+        { ...renamed, categoryId: category.id, historicalCategoryLabel: "Crossings" },
+      ],
+    });
+    const lines = screen.getAllByText(/Category definition in original form/);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toHaveTextContent("Category definition in original form: Crossings");
+  });
+
   it("sorts the feedback list by most supported when selected", () => {
     renderPortal({ acceptingSubmissions: false, approvedItems: APPROVED_ITEMS });
 
@@ -603,11 +630,12 @@ describe("the portal in the participant's language", () => {
   });
 
   /**
-   * THE ORDINARY SPANISH PORTAL — demographics OFF, which is the default — and
-   * the case the earlier block-scoped notice missed entirely.
+   * THE ORDINARY PORTAL IN A COMPLETE CATALOG, with demographics OFF (the
+   * default), and the case the earlier block-scoped notice missed entirely.
    *
-   * Spanish is a COMPLETE catalog, so `translator.hasFallbacks` is false and the
-   * route's own page-wide notice is correctly silent. But the submit tab, which
+   * French is a COMPLETE catalog, so `translator.hasFallbacks` is false and the
+   * route's own page-wide notice is correctly silent. (Spanish was until
+   * 2026-11-01, when two entries made from older English stopped being shown.) But the submit tab, which
    * is the tab the portal opens on, carries the English sentence
    * `resolvePortalMapFraming` builds server-side for every reader. With the
    * notice attached to the demographics block, a Spanish portal with
@@ -615,7 +643,7 @@ describe("the portal in the participant's language", () => {
    * disclosing it — which under Title VI reads as English the agency chose to
    * publish.
    */
-  it("discloses its English on a Spanish portal that has no demographics block", () => {
+  it("discloses its English on a complete-catalog portal that has no demographics block", () => {
     /*
       THE ENGLISH THIS TEST POINTS AT CHANGED ON 2026-08-14, and the change is
       the good direction. It used to be `mapFraming.summary` — English prose
@@ -636,27 +664,31 @@ describe("the portal in the participant's language", () => {
     });
     expect(broken.unreadableNote, "the fixture has no English left to disclose").toBeTruthy();
 
-    renderPortal({ mapFraming: broken, ...localeFor("es") });
+    const french = localeFor("fr");
+    expect(french.messages.fallbackKeys, "the premise: a complete catalog").toEqual([]);
+    renderPortal({ mapFraming: broken, ...french });
 
-    const notice = screen.getByText(/solo está disponible parcialmente en Español/i);
+    const notice = screen.getByText(/n'est que partiellement disponible en Français/i);
     const englishNote = screen.getByText(broken.unreadableNote as string);
 
     expect(notice.compareDocumentPosition(englishNote) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(englishNote.getAttribute("lang")).toBe("en");
-    // The notice itself is the Spanish it claims to be — this key is one the
+    // The notice itself is the French it claims to be. This key is one the
     // complete catalog carries, which is why this branch is reachable at all.
-    expect(notice.getAttribute("lang")).toBe("es");
+    expect(notice.getAttribute("lang")).toBe("fr");
   });
 
   it("warns above the block of English it is about, not at the bottom of the page", () => {
-    // Spanish is a COMPLETE catalog, so `translator.hasFallbacks` is false and
+    // French is a COMPLETE catalog, so `translator.hasFallbacks` is false and
     // the route's own page-wide notice stays silent — while the demographics
     // block is still English, because `demographicLabel` is shared with the
     // operator console and cannot simply become catalog keys. A portal that said
     // nothing here would publish English as Spanish by choice.
-    renderPortal({ demographicsEnabled: true, ...localeFor("es") });
+    const french = localeFor("fr");
+    expect(french.messages.fallbackKeys, "the premise: a complete catalog").toEqual([]);
+    renderPortal({ demographicsEnabled: true, ...french });
 
-    const notice = screen.getByText(/solo está disponible parcialmente en Español/i);
+    const notice = screen.getByText(/n'est que partiellement disponible en Français/i);
     // The block is on the step about the resident, which is where they meet it.
     writeComment("Hace falta un paso de peatones en la calle Main.");
     openStep("you");
@@ -682,8 +714,9 @@ describe("the portal in the participant's language", () => {
     // And the English that is still English says so, so a screen reader set to
     // Spanish does not read it with Spanish phonology.
     expect(firstEnglishLabel.getAttribute("lang")).toBe("en");
-    // The translated part of the same block is the Spanish it claims to be.
-    expect(screen.getAllByText("Prefiero no responder").length).toBeGreaterThan(0);
+    // The translated part of the same block is the French it claims to be.
+    expect(screen.getAllByText(french.messages.messages["portal.preferNotToSay"]).length).toBeGreaterThan(0);
+    expect(french.messages.messages["portal.preferNotToSay"]).toBe("Je préfère ne pas répondre");
   });
 
   it("does not repeat the page-wide notice the route already renders", () => {

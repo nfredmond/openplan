@@ -132,7 +132,7 @@ describe("ExploreCurrentResultCard", () => {
               value: "72",
               note: "Crash safety score.",
               estimated: true,
-              estimatedNote: "Crash source API unavailable — area-based estimate.",
+              estimatedNote: "Crash source API unavailable, area-based estimate.",
             },
           ],
         })}
@@ -142,9 +142,9 @@ describe("ExploreCurrentResultCard", () => {
     expect(screen.getByText("Estimated")).toBeInTheDocument();
     expect(screen.getByText("Estimated")).toHaveAttribute(
       "title",
-      "Crash source API unavailable — area-based estimate."
+      "Crash source API unavailable, area-based estimate."
     );
-    expect(screen.getByText("Crash source API unavailable — area-based estimate.")).toBeInTheDocument();
+    expect(screen.getByText("Crash source API unavailable, area-based estimate.")).toBeInTheDocument();
   });
 
   it("surfaces paired comparison context and dispatches export callbacks", () => {

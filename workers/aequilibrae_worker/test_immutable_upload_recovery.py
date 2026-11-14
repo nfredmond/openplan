@@ -26,7 +26,9 @@ class ImmutableUploadRecoveryTests(unittest.TestCase):
                     self.assertIs(post.call_args.kwargs['allow_redirects'],False)
                     self.assertIs(get.call_args.kwargs['allow_redirects'],False)
                     self.assertIn('/object/authenticated/run-artifacts/',get.call_args.args[0])
-                    self.assertEqual(get.call_args.kwargs['headers']['Authorization'], post.call_args.kwargs['headers']['Authorization'])
+                    credential = lambda call: {name: call.kwargs['headers'].get(name) for name in ('apikey', 'Authorization')}
+                    self.assertEqual(credential(get.call_args), credential(post.call_args))
+                    self.assertTrue(credential(get.call_args)['apikey'])
 
     def test_exact_retry(self): self.exercise()
     def test_lost_upload_reply(self): self.exercise(post_error=main.requests.Timeout('synthetic lost reply'))

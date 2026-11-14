@@ -115,7 +115,7 @@ export function PortalContextPage({
             className={
               acceptingSubmissions
                 ? "rounded-full bg-[color:var(--pine)]/15 px-2.5 py-0.5 text-xs font-semibold text-foreground"
-                : "rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground"
+                : "rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-muted-foreground"
             }
           >
             {acceptingSubmissions ? translator.t("page.submissionsOpen") : translator.t("page.submissionsClosed")}

@@ -279,6 +279,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     if (deleteError) {
       // 23503 = a dependency the pre-check did not cover (e.g. a new referrer,
       // or a row inserted between the check and here). The bytes are intact.
+      if (/retained.*award|immutable award terms|supports immutable award/i.test(deleteError.message)) return NextResponse.json({error:"This original PDF supports retained award terms and cannot be deleted. Upload a new document for an amendment."},{status:409});
       const isForeignKeyViolation =
         (deleteError as { code?: string }).code === "23503" ||
         /foreign key/i.test(deleteError.message);

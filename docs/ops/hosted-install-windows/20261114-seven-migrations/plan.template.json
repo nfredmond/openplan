@@ -1,0 +1,69 @@
+{
+  "window": "FILL-window-id",
+  "purpose": "window",
+  "capture": "FILL-capture-stamp",
+  "history": {
+    "count": 448,
+    "newest": "20261024200400"
+  },
+  "historyStatements": "FILL-from-prechecks/00-history.sql",
+  "postchecks": "postchecks.sql",
+  "files": [
+    {
+      "version": "20261102100000",
+      "name": "persist_state_injury_crashes",
+      "path": "openplan/supabase/migrations/20261102100000_persist_state_injury_crashes.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "a5974833150e2c295cc4eef20ce69cd21a6cf794e8e41fc114e89e40c469f1f6",
+      "selfWrapped": true
+    },
+    {
+      "version": "20261102100100",
+      "name": "bca_tribal_and_town_place_kinds",
+      "path": "openplan/supabase/migrations/20261102100100_bca_tribal_and_town_place_kinds.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "95c6d8997e9ed506cf982e877fb85a3ab8f66d07a77dd5dd4a270c43df6e646f",
+      "selfWrapped": true
+    },
+    {
+      "version": "20261102110000",
+      "name": "reserve_ai_usage",
+      "path": "openplan/supabase/migrations/20261102110000_reserve_ai_usage.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "1785f4843c377834b3eb1b979f2541757b83f9a8aee4f79f06402fb8b775b02c",
+      "selfWrapped": false
+    },
+    {
+      "version": "20261102110100",
+      "name": "application_export_custody",
+      "path": "openplan/supabase/migrations/20261102110100_application_export_custody.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "075720d6441290855817aefecb108835eafadeddc5f071ba058d9a5459cd4570",
+      "selfWrapped": false
+    },
+    {
+      "version": "20261102120000",
+      "name": "client_invoice_owner_admin_writes",
+      "path": "openplan/supabase/migrations/20261102120000_client_invoice_owner_admin_writes.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "3c75b9114568854b8d0976f5cb0bd6aae2fb74d6ab2023a60f8a9fab68d472ef",
+      "selfWrapped": false
+    },
+    {
+      "version": "20261102130000",
+      "name": "safety_crash_statement_revision",
+      "path": "openplan/supabase/migrations/20261102130000_safety_crash_statement_revision.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "e47040a92d6da35db46ac7725d65782633f68c118a6ba56f4f54fa2dd8163032",
+      "selfWrapped": false
+    },
+    {
+      "version": "20261102140000",
+      "name": "project_rtp_cycle_link_workspace_scope",
+      "path": "openplan/supabase/migrations/20261102140000_project_rtp_cycle_link_workspace_scope.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "4f7a0b4fd555c771622bf32752b210bb47f08330eed41aa8c057670dee23f668",
+      "selfWrapped": false
+    }
+  ]
+}

@@ -37,9 +37,9 @@ const DIRECTION_TABS: Array<{ value: InvoicingDirection; label: string }> = [
 
 const DIRECTION_DESCRIPTIONS: Record<InvoicingDirection, string> = {
   reimbursement:
-    "Reimbursement invoices this agency submits against its funding awards — the draw cycle from draft through submitted, approved for payment, and paid.",
+    "Reimbursement invoices this agency submits against its funding awards: the draw cycle from draft through submitted, approved for payment, and paid.",
   receivables:
-    "Invoices this workspace sends its own clients — the receivable cycle from draft through sent and paid, backed by engagements, rate tables, and the time ledger.",
+    "Invoices this workspace sends its own clients: the receivable cycle from draft through sent and paid, backed by engagements, rate tables, and the time ledger.",
 };
 
 /** Who can read and write here, and that none of it is a bill from OpenPlan. Same in both directions. */

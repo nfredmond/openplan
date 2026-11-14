@@ -15,6 +15,8 @@
  *     one crash on a short stub cannot top the list.
  *   - With no stored road lines at all, crashes are grouped into half-mile grid
  *     squares instead, ranked by crash count, and no per-mile figure is given.
+ *     A square is named by the nearest known road within 150 meters of its
+ *     crashes, or says the name is unavailable. It is never called a road.
  *
  * WHAT COUNTS. A source that separates serious injuries gives a KSI network
  * (fatal plus serious-injury crashes). A source that does not gives a network
@@ -25,7 +27,8 @@
  */
 
 import type { CrashSeverity } from "./sources/types";
-import type { SafetyRoadContextFeature } from "./road-context";
+import { isCrashSeverityCompleteness, separatesSeriousInjuries } from "./serious-injury-availability";
+import { matchSafetyRoadIdentity, type SafetyRoadContextFeature } from "./road-context";
 
 export type HighInjuryNetworkBasis = "ksi" | "fatal_only";
 export type HighInjuryNetworkMethod = "road_segments" | "grid_cells";
@@ -124,8 +127,11 @@ const TIE_TOLERANCE = 1e-9;
  * severity coverage. Null means coverage is not recorded, so nothing is ranked.
  */
 export function highInjuryNetworkBasis(severityCompleteness: string | null | undefined): HighInjuryNetworkBasis | null {
-  if (severityCompleteness === "kabco_full") return "ksi";
-  if (severityCompleteness === "fatal_only" || severityCompleteness === "fatal_injury_only") return "fatal_only";
+  // The recorded completeness is `seriousInjuryAvailability(...).effective`,
+  // written at acquisition, so the network ranks on serious injuries exactly
+  // when every other surface says they are separated.
+  if (separatesSeriousInjuries(severityCompleteness)) return "ksi";
+  if (isCrashSeverityCompleteness(severityCompleteness)) return "fatal_only";
   return null;
 }
 
@@ -424,6 +430,7 @@ function roadCandidates(
 
   const index = buildSegmentIndex(pieces, parameters.snapMeters);
   const tallies = new Map<number, Tally>();
+  const placements = new Map<string, string>();
   let placed = 0;
   for (const crash of crashes) {
     const point: [number, number] = [crash.longitude, crash.latitude];
@@ -444,6 +451,7 @@ function roadCandidates(
     }
     if (!best) continue;
     placed += 1;
+    placements.set(crash.id, pieces[best.pieceIndex].id);
     const tally = tallies.get(best.pieceIndex) ?? emptyTally();
     addToTally(tally, crash.severity);
     tallies.set(best.pieceIndex, tally);
@@ -471,27 +479,63 @@ function roadCandidates(
   return {
     candidates,
     placed,
+    placements,
     roadMilesReviewed: pieces.reduce((sum, piece) => sum + piece.lengthMeters, 0) / METERS_PER_MILE,
     roadSources: Array.from(new Set(pieces.map((piece) => piece.roadSource))).sort(),
   };
+}
+
+/**
+ * A grid square's name: the nearest known road within 150 meters of any of its
+ * crashes, else an explicit "road name unavailable". The center coordinates
+ * follow as a secondary detail so unnamed squares stay distinguishable.
+ */
+function gridSquareLabel(
+  crashes: readonly HighInjuryNetworkCrash[],
+  namingRoads: readonly SafetyRoadContextFeature[],
+  center: { latitude: number; longitude: number },
+): string {
+  let nearest: { name: string; distanceMeters: number } | null = null;
+  for (const crash of crashes) {
+    const identity = matchSafetyRoadIdentity(crash.longitude, crash.latitude, namingRoads);
+    if (identity.status !== "matched") continue;
+    if (
+      !nearest ||
+      identity.distanceMeters < nearest.distanceMeters ||
+      (identity.distanceMeters === nearest.distanceMeters && identity.name < nearest.name)
+    ) {
+      nearest = { name: identity.name, distanceMeters: identity.distanceMeters };
+    }
+  }
+  const coordinates = `${center.latitude.toFixed(5)}, ${center.longitude.toFixed(5)}`;
+  return nearest
+    ? `Half-mile square near ${nearest.name} (${coordinates})`
+    : `Half-mile square, road name unavailable (${coordinates})`;
 }
 
 function gridCandidates(
   crashes: readonly HighInjuryNetworkCrash[],
   basis: HighInjuryNetworkBasis,
   parameters: HighInjuryNetworkParameters,
+  namingRoads: readonly SafetyRoadContextFeature[] = [],
 ) {
   const latStep = (parameters.gridSizeMiles * METERS_PER_MILE) / METERS_PER_DEGREE_LATITUDE;
-  const cells = new Map<string, { column: number; row: number; lonStep: number; tally: Tally }>();
+  const cells = new Map<
+    string,
+    { column: number; row: number; lonStep: number; tally: Tally; crashes: HighInjuryNetworkCrash[] }
+  >();
+  const placements = new Map<string, string>();
   for (const crash of crashes) {
     const row = Math.floor(crash.latitude / latStep);
     const rowCenter = (row + 0.5) * latStep;
     const lonStep = latStep / Math.max(0.01, Math.cos(toRadians(rowCenter)));
     const column = Math.floor(crash.longitude / lonStep);
     const key = `grid:${column}:${row}`;
-    const cell = cells.get(key) ?? { column, row, lonStep, tally: emptyTally() };
+    const cell = cells.get(key) ?? { column, row, lonStep, tally: emptyTally(), crashes: [] };
     addToTally(cell.tally, crash.severity);
+    cell.crashes.push(crash);
     cells.set(key, cell);
+    placements.set(crash.id, key);
   }
 
   const candidates: Candidate[] = [...cells.entries()].map(([id, cell]) => {
@@ -503,7 +547,7 @@ function gridCandidates(
     const centerLon = (west + east) / 2;
     return {
       id,
-      label: `Half-mile square at ${centerLat.toFixed(5)}, ${centerLon.toFixed(5)}`,
+      label: gridSquareLabel(cell.crashes, namingRoads, { latitude: centerLat, longitude: centerLon }),
       geometry: {
         type: "Polygon",
         coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]],
@@ -518,7 +562,7 @@ function gridCandidates(
     };
   });
 
-  return { candidates, placed: crashes.length };
+  return { candidates, placed: crashes.length, placements };
 }
 
 /**
@@ -530,6 +574,7 @@ function gridCandidates(
  *
  * `roads` null means the road read failed: no ranking, never a silent switch
  * to the grid. An empty array means no road lines are stored: grid method.
+ * `namingRoads` only names grid squares; it never ranks.
  */
 export function computeHighInjuryNetwork(input: {
   crashes: readonly HighInjuryNetworkCrash[];
@@ -538,6 +583,7 @@ export function computeHighInjuryNetwork(input: {
   roads: readonly SafetyRoadContextFeature[] | null;
   years: readonly number[];
   parameters?: HighInjuryNetworkParameters;
+  namingRoads?: readonly SafetyRoadContextFeature[];
 }): HighInjuryNetwork {
   const parameters = input.parameters ?? HIGH_INJURY_NETWORK_PARAMETERS;
   if (input.roads === null) {
@@ -549,7 +595,11 @@ export function computeHighInjuryNetwork(input: {
 
   const built = method === "road_segments"
     ? roadCandidates(crashes, input.roads, input.basis, parameters)
-    : { ...gridCandidates(crashes, input.basis, parameters), roadMilesReviewed: null, roadSources: [] as string[] };
+    : {
+        ...gridCandidates(crashes, input.basis, parameters, input.namingRoads),
+        roadMilesReviewed: null,
+        roadSources: [] as string[],
+      };
 
   const ranked = rankHighInjuryCandidates(built.candidates);
   const listed = ranked.slice(0, parameters.listLimit);
@@ -586,26 +636,70 @@ export function computeHighInjuryNetwork(input: {
   };
 }
 
+/**
+ * Which segment each crash lands on, by the same rule the ranking uses: nearest
+ * road piece within the snap distance, or the half-mile grid square when no
+ * road lines are stored. A crash missing from the map was not placed. Null
+ * when the road read failed, as in `computeHighInjuryNetwork`.
+ */
+export function placeHighInjuryNetworkCrashes(input: {
+  crashes: readonly HighInjuryNetworkCrash[];
+  basis: HighInjuryNetworkBasis;
+  roads: readonly SafetyRoadContextFeature[] | null;
+  parameters?: HighInjuryNetworkParameters;
+}): Map<string, string> | null {
+  if (input.roads === null) return null;
+  const parameters = input.parameters ?? HIGH_INJURY_NETWORK_PARAMETERS;
+  const crashes = input.crashes.filter((crash) => usableCrash(crash, highInjuryNetworkSeverities(input.basis)));
+  return input.roads.length > 0
+    ? roadCandidates(crashes, input.roads, input.basis, parameters).placements
+    : gridCandidates(crashes, input.basis, parameters).placements;
+}
+
+/** What the network counts, in the words its figures are printed with. */
+export function highInjuryNetworkCrashWord(basis: HighInjuryNetworkBasis): string {
+  return basis === "ksi" ? "fatal or serious-injury crashes" : "fatal crashes";
+}
+
 /** Plain coverage sentence: what was placed, what was listed, what was left out. */
 export function describeHighInjuryNetworkCoverage(network: Extract<HighInjuryNetwork, { status: "computed" }>): string {
-  const crashWord = network.basis === "ksi" ? "fatal or serious-injury crashes" : "fatal crashes";
+  const crashWord = highInjuryNetworkCrashWord(network.basis);
   const periodCaveat = " Requested years filter stored crashes; they do not establish complete observation coverage or an annual denominator. Unavailable years are not zero-crash observations.";
   if (network.crashesConsidered === 0) {
     return `No ${crashWord} are recorded here for these years. That is not a finding that the roads are safe.${periodCaveat}`;
   }
   const notPlaced = network.crashesConsidered - network.crashesPlaced;
+  // The verb agrees with the leading count: "1 is", "2 are".
+  const be = (n: number) => (n === 1 ? "is" : "are");
   const placedSentence = network.method === "road_segments"
-    ? `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} are within ${network.parameters.snapMeters} m of a stored road line (${(network.roadMilesReviewed ?? 0).toFixed(1)} road miles stored).`
-    : `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} are placed in a grid square.`;
+    ? `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} ${be(network.crashesPlaced)} within ${network.parameters.snapMeters} m of a stored road line (${(network.roadMilesReviewed ?? 0).toFixed(1)} road miles stored).`
+    : `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} ${be(network.crashesPlaced)} placed in a grid square.`;
   const notPlacedSentence = notPlaced <= 0
     ? ""
     : network.method === "road_segments"
-      ? ` ${notPlaced.toLocaleString("en-US")} are not on this list because no stored road line is near them.`
-      : ` ${notPlaced.toLocaleString("en-US")} are not on this list because their coordinates could not be used.`;
-  const listedSentence = network.segments.length > 0
-    ? ` The ${network.segments.length} listed ${network.method === "road_segments" ? "pieces" : "squares"} hold ${network.listedCrashes.toLocaleString("en-US")} of them${network.listedMiles === null ? "" : ` on ${network.listedMiles.toFixed(1)} miles`}.`
+      ? ` ${notPlaced.toLocaleString("en-US")} ${be(notPlaced)} not on this list because no stored road line is near ${notPlaced === 1 ? "it" : "them"}.`
+      : ` ${notPlaced.toLocaleString("en-US")} ${be(notPlaced)} not on this list because ${notPlaced === 1 ? "its coordinates" : "their coordinates"} could not be used.`;
+  const listed = network.segments.length;
+  const listedNoun = network.method === "road_segments"
+    ? (listed === 1 ? "piece holds" : "pieces hold")
+    : (listed === 1 ? "square holds" : "squares hold");
+  const listedSentence = listed > 0
+    ? ` The ${listed} listed ${listedNoun} ${network.listedCrashes.toLocaleString("en-US")} of them${network.listedMiles === null ? "" : ` on ${network.listedMiles.toFixed(1)} miles`}.`
     : "";
   return placedSentence + notPlacedSentence + listedSentence + periodCaveat;
+}
+
+/**
+ * One line when every listed row shares one rank, so the list is not read as
+ * a ranking. Null when the list has an order. No tie-breaker is invented: the
+ * rows keep their shared rank, and a map numbers each of them with it.
+ */
+export function describeHighInjuryNetworkTie(
+  rows: ReadonlyArray<{ rank: number; tied: boolean; lengthMiles: number | null }>,
+): string | null {
+  if (rows.length < 2 || !rows.every((row) => row.tied && row.rank === rows[0].rank)) return null;
+  const items = rows.every((row) => row.lengthMiles === null) ? "squares" : "segments";
+  return `All ${rows.length.toLocaleString("en-US")} listed ${items} are tied at rank ${rows[0].rank}, so this list is not a ranking.`;
 }
 
 export type HighInjuryNetworkFeatureCollection = {
@@ -636,5 +730,53 @@ export function highInjuryNetworkFeatureCollection(
         crashCount: segment.crashCount,
       },
     })),
+  };
+}
+
+/** The map color: one hue outside the severity palette, so the layer never reads as a severity. */
+export const HIGH_INJURY_NETWORK_COLOR = "#6d28d9";
+
+export type HighInjuryNetworkMarkerCollection = {
+  type: "FeatureCollection";
+  features: Array<{
+    type: "Feature";
+    id: number;
+    geometry: { type: "Point"; coordinates: [number, number] };
+    properties: { segmentId: string; rank: number };
+  }>;
+};
+
+/**
+ * One point per listed segment, so a half-mile piece that is a pixel long at
+ * county zoom still shows: the middle vertex of a road piece, or the center
+ * of a grid square.
+ */
+export function highInjuryNetworkMarkerCollection(
+  collection: HighInjuryNetworkFeatureCollection | null | undefined,
+): HighInjuryNetworkMarkerCollection {
+  if (!collection) return { type: "FeatureCollection", features: [] };
+  return {
+    type: "FeatureCollection",
+    features: collection.features.flatMap((feature) => {
+      let point: [number, number] | undefined;
+      if (feature.geometry.type === "LineString") {
+        const coordinates = feature.geometry.coordinates;
+        point = coordinates[Math.floor(coordinates.length / 2)];
+      } else {
+        const ring = feature.geometry.coordinates[0] ?? [];
+        const lons = ring.map(([lon]) => lon);
+        const lats = ring.map(([, lat]) => lat);
+        point = ring.length > 0
+          ? [(Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2]
+          : undefined;
+      }
+      if (!point) return [];
+      return [{
+        type: "Feature" as const,
+        id: feature.id,
+        geometry: { type: "Point" as const, coordinates: point },
+        properties: { segmentId: feature.properties.segmentId, rank: feature.properties.rank },
+      }];
+    }),
   };
 }

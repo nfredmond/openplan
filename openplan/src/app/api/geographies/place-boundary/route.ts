@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { placeBoundaryResponseSchema, placeKindSchema } from "@/lib/api/place-geographies";
+import { normalizePlaceGeoid, placeBoundaryResponseSchema, placeKindSchema } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
 
 export async function GET(request: NextRequest) {
@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const kindResult = placeKindSchema.safeParse(searchParams.get("kind"));
-    const geoid = (searchParams.get("geoid") ?? "").replace(/[^0-9]/g, "");
+    const geoid = kindResult.success ? normalizePlaceGeoid(kindResult.data, searchParams.get("geoid")) : null;
 
-    if (!kindResult.success || geoid.length < 5 || geoid.length > 7) {
+    if (!kindResult.success || !geoid) {
       return NextResponse.json({ error: "A valid kind and GEOID are required" }, { status: 400 });
     }
 

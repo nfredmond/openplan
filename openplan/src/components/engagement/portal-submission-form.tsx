@@ -261,6 +261,17 @@ export function PortalSubmissionForm({
   const restoreStage = useRef(place.source === "stage" ? place.onRestoreGeometry : undefined);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
+  // Send unmounts the form, and the focused button with it. Without a new focus
+  // target the browser drops focus to <body> and a screen reader announces
+  // nothing, so a resident cannot tell the comment arrived. Only a send made on
+  // this page moves focus; a receipt restored on reload leaves focus alone.
+  const receivedHeadingRef = useRef<HTMLHeadingElement>(null);
+  const [focusReceipt, setFocusReceipt] = useState(false);
+  useEffect(() => {
+    if (!submitted || !focusReceipt) return;
+    receivedHeadingRef.current?.focus();
+    setFocusReceipt(false);
+  }, [submitted, focusReceipt]);
 
   useEffect(() => {
     if (previewMode) return;
@@ -344,6 +355,21 @@ export function PortalSubmissionForm({
   useEffect(() => {
     if (needsBody && step === "what") bodyRef.current?.focus();
   }, [needsBody, step]);
+
+  /*
+    A step the resident moves to takes focus on its heading. Without this, focus
+    stayed on the Next button, the new step's field sat behind it, and the move
+    from "About you" to "Send it" swaps Next for Send, so focus fell to <body>
+    and a keyboard resident tabbed through the map toolbar again to find Send.
+    Only a move the resident makes takes focus; opening the page does not.
+  */
+  const stepHeadingRef = useRef<HTMLHeadingElement>(null);
+  const [focusStepHeading, setFocusStepHeading] = useState(false);
+  useEffect(() => {
+    if (!focusStepHeading) return;
+    stepHeadingRef.current?.focus();
+    setFocusStepHeading(false);
+  }, [step, focusStepHeading]);
 
   /*
     The topic caveat, said ONCE under the control. A `<select>` cannot put a
@@ -512,6 +538,7 @@ export function PortalSubmissionForm({
     if (result.ok) {
       setReceipt({ submissionId: result.submissionId, receivedAt: result.receivedAt });
       setSubmitted(true);
+      setFocusReceipt(true);
       return;
     }
 
@@ -545,7 +572,7 @@ export function PortalSubmissionForm({
     return (
       <div className={cn("space-y-3 p-5 text-center", className)} data-testid="portal-sidebar-received">
         <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" aria-hidden="true" />
-        <h2 className="text-lg font-semibold text-foreground">{t("portal.received")}</h2>
+        <h2 ref={receivedHeadingRef} tabIndex={-1} className="text-lg font-semibold text-foreground focus:outline-none">{t("portal.received")}</h2>
         <p className="text-sm text-muted-foreground">{t("portal.reviewNotice")}</p>
         {/* The one promise the agency must not let a resident infer wrongly:
             being read is not the same as being written back to. */}
@@ -620,10 +647,14 @@ export function PortalSubmissionForm({
     }
     setNeedsBody(false);
     setStep(target);
+    setFocusStepHeading(true);
   };
 
   const goNext = () => goToStep(steps[Math.min(stepIndex + 1, steps.length - 1)]);
-  const goBack = () => setStep(steps[Math.max(stepIndex - 1, 0)]);
+  const goBack = () => {
+    setStep(steps[Math.max(stepIndex - 1, 0)]);
+    setFocusStepHeading(true);
+  };
 
   /**
    * THE "WHERE" STEP — the only place the three doors genuinely differ, and they
@@ -853,7 +884,7 @@ export function PortalSubmissionForm({
 
       <div className="space-y-3" data-testid={`portal-step-${step}`}>
         <div>
-          <h2 className="flex items-baseline justify-between gap-3 text-base font-semibold text-foreground">
+          <h2 ref={stepHeadingRef} tabIndex={-1} className="flex items-baseline justify-between gap-3 text-base font-semibold text-foreground focus:outline-none">
             {stepTitle[step]}
             <span className="text-xs font-medium tabular-nums text-muted-foreground">
               {t("portal.stepCounter", {

@@ -93,7 +93,7 @@ export function PageTabNav<Key extends string>({
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "module-tab-trigger inline-flex items-center whitespace-nowrap text-sm font-medium transition",
-                isActive ? "text-foreground" : "text-foreground/60 hover:text-foreground",
+                isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >
               {tab.label}

@@ -45,7 +45,7 @@ const BENCHMARK_FIT_BLOCK = {
     mode_split_pct: { auto: 88, transit: 1.5, walk: 6, bike: 1.5, shared: 3 },
   },
   sources: ["Reference benchmark source note"],
-  recommendation: "Directional only — review assumptions",
+  recommendation: "Directional only: review assumptions",
 };
 
 const NORMALIZED_BENCHMARK_FIT = {
@@ -56,7 +56,7 @@ const NORMALIZED_BENCHMARK_FIT = {
   components: { vmt_score: 75, mode_split_score: 68 },
   reference: BENCHMARK_FIT_BLOCK.reference,
   sources: ["Reference benchmark source note"],
-  recommendation: "Directional only — review assumptions",
+  recommendation: "Directional only: review assumptions",
 };
 
 describe("benchmark fit mapping", () => {
@@ -153,7 +153,7 @@ describe("employment provenance", () => {
 
   it("describes LODES coverage including the fallback tract count", () => {
     expect(describeEmploymentProvenance(LODES_EMPLOYMENT)).toBe(
-      "LEHD LODES8 WAC S000/JT00 2022 — 24 tracts (states ca); 2 tracts from the population-share fallback"
+      "LEHD LODES8 WAC S000/JT00 2022: 24 tracts (states ca); 2 tracts from the population-share fallback"
     );
     expect(employmentUsedSyntheticFallback(LODES_EMPLOYMENT)).toBe(true);
   });
@@ -170,7 +170,7 @@ describe("employment provenance", () => {
 
     const fullCoverage = { ...LODES_EMPLOYMENT, tracts_from_synthetic_fallback: 0 };
     expect(describeEmploymentProvenance(fullCoverage)).toBe(
-      "LEHD LODES8 WAC S000/JT00 2022 — 24 tracts (states ca)"
+      "LEHD LODES8 WAC S000/JT00 2022: 24 tracts (states ca)"
     );
     expect(employmentUsedSyntheticFallback(fullCoverage)).toBe(false);
   });

@@ -60,11 +60,18 @@ because its name sounds commercial. Check provider licenses and operating costs;
 a provider's free tier is not proof of free agency operation.
 
 Consequential facts, money, publication, legal applicability and adoption belong
-to responsible humans. Agents may propose grounded changes; never fabricate data,
-impersonate users, remove public caveats or silently promote a scientific claim.
-Nathaniel owns outreach and product priorities. Engineering decisions belong to
-the technical lead; request only the product judgments or authorization actually
-missing from the current task.
+to responsible humans. Agents may propose grounded changes; never fabricate
+data, impersonate users, remove public caveats or silently promote a scientific
+claim. Nathaniel's November 13, 2026 standing direction is to take OpenPlan as
+far as possible without his check-ins or decisions. Agents make product,
+engineering, scientific and sequencing decisions themselves, record the reason,
+and have a fresh-context reviewer check consequential calls. Do not ask
+Nathaniel for decisions or check-ins. Free, open-source dependencies with
+compatible licenses need no approval. These limits stay fixed: no paid services
+or spending; no shared AI keys on the hosted installation; credentials are never
+printed or committed; a fresh capture comes before any hosted migration; and
+agents never make a real agency's adoption, spending or publication decisions.
+Nathaniel still owns outreach, and his earlier dated decisions stand.
 
 The contract explicitly preserves full OWP/UPWP administration, complete RTP updates from the adopted predecessor, planning contract drawdown by task/employee/deliverable linked to forecast delivery, superior public engagement, API/installed CLI provider choice, full capital administration, local-tax/grant program administration with recipient reporting and measured project outputs, and complete consultant/agency procurement from discovery and solicitation through receipt, evaluation, award and contract handoff. Maintain their requirement-to-evidence mapping in `docs/product/CORE_REQUIREMENTS_LEDGER.md`; the roadmap stays the sole queue. These do not replace the remaining whole-product floor.
 
@@ -101,8 +108,10 @@ Prefer the smallest clear change. Read working designs before replacing them.
 Use TypeScript/Node and Python; avoid `any` when a real type is available. A
 comment explains use and intent above a function, not every statement.
 
-Every changed test or guard needs a harmless mutation that survives and a
-targeted broken behavior that fails for the stated reason. Restore edits without
+Every changed guard, and every changed test of money, permissions, custody,
+public records or scientific claims, needs a harmless mutation that survives and
+a targeted broken behavior that fails for the stated reason. Other changed tests
+must fail against the defect they cover before the fix. Restore edits without
 `git checkout` or destructive resets in shared work. State each check's blind
 category. Fix vacuous checks; never remove a failure to manufacture green.
 Mocked database tests must assert query projections where correctness depends
@@ -111,12 +120,18 @@ on selected fields. Live RLS and recovery tests protect different boundaries.
 A visible workflow requires an identified-build journey from real navigation,
 desktop and 390px evidence, console review and usable artifacts. Green unit
 tests, screenshots without provenance and server health do not establish that.
-Use the local browser skill before opening OpenPlan; never interfere with another
-session's browser, accounts or workers. Nathaniel's October 17, 2026 direction
-makes agent-run planner and public-participant workflow checks valid acceptance
-evidence for milestones and v1. Human feedback is post-v1, not a release gate.
-Do not recruit reviewers or ask Nathaniel for human feedback. Label agent-run
-results accurately and retain technical, scientific and workflow requirements.
+Use the local browser skill before opening OpenPlan; never interfere with
+another session's browser, accounts or workers. Human feedback never gates
+OpenPlan development, milestones, merges, releases or v1. Agent-run planner,
+operator and public-participant checks are the acceptance evidence: an agent
+performs the named role's task on permitted records or labeled fixtures, and the
+record names the executor. Nathaniel made this permanent on November 13, 2026.
+It settles his October 17, 2026 direction, and direction reviews do not reopen
+it. Do not recruit reviewers or ask Nathaniel for human feedback; after v1 it
+stays optional research under the [observation
+protocol](docs/product/PLANNER_OBSERVATION_PROTOCOL.md). A screen-reader check
+is an agent-driven NVDA or VoiceOver run. Label agent-run results accurately and
+retain technical, scientific and workflow requirements.
 
 Use the existing action registry for agent writes or record an executable
 refusal. Preserve distinct authorship, exact approved-payload hashes, route-local
@@ -185,7 +200,10 @@ or DNS to change OpenPlan. Public signup requires confirmation email.
 - **Supabase:** OpenPlan uses project `lolckycpdjsgeejsmuzl` for database, Auth and
   private Storage. It belongs to the Pro organization and uses Micro compute.
   The Nat Ford website uses a different project, `bymadqabjvtwrfbkcded`; keep them
-  separate. The dated catch-up records 405 migrations. Git deploys do not apply
+  separate. The dated catch-up recorded 405 migrations on October 11; main
+  expected 448 on November 1 and 455 after the November 14 window, which
+  installed seven files in one transaction with the kit in
+  `scripts/ops/hosted-install/`. Git deploys do not apply
   migrations. The agent that owns a schema change coordinates its rollout with
   the other agents through the coordination file below; no separate approval
   from Nathaniel is needed. Record the planned migration there first, then work
@@ -235,7 +253,12 @@ Release commits align changelog, package version, migrations and release-orderin
 checks; tag only when the declared evidence is satisfied. Documentation review
 does not itself declare an unfinished development candidate released.
 
-Keep expensive findings and unfinished boundaries in dated repository notes.
+Per-change evidence (commands, results, mutation tables) goes in the pull
+request body and CI artifacts. Create dated folders under `docs/reviews/` only for
+direction reviews, releases, scientific studies, incidents, and money, permission
+or custody boundaries, and do not commit raw logs or bulky JSON receipts
+(November 1, 2026 direction review). Keep expensive findings and unfinished
+boundaries in those notes or in the known-issues list.
 [Documentation index](docs/README.md) routes current authority. Preserve historical
 studies, releases and decisions; archive or supersede old plans visibly instead
 of rewriting what they found. Report errors and uncertainty promptly, in plain

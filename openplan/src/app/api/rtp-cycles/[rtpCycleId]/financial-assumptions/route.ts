@@ -106,7 +106,7 @@ function describeAcceptedEntryKinds(): string {
 const MAX_LEDGER_AMOUNT = 99_999_999_999_999;
 
 const NEGATIVE_AMOUNT_MESSAGE =
-  "amount must be zero or greater. A negative revenue or cost line does not read as an error in any total — it silently offsets a real line somewhere else in the same sum — so it is refused rather than stored. Record the offsetting item as its own line instead.";
+  "amount must be zero or greater. A negative revenue or cost line does not read as an error in any total (it silently offsets a real line somewhere else in the same sum), so it is refused rather than stored. Record the offsetting item as its own line instead.";
 
 const NOT_A_NUMBER_MESSAGE =
   "amount must be a number of dollars in constant (base-year) dollars. An amount nobody knows yet is a line you do not add yet, never a zero.";
@@ -233,7 +233,7 @@ function ledgerWriteFailureResponse(error: PostgrestErrorLike, verb: "save" | "u
       {
         error: "The ledger refused one of these values",
         details:
-          "Something in this line is outside what the financial ledger accepts — an amount below zero, an empty source name, or a basis year outside 1900–2200. Nothing was saved.",
+          "Something in this line is outside what the financial ledger accepts: an amount below zero, an empty source name, or a basis year outside 1900–2200. Nothing was saved.",
       },
       { status: 400 },
     );
@@ -377,7 +377,7 @@ async function resolveHorizonBandInCycle(
         {
           error: "That period is not part of this plan",
           details:
-            "The horizon band this line was going to be recorded against belongs to a different plan cycle, or no longer exists. Nothing was saved — money recorded against another plan's period would make both plans' fiscal-constraint figures wrong.",
+            "The horizon band this line was going to be recorded against belongs to a different plan cycle, or no longer exists. Nothing was saved. Money recorded against another plan's period would make both plans' fiscal-constraint figures wrong.",
         },
         { status: 400 },
       ),

@@ -6,6 +6,7 @@ import { canonicalBcaJson } from "@/lib/bca/workbench/canonical";
 import { readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { bcaDocumentSchema } from "@/lib/bca/workbench/schema";
+import { bcaPlaceReview, readBcaProjectPlace } from "@/lib/bca/workbench/project-place";
 import {
   calculateBcaDocument,
   WORKBENCH_ENGINE_VERSION,
@@ -62,11 +63,18 @@ export async function GET(
       },
       { status: 500 },
     );
+  const projectPlace = readBcaProjectPlace(projectId, access.project);
   return NextResponse.json({
     versions: (data ?? [])
       .slice(0, 100)
-      .map((row) => ({ ...row, inputHash: hash(row.document_json) })),
+      .map((row) => {
+        const document = bcaDocumentSchema.safeParse(row.document_json);
+        return { ...row, inputHash: hash(row.document_json), projectPlaceReview:
+          document.success && document.data.projectId === projectId
+            ? bcaPlaceReview(document.data, projectPlace) : { status: "invalid-document" } };
+      }),
     hasMore: (data?.length ?? 0) > 100,
+    projectPlace,
   });
 }
 export async function POST(
@@ -110,6 +118,26 @@ export async function POST(
     );
   const calculation = calculateBcaDocument(parsed.data.document);
   const inputHash = hash(parsed.data.document);
+  // Resolve an existing request before checking mutable project context. A
+  // legacy or stale exact replay must recover its original immutable result.
+  const readPrior = () => access.supabase.from("project_bca_versions").select(projection)
+    .eq("project_id", projectId).eq("id", parsed.data.id).maybeSingle();
+  const replay = (prior: { created_by: string; document_json: unknown }) => {
+    if (prior.created_by === access.user.id && hash(prior.document_json) === inputHash)
+      return NextResponse.json({ version: { ...prior, inputHash }, calculation, replayed: true });
+    return NextResponse.json({ error: "This save identifier already belongs to different content. Load history before saving a new version." }, { status: 409 });
+  };
+  const existing = await readPrior();
+  if (existing.error)
+    return NextResponse.json({ error: "Save outcome is unknown. Retry the same request." }, { status: 503 });
+  if (existing.data) return replay(existing.data);
+  const projectPlace = readBcaProjectPlace(projectId, access.project);
+  if (parsed.data.document.schemaVersion !== 2)
+    return NextResponse.json({ error: "This analysis is unbound. Review the project's place to create a new version. Existing retained requests can still recover an exact prior save." }, { status: 409 });
+  if (projectPlace.status !== "available")
+    return NextResponse.json({ error: projectPlace.message, projectPlace }, { status: 409 });
+  if (bcaPlaceReview(parsed.data.document, projectPlace).status !== "matched-at-read")
+    return NextResponse.json({ error: "The project changed since place review. Preserve this request, refresh the project place and explicitly review a new version.", projectPlace }, { status: 409 });
   const audit = createApiAuditLogger("projects.bca-analyses.save", request);
   const { data, error } = await access.supabase
     .from("project_bca_versions")
@@ -123,26 +151,13 @@ export async function POST(
     .select(projection)
     .single();
   if (error?.code === "23505") {
-    const prior = await access.supabase
-      .from("project_bca_versions")
-      .select(projection)
-      .eq("project_id", projectId)
-      .eq("id", parsed.data.id)
-      .maybeSingle();
+    const prior = await readPrior();
     if (prior.error)
       return NextResponse.json(
         { error: "Save outcome is unknown. Retry the same request." },
         { status: 503 },
       );
-    if (
-      prior.data?.created_by === access.user.id &&
-      hash(prior.data.document_json) === inputHash
-    )
-      return NextResponse.json({
-        version: { ...prior.data, inputHash },
-        calculation,
-        replayed: true,
-      });
+    if (prior.data) return replay(prior.data);
     return NextResponse.json(
       {
         error:
@@ -151,6 +166,8 @@ export async function POST(
       { status: 409 },
     );
   }
+  if (error?.code === "PT409")
+    return NextResponse.json({ error: "The project changed before the database retained this version. Preserve the original request, refresh the project place and explicitly review a new version." }, { status: 409 });
   if (error) {
     audit.error("save_failed", { code: error.code });
     return NextResponse.json(

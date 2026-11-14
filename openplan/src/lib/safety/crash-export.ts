@@ -231,7 +231,7 @@ export function crashExportHeaderRows(input: CrashExportInput): Array<[string, s
     // is indistinguishable from a complete one.
     rows.push([
       "INCOMPLETE",
-      `${provenance.matchedCount.toLocaleString("en-US")} collisions matched these filters and ${exported.toLocaleString("en-US")} were exported. This file is a partial slice — narrow the filters or the map extent to export the rest.`,
+      `${provenance.matchedCount.toLocaleString("en-US")} collisions matched these filters and ${exported.toLocaleString("en-US")} were exported. This file is a partial slice. Narrow the filters or the map extent to export the rest.`,
     ]);
   }
 

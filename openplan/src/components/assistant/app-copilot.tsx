@@ -703,7 +703,7 @@ function ChatProposalCard({
         </div>
       ) : null}
       {entry.state === "dismissed" ? (
-        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Dismissed — no change was made.</p>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Dismissed. No change was made.</p>
       ) : null}
     </div>
   );
@@ -1781,7 +1781,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       status: event.ok ? ("done" as const) : ("failed" as const),
                       summary: event.ok
                         ? describeAssistantChatToolActivity(activity.toolName, event.output)
-                        : `${describeAssistantChatToolActivity(activity.toolName, event.output)} — failed`,
+                        : `${describeAssistantChatToolActivity(activity.toolName, event.output)} (failed)`,
                     }
                   : activity
               ),
@@ -1824,7 +1824,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           patchChatEntry((entry) => ({
             ...entry,
             status: "error" as const,
-            error: "The Planner Agent chat reply came back empty — the model may be busy. Try again.",
+            error: "The Planner Agent chat reply came back empty. The model may be busy. Try again.",
           }));
         } else {
           patchChatEntry((entry) => ({ ...entry, status: "complete" as const }));
@@ -2520,7 +2520,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               This reply&apos;s single AI call was estimated at ~$
                               {message.costWarning.estimatedCostUsd.toFixed(2)}, above the $
                               {message.costWarning.thresholdUsd.toFixed(2)} review threshold. Occasional heavy questions are
-                              fine — repeated ones are worth narrowing.
+                              fine. Repeated ones are worth narrowing.
                             </p>
                           ) : null}
                           {message.status === "error" ? (

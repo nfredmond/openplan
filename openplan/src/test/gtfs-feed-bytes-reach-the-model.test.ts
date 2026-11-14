@@ -124,6 +124,9 @@ function serviceDouble(uploadError: { message: string } | null = null) {
   const updates: Array<Record<string, unknown>> = [];
 
   const client = {
+    // The workspace storage limit (storage-quota.ts) reads current use here
+    // before a fetched archive is stored. An empty workspace: always room.
+    rpc: () => Promise.resolve({ data: 0, error: null }),
     storage: {
       from(bucket: string) {
         return {
