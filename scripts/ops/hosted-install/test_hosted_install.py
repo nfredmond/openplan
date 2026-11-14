@@ -426,6 +426,38 @@ class RunnerTest(unittest.TestCase):
         with self.fake_psql(), self.assertRaises(kc.KitError):
             self.install()
 
+    def test_only_a_database_error_on_a_live_connection_reads_install_failed(self):
+        # Review 31, B1. With one message the server runs every statement
+        # through COMMIT even after psql is gone, so a lost connection, a killed
+        # psql or a FATAL may have committed: the kit must not call it failed.
+        cases = ((3, "psql:<stdin>:9: ERROR:  openplan install: the catalog changed", "install-failed"),
+                 (2, "psql: error: connection to server was lost", "install-unknown"),
+                 (-9, "", "install-unknown"),
+                 (3, "FATAL:  terminating connection due to administrator command\n"
+                     "ERROR:  openplan install: the catalog changed", "install-unknown"),
+                 (3, "ERROR:  x\npsql:<stdin>:9: connection to server was lost", "install-unknown"),
+                 (0, "", "install-unknown"))
+        for index, (code, stderr, status) in enumerate(cases):
+            marker = self.bundle_dir / "install-attempt-copy.json"
+            if marker.exists():
+                marker.unlink()
+            self.write_go()
+            with self.subTest(code=code, stderr=stderr[:30]), self.fake_psql(code=code, stderr=stderr):
+                exit_code, envelope = run_sql.execute(args_for("install", self.root / f"ev{index}", self.bundle_dir),
+                                                      FakeTarget(), NOW_OK)
+                self.assertEqual(envelope["status"], status)
+                self.assertEqual(exit_code, 1)
+
+    def test_a_dry_run_that_did_not_end_at_a_database_error_reads_unknown(self):
+        for index, (code, stderr, status) in enumerate((
+                (3, "ERROR:  relation does not exist", "dry-run-failed"),
+                (2, "connection to server was lost", "dry-run-unknown"),
+                (-9, "", "dry-run-unknown"),
+                (3, "FATAL:  terminating connection due to transaction timeout", "dry-run-unknown"))):
+            with self.subTest(code=code), self.fake_psql(code, "", stderr):
+                _, envelope = run_sql.execute(args_for("dryrun", self.root / f"ev{index}", self.bundle_dir), FakeTarget(), NOW_OK)
+                self.assertEqual(envelope["status"], status)
+
     def test_install_refuses_an_edited_install_file(self):
         self.write_go()
         with open(self.bundle_dir / "INSTALL.sql", "a") as handle:
@@ -453,7 +485,7 @@ class RunnerTest(unittest.TestCase):
     def test_dry_run_counts_only_a_raise_with_the_sentinel_as_complete(self):
         sentinel = "ERROR:  " + kc.DRYRUN_SENTINEL
         cases = ((3, DRY_OK, sentinel, "dry-run-complete"),
-                 (0, DRY_OK, "", "dry-run-failed"),
+                 (0, DRY_OK, "", "dry-run-unknown"),
                  (3, DRY_OK, "ERROR:  relation does not exist", "dry-run-failed"),
                  (3, "", sentinel, "dry-run-failed"),
                  (3, DRY_OK.replace(kc.BEFORE_PREFIX, "x"), sentinel, "dry-run-failed"),
@@ -867,6 +899,25 @@ class LiveBase(unittest.TestCase):
         return fixture, fixture.write_plan()
 
 
+# Runs a command with this process's stdin and kills it, as a dropped network
+# would end psql, once the file named first exists. Exit 137 then, as a shell
+# reports a killed process.
+KILL_ON_FLAG = (
+    "import os, subprocess, sys, time\n"
+    "flag, data = sys.argv[1], sys.stdin.buffer.read()\n"
+    "child = subprocess.Popen(sys.argv[2:], stdin=subprocess.PIPE)\n"
+    "child.stdin.write(data)\n"
+    "child.stdin.close()\n"
+    "while child.poll() is None and not os.path.exists(flag):\n"
+    "    time.sleep(0.02)\n"
+    "if child.poll() is None:\n"
+    "    child.kill()\n"
+    "    child.wait()\n"
+    "    sys.exit(137)\n"
+    "sys.exit(child.returncode)\n"
+)
+
+
 @unittest.skipUnless(LIVE, "set OPENPLAN_INSTALL_KIT_PSQL to run the live PostgreSQL tests")
 class LiveInstallTest(LiveBase):
     """Runs the generated SQL on a real PostgreSQL 17 database as postgres."""
@@ -952,6 +1003,51 @@ class LiveInstallTest(LiveBase):
         self.assertEqual(tables, "kit_before,kit_items")
         self.assertEqual(self.sql(self.target, "SELECT is_called FROM public.kit_seq"), "f")
         self.assertEqual(self.history(), "1 20990101000000")
+
+    def test_a_lost_connection_after_sending_reads_unknown_and_the_server_commits(self):
+        # Review 31, B1: psql is killed once the server is running the one
+        # message. The server finishes it, COMMIT included, after the client is
+        # gone, so the envelope must not say the install failed.
+        files = {"20990101000001_slow": "ALTER TABLE public.kit_items ADD COLUMN note text;\n"
+                                        "SELECT pg_catalog.pg_sleep(1.5);\n"}
+        fixture, plan = self.make(files)
+        bundle_dir = fixture.root / "b"
+        _, pins = self.dry_run(fixture, plan, bundle_dir)
+        bundle = fixture.build("install", plan, bundle_dir, pins)
+        (bundle_dir / "GO.json").write_text(json.dumps({"capture": bundle["capture"],
+                                                        "installSha256": bundle["installSha256"], "target": "copy"}))
+        flag = self.root / "kill-now"
+        killed = CommandTarget([sys.executable, "-c", KILL_ON_FLAG, str(flag)] + self.prefix, self.database)
+        done: dict = {}
+
+        def install():
+            with contextlib.redirect_stdout(io.StringIO()):
+                done["result"] = run_sql.execute(args_for("install", self.root / "ev", bundle_dir), killed, NOW_OK)
+
+        worker = threading.Thread(target=install)
+        worker.start()
+        try:
+            sleeping = "0"
+            for _ in range(200):
+                sleeping = self.sql(self.admin, "SELECT count(*) FROM pg_stat_activity WHERE datname = "
+                                                f"'{self.database}' AND wait_event = 'PgSleep'")
+                if sleeping == "1":
+                    break
+                time.sleep(0.05)
+            self.assertEqual(sleeping, "1", "the install never reached the server")
+        finally:
+            flag.write_text("")
+            worker.join(30)
+        code, envelope = done["result"]
+        self.assertEqual((code, envelope["status"]), (1, "install-unknown"))
+        self.assertNotIn(envelope["exitCode"], (0, 3))
+        for _ in range(100):
+            if self.history() == "2 20990101000001":
+                break
+            time.sleep(0.1)
+        self.assertEqual(self.history(), "2 20990101000001")
+        self.assertEqual(self.sql(self.target, "SELECT count(*) FROM pg_attribute WHERE attrelid = "
+                                               "'public.kit_items'::regclass AND attname = 'note'"), "1")
 
     def test_read_mode_is_read_only_in_the_database_too(self):
         code, _, stderr, _ = run_sql.run_psql(

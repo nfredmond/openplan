@@ -69,7 +69,8 @@ def run(args) -> dict:
     kc.write_new(bundle_dir / "GO.json", json.dumps(go, indent=2) + "\n")
     code, inst = step(args, "install", target, out, bundle=str(bundle_dir))
     if code:
-        raise kc.KitError(f"install on the copy failed: {inst.get('stderrTail', '')[-300:]}")
+        raise kc.KitError(f"install on the copy reads {inst.get('status')}, not installed; read its catalog: "
+                          f"{inst.get('stderrTail', '')[-300:]}")
     code, final = step(args, "catalog", target, out)
     if code:
         raise kc.KitError("catalog read after the install failed")

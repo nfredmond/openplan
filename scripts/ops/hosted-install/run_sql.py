@@ -33,7 +33,19 @@ Targets:
 
 Each run writes one envelope JSON and the raw output to DIR. Nothing is
 retried. Exit status: 0 when the mode's outcome is the expected one, 1 when the
-database refused or a check failed, 2 when the kit refused before sending.
+database refused, a check failed or the outcome is unknown, 2 when the kit
+refused before sending.
+
+Install status (review 31, B1): installed only on psql exit 0 with the result
+and lock lines; install-failed only when psql exit 3 reports a database ERROR
+on a connection that stayed up, so the server stopped before COMMIT and rolled
+back; install-unknown for everything else (connection lost, psql killed, a
+FATAL, missing lines). With one message the server runs every statement
+through COMMIT whether or not psql is still connected, so an unknown ending
+may have committed. Read catalog before anything else. A dry run has the same
+three endings (dry-run-complete, dry-run-failed, dry-run-unknown); its message
+holds no COMMIT, so a lost connection rolls it back, and dry-run-unknown means
+only that the kit did not see how it ended.
 
 Refusals before anything is sent: a read file that is not read-only, a probe
 without a final ROLLBACK, a bundle whose files do not match their recorded
@@ -271,6 +283,19 @@ def probe_wrapper(statements: list[sqllex.Statement]) -> str:
             f"DO $openplan_end$ BEGIN RAISE EXCEPTION '{kc.PROBE_SENTINEL}'; END $openplan_end$;\nROLLBACK;\n")
 
 
+def ended_at_database_error(code: int, stderr: str) -> bool:
+    """True only when psql exit 3 reports a database ERROR on a connection that
+    stayed up: the server stopped the message at that error, before COMMIT, and
+    the transaction rolled back (protocol 53.2.2.1). Exit 2 (connection lost,
+    including a transaction_timeout's FATAL), a negative exit (psql killed) and
+    any FATAL can end after the server committed: once the server has the one
+    message, it runs it to the end even if the client is gone (protocol 53.2.9,
+    "the backend will probably finish the query before noticing the
+    disconnection"; review 31, B1)."""
+    return (code == 3 and "ERROR:" in stderr and "FATAL:" not in stderr
+            and "connection to server was lost" not in stderr)
+
+
 def check_clock(target: Target, mode: str, now: dt.datetime | None = None) -> None:
     if target.kind != "hosted" or mode in {"read", "catalog", "rtt"}:
         return
@@ -378,7 +403,10 @@ def execute(args: argparse.Namespace, target: Target, now: dt.datetime | None = 
               and lock is not None)
         if ok:
             results[0]["before"] = befores[0].get("before") or {}
-        envelope["status"] = "dry-run-complete" if ok else "dry-run-failed"
+        if ok:
+            envelope["status"] = "dry-run-complete"
+        else:
+            envelope["status"] = "dry-run-failed" if ended_at_database_error(code, stderr) else "dry-run-unknown"
         # Judged on the server's lock clock, not on wall time (lane 28).
         if ok and lock["lockHeldMs"] > kc.LOCK_LIMIT_MS:
             envelope["status"], ok = "dry-run-too-slow", False
@@ -387,7 +415,10 @@ def execute(args: argparse.Namespace, target: Target, now: dt.datetime | None = 
         envelope["status"] = "probe-complete" if ok else "probe-failed"
     elif mode == "install":
         ok = code == 0 and len(results) == 1 and lock is not None
-        envelope["status"] = "installed" if ok else "install-failed"
+        if ok:
+            envelope["status"] = "installed"
+        else:
+            envelope["status"] = "install-failed" if ended_at_database_error(code, stderr) else "install-unknown"
         if ok and lock["lockHeldMs"] > kc.LOCK_LIMIT_MS:
             envelope["lockOverLimit"] = True
     else:

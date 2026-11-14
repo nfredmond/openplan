@@ -219,18 +219,26 @@ checks it.
     the dry run. The dry-run envelope must read `dry-run-complete`, judged on
     its server-measured `lockHeldMs` (over 2,000 ms reads `dry-run-too-slow`);
     record `lockHeldMs` and `elapsedMs`. `compare_maps.py` must exit 0.
-    **Stop** otherwise.
+    **Stop** otherwise. A dry run's message holds no `COMMIT`, so a lost
+    connection rolls it back; `dry-run-unknown` means the kit did not see how
+    it ended. Read `catalog`: 448 rows and the before digest are expected.
 19. Write `$W/bundle-hosted/GO.json` with `capture`, `installSha256` from
     `bundle.json` and `"target": "hosted"`. Measure again and install once:
     `bash $KIT/kit.sh hosted $W rtt`, then
     `bash $KIT/kit.sh hosted $W install --bundle /work/bundle-hosted --rtt /work/evidence/rtt-<new stamp>.json --rehearsed /work/evidence/dryrun-<stamp>.json`
     (the rehearsed lock time is now the hosted dry run's own). A refused
     estimate sends nothing and does not use up the bundle's one attempt. It
-    must read `installed`; record `lockHeldMs`. On any error the transaction has rolled back; the kit
-    will not resend from that bundle. If psql died after sending, read
-    `catalog`: 455 rows and the dry run's after state means installed, continue;
-    448 and the before digest means not installed, stop; anything else, stop
-    for review (review 15, N12).
+    must read `installed`; record `lockHeldMs`. If it reads anything but
+    `installed`, read `catalog` before anything else. 455 rows and the dry
+    run's after state means installed: continue at step 20. 448 rows and the
+    before digest means not installed: stop. Anything else: stop for review.
+    The kit never resends from that bundle (review 15, N12; review 31, B1).
+    `install-failed` means psql reported a database error on a live
+    connection, so the server stopped before `COMMIT`; `install-unknown`
+    means the connection was lost, psql was killed or the output was
+    incomplete. The whole transaction is one message, and the server runs it
+    through `COMMIT` even after the client is gone, so either label is read
+    against `catalog`, never taken as "rolled back".
 20. Post-verify: `bash $KIT/kit.sh hosted $W catalog`, then
     `python $KIT/postverify.py --pins $W/evidence/dryrun-<stamp>.json --catalog $W/evidence/catalog-<new>.json --out $W/evidence/postverify.json`.
     Then each packet's rolled-back probes with `kit.sh hosted $W probe <file>`.
