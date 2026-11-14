@@ -54,6 +54,31 @@ it("passes the actual project snapshot from the server page with the same full p
   expect(page.props.projectPlace).toMatchObject({ status: "available", snapshot: { projectId: bcaProjectId,
     projectUpdatedAt: bcaProjectRow().updated_at, status: "missing" } });
 });
+// The project page refuses an id with `isUuid` (src/lib/uuid.ts), which accepts any hexadecimal value in
+// uuid shape because fixtures and older rows are not all RFC 4122. The BCA page must accept exactly the same
+// ids: one its project page opens may not answer 404 here before the project is even read.
+it("reads the project for exactly the ids the project page accepts", async () => {
+  const { isUuid } = await import("@/lib/uuid");
+  const candidates = [
+    bcaProjectId,
+    "00000000-0000-0000-0000-000000000001",
+    "11111111-1111-1111-1111-111111111111",
+    "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA",
+    "not-a-project",
+    "new",
+    "00000000000000000000000000000001",
+    "{00000000-0000-0000-0000-000000000001}",
+  ];
+  for (const projectId of candidates) {
+    vi.clearAllMocks();
+    mocks.getUser.mockResolvedValue({ data: { user: { id: bcaActorId } } });
+    mocks.client.mockResolvedValue({ auth: { getUser: mocks.getUser }, from: mocks.from });
+    mocks.from.mockImplementation(() => query({ data: null, error: null }));
+    await expect(BcaPage({ params: Promise.resolve({ projectId }) })).rejects.toThrow("not found");
+    const readTheProject = mocks.from.mock.calls.some(([table]) => table === "projects");
+    expect([projectId, readTheProject]).toEqual([projectId, isUuid(projectId)]);
+  }
+});
 it("hands the workbench the project's own latest saved version, and a failed read as failed", async () => {
   const { exampleBcaDocument, reviewBcaProjectPlace } = await import("@/lib/bca/workbench/document");
   const { bcaProjectPlace } = await import("./fixtures/bca/project-place");

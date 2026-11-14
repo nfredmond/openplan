@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { z } from "zod";
+import { isUuid } from "@/lib/uuid";
 import { createClient } from "@/lib/supabase/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BcaWorkbench } from "@/components/grants/bca-workbench/workbench";
@@ -18,7 +18,8 @@ export default async function BcaPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  if (!z.string().uuid().safeParse(projectId).success) notFound();
+  // The same id check as the project page, so a project that opens there never answers 404 here first.
+  if (!isUuid(projectId)) notFound();
   const supabase = await createClient();
   const {
     data: { user },
