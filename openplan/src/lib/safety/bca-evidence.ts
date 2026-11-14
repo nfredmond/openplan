@@ -36,6 +36,8 @@ import {
   totalCountedCrashes,
   type SafetyCrashEvidence,
 } from "./crash-evidence";
+import { getSafetyCountermeasure } from "./countermeasures";
+import type { CrashSeverity } from "./sources/types";
 
 export type BcaCrashInputSuggestion = {
   /**
@@ -129,4 +131,125 @@ export function buildBcaCrashInputSuggestion(
   }
 
   return { suggestedInputs, citationText: evidence.citationText, caveats };
+}
+
+// ─── Treated segments of a saved safety plan ────────────────────────────────
+//
+// The benefit-cost workbench offers the crashes recorded on the segments a
+// planner treated in a saved safety plan. Recorded counts only: the crash
+// modification factor, the persons basis and the dollar values stay the
+// planner's inputs, and nothing enters an analysis until the planner adds it.
+
+/** One stored crash as the treated-segment read selects it. */
+export type BcaSegmentCrash = {
+  id: string;
+  longitude: number;
+  latitude: number;
+  severity: CrashSeverity;
+  collisionYear: number | null;
+  /** People killed, or null when the source supplied no count. */
+  killedCount: number | null;
+};
+
+type BcaTreatedSegmentYear = {
+  year: number;
+  fatalCrashes: number;
+  /** Null when the source does not record serious injuries. Never 0 for unknown. */
+  seriousInjuryCrashes: number | null;
+};
+
+export type BcaTreatedSegment = {
+  segmentId: string;
+  segmentLabel: string;
+  countermeasures: Array<{ id: string; name: string; cmfNote: string }>;
+  years: BcaTreatedSegmentYear[];
+  fatalCrashes: number;
+  seriousInjuryCrashes: number | null;
+  /** People killed in the fatal crashes, or null when any fatal crash has no count. */
+  fatalities: number | null;
+  /** Fatal crashes whose source gave no count of people killed. */
+  fatalCrashesWithoutPersonCount: number;
+};
+
+export type BcaSafetyPlanOffer =
+  | {
+      status: "ready";
+      reportId: string;
+      reportTitle: string;
+      ingestId: string;
+      sourceId: string | null;
+      sourceLabel: string;
+      /** The acquisition's severity coverage sentence. */
+      coverage: string;
+      /** Requested years the counts cover, ascending. */
+      years: number[];
+      seriousInjuryInSource: boolean;
+      caveats: string[];
+      segments: BcaTreatedSegment[];
+    }
+  | { status: "unavailable"; reportId: string; reportTitle: string; ingestId: string; reason: string };
+
+export type BcaSafetyEvidenceRead =
+  | { status: "read"; plans: BcaSafetyPlanOffer[] }
+  | { status: "failed" };
+
+/**
+ * Count the crashes placed on each treated segment by severity and year.
+ * `placements` maps crash id to segment id, from `placeHighInjuryNetworkCrashes`.
+ * Only the treated segments are counted; crashes on other segments and crashes
+ * outside the requested years are left out.
+ */
+export function summarizeBcaTreatedSegments(input: {
+  attachments: ReadonlyArray<{ segmentId: string; segmentLabel: string; countermeasureIds: readonly string[] }>;
+  crashes: readonly BcaSegmentCrash[];
+  placements: ReadonlyMap<string, string>;
+  seriousInjuryInSource: boolean;
+  years: readonly number[];
+}): BcaTreatedSegment[] {
+  const years = Array.from(new Set(input.years)).sort((a, b) => a - b);
+  const requested = new Set(years);
+  return input.attachments.map((attachment) => {
+    const byYear = new Map(years.map((year) => [year, { fatal: 0, serious: 0 }]));
+    let fatalities = 0;
+    let withoutCount = 0;
+    for (const crash of input.crashes) {
+      if (input.placements.get(crash.id) !== attachment.segmentId) continue;
+      if (crash.collisionYear === null || !requested.has(crash.collisionYear)) continue;
+      const tally = byYear.get(crash.collisionYear)!;
+      if (crash.severity === "fatal") {
+        tally.fatal += 1;
+        if (crash.killedCount === null) withoutCount += 1;
+        else fatalities += crash.killedCount;
+      } else if (crash.severity === "severe_injury" && input.seriousInjuryInSource) {
+        tally.serious += 1;
+      }
+    }
+    const rows = years.map((year) => ({
+      year,
+      fatalCrashes: byYear.get(year)!.fatal,
+      seriousInjuryCrashes: input.seriousInjuryInSource ? byYear.get(year)!.serious : null,
+    }));
+    return {
+      segmentId: attachment.segmentId,
+      segmentLabel: attachment.segmentLabel,
+      countermeasures: attachment.countermeasureIds.flatMap((id) => {
+        const entry = getSafetyCountermeasure(id);
+        if (!entry) return [];
+        return [{
+          id,
+          name: entry.name,
+          cmfNote: entry.cmf
+            ? `Catalog CMF ${entry.cmf.value} for ${entry.cmf.appliesTo}, CMF Clearinghouse ID ${entry.cmf.cmfId}.`
+            : entry.cmfNote ?? "[VERIFY] No crash modification factor cited.",
+        }];
+      }),
+      years: rows,
+      fatalCrashes: rows.reduce((sum, row) => sum + row.fatalCrashes, 0),
+      seriousInjuryCrashes: input.seriousInjuryInSource
+        ? rows.reduce((sum, row) => sum + (row.seriousInjuryCrashes ?? 0), 0)
+        : null,
+      fatalities: withoutCount > 0 ? null : fatalities,
+      fatalCrashesWithoutPersonCount: withoutCount,
+    };
+  });
 }
