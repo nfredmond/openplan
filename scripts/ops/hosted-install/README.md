@@ -54,7 +54,11 @@ the change-map check.
   psql sent one statement per round trip: at the 25 ms measured from the
   operator's workstation to hosted, the seven-file dry run held the Safety
   tables for about 4.6 s. A count of statement checks must match the build,
-  or the transaction stops before it can commit.
+  or the transaction stops before it can commit. Every statement in one
+  message sees the same `statement_timestamp()` (PostgreSQL 17 protocol
+  53.2.2.1), so each check also compares it with the value the guard row
+  stored: a transaction that reached the server in more than one message
+  stops at the first check after the split (review 31, N4).
 - **Lock time (lane 28).** The guard after each statement records, on the
   server's clock, when the transaction first holds an ACCESS EXCLUSIVE lock on
   a non-temporary table; the last statement reads the clock again. The

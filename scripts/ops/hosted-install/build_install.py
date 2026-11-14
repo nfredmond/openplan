@@ -13,8 +13,9 @@ run_sql.py sends each file to the server as one message (one network round
 trip), inside BEGIN and, for the install, COMMIT, with ON_ERROR_STOP. No round
 trip happens while a lock is held. Each file holds, in order:
 
-  1. B5 timeouts, then a guard row holding the transaction id, a count of
-     statement checks and the server's lock clock.
+  1. B5 timeouts, then a guard row holding the transaction id, the message's
+     statement_timestamp(), a count of statement checks and the server's lock
+     clock.
   2. The whole catalog map before any change (catalog_keys.sql). The dry run
      sends that map to the client here, before any lock is taken.
   3. Preconditions: session and current user postgres, postgres not a
@@ -22,9 +23,11 @@ trip happens while a lock is held. Each file holds, in order:
      planned version present. The install also requires the history tuple
      hash and whole-catalog digest the dry run read (B3.4).
   4. Each migration statement, each followed by a check that the transaction
-     id has not changed (B2.2), then the file's history row. The same check
-     counts itself and records, on the server's clock, when the transaction
-     first holds an ACCESS EXCLUSIVE lock on a non-temporary relation.
+     id has not changed (B2.2) and that the statement came in the same
+     message as the guard row (review 31, N4), then the file's history row.
+     The same check counts itself and records, on the server's clock, when the
+     transaction first holds an ACCESS EXCLUSIVE lock on a non-temporary
+     relation.
   5. NOTIFY pgrst (N9), then one statement that reads the catalog map again
      and, in the install, requires the changed-key map (added, removed and
      changed keys with their new value hashes) to equal the dry run's (B3.2).
@@ -150,14 +153,32 @@ LOCK_HELD = (
 )
 
 
+# True when this statement arrived in a different Query message from the one
+# that created the guard row. PostgreSQL 17 protocol section 53.2.2.1: "all the
+# statements within the Query message will observe the same value of
+# statement_timestamp(), since that timestamp is updated only upon receipt of
+# the Query message." A bundle that reached the server in more than one
+# message (a psql, pooler or lexer split) therefore stops at the first guard
+# after the split, before it can commit (review 31, N4).
+SPLIT_MESSAGE = ("pg_catalog.statement_timestamp() IS DISTINCT FROM "
+                 "(SELECT m.message_ts FROM pg_temp.openplan_install_guard m)")
+
+
+def split_refusal(label: str) -> str:
+    return (f"IF {SPLIT_MESSAGE} THEN RAISE EXCEPTION 'openplan install: the transaction reached the server "
+            f"in more than one message (found at {label})'; END IF;")
+
+
 def xid_guard(label: str) -> str:
-    """After each statement: the transaction id is unchanged (B2.2); count this
-    check; and if the first ACCESS EXCLUSIVE lock appeared during the statement
-    just run, record that statement's start as the lock start."""
+    """After each statement: the transaction id is unchanged (B2.2) and the
+    statement came in the guard row's message (N4); count this check; and if
+    the first ACCESS EXCLUSIVE lock appeared during the statement just run,
+    record that statement's start as the lock start."""
     return (
         "DO $openplan_xid$ BEGIN IF pg_catalog.pg_current_xact_id()::text IS DISTINCT FROM "
         "(SELECT g.xid FROM pg_temp.openplan_install_guard g) THEN RAISE EXCEPTION "
         f"'openplan install: the transaction changed after {label}'; END IF; "
+        f"{split_refusal(label)} "
         "UPDATE pg_temp.openplan_install_guard SET guards = guards + 1, "
         f"lock_first = COALESCE(lock_first, CASE WHEN {LOCK_HELD} THEN step_started END), "
         "step_started = pg_catalog.clock_timestamp(); END $openplan_xid$;\n"
@@ -185,6 +206,7 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
         kc.TIMEOUTS.rstrip("\n"),
         "CREATE TEMP TABLE openplan_install_guard ON COMMIT DROP AS SELECT",
         "  pg_catalog.pg_current_xact_id()::text AS xid,",
+        "  pg_catalog.statement_timestamp() AS message_ts,",
         "  pg_catalog.current_setting('search_path') AS search_path,",
         "  pg_catalog.clock_timestamp() AS started,",
         f"  {HISTORY_HASH} AS history_hash,",
@@ -223,6 +245,7 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
         "DECLARE g record; openplan_digest text; openplan_present text;\n"
         "BEGIN\n"
         "  SELECT * INTO g FROM pg_temp.openplan_install_guard;\n"
+        f"  {split_refusal('the pre-checks')}\n"
         "  IF session_user <> 'postgres' OR current_user <> 'postgres' THEN\n"
         "    RAISE EXCEPTION 'openplan install: session and current user must both be postgres, found % and %', session_user, current_user;\n"
         "  END IF;\n"
@@ -322,7 +345,8 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
     # had split the file differently from the kit's lexer, the count differs
     # and the transaction stops before it can commit.
     lines.append(
-        "DO $openplan_count$ BEGIN IF (SELECT g.guards FROM pg_temp.openplan_install_guard g) IS DISTINCT FROM "
+        f"DO $openplan_count$ BEGIN {split_refusal('the statement count')} "
+        "IF (SELECT g.guards FROM pg_temp.openplan_install_guard g) IS DISTINCT FROM "
         f"{checks} THEN RAISE EXCEPTION 'openplan install: % of {checks} statement checks ran; the file did not reach "
         "the server as built', (SELECT g.guards FROM pg_temp.openplan_install_guard g); END IF; END $openplan_count$;"
     )

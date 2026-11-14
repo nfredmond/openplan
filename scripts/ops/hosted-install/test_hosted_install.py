@@ -1130,6 +1130,27 @@ class LiveInstallTest(LiveBase):
         self.assertIn("statement checks ran", stderr)
         self.assertNotIn(kc.DRYRUN_SENTINEL, stderr)
 
+    def test_a_bundle_sent_as_two_messages_stops_before_it_commits(self):
+        # Review 31, N4. Every statement of one Query message sees the same
+        # statement_timestamp() (protocol 53.2.2.1). Here the install's message
+        # is cut in two after file 1's last statement check, as a psql, pooler
+        # or lexer split would cut it: the first guard of the second message
+        # must refuse, and nothing may commit.
+        fixture, plan = self.make()
+        _, pins = self.dry_run(fixture, plan, fixture.root / "b")
+        fixture.build("install", plan, fixture.root / "b", pins)
+        message = run_sql.transaction_message((fixture.root / "b" / "INSTALL.sql").read_text(), commit=True)
+        cut = message.rindex("\\;", 0, message.index("INSERT INTO supabase_migrations.schema_migrations"))
+        two = message[:cut] + ";" + message[cut + 2:]
+        command = self.target.command() + run_sql.PSQL_FLAGS + ["-f", "-"]
+        result = subprocess.run(command, input=two.encode(), capture_output=True)
+        stderr = result.stderr.decode(errors="replace")
+        self.assertEqual(result.returncode, 3, stderr)
+        self.assertIn("reached the server in more than one message (found at 20990101000001 history row)", stderr)
+        self.assertEqual(self.history(), "1 20990101000000")
+        self.assertEqual(self.sql(self.target, "SELECT count(*) FROM pg_attribute WHERE attrelid = "
+                                               "'public.kit_items'::regclass AND attname = 'note'"), "0")
+
     def test_a_failing_post_check_stops_the_install_before_it_commits(self):
         fixture, _ = self.make()
         (fixture.root / "post.sql").write_text(
@@ -1302,8 +1323,11 @@ class LatencyTest(LiveBase):
         return proxy, ProxyTarget(self.prefix, self.database, proxy.port)
 
     def old_path(self, target, sql):
-        """The kit's send before lane 28: psql -1 -f, one statement per round trip."""
-        command = target.command() + ["-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "--single-transaction", "-f", "-"]
+        """The kit's send before lane 28: psql -1 -f, one statement per round trip.
+        Since review 31 (N4) a bundle's first guard refuses a second message, so
+        the comparison turns that check off to time the old send at all."""
+        sql = sql.replace(build_install.SPLIT_MESSAGE, "false")
+        command =target.command() + ["-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "--single-transaction", "-f", "-"]
         result = subprocess.run(command, input=sql.encode(), capture_output=True, env=target.environment())
         self.assertEqual(result.returncode, 3, result.stderr.decode(errors="replace"))
         return kc.parse_results(result.stdout.decode(), kc.LOCK_PREFIX)[0]["lockHeldMs"]
