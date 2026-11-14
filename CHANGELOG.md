@@ -20,6 +20,24 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Human feedback never gates OpenPlan, permanently:** on November 13, 2026 Nathaniel
+made the October 17 acceptance policy permanent; direction reviews do not reopen it.
+Agent-run planner, operator and public-participant checks are the acceptance evidence
+for milestones, merges, releases and v1, and each record names the executor. The
+milestones, roadmap, contract, capability matrix, requirements ledger, handoff and
+release policy no longer require real planners, practitioner review, human observation
+or comparative human trials; each such line now names the agent-run task, and a
+screen-reader check is an agent-driven NVDA or VoiceOver run. Agency adoption,
+spending and publication decisions, exact-payload approvals, legal determinations and
+staff moderation stay with people. Under his second November 13 direction, agents make
+product, engineering, scientific and sequencing decisions themselves with a recorded
+reason and a fresh-context review, and do not ask him for decisions or check-ins; the
+fixed limits (no paid services or spending, no shared hosted AI keys, no printed or
+committed credentials, a fresh capture before any hosted migration) are written into
+`AGENTS.md`. A new test (`human-feedback-never-gates.test.ts`) fails if a gate or a
+request for his decision returns to the active guidance. No statuses change; no
+migration.
+
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the
