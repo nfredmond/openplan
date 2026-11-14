@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Hosted capture and install kit (KI-2026-11-14-160):** the procedure and
+tools for proving an offsite capture and installing hosted migrations now live
+in `scripts/ops/hosted-install/`, replacing the private kit lost with the
+wiped workstation. Capture checks run in the backup worker's own image; a
+restore passes only on exact counts, key hashes, Storage reconciliation and
+access probes; migrations install in one transaction after a rollback-only
+dry run, with timeouts and no retry. Hosted operations no longer use
+`supabase migration up --linked`. No migration.
 **Human feedback never gates OpenPlan, permanently:** on November 13, 2026 Nathaniel
 made the October 17 acceptance policy permanent; direction reviews do not reopen it.
 Agent-run planner, operator and public-participant checks are the acceptance evidence

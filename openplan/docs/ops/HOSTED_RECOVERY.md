@@ -63,9 +63,37 @@ those rows name exactly the 220 copied objects. Production has seven event
 triggers; the restored copy has six.
 
 That restore proves the archive and objects. It does not start replacement
-Auth or Storage services, replay worker journals, or cut production over. The
-private key that decrypts these captures must be kept in a second place
-outside this workstation.
+Auth or Storage services, replay worker journals, or cut production over.
+
+## Capture key loss and the install kit, November 14, 2026
+
+The private key for every capture from October 12 onward lived only on the
+Linux workstation that was wiped in October 2026. Every capture made before
+`<ROTATION STAMP, lead fills in>` is encrypted to fingerprint
+`A4221F59406B5F299D2DD3FE7213CBBB858160CA` and cannot be decrypted. Those
+captures age out of the bucket within 30 days of the rotation. The installer
+kit that ran the October migration installs was lost the same way.
+
+[`scripts/ops/hosted-install/`](../../../scripts/ops/hosted-install/README.md)
+now holds the procedure and tools in the repository: a new key pair, one
+proven capture, a network-free restore, and the one-transaction migration
+install with a rollback-only dry run. A restore passes only on exact table
+counts, matching key hashes, every Storage row reconciled against the copied
+bytes, and owner, other-workspace and anonymous probes returning 1, 0 and 0.
+A difference passes only when the source shows rows written after the capture
+started.
+
+The new private key (fingerprint `<NEW FINGERPRINT, lead fills in>`) exists
+only on the operator's Windows workstation: the state folder on C: and a copy
+on D:, a second internal disk. Neither disk is encrypted, and the passphrase
+is stored with the key. If this workstation is lost, stolen, wiped or
+replaced without copying that folder, no offsite capture can be decrypted.
+Supabase's seven daily physical backups remain a database-only last resort
+(no Storage objects, in-place restore). A copy outside this machine, made by
+the account owner, would close this gap and is recorded as an open item. The
+lead decrypts the newest capture weekly and records the date in the
+coordination file, so a lost key is found within a week rather than at a
+restore.
 
 Railway's live model, application-worker and OCR volumes have daily and weekly
 backup schedules. The observed retention is six days for daily backups and
@@ -150,8 +178,8 @@ nothing that was dropped or renamed. Every later merge or migration replaces
 this target; repeat step 2 before using it.
 
 **One operator.** Recovery depends on Nathaniel: the Vercel, Supabase,
-Railway and Resend accounts are under his login, and the only copy of the
-offsite decryption key is on his workstation until he stores a second one.
+Railway and Resend accounts are under his login, and the offsite decryption
+key exists only on one workstation (see the capture key section above).
 If he is unavailable, no one else can restore or roll back this installation.
 
 ## Observed result and remaining boundaries

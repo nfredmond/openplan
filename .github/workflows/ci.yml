@@ -232,6 +232,18 @@ jobs:
     defaults:
       run:
         working-directory: ./workers/aequilibrae_worker
+    # A throwaway PostgreSQL 17 for the hosted install kit's live tests: trust
+    # authentication on the job's own network, no data, gone with the job.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: kit_admin
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kit_admin"
+          --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
       - uses: actions/checkout@v6
 
@@ -256,6 +268,21 @@ jobs:
       - name: Hosted offsite backup
         working-directory: ./workers/hosted-backup
         run: python -m unittest test_backup -v
+
+      # The install kit's refusals (review 15, B2, B3, B5, B7 and N1). The live
+      # tests run the generated SQL on PostgreSQL 17 as a non-superuser named
+      # postgres, as on hosted; the step fails if they were skipped.
+      - name: Hosted install kit
+        working-directory: ./scripts/ops/hosted-install
+        env:
+          OPENPLAN_INSTALL_KIT_PSQL: '["psql", "-h", "localhost", "-U", "postgres"]'
+        run: |
+          set -euo pipefail
+          psql -h localhost -U kit_admin -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE postgres LOGIN CREATEDB"
+          python -m unittest test_hosted_install -v 2>&1 | tee "$RUNNER_TEMP/kit-tests.log"
+          if grep -q "set OPENPLAN_INSTALL_KIT_PSQL" "$RUNNER_TEMP/kit-tests.log"; then
+            echo "the live install-kit tests were skipped"; exit 1
+          fi
 
       - name: Syntax check
         run: python -m py_compile *.py
