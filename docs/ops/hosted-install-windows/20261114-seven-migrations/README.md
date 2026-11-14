@@ -2,9 +2,35 @@
 
 Inputs for the hosted install kit (`scripts/ops/hosted-install/README.md`,
 Phase C, steps 14 to 21). Hosted history moves from 448 rows through
-`20261024200400` to 455 through `20261102140000`. Nothing here has run on
-hosted. **Merging the integration pull request before this install breaks
-production** (see "If the code merges first").
+`20261024200400` to 455 through `20261102140000`. **This window ran on
+November 14, 2026; see "Result" below.** The rest of this page is kept as the
+record of what was planned and checked. Before the install, merging the
+integration pull request first would have broken production (see "If the code
+merges first").
+
+## Result
+
+Installed on November 14, 2026 at 12:20 UTC, agent-run, in one transaction.
+
+| Step | Result |
+|---|---|
+| Capture before the window | `20261114T112947Z`, encrypted to the current key, every verification check true, 223 Storage objects, 0 mismatches |
+| Restore with no network | PostgreSQL 17.11; 371 tables equal to hosted row counts; history 448; access probes 1, 0 and 0 |
+| Rehearsal on that copy | Dry run: 261 ms under lock, history stayed 448, catalog digest unchanged. Install: 279 ms under lock, history 455, post-verify passed. Probes 410, 415 and 440 complete |
+| Hosted pre-checks 00 to 60 | All pass. History rows are recorded as statements. Pre-check 60 found no long transaction |
+| Round trip to hosted | 24 ms |
+| Hosted dry run | `dry-run-complete`, 791 ms under lock, 2,402 ms in all |
+| Catalog maps, copy against hosted | Equal, 0 differences; the one allowed difference was not needed |
+| Hosted install | `installed`, 739 ms under lock, 2,068 ms in all |
+| Post-verify | 48 changed keys, digest equal, 0 differences; history 455 through `20261102140000` |
+| Probe 410 | Complete: member and viewer refused every draft invoice and line write; owner, admin and service role allowed. The `postgres` role could insert the probe's test users on hosted |
+| Probe 415 | Complete: 600 crashes stored; 0.39, 0.26 and 0.43 seconds per statement; acquisition revision 1 to 4 |
+| Probe 440 | Complete: same-workspace link accepted, four cross-workspace writes refused |
+| Code merge | PR 471 merged as `2fbce717c` right after |
+
+The kit image was built from `main` at `1b7360a81`, and every file was read
+from the integration head `fa07b32c8`. Nothing was retried. Not shown by this
+window: a rollback on hosted, and lock waits under real traffic.
 
 ## Use
 
