@@ -52,6 +52,7 @@ import { SAFETY_KSI_COVERAGE_UNAVAILABLE, safetyEvidenceSeriousInjury, type Safe
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { describeHighInjuryNetworkTie } from "@/lib/safety/high-injury-network";
+import { roadDisplayName } from "@/lib/safety/road-context";
 import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import {
   SAFETY_ACTION_PLAN_SECTION_TITLE,
@@ -1404,7 +1405,7 @@ export function safetyActionPlanMarkup(
         <tbody>${network.rows.map((row, index) => `<tr>
           <td>${index + 1}</td>
           <td>${esc(row.tied ? `${row.rank} (tie)` : String(row.rank))}</td>
-          <td>${esc(row.label)}${locations[row.segmentId] ? `<br><span class="meta">${esc(locations[row.segmentId])}</span>` : ""}</td>
+          <td>${esc(roadDisplayName(row.label))}${locations[row.segmentId] ? `<br><span class="meta">${esc(locations[row.segmentId])}</span>` : ""}</td>
           <td>${row.lengthMiles === null ? "Not a road piece" : esc(row.lengthMiles.toFixed(2))}</td>
           <td>${esc(row.fatalCrashCount.toLocaleString("en-US"))}</td>
           <td>${row.seriousInjuryCrashCount === null ? "Not in source (fatal crashes only)" : esc(row.seriousInjuryCrashCount.toLocaleString("en-US"))}</td>
@@ -1421,7 +1422,7 @@ export function safetyActionPlanMarkup(
     ? `<h3>Countermeasures</h3><p>No countermeasure is attached to a segment yet.</p>`
     : `<h3>Countermeasures</h3>
       <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
-      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `${rowNumbers.has(treatment.segmentId) ? `No. ${rowNumbers.get(treatment.segmentId)}, ` : ""}rank ${treatment.rank}`}${locations[treatment.segmentId] ? `, ${esc(locations[treatment.segmentId])}` : ""}):
+      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(roadDisplayName(treatment.segmentLabel))}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `${rowNumbers.has(treatment.segmentId) ? `No. ${rowNumbers.get(treatment.segmentId)}, ` : ""}rank ${treatment.rank}`}${locations[treatment.segmentId] ? `, ${esc(locations[treatment.segmentId])}` : ""}):
         <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? `<span class="list-status">${esc(item.listStatus)}</span>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a class="source-url" href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
       </li>`).join("")}</ul>
       <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;

@@ -40,6 +40,19 @@ export type CachedRoadRow = {
   cached_at?: string | null;
 };
 
+/**
+ * A stored road name as a reader writes it. TIGER/Line full names put a space
+ * after the interstate prefix ("I- 80", "I- 80 Bus"); this closes it ("I-80").
+ * Nothing else is renamed and no abbreviation is expanded: "State Rte 7" and
+ * "US Hwy 395" print as the source names them.
+ *
+ * Labels only. The stored name keys each road line (`roadLineKey`), and so
+ * every saved segment id, so it is never rewritten where it is stored or keyed.
+ */
+export function roadDisplayName(name: string): string {
+  return name.replace(/\b([A-Za-z]{1,3})-\s+(?=\d)/g, "$1-").replace(/\s{2,}/g, " ").trim();
+}
+
 const SOURCE_REGISTRY: ReadonlyArray<{
   id: SafetyRoadSourceId;
   label: string;
@@ -160,7 +173,7 @@ export function matchSafetyRoadIdentity(
 
   return {
     status: "matched",
-    name: nearest.road.name,
+    name: roadDisplayName(nearest.road.name),
     sourceId: nearest.road.sourceId,
     sourceLabel: nearest.road.sourceLabel,
     vintage: nearest.road.vintage,

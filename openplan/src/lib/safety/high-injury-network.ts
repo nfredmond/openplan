@@ -28,7 +28,7 @@
 
 import type { CrashSeverity } from "./sources/types";
 import { isCrashSeverityCompleteness, separatesSeriousInjuries } from "./serious-injury-availability";
-import { matchSafetyRoadIdentity, type SafetyRoadContextFeature } from "./road-context";
+import { matchSafetyRoadIdentity, roadDisplayName, type SafetyRoadContextFeature } from "./road-context";
 
 export type HighInjuryNetworkBasis = "ksi" | "fatal_only";
 export type HighInjuryNetworkMethod = "road_segments" | "grid_cells";
@@ -464,7 +464,8 @@ function roadCandidates(
     const crashesPerMile = tally.crashCount / rateMiles;
     return {
       id: piece.id,
-      label: piece.roadName,
+      // The display name; the id above keys on the stored name.
+      label: roadDisplayName(piece.roadName),
       geometry: { type: "LineString", coordinates: piece.coordinates },
       lengthMiles,
       crashCount: tally.crashCount,

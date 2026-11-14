@@ -41,7 +41,7 @@ import {
   describeCrashStudyArea,
   readCrashStudyAreaCoverage,
 } from "@/lib/safety/crash-study-area";
-import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
+import { roadDisplayName, type SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 import {
   absentEvidenceAppendix,
@@ -208,7 +208,8 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
         rows: network.rows.map((row, rowIndex) => [
           String(rowIndex + 1),
           row.tied ? `${row.rank} (tie)` : String(row.rank),
-          locations.get(row.segmentId) ? `${row.label}, ${locations.get(row.segmentId)}` : row.label,
+          // Frozen labels keep their stored spelling; they print as a reader writes them.
+          locations.get(row.segmentId) ? `${roadDisplayName(row.label)}, ${locations.get(row.segmentId)}` : roadDisplayName(row.label),
           row.lengthMiles === null ? "Not a road piece" : row.lengthMiles.toFixed(2),
           row.fatalCrashCount.toLocaleString("en-US"),
           row.seriousInjuryCrashCount === null ? seriousInjuryAbsence(seriousInjury) : row.seriousInjuryCrashCount.toLocaleString("en-US"),
@@ -361,7 +362,7 @@ function countermeasureAppendix(index: number, records: Ss4aEvidenceRecords): Ss
       headers: ["Location", "Network rank", "Countermeasure", "Addresses", "Crash types", "Crash modification factor", "Source"],
       rows: draft.treatments.flatMap((treatment) =>
         treatment.countermeasures.map((item) => [
-          treatment.segmentLabel,
+          roadDisplayName(treatment.segmentLabel),
           treatment.rank === null
             ? "Not in the frozen ranked list"
             : rowNumbers.has(treatment.segmentId)
