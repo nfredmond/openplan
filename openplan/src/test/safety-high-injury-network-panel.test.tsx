@@ -14,10 +14,12 @@ import { HighInjuryNetworkPanel, type HighInjuryNetworkReportTarget } from "@/co
 import {
   HIGH_INJURY_NETWORK_PARAMETERS,
   highInjuryNetworkFeatureCollection,
+  highInjuryNetworkMarkerCollection,
   type HighInjuryNetwork,
 } from "@/lib/safety/high-injury-network";
 import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { lastFakeMap, resetFakeMaps } from "@/test/helpers/mapbox-gl-fake";
+import { confirmDestructiveAction, confirmDialogText, declineConfirmation } from "@/test/helpers/confirm-dialog";
 
 vi.mock("mapbox-gl", async () => {
   const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
@@ -181,7 +183,7 @@ describe("the ranked table", () => {
   it("cites the countermeasure list and marks unverified CMF values", () => {
     renderPanel();
     const list = screen.getByTestId("safety-countermeasure-list");
-    expect(list.textContent).toContain("Retrieved 2026-10-13");
+    expect(list.textContent).toContain("Retrieved 2026-11-13");
     expect(list.textContent).toContain("[VERIFY]");
     expect(within(list).getByRole("link", { name: "Lighting" }).getAttribute("href")).toBe(
       "https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",
@@ -289,6 +291,83 @@ describe("attaching countermeasures", () => {
   });
 });
 
+// KI-2026-11-14-210: a plan saved when the place ranked half-mile squares,
+// read after the place ranks road segments. The squares are not listed, so a
+// save drops them; the panel must say so and not count them.
+describe("a saved plan this list does not show", () => {
+  const squaresPlan = (extra: { segmentId: string; segmentLabel: string; countermeasureIds: string[] }[] = []): HighInjuryNetworkReportTarget[] => [{
+    id: "report-sq",
+    title: "Plan SQ",
+    safetyActionPlan: {
+      ingestId: INGEST_ID,
+      attachments: [
+        { segmentId: "grid:1:1", segmentLabel: "Half-mile square 1", countermeasureIds: ["lighting"] },
+        { segmentId: "grid:2:1", segmentLabel: "Half-mile square 2", countermeasureIds: ["walkways"] },
+        ...extra,
+      ],
+    },
+  }];
+
+  it("counts only attachments on listed rows", () => {
+    renderPanel({ reports: squaresPlan() });
+    expect(screen.queryByRole("button", { name: "Save 2 segments" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Replace saved plan" })).toBeInTheDocument();
+    fireEvent.click(within(screen.getAllByTestId("safety-hin-row")[0]).getByRole("checkbox", { name: "Lighting" }));
+    expect(screen.getByRole("button", { name: "Save 1 segment" })).toBeInTheDocument();
+  });
+
+  it("names how many saved places the list does not show, and only then", () => {
+    renderPanel({ reports: squaresPlan() });
+    expect(screen.getByTestId("safety-hin-unlisted-plan").textContent).toBe(
+      "The saved plan treats 2 places this list does not show. Saving replaces it.",
+    );
+    cleanup();
+    renderPanel({ reports: squaresPlan([{ segmentId: "road:0000beef:1", segmentLabel: "Oak Avenue", countermeasureIds: ["walkways"] }]) });
+    expect(screen.getByTestId("safety-hin-unlisted-plan").textContent).toContain("treats 2 places");
+    expect(screen.getByRole("button", { name: "Save 1 segment" })).toBeInTheDocument();
+    cleanup();
+    // Plan B's one attachment is on a listed row.
+    renderPanel();
+    expect(screen.queryByTestId("safety-hin-unlisted-plan")).toBeNull();
+    expect(screen.getByRole("button", { name: "Save 1 segment" })).toBeInTheDocument();
+  });
+
+  it("asks before replacing it with an empty plan", async () => {
+    const props = renderPanel({ reports: squaresPlan() });
+    fireEvent.click(screen.getByRole("button", { name: "Replace saved plan" }));
+    expect(await confirmDialogText()).toContain("treats 2 places this list does not show");
+    await declineConfirmation();
+    expect(props.saveRequest).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Replace saved plan" }));
+    await act(async () => {
+      await confirmDestructiveAction("Replace saved plan");
+    });
+    expect(props.saveRequest).toHaveBeenCalledWith("report-sq", {
+      safetyIngestSelections: [{ ingestId: INGEST_ID }],
+      safetyActionPlan: { ingestId: INGEST_ID, attachments: [] },
+    });
+    expect(screen.getByRole("status").textContent).toBe("Saved to Plan SQ.");
+    expect(screen.queryByTestId("safety-hin-unlisted-plan")).toBeNull();
+  });
+
+  it("saves listed attachments without asking, and never carries the squares forward", async () => {
+    const props = renderPanel({ reports: squaresPlan() });
+    fireEvent.click(within(screen.getAllByTestId("safety-hin-row")[0]).getByRole("checkbox", { name: "Lighting" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save 1 segment" }));
+    });
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(props.saveRequest).toHaveBeenCalledWith("report-sq", {
+      safetyIngestSelections: [{ ingestId: INGEST_ID }],
+      safetyActionPlan: {
+        ingestId: INGEST_ID,
+        attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting"] }],
+      },
+    });
+  });
+});
+
 describe("the map layer", () => {
   const BASEMAPS = resolvePublicBasemapConfig({ mapboxToken: "pk.test", env: {} });
   const styleUrl = (id: string) => BASEMAPS.choices.find((choice) => choice.id === id)?.styleUrl ?? "";
@@ -338,5 +417,106 @@ describe("the map layer", () => {
       <SafetyCrashMap collection={null} bbox={null} styleUrl={styleUrl("satellite")} highInjuryNetwork={null} />,
     );
     expect(map.sourceData("safety-high-injury-network")).toEqual({ type: "FeatureCollection", features: [] });
+  });
+});
+
+/** Three half-mile squares with one fatal crash each: every row ties. */
+function tiedSquares(): HighInjuryNetwork {
+  const square = (index: number) => {
+    const west = -116.1 + index * 0.05;
+    return {
+      id: `grid:${index}:1`,
+      rank: 1,
+      tied: true,
+      label: `Half-mile square, road name unavailable (41.99000, ${(west + 0.005).toFixed(5)})`,
+      geometry: { type: "Polygon" as const, coordinates: [[[west, 41.985], [west + 0.01, 41.985], [west + 0.01, 41.995], [west, 41.995], [west, 41.985]]] as [number, number][][] },
+      lengthMiles: null,
+      crashCount: 1,
+      fatalCrashCount: 1,
+      seriousInjuryCrashCount: null,
+      crashesPerMile: null,
+      roadSource: null,
+    };
+  };
+  return {
+    status: "computed", basis: "fatal_only", method: "grid_cells", years: [2022, 2023],
+    segments: [square(0), square(1), square(2)],
+    crashesConsidered: 3, crashesPlaced: 3, segmentsWithCrashes: 3, roadMilesReviewed: null, listedMiles: null,
+    listedCrashes: 3, roadSources: [], parameters: HIGH_INJURY_NETWORK_PARAMETERS,
+  };
+}
+
+/** Two road pieces with different rates: an ordered list. */
+function orderedRoads(): HighInjuryNetwork {
+  const base = network("fatal_only");
+  if (base.status !== "computed") throw new Error("fixture");
+  return {
+    ...base,
+    segments: [
+      { ...base.segments[0], rank: 1, tied: false, crashesPerMile: 6 },
+      { ...base.segments[1], rank: 2, tied: false, crashCount: 2, crashesPerMile: 4 },
+    ],
+  };
+}
+
+describe("ties and grid squares (D20)", () => {
+  it("says in one line that an all-tied list is not a ranking", () => {
+    renderPanel({ network: tiedSquares(), reports: [REPORTS[0]] });
+    expect(screen.getByTestId("safety-hin-tie").textContent).toBe("All 3 listed squares are tied at rank 1, so this list is not a ranking.");
+  });
+
+  it("prints no tie line when the list has an order", () => {
+    renderPanel({ network: orderedRoads(), reports: [REPORTS[0]] });
+    expect(screen.queryByTestId("safety-hin-tie")).toBeNull();
+    expect(screen.getByRole("button", { name: "Save 0 segments" })).toBeInTheDocument();
+  });
+
+  it("counts squares, not segments, on the save button", () => {
+    renderPanel({ network: tiedSquares(), reports: [REPORTS[0]] });
+    expect(screen.getByRole("button", { name: "Save 0 squares" })).toBeInTheDocument();
+    const firstRow = screen.getAllByTestId("safety-hin-row")[0];
+    fireEvent.click(within(firstRow).getAllByRole("checkbox")[0]);
+    expect(screen.getByRole("button", { name: "Save 1 square" })).toBeInTheDocument();
+  });
+});
+
+describe("the network markers (D7)", () => {
+  const BASEMAPS = resolvePublicBasemapConfig({ mapboxToken: "pk.test", env: {} });
+
+  beforeEach(() => {
+    vi.resetModules();
+    resetFakeMaps();
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "pk.test-token-for-the-crash-map");
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+    resetFakeMaps();
+  });
+
+  it("marks every listed segment at county zoom, under the crash points", async () => {
+    const layer = highInjuryNetworkFeatureCollection(tiedSquares());
+    const { SafetyCrashMap } = await import("@/components/safety/safety-crash-map");
+    render(<SafetyCrashMap collection={null} bbox={null} styleUrl={BASEMAPS.choices[0]?.styleUrl ?? ""} highInjuryNetwork={layer} />);
+    const map = lastFakeMap();
+    act(() => map.loadStyle());
+    const markers = map.sourceData("safety-high-injury-network-marker") as ReturnType<typeof highInjuryNetworkMarkerCollection>;
+    expect(markers.features).toHaveLength(3);
+    const [lon, lat] = markers.features[0].geometry.coordinates;
+    expect(markers.features[0].geometry.type).toBe("Point");
+    expect(lon).toBeCloseTo(-116.095, 9);
+    expect(lat).toBeCloseTo(41.99, 9);
+    const ids = map.layerIds();
+    expect(ids.indexOf("safety-high-injury-network-marker")).toBeGreaterThanOrEqual(0);
+    expect(ids.indexOf("safety-high-injury-network-marker")).toBeLessThan(ids.indexOf("safety-crash-halo"));
+    // Drawn at the zooms a county opens on, before the lines are wide enough.
+    const paint = (map.getLayer("safety-high-injury-network-marker") as { spec: { paint: Record<string, unknown> } }).spec.paint;
+    expect(paint["circle-radius"]).toEqual(["interpolate", ["linear"], ["zoom"], 5, 8, 13, 6]);
+    expect(paint["circle-opacity"]).toEqual(["interpolate", ["linear"], ["zoom"], 12, 0.85, 14, 0]);
+  });
+
+  it("puts a road piece's marker on the line itself", () => {
+    const markers = highInjuryNetworkMarkerCollection(highInjuryNetworkFeatureCollection(network()));
+    expect(markers.features.map((feature) => feature.geometry.coordinates)).toEqual([[-99.99, 40], [-99.99, 40.01]]);
   });
 });

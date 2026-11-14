@@ -28,7 +28,10 @@ import {
   type SafetyRoadContextFeature,
 } from "@/lib/safety/road-context";
 import { retainedCrashRoadProvider } from "@/lib/safety/road-provider";
-import { loadUsTigerRoadContext } from "@/lib/safety/us-road-context-adapter";
+import {
+  loadUsTigerRoadContext,
+  loadUsTigerRoadLinesNearCrashes,
+} from "@/lib/safety/us-road-context-adapter";
 import {
   hasCompleteCrashCustody,
   readSafetyCrashEvidenceIngest,
@@ -39,6 +42,7 @@ import {
   buildHighInjuryNetworkForIngest,
   type HighInjuryNetworkSupabaseLike,
 } from "@/lib/safety/high-injury-network-loader";
+import type { HighInjuryNetworkCrash } from "@/lib/safety/high-injury-network";
 
 /**
  * Crash query for the Safety map and list.
@@ -434,11 +438,69 @@ export async function GET(request: NextRequest) {
       p_ingest_ids: [activeIngestId],
     });
 
+    const fetchesUsRoads = retainedCrashRoadProvider([acquisition], [activeIngestId]) === "us-census-tiger-line";
+
+    /** Freeze fetched road lines in the project cache. False when the write failed. */
+    const storeRoadLines = async (roads: readonly SafetyRoadContextFeature[]): Promise<boolean> => {
+      if (!query.projectId || roads.length === 0) return false;
+      try {
+        const serviceSupabase = createServiceRoleClient();
+        const { error: cacheError } = await serviceSupabase
+          .from("safety_road_context_features")
+          .upsert(
+            roads.map((road) => ({
+              workspace_id: query.workspaceId,
+              project_id: query.projectId,
+              country_code: "US",
+              source_id: road.sourceId,
+              source_label: road.sourceLabel,
+              source_vintage: road.vintage,
+              source_feature_id: road.id,
+              road_name: road.name,
+              geometry_geojson: road.geometry,
+            })),
+            { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" },
+          );
+        if (cacheError) throw cacheError;
+        return true;
+      } catch (cacheError) {
+        audit.warn("safety_road_context_cache_write_failed", {
+          workspaceId: query.workspaceId,
+          projectId: query.projectId,
+          error: cacheError instanceof Error ? cacheError.message : "unknown",
+        });
+        return false;
+      }
+    };
+
+    /**
+     * US TIGER/Line roads near the ranked concentration points, read at most
+     * once per request when the project has no cached road lines, and cached.
+     */
+    let roadLinesRequested = false;
+    const fetchConcentrationRoads = async (
+      concentrations: ReturnType<typeof readSafetyKsiConcentrations> | null
+    ) => {
+      if (
+        roadLinesRequested
+        || !fetchesUsRoads
+        || !concentrations
+        || concentrations.length === 0
+        || roadContext === null
+        || roadContext.length > 0
+      ) return;
+      roadLinesRequested = true;
+      const tigerContext = await loadUsTigerRoadContext(concentrations);
+      roadContext = tigerContext.roads;
+      roadContextCoverageLimit = tigerContext.coverageLimit;
+      if (networkRoads !== null && networkRoads.length === 0) networkRoads = tigerContext.roads;
+      await storeRoadLines(tigerContext.roads);
+    };
+
     /**
      * The ranking with each concentration's nearest named road. When the
      * project has no cached road lines, US TIGER/Line roads are read for the
-     * ranked points and cached, which also gives the high-injury network its
-     * road lines. Null when the ranking itself could not be read.
+     * ranked points and cached. Null when the ranking itself could not be read.
      */
     const rankConcentrations = async (
       concentrationResult: Awaited<typeof concentrationRequest>
@@ -446,46 +508,7 @@ export async function GET(request: NextRequest) {
       const parsedKsiConcentrations = concentrationResult.error
         ? null
         : readSafetyKsiConcentrations(concentrationResult.data);
-      if (
-        retainedCrashRoadProvider([acquisition], [activeIngestId]) === "us-census-tiger-line"
-        && parsedKsiConcentrations
-        && parsedKsiConcentrations.length > 0
-        && roadContext !== null
-        && roadContext.length === 0
-      ) {
-        const tigerContext = await loadUsTigerRoadContext(parsedKsiConcentrations);
-        roadContext = tigerContext.roads;
-        roadContextCoverageLimit = tigerContext.coverageLimit;
-        if (networkRoads !== null && networkRoads.length === 0) networkRoads = tigerContext.roads;
-        if (query.projectId && tigerContext.roads.length > 0) {
-          try {
-            const serviceSupabase = createServiceRoleClient();
-            const { error: cacheError } = await serviceSupabase
-              .from("safety_road_context_features")
-              .upsert(
-                tigerContext.roads.map((road) => ({
-                  workspace_id: query.workspaceId,
-                  project_id: query.projectId,
-                  country_code: "US",
-                  source_id: road.sourceId,
-                  source_label: road.sourceLabel,
-                  source_vintage: road.vintage,
-                  source_feature_id: road.id,
-                  road_name: road.name,
-                  geometry_geojson: road.geometry,
-                })),
-                { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" },
-              );
-            if (cacheError) throw cacheError;
-          } catch (cacheError) {
-            audit.warn("safety_road_context_cache_write_failed", {
-              workspaceId: query.workspaceId,
-              projectId: query.projectId,
-              error: cacheError instanceof Error ? cacheError.message : "unknown",
-            });
-          }
-        }
-      }
+      await fetchConcentrationRoads(parsedKsiConcentrations);
       if (concentrationResult.error) {
         audit.warn("safety_ksi_concentrations_unavailable", {
           workspaceId: query.workspaceId,
@@ -595,7 +618,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const ksiConcentrations = await rankConcentrations(concentrationResult);
     const ksiEquityTracts = equityResult.error
       ? null
       : readSafetyKsiEquityTracts(equityResult.data);
@@ -613,6 +635,41 @@ export async function GET(request: NextRequest) {
       (query.yearFrom === undefined || year >= query.yearFrom) &&
       (query.yearTo === undefined || year <= query.yearTo)
     );
+    /**
+     * ROAD LINES NEAR THE RANKED CRASHES, NOT ONLY NEAR CONCENTRATIONS. A
+     * fatal-only source, or a rural place whose severe crashes never pair up,
+     * has no concentration to fetch roads for, and its network fell back to
+     * coordinate squares (D20). With no stored lines, US TIGER/Line roads are
+     * read near every ranked crash and frozen; only frozen lines rank, so a
+     * saved segment is found again in the report. Too many locations falls
+     * back to the concentration points, as before. A failed read keeps the
+     * grid and is not retried through the concentration lookup.
+     */
+    const loadNetworkRoads = fetchesUsRoads
+      && query.projectId
+      && networkRoads !== null
+      && networkRoads.length === 0
+      && roadContext !== null
+      ? async (crashes: readonly HighInjuryNetworkCrash[]): Promise<SafetyRoadContextFeature[]> => {
+          const load = await loadUsTigerRoadLinesNearCrashes(crashes);
+          if (load.status === "too_many_locations" || load.status === "too_many_lines") {
+            await fetchConcentrationRoads(
+              concentrationResult.error ? null : readSafetyKsiConcentrations(concentrationResult.data)
+            );
+            return networkRoads ?? [];
+          }
+          roadLinesRequested = true;
+          if (load.status !== "read" || load.roads.length === 0) {
+            audit.warn("safety_road_lines_unavailable", { workspaceId: query.workspaceId, status: load.status });
+            return [];
+          }
+          roadContext = [...(roadContext ?? []), ...load.roads];
+          roadContextCoverageLimit = "Road names are nearest-line matches within 150 meters against cached U.S. Census TIGER/Line road responses. Unnamed roads and roads outside the queried crash buffers are excluded.";
+          if (!(await storeRoadLines(load.roads))) return [];
+          networkRoads = load.roads;
+          return load.roads;
+        }
+      : undefined;
     const highInjuryNetwork = await buildHighInjuryNetworkForIngest(
       supabase as unknown as HighInjuryNetworkSupabaseLike,
       {
@@ -624,8 +681,11 @@ export async function GET(request: NextRequest) {
         yearFrom: query.yearFrom,
         yearTo: query.yearTo,
         roads: networkRoads,
+        loadRoads: loadNetworkRoads,
+        namingRoads: roadContext ?? [],
       }
     );
+    const ksiConcentrations = await rankConcentrations(concentrationResult);
     if (highInjuryNetwork.status === "unavailable") {
       audit.warn("safety_high_injury_network_unavailable", {
         workspaceId: query.workspaceId,

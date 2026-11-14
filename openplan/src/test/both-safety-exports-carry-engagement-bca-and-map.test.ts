@@ -46,7 +46,8 @@ import { buildSafetyPlanNetworkMap, buildSafetyPlanSupport, safetyPlanEngagement
 import { buildProjectStageGateSnapshot, buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import { buildSafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
-import { getSafetyCountermeasure } from "@/lib/safety/countermeasures";
+import { describeCountermeasureSource, getSafetyCountermeasure } from "@/lib/safety/countermeasures";
+import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
 import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
 import { makeSourceSnapshot, savedSource, sourceActor, sourceDate, sourceHash, sourceScope } from "./fixtures/engagement/synthesis-source";
 import {
@@ -513,6 +514,31 @@ function wordsOffPage(file: string): string[] {
   return offPage;
 }
 
+/**
+ * Words past the right edge of a section's text column, footer excluded. Both
+ * exports print on Letter with a 48 px PDF margin, 24 px main padding, a 1 px
+ * section border and 24 px section padding: 97 CSS px, or 72.75 pt, from the
+ * page edge. A word past it runs into or over the card's border.
+ */
+function wordsPastCard(file: string): string[] {
+  const xml = execFileSync(tool("pdftotext"), ["-bbox", file, "-"]).toString();
+  const past: string[] = [];
+  for (const pageMatch of xml.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)) {
+    const [width, height] = [Number(pageMatch[1]), Number(pageMatch[2])];
+    for (const word of pageMatch[3].matchAll(/<word xMin="[\d.]+" yMin="[\d.]+" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)<\/word>/g)) {
+      if (Number(word[2]) < height - 36 && Number(word[1]) > width - 72.75 + 1) past.push(word[3]);
+    }
+  }
+  return past;
+}
+
+/** Every printed word in reading order, with its height in points. */
+function wordBoxes(file: string): { text: string; height: number }[] {
+  const xml = execFileSync(tool("pdftotext"), ["-bbox", file, "-"]).toString();
+  return [...xml.matchAll(/<word xMin="[\d.]+" yMin="([\d.]+)" xMax="[\d.]+" yMax="([\d.]+)">([^<]*)<\/word>/g)]
+    .map((word) => ({ text: word[3], height: Number(word[2]) - Number(word[1]) }));
+}
+
 /** Every word poppler placed on pages `from` onward, in order, lowercased, without edge punctuation. */
 function printedWords(file: string, from = 1): string[] {
   const xml = execFileSync(tool("pdftotext"), ["-bbox", "-f", String(from), file, "-"]).toString();
@@ -585,6 +611,43 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
     expect(mapPage).toBeGreaterThan(0);
     expect(Math.max(redPixels(doc.file, mapPage), redPixels(doc.file, Math.min(mapPage + 1, doc.pages)))).toBeGreaterThan(50);
     expect(wordsOffPage(doc.file)).toEqual([]);
+  }, 120_000);
+
+  // KI-2026-11-14-212: an item FHWA removed printed its list status in large
+  // bold type, and the Internet Archive URLs ran to the card edge on the
+  // report's countermeasure page and the SS4A Appendix C and seed caveats.
+  it("prints the off-list line as a quiet line and wraps archive URLs inside the card", async () => {
+    const network = fixtureNetwork();
+    const plan = { ingestId: EVIDENCE_IDS.ingest, attachments: [{ segmentId: network.segments[0].id, segmentLabel: network.segments[0].label, countermeasureIds: ["bicycle-lanes", "lighting"] }] };
+    const draft = buildSafetyActionPlanSection({ plan, evidence: planEvidence(), network, engagement: null });
+    const support = buildSafetyPlanSupport({ reads: { engagement: { status: "absent" }, bca: { status: "absent" } }, projectId: EVIDENCE_IDS.project, projectName: "Example safety project", networkMap: null });
+    const html = buildReportHtml(reportData(draft, support));
+    expect(html).toContain('<span class="list-status">Not on FHWA');
+    const report = await pdf("safety-report-off-list", html);
+    expect(report.all).toContain(getSafetyCountermeasure("bicycle-lanes")!.sourceUrl.slice(0, 40));
+    expect(wordsPastCard(report.file)).toEqual([]);
+    // The status line runs from after "Bicycle Lanes." to the "Addresses:"
+    // that opens the item's body text; it must print smaller than that body.
+    const words = wordBoxes(report.file);
+    const start = words.findIndex((word, index) => word.text === "Lanes." && words[index - 1]?.text === "Bicycle" && words[index + 1]?.text === "Not");
+    const end = words.findIndex((word, index) => index > start && word.text === "Addresses:");
+    expect(start).toBeGreaterThan(0);
+    expect(end - start).toBeGreaterThan(20);
+    const status = words.slice(start + 1, end).map((word) => word.height);
+    expect(Math.max(...status)).toBeLessThan(words[end].height - 1);
+
+    const records = completeEvidenceRecords();
+    records.safety = { status: "ready", snapshot: evidenceSnapshot({}, ["bicycle-lanes", "lighting"]), otherSeededArtifactCount: 0 };
+    const sourceLine = describeCountermeasureSource({ ids: ["bicycle-lanes"] });
+    const application = await pdf("ss4a-off-list", buildGrantApplicationHtml({
+      opportunity: { id: EVIDENCE_IDS.opportunity, title: "SS4A application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-01T00:00:00.000Z",
+      evidenceAppendices: buildSs4aEvidenceAppendices(records, new Set(["countermeasures"] as const)),
+      safetySeedHistory: [{ kind: "openplan.ss4a-safety-seed.v1", artifactId: EVIDENCE_IDS.ingest, reportId: EVIDENCE_IDS.ingest, acquisitionId: EVIDENCE_IDS.ingest,
+        snapshotHash: "a".repeat(64), caveat: SAFETY_SEED_CAVEAT, sourceCaveats: [sourceLine] }],
+    }));
+    expect(application.all.replace(/\s+/g, "")).toContain("https://web.archive.org/web/");
+    expect(wordsPastCard(application.file)).toEqual([]);
   }, 120_000);
 
   it("keeps the countermeasure table inside the page (D17)", async () => {

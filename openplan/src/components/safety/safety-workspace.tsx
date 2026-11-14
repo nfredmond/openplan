@@ -80,7 +80,7 @@ import {
 import { CrashFilterPanel, type CrashFacetCounts } from "./crash-filter-panel";
 import { SafetyPrintableStreetContext } from "./safety-printable-street-context";
 import { HighInjuryNetworkPanel, type HighInjuryNetworkReportTarget } from "./high-injury-network-panel";
-import { highInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
+import { HIGH_INJURY_NETWORK_COLOR, highInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 function CutoffProvenanceLink({
@@ -226,7 +226,7 @@ function describeTractMetric(
  * a caption). Moving it rather than truncating it keeps both the map and the
  * sentence intact.
  */
-function CrashSeverityKey({ className }: { className: string }) {
+function CrashSeverityKey({ className, showNetwork = false }: { className: string; showNetwork?: boolean }) {
   return (
     <div className={className} data-testid="safety-severity-key">
       {CRASH_SEVERITY_LEGEND_ORDER.map((severity) => (
@@ -239,6 +239,18 @@ function CrashSeverityKey({ className }: { className: string }) {
           {SEVERITY_LABELS[severity]}
         </span>
       ))}
+      {/* The network layer is drawn only while it is on and holds a segment,
+          and its key entry follows it (D7). */}
+      {showNetwork ? (
+        <span className="flex items-center gap-1.5" data-testid="safety-hin-key">
+          <span
+            aria-hidden="true"
+            className="inline-block h-1 w-4 shrink-0 rounded-full"
+            style={{ backgroundColor: HIGH_INJURY_NETWORK_COLOR }}
+          />
+          High-injury network
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -523,6 +535,7 @@ export function SafetyWorkspace({
     () => (showHighInjuryNetwork ? highInjuryNetworkFeatureCollection(response?.highInjuryNetwork) : null),
     [showHighInjuryNetwork, response?.highInjuryNetwork]
   );
+  const networkOnMap = (highInjuryNetworkLayer?.features.length ?? 0) > 0;
 
   // Whether the box still holds the area this page opened with. Everything that
   // explains where that area came from is gated on it: once the planner picks
@@ -1260,7 +1273,7 @@ export function SafetyWorkspace({
               z-30), and the key would have been half underneath it. The right
               side of the map is the sidebar's edge and is otherwise empty;
               `bottom-8` keeps it clear of Mapbox's attribution strip. */}
-          <CrashSeverityKey className="pointer-events-none absolute bottom-8 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-label text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
+          <CrashSeverityKey showNetwork={networkOnMap} className="pointer-events-none absolute bottom-8 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border/60 bg-background/90 px-2.5 py-1.5 text-label text-muted-foreground shadow-sm backdrop-blur-sm lg:flex" />
         </div>
 
         {/* THE SIDEBAR. Everything a planner does to the map, in the order they
@@ -1387,7 +1400,7 @@ export function SafetyWorkspace({
               the one page scroll, and a nested scroll region inside it is how a
               panel ends up with a 24px window. */}
           <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:overflow-y-auto">
-            <CrashSeverityKey className="flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-muted-foreground lg:hidden" />
+            <CrashSeverityKey showNetwork={networkOnMap} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-muted-foreground lg:hidden" />
 
             {/* Kept mounted while closed: these switches drive layers on the
                 map beside the panel, and unmounting them would drop the
