@@ -16,9 +16,12 @@ N6). The template refuses to build until all four are filled. Pre-checks run
 with `kit.sh hosted $W read /work/prechecks/<file>`; each check row reads
 `pass`, and a differing check stops the read as `read-failed` with
 `PRE-CHECK FAILED <check>: expected ..., found ...`. Informational rows
-(row counts, PR 410's invoice creators) are for the window record. Probes run
-after the install with `kit.sh hosted $W probe /work/probes/<file>`.
-`postchecks.sql` runs inside the install transaction.
+(row counts, PR 410's invoice creators, pre-check 60) are for the window
+record. Run `prechecks/60-live-traffic-and-handoffs.sql` last, right before
+the dry run (see "Locks and live traffic"). `postchecks.sql` runs inside the
+install transaction. Probes run after the install with
+`kit.sh hosted $W probe /work/probes/<file>`; read their results as "Probes"
+below says.
 
 ## The seven files, in install order
 
@@ -44,20 +47,84 @@ version order. Holding hosted at 455 with the old code is safe: the old code
 ignores the new columns and functions, and the new policies and triggers
 refuse only writes the old routes already refuse.
 
-PR 440's packet said to retry if a lock timed out. Struck: the kit never
-retries. A lock timeout (3 s) rolls the whole window back to 448 and ends it.
+## Locks and live traffic
+
+A live request that touches a locked table waits in the lock queue until the
+install commits or its own statement times out. While the install waits for
+a lock (at most 3 s), every new reader of that table queues behind it too.
+The install holds the Safety, export and invoice locks and asks for
+`projects` last, so a request that already holds a `projects` lock and then
+waits on a Safety table closes a cycle; after 1 s the deadlock detector ends
+one side. **A lock timeout or a deadlock rolls the whole window back to 448
+and ends it.** The kit never retries; PR 440's packet said to retry, and that
+is struck. If the deadlock detector ends a live request instead, that user
+sees an error once.
+
+Right before the dry run, read `prechecks/60-live-traffic-and-handoffs.sql`.
+Its first result lists transactions open for more than 1 s that hold a lock
+on one of the nine tables above. If it returns rows, wait for them to finish
+and read it again. An old-code Safety acquisition on a large study area
+(up to 8 s per statement before PR 415) is the likeliest one.
 
 ## If the code merges first (hosted still at 448)
 
-- `/api/health` expects 455 migrations.
-- PR 409: every application export answers 503 naming migration
-  `20261102110100`, and so does the export list.
-- PR 408: a Safety acquisition in Oregon, Iowa, Ohio or DC fails at its first
-  write. A BCA save for a tribal area or a town reaches the database and is
-  refused by `guard_project_bca_place_insert` ("Recorded project place
-  reference is invalid").
-- PRs 410, 415 and 440: the code does not depend on its migration; each
+What a planner or operator sees, widest first:
+
+- **AI calls, PR 409.** Every metered AI call goes through `reserveAiUsage`
+  (`openplan/src/lib/runtime/ai-rate-limit.ts`), which calls
+  `reserve_ai_usage` before the model call. Ten call sites use it: assistant
+  chat, Planner Agent provider turns, analysis, grant narrative drafts, grant
+  section drafts, report narrative drafts, RTP chapter drafts, RTP document
+  extraction, engagement close-the-loop drafts and engagement moderation
+  scans. With the function missing, what happens depends on who pays:
+  - **A deployment-wide key pays** (`ANTHROPIC_API_KEY` set, plus
+    `OPENPLAN_SHARED_AI_KEY=allow` in a production build): every one of those
+    calls is refused with "AI usage could not be metered, so the deployment's
+    shared AI key is not used".
+  - **The workspace's own key pays:** the call goes ahead. `reserveAiUsage`
+    logs `[ai-rate-limit] atomic usage reservation unavailable` and falls back
+    to the earlier count-then-record limit, which is not atomic, so parallel
+    calls can pass one count.
+  - **No key:** AI is off for that workspace either way.
+
+  Hosted, November 14, 2026 (the lead's check): no deployment-wide key is
+  set. `ANTHROPIC_API_KEY` was removed from Production and Preview that day,
+  and `OPENPLAN_SHARED_AI_KEY` is not set. So on hosted no call is refused;
+  workspaces with their own key take the fallback path above, with one log
+  line per call. A deployment that sets a shared key gets the refusal.
+- **Application exports, PR 409.** Every application export answers 503
+  naming migration `20261102110100`, and so does the export list.
+- **Document library, PR 409.** The "Grant applications" group selects
+  `sha256` (`openplan/src/lib/document-library/sources.ts`), so the knowledge
+  base shows "Grant applications (unavailable)" and says the source is not
+  set up on this installation yet. A project's documents read the same
+  library and leave grant application exports out as not set up.
+- **Safety and BCA, PR 408.** A Safety acquisition in Oregon, Iowa, Ohio or
+  DC fails at its first write. A BCA save for a tribal area or a town reaches
+  the database and is refused by `guard_project_bca_place_insert`
+  ("Recorded project place reference is invalid").
+- **PRs 410, 415 and 440:** the code does not depend on its migration; each
   defect stays open on hosted.
+- `/api/health` reports the build's expected count (455). It does not read
+  hosted history, so that number is informational, not a failure.
+
+## What a planner or operator may see once
+
+- **Award handoff preview, at the install.** `award_handoff_state`
+  (`20261024200100`) fingerprints every application export row of an award's
+  grant with `to_jsonb`, which includes NULL columns, so the two columns file
+  4 adds change that fingerprint for every grant with at least one export. A
+  handoff preview open across the install is refused once at apply with
+  "Sources, outcomes or terms pointers changed; review again"; previewing
+  again fixes it. Stored revisions are not rechecked, so nothing stored
+  changes. Pre-check 60's second result counts the awards this can reach.
+- **Saved report packets, after the merge (step 21).** The Oregon, Iowa, Ohio
+  and DC crash adapters and the crash source registry change in this pull
+  request, and all five are pinned by hash in the jurisdiction readiness
+  registry. When the merge deploys, every saved report packet says its
+  registry inputs changed and asks to be regenerated once more, on top of the
+  November 14 re-pin. Regenerating records the new fingerprint. No stored
+  crash record, count or grant rule changes.
 
 ## Post-checks
 
@@ -122,7 +189,29 @@ with no label in that last case.
 ## Rollback, per file, newest first
 
 Each is a separate decision after the window (review 15, N11). Delete a
-history row only when its file's effect is removed.
+history row only when its file's effect is removed. Lane 29 rehearsed 7, 6,
+5, 3 and 2 together at 455 on a scratch stack: the touched functions (by
+definition hash and ACL), triggers and policies then matched the 448 stack
+exactly.
+
+**File 2 (408)** restores the two BCA functions from
+`20261023190200_bca_project_place_snapshot.sql`. Take only lines 53 to 220 of
+that file, which are its two `CREATE FUNCTION` statements
+(`valid_bca_snapshot_jurisdiction` and `guard_project_bca_place_insert`),
+and change `CREATE FUNCTION` to `CREATE OR REPLACE FUNCTION`. Do not take its
+`REVOKE`, `GRANT` or `CREATE TRIGGER` lines: `CREATE OR REPLACE` keeps the
+functions' privileges, and the trigger already exists, so that line would
+fail. From the repository root:
+
+```bash
+git show <integration head>:openplan/supabase/migrations/20261023190200_bca_project_place_snapshot.sql \
+  | sed -n '53,220p' | sed 's/^CREATE FUNCTION /CREATE OR REPLACE FUNCTION /' > $W/rollback-408-file2.sql
+grep -c '^CREATE OR REPLACE FUNCTION' $W/rollback-408-file2.sql   # must print 2
+sha256sum $W/rollback-408-file2.sql
+# must print 4f11144d689c832a45158f0b31c1c7eda40eba44d07f73ed7e75d7bc41baa120
+```
+
+Run that file, then the `DROP FUNCTION` line for file 2 below.
 
 ```sql
 -- 7 (440): no data change.
@@ -131,9 +220,33 @@ DROP TRIGGER IF EXISTS projects_rtp_link_workspace ON public.projects;
 DROP TRIGGER IF EXISTS rtp_cycles_rtp_link_workspace ON public.rtp_cycles;
 DROP FUNCTION IF EXISTS public.guard_project_rtp_cycle_link_scope();
 DROP FUNCTION IF EXISTS public.guard_rtp_link_parent_workspace();
--- 6 (415): restores the row triggers; brings the large-acquisition timeout back.
--- Use the BEGIN ... COMMIT block in PR 415's install packet verbatim (11 DROP TRIGGER,
--- 3 CREATE TRIGGER on the unchanged old functions, 3 DROP FUNCTION).
+
+-- 6 (415): restores the row triggers from 20261023190100 and 20260827000003
+-- (their functions were never changed or dropped) and brings the
+-- large-acquisition timeout back. PR 415's rollback, verbatim; run it as one
+-- transaction.
+BEGIN;
+DROP TRIGGER IF EXISTS safety_comparison_crash_revision_insert ON public.safety_crashes;
+DROP TRIGGER IF EXISTS safety_comparison_crash_revision_update ON public.safety_crashes;
+DROP TRIGGER IF EXISTS safety_comparison_crash_revision_delete ON public.safety_crashes;
+DROP TRIGGER IF EXISTS safety_comparison_party_revision_insert ON public.safety_crash_parties;
+DROP TRIGGER IF EXISTS safety_comparison_party_revision_update ON public.safety_crash_parties;
+DROP TRIGGER IF EXISTS safety_comparison_party_revision_delete ON public.safety_crash_parties;
+DROP TRIGGER IF EXISTS trg_safety_crashes_project_evidence_revision_insert ON public.safety_crashes;
+DROP TRIGGER IF EXISTS trg_safety_crashes_project_evidence_revision_update ON public.safety_crashes;
+DROP TRIGGER IF EXISTS trg_safety_crashes_project_evidence_revision_delete ON public.safety_crashes;
+DROP TRIGGER IF EXISTS safety_comparison_crash_fence ON public.safety_crashes;
+DROP TRIGGER IF EXISTS safety_comparison_party_fence ON public.safety_crash_parties;
+CREATE TRIGGER safety_comparison_crash_fence BEFORE INSERT OR UPDATE OR DELETE ON public.safety_crashes FOR EACH ROW EXECUTE FUNCTION safety_comparison_private.source_fence();
+CREATE TRIGGER safety_comparison_party_fence BEFORE INSERT OR UPDATE OR DELETE ON public.safety_crash_parties FOR EACH ROW EXECUTE FUNCTION safety_comparison_private.source_fence();
+CREATE TRIGGER trg_safety_crashes_project_evidence_revision AFTER INSERT OR UPDATE OR DELETE ON public.safety_crashes FOR EACH ROW EXECUTE FUNCTION public.bump_project_revision_from_parent_evidence('ingest_id', 'safety_crash_ingests');
+DROP FUNCTION public.safety_crash_child_fence();
+DROP FUNCTION public.safety_crash_child_revision();
+DROP FUNCTION public.bump_project_revision_from_safety_crash_rows();
+-- Only if the history row should go too, so a later install reapplies the file:
+DELETE FROM supabase_migrations.schema_migrations WHERE version='20261102130000';
+COMMIT;
+
 -- 5 (410): no data change.
 DROP POLICY client_invoices_invoice_writer_insert ON public.client_invoices;
 DROP POLICY client_invoices_invoice_writer_update ON public.client_invoices;
@@ -142,10 +255,14 @@ DROP POLICY client_invoice_line_items_invoice_writer_insert ON public.client_inv
 DROP POLICY client_invoice_line_items_invoice_writer_update ON public.client_invoice_line_items;
 DROP POLICY client_invoice_line_items_invoice_writer_delete ON public.client_invoice_line_items;
 DROP FUNCTION public.workspace_member_can_write_invoices(uuid);
+
 -- 4 (409): leave the columns (old code ignores them; dropping discards recorded hashes).
--- 3 (409): revert the code first; with this code live, the shared key refuses every metered call.
+
+-- 3 (409): revert the code first; with this code live and a shared key, every metered call is refused.
 DROP FUNCTION public.reserve_ai_usage(uuid, text[], integer, integer, text, text, text, jsonb);
--- 2 (408): CREATE OR REPLACE both functions from 20261023190200_bca_project_place_snapshot.sql, then
+
+-- 2 (408): after running $W/rollback-408-file2.sql (above):
 DROP FUNCTION public.bca_snapshot_tigerweb_geoid_valid(text, text);
+
 -- 1 (408): none. The wider CHECKs are harmless supersets; narrowing fails once a state row exists.
 ```
