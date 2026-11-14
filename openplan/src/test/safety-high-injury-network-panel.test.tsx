@@ -182,7 +182,7 @@ describe("the ranked table", () => {
   it("cites the countermeasure list and marks unverified CMF values", () => {
     renderPanel();
     const list = screen.getByTestId("safety-countermeasure-list");
-    expect(list.textContent).toContain("Retrieved 2026-10-13");
+    expect(list.textContent).toContain("Retrieved 2026-11-13");
     expect(list.textContent).toContain("[VERIFY]");
     expect(within(list).getByRole("link", { name: "Lighting" }).getAttribute("href")).toBe(
       "https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",

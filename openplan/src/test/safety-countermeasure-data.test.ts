@@ -87,6 +87,29 @@ describe("the countermeasure data file", () => {
     expect(() => parseCountermeasureFile(broken)).toThrow();
   });
 
+  // D6: FHWA's list page, read 2026-11-13, groups six items under Roadway
+  // Departure. Each carries FHWA's exact name and its own FHWA page.
+  it("carries every roadway-departure item on FHWA's list, each with its own FHWA page", () => {
+    const expected: Array<[string, string]> = [
+      ["Enhanced Delineation for Horizontal Curves", "enhanced-delineation-horizontal-curves"],
+      ["Longitudinal Rumble Strips and Stripes on Two-Lane Roads", "longitudinal-rumble-strips-and-stripes-two-lane-roads"],
+      ["Median Barriers", "median-barriers"],
+      ["Roadside Design Improvements at Curves", "roadside-design-improvements-curves"],
+      ["SafetyEdge℠", "safetyedgesm"],
+      ["Wider Edge Lines", "wider-edge-lines"],
+    ];
+    const roadwayDeparture = SAFETY_COUNTERMEASURES.filter((entry) => entry.focusArea === "roadway_departure");
+    expect(roadwayDeparture.map((entry) => [entry.name, entry.sourceUrl])).toEqual(
+      expected.map(([name, slug]) => [name, `https://highways.dot.gov/safety/proven-safety-countermeasures/${slug}`]),
+    );
+    for (const entry of roadwayDeparture) expect(entry.crashTypes, entry.id).toContain("roadway_departure");
+  });
+
+  it("dates its list count to the day the list was read", () => {
+    expect(SAFETY_COUNTERMEASURE_FILE.version).toBe(SAFETY_COUNTERMEASURE_FILE.source.retrievedOn);
+    expect(SAFETY_COUNTERMEASURE_FILE.listNote).toContain(`read ${SAFETY_COUNTERMEASURE_FILE.source.retrievedOn}`);
+  });
+
   it("prints the source and retrieval date on one line", () => {
     const line = describeCountermeasureSource();
     expect(line).toContain(SAFETY_COUNTERMEASURE_FILE.source.url);
