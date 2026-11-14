@@ -26,6 +26,7 @@ import type {
 } from "@/lib/reports/safety-action-plan";
 import { REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
 import { withPlanningContext } from "@/lib/projects/planning-context";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export type HighInjuryNetworkReportTarget = {
   id: string;
@@ -122,6 +123,21 @@ function defaultReportId(reports: readonly HighInjuryNetworkReportTarget[], inge
   return (reports.find((report) => holdsPlanFor(report, ingestId)) ?? reports[0])?.id ?? "";
 }
 
+/**
+ * How many places the report's saved plan treats that the current list does
+ * not show. Saving sends only listed rows, so it drops these. A plan from a
+ * different crash pull counts in full: none of it is loaded here.
+ */
+function unlistedSavedPlanCount(
+  plan: ReportSafetyActionPlan | null | undefined,
+  ingestId: string | null,
+  listedIds: ReadonlySet<string>,
+): number {
+  if (!plan) return 0;
+  if (plan.ingestId !== ingestId) return plan.attachments.length;
+  return plan.attachments.filter((attachment) => !listedIds.has(attachment.segmentId)).length;
+}
+
 /** The item's FHWA list status on its own line, only for an item FHWA removed. */
 function ListStatus({ countermeasure }: { countermeasure: (typeof SAFETY_COUNTERMEASURES)[number] }) {
   const status = countermeasureListStatus(countermeasure);
@@ -168,14 +184,27 @@ export function HighInjuryNetworkPanel({
     kind: "idle",
   });
 
+  // The page does not reread its reports after a save, so the plan just saved
+  // stands in for the report's stored plan until it does.
+  const [lastSaved, setLastSaved] = useState<{ reportId: string; plan: ReportSafetyActionPlan } | null>(null);
+  const { confirm, confirmDialog } = useConfirmDialog();
   const segments = useMemo(() => (network?.status === "computed" ? network.segments : []), [network]);
-  const attachedCount = Object.values(selections).filter((ids) => ids.length > 0).length;
+  // Only listed rows count. A plan saved against half-mile squares keeps its
+  // square ids in `selections`, but the save sends listed rows only.
+  const attachedCount = segments.filter((segment) => (selections[segment.id]?.length ?? 0) > 0).length;
   const comparisonReport = reports.find((report) => report.id === reportId && report.supportsSafetyComparison)
     ?? reports.find((report) => report.supportsSafetyComparison);
   const selectedReport = reports.find((report) => report.id === reportId);
   const planElsewhere = selectedReport && !holdsPlanFor(selectedReport, ingestId)
     ? reports.find((report) => holdsPlanFor(report, ingestId))
     : undefined;
+  const unlistedCount = unlistedSavedPlanCount(
+    lastSaved?.reportId === reportId ? lastSaved.plan : selectedReport?.safetyActionPlan,
+    ingestId,
+    new Set(segments.map((segment) => segment.id)),
+  );
+  const replacesWithEmpty = unlistedCount > 0 && attachedCount === 0;
+  const placeWord = unlistedCount === 1 ? "place" : "places";
   const selectReport = (id: string) => {
     setReportId(id);
     setSelections(initialSelections(reports, id, ingestId));
@@ -236,6 +265,11 @@ export function HighInjuryNetworkPanel({
 
   const save = async () => {
     if (!ingestId || !reportId) return;
+    if (replacesWithEmpty && !(await confirm({
+      headline: "Replace the saved plan with an empty one?",
+      consequence: `The saved plan treats ${unlistedCount} ${placeWord} this list does not show. No listed row has countermeasures, so the report keeps none.`,
+      confirmLabel: "Replace saved plan",
+    }))) return;
     const attachments: SafetyActionPlanAttachment[] = segments.flatMap((segment) => {
       const ids = selections[segment.id] ?? [];
       return ids.length > 0 ? [{ segmentId: segment.id, segmentLabel: segment.label, countermeasureIds: ids }] : [];
@@ -246,6 +280,7 @@ export function HighInjuryNetworkPanel({
       safetyActionPlan: { ingestId, attachments },
     });
     const title = reports.find((report) => report.id === reportId)?.title ?? "the report";
+    if (result.ok) setLastSaved({ reportId, plan: { ingestId, attachments } });
     setSaveState(result.ok
       ? { kind: "saved", message: `Saved to ${title}.` }
       : { kind: "failed", message: result.error ?? "The report could not be saved." });
@@ -419,6 +454,11 @@ export function HighInjuryNetworkPanel({
           left those places no way to record the plan at all. */}
       {ingestId && reports.length > 0 ? (
           <div className="flex flex-col gap-1 text-xs" data-testid="safety-hin-save">
+            {unlistedCount > 0 && (
+              <p className="font-medium" data-testid="safety-hin-unlisted-plan">
+                The saved plan treats {unlistedCount} {placeWord} this list does not show. Saving replaces it.
+              </p>
+            )}
             <div className="flex flex-wrap items-center gap-2">
               <label htmlFor="safety-hin-report" className="font-medium">Save to report</label>
               <select
@@ -439,7 +479,9 @@ export function HighInjuryNetworkPanel({
               >
                 {saveState.kind === "saving"
                   ? "Saving"
-                  : segments.length === 0
+                  : replacesWithEmpty
+                    ? "Replace saved plan"
+                    : segments.length === 0
                     ? "Save plan with no ranked segments"
                     : `Save ${attachedCount} ${itemWord}`}
               </button>
@@ -486,6 +528,7 @@ export function HighInjuryNetworkPanel({
             To save countermeasures, open Safety from a project.
           </p>
         )}
+      {confirmDialog}
     </section>
   );
 }

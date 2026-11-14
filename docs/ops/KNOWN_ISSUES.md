@@ -154,6 +154,15 @@ browser check on integration PR 1. Paths are under `openplan/`.
 | KI-2026-11-14-051 | Medium, first proven job | Grid squares were named only by coordinates, an all-tied list read as a ranking, and the save button counted squares as segments (D20). | Fixed in code. A square reads "Half-mile square near (road)" when a known road lies within 150 m of its crashes, else "Half-mile square, road name unavailable", with its coordinates after. When every listed row shares one rank, the Safety page, the report's plan section and SS4A Appendix A print one line: "All N listed squares are tied at rank 1, so this list is not a ranking." The maps still number each tied row with the shared rank. The button says "Save N squares". Open: the Safety page can name a square from a model network road that the report does not read, so the report may print "road name unavailable" for the same square. | `src/lib/safety/high-injury-network.ts`; `src/test/tied-network-says-so-in-both-exports.test.ts` (both PDFs read back with poppler); `src/test/safety-high-injury-network-panel.test.tsx` |
 | KI-2026-11-14-052 | Low, map legend | The network lines were invisible at county zoom and missing from the map legend (D7). | Fixed in code, not yet checked in a browser. Each listed segment gets a marker under the crash points that fades out between zoom 12 and 14 as the lines widen, and the line is 4 px wide from zoom 6. The legend lists "High-injury network" while the layer is on and holds a segment. | `src/components/safety/safety-crash-map.tsx`; `src/test/safety-map-first-shell.test.tsx` |
 
+## Integration 3 browser check, November 14, 2026
+
+Found by the agent-run browser check of integration PR 465 (local stack, 1440
+and 390 px). Paths are under `openplan/`.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-14-210 | Moderate, silent loss of a saved plan | Pyramid Lake had a plan saved against half-mile squares. After the place ranked road segments, the save button read "Save 2 segments" while every listed row showed "Countermeasures (0)": it counted the old squares, which the list no longer shows. A save sends only listed rows, so one click replaced the plan with an empty one without a word. | Fixed in code, not yet checked in a browser. The button counts only listed rows. When the selected report's saved plan treats places the list does not show (or belongs to another crash pull), one line above the save says how many and that saving replaces it. With nothing attached on a listed row, the button reads "Replace saved plan" and the shared confirm dialog asks first. Old squares are not carried forward or mapped to road segments. | `src/test/safety-high-injury-network-panel.test.tsx`, "a saved plan this list does not show" |
+
 ## RTP project links across workspaces, November 2, 2026
 
 Found by the service-role guard lane (PR 438) and re-verified on `main` at

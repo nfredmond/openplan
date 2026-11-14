@@ -19,6 +19,7 @@ import {
 } from "@/lib/safety/high-injury-network";
 import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { lastFakeMap, resetFakeMaps } from "@/test/helpers/mapbox-gl-fake";
+import { confirmDestructiveAction, confirmDialogText, declineConfirmation } from "@/test/helpers/confirm-dialog";
 
 vi.mock("mapbox-gl", async () => {
   const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
@@ -287,6 +288,83 @@ describe("attaching countermeasures", () => {
   it("opens Reports for this project when its reports cannot hold the comparison", () => {
     renderPanel({ reports: [{ id: "analysis", title: "Analysis", safetyActionPlan: null, supportsSafetyComparison: false }], projectId: "project-1" });
     expect(screen.getByRole("link", { name: "Choose or create a project-status report for Safety comparison" })).toHaveAttribute("href", "/reports?projectId=project-1");
+  });
+});
+
+// KI-2026-11-14-210: a plan saved when the place ranked half-mile squares,
+// read after the place ranks road segments. The squares are not listed, so a
+// save drops them; the panel must say so and not count them.
+describe("a saved plan this list does not show", () => {
+  const squaresPlan = (extra: { segmentId: string; segmentLabel: string; countermeasureIds: string[] }[] = []): HighInjuryNetworkReportTarget[] => [{
+    id: "report-sq",
+    title: "Plan SQ",
+    safetyActionPlan: {
+      ingestId: INGEST_ID,
+      attachments: [
+        { segmentId: "grid:1:1", segmentLabel: "Half-mile square 1", countermeasureIds: ["lighting"] },
+        { segmentId: "grid:2:1", segmentLabel: "Half-mile square 2", countermeasureIds: ["walkways"] },
+        ...extra,
+      ],
+    },
+  }];
+
+  it("counts only attachments on listed rows", () => {
+    renderPanel({ reports: squaresPlan() });
+    expect(screen.queryByRole("button", { name: "Save 2 segments" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Replace saved plan" })).toBeInTheDocument();
+    fireEvent.click(within(screen.getAllByTestId("safety-hin-row")[0]).getByRole("checkbox", { name: "Lighting" }));
+    expect(screen.getByRole("button", { name: "Save 1 segment" })).toBeInTheDocument();
+  });
+
+  it("names how many saved places the list does not show, and only then", () => {
+    renderPanel({ reports: squaresPlan() });
+    expect(screen.getByTestId("safety-hin-unlisted-plan").textContent).toBe(
+      "The saved plan treats 2 places this list does not show. Saving replaces it.",
+    );
+    cleanup();
+    renderPanel({ reports: squaresPlan([{ segmentId: "road:0000beef:1", segmentLabel: "Oak Avenue", countermeasureIds: ["walkways"] }]) });
+    expect(screen.getByTestId("safety-hin-unlisted-plan").textContent).toContain("treats 2 places");
+    expect(screen.getByRole("button", { name: "Save 1 segment" })).toBeInTheDocument();
+    cleanup();
+    // Plan B's one attachment is on a listed row.
+    renderPanel();
+    expect(screen.queryByTestId("safety-hin-unlisted-plan")).toBeNull();
+    expect(screen.getByRole("button", { name: "Save 1 segment" })).toBeInTheDocument();
+  });
+
+  it("asks before replacing it with an empty plan", async () => {
+    const props = renderPanel({ reports: squaresPlan() });
+    fireEvent.click(screen.getByRole("button", { name: "Replace saved plan" }));
+    expect(await confirmDialogText()).toContain("treats 2 places this list does not show");
+    await declineConfirmation();
+    expect(props.saveRequest).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Replace saved plan" }));
+    await act(async () => {
+      await confirmDestructiveAction("Replace saved plan");
+    });
+    expect(props.saveRequest).toHaveBeenCalledWith("report-sq", {
+      safetyIngestSelections: [{ ingestId: INGEST_ID }],
+      safetyActionPlan: { ingestId: INGEST_ID, attachments: [] },
+    });
+    expect(screen.getByRole("status").textContent).toBe("Saved to Plan SQ.");
+    expect(screen.queryByTestId("safety-hin-unlisted-plan")).toBeNull();
+  });
+
+  it("saves listed attachments without asking, and never carries the squares forward", async () => {
+    const props = renderPanel({ reports: squaresPlan() });
+    fireEvent.click(within(screen.getAllByTestId("safety-hin-row")[0]).getByRole("checkbox", { name: "Lighting" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Save 1 segment" }));
+    });
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(props.saveRequest).toHaveBeenCalledWith("report-sq", {
+      safetyIngestSelections: [{ ingestId: INGEST_ID }],
+      safetyActionPlan: {
+        ingestId: INGEST_ID,
+        attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting"] }],
+      },
+    });
   });
 });
 
