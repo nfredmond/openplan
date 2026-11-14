@@ -59,6 +59,33 @@ retries. A lock timeout (3 s) rolls the whole window back to 448 and ends it.
 - PRs 410, 415 and 440: the code does not depend on its migration; each
   defect stays open on hosted.
 
+## Post-checks
+
+`postchecks.sql` runs inside the install transaction; any failure rolls the
+window back to 448. Besides history, constraints and privileges, it checks
+what each object does or is, not only that it exists:
+
+- every function the seven files create or replace, by SHA-256 of its
+  `pg_get_functiondef` (ten functions), and the owner (`postgres`) of the
+  eight they create;
+- the owner of `bca_snapshot_tigerweb_geoid_valid`, the one function whose
+  catalog key `allowed_differences.json` lets differ (see its reason);
+- row security enabled, and not forced, on `client_invoices` and
+  `client_invoice_line_items`, and each of the six invoice writer policies
+  calling `workspace_member_can_write_invoices`;
+- the 415 triggers: the two fences per row, the nine revision and project
+  triggers per statement with their transition tables;
+- the 440 triggers: function, BEFORE, per row, events and `UPDATE OF`
+  columns.
+
+Lane 29 rehearsal, November 14, 2026 (scratch stack, PostgreSQL 17.11,
+`supabase/postgres:17.11.0.006`): all post-checks pass at 455; a comment on a
+function, table and trigger still passes; forcing row security, disabling it,
+changing the helper's owner, adding one space to a function body, one policy
+written without the helper, a 415 trigger made per row, and a 440 trigger
+without `UPDATE OF` each fail with their own message. The definition hashes
+are the same under three different `search_path` settings.
+
 ## Probes
 
 Run after the install. Each ends in ROLLBACK, so nothing is kept. The kit's
