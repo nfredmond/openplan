@@ -20,6 +20,11 @@
  *     columns the FARS parser reads, about 1.9 MB a year) is kept in private
  *     Storage with a manifest that records the archive's URL, SHA-256, size,
  *     ETag, Last-Modified and read date, and the reduced copy's SHA-256.
+ *     Keeping it is optional. Its uploads run on their own bound,
+ *     `keepLimitMs`, outside the deadline: a slow upload never fails a year
+ *     whose table was read and checked. An upload that misses its bound is
+ *     abandoned, the manifest is not written, and the receipt says the copy
+ *     was not kept.
  *   - A later read uses the kept copy only when its SHA-256 matches the
  *     manifest and NHTSA's live file still has the recorded size, ETag and
  *     date. Anything else is refused and the file is downloaded again.
@@ -49,16 +54,25 @@ export type FarsFileTiming = {
   downloadLimitMs: number;
   /** How long the live-file check for a kept copy may take. */
   sourceCheckMs: number;
+  /**
+   * How long keeping a copy may take after a good download, counted from the
+   * end of the download, not against `deadlineMs`. Past it the copy is
+   * abandoned and its manifest is never written.
+   */
+  keepLimitMs: number;
 };
 
 /**
  * 40 s leaves the hosted ingest route (`maxDuration = 60`) about 20 s for
- * parsing and writing crashes. A kept copy reads in about 1 s.
+ * parsing and writing crashes. A kept copy reads in about 1 s. Keeping a
+ * copy (about 1.9 MB a year, uploaded in parallel) may add at most 5 s, so a
+ * download that lands at the deadline still leaves the route about 15 s.
  */
 export const FARS_FILE_TIMING: FarsFileTiming = {
   deadlineMs: 40_000,
   downloadLimitMs: 300_000,
   sourceCheckMs: 5_000,
+  keepLimitMs: 5_000,
 };
 
 const EXTRACT_FORMAT = "openplan.fars-accident-extract.v1";
@@ -83,6 +97,15 @@ const EXTRACT_FIELDS: ReadonlySet<string> = new Set([
 type FarsAnnualFileResult =
   | { ok: true; csv: string; receipt: CrashSourceFileReceipt }
   | { ok: false; receipt: CrashSourceFileReceipt };
+
+type KeptRecord = Omit<KeptManifest, "format" | "extractPath" | "extractSha256">;
+
+/**
+ * A read and, after a good download, the bounded upload of its kept copy.
+ * `keeping` resolves true only when the manifest was written within
+ * `keepLimitMs`; it never rejects.
+ */
+type FarsAnnualFileRead = { result: FarsAnnualFileResult; keeping: Promise<boolean> | null };
 
 type KeptManifest = {
   format: string;
@@ -241,11 +264,13 @@ async function readKeptCopy(
   };
 }
 
-async function keep(
-  store: KeptSourceFileStore,
-  record: Omit<KeptManifest, "format" | "extractPath" | "extractSha256">,
-  extractCsv: string,
-): Promise<void> {
+/**
+ * Keep the reduced copy, then its manifest, within `limitMs`. Resolves true
+ * only when both writes succeeded in time, false otherwise; never rejects.
+ * Past the limit the copy is abandoned: an extract upload still under way may
+ * land, but no manifest is written after the limit, so no later read trusts it.
+ */
+async function keep(store: KeptSourceFileStore, record: KeptRecord, extractCsv: string, limitMs: number): Promise<boolean> {
   const paths = keptPaths(record.sourceUrl);
   const extractBytes = new TextEncoder().encode(extractCsv);
   const manifest: KeptManifest = {
@@ -254,10 +279,26 @@ async function keep(
     extractPath: `${paths.dir}/${record.archiveSha256}.csv`,
     extractSha256: sha256Hex(extractBytes),
   };
-  // The manifest goes last, so a copy whose upload stopped part way is never
-  // named by one.
-  if (!(await store.write(manifest.extractPath, extractBytes, "text/csv"))) return;
-  await store.write(paths.manifest, new TextEncoder().encode(JSON.stringify(manifest)), "application/json");
+  let abandoned = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const limit = new Promise<boolean>((resolve) => {
+    timer = setTimeout(() => {
+      abandoned = true;
+      resolve(false);
+    }, limitMs);
+  });
+  // The manifest goes last, so a copy whose upload stopped part way, or ran
+  // past the limit, is never named by one.
+  const writes = (async () => {
+    if (!(await store.write(manifest.extractPath, extractBytes, "text/csv"))) return false;
+    if (abandoned) return false;
+    return store.write(paths.manifest, new TextEncoder().encode(JSON.stringify(manifest)), "application/json");
+  })().catch(() => false);
+  try {
+    return await Promise.race([writes, limit]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function accidentTable(archiveBytes: Uint8Array): Promise<string | null> {
@@ -272,12 +313,32 @@ async function accidentTable(archiveBytes: Uint8Array): Promise<string | null> {
   }
 }
 
+/** A failed read, with no copy to keep. */
+function failedRead(url: string, year: number, failure: string): FarsAnnualFileRead {
+  return { result: failed(url, year, failure), keeping: null };
+}
+
+/**
+ * Download, check and reduce one archive. The checked table is returned as
+ * soon as it is ready; keeping a copy starts then and runs on its own bound.
+ */
 async function downloadAndKeep(
   url: string,
   year: number,
   store: KeptSourceFileStore | undefined,
+  timing: FarsFileTiming,
+): Promise<FarsAnnualFileRead> {
+  const read = await download(url, year, timing.downloadLimitMs);
+  if (!read.result.ok || !store || !read.kept) return { result: read.result, keeping: null };
+  return { result: read.result, keeping: keep(store, read.kept, read.result.csv, timing.keepLimitMs) };
+}
+
+async function download(
+  url: string,
+  year: number,
   limitMs: number,
-): Promise<FarsAnnualFileResult> {
+): Promise<{ result: FarsAnnualFileResult; kept: KeptRecord | null }> {
+  const fail = (failure: string) => ({ result: failed(url, year, failure), kept: null });
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), limitMs);
   try {
@@ -285,62 +346,58 @@ async function downloadAndKeep(
     try {
       response = await fetch(url, { cache: "no-store", signal: controller.signal });
     } catch {
-      return failed(url, year, "NHTSA could not be reached");
+      return fail("NHTSA could not be reached");
     }
-    if (!response.ok) return failed(url, year, `NHTSA answered HTTP ${response.status}`);
+    if (!response.ok) return fail(`NHTSA answered HTTP ${response.status}`);
 
     const declaredHeader = response.headers.get("content-length");
     const declared = declaredHeader === null ? Number.NaN : Number(declaredHeader);
-    if (Number.isFinite(declared) && declared > MAX_ARCHIVE_BYTES) return failed(url, year, "the archive is larger than OpenPlan reads");
+    if (Number.isFinite(declared) && declared > MAX_ARCHIVE_BYTES) return fail("the archive is larger than OpenPlan reads");
 
     let bytes: Uint8Array;
     try {
       bytes = new Uint8Array(await response.arrayBuffer());
     } catch {
-      return failed(url, year, "the download stopped before the archive was complete");
+      return fail("the download stopped before the archive was complete");
     }
-    if (bytes.byteLength > MAX_ARCHIVE_BYTES) return failed(url, year, "the archive is larger than OpenPlan reads");
+    if (bytes.byteLength > MAX_ARCHIVE_BYTES) return fail("the archive is larger than OpenPlan reads");
     if (Number.isFinite(declared) && bytes.byteLength !== declared) {
-      return failed(url, year, `received ${bytes.byteLength} of ${declared} bytes`);
+      return fail(`received ${bytes.byteLength} of ${declared} bytes`);
     }
 
     const csv = await accidentTable(bytes);
-    if (csv === null) return failed(url, year, "the archive has no readable accident table");
+    if (csv === null) return fail("the archive has no readable accident table");
     const extract = reduceFarsAccidentTable(csv, year);
-    if ("refused" in extract) return failed(url, year, extract.refused);
+    if ("refused" in extract) return fail(extract.refused);
 
     const archiveSha256 = sha256Hex(bytes);
     const readAt = new Date().toISOString();
-    if (store) {
-      await keep(
-        store,
-        {
-          sourceUrl: url,
-          year,
-          archiveSha256,
-          archiveBytes: bytes.byteLength,
-          etag: response.headers.get("etag"),
-          lastModified: response.headers.get("last-modified"),
-          readAt,
-        },
-        extract.csv,
-      ).catch(() => undefined);
-    }
     return {
-      ok: true,
-      csv: extract.csv,
-      receipt: {
-        year,
+      result: {
+        ok: true,
+        csv: extract.csv,
+        receipt: {
+          year,
+          sourceUrl: url,
+          status: "read",
+          sha256: archiveSha256,
+          bytes: bytes.byteLength,
+          readAt,
+          retrieval: "source_download",
+        },
+      },
+      kept: {
         sourceUrl: url,
-        status: "read",
-        sha256: archiveSha256,
-        bytes: bytes.byteLength,
+        year,
+        archiveSha256,
+        archiveBytes: bytes.byteLength,
+        etag: response.headers.get("etag"),
+        lastModified: response.headers.get("last-modified"),
         readAt,
-        retrieval: "source_download",
       },
     };
   } catch {
-    return failed(url, year, "the archive could not be read");
+    return fail("the archive could not be read");
   } finally {
     clearTimeout(timer);
   }
@@ -351,14 +408,14 @@ async function downloadAndKeep(
  * same file at the same time share one download, and an acquisition that
  * stopped waiting leaves its download here for the next one.
  */
-const downloadsUnderWay = new Map<string, Promise<FarsAnnualFileResult>>();
+const downloadsUnderWay = new Map<string, Promise<FarsAnnualFileRead>>();
 
-function downloadOnce(url: string, year: number, store: KeptSourceFileStore | undefined, limitMs: number) {
+function downloadOnce(url: string, year: number, store: KeptSourceFileStore | undefined, timing: FarsFileTiming) {
   const existing = downloadsUnderWay.get(url);
   if (existing) return existing;
-  const download = downloadAndKeep(url, year, store, limitMs).finally(() => downloadsUnderWay.delete(url));
-  downloadsUnderWay.set(url, download);
-  return download;
+  const started = downloadAndKeep(url, year, store, timing).finally(() => downloadsUnderWay.delete(url));
+  downloadsUnderWay.set(url, started);
+  return started;
 }
 
 async function readKeptOrDownload(
@@ -366,12 +423,12 @@ async function readKeptOrDownload(
   year: number,
   store: KeptSourceFileStore | undefined,
   timing: FarsFileTiming,
-): Promise<FarsAnnualFileResult> {
+): Promise<FarsAnnualFileRead> {
   if (store) {
     const kept = await readKeptCopy(url, year, store, timing.sourceCheckMs).catch(() => null);
-    if (kept) return kept;
+    if (kept) return { result: kept, keeping: null };
   }
-  return downloadOnce(url, year, store, timing.downloadLimitMs);
+  return downloadOnce(url, year, store, timing);
 }
 
 /**
@@ -391,19 +448,25 @@ export async function readFarsAnnualFile(input: {
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   let onAbort: (() => void) | undefined;
-  const stopWaiting = new Promise<FarsAnnualFileResult>((resolve) => {
+  const stopWaiting = new Promise<FarsAnnualFileRead>((resolve) => {
     timer = setTimeout(
-      () => resolve(failed(url, year, `NHTSA did not deliver the file within ${Math.round(timing.deadlineMs / 1000)} s`)),
+      () => resolve(failedRead(url, year, `NHTSA did not deliver the file within ${Math.round(timing.deadlineMs / 1000)} s`)),
       timing.deadlineMs,
     );
-    onAbort = () => resolve(failed(url, year, "the request was stopped"));
+    onAbort = () => resolve(failedRead(url, year, "the request was stopped"));
     input.signal?.addEventListener("abort", onAbort, { once: true });
   });
 
+  let read: FarsAnnualFileRead;
   try {
-    return await Promise.race([readKeptOrDownload(url, year, input.keptFiles, timing), stopWaiting]);
+    read = await Promise.race([readKeptOrDownload(url, year, input.keptFiles, timing), stopWaiting]);
   } finally {
     clearTimeout(timer);
     if (onAbort) input.signal?.removeEventListener("abort", onAbort);
   }
+  if (!read.keeping || !read.result.ok) return read.result;
+  // The table is read and checked. The copy's upload is bounded by
+  // `keepLimitMs` on its own, so waiting here never fails the year.
+  const copyKept = await read.keeping;
+  return { ...read.result, receipt: { ...read.result.receipt, copyKept } };
 }

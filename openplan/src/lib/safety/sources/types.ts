@@ -259,6 +259,12 @@ export type CrashSourceFileReceipt = {
    * used as it was first read.
    */
   sourceCheckedAt?: string | null;
+  /**
+   * After a download, whether a reduced copy was kept for later reads. False
+   * when Storage refused it or the upload ran past its own time limit; the
+   * read itself still counts. Absent when no kept-file store was offered.
+   */
+  copyKept?: boolean;
   /** Why the file was not read. Present only when `status` is "failed". */
   failure?: string;
 };

@@ -34,7 +34,7 @@ const BBOX = { minLon: -119.9, minLat: 39.1, maxLon: -119.1, maxLat: 39.9 };
 const PUERTO_RICO_BBOX = { minLon: -67.3, minLat: 17.9, maxLon: -65.4, maxLat: 18.52 };
 const YEARS = [2024, 2023, 2022];
 const CRASHES_PER_YEAR = 5;
-const QUICK: FarsFileTiming = { deadlineMs: 5_000, downloadLimitMs: 10_000, sourceCheckMs: 1_000 };
+const QUICK: FarsFileTiming = { deadlineMs: 5_000, downloadLimitMs: 10_000, sourceCheckMs: 1_000, keepLimitMs: 1_000 };
 
 /**
  * A National archive for `year`. `rowYear` lets a test publish a table for
@@ -279,7 +279,7 @@ describe("a year that misses the deadline is failed, never zero", () => {
     served.set(farsAnnualArchiveUrl(2023), { delayMs: 600, bytes: late });
     const nhtsa = stubNhtsa(served);
     const { objects, store } = memoryStore();
-    const timing: FarsFileTiming = { deadlineMs: 200, downloadLimitMs: 5_000, sourceCheckMs: 1_000 };
+    const timing: FarsFileTiming = { deadlineMs: 200, downloadLimitMs: 5_000, sourceCheckMs: 1_000, keepLimitMs: 1_000 };
 
     const result = await fetchFarsCrashes({ bbox: BBOX, years: YEARS, keptFiles: store }, timing);
 
@@ -302,13 +302,77 @@ describe("a year that misses the deadline is failed, never zero", () => {
 
   it("fails every year, and says why, when no file arrives in time", async () => {
     stubNhtsa(new Map(YEARS.map((year) => [farsAnnualArchiveUrl(year), "hang" as const])));
-    const timing: FarsFileTiming = { deadlineMs: 100, downloadLimitMs: 300, sourceCheckMs: 100 };
+    const timing: FarsFileTiming = { deadlineMs: 100, downloadLimitMs: 300, sourceCheckMs: 100, keepLimitMs: 100 };
 
     await expect(fetchFarsCrashes({ bbox: BBOX, years: YEARS }, timing)).rejects.toThrow(
       /no usable response for any published requested year \(2024: NHTSA did not deliver the file within 0 s; 2023: .*; 2022: .*\)/
     );
     // Let the abandoned downloads reach their limit before the next test.
     await new Promise((resolve) => setTimeout(resolve, 400));
+  });
+});
+
+describe("keeping a copy is optional and never fails a checked year", () => {
+  /** A kept-file store whose extract and manifest uploads each take a set time. */
+  function slowStore(extractMs: number, manifestMs: number) {
+    const objects = new Map<string, Uint8Array>();
+    const store: KeptSourceFileStore = {
+      read: async (path) => objects.get(path)?.slice() ?? null,
+      write: async (path, bytes) => {
+        await new Promise((resolve) => setTimeout(resolve, path.endsWith("/manifest.json") ? manifestMs : extractMs));
+        objects.set(path, bytes.slice());
+        return true;
+      },
+    };
+    return { objects, store };
+  }
+  const hasManifest = (objects: Map<string, Uint8Array>) => [...objects.keys()].some((path) => path.endsWith("/manifest.json"));
+
+  it("returns the checked table when the download lands near the deadline and the uploads run past it", async () => {
+    const url = "https://static.nhtsa.gov/test/keep-past-deadline/FARS2024NationalCSV.zip";
+    stubNhtsa(new Map<string, Served>([[url, { delayMs: 150, bytes: await nationalArchive(2024) }]]));
+    const { store } = slowStore(400, 400);
+    const timing: FarsFileTiming = { deadlineMs: 300, downloadLimitMs: 5_000, sourceCheckMs: 100, keepLimitMs: 100 };
+
+    const result = await readFarsAnnualFile({ url, year: 2024, keptFiles: store, timing });
+
+    expect(result.ok).toBe(true);
+    expect(result.receipt).toMatchObject({ status: "read", retrieval: "source_download", copyKept: false });
+    expect(result.ok && result.csv.split("\n")).toHaveLength(CRASHES_PER_YEAR + 1);
+  });
+
+  it("writes no manifest after the upload's limit, so the next read downloads again", async () => {
+    const url = "https://static.nhtsa.gov/test/keep-abandoned/FARS2024NationalCSV.zip";
+    const nhtsa = stubNhtsa(new Map<string, Served>([[url, { bytes: await nationalArchive(2024) }]]));
+    const { objects, store } = slowStore(250, 0);
+    const timing: FarsFileTiming = { deadlineMs: 2_000, downloadLimitMs: 5_000, sourceCheckMs: 100, keepLimitMs: 100 };
+
+    const first = await readFarsAnnualFile({ url, year: 2024, keptFiles: store, timing });
+    expect(first.receipt).toMatchObject({ status: "read", copyKept: false });
+
+    // The abandoned extract upload lands later; no manifest may follow it.
+    await vi.waitFor(() => expect([...objects.keys()].some((path) => path.endsWith(".csv"))).toBe(true), { timeout: 2_000, interval: 25 });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(hasManifest(objects), "a manifest written after the limit").toBe(false);
+
+    const second = await readFarsAnnualFile({ url, year: 2024, keptFiles: store, timing });
+    expect(second.receipt).toMatchObject({ status: "read", retrieval: "source_download" });
+    expect(nhtsa.downloads.get(url)).toBe(2);
+  });
+
+  it("records a copy kept within its limit, and reads it next time", async () => {
+    const url = "https://static.nhtsa.gov/test/keep-in-time/FARS2024NationalCSV.zip";
+    const nhtsa = stubNhtsa(new Map<string, Served>([[url, { bytes: await nationalArchive(2024) }]]));
+    const { objects, store } = slowStore(20, 20);
+    const timing: FarsFileTiming = { deadlineMs: 2_000, downloadLimitMs: 5_000, sourceCheckMs: 100, keepLimitMs: 1_000 };
+
+    const first = await readFarsAnnualFile({ url, year: 2024, keptFiles: store, timing });
+    expect(first.receipt).toMatchObject({ status: "read", retrieval: "source_download", copyKept: true });
+    expect(hasManifest(objects)).toBe(true);
+
+    const second = await readFarsAnnualFile({ url, year: 2024, keptFiles: store, timing });
+    expect(second.receipt).toMatchObject({ status: "read", retrieval: "kept_copy" });
+    expect(nhtsa.downloads.get(url)).toBe(1);
   });
 });
 
