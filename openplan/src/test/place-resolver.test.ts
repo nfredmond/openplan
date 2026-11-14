@@ -80,7 +80,9 @@ describe("buildPlaceSearchUrl", () => {
       stateFips: "39",
     });
     const decoded = decodeURIComponent(url).replace(/\+/g, " ");
-    expect(decoded).toContain("UPPER(BASENAME) LIKE UPPER('Columbus%') AND STATE='39'");
+    expect(decoded).toContain(
+      "(UPPER(BASENAME) LIKE UPPER('Columbus%') OR UPPER(NAME) LIKE UPPER('Columbus%')) AND STATE='39'"
+    );
   });
 
   it("never filters a CBSA layer by state — a metro area legitimately spans states", () => {
@@ -181,6 +183,7 @@ describe("parsePlaceSearchResponse", () => {
         description: "City / town",
         stateFips: "06",
         sortKey: "davis",
+        nameKey: "davis city",
         population: null,
       },
     ]);

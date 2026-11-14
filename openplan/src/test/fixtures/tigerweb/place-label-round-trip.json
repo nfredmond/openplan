@@ -1,0 +1,284 @@
+{
+ "capturedAt": "2026-11-14",
+ "trimmed": "Field metadata removed; features unchanged. Each layer was asked for these rows by GEOID, so no place name was sent.",
+ "layers": {
+  "36": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/36/query?where=GEOID+IN+%28%273010R%27%2C%272430R%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CAIANNHFP1%2CAIANNHFP2%2CAIANNHFP3&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "2430R",
+       "NAME": "Navajo Nation Reservation",
+       "BASENAME": "Navajo Nation",
+       "AIANNHFP1": "04-48845",
+       "AIANNHFP2": "35-51580",
+       "AIANNHFP3": "49-53920"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "3010R",
+       "NAME": "Pyramid Lake Paiute Reservation",
+       "BASENAME": "Pyramid Lake Paiute",
+       "AIANNHFP1": "32-58800",
+       "AIANNHFP2": null,
+       "AIANNHFP3": null
+      }
+     }
+    ]
+   }
+  },
+  "38": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/38/query?where=GEOID+IN+%28%272430T%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CAIANNHFP1%2CAIANNHFP2%2CAIANNHFP3&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "2430T",
+       "NAME": "Navajo Nation Off-Reservation Trust Land",
+       "BASENAME": "Navajo Nation",
+       "AIANNHFP1": "04-48845",
+       "AIANNHFP2": "35-51580",
+       "AIANNHFP3": "49-53920"
+      }
+     }
+    ]
+   }
+  },
+  "52": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/52/query?where=GEOID+IN+%28%275915R%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CAIANNHFP1%2CAIANNHFP2%2CAIANNHFP3&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "5915R",
+       "NAME": "Creek/Seminole joint-use OTSA",
+       "BASENAME": "Creek/Seminole",
+       "AIANNHFP1": "40-18173",
+       "AIANNHFP2": null,
+       "AIANNHFP3": null
+      }
+     }
+    ]
+   }
+  },
+  "28": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/28/query?where=GEOID+IN+%28%273525170%27%2C%271319000%27%2C%270618100%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CSTATE&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "0618100",
+       "NAME": "Davis city",
+       "BASENAME": "Davis",
+       "STATE": "06"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "1319000",
+       "NAME": "Columbus city",
+       "BASENAME": "Columbus",
+       "STATE": "13"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "3525170",
+       "NAME": "Española city",
+       "BASENAME": "Española",
+       "STATE": "35"
+      }
+     }
+    ]
+   }
+  },
+  "30": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/30/query?where=GEOID+IN+%28%270671778%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CSTATE&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "0671778",
+       "NAME": "Sierra City CDP",
+       "BASENAME": "Sierra City",
+       "STATE": "06"
+      }
+     }
+    ]
+   }
+  },
+  "93": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/93/query?where=GEOID+IN+%28%2717980%27%2C%2718140%27%29&outFields=GEOID%2CNAME%2CBASENAME&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "17980",
+       "NAME": "Columbus, GA-AL Metro Area",
+       "BASENAME": "Columbus, GA-AL"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "18140",
+       "NAME": "Columbus, OH Metro Area",
+       "BASENAME": "Columbus, OH"
+      }
+     }
+    ]
+   }
+  },
+  "91": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/91/query?where=GEOID+IN+%28%2746020%27%29&outFields=GEOID%2CNAME%2CBASENAME&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "46020",
+       "NAME": "Truckee-Grass Valley, CA Micro Area",
+       "BASENAME": "Truckee-Grass Valley, CA"
+      }
+     }
+    ]
+   }
+  },
+  "22": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/22/query?where=GEOID+IN+%28%273912581536%27%2C%273914981620%27%2C%273902981158%27%2C%273914381592%27%2C%272501735215%27%2C%277201170534%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CSTATE%2CCOUNTY%2CFUNCSTAT%2CLSADC&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "2501735215",
+       "NAME": "Lexington town",
+       "BASENAME": "Lexington",
+       "STATE": "25",
+       "COUNTY": "017",
+       "FUNCSTAT": "A",
+       "LSADC": "43"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "3902981158",
+       "NAME": "Washington township",
+       "BASENAME": "Washington",
+       "STATE": "39",
+       "COUNTY": "029",
+       "FUNCSTAT": "A",
+       "LSADC": "44"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "3912581536",
+       "NAME": "Washington township",
+       "BASENAME": "Washington",
+       "STATE": "39",
+       "COUNTY": "125",
+       "FUNCSTAT": "A",
+       "LSADC": "44"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "3914381592",
+       "NAME": "Washington township",
+       "BASENAME": "Washington",
+       "STATE": "39",
+       "COUNTY": "143",
+       "FUNCSTAT": "A",
+       "LSADC": "44"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "3914981620",
+       "NAME": "Washington township",
+       "BASENAME": "Washington",
+       "STATE": "39",
+       "COUNTY": "149",
+       "FUNCSTAT": "A",
+       "LSADC": "44"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "7201170534",
+       "NAME": "Río Cañas barrio",
+       "BASENAME": "Río Cañas",
+       "STATE": "72",
+       "COUNTY": "011",
+       "FUNCSTAT": "N",
+       "LSADC": "20"
+      }
+     }
+    ]
+   }
+  },
+  "82": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/82/query?where=GEOID+IN+%28%2706091%27%2C%2732017%27%2C%2739029%27%2C%2739125%27%2C%2739143%27%2C%2739149%27%2C%2725017%27%2C%2772011%27%29&outFields=GEOID%2CNAME%2CSTATE&returnGeometry=false&orderByFields=GEOID&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "06091",
+       "NAME": "Sierra County",
+       "STATE": "06"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "25017",
+       "NAME": "Middlesex County",
+       "STATE": "25"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "32017",
+       "NAME": "Lincoln County",
+       "STATE": "32"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "39029",
+       "NAME": "Columbiana County",
+       "STATE": "39"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "39125",
+       "NAME": "Paulding County",
+       "STATE": "39"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "39143",
+       "NAME": "Sandusky County",
+       "STATE": "39"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "39149",
+       "NAME": "Shelby County",
+       "STATE": "39"
+      }
+     },
+     {
+      "attributes": {
+       "GEOID": "72011",
+       "NAME": "Añasco Municipio",
+       "STATE": "72"
+      }
+     }
+    ]
+   }
+  }
+ }
+}

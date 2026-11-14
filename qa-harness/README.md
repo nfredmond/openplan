@@ -79,6 +79,8 @@ node first-job-journey.js --mode rehearsal --base-url http://localhost:3450 \
   --email journey-1@openplan.test --second-email journey-2@openplan.test \
   --confirm-link-file ../../journey-confirm-1.txt --second-confirm-link-file ../../journey-confirm-2.txt \
   --out ../../journey-runs/sierra-1
+# --place-query is the full label the place search shows, matched exactly:
+#   "Lincoln County, NV", "Pyramid Lake Paiute Reservation, NV"
 # proof: same, with --mode proof --base-url <the hosted origin> --inputs <sourced inputs JSON>
 #   --budget-file <budget document> --expected-commit <40-character commit>
 # assemble three journeys into one record for the evidence checker

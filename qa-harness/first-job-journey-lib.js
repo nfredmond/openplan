@@ -536,6 +536,21 @@ function readPageForRecord({ text, html, strings }) {
   };
 }
 
+/**
+ * The index of the place search result whose label is exactly the place the
+ * run was told to choose, or -1. Case and spacing aside, nothing looser counts:
+ * a run passes the full label the search shows ("Pyramid Lake Paiute
+ * Reservation, NV"), so the record proves that name finds the place. A partial
+ * name that happens to return one result ("Pyramid Lake") does not pass.
+ */
+function choosePlaceResult(query, labels) {
+  const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const wanted = normalize(query);
+  if (!wanted) return -1;
+  const matches = labels.map((label, index) => (normalize(label) === wanted ? index : -1)).filter((index) => index >= 0);
+  return matches.length === 1 ? matches[0] : -1;
+}
+
 /** UTC timestamp in the record's dateTime shape, without milliseconds. */
 function utcNow(date = new Date()) {
   return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -558,6 +573,7 @@ module.exports = {
   buildJourney,
   checkConfirmLinkOrigin,
   checkJourneyOrigin,
+  choosePlaceResult,
   confirmationTokenHash,
   countMarkers,
   describePdf,

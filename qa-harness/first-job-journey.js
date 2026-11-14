@@ -410,13 +410,13 @@ async function main() {
       await search.type(options.placeQuery);
       const kindLabel = { county: 'County', city: 'City / town', cdp: 'Census-designated place', metro: 'Metro area', micro: 'Micropolitan area', aiannh: 'Tribal area', cousub: 'Town or township' }[options.placeKind];
       await page.waitForFunction((kind) => [...document.querySelectorAll('ul li button')].some((b) => b.innerText.includes(kind)), { timeout: 90000 }, kindLabel);
-      const choice = await page.evaluate((query, kind) => {
+      const labels = await page.evaluate((kind) => {
         const buttons = [...document.querySelectorAll('ul li button')].filter((b) => b.innerText.includes(kind));
-        const labels = buttons.map((b) => b.querySelector('span span.font-medium, span.font-medium').innerText.trim());
-        const exact = labels.findIndex((label) => label.toLowerCase() === query.toLowerCase());
-        return { labels, index: exact >= 0 ? exact : buttons.length === 1 ? 0 : -1 };
-      }, options.placeQuery, kindLabel);
-      if (choice.index < 0) throw new Error(`Place search for "${options.placeQuery}" did not give one ${kindLabel} result named exactly that. Results: ${choice.labels.join('; ')}`);
+        return buttons.map((b) => b.querySelector('span span.font-medium, span.font-medium').innerText.trim());
+      }, kindLabel);
+      // The full label only (KI-2026-11-14-230): "Pyramid Lake Paiute Reservation, NV", not "Pyramid Lake".
+      const choice = { labels, index: lib.choosePlaceResult(options.placeQuery, labels) };
+      if (choice.index < 0) throw new Error(`Place search for "${options.placeQuery}" did not give one ${kindLabel} result named exactly that. Pass the full label the search shows. Results: ${choice.labels.join('; ')}`);
       const label = choice.labels[choice.index];
       await clickText(page, 'ul li button', label);
       await sleep(3000);
