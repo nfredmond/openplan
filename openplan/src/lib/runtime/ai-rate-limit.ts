@@ -1,4 +1,5 @@
 import { anthropicKeySource } from "@/lib/integrations/anthropic-access";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 /**
@@ -225,12 +226,14 @@ type ReserveParams = {
 /**
  * PostgREST answers PGRST202 when its schema cache has no such function, and
  * Postgres answers 42883 (undefined_function). Either means this database has
- * not applied {@link AI_USAGE_RESERVATION_MIGRATION}.
+ * not applied {@link AI_USAGE_RESERVATION_MIGRATION}. An error that carries no
+ * code is read by the one shared classifier, and only when it names this
+ * function, so another object's pending migration is never taken for this one.
  */
 function reservationFunctionMissing(error: { code?: string | null; message?: string | null }): boolean {
   if (error.code === "PGRST202" || error.code === "42883") return true;
   const message = error.message ?? "";
-  return /reserve_ai_usage/.test(message) && /could not find|does not exist|schema cache/i.test(message);
+  return /reserve_ai_usage/.test(message) && looksLikePendingSchema(message);
 }
 
 /** The SQL function's answer: `{ allowed, count }`, or null for any other shape. */
