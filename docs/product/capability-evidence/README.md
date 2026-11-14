@@ -57,6 +57,11 @@ and its six PDFs through the current checker, and
 requires main's checker to accept the copy and the current one to refuse it.
 The strengthened checker accepts the first record.
 
+Later that day (lane 49) the checker began to render the map page itself
+instead of taking the map on trust, which closes nine of the ten single
+changes the review found. The tenth, a place's Census id changed with its
+label kept, stays open: no committed table maps a Census id to its name.
+
 ## What the checker refuses
 
 For the job `safety-action-plan-and-ss4a-in-three-places`, decided in the
@@ -82,9 +87,14 @@ the checker refuses a record unless:
    action plan and an SS4A application. Each PDF is a committed file whose
    SHA-256 and size match the record, has the page count the record states,
    carries no DRAFT stamp, and shows the five required items: the high-injury
-   network map (found by a rendered page image and its hash), the crash
-   summary, countermeasures, the benefit-cost analysis and the engagement
-   summary (each found by `pdftotext` text on the page the record names).
+   network map (found by a rendered page image), the crash summary,
+   countermeasures, the benefit-cost analysis and the engagement summary
+   (each found by `pdftotext` text on the page the record names). The
+   checker renders the map item's page with Poppler's `pdftoppm` at 72 dpi
+   and counts highlight-red pixels with the journey's own rule
+   (`openplan/scripts/lib/poppler-pixels.mjs`); the page needs at least 40.
+   When the item carries `pixelSha256`, the SHA-256 of the page's PPM bytes,
+   the checker recomputes it and refuses a different one.
    Each text item names its own heading from the definition (`itemHeadings`,
    such as "Appendix B. Crash summary" in the SS4A application), and that
    heading is a line of its own on the page, not words in a sentence or a
@@ -171,16 +181,19 @@ table the matcher reads as a column gap and prints no answered count
 ## What it cannot tell
 
 The checker proves that the required parts are present and bound to one
-commit. It cannot tell whether a PDF is useful to a planner, whether the map
-image shows the right network, or whether a place label names the place its
-Census id identifies (no committed table maps a Census id to its name). It
-does not render the map page again: Poppler's `pdftoppm` reproduces all six
-recorded image hashes of the first record on the workstation that recorded
-them, but its PNG bytes depend on the Poppler, FreeType and zlib versions, so
-a recomputed hash would pass on one platform only. It reads the words
-printed with the map instead, which shows the page holds the map's figure,
-not that the drawing is there. It cannot repeat a source check's comparison.
+commit. It cannot tell whether a PDF is useful to a planner, whether the red
+marks on a map page are the right place's ranked segments, or whether a
+place label names the place its Census id identifies (no committed table
+maps a Census id to its name). It counts enough highlight red on the map
+page; a page of another place's marks would pass. It does not recompute the
+PNG hash (`imageSha256`): PNG bytes differ between Poppler builds whose
+pixels are the same (Poppler 25.07 on Windows and 24.02 on Ubuntu 24.04 give
+the first record's six map pages identical PPM bytes and different PNG
+bytes). The first record predates `pixelSha256`, so its map pages are counted
+but not matched to a hash. A Poppler release that rasterizes differently
+would change the pixel hash. It cannot repeat a source check's comparison.
 For the first job it counts cross-workspace checks per journey, so one
 journey's checks repeated for each journey would pass. It does not check console errors or page-level
 horizontal scroll; the record states them for a reviewer. Reading PDF text
-needs Poppler's `pdftotext`; without it the checker refuses the record.
+and rendering the map page need Poppler's `pdftotext` and `pdftoppm`;
+without them the checker refuses the record.
