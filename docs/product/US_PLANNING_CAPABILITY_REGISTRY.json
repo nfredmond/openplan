@@ -10,7 +10,86 @@
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
     "sha256": "997125c6b7509b477012a27efc3cee596db25bc7e9437154786b1a6d3d3854b2"
   },
-  "provenJobs": [],
+  "provenJobs": [
+    {
+      "jobId": "safety-action-plan-and-ss4a-in-three-places",
+      "places": [
+        {
+          "kind": "county",
+          "geoid": "06091",
+          "stateFips": [
+            "06"
+          ]
+        },
+        {
+          "kind": "county",
+          "geoid": "32017",
+          "stateFips": [
+            "32"
+          ]
+        },
+        {
+          "kind": "aiannh",
+          "geoid": "3010R",
+          "stateFips": [
+            "32"
+          ]
+        }
+      ],
+      "commit": "ccf88a9219fa58b67842a8f1dd41dbe3b371f8e5",
+      "reviewedAt": "2026-11-14",
+      "evidence": [
+        {
+          "path": "docs/product/capability-evidence/first-proven-job.v1.json",
+          "sha256": "b8d1beac045d8d99ec3afcc55db469d15995875b4c3c5584fd5b41fb126971c8"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/california-county-safety-action-plan.pdf",
+          "sha256": "afb093311f472e094e0a1669bcdc09aaca61acf5bc216c22b9af48f36b8691ee"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/california-county-ss4a-application.pdf",
+          "sha256": "822dd8fe67252a57db1ad669cb12fc7e617573e9c7cf6b288b49ff847f83f0f8"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/nevada-county-safety-action-plan.pdf",
+          "sha256": "db69fa0fc1b97eaab8e7486ad16a9cd55d79ec90ea17a27003410856a72960ac"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/nevada-county-ss4a-application.pdf",
+          "sha256": "2443dce9243fd062779096690b676723f8bafa770c4d670af525807e1f0453e9"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/tribal-area-safety-action-plan.pdf",
+          "sha256": "7d01024a1b8254974b632e3033344b94f31755f2d42b7a2ad89f303c07873406"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/tribal-area-ss4a-application.pdf",
+          "sha256": "83f592feb9b354f2491e3f94aafbfc0b94ae795e0ef473acec14f59e34137b46"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/README.md",
+          "sha256": "132e0d0febbcaf711dcee569f81b7809fe943ce22087eed1f0e1e6915d44db9a"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/sierra-county-ca.inputs.json",
+          "sha256": "5f00887cbe5573dc23c2ee038b145bb47859381591b019c02751b84b719079b6"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/lincoln-county-nv.inputs.json",
+          "sha256": "a44db134df84e78ac4d6b0bfb3c5039caa22a054ed093384d255abd19411bf7a"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/pyramid-lake-paiute-reservation.inputs.json",
+          "sha256": "264c91b172a4db633f841c5b25090307c94d66f28c638477b3e8080db91ce0b3"
+        },
+        {
+          "path": "docs/product/capability-evidence/first-proven-job/inputs/budget-demonstration.csv",
+          "sha256": "a38dac9e7b8086dc8bc214c531d31d04278dd445b537731a32cf346fd1b5c32e"
+        }
+      ]
+    }
+  ],
   "dimensions": {
     "planner": [
       { "id": "transportation-planner", "status": "partial" },
