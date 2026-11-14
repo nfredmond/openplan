@@ -1,6 +1,7 @@
 /**
  * A FRESHLY SEEDED SS4A EXPORT PRINTS DATES AND SEVERITY COVERAGE IN PLAIN
- * WORDS (KI-2026-11-14-116, first full journey, run 9).
+ * WORDS, AND ENDS ON ITS LAST PAGE OF TEXT (KI-2026-11-14-116, first full
+ * journey, run 9; verification 18).
  *
  * Run 9 exported an SS4A application seeded from a Safety report minutes
  * earlier. Each section repeated the seed header "Retrieved:
@@ -155,6 +156,30 @@ async function pdfPages(name: string, html: string): Promise<string[]> {
       .replace(/Safe Streets and Roads for All \(SS4A\)\s*\S\s*Page \d+ of \d+/, "").trim());
 }
 
+/**
+ * A one-section packet that ends, as run 9's did, on the Safety seed sources
+ * list, here `items` one-line qualifications long. The list splits across
+ * pages line by line, so its end can land anywhere on a page.
+ */
+function packetEndingOnList(items: number): string {
+  const row: ApplicationSectionRow = {
+    id: "00000000-0000-4000-8000-000000000199", workspace_id: EVIDENCE_IDS.workspace, opportunity_id: EVIDENCE_IDS.opportunity,
+    section_key: "project-overview", title: "Project overview", guidance: null, sort_order: 0, source: "catalog", suggested_evidence: [],
+    ai_drafting_enabled: true, status: "final", final_markdown: "Project overview text.",
+    finalized_from_draft_id: null, finalized_by: null, finalized_at: null, updated_by: null,
+    created_at: "2026-11-14T00:00:00.000Z", updated_at: "2026-11-14T05:54:00.000Z",
+  };
+  return buildGrantApplicationHtml({
+    opportunity: { id: EVIDENCE_IDS.opportunity, title: "SS4A application", agency_name: null, summary: null,
+      expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+    programTitle: null, attachments: [], generatedAt: "2026-11-14T06:00:00.000Z",
+    sections: [{ section: row, provenance: { origin: "operator_authored", model: null, groundedSentenceCount: null, totalSentenceCount: null, finalizedBy: null, finalizedAt: null } }],
+    safetySeedHistory: [{ kind: "openplan.ss4a-safety-seed.v1", artifactId: EVIDENCE_IDS.artifact, reportId: EVIDENCE_IDS.report,
+      acquisitionId: EVIDENCE_IDS.ingest, snapshotHash: "0".repeat(64), caveat: SAFETY_SEED_CAVEAT,
+      sourceCaveats: Array.from({ length: items }, (_, n) => `Qualification ${n + 1}.`) }],
+  });
+}
+
 describe.runIf(PDF_TOOLS)("the SS4A export as a PDF, read back with pdftotext", () => {
   it("holds no ISO stamp and no bare coverage code on any page", async () => {
     const text = (await pdfPages("ss4a-seeded", seededPacket())).join(" ");
@@ -162,4 +187,17 @@ describe.runIf(PDF_TOOLS)("the SS4A export as a PDF, read back with pdftotext", 
     expect(text.match(COVERAGE_CODE)?.[0] ?? null).toBeNull();
     expect(text).toContain("Retrieved: Nov 14, 2026, 05:52 UTC");
   }, 120_000);
+
+  // One list item moves the end of the text about 19 px, less than the
+  // spacing that spilled, so 40 lengths spanning more than a page must land in
+  // that window. On the base commit 70 to 75 items printed a blank fourth
+  // page; with only the 80 px removed, 74 and 75 still did.
+  it("ends on the last page that holds text, at every list length across more than a page", async () => {
+    const trailingBlank: number[] = [];
+    for (let items = 60; items < 100; items += 1) {
+      const pages = await pdfPages(`ss4a-list-${items}`, packetEndingOnList(items));
+      if (pages[pages.length - 1] === "") trailingBlank.push(items);
+    }
+    expect(trailingBlank).toEqual([]);
+  }, 600_000);
 });

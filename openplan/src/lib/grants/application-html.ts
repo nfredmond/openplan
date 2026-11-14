@@ -180,6 +180,9 @@ function formatAmount(value: number | string | null | undefined): string {
   return formatMoney(numeric, { precision: "whole" });
 }
 
+// Print drops the spacing under the last text. When the text ended near a
+// page end, that empty spacing spilled onto a blank last page
+// (KI-2026-11-14-116).
 const DOCUMENT_STYLES = `
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
@@ -217,7 +220,8 @@ const DOCUMENT_STYLES = `
       .appendix-facts dd { font-size: 15px; line-height: 1.5; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
       .table-scroll { overflow-x: auto; }
-      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }`;
+      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }
+      @media print { main, main > :last-child { padding-bottom: 0; } main > :last-child :last-child { margin-bottom: 0; } }`;
 
 /**
  * The standing caveats whose evidence this document carries, in cover order.
