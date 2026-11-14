@@ -65,9 +65,16 @@ the change-map check.
   envelope's `lockHeldMs` is the difference. It does not include the commit or
   rollback itself, which needs no round trip. The limit is **2,000 ms**
   (`kitcommon.LOCK_LIMIT_MS`): one second under Supabase's 3 s default
-  statement timeout for the `anon` role and under the kit's own 3 s
-  `lock_timeout`. A dry run whose lock time is over it reads
-  `dry-run-too-slow` and exits 1.
+  statement timeout for the `anon` role. A dry run whose lock time is over it
+  reads `dry-run-too-slow` and exits 1.
+- **Lock timeout (review 31, N3).** The dry run and install set
+  `lock_timeout = '1s'`: no single lock wait lasts more than one second. The
+  bundle's server time is about 0.3 s; while the install waits for a lock it
+  keeps every lock it already holds, the Safety tables first, and live `anon`
+  requests queued behind them time out at 3 s, so a wait must end well before
+  that. A lock timeout fails safely: the transaction rolls back with hosted at
+  448, and the window needs a new bundle. `read`, `catalog`, `rtt` and
+  `probe` keep `lock_timeout = '3s'`.
 - **Measure before acting (lane 28).** `rtt` sends 20 `SELECT 1` statements
   one at a time in a read-only transaction and records psql's time for each;
   the median is the round trip. A hosted `dryrun` or `install` needs `--rtt`

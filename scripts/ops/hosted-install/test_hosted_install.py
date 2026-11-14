@@ -305,12 +305,17 @@ class BuilderTest(unittest.TestCase):
         control = [s.words for s in sqllex.split_statements(text) if sqllex.refusal(s) == "transaction control"]
         self.assertEqual(control, [("ROLLBACK",)])
         first_lines = text.split("\n")[3:7]
-        self.assertEqual("\n".join(first_lines) + "\n", kc.TIMEOUTS)
+        self.assertEqual("\n".join(first_lines) + "\n", kc.INSTALL_TIMEOUTS)
         self.assertLess(text.index(kc.DRYRUN_SENTINEL), text.rindex("ROLLBACK;"))
 
     def test_the_review_timeouts_are_exact(self):
         # Review 15, B5. The builder test above checks that every file opens with
         # these lines; this one pins the values themselves.
+        # Review 31, N3: the dry run and install wait at most 1 s for a lock.
+        self.assertEqual(kc.INSTALL_TIMEOUTS, "SET LOCAL lock_timeout = '1s';\n"
+                                              "SET LOCAL statement_timeout = '60s';\n"
+                                              "SET LOCAL idle_in_transaction_session_timeout = '30s';\n"
+                                              "SET LOCAL transaction_timeout = '120s';\n")
         self.assertEqual(kc.TIMEOUTS, "SET LOCAL lock_timeout = '3s';\n"
                                       "SET LOCAL statement_timeout = '60s';\n"
                                       "SET LOCAL idle_in_transaction_session_timeout = '30s';\n"
@@ -1103,7 +1108,10 @@ class LiveInstallTest(LiveBase):
             blocker.wait()
         self.assertEqual(code, 3)
         self.assertIn("lock timeout", stderr)
-        self.assertLess(elapsed, 9000)
+        # Review 31, N3: the wait ends at 1 s. The whole run, connection
+        # included, stays under 2.5 s; a 3 s lock timeout cannot.
+        self.assertGreaterEqual(elapsed, 1000)
+        self.assertLess(elapsed, 2500)
         self.assertEqual(self.history(), "1 20990101000000")
 
     def test_the_lock_clock_starts_at_the_first_exclusive_lock(self):
