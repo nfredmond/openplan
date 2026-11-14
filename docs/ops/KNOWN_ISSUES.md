@@ -93,6 +93,15 @@ records the exact path and pending correction design. The creation-provider
 assumption also remains open. The October 12 findings above remain the historical
 baseline; KI-025 and M1 are not closed.
 
+## Hosted capture key and install kit, November 14, 2026
+
+Found when the October workstation was found wiped (investigation 13 and
+review 15, November 14). Paths are from the repository root.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-14-160 | High, custody | The private key for the daily offsite capture, the private credentials folder and the migration installer kit lived only on the Linux workstation wiped in October 2026. Every retained capture is encrypted to `A4221F59406B5F299D2DD3FE7213CBBB858160CA` and cannot be decrypted, so hosted has no usable offsite capture, and seven additive migrations (history 448 to 455) cannot be installed under the capture rule. `verify_capture.py` also crashed on the backup image's Python 3.11.2 (no tar filter). | The kit is rebuilt in the repository with tests: key generation, capture verification in the backup worker's own image, network-free restore with exact counts, key hashes, Storage reconciliation and access probes, and the one-transaction install with a rollback-only dry run pinned by catalog values, history and digest. Rehearsed end to end on a local stack with a throwaway key, November 14. Still open: the key rotation, one proven hosted capture and the migration window, all hosted steps for the lead; the migration packets (review 15, B4) belong to the migration lane. | `scripts/ops/hosted-install/README.md`; `scripts/ops/hosted-install/rehearsal/README.md`; `scripts/ops/hosted-install/test_hosted_install.py`; `workers/hosted-backup/test_backup.py` (`VerifyExtractTest`) |
+| KI-2026-11-14-161 | High, custody | With no off-machine escrow (lead decision, November 14), both copies of the new capture key sit on one workstation, on two internal disks that are not encrypted, with the passphrase beside the key. Loss, theft, a wipe or a machine move that forgets the folder makes every capture unreadable again, while the daily job keeps reporting success. | Open by decision. The deployment record, hosted recovery record and operations page now say so plainly. A weekly decrypt check by the lead and a machine-move checklist line find a lost key within a week. A copy outside this machine made by the account owner would close it. | `workers/hosted-backup/DEPLOY.md` (Limits); `openplan/docs/ops/HOSTED_RECOVERY.md`; `openplan/docs/ops/HOSTED_OPERATIONS.md` |
 ## Benefit-cost analysis reads Safety, November 14, 2026
 
 Found in the November 3 rehearsal (defects D8 and D9). Paths are under `openplan/`.

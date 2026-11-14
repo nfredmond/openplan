@@ -12,11 +12,14 @@ import json
 import pathlib
 import shutil
 import subprocess
+import tarfile
 import tempfile
 import unittest
 import urllib.parse
+from unittest import mock
 
 import backup
+import verify_capture
 
 # Synthetic keys only. LEGACY_JWT decodes to {"alg":"HS256"} / {"role":"service_role"}
 # with a made-up signature; SECRET_KEY only borrows the documented prefix.
@@ -229,6 +232,91 @@ class UploadTest(unittest.TestCase):
         with self.assertRaisesRegex(backup.BackupError, "does not match"):
             self.run_upload(s3)
         self.assertNotIn("captures/20261012T101700Z/summary.json", s3.objects)
+
+
+class OldPythonTarFile(tarfile.TarFile):
+    """Debian bookworm's Python 3.11.2: extractall has no filter argument."""
+
+    def extractall(self, path=".", members=None, *, numeric_owner=False, **kwargs):
+        if "filter" in kwargs:
+            raise TypeError("extractall() got an unexpected keyword argument 'filter'")
+        return super().extractall(path, members, numeric_owner=numeric_owner)
+
+
+class VerifyExtractTest(unittest.TestCase):
+    """Review 15, B1: the verifier must run on the backup image's Python and refuse unsafe members."""
+
+    def make_tar(self, root, add):
+        path = root / "capture.tar"
+        with tarfile.open(path, "w") as tar:
+            add(tar, root)
+        return path
+
+    def add_capture(self, tar, root):
+        src = root / "src" / "20261115T120000Z"
+        (src / "storage" / "maps").mkdir(parents=True)
+        (src / "manifest.json").write_text("{}")
+        (src / "storage" / "maps" / "a.zip").write_bytes(b"zip")
+        tar.add(src, arcname="20261115T120000Z")
+
+    def test_extracts_a_capture_on_a_python_without_the_tar_filter(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = pathlib.Path(raw)
+            path = self.make_tar(root, self.add_capture)
+            out = root / "out"
+            out.mkdir()
+            # Hide data_filter if this Python has it; bookworm's 3.11.2 never did.
+            saved = getattr(tarfile, "data_filter", None)
+            if saved is not None:
+                del tarfile.data_filter
+            try:
+                with mock.patch.object(verify_capture.tarfile, "open", OldPythonTarFile.open):
+                    with verify_capture.tarfile.open(path) as tar:
+                        verify_capture.extract_capture(tar, out, "20261115T120000Z")
+            finally:
+                if saved is not None:
+                    tarfile.data_filter = saved
+            self.assertEqual((out / "20261115T120000Z" / "storage" / "maps" / "a.zip").read_bytes(), b"zip")
+
+    def test_refuses_a_symlink_member(self):
+        def add(tar, root):
+            self.add_capture(tar, root)
+            link = tarfile.TarInfo("20261115T120000Z/storage/maps/link")
+            link.type = tarfile.SYMTYPE
+            link.linkname = "/etc/passwd"
+            tar.addfile(link)
+        self.assert_refused(add)
+
+    def test_refuses_paths_outside_the_capture_folder(self):
+        for name in ("../escape.txt", "/abs.txt", "20261115T120000Z/../../x", "other/x.txt", "20261115T120000Z/./x"):
+            def add(tar, root, name=name):
+                self.add_capture(tar, root)
+                info = tarfile.TarInfo(name)
+                info.size = 1
+                tar.addfile(info, io.BytesIO(b"x"))
+            with self.subTest(name=name):
+                self.assert_refused(add)
+
+    def test_refuses_a_hard_link_and_a_device(self):
+        for kind in (tarfile.LNKTYPE, tarfile.CHRTYPE, tarfile.FIFOTYPE):
+            def add(tar, root, kind=kind):
+                self.add_capture(tar, root)
+                info = tarfile.TarInfo("20261115T120000Z/storage/maps/special")
+                info.type = kind
+                info.linkname = "20261115T120000Z/manifest.json"
+                tar.addfile(info)
+            with self.subTest(kind=kind):
+                self.assert_refused(add)
+
+    def assert_refused(self, add):
+        with tempfile.TemporaryDirectory() as raw:
+            root = pathlib.Path(raw)
+            path = self.make_tar(root, add)
+            out = root / "out"
+            out.mkdir()
+            with tarfile.open(path) as tar, self.assertRaisesRegex(SystemExit, "refusing capture member"):
+                verify_capture.extract_capture(tar, out, "20261115T120000Z")
+            self.assertEqual(list(out.iterdir()), [])
 
 
 if __name__ == "__main__":
