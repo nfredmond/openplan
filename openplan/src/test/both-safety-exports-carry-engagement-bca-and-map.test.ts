@@ -49,6 +49,7 @@ import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence"
 import { describeCountermeasureSource, getSafetyCountermeasure } from "@/lib/safety/countermeasures";
 import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
 import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
+import { findPdfPhrase, letterSpacedRuns } from "../../scripts/lib/pdf-text-match.mjs";
 import { makeSourceSnapshot, savedSource, sourceActor, sourceDate, sourceHash, sourceScope } from "./fixtures/engagement/synthesis-source";
 import {
   BCA_VERSION_ROW,
@@ -481,7 +482,7 @@ async function pdf(name: string, html: string) {
   const pages = Number(/Pages:\s+(\d+)/.exec(execFileSync(tool("pdfinfo"), [file]).toString())![1]);
   const pageText = Array.from({ length: pages }, (_, index) =>
     execFileSync(tool("pdftotext"), ["-f", String(index + 1), "-l", String(index + 1), file, "-"]).toString());
-  return { file, pages, pageText, all: pageText.join("\n") };
+  return { file, pages, pageText };
 }
 
 /** Pixels of the network's highlight red on one page, from a binary PPM. */
@@ -579,13 +580,16 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
   it("the safety action plan report carries engagement, BCA and a drawn map", async () => {
     const { draft, support } = await reportSection(true);
     const doc = await pdf("safety-action-plan-report", buildReportHtml(reportData(draft, support)));
-    // Labels print in capitals by CSS, so compare without case.
-    const flat = doc.all.replace(/\s+/g, " ").toLowerCase();
+    // The shared matcher (scripts/lib/pdf-text-match.mjs) is the one the proof
+    // checker and the journey use: case, wrapped lines and letter spacing aside,
+    // each phrase must be whole on one page.
     const ratio = calculateBcaDocument(BCA_VERSION_ROW().document_json as BcaDocument).benefitCostRatio!.toFixed(3);
     for (const phrase of ["Engagement summary", "Comments approved", "sorts 3 comment(s) and survey answer(s)", "Benefit-cost summary", ratio,
       "Synthetic training assumptions", "All 2 ranked segments in the table are drawn in red", "Engagement and collaboration: Partly covered"]) {
-      expect(flat, phrase).toContain(phrase.toLowerCase());
+      expect(findPdfPhrase(doc.pageText, phrase), phrase).not.toEqual([]);
     }
+    // KI-2026-11-14-117: labels read back as words, not as single letters.
+    expect(doc.pageText.flatMap(letterSpacedRuns)).toEqual([]);
     const mapPage = pageWith(doc.pageText, /High-injury network map\. All 2 ranked/);
     expect(mapPage).toBeGreaterThan(0);
     // The caption can land on the page after its figure; one of the two holds the drawing.
@@ -602,11 +606,11 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
       evidenceAppendices: buildSs4aEvidenceAppendices(records, new Set(SS4A_APPENDIX_KEYS)),
     });
     const doc = await pdf("ss4a-application", html);
-    // Labels print in capitals by CSS, so compare without case.
-    const flat = doc.all.replace(/\s+/g, " ").toLowerCase();
     for (const phrase of ["Appendix E. Engagement summary", "sorts 3 comment(s) and survey answer(s)", "Comments approved", "Appendix D. Benefit-cost summary", "Synthetic training assumptions"]) {
-      expect(flat, phrase).toContain(phrase.toLowerCase());
+      expect(findPdfPhrase(doc.pageText, phrase), phrase).not.toEqual([]);
     }
+    // KI-2026-11-14-117: labels read back as words, not as single letters.
+    expect(doc.pageText.flatMap(letterSpacedRuns)).toEqual([]);
     const mapPage = pageWith(doc.pageText, /Appendix A\. High-injury network map/);
     expect(mapPage).toBeGreaterThan(0);
     expect(Math.max(redPixels(doc.file, mapPage), redPixels(doc.file, Math.min(mapPage + 1, doc.pages)))).toBeGreaterThan(50);
@@ -665,12 +669,13 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
     const tablePage = pageWith(doc.pageText, /Appendix C\. Countermeasures/);
     expect(tablePage).toBeGreaterThan(0);
     // Poppler drops glyphs past the page edge, so a clipped column loses
-    // characters. It also drops a hyphen where it joins a wrapped line, so
-    // hyphens are ignored on both sides.
-    const joined = doc.pageText.slice(tablePage - 1).join("").replace(/[\s-]+/g, "");
+    // characters. Each URL must also read back whole on one page: a table row
+    // that split across a page break (KI-2026-11-14-117, seen on Linux) left
+    // the end of a URL on the next page. The matcher allows the line breaks of
+    // the narrow column and a hyphen Poppler drops at a line end.
     for (const id of LONG_URL_COUNTERMEASURES) {
       const url = getSafetyCountermeasure(id)!.sourceUrl;
-      expect(joined, url).toContain(url.replace(/-/g, ""));
+      expect(findPdfPhrase(doc.pageText.slice(tablePage - 1), url), url).not.toEqual([]);
     }
     expect(wordsOffPage(doc.file)).toEqual([]);
     // KI-2026-11-14-114: a fixed-width column split "Delineatio n". Words in
@@ -682,8 +687,7 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
     expect(words.filter((word) => !printed.has(word))).toEqual([]);
     // The same across the evidence appendices, the index included: a printed
     // word is a word of the source text, or a piece of a long URL, id or hash,
-    // which may break anywhere. (Letter-spaced cover headings read back as
-    // single letters, so the check starts at the appendices.)
+    // which may break anywhere. The check starts at the appendices.
     const text = html.replace(/<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ")
       .replace(/&amp;/g, "&").replace(/&#39;/g, "'");
     const tokens = text.split(/\s+/);

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { joinLetterSpacing, pdfTextHasPhrase } from "../lib/pdf-text-match.mjs";
 
 /**
  * The one origin whose pages count as proof of a hosted job. A local,
@@ -201,7 +202,8 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
     const pages = readPdfPages(source);
     if (pages.length !== pdf.pages) refuse(`${pdfLabel} has ${pages.length} pages, record says ${pdf.pages}`);
     pages.forEach((text, index) => {
-      if (/\bDRAFT\b/.test(text)) refuse(`${pdfLabel} page ${index + 1} carries a DRAFT stamp`);
+      // A stamp set with letter spacing can read back as "D R A F T".
+      if (/\bDRAFT\b/.test(joinLetterSpacing(text))) refuse(`${pdfLabel} page ${index + 1} carries a DRAFT stamp`);
       const found = secretIn(text);
       if (found) refuse(`${pdfLabel} page ${index + 1} contains ${found}`);
     });
@@ -214,7 +216,10 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
       if (entry.page > pages.length) refuse(`${pdfLabel} ${item} names page ${entry.page} of ${pages.length}`);
       if (method === "pdftotext") {
         if (!entry.text || entry.imageSha256) refuse(`${pdfLabel} ${item} needs the text pdftotext found, and no image hash`);
-        if (!squash(pages[entry.page - 1]).includes(squash(entry.text))) {
+        // The shared matcher the export test and the journey use: case,
+        // wrapped lines and letter spacing aside, the text must be whole on
+        // that page (scripts/lib/pdf-text-match.mjs).
+        if (!pdfTextHasPhrase(pages[entry.page - 1], entry.text)) {
           refuse(`${pdfLabel} ${item} text is not on page ${entry.page}`);
         }
       } else if (!entry.imageSha256 || entry.text) {
@@ -367,10 +372,6 @@ function checkSchema(value, schema, path, root) {
 
 function refuse(reason) {
   throw new Error(`proven job record refused: ${reason}`);
-}
-
-function squash(text) {
-  return text.replace(/\s+/g, " ").trim();
 }
 
 function parsedSchema(bytes) {

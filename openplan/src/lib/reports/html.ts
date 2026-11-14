@@ -2101,15 +2101,25 @@ function engagementSummaryMarkup(data: EngagementMarkupContext): string {
     </div>`;
 }
 
-/** The one report stylesheet, shared by the project and campaign builders so
- * both packet families stay visually coherent. */
+/**
+ * The one report stylesheet, shared by the project and campaign builders so
+ * both packet families stay visually coherent.
+ *
+ * Letter spacing stays under 0.1em: Poppler and most PDF readers start a new
+ * word at a gap wider than a tenth of the font size, so wider tracking makes a
+ * label read back as single letters and a search for it fails
+ * (KI-2026-11-14-117). Table rows do not split across pages, so a long URL in
+ * a cell prints, and copies, whole on one page. Cells are top-aligned and
+ * padded: a one-line cell centered beside a two-line cell was read between
+ * that cell's lines, and unpadded cells ran into each other.
+ */
 const REPORT_DOCUMENT_STYLES = `
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
       body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, "Times New Roman", serif; }
       main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
       .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); box-shadow: 0 30px 70px rgba(19, 34, 43, 0.08); }
-      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }
+      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #965c2a; }
       h1, h2, h3 { margin: 0; }
       h1 { margin-top: 12px; font-size: 42px; line-height: 1.05; }
       .hero p { max-width: 760px; font-size: 17px; line-height: 1.6; }
@@ -2118,13 +2128,13 @@ const REPORT_DOCUMENT_STYLES = `
       .two-col { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
       .facts, .metrics-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
       .facts div, .metrics-grid div, .transparency-item, .metric-card { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
-      dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }
+      dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       dd, strong { margin: 6px 0 0; font-size: 18px; }
       .record-list, .timeline { margin: 0; padding-left: 20px; display: grid; gap: 12px; }
       .record-list li, .timeline li { padding-left: 4px; }
       .run-card { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 22px; padding: 18px; background: #fffdf8; }
       .run-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
-      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
+      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
       .pill-pass { background: #d8f3df; color: #15653a; }
       .pill-hold { background: #fde2d2; color: #9a3412; }
       .warning-box { border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
@@ -2149,6 +2159,8 @@ const REPORT_DOCUMENT_STYLES = `
       .geo-figure figcaption p { margin: 6px 0 0; }
       .safety-network-map { margin: 14px 0; break-inside: avoid; }
       .safety-network-map figcaption { margin-top: 8px; font-size: 13px; line-height: 1.5; color: #3b4952; }
+      tr { break-inside: avoid; }
+      th, td { text-align: left; vertical-align: top; padding: 6px 8px; }
       table.wrap-cells { width: 100%; table-layout: fixed; }
       table.wrap-cells th, table.wrap-cells td { overflow-wrap: anywhere; }
       .list-status { display: block; margin: 2px 0; font-size: 14px; color: #3b4952; }
