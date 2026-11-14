@@ -117,7 +117,10 @@ Commands run from the repository root unless a working directory is shown:
 | `sha256sum -c NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256` in `docs/modeling/` | One original frozen artifact checked, one pass. |
 | `git diff --check` | Pass. |
 
-The [retained mutation record](../reviews/2026-10-23-s3-acceptance-evaluator/synthetic-mutations.json)
+The mutation record is not kept in git. Rerunning
+`scripts/modeling/prove_acceptance_evaluator.py` regenerates it; the 2026-10-23
+output had SHA-256 `68ded006f40cf2d53b600e572b1c5eb4e1e4aa72113c8fd367a0ae1a3cb1bc27`,
+and its summary is in the body of pull request 374. The record
 names every changed condition and the exact failing tests. It binds the evaluator
 source digest, with no digest of the draft. The harness rejects import errors,
 syntax errors, empty suites, skips and test errors as proof. All final kills
