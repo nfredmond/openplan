@@ -250,6 +250,25 @@ export function reviewCountSentences(snapshot: EngagementReviewSnapshot): string
   ];
 }
 
+const placeLabel = (value: unknown) => typeof value === "string" && value.trim() ? value.trim() : null;
+
+/**
+ * The study area line. A campaign with no area of its own opens its public map
+ * on its project's place, or else the workspace's home area. The retained
+ * definition records both as they stood when the campaign's settings were
+ * saved, so the line names that place instead of saying none was supplied.
+ */
+export function campaignStudyAreaText(context: RecordData | undefined): string {
+  if (!context) return "Study area: unavailable in this saved snapshot.";
+  const own = placeLabel(context.place_label);
+  if (own) return `Study area: ${own}.`;
+  const project = placeLabel((context.project_frame as RecordData | null | undefined)?.label);
+  if (project) return `Study area: ${project} (the project's place, as recorded with the campaign's saved settings). The campaign has no study area of its own.`;
+  const home = placeLabel((context.workspace_frame as RecordData | null | undefined)?.label);
+  if (home) return `Study area: ${home} (the workspace's home area, as recorded with the campaign's saved settings). Neither the campaign nor its project had a study area of its own.`;
+  return "Study area: Not supplied.";
+}
+
 export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, checksum: string, photos: Map<string,Buffer> = new Map()): string {
   const questionSummary = campaignQuestionSummary(snapshot);
   const missing = snapshot.items.filter((row) => !row.configuration_version_id).length;
@@ -261,7 +280,7 @@ export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, chec
   <p>Campaign snapshot ${escape(snapshot.capturedAt)}. This report describes retained consultation records. Publication and a reviewed staff response are separate facts. Participation is not a representative survey of the population.</p>
   <p class="meta">Campaign ${escape(snapshot.campaign.id)}<br>Snapshot SHA-256 ${checksum}<br>Filters ${escape(JSON.stringify(snapshot.filters))}</p>
   <nav><a href="#summary">Record summary</a> · <a href="#questions">Question summary</a> · <a href="#contributions">Contribution register</a> · <a href="#answers">Survey answers</a> · <a href="#responses">Staff responses</a> · <a href="#definitions">Historical definitions</a>${snapshot.scope === "internal" ? ' · <a href="#decision-history">Decision history</a>' : ""}</nav>
-  <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>Study area: ${escape(context?.place_label ?? 'Not supplied')}. Participation opens: ${escape(context?.participation_starts_at ?? 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ?? 'No scheduled end')}.</p>
+  <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>${escape(campaignStudyAreaText(context))} Participation opens: ${escape(context?.participation_starts_at ?? 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ?? 'No scheduled end')}.</p>
   <h2 id="summary">Selected records</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><h3>Review counts</h3><ul class="review-counts">${counts}</ul><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
   <h3>Contribution sources</h3><p>Counts are records, not people. Staff-authored notes are not resident submissions. Intake method does not establish identity or representative support.</p><table aria-label="Contribution sources"><thead><tr><th>Source</th><th>Records</th></tr></thead><tbody>${contributionSourceCounts(snapshot).map(([label,count])=>`<tr><td>${escape(label)}</td><td>${count}</td></tr>`).join('')}</tbody></table>
   <h2 id="questions">Question summary</h2><p>Each row uses the questions available to that session's retained configuration. Unanswered includes questions not shown by branching and answers outside the export filters; it does not establish refusal or noncompliance. Repeated counts are additional identical answers, retained as separate records.</p>
