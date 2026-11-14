@@ -159,14 +159,15 @@ Merced, five in Tulare, 11 in Broomfield and 36 in Pueblo; all require a publish
 crosswalk. Other nearby HPMS sections remain ambiguous or incompatible. No TMAS
 row passes the complete facility/direction association gate.
 
-The [coverage record](../../data/modeling/s1-station-evidence-2026-10-23/coverage.json)
-retains each association, candidate hash, refusal and recalculated interval.
-The [source evidence](../../data/modeling/s1-station-evidence-2026-10-23/source-evidence.json)
+The coverage record `coverage.json` retains each association, candidate hash,
+refusal and recalculated interval. The source evidence `source-evidence.json`
 retains all selected state/TMAS metadata and candidate HPMS excerpts, plus the
 complete receipt manifest. Full raw responses and the 64,492,253-byte normalized
 bundle remain in local content-addressed storage at the paths in that record.
 The repository excerpt is not a replacement for those raw bytes. No private
-records or account data enter either artifact.
+records or account data enter either artifact. Both files, like the mutation
+tables below, are not kept in git; see the
+[artifact manifest](#artifact-manifest) for their SHA-256 values.
 
 ## Verification, failures and limits
 
@@ -177,7 +178,7 @@ The interpreter is CPython 3.11.15. The existing uncertainty environment remains
 unchanged. New adapters use the standard library; this task performs no NumPy
 array work outside the CPython 3.11 environment.
 
-The final [mutation campaign](../../data/modeling/s1-station-evidence-2026-10-23/mutations-final-v2.json)
+The final mutation campaign `mutations-final-v2.json`
 records 54 intended assertion failures, two harmless full-suite survivors, and
 a passing baseline. Every mutation runs in a temporary copy. The original
 source bytes match their pre-campaign hashes. No skipped or masked control earns
@@ -204,6 +205,21 @@ user scopes with `MemoryMax=6G` and `MemorySwapMax=0`. Product direction checkin
 passes with existing review-age reminders. Full application QA, browser journeys,
 scientific validation and hosted tests remain unexecuted. No `next build`,
 Docker operation, deployment, managed database access or secret access occurs.
+
+## Artifact manifest
+
+These outputs were removed from git before merge. They remain in this branch's
+history at commit `b7d8cc648` under `data/modeling/s1-station-evidence-2026-10-23/`.
+The execution records that stay in that folder name the same paths.
+
+| File | Bytes | SHA-256 |
+|---|---:|---|
+| `coverage.json` | 929,795 | `7a8d7ad52cc48e62be842890086b59a569dc54a20ca9a2cc6c3fa109f3776820` |
+| `source-evidence.json` | 1,788,071 | `6760557d53764bc619a5b5783daaa85363d5a2eb292f28823cdc801904742be9` |
+| `mutations-attempt1.json` | 4,268 | `1a06492c6430ab96402bc13ff66931147fffd2fb09685be14a4ca95ac34c6e59` |
+| `mutations-attempt2.json` | 43,312 | `77e1b227b3ceb494332d5662f5ff89ef5cf9d8ca2eb1a8188816f457e2bb6795` |
+| `mutations-final.json` | 46,240 | `9fc47957e7fc7eee39c4b768d640d035b20912897d3d3341d52f0c6ad7cff732` |
+| `mutations-final-v2.json` | 59,049 | `2adf0ffb5c1b6e30c13f46528fe6e838ad467ce720ce53084250af1af396ab75` |
 
 ## Reproduce without new outcome access
 

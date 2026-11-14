@@ -86,7 +86,7 @@ const PYTHON_STDLIB = new Set([
   "inspect", "itertools", "json", "logging", "math", "os", "pathlib", "platform", "random", "re",
   "shlex", "shutil", "sqlite3", "statistics", "string", "subprocess", "sys",
   "tempfile", "textwrap", "time", "traceback", "types", "typing", "unittest",
-  "urllib", "uuid", "warnings", "zipfile",
+  "urllib", "uuid", "warnings", "xml", "zipfile",
 ]);
 
 /**
