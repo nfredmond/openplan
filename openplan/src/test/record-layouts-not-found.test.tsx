@@ -3,10 +3,12 @@
  * real 404 for a record the reader cannot see, and the public portal layout
  * answers one for an address that reaches no campaign.
  *
- * Each record layout is held to five cases with a fake client that applies
- * row security the way the SELECT policies do (only rows in the reader's
- * workspace come back): a visible record renders the page, an absent record
- * and another workspace's record take the same path to the same 404, a
+ * Each record layout is held to six cases with a fake client that applies
+ * row security the way the SELECT policies do (rows in every workspace the
+ * reader belongs to come back, current or not): a visible record renders the
+ * page, an absent record and a record in a workspace the reader does not
+ * belong to take the same path to the same 404, a record in the reader's other
+ * workspace gets the answer the page itself gave before this check existed, a
  * malformed id is refused before any query, and a failed read renders the
  * page so it can say the record could not be read.
  *
@@ -29,22 +31,29 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
 
+/** The reader's current workspace. */
 const READER_WORKSPACE = "11111111-1111-4111-8111-111111111111";
+/** A workspace the reader also belongs to, but is not current. */
+const SECOND_WORKSPACE = "33333333-3333-4333-8333-333333333333";
+/** A workspace the reader does not belong to. */
 const OTHER_WORKSPACE = "22222222-2222-4222-8222-222222222222";
+const READER_MEMBER_OF = [READER_WORKSPACE, SECOND_WORKSPACE];
 const OWN = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const OTHER = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const NO_SUCH = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+const IN_SECOND = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
 
 const ROWS = [
   { id: OWN, workspace_id: READER_WORKSPACE },
   { id: OTHER, workspace_id: OTHER_WORKSPACE },
+  { id: IN_SECOND, workspace_id: SECOND_WORKSPACE },
 ];
 
 type Query = { table: string; columns: string; filters: Array<[string, unknown]>; terminal: string };
 let queries: Query[] = [];
 let failReads = false;
 
-/** A cookie-scoped client stand-in: the reader sees only their workspace's rows. */
+/** A cookie-scoped client stand-in: row security shows every member workspace's rows, current or not. */
 function readerClient() {
   return {
     auth: { getUser: async () => ({ data: { user: { id: "reader" } }, error: null }) },
@@ -54,7 +63,7 @@ function readerClient() {
       const answer = (terminal: string) => {
         query.terminal = terminal;
         if (failReads) return { data: null, error: { code: "08006", message: "connection refused" } };
-        const match = ROWS.filter((row) => row.workspace_id === READER_WORKSPACE).find((row) =>
+        const match = ROWS.filter((row) => READER_MEMBER_OF.includes(row.workspace_id)).find((row) =>
           query.filters.every(([column, value]) => row[column as keyof typeof row] === value)
         );
         if (match) return { data: match, error: null };
@@ -107,8 +116,33 @@ const CHILD = <main data-testid="record-page">record</main>;
 
 type RecordLayout = (props: { children: React.ReactNode; params: Promise<Record<string, string>> }) => Promise<unknown>;
 
-const FAMILIES: Array<{ name: string; table: string; param: string; layout: RecordLayout; folder: string; children: string[] }> = [
-  { name: "plans", table: "plans", param: "planId", layout: PlanRecordLayout as RecordLayout, folder: "plans/[planId]", children: [] },
+/**
+ * `secondWorkspace` is what the page answered on main, before these layouts
+ * made a check, for a record in the reader's other workspace; the layout must
+ * give the same answer. Plans, programs and projects read the row through row
+ * security alone, so the page showed the record. Every RTP page read the cycle
+ * with `.eq("workspace_id", membership.workspace_id)` and called `notFound()`
+ * for no row, so it showed the not-found screen (under 200, behind
+ * `loading.tsx`); the layout now gives that refusal its true 404.
+ */
+const FAMILIES: Array<{
+  name: string;
+  table: string;
+  param: string;
+  layout: RecordLayout;
+  folder: string;
+  children: string[];
+  secondWorkspace: "renders" | "not found";
+}> = [
+  {
+    name: "plans",
+    table: "plans",
+    param: "planId",
+    layout: PlanRecordLayout as RecordLayout,
+    folder: "plans/[planId]",
+    children: [],
+    secondWorkspace: "renders",
+  },
   {
     name: "programs",
     table: "programs",
@@ -116,6 +150,7 @@ const FAMILIES: Array<{ name: string; table: string; param: string; layout: Reco
     layout: ProgramRecordLayout as RecordLayout,
     folder: "programs/[programId]",
     children: ["measure", "work-program"],
+    secondWorkspace: "renders",
   },
   {
     name: "projects",
@@ -124,6 +159,7 @@ const FAMILIES: Array<{ name: string; table: string; param: string; layout: Reco
     layout: ProjectRecordLayout as RecordLayout,
     folder: "projects/[projectId]",
     children: ["management"],
+    secondWorkspace: "renders",
   },
   {
     name: "RTP cycles",
@@ -132,6 +168,7 @@ const FAMILIES: Array<{ name: string; table: string; param: string; layout: Reco
     layout: RtpCycleRecordLayout as RecordLayout,
     folder: "rtp/[rtpCycleId]",
     children: ["document", "extraction", "extraction/chapters"],
+    secondWorkspace: "not found",
   },
 ];
 
@@ -144,7 +181,7 @@ beforeEach(() => {
   createClientMock.mockClear();
 });
 
-describe.each(FAMILIES)("the $name record layout", ({ table, param, layout, folder, children }) => {
+describe.each(FAMILIES)("the $name record layout", ({ table, param, layout, folder, children, secondWorkspace }) => {
   const render = (id: string) => layout({ children: CHILD, params: Promise.resolve({ [param]: id }) });
   const recordQueries = () => queries.filter((query) => query.table === table);
 
@@ -170,6 +207,19 @@ describe.each(FAMILIES)("the $name record layout", ({ table, param, layout, fold
     const shape = (list: Query[]) => list.map(({ table: t, columns, filters, terminal }) => [t, columns, filters.map(([c]) => c), terminal]);
     expect(shape(otherWorkspaceQueries)).toEqual(shape(queries));
     expect(notFoundMock).toHaveBeenCalledTimes(2);
+  });
+
+  it(`answers a record in the reader's other, non-current workspace as the page did: ${secondWorkspace}`, async () => {
+    const workspaceFilters = () =>
+      recordQueries().flatMap((query) => query.filters.filter(([column]) => column === "workspace_id"));
+    if (secondWorkspace === "renders") {
+      await expect(render(IN_SECOND)).resolves.toBe(CHILD);
+      expect(notFoundMock).not.toHaveBeenCalled();
+      expect(workspaceFilters()).toEqual([]);
+    } else {
+      await expect(render(IN_SECOND)).rejects.toBe(NOT_FOUND);
+      expect(workspaceFilters()).toEqual([["workspace_id", READER_WORKSPACE]]);
+    }
   });
 
   it("answers not found for a malformed id before any query", async () => {
