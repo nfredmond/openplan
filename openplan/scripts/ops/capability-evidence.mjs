@@ -3,7 +3,7 @@ import { readFileSync, realpathSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { joinLetterSpacing, pdfTextHasPhrase } from "../lib/pdf-text-match.mjs";
+import { joinLetterSpacing, normalizePdfText, pdfTextHasPhrase } from "../lib/pdf-text-match.mjs";
 import { assertPopplerTool, popplerPdfPages } from "../lib/poppler-text.mjs";
 
 /**
@@ -154,7 +154,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     if (job.campaign) checkCampaign(journey, job, label, workbooks);
   }
 
-  const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace);
+  const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace, roles);
   if (job.participantChecks) checkParticipantChecks(record.participantChecks, job.participantChecks);
 
   const requiredLimits = [...job.requiredLimits];
@@ -168,6 +168,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     if (sourceCheck.status !== "not-run" && (!sourceCheck.url || !sourceCheck.checkedOn)) {
       refuse(`a ${subject} source check needs the query URL and the date it was run`);
     }
+    if (sourceCheck.status === "matched" && job.sourceCheck.matched) checkMatchedSource(sourceCheck, job.sourceCheck, subject);
     if (sourceCheck.status !== "matched") requiredLimits.push(job.sourceCheck.unconfirmedLimit);
   }
   const limitIds = new Set(record.limits.map((limit) => limit.id));
@@ -179,19 +180,56 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
 
 /**
  * A job's per-journey value rules, from its definition: each names a dotted
- * field of the journey and what it must hold (`equals` a value, or be `atLeast`
- * a number), and the refusal to give otherwise. `{found}` and `{expected}` in
- * the refusal take the journey's value and the rule's.
+ * field of the journey and what it must hold (`equals` a value, be `atLeast`
+ * a number, or hold `minItems` entries in a list), and the refusal to give
+ * otherwise. `{found}` and `{expected}` in the refusal take the journey's
+ * value (for a list, its length) and the rule's.
  */
 function checkJourneyFields(journey, rules, label) {
   for (const rule of rules ?? []) {
-    const found = rule.field.split(".").reduce((value, key) => (value == null ? undefined : value[key]), journey);
-    const expected = Object.hasOwn(rule, "equals") ? rule.equals : rule.atLeast;
+    let found = rule.field.split(".").reduce((value, key) => (value == null ? undefined : value[key]), journey);
+    let expected;
     let holds;
-    if (Object.hasOwn(rule, "equals")) holds = found === rule.equals;
-    else if (Object.hasOwn(rule, "atLeast")) holds = typeof found === "number" && found >= rule.atLeast;
-    else throw new Error(`job definition rule for ${rule.field} needs equals or atLeast`);
+    if (Object.hasOwn(rule, "equals")) {
+      expected = rule.equals;
+      holds = found === rule.equals;
+    } else if (Object.hasOwn(rule, "atLeast")) {
+      expected = rule.atLeast;
+      holds = typeof found === "number" && found >= rule.atLeast;
+    } else if (Object.hasOwn(rule, "minItems")) {
+      expected = rule.minItems;
+      holds = Array.isArray(found) && found.length >= rule.minItems;
+      if (Array.isArray(found)) found = found.length;
+    } else {
+      throw new Error(`job definition rule for ${rule.field} needs equals, atLeast or minItems`);
+    }
     if (!holds) refuse(`${label} ${rule.refusal.replaceAll("{found}", String(found)).replaceAll("{expected}", String(expected))}`);
+  }
+}
+
+/**
+ * A source check marked "matched" must say where the comparison can be
+ * repeated and what was compared: an https address on a host the job's
+ * definition lists for its source, and a note of at least the definition's
+ * length (KI-2026-11-14-303, review 43 finding R3).
+ *
+ * Blind category: the checker cannot repeat the comparison. It cannot tell
+ * whether the note is true, only that the record names a source address and
+ * says something of substance about what was compared.
+ */
+function checkMatchedSource(sourceCheck, rule, subject) {
+  const { hosts, minNoteLength } = rule.matched;
+  let url;
+  try {
+    url = new URL(sourceCheck.url);
+  } catch {
+    refuse(`the ${subject} source check address is not a web address`);
+  }
+  if (url.protocol !== "https:" || !hosts.includes(url.hostname)) {
+    refuse(`a matched ${subject} source check must name an https address on ${hosts.join(", ")}, found ${url.protocol}//${url.hostname}`);
+  }
+  if (sourceCheck.note.trim().length < minNoteLength) {
+    refuse(`a matched ${subject} source check note must say what was compared, in at least ${minNoteLength} characters`);
   }
 }
 
@@ -227,10 +265,11 @@ function checkExecutors(journey, job, label) {
  * page. It cannot see the page, so it cannot tell whether the strings
  * searched were the right ones, only that enough distinct ones were.
  */
-function checkCrossWorkspace(checks, rule) {
+function checkCrossWorkspace(checks, rule, roles) {
   let pageAnsweredOk = false;
   for (const check of checks) {
     const label = `cross-workspace ${check.kind} request ${check.request} for another workspace's ${check.target}`;
+    if (check.journey !== undefined && !roles.includes(check.journey)) refuse(`${label} names the ${check.journey} journey, which the record does not hold`);
     if (check.contentReturned) refuse(`${label} returned content (status ${check.status})`);
     if (CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status)) continue;
     if (check.kind === "page" && check.status === 200) {
@@ -267,7 +306,50 @@ function checkCrossWorkspace(checks, rule) {
       refuse(`cross-workspace checks for ${target} need its ${page} checked as a page check`);
     }
   }
+  checkCrossWorkspacePerJourney(checks, rule, roles);
   return pageAnsweredOk;
+}
+
+/**
+ * Every journey must have its own cross-workspace checks, not one journey's
+ * set standing for all three (KI-2026-11-14-303, review 43 finding R1).
+ * Every check reaching here was already accepted for its kind.
+ *
+ * `perJourney: "role"`: each check names the journey that made it, and each
+ * journey has each required request (data and page) exactly once.
+ * `perJourney: "count"`: for a record whose checks carry no journey (the
+ * first proven job's), each required request is checked exactly as many
+ * times as the record has journeys.
+ *
+ * Blind category of "count": the checker cannot tell whether the checks came
+ * from different journeys. One journey's checks repeated once per journey
+ * would pass; only the role form can see that.
+ */
+function checkCrossWorkspacePerJourney(checks, rule, roles) {
+  if (!rule.perJourney) return;
+  if (rule.perJourney === "role") {
+    const unnamed = checks.find((check) => check.journey === undefined);
+    if (unnamed) refuse(`cross-workspace ${unnamed.kind} request ${unnamed.request} for another workspace's ${unnamed.target} does not name the journey that made it`);
+  } else if (rule.perJourney !== "count") {
+    throw new Error(`job definition crossWorkspace.perJourney must be role or count, found ${rule.perJourney}`);
+  }
+  for (const target of rule.targets) {
+    const required = [["data", rule.requiredDataRequests[target]]];
+    if (rule.requiredPageRequests?.[target]) required.push(["page", rule.requiredPageRequests[target]]);
+    for (const [kind, request] of required) {
+      const matching = checks.filter((check) => check.target === target && check.kind === kind && check.request === request);
+      if (rule.perJourney === "count") {
+        if (matching.length !== roles.length) {
+          refuse(`cross-workspace checks hold ${matching.length} ${request} ${kind} checks for ${target}; this job needs one from each of its ${roles.length} journeys`);
+        }
+        continue;
+      }
+      for (const role of roles) {
+        const own = matching.filter((check) => check.journey === role).length;
+        if (own !== 1) refuse(`the ${role} journey needs exactly one ${request} ${kind} check for ${target}, found ${own}`);
+      }
+    }
+  }
 }
 
 /**
@@ -346,18 +428,48 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
       if (entry.page > pages.length) refuse(`${pdfLabel} ${item} names page ${entry.page} of ${pages.length}`);
       if (method === "pdftotext") {
         if (!entry.text || entry.imageSha256) refuse(`${pdfLabel} ${item} needs the text pdftotext found, and no image hash`);
+        const heading = job.itemHeadings?.[pdf.kind]?.[item];
+        if (heading !== undefined && entry.text !== heading) refuse(`${pdfLabel} ${item} must name its heading "${heading}", found "${entry.text}"`);
         // The shared matcher the export test and the journey use: case,
         // wrapped lines and letter spacing aside, the text must be whole on
         // that page (scripts/lib/pdf-text-match.mjs).
         if (!pdfTextHasPhrase(pages[entry.page - 1], entry.text)) {
           refuse(`${pdfLabel} ${item} text is not on page ${entry.page}`);
         }
-      } else if (!entry.imageSha256 || entry.text) {
-        refuse(`${pdfLabel} ${item} needs the rendered page image hash, and no text`);
+        if (heading !== undefined && !hasHeadingLine(pages[entry.page - 1], heading)) {
+          refuse(`${pdfLabel} ${item} heading "${heading}" is not a line of its own on page ${entry.page}`);
+        }
+      } else {
+        if (!entry.imageSha256 || entry.text) refuse(`${pdfLabel} ${item} needs the rendered page image hash, and no text`);
+        // The checker cannot render the page the same way on every platform
+        // (KI-2026-11-14-303), so it reads the words the export prints with
+        // its map on that page instead.
+        const mapText = job.mapPageText?.[pdf.kind];
+        if (mapText !== undefined && !pdfTextHasPhrase(pages[entry.page - 1], mapText)) {
+          refuse(`${pdfLabel} ${item} page ${entry.page} does not carry "${mapText}", which the export prints with its map`);
+        }
       }
     }
     if (pdf.items.length !== Object.keys(job.items).length) refuse(`${pdfLabel} lists items this job does not define`);
   }
+}
+
+/**
+ * True when one line of the page is the heading and nothing else: the shared
+ * matcher finds the heading on that line, and the line's letters and digits,
+ * with spaces, hyphens and case set aside, are the heading's. A heading set
+ * with letter spacing still counts; the same words inside a sentence, a
+ * table row or a contents line do not (KI-2026-11-14-303, review 43 findings
+ * R6 and R11).
+ *
+ * Blind category: a heading that wraps onto a second line is not found, and
+ * a line holding only the heading's words in another place (a running header)
+ * counts as the heading.
+ */
+function hasHeadingLine(pageText, heading) {
+  const bare = (text) => normalizePdfText(joinLetterSpacing(text)).replace(/[\s-]/g, "");
+  const target = bare(heading);
+  return pageText.split("\n").some((line) => bare(line) === target && pdfTextHasPhrase(line, heading));
 }
 
 /**

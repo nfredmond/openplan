@@ -110,7 +110,7 @@ describe("the engagement job's synthetic example", () => {
   it("accepts a city place, a campaign page that answers 404 without the 200 limit, and a 403 participant refusal", () => {
     const record = proven();
     Object.assign(journey(record, "city-or-town").place, { kind: "city", geoid: "2599812" });
-    record.crossWorkspace.checks[3] = { target: "staff-campaign", request: "campaign-page", kind: "page", status: 404, contentReturned: false };
+    record.crossWorkspace.checks[3] = { journey: "county", target: "staff-campaign", request: "campaign-page", kind: "page", status: 404, contentReturned: false };
     record.limits = record.limits.filter((limit: Json) => limit.id !== "campaign-page-answers-200-with-not-found-screen");
     record.participantChecks.refusals[0].status = 403;
     expect(() => check(record)).not.toThrow();
@@ -185,8 +185,13 @@ describe("the engagement job refuses", () => {
     ["a serious accessibility violation on the portal", (r) => { journey(r, "county").screens[3].axe.serious = 1; }, /portal at 390 px dark has 1 serious/],
     // Cross-workspace
     ["a workbook download answering 200", (r) => { r.crossWorkspace.checks[1].status = 200; }, /review-xlsx-download for another workspace's campaign-review-workbook answered status 200, which is inconclusive/],
-    ["a staff campaign held only by its page", (r) => { r.crossWorkspace.checks.splice(2, 1); }, /checks for staff-campaign need its campaign-read refused as a data check/],
-    ["a staff campaign without its page check", (r) => { r.crossWorkspace.checks.splice(3, 1); }, /checks for staff-campaign need its campaign-page checked as a page check/],
+    ["a staff campaign held only by its page", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.request !== "campaign-read"); }, /checks for staff-campaign need its campaign-read refused as a data check/],
+    ["a staff campaign without its page check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.request !== "campaign-page"); }, /checks for staff-campaign need its campaign-page checked as a page check/],
+    // Each check names its journey, and each journey has each required request once (lane 45).
+    ["a cross-workspace check that names no journey", (r) => { delete r.crossWorkspace.checks[0].journey; }, /review-pdf-download for another workspace's campaign-review-pdf does not name the journey that made it/],
+    ["one journey's campaign read standing for another's", (r) => { r.crossWorkspace.checks[6].journey = "county"; }, /the county journey needs exactly one campaign-read data check for staff-campaign, found 2/],
+    ["a tribal journey without its review download check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => !(c.journey === "tribal-area" && c.request === "review-pdf-download")); }, /the tribal-area journey needs exactly one review-pdf-download data check for campaign-review-pdf, found 0/],
+    ["a cross-workspace check naming a journey the record does not hold", (r) => { r.crossWorkspace.checks[4].journey = "borough"; }, /names the borough journey, which the record does not hold/],
     ["a campaign page answering 200 without its limit", (r) => { r.limits = r.limits.filter((l: Json) => l.id !== "campaign-page-answers-200-with-not-found-screen"); }, /does not state the campaign-page-answers-200-with-not-found-screen limit/],
     // The public participant
     ["staff items served to the public participant", (r) => { r.participantChecks.refusals[1] = { request: "campaign-items-read", status: 200, contentReturned: true }; }, /public participant request campaign-items-read returned content \(status 200\)/],

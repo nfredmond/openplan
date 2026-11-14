@@ -12,6 +12,15 @@
  * The cases are copied from capability-evidence.test.ts; the last test here
  * fails if that file gains or loses a case this one does not have.
  *
+ * Lane 45 (November 14, 2026) made the current checker refuse changes main's
+ * accepts: cross-workspace checks from every journey, every required screen,
+ * each text item's own heading, the words printed with the map, a matched
+ * source check's address and note, and crashes, segments, countermeasures,
+ * approved comments and a staff review in every journey. Those cases are in
+ * proven-job-checker-gaps.test.ts, where main accepts and the current
+ * checker refuses. The synthetic example was brought up to those rules and
+ * main's checker still accepts it, so every case here keeps one verdict.
+ *
  * Blind category: only the first job's example and these single-fault cases
  * are compared. A record with two faults may be refused for a different one
  * of them, because the per-job sub-schema is checked after the common fields.
@@ -32,11 +41,20 @@ const EXAMPLE = JSON.parse(
 const jobRoot = mkdtempSync(join(tmpdir(), "openplan-proven-job-equivalence-"));
 const fakePdfPages = (path: string) => readFileSync(path, "utf8").replace(/^[^\n]*\n/, "").split("\f");
 
+// The headings and map-page words the first job's definition names
+// (itemHeadings, mapPageText), one heading to a line as the exports print them.
+const HEADINGS: Record<string, string[]> = {
+  "safety-action-plan": ["Crash summary", "Countermeasures", "Benefit-cost summary", "Engagement summary"],
+  "ss4a-application": ["Appendix B. Crash summary", "Appendix C. Countermeasures", "Appendix D. Benefit-cost summary", "Appendix E. Engagement summary"],
+};
+const MAP_TEXT: Record<string, string> = { "safety-action-plan": "High-injury network map", "ss4a-application": "Source severity coverage" };
+
 function syntheticPdf(role: string, kind: string, extra = ""): string {
+  const [crash, countermeasures, bca, engagement] = HEADINGS[kind];
   return [
-    `%PDF-1.4 synthetic test file for the proven job checker, not a real PDF\n${kind} for the ${role} journey\nCrash summary: synthetic counts`,
-    "High-injury network map",
-    `Countermeasures\nBenefit-cost analysis\nEngagement summary${extra}`,
+    `%PDF-1.4 synthetic test file for the proven job checker, not a real PDF\n${kind} for the ${role} journey\n${crash}\nSynthetic counts`,
+    MAP_TEXT[kind],
+    `${countermeasures}\n${bca}\n${engagement}${extra}`,
   ].join("\f");
 }
 
@@ -117,7 +135,7 @@ describe("the first job's verdicts are the same before and after the rules moved
     ["a wrong page count", (r) => { journey(r, "tribal-area").pdfs[0].pages = 4; }, /has 3 pages, record says 4/],
     ["one serious accessibility violation", (r) => { journey(r, "nevada-county").screens[3].axe.serious = 1; }, /safety at 390 px dark has 1 serious and 0 critical/],
     ["one critical violation at desktop width", (r) => { journey(r, "california-county").screens[0].axe.critical = 1; }, /safety at 1440 px light has 0 serious and 1 critical/],
-    ["a screen not checked at 390 px in dark mode", (r) => { journey(r, "nevada-county").screens.pop(); }, /safety has no check at 390 px dark/],
+    ["a screen not checked at 390 px in dark mode", (r) => { journey(r, "nevada-county").screens.splice(3, 1); }, /safety has no check at 390 px dark/],
     ["zero stored crashes in Nevada", (r) => { journey(r, "nevada-county").crashes.storedCount = 0; }, /nevada-county journey stored 0 crashes; at least 1 required/],
     ["Nevada crashes from a California source", (r) => { journey(r, "nevada-county").crashes.sourceId = "ccrs-ca"; }, /nevada-county journey crashes come from ccrs-ca, not fars-national/],
     ["a tribal journey run on a county", (r) => { Object.assign(journey(r, "tribal-area").place, { kind: "county", geoid: "32997" }); }, /tribal-area journey must be a place of kind aiannh, found county/],
@@ -144,7 +162,7 @@ describe("the first job's verdicts are the same before and after the rules moved
     ["a data request answering 200 that claims the not-found screen", (r) => { Object.assign(r.crossWorkspace.checks[1], { status: 200, notFoundRendered: true, recordTextFound: false, searchedStringSha256: r.crossWorkspace.checks[0].searchedStringSha256, searchedStringCount: 4 }); }, /data request report-pdf-download .* answered status 200, which is inconclusive/],
     ["a target held only by a page check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.target !== "safety-action-plan" || c.kind === "page"); }, /checks for safety-action-plan need its report-pdf-download refused as a data check/],
     ["an application held only by its read, not its download", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.request !== "application-pdf-download"); }, /checks for ss4a-application need its application-pdf-download refused as a data check/],
-    ["a download recorded as a page check", (r) => { r.crossWorkspace.checks[1].kind = "page"; }, /need its report-pdf-download refused as a data check/],
+    ["a download recorded as a page check", (r) => { for (const c of r.crossWorkspace.checks) if (c.request === "report-pdf-download") c.kind = "page"; }, /need its report-pdf-download refused as a data check/],
     ["a page answering 200 without its stated limit", (r) => { r.limits = r.limits.filter((limit: Json) => limit.id !== "report-page-answers-200-with-not-found-screen"); }, /does not state the report-page-answers-200-with-not-found-screen limit/],
     ["a check without a kind", (r) => { delete r.crossWorkspace.checks[2].kind; }, /record\.crossWorkspace\.checks\[2\] is missing kind/],
     ["a signed-out second account counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 401; }, /answered status 401, which is inconclusive/],
@@ -180,20 +198,20 @@ describe("the first job's verdicts are the same before and after the rules moved
 
   it("finds an item heading that reads back letter-spaced in both", () => {
     const record = proven();
-    rewritePdf(record, "tribal-area", "ss4a-application", withPage3("tribal-area", "ss4a-application",
-      "C O U N T E R M E A S U R E S\nB E N E F I T- C O S T A N A LY S I S\nE N G A G E M E N T S U M M A RY"));
+    rewritePdf(record, "tribal-area", "safety-action-plan", withPage3("tribal-area", "safety-action-plan",
+      "C O U N T E R M E A S U R E S\nB E N E F I T- C O S T S U M M A RY\nE N G A G E M E N T S U M M A RY"));
     expect(bothOnRecord(record)).toEqual({ main: "accepted", current: "accepted" });
   });
 
   it.each(named<[string, string]>([
-    ["part of a longer word", "Countermeasures\nBenefit-cost analysis\nEngagement summaryless"],
-    ["two cells across a column gap", "Countermeasures\nBenefit-cost analysis\nEngagement      summary"],
-    ["a phrase split by a blank line", "Countermeasures\nBenefit-cost analysis\nEngagement\n\nsummary"],
+    ["part of a longer word", "Countermeasures\nBenefit-cost summary\nEngagement summaryless"],
+    ["two cells across a column gap", "Countermeasures\nBenefit-cost summary\nEngagement      summary"],
+    ["a phrase split by a blank line", "Countermeasures\nBenefit-cost summary\nEngagement\n\nsummary"],
   ]))("refuses item text found only as %s the same way in both", (_name, page3) => {
     const record = proven();
-    rewritePdf(record, "tribal-area", "ss4a-application", withPage3("tribal-area", "ss4a-application", page3));
+    rewritePdf(record, "tribal-area", "safety-action-plan", withPage3("tribal-area", "safety-action-plan", page3));
     const result = bothOnRecord(record);
-    expect(result.main).toMatch(/tribal-area journey ss4a-application PDF engagement-summary text is not on page 3/);
+    expect(result.main).toMatch(/tribal-area journey safety-action-plan PDF engagement-summary text is not on page 3/);
     expect(result.current).toBe(result.main);
   });
 

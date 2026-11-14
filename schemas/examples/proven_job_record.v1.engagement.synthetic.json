@@ -503,10 +503,11 @@
   ],
   "crossWorkspace": {
     "checks": [
-      {"target": "campaign-review-pdf", "request": "review-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
-      {"target": "campaign-review-workbook", "request": "review-xlsx-download", "kind": "data", "status": 404, "contentReturned": false},
-      {"target": "staff-campaign", "request": "campaign-read", "kind": "data", "status": 403, "contentReturned": false},
+      {"journey": "county", "target": "campaign-review-pdf", "request": "review-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "county", "target": "campaign-review-workbook", "request": "review-xlsx-download", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "county", "target": "staff-campaign", "request": "campaign-read", "kind": "data", "status": 403, "contentReturned": false},
       {
+        "journey": "county",
         "target": "staff-campaign",
         "request": "campaign-page",
         "kind": "page",
@@ -520,7 +521,15 @@
           "fb1fb707b06d4a0ab2f0131ca1a4e0b5bf6d85430d0d77319b1656e0d796bcf2"
         ],
         "searchedStringCount": 3
-      }
+      },
+      {"journey": "city-or-town", "target": "campaign-review-pdf", "request": "review-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "city-or-town", "target": "campaign-review-workbook", "request": "review-xlsx-download", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "city-or-town", "target": "staff-campaign", "request": "campaign-read", "kind": "data", "status": 403, "contentReturned": false},
+      {"journey": "city-or-town", "target": "staff-campaign", "request": "campaign-page", "kind": "page", "status": 404, "contentReturned": false},
+      {"journey": "tribal-area", "target": "campaign-review-pdf", "request": "review-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "tribal-area", "target": "campaign-review-workbook", "request": "review-xlsx-download", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "tribal-area", "target": "staff-campaign", "request": "campaign-read", "kind": "data", "status": 403, "contentReturned": false},
+      {"journey": "tribal-area", "target": "staff-campaign", "request": "campaign-page", "kind": "page", "status": 404, "contentReturned": false}
     ]
   },
   "participantChecks": {

@@ -6,7 +6,7 @@
     "county": "^\\d{5}$",
     "aiannh": "^\\d{4}[RT]$"
   },
-  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, or atLeast a number. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check and the limit to state when it did not match.",
+  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once).",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -25,7 +25,12 @@
         { "role": "tribal-area", "placeKind": "aiannh" }
       ],
       "journeyFields": [
-        { "field": "bcaSaved", "equals": true, "refusal": "did not save a benefit-cost analysis" }
+        { "field": "bcaSaved", "equals": true, "refusal": "did not save a benefit-cost analysis" },
+        { "field": "crashes.storedCount", "atLeast": 1, "refusal": "stored {found} crashes; every journey of this job stores at least {expected}" },
+        { "field": "highInjuryNetwork.segmentCount", "atLeast": 1, "refusal": "ranked {found} high-injury segments; at least {expected} required" },
+        { "field": "countermeasureCount", "atLeast": 1, "refusal": "saved {found} countermeasures; at least {expected} required" },
+        { "field": "engagement.approvedCommentIds", "minItems": 1, "refusal": "recorded {found} approved comments; at least {expected} required" },
+        { "field": "engagement.staffReviewIds", "minItems": 1, "refusal": "recorded {found} approved staff reviews; at least {expected} required" }
       ],
       "pdfs": ["safety-action-plan", "ss4a-application"],
       "items": {
@@ -35,7 +40,31 @@
         "bca": "pdftotext",
         "engagement-summary": "pdftotext"
       },
-      "screens": { "widths": [1440, 390], "modes": ["light", "dark"] },
+      "itemHeadings": {
+        "source": "qa-harness/first-job-journey-lib.js (ITEM_RULES), the headings the journey searches for",
+        "safety-action-plan": {
+          "crash-summary": "Crash summary",
+          "countermeasures": "Countermeasures",
+          "bca": "Benefit-cost summary",
+          "engagement-summary": "Engagement summary"
+        },
+        "ss4a-application": {
+          "crash-summary": "Appendix B. Crash summary",
+          "countermeasures": "Appendix C. Countermeasures",
+          "bca": "Appendix D. Benefit-cost summary",
+          "engagement-summary": "Appendix E. Engagement summary"
+        }
+      },
+      "mapPageText": {
+        "source": "openplan/src/lib/reports/html.ts (the map's figure caption); openplan/src/lib/grants/ss4a-evidence-appendices.ts (the first fact printed under Appendix A's map)",
+        "safety-action-plan": "High-injury network map",
+        "ss4a-application": "Source severity coverage"
+      },
+      "screens": {
+        "widths": [1440, 390],
+        "modes": ["light", "dark"],
+        "required": ["sign-up", "portal", "dashboard", "project", "safety", "bca", "campaign-responses", "report", "grants-application"]
+      },
       "crossWorkspace": {
         "note": "Lead decision 2026-11-14 (KI-2026-11-14-060). A data check (an API route or a file download) counts only with 403 or 404. A page check also counts with 200 when the journey read the rendered page and found the not-found screen and none of the first account's identifying strings. Each target needs its download refused as a data check; a page check alone never satisfies the rule.",
         "targets": ["safety-action-plan", "ss4a-application"],
@@ -43,10 +72,20 @@
           "safety-action-plan": "report-pdf-download",
           "ss4a-application": "application-pdf-download"
         },
+        "requiredPageRequests": { "safety-action-plan": "report-page" },
+        "perJourney": "count",
         "minSearchedStrings": 3,
         "pageAnsweredOkLimit": "report-page-answers-200-with-not-found-screen"
       },
-      "sourceCheck": { "subject": "crash", "unconfirmedLimit": "crash-counts-not-independently-confirmed" },
+      "sourceCheck": {
+        "subject": "crash",
+        "unconfirmedLimit": "crash-counts-not-independently-confirmed",
+        "matched": {
+          "note": "Hosts of the crash sources this job reads: NHTSA's FARS annual files and its crash query service, and California's CCRS on the state open data portal (openplan/src/lib/safety/sources/fars.ts, ccrs.ts). The checker cannot repeat the comparison; it checks only that a matched check names an address it could be repeated from and says what was compared.",
+          "hosts": ["static.nhtsa.gov", "crashviewer.nhtsa.dot.gov", "data.ca.gov"],
+          "minNoteLength": 80
+        }
+      },
       "requiredLimits": [
         "no-pdf-ua-check",
         "no-keyboard-or-screen-reader-pass",
@@ -117,6 +156,7 @@
           "staff-campaign": "campaign-read"
         },
         "requiredPageRequests": { "staff-campaign": "campaign-page" },
+        "perJourney": "role",
         "minSearchedStrings": 3,
         "pageAnsweredOkLimit": "campaign-page-answers-200-with-not-found-screen"
       },

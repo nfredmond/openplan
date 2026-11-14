@@ -292,7 +292,9 @@ test('the not-found title the journey looks for is the one the app prints', () =
 test('a page check carries only fields the record schema defines', () => {
   const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'proven_job_record.v1.schema.json'), 'utf8'));
   const allowed = Object.keys(schema.properties.crossWorkspace.properties.checks.items.properties).sort();
-  assert.deepEqual(allowed, ['contentReturned', 'kind', 'notFoundRendered', 'recordTextFound', 'request', 'searchedStringCount', 'searchedStringSha256', 'status', 'target']);
+  // `journey` (lane 45) is optional for this job: its checker counts each
+  // required request once per journey instead of matching names.
+  assert.deepEqual(allowed, ['contentReturned', 'journey', 'kind', 'notFoundRendered', 'recordTextFound', 'request', 'searchedStringCount', 'searchedStringSha256', 'status', 'target']);
   const source = fs.readFileSync(path.join(__dirname, 'first-job-journey.js'), 'utf8');
   for (const key of ['notFoundRendered', 'recordTextFound', 'searchedStringSha256', 'searchedStringCount']) assert.ok(source.includes(`${key}:`), key);
 });

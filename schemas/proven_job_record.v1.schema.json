@@ -27,6 +27,7 @@
             "additionalProperties": false,
             "properties": {
               "target": { "$ref": "#/$defs/slug" },
+              "journey": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "The role of the journey whose records the second account asked for. Optional for the first proven job, whose record predates it; required by a job whose definition sets crossWorkspace.perJourney to role." },
               "request": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "What the second account asked for, for example report-page, report-pdf-download, application-read or application-pdf-download." },
               "kind": { "enum": ["page", "data"], "description": "data: an API route or a file download; only 403 or 404 counts. page: an HTML page; 403 or 404 counts, and 200 counts only with notFoundRendered true, recordTextFound false and at least three searched strings." },
               "status": { "type": "integer", "minimum": 100, "description": "HTTP status the second account received. Any status the rule for its kind does not accept is inconclusive and refuses the record." },
