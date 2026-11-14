@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Development dependency advisories cleared (November 13):** `hono` moves to 4.13.16 and `@hono/node-server` to 2.1.6 through lockfile overrides, for seven advisories published against earlier versions. Both come in only through the development tool `shadcn`; nothing served to planners uses them. The dependency audit in the QA gate passes again. No migration.
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the
