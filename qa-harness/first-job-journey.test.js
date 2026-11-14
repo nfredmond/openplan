@@ -416,3 +416,17 @@ test('the journey keeps exactly the record fields lane 10 defines', () => {
   const journey = lib.buildJourney({ role: 'x', extra: 'dropped' });
   assert.deepEqual(Object.keys(journey).sort(), [...schema.$defs.journey.required].sort());
 });
+
+test('the study place is chosen by its full label only (KI-2026-11-14-230)', () => {
+  const tribal = ['Pyramid Lake Paiute Reservation, NV'];
+  assert.equal(lib.choosePlaceResult('Pyramid Lake Paiute Reservation, NV', tribal), 0);
+  assert.equal(lib.choosePlaceResult('  pyramid lake  paiute reservation, nv ', tribal), 0);
+  // The BASENAME workaround lane 26 used no longer passes on a lone result.
+  assert.equal(lib.choosePlaceResult('Pyramid Lake', tribal), -1);
+  const navajo = ['Navajo Nation Off-Reservation Trust Land, AZ-NM-UT', 'Navajo Nation Reservation, AZ-NM-UT'];
+  assert.equal(lib.choosePlaceResult('Navajo Nation Reservation, AZ-NM-UT', navajo), 1);
+  assert.equal(lib.choosePlaceResult('Navajo Nation', navajo), -1);
+  // Two results with the same label are not one place.
+  assert.equal(lib.choosePlaceResult('Washington township, OH', ['Washington township, OH', 'Washington township, OH']), -1);
+  assert.equal(lib.choosePlaceResult('', tribal), -1);
+});
