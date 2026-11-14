@@ -15,7 +15,7 @@ export function EngagementCampaignCreatedNotice({ campaign }: { campaign: Public
       <p className="font-semibold text-foreground">Campaign created.</p>
       <p className="mt-1 text-muted-foreground">
         {portal.isPubliclyReachable
-          ? "Its public link is live — the URL is in the header below."
+          ? "Its public link is live. The URL is in the header below."
           : "Its public portal stays offline until a share link is generated under Operator Actions and the campaign is Active."}{" "}
         Once live, share the public URL anywhere; every submission lands in this console&apos;s moderation queue.
       </p>

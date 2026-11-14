@@ -38,6 +38,24 @@ jobs:
       - name: Install
         run: npm ci
 
+      # The proven job record checker reads PDF text with Poppler's pdftotext,
+      # and the export test renders both safety PDFs with Chrome and reads them
+      # back with pdftotext and pdftoppm. The ubuntu-latest image (24.04,
+      # 20261111) ships Google Chrome but not Poppler, so without this step the
+      # export test's PDF block and the real-reader test skip (KI-2026-11-14-101).
+      # The checks fail the job if either tool goes missing, rather than letting
+      # those tests skip without notice. Text reads back differently on Linux
+      # than on Windows, so both checks find text with the shared matcher in
+      # openplan/scripts/lib/pdf-text-match.mjs (KI-2026-11-14-117).
+      - name: Poppler for PDF checks
+        run: |
+          test -s /etc/apt/sources.list.d/ubuntu.sources
+          control_apt_sources=(-o Dir::Etc::sourcelist=sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=-)
+          sudo apt-get "${control_apt_sources[@]}" update -qq
+          sudo apt-get "${control_apt_sources[@]}" install -y poppler-utils
+          for tool in pdftotext pdftoppm pdfinfo; do command -v "$tool"; done
+          test -x /usr/bin/google-chrome
+
       - name: Hosted queue supervisor
         run: node --test ../workers/hosted-node/supervise.test.mjs
 
@@ -46,6 +64,7 @@ jobs:
         run: |
           npm ci
           npm run check:first-week-discovery
+          npm run check:service-key-headers
 
       - name: QA gate
         run: npm run qa:gate
@@ -97,6 +116,24 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      # The proven job record checker reads PDF text with Poppler's pdftotext,
+      # and the export test renders both safety PDFs with Chrome and reads them
+      # back with pdftotext and pdftoppm. The ubuntu-latest image (24.04,
+      # 20261111) ships Google Chrome but not Poppler, so without this step the
+      # export test's PDF block and the real-reader test skip (KI-2026-11-14-101).
+      # The checks fail the job if either tool goes missing, rather than letting
+      # those tests skip without notice. Text reads back differently on Linux
+      # than on Windows, so both checks find text with the shared matcher in
+      # openplan/scripts/lib/pdf-text-match.mjs (KI-2026-11-14-117).
+      - name: Poppler for PDF checks
+        run: |
+          test -s /etc/apt/sources.list.d/ubuntu.sources
+          control_apt_sources=(-o Dir::Etc::sourcelist=sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=-)
+          sudo apt-get "${control_apt_sources[@]}" update -qq
+          sudo apt-get "${control_apt_sources[@]}" install -y poppler-utils
+          for tool in pdftotext pdftoppm pdfinfo; do command -v "$tool"; done
+          test -x /usr/bin/google-chrome
 
       # The qa gate above always walks test files in the same order, so it
       # cannot see a test that depends on another test having run first. Vitest
@@ -231,6 +268,18 @@ jobs:
     defaults:
       run:
         working-directory: ./workers/aequilibrae_worker
+    # A throwaway PostgreSQL 17 for the hosted install kit's live tests: trust
+    # authentication on the job's own network, no data, gone with the job.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: kit_admin
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kit_admin"
+          --health-interval 5s --health-timeout 5s --health-retries 12
     steps:
       - uses: actions/checkout@v6
 
@@ -255,6 +304,25 @@ jobs:
       - name: Hosted offsite backup
         working-directory: ./workers/hosted-backup
         run: python -m unittest test_backup -v
+
+      # The install kit's refusals (review 15, B2, B3, B5, B7 and N1). The live
+      # tests run the generated SQL on PostgreSQL 17 as a non-superuser named
+      # postgres, as on hosted, and the latency tests (lane 28) send it through
+      # a proxy that delays every client packet; the step fails if any of them
+      # were skipped.
+      - name: Hosted install kit
+        working-directory: ./scripts/ops/hosted-install
+        env:
+          OPENPLAN_INSTALL_KIT_PSQL: '["psql", "-h", "localhost", "-U", "postgres"]'
+          # The latency tests put a delaying proxy in front of this address.
+          OPENPLAN_INSTALL_KIT_TCP: localhost:5432
+        run: |
+          set -euo pipefail
+          psql -h localhost -U kit_admin -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE postgres LOGIN CREATEDB"
+          python -m unittest test_hosted_install -v 2>&1 | tee "$RUNNER_TEMP/kit-tests.log"
+          if grep -q "set OPENPLAN_INSTALL_KIT_PSQL" "$RUNNER_TEMP/kit-tests.log"; then
+            echo "the live install-kit tests were skipped"; exit 1
+          fi
 
       - name: Syntax check
         run: python -m py_compile *.py

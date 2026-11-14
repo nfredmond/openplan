@@ -1,3 +1,5 @@
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
+import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -6,8 +8,9 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 
 const REPORT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const PROJECT_ID = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
@@ -48,8 +51,14 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
+// Who pays for the call, as the AI limiter sees it (the shared key unless a
+// test says otherwise). Everything else in the module is real.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 import { POST as postNarrativeDraft } from "@/app/api/reports/[reportId]/narrative-draft/route";
@@ -90,13 +99,22 @@ const baseProject = {
 
 // Generic awaitable query chain: every builder method returns the chain,
 // awaiting it (or calling maybeSingle) yields the canned result.
-function chainable(result: { data: unknown; error: { message: string; code?: string } | null }) {
+type ReadFixture = { data: unknown; error: { message: string; code?: string } | null; count?: number | null };
+type FinancialTable = "funding_awards" | "funding_opportunities" | "billing_invoice_records";
+type FinancialSelect = { table: FinancialTable; columns: string; options?: { count?: string } };
+
+function chainable(fixture: ReadFixture, onSelect?: (columns: string, options?: { count?: string }) => void) {
+  const result = exactCountResult(fixture);
   const chain: Record<string, unknown> = {
     maybeSingle: vi.fn(async () => result),
     then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
       Promise.resolve(result).then(resolve, reject),
   };
-  for (const method of ["select", "eq", "neq", "in", "order", "limit"]) {
+  chain.select = vi.fn((columns: string, options?: { count?: string }) => {
+    onSelect?.(columns, options);
+    return chain;
+  });
+  for (const method of ["eq", "neq", "in", "order", "limit"]) {
     chain[method] = vi.fn(() => chain);
   }
   return chain;
@@ -105,7 +123,9 @@ function chainable(result: { data: unknown; error: { message: string; code?: str
 function installClient(overrides?: {
   report?: Record<string, unknown> | null;
   membership?: Record<string, unknown> | null;
+  financialReads?: Partial<Record<FinancialTable, ReadFixture>>;
 }) {
+  const financialSelects: FinancialSelect[] = [];
   const report = overrides?.report === undefined ? baseReport : overrides.report;
   const membership =
     overrides?.membership === undefined
@@ -117,6 +137,11 @@ function installClient(overrides?: {
     rpc: (...args: unknown[]) => rpcMock(...args),
     from: vi.fn((table: string) => {
       if (table === "document_narrative_drafts") return { insert: draftInsertMock };
+      if (table === "funding_awards" || table === "funding_opportunities" || table === "billing_invoice_records") {
+        return chainable(overrides?.financialReads?.[table] ?? { data: [], error: null }, (columns, options) => {
+          financialSelects.push({ table, columns, options });
+        });
+      }
       if (table === "reports") return chainable({ data: report, error: null });
       if (table === "workspace_members") return chainable({ data: membership, error: null });
       if (table === "projects") return chainable({ data: baseProject, error: null });
@@ -146,15 +171,36 @@ function installClient(overrides?: {
           error: null,
         });
       }
-      // funding_awards, funding_opportunities, billing_invoice_records — empty
-      // is a valid posture for all.
       return chainable({ data: [], error: null });
     }),
   });
+  return financialSelects;
+}
+
+const FINANCIAL_PROJECTIONS: Record<FinancialTable, string> = {
+  funding_awards: "id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",
+  funding_opportunities: "id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",
+  billing_invoice_records: "id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",
+};
+const FINANCIAL_TABLES = Object.keys(FINANCIAL_PROJECTIONS) as FinancialTable[];
+const FINANCIAL_COMPLETENESS_ERROR = "Complete funding currency/version source sets are unavailable. No partial financial snapshot is accepted.";
+
+/** Each complete legacy set has one row; only the selected count changes in a refusal case. */
+function financialReads(): Record<FinancialTable, ReadFixture> {
+  const awardId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+  return {
+    funding_awards: { data: [{ id: awardId, awarded_amount: "100.01", match_amount: "0.00", risk_flag: "none", obligation_due_at: null, updated_at: null, created_at: null, latest_handoff_revision_id: null, current_handoff_revision_id: null, currency_code: null, has_source_backed_issuance: false }], count: 1, error: null },
+    funding_opportunities: { data: [{ id: "ffffffff-ffff-4fff-8fff-ffffffffffff", expected_award_amount: "25.01", decision_state: "pursue", opportunity_status: "open", closes_at: null, updated_at: null, created_at: null, has_source_backed_issuance: false }], count: 1, error: null },
+    billing_invoice_records: { data: [{ id: "11111111-1111-4111-8111-111111111111", funding_award_id: awardId, status: "paid", amount: "10.01", retention_percent: "0", retention_amount: "0.00", net_amount: "10.01", due_date: null, invoice_date: null, created_at: null, award_handoff_revision_id: null, currency_code: null, handoff_applicable_revision_id: null }], count: 1, error: null },
+  };
+}
+
+function expectFinancialSelects(selects: FinancialSelect[]) {
+  expect(selects).toEqual(FINANCIAL_TABLES.map((table) => ({ table, columns: FINANCIAL_PROJECTIONS[table], options: { count: "exact" } })));
 }
 
 describe("/api/reports/[reportId]/narrative-draft", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_ASSISTANT_MODEL", "");
@@ -162,8 +208,10 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     // Default: the workspace has uploaded nothing that matches this packet.
     rpcMock.mockResolvedValue({ data: [], error: null });
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
 
     draftSingleMock.mockImplementation(async () => ({
@@ -277,14 +325,57 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
   });
 
   it("returns 429 without a model call when the workspace AI allowance is exhausted", async () => {
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    meter.count.mockResolvedValue({ count: 20, error: null });
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
 
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("300");
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+  });
+
+  it("counts the call before making it, with this route's bucket and event keys", async () => {
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "document_narrative_draft",
+      eventKey: "report_section_narrative_draft",
+      sourceRoute: "/api/reports/[reportId]/narrative-draft",
+      metadataJson: { model: "claude-opus-5-5", sectionKey: "executive_summary" },
+    });
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(meter.insert.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it.each([
+    ["the usage lookup", () => meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } })],
+    ["the usage record", () => meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } })],
+  ])("makes no call when %s fails and the deployment's shared key pays", async (_label, breakMeter) => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    breakMeter();
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still calls the model on the workspace's own key when the usage meter fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    keySourceMock.mockReturnValue("workspace");
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
   });
 
   it("generates, validates, and stores the draft with grounding stats and a facts hash", async () => {
@@ -331,14 +422,63 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     expect(insertPayload.created_by).toBe(USER_ID);
 
     // The successful generation is metered against the shared staff AI allowance.
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         bucketKey: "document_narrative_draft",
         eventKey: "report_section_narrative_draft",
       })
     );
+  });
+
+  it("report financial completeness accepts three complete one-row source sets", async () => {
+    const selects = installClient({ financialReads: financialReads() });
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(response.status).toBe(201);
+    expectFinancialSelects(selects);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
+    expect(anthropicMock).toHaveBeenCalledTimes(1);
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(draftInsertMock).toHaveBeenCalledTimes(1);
+    expect(mockAudit.error).not.toHaveBeenCalled();
+  });
+
+  it.each(FINANCIAL_TABLES.flatMap((table) => [0, 2].map((count) => ({ table, count }))))(
+    "report financial completeness refuses $table count=$count with one successful row",
+    async ({ table, count }) => {
+      const reads = financialReads();
+      reads[table] = { ...reads[table], count };
+      const selects = installClient({ financialReads: reads });
+      const response = await postNarrativeDraft(jsonRequest(), routeContext());
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Unexpected error while drafting narrative" });
+      expectFinancialSelects(selects);
+      expect(mockAudit.error).toHaveBeenCalledWith("narrative_draft_unhandled_error", expect.objectContaining({
+        error: expect.objectContaining({ name: "Error", message: FINANCIAL_COMPLETENESS_ERROR }),
+      }));
+      expect(generateTextMock).not.toHaveBeenCalled();
+      expect(anthropicMock).not.toHaveBeenCalled();
+      expect(meter.insert).not.toHaveBeenCalled();
+      expect(draftInsertMock).not.toHaveBeenCalled();
+    }
+  );
+
+  it("report financial completeness keeps a failed read in its named source-error branch", async () => {
+    const reads = financialReads();
+    reads.funding_awards = { data: null, count: null, error: { code: "42501", message: "permission denied for table funding_awards" } };
+    const selects = installClient({ financialReads: reads });
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "Failed to load report source records" });
+    expectFinancialSelects(selects);
+    expect(mockAudit.error).toHaveBeenCalledWith("narrative_draft_load_failed", {
+      reportId: REPORT_ID, message: "permission denied for table funding_awards", code: "42501",
+    });
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(anthropicMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
   });
 
   it("respects the OPENPLAN_ASSISTANT_MODEL override", async () => {
@@ -353,14 +493,16 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     );
   });
 
-  it("returns 502 without persisting or metering when generation fails", async () => {
+  it("returns 502 without persisting when generation fails, keeping the reservation", async () => {
     generateTextMock.mockRejectedValue(new Error("model unavailable"));
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
 
     expect(response.status).toBe(502);
     expect(draftInsertMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    // The call was counted before it was made, and a failed call keeps
+    // its reservation (ai-rate-limit.ts, reserveAiUsage).
+    expect(meter.insert).toHaveBeenCalledTimes(1);
   });
 
   it("answers 503 with the migration name when the drafts table is missing", async () => {
@@ -485,7 +627,10 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
       ],
       error: null,
     });
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     draftSingleMock.mockResolvedValue({ data: { id: DRAFT_ID }, error: null });
     generateTextMock.mockResolvedValue({

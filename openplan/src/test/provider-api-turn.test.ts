@@ -4,11 +4,11 @@ import { runProviderApiTurn, withExactProviderApiMode } from "@/lib/assistant/pr
 import { retainedProviderTurnSchema, type ProviderService, type ProviderUserClient } from "@/lib/assistant/provider-server";
 import { parseProviderProjectAnswer, providerProjectPacketSchema } from "@/lib/assistant/provider-project-task";
 
-const mocks = vi.hoisted(() => ({ generate: vi.fn(), model: vi.fn(), keySource: vi.fn(), metadata: vi.fn(), context: vi.fn(), rate: vi.fn(), usage: vi.fn() }));
+const mocks = vi.hoisted(() => ({ generate: vi.fn(), model: vi.fn(), keySource: vi.fn(), metadata: vi.fn(), context: vi.fn(), reserve: vi.fn() }));
 vi.mock("ai", () => ({ generateText: mocks.generate, Output: { object: (value: unknown) => value } }));
 vi.mock("@/lib/integrations/anthropic-access", () => ({ anthropicModel: mocks.model, anthropicKeySource: mocks.keySource }));
 vi.mock("@/lib/integrations/workspace-keys", () => ({ listWorkspaceIntegrationKeyMetadata: mocks.metadata, withWorkspaceIntegrationContext: mocks.context }));
-vi.mock("@/lib/runtime/ai-rate-limit", () => ({ checkAiUsageRateLimit: mocks.rate, recordAiUsageEvent: mocks.usage }));
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({ reserveAiUsage: mocks.reserve }));
 
 const id = "11111111-1111-4111-8111-111111111111", workspace = "22222222-2222-4222-8222-222222222222", project = "33333333-3333-4333-8333-333333333333", requestId = "44444444-4444-4444-8444-444444444444", attempt = "55555555-5555-4555-8555-555555555555", owner = "66666666-6666-4666-8666-666666666666";
 const packet = providerProjectPacketSchema.parse({ version: 1, workspaceId: workspace, project: { id: project, name: "SYNTHETIC project", summary: null, status: "active", planType: "corridor", deliveryPhase: "planning", updatedAt: "2026-09-10T00:00:00Z" }, capturedAt: "2026-09-10T01:00:00Z", source: { id: `project:${project}`, label: "SYNTHETIC project", href: `/projects/${project}` } });
@@ -27,7 +27,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.model.mockReturnValue({ fixture: true }); mocks.keySource.mockReturnValue("workspace");
   mocks.metadata.mockResolvedValue([{ provider: "anthropic" }]); mocks.context.mockImplementation((_workspace, fn) => fn());
-  mocks.rate.mockResolvedValue({ allowed: true }); mocks.usage.mockResolvedValue(undefined); mocks.generate.mockResolvedValue(generated());
+  mocks.reserve.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 }); mocks.generate.mockResolvedValue(generated());
   const q = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn().mockResolvedValue({ data: { id, state: "running", attempt_id: attempt }, error: null }) };
   q.select.mockReturnValue(q); q.eq.mockReturnValue(q); select = q.select; eq = q.eq; read = q.maybeSingle;
   rpc = vi.fn(async (_name, args) => ({ data: { ...original, state: args.p_failure_code ? "failed" : "succeeded", result: args.p_result, provider_receipt: args.p_provider_receipt, failure_code: args.p_failure_code, finished_at: "2026-09-10T01:01:00Z" }, error: null }));
@@ -43,7 +43,8 @@ describe("one-shot direct API project task", () => {
     expect(JSON.parse(mocks.generate.mock.calls[0][0].prompt).selectedProjectRecord).toEqual(packet);
     expect(mocks.generate.mock.calls[0][0].output.schema.safeParse({ ...output, citations: ["private:other"] }).success).toBe(false);
     expect(select).toHaveBeenCalledWith("id,state,attempt_id"); expect(eq).toHaveBeenCalledWith("user_id", owner); expect(eq).toHaveBeenCalledWith("id", id);
-    expect(mocks.usage).toHaveBeenCalledWith(expect.objectContaining({ eventKey: id, workspaceId: workspace }));
+    expect(mocks.reserve).toHaveBeenCalledWith(expect.objectContaining({ bucketKey: "assistant_chat", eventKey: id, workspaceId: workspace }));
+    expect(mocks.reserve.mock.invocationCallOrder[0]).toBeLessThan(mocks.generate.mock.invocationCallOrder[0]);
     expect(rpc).toHaveBeenCalledWith("finish_assistant_provider_turn", expect.objectContaining({ p_turn_id: id, p_attempt_id: attempt, p_user_id: owner, p_connection_id: null, p_token_hash: null }));
     expect(saved.provider_receipt).toMatchObject({ provider: "anthropic", model: "fixture-api-model", authMode: "workspace_api_key", inputTokens: 100, outputTokens: 50 });
   });
@@ -71,8 +72,12 @@ describe("one-shot direct API project task", () => {
     expect(JSON.stringify(saved)).not.toContain("PRIVATE_KEY_FAILURE_CANARY"); expect(mocks.generate).not.toHaveBeenCalled();
   });
   it("refuses a rate limit before generation", async () => {
-    mocks.rate.mockResolvedValue({ allowed: false });
+    mocks.reserve.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
     expect((await run()).failure_code).toBe("provider_rate_limited"); expect(mocks.generate).not.toHaveBeenCalled();
+  });
+  it("makes no call when usage cannot be metered", async () => {
+    mocks.reserve.mockRejectedValue(new Error("AI usage could not be metered"));
+    const saved = await run(); expect(saved.failure_code).toBe("provider_api_failed"); expect(mocks.generate).not.toHaveBeenCalled();
   });
   it.each([null, { id, state: "cancelled", attempt_id: attempt }, { id, state: "running", attempt_id: owner }])("aborts when current request access or ownership is lost %j", async data => {
     read.mockResolvedValue({ data, error: null });

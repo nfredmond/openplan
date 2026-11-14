@@ -107,7 +107,7 @@ export class ReadFailureLog {
 
     return (
       `This page could not read ${listed}. ` +
-      "Anything below that depends on it is shown as unavailable rather than as zero — an empty " +
+      "Anything below that depends on it is shown as unavailable rather than as zero. An empty " +
       "list here would not mean the records are absent."
     );
   }

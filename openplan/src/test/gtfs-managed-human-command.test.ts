@@ -24,7 +24,8 @@ async function fixture(operation: "cancel" | "adopt" = "cancel") {
  const options = { directory, installationId: id(6), target: "http://127.0.0.1:54321", scope, command, service, signal: controller.signal, deadlineMs: 50 };
  return { directory, command, receipt, controller, transport, options, run: () => executeGtfsHumanCommand(options) };
 }
-describe("retained human GTFS commands", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("retained human GTFS commands", () => {
  it.each(["cancel", "adopt"] as const)("retains the exact %s command before RPC and rechecks SQL on replay", async operation => {
   const f = await fixture(operation); expect(await f.run()).toEqual(f.receipt); expect(await f.run()).toEqual(f.receipt); expect(f.transport).toHaveBeenCalledTimes(2);
   expect(String(f.transport.mock.calls[0][0])).toBe(`http://127.0.0.1:54321/rest/v1/rpc/${operation === "cancel" ? "cancel_gtfs_ingest" : "adopt_reviewed_gtfs_ingest"}`);

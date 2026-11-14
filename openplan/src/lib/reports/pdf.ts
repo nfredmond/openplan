@@ -46,12 +46,18 @@ async function launchBrowser(): Promise<Browser> {
   const puppeteer = (await import("puppeteer-core")).default;
 
   if (isServerlessRuntime()) {
+    // The bundle must be a release that knows the function's Node.js runtime.
+    // Release 129 unpacked the Amazon Linux 2 libraries on every runtime but
+    // Node 20, so on the hosted site's Node 24 (Amazon Linux 2023) the browser
+    // died at launch with "libnspr4.so: cannot open shared object file" and
+    // every hosted PDF came from the built-in writer (KI-2026-11-14-301).
+    // Release 153 dropped `headless` and `defaultViewport` from its export;
+    // its documentation launches with the headless shell.
     const chromium = (await import("@sparticuz/chromium")).default;
     return puppeteer.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport,
+      headless: "shell",
     });
   }
 
@@ -139,10 +145,22 @@ export function detectPdfEngineAvailability(): PdfEngineAvailability {
  */
 export const BUILTIN_PDF_NOTICE =
   "Typeset by OpenPlan's built-in PDF writer because this deployment has no browser rendering " +
-  "engine. This is the complete written report — no section has been shortened or dropped — but " +
+  "engine. This is the complete written report (no section has been shortened or dropped), but " +
   "photographs, charts, styled layout, and table " +
   "rules from the HTML packet are not reproduced. Frozen image custody facts remain in the " +
   "document and artifact record. Non-Latin scripts are not rendered.";
+
+/**
+ * Why the browser engine was not used, in words safe to log and store: the
+ * first line of the launch or render error, cut to 300 characters. Paths under
+ * /tmp and library names can appear; request data cannot, because the error
+ * comes from starting the browser or printing a page, not from the document.
+ */
+export function describePdfEngineFailure(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const line = message.split("\n").map((part) => part.trim()).filter(Boolean).slice(0, 4).join(" | ");
+  return (line || "unknown error").slice(0, 300);
+}
 
 export type RenderReportPdfResult = {
   bytes: Uint8Array;
@@ -151,6 +169,12 @@ export type RenderReportPdfResult = {
   pageCount: number | null;
   /** Non-null only when the output differs from the styled HTML rendering. */
   disclosure: string | null;
+  /**
+   * Non-null only when a browser engine was expected and failed. A deployment
+   * with no engine at all leaves it null; that case is a configuration, not a
+   * fault.
+   */
+  engineFailure: string | null;
 };
 
 /**
@@ -171,14 +195,19 @@ export async function renderReportPdf(
   }
 ): Promise<RenderReportPdfResult> {
   const availability = detectPdfEngineAvailability();
+  let engineFailure: string | null = null;
 
   if (availability.chromeAvailable) {
     try {
       const bytes = await renderHtmlToPdf(html, { format: options.format, footerLabel: options.footerLabel });
-      return { bytes: new Uint8Array(bytes), engine: "chrome", pageCount: null, disclosure: null };
-    } catch {
-      // Fall through to the built-in writer. The caller audits the reason; a
-      // complete document still leaves the building.
+      return { bytes: new Uint8Array(bytes), engine: "chrome", pageCount: null, disclosure: null, engineFailure: null };
+    } catch (error) {
+      // Fall through to the built-in writer: a complete document still leaves
+      // the building. The reason is logged here, once, for every caller. Before
+      // this line existed the hosted site fell back on every PDF for weeks and
+      // nothing said why.
+      engineFailure = describePdfEngineFailure(error);
+      console.error(`[pdf] the browser engine (${availability.source}) failed, so the built-in writer was used: ${engineFailure}`);
     }
   }
 
@@ -200,5 +229,6 @@ export async function renderReportPdf(
     engine: "builtin",
     pageCount: result.pageCount,
     disclosure: BUILTIN_PDF_NOTICE,
+    engineFailure,
   };
 }

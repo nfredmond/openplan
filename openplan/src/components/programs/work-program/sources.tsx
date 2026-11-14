@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { WorkProgramSource } from "@/lib/programs/work-program/types";
 import type { WorkProgramSourceElement } from "@/lib/programs/work-program/source-extraction";
 import { Field, SelectField, fieldClass } from "./fields";
+import { uploadKnowledgeBaseFile } from "@/lib/knowledge-base/upload-client";
 
 type Props = {
   programId: string; workspaceId: string; sources: WorkProgramSource[];
@@ -55,8 +56,7 @@ export function WorkProgramSources({ programId, workspaceId, sources, documents,
     try {
       let selected = documentId;
       if (file) {
-        const query = new URLSearchParams({ workspaceId, filename: file.name });
-        const response = await fetch(`/api/knowledge-base/documents?${query}`, { method: "POST", headers: { "Content-Type": "application/pdf" }, body: file });
+        const response = await uploadKnowledgeBaseFile(file, { workspaceId, contentType: "application/pdf" });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error ?? "The original could not be uploaded");
         selected = result.document.id;

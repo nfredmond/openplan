@@ -1,3 +1,4 @@
+import { managedInvoiceTotals, comparableAwardFunding, type ManagedInvoiceTotals, type ComparableFunding, type ComparableAward, type ManagedInvoice } from "@/lib/grants/award-handoff";
 import {
   CLAIMED_INVOICE_STATUSES,
   computeInvoiceRetentionWithheld,
@@ -51,7 +52,7 @@ import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
  */
 
 /** The award row, in the shape the ledger needs it. */
-export type DrawdownAwardLike = {
+export type DrawdownAwardLike = ComparableAward & {
   awarded_amount?: number | string | null;
   match_amount?: number | string | null;
   match_posture?: string | null;
@@ -64,7 +65,7 @@ export type DrawdownAwardLike = {
  * `paidWithNoDateCount`. It is deliberately NOT defaulted to the invoice date
  * or to today — either would manufacture a payment date nobody recorded.
  */
-export type DrawdownInvoiceLike = BillingInvoiceRecordLike & {
+export type DrawdownInvoiceLike = BillingInvoiceRecordLike & ManagedInvoice & {
   id?: string | null;
   invoice_number?: string | null;
   invoice_date?: string | null;
@@ -103,6 +104,7 @@ export type LedgerInvoiceLine = {
 };
 
 export type AwardDrawdownLedger = {
+  managed?: { funding: ComparableFunding; invoices: ManagedInvoiceTotals };
   /**
    * `funding_awards.awarded_amount`, or null when it is 0.
    *
@@ -111,7 +113,7 @@ export type AwardDrawdownLedger = {
    * fact the database does not hold, so the ledger reports null and the surface
    * says "not recorded". Every figure derived from it is null too.
    */
-  authorizedAmount: number | null;
+  recordedAwardCeiling: number | null;
   /**
    * `funding_awards.match_amount`, or null when it is 0 — same
    * `NOT NULL DEFAULT 0` problem as the authorized amount. `matchPosture`
@@ -168,7 +170,7 @@ export type AwardDrawdownLedger = {
   rejectedCount: number;
 
   /**
-   * `authorizedAmount − claimedGrossToDate`, DELIBERATELY NOT CLAMPED.
+   * `recordedAwardCeiling − claimedGrossToDate`, DELIBERATELY NOT CLAMPED.
    *
    * A negative value is an over-claim against the authorization, and it is one
    * of the few things in this module a planner must act on immediately. The
@@ -176,10 +178,10 @@ export type AwardDrawdownLedger = {
    * defensible for a portfolio total that mixes many awards; per award it would
    * hide the overage entirely.
    *
-   * Null whenever `authorizedAmount` is null — there is no remainder of an
+   * Null whenever `recordedAwardCeiling` is null — there is no remainder of an
    * amount nobody recorded.
    */
-  remainingAuthorized: number | null;
+  remainingAgainstCeiling: number | null;
 
   lines: LedgerInvoiceLine[];
 };
@@ -224,7 +226,7 @@ export function toDrawdownInvoiceRead(result: {
 
 /** The columns a read feeding this ledger must select. */
 export const DRAWDOWN_INVOICE_COLUMNS =
-  "id, invoice_number, status, amount, retention_percent, retention_amount, invoice_date, due_date, paid_date";
+  "id, funding_award_id, invoice_number, status, amount, retention_percent, retention_amount, net_amount, invoice_date, due_date, paid_date";
 
 /** Nullable award money: the column cannot tell 0 from "nobody entered it". */
 function recordedAwardAmount(value: number | string | null | undefined): number | null {
@@ -250,10 +252,21 @@ export function buildAwardDrawdownLedger({
     return { ok: false, pending: invoiceRead.pending, message: invoiceRead.message };
   }
 
-  const authorizedAmount = recordedAwardAmount(award?.awarded_amount);
+  if (award?.latest_handoff_revision_id || award?.current_handoff_revision_id) {
+    const funding = comparableAwardFunding([award]); const invoices = managedInvoiceTotals(invoiceRead.invoices, award);
+    // Numeric legacy projections remain unassessed. Exact values are carried in
+    // managed, including explicit zero. No Number accumulation runs in this branch.
+    return { ok:true, ledger: { managed:{ funding,invoices }, recordedAwardCeiling:null,matchAmount:null,matchPosture:null,
+      claimedGrossToDate:Number.NaN,claimedCount:invoiceRead.invoices.filter((i) => isClaimedInvoiceStatus(i.status ?? '')).length,
+      paidToDate:Number.NaN,paidCount:invoiceRead.invoices.filter((i) => i.status === 'paid').length,paidWithNoDateCount:0,
+      outstandingClaimed:Number.NaN,outstandingCount:0,retentionHeld:Number.NaN,retentionPendingOnUnpaid:Number.NaN,
+      draftedNotClaimed:Number.NaN,draftedCount:0,rejectedGross:Number.NaN,rejectedCount:0,remainingAgainstCeiling:null,lines:[],
+    } };
+  }
+  const recordedAwardCeiling = recordedAwardAmount(award?.awarded_amount);
 
   const ledger: AwardDrawdownLedger = {
-    authorizedAmount,
+    recordedAwardCeiling,
     matchAmount: recordedAwardAmount(award?.match_amount),
     matchPosture: typeof award?.match_posture === "string" ? award.match_posture : null,
     claimedGrossToDate: 0,
@@ -269,7 +282,7 @@ export function buildAwardDrawdownLedger({
     draftedCount: 0,
     rejectedGross: 0,
     rejectedCount: 0,
-    remainingAuthorized: null,
+    remainingAgainstCeiling: null,
     lines: [],
   };
 
@@ -331,8 +344,8 @@ export function buildAwardDrawdownLedger({
     }
   }
 
-  ledger.remainingAuthorized =
-    authorizedAmount === null ? null : roundCurrencyAmount(authorizedAmount - ledger.claimedGrossToDate);
+  ledger.remainingAgainstCeiling =
+    recordedAwardCeiling === null ? null : roundCurrencyAmount(recordedAwardCeiling - ledger.claimedGrossToDate);
 
   return { ok: true, ledger };
 }

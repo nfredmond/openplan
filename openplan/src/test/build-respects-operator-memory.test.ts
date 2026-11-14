@@ -4,6 +4,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { npmInvocation } from "./helpers/npm-invocation";
 
 const buildCommand = (JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: { build: string };
@@ -50,7 +51,8 @@ process.exit(${exitCode});
     const env = { ...process.env };
     delete env.NODE_OPTIONS;
     if (nodeOptions !== undefined) env.NODE_OPTIONS = nodeOptions;
-    const result = spawnSync("npm", ["run", "--silent", "build"], {
+    const npm = npmInvocation(["run", "--silent", "build"]);
+    const result = spawnSync(npm.command, npm.args, {
       cwd: directory,
       env,
       encoding: "utf8",

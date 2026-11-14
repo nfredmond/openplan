@@ -269,7 +269,7 @@ export function MeasureFundSetup({
           <MeasureField
             label="Accounting period"
             htmlFor="measure-cadence"
-            hint="How often the fund closes a period — not how often deposits arrive."
+            hint="How often the fund closes a period, not how often deposits arrive."
           >
             <select
               id="measure-cadence"
@@ -311,7 +311,7 @@ export function MeasureFundSetup({
           <MeasureField
             label="Rate, as people say it"
             htmlFor="measure-rate"
-            hint="A label only. OpenPlan never multiplies by a tax rate — receipts are recorded, not computed."
+            hint="A label only. OpenPlan never multiplies by a tax rate. Receipts are recorded, not computed."
           >
             <Input id="measure-rate" value={rateLabel} onChange={(event) => setRateLabel(event.target.value)} />
           </MeasureField>
@@ -368,7 +368,7 @@ export function MeasureFundSetup({
             <MeasureField
               label="How this agency names its fiscal year"
               htmlFor="measure-fy-note"
-              hint="In your own words. OpenPlan never derives a fiscal year from a date — boundaries differ by jurisdiction."
+              hint="In your own words. OpenPlan never derives a fiscal year from a date. Boundaries differ by jurisdiction."
             >
               <Input
                 id="measure-fy-note"
@@ -393,7 +393,7 @@ export function MeasureFundSetup({
     <section className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
       <h2 className="text-base font-semibold">Record what the ordinance says</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Each reading of the ordinance is dated and kept. Amending the ordinance records a new version — the old
+        Each reading of the ordinance is dated and kept. Amending the ordinance records a new version. The old
         one stays, because the money already split under it points at it.
       </p>
       {opening.startingPointNote ? (
@@ -423,7 +423,7 @@ export function MeasureFundSetup({
           variant={ruleMode === "narrative" ? "default" : "outline"}
           onClick={() => setRuleMode("narrative")}
         >
-          It does not fit a rule — record it as text
+          It does not fit a rule: record it as text
         </Button>
       </div>
 
@@ -476,7 +476,7 @@ export function MeasureFundSetup({
           <MeasureField
             label="Where this reading comes from"
             htmlFor="measure-rule-note"
-            hint="The section, the amendment, the board action — whatever a reviewer would need to check it."
+            hint="The section, the amendment, the board action: whatever a reviewer would need to check it."
           >
             <Input
               id="measure-rule-note"
@@ -506,7 +506,7 @@ export function MeasureFundSetup({
           <p className="mt-2 text-xs text-muted-foreground">
             Those records stay exactly as they are, filed against the version that created them. What changes is
             that nothing new can be allocated or claimed under the reference. If this is a rename rather than a
-            retirement, put the old short reference back on the category instead — a reference is how a claim
+            retirement, put the old short reference back on the category instead. A reference is how a claim
             finds its clause, and a renamed one starts a different history.
           </p>
           <label className="mt-2 flex items-start gap-2 text-xs">

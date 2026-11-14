@@ -170,9 +170,10 @@ export function BcaQuantityBuilder({
           </select>
         </Field>
         <p className="text-sm">
-          No project values are supplied automatically. These helpers show
-          arithmetic and retain your inputs. They do not establish traffic
-          forecasts, treatment effectiveness or hazard probabilities.
+          These helpers show arithmetic and keep your inputs. Crashes stored
+          on treated safety segments are offered on the Evidence tab. The
+          helpers do not set traffic forecasts, treatment effectiveness or
+          hazard probabilities.
         </p>
         {kind === "safety" && (
           <Field label="Safety count unit">

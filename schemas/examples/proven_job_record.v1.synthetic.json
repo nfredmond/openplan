@@ -1,0 +1,375 @@
+{
+  "schema": "openplan.proven_job_record.v1",
+  "jobId": "safety-action-plan-and-ss4a-in-three-places",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "recordedOn": "2026-11-20",
+  "journeys": [
+    {
+      "role": "california-county",
+      "place": {
+        "kind": "county",
+        "geoid": "06998",
+        "stateFips": ["06"],
+        "label": "Synthetic California county"
+      },
+      "executor": { "agent": "Claude Code", "model": "claude-opus-5-5" },
+      "accountCreatedAt": "2026-11-20T10:00:00Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        { "point": "start", "checkedAt": "2026-11-20T10:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
+        { "point": "end", "checkedAt": "2026-11-20T10:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
+      ],
+      "crashes": { "sourceId": "ccrs-ca", "severityCoverage": "all_severities", "reportedCount": 40, "storedCount": 40 },
+      "highInjuryNetwork": { "method": "Fatal and serious injury crashes per mile, top segments", "segmentCount": 4 },
+      "countermeasureCount": 5,
+      "bcaSaved": true,
+      "engagement": {
+        "campaignId": "00000000-0000-4000-8000-000000000001",
+        "approvedCommentIds": ["00000000-0000-4000-8000-000000000002", "00000000-0000-4000-8000-000000000003"],
+        "staffReviewIds": ["00000000-0000-4000-8000-000000000004"]
+      },
+      "pdfs": [
+        {
+          "kind": "safety-action-plan",
+          "path": "docs/product/capability-evidence/synthetic-example/california-county-safety-action-plan.pdf",
+          "sha256": "b6f6a001ee3dbc42664ed08ab52d303085db03afb6155779801386c337009632",
+          "bytes": 237,
+          "pages": 3,
+          "draftStamp": false,
+          "items": [
+            { "item": "high-injury-map", "page": 2, "method": "page-image", "imageSha256": "1ccc254b811c343fdf5a7493f70c7b99ca56111cab646f195918e72c0bc25282" },
+            { "item": "crash-summary", "page": 1, "method": "pdftotext", "text": "Crash summary" },
+            { "item": "countermeasures", "page": 3, "method": "pdftotext", "text": "Countermeasures" },
+            { "item": "bca", "page": 3, "method": "pdftotext", "text": "Benefit-cost analysis" },
+            { "item": "engagement-summary", "page": 3, "method": "pdftotext", "text": "Engagement summary" }
+          ]
+        },
+        {
+          "kind": "ss4a-application",
+          "path": "docs/product/capability-evidence/synthetic-example/california-county-ss4a-application.pdf",
+          "sha256": "c5cc3cdc1e70772ff6518ab735b345e2d1dda160f409ddf7063dd51c0d5034ef",
+          "bytes": 235,
+          "pages": 3,
+          "draftStamp": false,
+          "items": [
+            { "item": "high-injury-map", "page": 2, "method": "page-image", "imageSha256": "25cf033dcd179af25fa1c2969f3c34d79d6b341e2806e54634ae37a8c41bd0b2" },
+            { "item": "crash-summary", "page": 1, "method": "pdftotext", "text": "Crash summary" },
+            { "item": "countermeasures", "page": 3, "method": "pdftotext", "text": "Countermeasures" },
+            { "item": "bca", "page": 3, "method": "pdftotext", "text": "Benefit-cost analysis" },
+            { "item": "engagement-summary", "page": 3, "method": "pdftotext", "text": "Engagement summary" }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        }
+      ]
+    },
+    {
+      "role": "nevada-county",
+      "place": {
+        "kind": "county",
+        "geoid": "32998",
+        "stateFips": ["32"],
+        "label": "Synthetic Nevada county"
+      },
+      "executor": { "agent": "Claude Code", "model": "claude-opus-5-5" },
+      "accountCreatedAt": "2026-11-20T11:00:00Z",
+      "confirmationMethod": "operator_relay",
+      "health": [
+        { "point": "start", "checkedAt": "2026-11-20T11:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
+        { "point": "end", "checkedAt": "2026-11-20T11:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
+      ],
+      "crashes": { "sourceId": "fars-national", "severityCoverage": "fatal_only", "reportedCount": 6, "storedCount": 6 },
+      "highInjuryNetwork": { "method": "Fatal and serious injury crashes per mile, top segments", "segmentCount": 4 },
+      "countermeasureCount": 5,
+      "bcaSaved": true,
+      "engagement": {
+        "campaignId": "00000000-0000-4000-8000-000000000005",
+        "approvedCommentIds": ["00000000-0000-4000-8000-000000000006", "00000000-0000-4000-8000-000000000007"],
+        "staffReviewIds": ["00000000-0000-4000-8000-000000000008"]
+      },
+      "pdfs": [
+        {
+          "kind": "safety-action-plan",
+          "path": "docs/product/capability-evidence/synthetic-example/nevada-county-safety-action-plan.pdf",
+          "sha256": "e044e47429130df9d72e6f6c49262d890fdea6e3055858869ded47c7b6932786",
+          "bytes": 233,
+          "pages": 3,
+          "draftStamp": false,
+          "items": [
+            { "item": "high-injury-map", "page": 2, "method": "page-image", "imageSha256": "08ba881a4bedc8c901b999366c5a0314ff8c3761e5ae82dfad108baea65809b6" },
+            { "item": "crash-summary", "page": 1, "method": "pdftotext", "text": "Crash summary" },
+            { "item": "countermeasures", "page": 3, "method": "pdftotext", "text": "Countermeasures" },
+            { "item": "bca", "page": 3, "method": "pdftotext", "text": "Benefit-cost analysis" },
+            { "item": "engagement-summary", "page": 3, "method": "pdftotext", "text": "Engagement summary" }
+          ]
+        },
+        {
+          "kind": "ss4a-application",
+          "path": "docs/product/capability-evidence/synthetic-example/nevada-county-ss4a-application.pdf",
+          "sha256": "0507e8dd6d22ccc5883c114a2f2be803a520c62b73e2bbbe030c55144bb14763",
+          "bytes": 231,
+          "pages": 3,
+          "draftStamp": false,
+          "items": [
+            { "item": "high-injury-map", "page": 2, "method": "page-image", "imageSha256": "2d51a03adf7c4270bdd31337bd53963ce946a8cf439610b608bbf44a65d56f5e" },
+            { "item": "crash-summary", "page": 1, "method": "pdftotext", "text": "Crash summary" },
+            { "item": "countermeasures", "page": 3, "method": "pdftotext", "text": "Countermeasures" },
+            { "item": "bca", "page": 3, "method": "pdftotext", "text": "Benefit-cost analysis" },
+            { "item": "engagement-summary", "page": 3, "method": "pdftotext", "text": "Engagement summary" }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        }
+      ]
+    },
+    {
+      "role": "tribal-area",
+      "place": {
+        "kind": "aiannh",
+        "geoid": "9998R",
+        "stateFips": ["32"],
+        "label": "Synthetic tribal area"
+      },
+      "executor": { "agent": "Claude Code", "model": "claude-opus-5-5" },
+      "accountCreatedAt": "2026-11-20T12:00:00Z",
+      "confirmationMethod": "admin_generate_link",
+      "health": [
+        { "point": "start", "checkedAt": "2026-11-20T12:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
+        { "point": "end", "checkedAt": "2026-11-20T12:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
+      ],
+      "crashes": { "sourceId": "fars-national", "severityCoverage": "fatal_only", "reportedCount": 3, "storedCount": 3 },
+      "highInjuryNetwork": { "method": "Fatal and serious injury crashes per mile, top segments", "segmentCount": 4 },
+      "countermeasureCount": 5,
+      "bcaSaved": true,
+      "engagement": {
+        "campaignId": "00000000-0000-4000-8000-000000000009",
+        "approvedCommentIds": ["00000000-0000-4000-8000-000000000010", "00000000-0000-4000-8000-000000000011"],
+        "staffReviewIds": ["00000000-0000-4000-8000-000000000012"]
+      },
+      "pdfs": [
+        {
+          "kind": "safety-action-plan",
+          "path": "docs/product/capability-evidence/synthetic-example/tribal-area-safety-action-plan.pdf",
+          "sha256": "c644148f9db0643a59521daaec63f51665b2eff77d0aa721978205290b3133bd",
+          "bytes": 231,
+          "pages": 3,
+          "draftStamp": false,
+          "items": [
+            { "item": "high-injury-map", "page": 2, "method": "page-image", "imageSha256": "ee6813d9e2674e8f67caf675fd0066307c9c2298c670a031e1f55d48d803b5f6" },
+            { "item": "crash-summary", "page": 1, "method": "pdftotext", "text": "Crash summary" },
+            { "item": "countermeasures", "page": 3, "method": "pdftotext", "text": "Countermeasures" },
+            { "item": "bca", "page": 3, "method": "pdftotext", "text": "Benefit-cost analysis" },
+            { "item": "engagement-summary", "page": 3, "method": "pdftotext", "text": "Engagement summary" }
+          ]
+        },
+        {
+          "kind": "ss4a-application",
+          "path": "docs/product/capability-evidence/synthetic-example/tribal-area-ss4a-application.pdf",
+          "sha256": "6a4bcf3ccb8fa9ec54f289cd2e534f6daf8710b7677ac270b34005afcf214ab6",
+          "bytes": 229,
+          "pages": 3,
+          "draftStamp": false,
+          "items": [
+            { "item": "high-injury-map", "page": 2, "method": "page-image", "imageSha256": "2aa01f9a73e6abb72d98f2b63ac1af466ba25394df8b923e19a443773bb39018" },
+            { "item": "crash-summary", "page": 1, "method": "pdftotext", "text": "Crash summary" },
+            { "item": "countermeasures", "page": 3, "method": "pdftotext", "text": "Countermeasures" },
+            { "item": "bca", "page": 3, "method": "pdftotext", "text": "Benefit-cost analysis" },
+            { "item": "engagement-summary", "page": 3, "method": "pdftotext", "text": "Engagement summary" }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.10.2",
+            "tags": ["wcag2a", "wcag2aa", "wcag21aa"],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        }
+      ]
+    }
+  ],
+  "crossWorkspace": {
+    "checks": [
+      {
+        "target": "safety-action-plan",
+        "request": "report-page",
+        "kind": "page",
+        "status": 200,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "d361e53ecfd04e73eb2c41b0802a2184d8b57b427d4c40193053d4776ec4ded4",
+          "8dfeeeb9e6cd1c8c344b6009e6ef026badbe705af64004392abe7514a6168766",
+          "fb1fb707b06d4a0ab2f0131ca1a4e0b5bf6d85430d0d77319b1656e0d796bcf2",
+          "90b3a87d2664b7ecd3d55efbf571cac76d017e01b474431e6ee442a4b6c40882"
+        ],
+        "searchedStringCount": 4
+      },
+      { "target": "safety-action-plan", "request": "report-pdf-download", "kind": "data", "status": 404, "contentReturned": false },
+      { "target": "ss4a-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false },
+      { "target": "ss4a-application", "request": "application-pdf-download", "kind": "data", "status": 404, "contentReturned": false }
+    ]
+  },
+  "sourceCheck": { "status": "not-run", "checkedOn": null, "url": null, "note": "Synthetic example; no source was queried." },
+  "limits": [
+    { "id": "synthetic-example", "text": "Synthetic example for the checker tests. It is not evidence and names no real place, run or file." },
+    { "id": "no-pdf-ua-check", "text": "No PDF/UA check was run on the exported PDFs." },
+    { "id": "no-keyboard-or-screen-reader-pass", "text": "No keyboard-only or screen-reader pass was made." },
+    { "id": "no-human-usefulness-review", "text": "No planner reviewed whether the PDFs are useful." },
+    { "id": "fars-is-fatal-only", "text": "FARS records fatal crashes only, so Nevada and tribal counts omit serious injuries." },
+    { "id": "crash-counts-not-independently-confirmed", "text": "Crash counts were not compared with the source's own query tool." },
+    { "id": "report-page-answers-200-with-not-found-screen", "text": "Another workspace's report page answers HTTP 200 with the not-found screen, because the page streams; the journey read the screen and found none of the first account's text. The downloads answer 404." }
+  ]
+}

@@ -146,12 +146,12 @@ describe("ClientInvoiceComposer", () => {
     await pullUnbilledTime();
 
     // Rated group: 5 hours of Senior Planner priced from the engagement table.
-    expect(screen.getByDisplayValue("Senior Planner — Jane Doe")).toBeInTheDocument();
-    expect(screen.getByText("Senior Planner — $180.00/hour from the engagement rate table")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Senior Planner: Jane Doe")).toBeInTheDocument();
+    expect(screen.getByText("Senior Planner: $180.00/hour from the engagement rate table")).toBeInTheDocument();
     // Rateless group is flagged, never priced.
-    expect(screen.getByDisplayValue("GIS Analyst — Ada Park")).toBeInTheDocument();
-    expect(screen.getByText("GIS Analyst — no rate found in any table; enter the amount manually")).toBeInTheDocument();
-    expect(screen.getByText("No rate found — enter the amount manually.")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("GIS Analyst: Ada Park")).toBeInTheDocument();
+    expect(screen.getByText("GIS Analyst: no rate found in any table; enter the amount manually")).toBeInTheDocument();
+    expect(screen.getByText("No rate found. Enter the amount manually.")).toBeInTheDocument();
   });
 
   it("refuses to submit while a rateless pulled line has no manual amount", async () => {
@@ -164,7 +164,7 @@ describe("ClientInvoiceComposer", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/Enter a manual amount for every pulled line without a rate — rates are never invented/)
+        screen.getByText(/Enter a manual amount for every pulled line without a rate. Rates are never invented/)
       ).toBeInTheDocument()
     );
     // Only the GET for time entries ran; no invoice POST.
@@ -177,7 +177,7 @@ describe("ClientInvoiceComposer", () => {
     fillRequiredHeader();
     await pullUnbilledTime();
 
-    fireEvent.change(screen.getByPlaceholderText("Required — no rate found"), { target: { value: "400" } });
+    fireEvent.change(screen.getByPlaceholderText("Required: no rate found"), { target: { value: "400" } });
     fireEvent.click(screen.getByRole("button", { name: "Save client invoice" }));
 
     await waitFor(() =>
@@ -205,7 +205,7 @@ describe("ClientInvoiceComposer", () => {
     // The untouched starter line is dropped; only the two pulled groups remain.
     expect(payload.lineItems).toHaveLength(2);
 
-    const rated = payload.lineItems.find((line) => line.description === "Senior Planner — Jane Doe");
+    const rated = payload.lineItems.find((line) => line.description === "Senior Planner: Jane Doe");
     expect(rated).toMatchObject({
       quantity: 5,
       unitLabel: "hour",
@@ -214,7 +214,7 @@ describe("ClientInvoiceComposer", () => {
     });
     expect(rated).not.toHaveProperty("amount");
 
-    const rateless = payload.lineItems.find((line) => line.description === "GIS Analyst — Ada Park");
+    const rateless = payload.lineItems.find((line) => line.description === "GIS Analyst: Ada Park");
     expect(rateless).toMatchObject({
       quantity: 4,
       unitLabel: "hour",

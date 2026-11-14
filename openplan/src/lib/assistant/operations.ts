@@ -644,7 +644,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             approval: "approval_required",
             auditEvent: "assistant.operation.workspace.refresh_gtfs_feed",
             auditNote:
-              "Fetches this feed again from the stored address through the normal route, and the change is recorded in the activity log. It supplies no address of its own, and it cannot adopt a refetch the collapse check withholds — a materially smaller result is stored and left for a person to accept.",
+              "Fetches this feed again from the stored address through the normal route, and the change is recorded in the activity log. It supplies no address of its own, and it cannot adopt a refetch the collapse check withholds. A materially smaller result is stored and left for a person to accept.",
             executeAction: {
               kind: "refresh_gtfs_feed",
               workspaceId,
@@ -716,7 +716,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           priority: "secondary",
           statusLabel: "No model runs yet",
           reason:
-            "No model run is recorded in this workspace. The models page is where you pick a study area, an engine, and a zone geography — and its copilot can walk you through those choices before you launch.",
+            "No model run is recorded in this workspace. The models page is where you pick a study area, an engine, and a zone geography, and its copilot can walk you through those choices before you launch.",
           approval: "safe",
           auditEvent: "assistant.operation.workspace.first_model_run",
           auditNote: "Navigation only. It creates no run and launches nothing.",
@@ -1286,7 +1286,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
           statusLabel: "Derived from the plan's own horizon",
           reason:
             `This plan declares a ${context.rtpCycle.horizonStartYear}–${context.rtpCycle.horizonEndYear} horizon but has no periods, ` +
-            "so its financial element cannot place money in time. The scaffold derives periods from the declared horizon — " +
+            "so its financial element cannot place money in time. The scaffold derives periods from the declared horizon: " +
             "no year, label, or escalation target is authored, and every period stays yours to edit.",
           approval: "approval_required",
           auditEvent: "assistant.operation.rtp.scaffold_horizon_bands",
@@ -1807,13 +1807,13 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
             reason:
               `${relaunchableRun.runTitle} ended ${relaunchableRun.status} and can be re-queued to the ` +
               "modeling worker exactly as it was configured. Planner Agent cannot change the study area, " +
-              "the engine or the zone resolution — a relaunch reruns the run a person set up, which is the " +
+              "the engine or the zone resolution. A relaunch reruns the run a person set up, which is the " +
               "recovery once the reason it failed has been fixed.",
             approval: "approval_required",
             auditEvent: "assistant.operation.model.launch_model_run",
             auditNote:
               "Re-queues this existing run through the normal launch route, and the change is recorded in the activity log. It supplies no configuration of " +
-              "its own, and it cannot relaunch a run that already succeeded — so it cannot re-roll a run " +
+              "its own, and it cannot relaunch a run that already succeeded, so it cannot re-roll a run " +
               "until its validation numbers land better.",
             executeAction: {
               kind: "launch_model_run",
@@ -1855,7 +1855,7 @@ function buildModelOperations(context: ModelAssistantContext): AssistantQuickLin
           priority: "primary",
           statusLabel: "No runs yet",
           reason:
-            "This model has no recorded runs. Planner Agent can walk through the study area, engine, and zone geography choices in the launcher's own words — you make each choice and launch it yourself.",
+            "This model has no recorded runs. Planner Agent can walk through the study area, engine, and zone geography choices in the launcher's own words. You make each choice and launch it yourself.",
           approval: "safe",
           auditEvent: "assistant.operation.model.first_run_guide",
           auditNote: "This reads and explains only. It creates no run and launches nothing.",
@@ -2111,7 +2111,7 @@ function laneWorkflow(kind: AssistantModuleLaneKind | "model", workflowId: strin
   const action = getAssistantActions(kind).find((entry) => entry.id === workflowId);
   if (!action) {
     throw new Error(
-      `Assistant operations offered workflow "${workflowId}" for kind "${kind}", but the catalog does not list it — the in-panel trigger would silently answer a different workflow.`
+      `Assistant operations offered workflow "${workflowId}" for kind "${kind}", but the catalog does not list it. The in-panel trigger would silently answer a different workflow.`
     );
   }
   return { workflowId: action.id, prompt: action.prompt, promptLabel: action.label };
@@ -2339,7 +2339,7 @@ function buildEngagementLaneOperations(context: WorkspaceAssistantContext): Assi
             actionClass: "review_controls",
             priority: "primary",
             statusLabel: `${moderation.pending} pending · ${moderation.flagged} flagged`,
-            reason: `${campaigns.publicOpen} campaign${campaigns.publicOpen === 1 ? " is" : "s are"} collecting public input right now while ${moderationCount} submission${moderationCount === 1 ? " waits" : "s wait"} in the moderation queue${leadCampaign ? ` — ${leadCampaign.title} is the live campaign to open first` : ""}.`,
+            reason: `${campaigns.publicOpen} campaign${campaigns.publicOpen === 1 ? " is" : "s are"} collecting public input right now while ${moderationCount} submission${moderationCount === 1 ? " waits" : "s wait"} in the moderation queue${leadCampaign ? `. ${leadCampaign.title} is the live campaign to open first` : ""}.`,
             approval: "review",
             auditEvent: "assistant.operation.engagement.moderation",
             auditNote: "Navigation only. Approving, flagging, or hiding a submission still happens in the campaign console.",
@@ -2561,7 +2561,7 @@ function buildKnowledgeBaseLaneOperations(context: WorkspaceAssistantContext): A
             actionClass: "review_controls",
             priority: "primary",
             statusLabel: `${documents.extractionFailed} failed`,
-            reason: `${documents.extractionFailed} document${documents.extractionFailed === 1 ? "" : "s"} failed text extraction, so nothing can be retrieved from ${documents.extractionFailed === 1 ? "it" : "them"} — ${documents.extractionFailed === 1 ? "it is" : "they are"} invisible to every knowledge-base answer until re-uploaded or re-extracted.`,
+            reason: `${documents.extractionFailed} document${documents.extractionFailed === 1 ? "" : "s"} failed text extraction, so nothing can be retrieved from ${documents.extractionFailed === 1 ? "it" : "them"}. ${documents.extractionFailed === 1 ? "It is" : "They are"} invisible to every knowledge-base answer until re-uploaded or re-extracted.`,
             approval: "review",
             auditEvent: "assistant.operation.knowledge_base.extraction_failures",
             auditNote: "Navigation only. Re-uploading or re-extracting a document still happens on the knowledge base page.",

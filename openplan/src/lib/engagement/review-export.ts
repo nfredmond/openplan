@@ -5,6 +5,7 @@ import { formatReviewWorkbook } from "@/lib/export/review-workbook-layout";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
+import { ENGAGEMENT_REVIEW_STATES, countEngagementReview, engagementReviewStateLabel, type EngagementReviewCounts, type EngagementReviewState } from "./review-counts";
 import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
 import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 import { decisionSynthesisReport, decisionSynthesisExportRows, decisionSynthesisCoverageFields, decisionSynthesisEventFields, decisionSynthesisMemberFields } from "./decision-synthesis-export";
@@ -181,26 +182,113 @@ function decisionHistoryHtml(snapshot: EngagementReviewSnapshot): string {
   }).join('')}${synthesis.appendix}`;
 }
 
+/**
+ * A staff response's sources, named by their number in this file's register.
+ * A bare JSON list of identifiers left a reader matching UUIDs by eye to follow
+ * one contribution to the response that answers it. A source outside this
+ * file's selection (another status or date range) is named by identifier only.
+ */
+function campaignResponseSourcesText(snapshot: EngagementReviewSnapshot, ids: unknown): string {
+  if (!Array.isArray(ids) || ids.length === 0) return "No contributions recorded";
+  return ids.map((id) => {
+    const index = snapshot.items.findIndex((row) => row.id === id);
+    return index >= 0
+      ? `contribution ${index + 1}, ${text(snapshot.items[index].title) || "Untitled contribution"} (${text(id)})`
+      : `${text(id)} (not in this selection)`;
+  }).join("; ");
+}
+
+/** A saved snapshot's review counts. A response counts as published when it has a publication time. */
+function reviewSnapshotCounts(snapshot: EngagementReviewSnapshot): EngagementReviewCounts {
+  return countEngagementReview({
+    items: snapshot.items,
+    responses: snapshot.responses.map((row) => ({ sourceItemIds: row.source_item_ids, published: row.published_at != null && row.published_at !== "" })),
+  });
+}
+
+/** The order a reader meets the review states in the PDF, the workbook and the manifest. */
+const REVIEW_STATE_READING_ORDER: readonly EngagementReviewState[] = ["approved", "rejected", "pending", "flagged"];
+const REVIEW_STATE_MANIFEST_KEY: Record<EngagementReviewState, string> = { approved: "approved", rejected: "withheld", pending: "pending", flagged: "flaggedForReview" };
+
+/**
+ * Which counts one review file states, and what it leaves out. A public copy
+ * holds approved contributions only, and a status filter holds one state, so
+ * those files say what they leave out instead of printing a zero for it.
+ */
+function reviewFileCounts(snapshot: EngagementReviewSnapshot) {
+  const counts = reviewSnapshotCounts(snapshot);
+  const chosen = snapshot.scope === "public" ? "approved" : ENGAGEMENT_REVIEW_STATES.find((state) => state === snapshot.filters.status);
+  const states = chosen ? [chosen] : REVIEW_STATE_READING_ORDER;
+  const leftOut = snapshot.scope === "public"
+    ? "This public copy holds approved contributions only. Withheld, pending and flagged contributions are left out, so it does not count them."
+    : chosen ? `This selection holds ${engagementReviewStateLabel(chosen).toLowerCase()} contributions only. Contributions in other review states are left out, so it does not count them.` : null;
+  return {
+    counts,
+    /** Null when the file holds only some review states: the received total would be one of them. */
+    received: chosen ? null : counts.received,
+    states: states.map((state) => ({ state, label: engagementReviewStateLabel(state), count: counts.byState[state], manifestKey: REVIEW_STATE_MANIFEST_KEY[state] })),
+    leftOut,
+  };
+}
+
+const contributionNoun = (count: number) => count === 1 ? "contribution" : "contributions";
+
+/**
+ * The review counts as sentences, each led by the state's word and its number
+ * ("Approved 3 contributions."), so a reader and a text search of the PDF find
+ * the same phrase. A table set the label and its number a column apart.
+ */
+function reviewCountSentences(snapshot: EngagementReviewSnapshot): string[] {
+  const file = reviewFileCounts(snapshot);
+  const { counts } = file;
+  return [
+    ...(file.leftOut ? [file.leftOut] : []),
+    ...(file.received === null ? [] : [`Received ${file.received} ${contributionNoun(file.received)}.`]),
+    ...file.states.map(({ label, count }) => `${label} ${count} ${contributionNoun(count)}.`),
+    `Published ${counts.publishedResponses} staff ${counts.publishedResponses === 1 ? "response" : "responses"}.`,
+    `Answered ${counts.answered} ${contributionNoun(counts.answered)} with a published staff response. A contribution that two responses answer counts once.`,
+  ];
+}
+
+const placeLabel = (value: unknown) => typeof value === "string" && value.trim() ? value.trim() : null;
+
+/**
+ * The study area line. A campaign with no area of its own opens its public map
+ * on its project's place, or else the workspace's home area. The retained
+ * definition records both as they stood when the campaign's settings were
+ * saved, so the line names that place instead of saying none was supplied.
+ */
+export function campaignStudyAreaText(context: RecordData | undefined): string {
+  if (!context) return "Study area: unavailable in this saved snapshot.";
+  const own = placeLabel(context.place_label);
+  if (own) return `Study area: ${own}.`;
+  const project = placeLabel((context.project_frame as RecordData | null | undefined)?.label);
+  if (project) return `Study area: ${project} (the project's place, as recorded with the campaign's saved settings). The campaign has no study area of its own.`;
+  const home = placeLabel((context.workspace_frame as RecordData | null | undefined)?.label);
+  if (home) return `Study area: ${home} (the workspace's home area, as recorded with the campaign's saved settings). Neither the campaign nor its project had a study area of its own.`;
+  return "Study area: Not supplied.";
+}
+
 export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, checksum: string, photos: Map<string,Buffer> = new Map()): string {
   const questionSummary = campaignQuestionSummary(snapshot);
   const missing = snapshot.items.filter((row) => !row.configuration_version_id).length;
-  const counts = ["pending","flagged","approved","rejected"].map((state) => `<tr><th>${state === 'approved' ? 'Approved' : state === 'rejected' ? 'Withheld' : state}</th><td>${snapshot.items.filter((row)=>row.status===state).length}</td></tr>`).join('');
+  const counts = reviewCountSentences(snapshot).map((sentence) => `<li>${escape(sentence)}</li>`).join('');
   const context = snapshot.definitions.find((row) => row.id === snapshot.campaign.configurationVersionId)?.definition.campaign;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(snapshot.campaign.title)} engagement review</title><style>
-  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>
+  @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}.review-counts{break-inside:avoid}img{max-width:100%;max-height:220px;object-fit:contain}</style></head><body>
   <p class="badge">${snapshot.scope.toUpperCase()} REVIEW COPY</p><h1>${escape(snapshot.campaign.title)}</h1><p>${escape(snapshot.campaign.summary)}</p>
   <p>Campaign snapshot ${escape(snapshot.capturedAt)}. This report describes retained consultation records. Publication and a reviewed staff response are separate facts. Participation is not a representative survey of the population.</p>
   <p class="meta">Campaign ${escape(snapshot.campaign.id)}<br>Snapshot SHA-256 ${checksum}<br>Filters ${escape(JSON.stringify(snapshot.filters))}</p>
   <nav><a href="#summary">Record summary</a> · <a href="#questions">Question summary</a> · <a href="#contributions">Contribution register</a> · <a href="#answers">Survey answers</a> · <a href="#responses">Staff responses</a> · <a href="#definitions">Historical definitions</a>${snapshot.scope === "internal" ? ' · <a href="#decision-history">Decision history</a>' : ""}</nav>
-  <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>Study area: ${escape(context?.place_label ?? 'Not supplied')}. Participation opens: ${escape(context?.participation_starts_at ?? 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ?? 'No scheduled end')}.</p>
-  <h2 id="summary">Selected records</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><table><tbody>${counts}</tbody></table><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
+  <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>${escape(campaignStudyAreaText(context))} Participation opens: ${escape(context?.participation_starts_at ?? 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ?? 'No scheduled end')}.</p>
+  <h2 id="summary">Selected records</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><h3>Review counts</h3><ul class="review-counts">${counts}</ul><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
   <h3>Contribution sources</h3><p>Counts are records, not people. Staff-authored notes are not resident submissions. Intake method does not establish identity or representative support.</p><table aria-label="Contribution sources"><thead><tr><th>Source</th><th>Records</th></tr></thead><tbody>${contributionSourceCounts(snapshot).map(([label,count])=>`<tr><td>${escape(label)}</td><td>${count}</td></tr>`).join('')}</tbody></table>
   <h2 id="questions">Question summary</h2><p>Each row uses the questions available to that session's retained configuration. Unanswered includes questions not shown by branching and answers outside the export filters; it does not establish refusal or noncompliance. Repeated counts are additional identical answers, retained as separate records.</p>
   <table class="question-summary"><thead><tr><th>Question and configuration</th><th>Sessions</th><th>Answered</th><th>Redacted</th><th>Unanswered</th><th>Repeated</th></tr></thead><tbody>${questionSummary.map(row=>`<tr><td>${escape(row.prompt)}<br><span class="meta">${escape(row.version)}</span></td><td>${row.sessions}</td><td>${row.answered}</td><td>${row.redacted}</td><td>${row.unanswered}</td><td>${row.repeated}</td></tr>`).join('')}</tbody></table><p>${snapshot.sessions.filter(session=>!snapshot.definitions.some(version=>version.id===session.configuration_version_id)).length} sessions have unavailable historical definitions and are excluded from question denominators. Their recorded answers remain in the register.</p>
   ${campaignReviewMap(snapshot)}
   <h2 id="contributions">Contributions</h2>${snapshot.items.map((row,index)=>`<article class="entry"><h3>${index+1}. ${escape(row.title || 'Untitled contribution')}</h3><p class="meta">${escape(row.id)} | ${escape(row.created_at)} | ${escape(row.status)} | ${escape(historicalCategory(snapshot,row))}<br>Source: ${escape(contributionSourceLabel(row.source_type))}<br>Configuration: ${escape(row.configuration_version_id || 'Historical definition unavailable')}${row.parent_item_id ? `<br>Reply to ${escape(row.parent_item_id)}` : ''}</p>${reportNarrative(row.body,row.id)}${row.geometry && !contributionGeometry(row) ? '<p>The retained drawing is invalid or degenerate. Its exact coordinates remain in snapshot.json; it is omitted from the map and GeoJSON.</p>' : ''}${row.submitted_by ? `<p>Submitted name: ${escape(row.submitted_by)}</p>`:''}${snapshot.scope==='internal' && row.moderation_notes ? `<p>Review reason: ${escape(row.moderation_notes)}</p>`:''}${row.photo_path && photos.has(`photos/${row.id}.${text(row.photo_path).split('.').pop()}`) ? `<img alt="Reviewed photograph for contribution ${escape(row.id)}" src="data:image/${text(row.photo_path).endsWith('.jpg') ? 'jpeg' : text(row.photo_path).split('.').pop()};base64,${photos.get(`photos/${row.id}.${text(row.photo_path).split('.').pop()}`)!.toString('base64')}"/>` : ''}${row.photo_path ? `<p>Reviewed photograph: photos/${escape(row.id)}.${escape(text(row.photo_path).split('.').pop())}. Included in the portable package.</p>`:''}</article>`).join('')}
   <h2 id="answers">Survey answer register</h2>${snapshot.sessions.map((session)=>`<article class="entry"><h3>Session ${escape(session.id)}</h3><p class="meta">${escape(session.created_at)} | ${escape(session.status)} | Configuration ${escape(session.configuration_version_id || 'Historical definition unavailable')}</p>${snapshot.answers.filter((answer)=>answer.session_id===session.id).map((answer)=>`<p><strong>${escape(answer.question_prompt_snapshot || 'Historical question prompt unavailable')}</strong><br><span dir="auto">${escape(answer.answer_text || text(answer.answer_json))}</span>${photos.size && (answer.answer_json as { files?: unknown[] }|null)?.files ? `<br>Attachments: ${(answer.answer_json as {files:Array<{path:string}>}).files.map((file,index)=>`attachments/${escape(answer.id)}-${index+1}.${escape(file.path.split('.').pop())}`).join(', ')}` : ''}<br><span class="meta">Answer ${escape(answer.id)} | Question ${escape(answer.question_id || 'Deleted question')}</span></p>`).join('') || '<p>No answers included for this session under these filters.</p>'}</article>`).join('')}
-  <h2 id="responses">Reviewed staff responses</h2>${snapshot.responses.map((row)=>`<article class="entry"><h3>${escape(row.theme_title)}</h3><p>You said: ${escape(row.you_said)}</p><p>Agency response: ${escape(row.we_did)}</p><p class="meta">Response ${escape(row.id)} | Sources ${escape(text(row.source_item_ids))}</p></article>`).join('') || '<p>No reviewed staff responses are available for this selection.</p>'}
+  <h2 id="responses">Reviewed staff responses</h2>${snapshot.responses.map((row)=>`<article class="entry"><h3>${escape(row.theme_title)}</h3><p>You said: ${escape(row.you_said)}</p><p>Agency response: ${escape(row.we_did)}</p><p class="meta">Response ${escape(row.id)} | ${row.published_at ? `Published ${escape(text(row.published_at))}` : "Not published"}<br>Answers ${escape(campaignResponseSourcesText(snapshot, row.source_item_ids))}</p></article>`).join('') || '<p>No reviewed staff responses are available for this selection.</p>'}
   ${decisionHistoryHtml(snapshot)}
   <section class="definitions"><h2 id="definitions">Historical definitions</h2>${snapshot.definitions.map((version)=>`<section class="version"><h3>Configuration ${escape(version.id)}</h3><p class="meta">Definition SHA-256 ${escape(version.sha256)}</p><p>${escape(version.definition.campaign.instructions)}</p><h3>Categories</h3>${version.definition.categories.map((row)=>`<p>${escape(row.label)}: ${escape(row.description)}<br><span class="meta">${escape(row.id)}</span></p>`).join('')}<h3>Questions</h3>${version.definition.questions.map((row)=>`<p>${escape(row.prompt)}<br>${escape(row.help_text)}<br>Type ${escape(row.question_type)}; ${row.required ? 'required' : 'optional'}. Options ${escape(text(row.options))}</p>`).join('')}<h3>Retained translations</h3>${(version.definition.translations??[]).map(row=>`<p>${escape(row.locale)} · ${escape(row.entity_type)} · ${escape(row.field)} · ${escape(row.source)}<br>${escape(row.translated_text)}</p>`).join('')||'<p>No translations in this definition.</p>'}</section>`).join('')}
   </section><h2>Portable record</h2><p>Download the engagement companion ZIP for this snapshot from its Reports record. A project evidence bundle containing this PDF alone does not include every engagement companion. The engagement ZIP contains this PDF, the XLSX workbook, exact snapshot JSON, complete contribution CSV/GeoJSON, answer CSV and reviewed photographs. Workbook long text is split into ordered companion rows. Concatenate parts by record ID, field and part number to recover it exactly. Formula-like participant text remains literal text in XLSX and JSON; CSV protects spreadsheet users by prefixing dangerous formulas.</p></body></html>`;
@@ -236,9 +324,9 @@ export async function buildCampaignReviewWorkbook(snapshot: EngagementReviewSnap
     sheet['!rows']=data.map((row,index)=>({hpt:index===0?30:Math.min(220,Math.max(30,...row.map(value=>(workbookTextLines(text(value))+1)*13)))}));
     XLSX.utils.book_append_sheet(workbook,sheet,name);
   };
-  add('Read me',[["Field","Value"],["Campaign",snapshot.campaign.title],["Scope",snapshot.scope],["Captured at",snapshot.capturedAt],["Snapshot SHA-256",checksum],["Filters",JSON.stringify(snapshot.filters)],["Meaning","Received, awaiting review, approved, publicly released and answered are distinct. Approval does not establish public release. Participation is not a representative population sample."], ["Source counts","Counts are records, not people. Staff-authored notes are not resident submissions. Intake method does not establish identity or representative support."],["Historical definitions","Missing configuration remains unavailable. Never substitute current wording."],["Long text","Long or multiline values use ordered rows in Long text. Join by record ID, field and part. The JSON companion retains exact full records."],["Category filters","Apply to contributions and answer categories. Sessions keep their own date/status scope. Missing answers are not zero." ]]);
+  add('Read me',[["Field","Value"],["Campaign",snapshot.campaign.title],["Scope",snapshot.scope],["Captured at",snapshot.capturedAt],["Snapshot SHA-256",checksum],["Filters",JSON.stringify(snapshot.filters)],["Meaning","Received, awaiting review, approved, publicly released and answered are distinct. Approval does not establish public release. Participation is not a representative population sample."], ["Source counts","Counts are records, not people. Staff-authored notes are not resident submissions. Intake method does not establish identity or representative support."],["Historical definitions","Missing configuration remains unavailable. Never substitute current wording."],["Long text","Long or multiline values use ordered rows in Long text. Join by record ID, field and part. The JSON companion retains exact full records."],["Review counts","Summary counts contributions by review state with the PDF's words. The Contributions status column keeps the stored value (rejected for a withheld contribution); its Review state column gives the PDF's word."],["Category filters","Apply to contributions and answer categories. Sessions keep their own date/status scope. Missing answers are not zero." ]]);
   const itemFields=['id','parent_item_id','configuration_version_id','status','created_at','title','body','submitted_by','source_type','latitude','longitude','geometry','photo_path',...(snapshot.scope==='internal'?['moderation_notes']:[])];
-  add('Contributions',[ [...itemFields,'Historical category','Source label'],...snapshot.items.map(row=>[...itemFields.map(field=>cell('contribution',row.id,field,row[field])),historicalCategory(snapshot,row),cell('contribution',row.id,'source_label',contributionSourceLabel(row.source_type))])]);
+  add('Contributions',[ [...itemFields,'Historical category','Source label','Review state'],...snapshot.items.map(row=>[...itemFields.map(field=>cell('contribution',row.id,field,row[field])),historicalCategory(snapshot,row),cell('contribution',row.id,'source_label',contributionSourceLabel(row.source_type)),(ENGAGEMENT_REVIEW_STATES as readonly unknown[]).includes(row.status) ? engagementReviewStateLabel(row.status as EngagementReviewState) : cell('contribution',row.id,'review_state',row.status)])]);
   add('Contribution sources', [['Source','Records'],...contributionSourceCounts(snapshot)]);
   for(const [name,kind,rows,fields] of [
     ['Survey sessions','session',snapshot.sessions,['id','configuration_version_id','status','created_at']],
@@ -266,6 +354,11 @@ export async function buildCampaignReviewWorkbook(snapshot: EngagementReviewSnap
   add('Long text',longText);
   const totals: Array<Array<string | number>> = [["Record set","Count"],["Contributions",snapshot.items.length],["Survey sessions",snapshot.sessions.length],["Answers",snapshot.answers.length],["Staff responses",snapshot.responses.length]];
   if(snapshot.schema===2)totals.push(["Decision history actions",snapshot.decisionLinkCount]);
+  const review = reviewFileCounts(snapshot);
+  if(review.received!==null)totals.push(["Received",review.received]);
+  for(const {label,count} of review.states)totals.push([label,count]);
+  if(review.leftOut)totals.push([snapshot.scope==='public'?'Withheld, pending and flagged':'Other review states',snapshot.scope==='public'?'Not in the public copy':'Not in this selection']);
+  totals.push(["Published staff responses",review.counts.publishedResponses],["Answered by a published staff response",review.counts.answered]);
   add('Summary',totals);
   if(snapshot.schema===2)workbook.Sheets.Summary.B6={t:'n',v:snapshot.decisionLinkCount,f:snapshot.decisionLinkCount?`COUNTA('Decision history'!A2:A${snapshot.decisionLinkCount+1})`:'0'};
   for(const [index,name,count] of [[2,'Contributions',snapshot.items.length],[3,'Survey sessions',snapshot.sessions.length],[4,'Answers',snapshot.answers.length],[5,'Staff responses',snapshot.responses.length]] as const) {
@@ -291,6 +384,22 @@ export async function verifyCampaignReviewZip(bytes: Buffer, snapshotChecksum: s
     const content = await file.async("nodebuffer");
     if (createHash("sha256").update(content).digest("hex") !== entry.checksum || (entry.byteLength !== undefined && entry.byteLength !== content.length)) throw new Error("Portable file checksum mismatch");
   }
+}
+
+/** The manifest's review counts, from the same reading as the PDF and the workbook. */
+function manifestReviewCounts(snapshot: EngagementReviewSnapshot): Record<string, number> {
+  const review = reviewFileCounts(snapshot);
+  return {
+    ...(review.received === null ? {} : { received: review.received }),
+    ...Object.fromEntries(review.states.map(({ manifestKey, count }) => [manifestKey, count])),
+    publishedResponses: review.counts.publishedResponses,
+    answered: review.counts.answered,
+  };
+}
+
+function manifestCountsLeftOut(snapshot: EngagementReviewSnapshot): { countsLeftOut?: string } {
+  const { leftOut } = reviewFileCounts(snapshot);
+  return leftOut ? { countsLeftOut: leftOut } : {};
 }
 
 export async function renderCampaignReviewFiles(snapshotText:string,checksum:string,photos:Map<string,Buffer> = new Map()):Promise<EngagementReviewFile[]> {
@@ -322,7 +431,7 @@ export async function renderCampaignReviewFiles(snapshotText:string,checksum:str
   const manifestFiles = await Promise.all(Object.values(zip.files).filter(file=>!file.dir).map(async file=>{
     const bytes=await file.async('nodebuffer');return {name:file.name,checksum:createHash('sha256').update(bytes).digest('hex'),byteLength:bytes.length};
   }));
-  addText('manifest.json',JSON.stringify({schema:1,snapshotSha256:checksum,scope:snapshot.scope,counts:{contributions:snapshot.items.length,sessions:snapshot.sessions.length,answers:snapshot.answers.length,responses:snapshot.responses.length},files:manifestFiles},null,2));
+  addText('manifest.json',JSON.stringify({schema:1,snapshotSha256:checksum,scope:snapshot.scope,counts:{contributions:snapshot.items.length,sessions:snapshot.sessions.length,answers:snapshot.answers.length,responses:snapshot.responses.length,...manifestReviewCounts(snapshot)},...manifestCountsLeftOut(snapshot),files:manifestFiles},null,2));
   const portable = await zip.generateAsync({type:'nodebuffer',compression:'DEFLATE'});
   await verifyCampaignReviewZip(portable,checksum);
   add('zip','application/zip',portable);

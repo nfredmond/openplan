@@ -458,7 +458,7 @@ describe("public page claims guardrails", () => {
   it("does not fire on the sentence that states the boundary", () => {
     const boundary =
       "This page is not an audited financial statement and it is not the agency's official " +
-      "accounting — it is a running view of what has been recorded, shown so it can be checked.";
+      "accounting. It is a running view of what has been recorded, shown so it can be checked.";
     const stripped = sourceWithoutExplicitCaveats(boundary);
 
     for (const { label, pattern } of PROHIBITED_PUBLIC_CLAIMS) {

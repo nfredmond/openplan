@@ -53,7 +53,7 @@ export const NEVADA_COUNTY_VALIDATION_METRICS: readonly NevadaCountyValidationMe
   {
     label: "Max APE",
     value: `${NEVADA_COUNTY_MAX_APE_PERCENT}%`,
-    note: "Above the 50% critical-facility threshold — disqualifies this run from outward modeling claims.",
+    note: "Above the 50% critical-facility threshold: disqualifies this run from outward modeling claims.",
   },
   { label: "Spearman ρ (facility ranking)", value: "0.40" },
 ];

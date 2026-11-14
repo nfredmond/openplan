@@ -117,7 +117,7 @@ describe("EngagementShareControls — the printable link name", () => {
   it("surfaces the server's 'taken' refusal to the planner", async () => {
     fetchMock.mockResolvedValue({
       ok: false,
-      json: async () => ({ error: "That link name is taken — another campaign is already using it. Pick a different one." }),
+      json: async () => ({ error: "That link name is taken. Another campaign is already using it. Pick a different one." }),
     });
     render(<EngagementShareControls campaign={campaign()} />);
 

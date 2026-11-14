@@ -747,6 +747,48 @@ describe("POST /api/gtfs/feeds: the workspace storage limit", () => {
     expect(runGtfsIngestMock).not.toHaveBeenCalled();
   });
 
+  // The ingest checks the fetched archive's actual size and hands back the
+  // limit's refusal; the route answers it in the shared shape, not as an
+  // ordinary ingest failure.
+  it("answers a fetched archive that does not fit with the shared storage refusal", async () => {
+    const quotaBytes = 5 * 1024 ** 3;
+    const message = "This file would put the workspace over its 5 GiB storage limit (5 GiB used). Delete files you no longer need, or ask whoever runs this OpenPlan site to raise the limit.";
+    runGtfsIngestMock.mockResolvedValue({
+      ok: false,
+      status: 413,
+      code: "workspace_storage_limit",
+      detail: message,
+      feedId: OWN_FEED_ID,
+      versionId: FAILED_VERSION_ID,
+      createdFeed: true,
+      storageRoom: { status: "full", usedBytes: quotaBytes - 10, quotaBytes, message },
+    });
+
+    const response = await POST(createRequest({ source: "url", workspaceId: WORKSPACE_ID, url: SOURCE_URL }));
+
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: message, usedBytes: quotaBytes - 10, quotaBytes });
+  });
+
+  it("answers 503 in the shared shape when the ingest could not read storage use for the fetched archive", async () => {
+    const message = "Storage use could not be checked, so nothing was uploaded. Try again in a minute.";
+    runGtfsIngestMock.mockResolvedValue({
+      ok: false,
+      status: 503,
+      code: "workspace_storage_limit",
+      detail: message,
+      feedId: OWN_FEED_ID,
+      versionId: FAILED_VERSION_ID,
+      createdFeed: false,
+      storageRoom: { status: "unreadable", message, detail: "permission denied" },
+    });
+
+    const response = await POST(createRequest({ source: "url", workspaceId: WORKSPACE_ID, url: SOURCE_URL }));
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: message });
+  });
+
   it("ingests while the workspace has room", async () => {
     checkWorkspaceStorageRoomMock.mockResolvedValueOnce({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
 

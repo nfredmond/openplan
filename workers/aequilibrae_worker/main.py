@@ -120,6 +120,7 @@ import emissions
 import equity
 import model_credibility
 from worker_heartbeat import WorkerHeartbeat
+from supabase_service_headers import service_key_headers
 from model_receipt_values import same_json_value
 import model_stage_lease
 
@@ -454,8 +455,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
 
 HEADERS = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
+    **service_key_headers(SUPABASE_KEY),
     "Content-Type": "application/json",
     "Prefer": "return=representation",
 }
@@ -787,7 +787,7 @@ def sb_record_modeling_structural_demand_diagnosis(payload: dict) -> dict:
 
 def upload_verified_immutable_bytes(object_path: str, data: bytes, content_type: str) -> str:
     """Resolve upload custody through exact stored bytes, including lost replies."""
-    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    headers = service_key_headers(SUPABASE_KEY)
     try:
         requests.post(
             f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
@@ -893,7 +893,7 @@ def select_managed_predecessor_input(artifact_type: str, *, method: str | None =
     writer.require_open()
     try:
         get = writer.get or requests.get
-        headers = {"apikey": writer.service_key, "Authorization": "Bearer " + writer.service_key}
+        headers = service_key_headers(writer.service_key)
         response = get(
             writer.base_url.rstrip("/") + "/rest/v1/model_run_stages", headers=headers,
             params={"run_id": "eq." + writer.context.run_id,
@@ -2129,7 +2129,7 @@ def resolve_zone_attributes(run_id: str, work_dir: str, run_row: dict | None) ->
     try:
         res = requests.get(
             f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
-            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            headers=service_key_headers(SUPABASE_KEY),
             timeout=60,
         )
         if res.status_code != 200:
@@ -2311,7 +2311,7 @@ def download_selected_feed_bytes(row: dict) -> bytes:
     try:
         res = requests.get(
             f"{SUPABASE_URL}/storage/v1/object/{GTFS_UPLOADS_BUCKET}/{storage_path}",
-            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            headers=service_key_headers(SUPABASE_KEY),
             timeout=120,
         )
     except Exception as exc:

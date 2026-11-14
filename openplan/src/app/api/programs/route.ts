@@ -14,6 +14,7 @@ import {
   PROGRAM_TYPE_OPTIONS,
   type ProgramLinkType,
 } from "@/lib/programs/catalog";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 
 const PROGRAM_TYPES = PROGRAM_TYPE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 const PROGRAM_STATUSES = PROGRAM_STATUS_OPTIONS.map((option) => option.value) as [string, ...string[]];
@@ -315,9 +316,12 @@ export async function GET(request: NextRequest) {
       explicitReportIds.length
         ? supabase.from("report_artifacts").select("report_id").in("report_id", explicitReportIds)
         : Promise.resolve({ data: [], error: null }),
-      explicitCampaignIds.length
-        ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", explicitCampaignIds)
-        : Promise.resolve({ data: [], error: null }),
+      // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+      readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+        supabase,
+        explicitCampaignIds,
+        CAMPAIGN_ITEM_STATUS_COLUMNS
+      ),
     ]);
 
     for (const [name, result] of [

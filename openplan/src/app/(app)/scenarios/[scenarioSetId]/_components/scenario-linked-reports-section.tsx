@@ -63,7 +63,7 @@ export function ScenarioLinkedReportsSection({
 
       {linkedReportsUnreadable ? (
         <div className="module-empty-state mt-5 text-sm">
-          Report linkage could not be resolved for this render — this project&apos;s reports or their run links could
+          Report linkage could not be resolved for this render: this project&apos;s reports or their run links could
           not be read. Nothing is listed below, and that is not a statement that no report uses this scenario
           set&apos;s runs.
         </div>

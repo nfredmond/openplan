@@ -1,4 +1,4 @@
-import { fundingAwardObligationReview } from "@/lib/programs/catalog";
+import { fundingAwardObligationStanding } from "@/lib/programs/catalog";
 /**
  * THE DAILY DEADLINE SWEEP — the one place OpenPlan tells a planner that
  * something is due.
@@ -499,8 +499,8 @@ function deadlineSentence(
   const where = context ? ` on ${context}` : "";
   const when = formatWorkDeadlineDate(dueOn) ?? dueOn;
   return isOverdue
-    ? `${noun}${where} — was due ${when} and is now overdue.`
-    : `${noun}${where} — due ${when}.`;
+    ? `${noun}${where} was due ${when} and is now overdue.`
+    : `${noun}${where}, due ${when}.`;
 }
 
 const deliverablesSource: SweepSource = {
@@ -538,7 +538,7 @@ const deliverablesSource: SweepSource = {
 
 const milestonesSource: SweepSource = {
   kind: "milestone_due",
-  table: "project_milestones",
+  table: "active_project_milestones",
   select: "id, project_id, title, target_date, status, assignee_user_id, projects!inner(id, name, workspace_id)",
   dateColumn: "target_date",
   dateColumnKind: "date",
@@ -570,7 +570,7 @@ const milestonesSource: SweepSource = {
 
 const submittalsSource: SweepSource = {
   kind: "submittal_due",
-  table: "project_submittals",
+  table: "active_project_submittals",
   select: "id, project_id, title, due_date, status, agency_label, assignee_user_id, projects!inner(id, name, workspace_id)",
   dateColumn: "due_date",
   dateColumnKind: "date",
@@ -710,12 +710,13 @@ const grantApplicationsSource: SweepSource = {
 
 const awardObligationsSource: SweepSource = {
   kind: "award_obligation_due",
-  table: "funding_awards",
-  select: "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, created_by",
+  table: "legacy_calendar_funding_awards",
+  select: "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, closed_at, created_by",
   dateColumn: "obligation_due_at",
   dateColumnKind: "timestamptz",
   recipientColumn: "created_by",
-  // Spending and imported closure do not establish obligation timing.
+  // Closed awards are filtered by `fundingAwardObligationStanding`, the rule
+  // My Work uses, after the read: the test compares two columns.
   staticFilters: [],
   toCandidates: (rows, now) =>
     rows.flatMap((row) => {
@@ -723,9 +724,21 @@ const awardObligationsSource: SweepSource = {
       const dueOn = workDeadlineDueOn(asString(row.obligation_due_at));
       const recipient = asString(row.created_by);
       if (!workspaceId || !dueOn || !recipient) return [];
-      const review = fundingAwardObligationReview(asString(row.spending_status), asString(row.closure_basis));
-      // A closed award may have met its deadline; the closure record cannot say.
-      const isOverdue = review ? false : isDeadlinePast(asString(row.obligation_due_at), now);
+      const standing = fundingAwardObligationStanding(
+        {
+          spendingStatus: asString(row.spending_status),
+          closureBasis: asString(row.closure_basis),
+          closedAt: asString(row.closed_at),
+          obligationDueAt: asString(row.obligation_due_at),
+        },
+        now,
+      );
+      // Closed before its obligation date: the date was met, nothing to send.
+      if (standing.state === "closed_before_deadline") return [];
+      const review = standing.state === "review" ? standing.sentence : null;
+      // A closed award past its date is a past-due record listed for review,
+      // not counted with the overdue deadlines (see `digestBody`).
+      const isOverdue = standing.pastDue;
       return [
         {
           workspace_id: workspaceId,
@@ -737,7 +750,7 @@ const awardObligationsSource: SweepSource = {
           due_on: dueOn,
           title: asString(row.title) ?? "(untitled award)",
           body: review
-            ? `Review recorded obligation deadline ${dueOn}. ${review}`
+            ? `Review recorded obligation deadline ${dueOn}${isOverdue ? ", which has passed" : ""}. ${review}`
             : `${deadlineSentence("Award funds must be obligated", null, dueOn, isOverdue)} You recorded this award; obligation deadlines carry no assignee.`,
           isOverdue,
           needsReview: Boolean(review),
@@ -945,7 +958,7 @@ export function expenditureAtRiskSentence(
   if (contextUnavailable || !ledger) {
     return "OpenPlan could not read this award's invoices, so the amount at risk is not stated here.";
   }
-  const remaining = ledger.remainingAuthorized;
+  const remaining = ledger.remainingAgainstCeiling;
   if (remaining === null) {
     return "No awarded amount is recorded on this award, so OpenPlan cannot say how much is at risk.";
   }
@@ -955,7 +968,7 @@ export function expenditureAtRiskSentence(
   if (remaining === 0) {
     return "Every authorized dollar on this award has already been claimed.";
   }
-  return `Claims against this award already exceed the authorized amount by ${reminderMoney(
+  return `Claims against this award already exceed the recorded award ceiling by ${reminderMoney(
     Math.abs(remaining),
     currencyCode
   )}.`;
@@ -963,7 +976,7 @@ export function expenditureAtRiskSentence(
 
 const awardExpendituresSource: SweepSource = {
   kind: "award_expenditure_due",
-  table: "funding_awards",
+  table: "legacy_calendar_funding_awards",
   select:
     "id, workspace_id, project_id, title, expenditure_deadline_at, spending_status, awarded_amount, match_amount, match_posture, created_by",
   dateColumn: "expenditure_deadline_at",
@@ -1101,7 +1114,7 @@ export function measureClaimWaitingSentence(input: {
       : "OpenPlan could not read this fund's currency, so the amount is not stated here.";
   return (
     `Submitted ${when} and still waiting on a decision. ${howLong} ${money} ` +
-    "No review deadline is recorded for this measure, so this is not an overdue notice — it is a claim " +
+    "No review deadline is recorded for this measure, so this is not an overdue notice. It is a claim " +
     "nobody has answered yet."
   );
 }
@@ -1378,6 +1391,18 @@ async function rosterForWorkspace(
   return null;
 }
 
+/**
+ * Each digest item belongs to exactly one section. A closed award listed for
+ * review stays in the review section even when its date has passed.
+ */
+function digestBuckets(items: readonly Candidate[]): { toReview: Candidate[]; overdue: Candidate[]; upcoming: Candidate[] } {
+  return {
+    toReview: items.filter((item) => item.needsReview),
+    overdue: items.filter((item) => item.isOverdue && !item.needsReview),
+    upcoming: items.filter((item) => !item.isOverdue && !item.needsReview),
+  };
+}
+
 function digestSubject(overdue: number, upcoming: number, toReview: number, horizonDays: number): string {
   const review = toReview > 0 ? `${toReview} closed ${toReview === 1 ? "award" : "awards"} to review` : null;
   let due: string | null = null;
@@ -1397,13 +1422,11 @@ function digestBody(
   horizonDays: number,
   appOrigin: string | null
 ): string {
-  const toReview = items.filter((item) => item.needsReview);
-  const overdue = items.filter((item) => item.isOverdue);
-  const upcoming = items.filter((item) => !item.isOverdue && !item.needsReview);
+  const { toReview, overdue, upcoming } = digestBuckets(items);
   const line = (item: Candidate) =>
-    `  - ${item.title} — ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
+    `  - ${item.title}: ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
   const reviewLine = (item: Candidate) =>
-    `  - ${item.title}, obligation deadline ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
+    `  - ${item.title}, obligation deadline ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}${item.isOverdue ? " (passed)" : ""}`;
 
   const parts: string[] = [
     workspaceName
@@ -1669,9 +1692,10 @@ export async function sweepWorkDeadlines(
       continue;
     }
 
-    const toReview = items.filter((item) => item.needsReview).length;
-    const overdue = items.filter((item) => item.isOverdue).length;
-    const upcoming = items.filter((item) => !item.isOverdue && !item.needsReview).length;
+    const buckets = digestBuckets(items);
+    const toReview = buckets.toReview.length;
+    const overdue = buckets.overdue.length;
+    const upcoming = buckets.upcoming.length;
     // The cast is the repo's untyped-client convention (`service as
     // RosterServiceClient`): every Supabase client here is structural, and the
     // outbox helper declares the slice it needs rather than the whole client.

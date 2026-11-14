@@ -379,13 +379,13 @@ export function detectConvertibleFormat(
 export function describeConvertibleFormatRefusal(format: SpatialFileConvertibleFormat): string {
   const name = format === "file_geodatabase" ? "file geodatabase (.gdb)" : "personal geodatabase (.mdb)";
   return (
-    `This is an Esri ${name}. It is real GIS data and there is nothing wrong with it — OpenPlan simply cannot ` +
+    `This is an Esri ${name}. It is real GIS data and there is nothing wrong with it. OpenPlan simply cannot ` +
     `read that format directly, and this installation has no conversion service configured. ` +
     `The quickest fix is on your side and takes about a minute: in ArcGIS Pro, right-click the layer in the ` +
     `Contents pane → Data → Export Features, and save it as a shapefile or GeoJSON. In QGIS, right-click the ` +
     `layer → Export → Save Features As… and choose GeoJSON. Then upload that. ` +
     `(If your organisation wants OpenPlan to convert these itself, an operator can configure a conversion ` +
-    `worker — see the self-hosting guide.)`
+    `worker. See the self-hosting guide.)`
   );
 }
 
@@ -994,7 +994,7 @@ function readKmlUpload(text: string): ReaderResult {
   }
 
   if (!/<(?:[A-Za-z0-9_.-]+:)?kml\b/i.test(text) && !/<(?:[A-Za-z0-9_.-]+:)?Placemark\b/i.test(text)) {
-    return refuse("unreadable", "This file does not look like KML — it contains no <kml> or <Placemark> element.");
+    return refuse("unreadable", "This file does not look like KML: it contains no <kml> or <Placemark> element.");
   }
 
   const candidates: Candidate[] = [];
@@ -1117,7 +1117,7 @@ function collectRawZipEntries(bytes: Uint8Array, options: { namesOnly?: boolean 
   const view = viewOf(bytes);
   const eocd = findEndOfCentralDirectory(view, bytes.byteLength);
   if (eocd === -1) {
-    return refuse("unreadable", "This zip archive is damaged — its central directory could not be found.");
+    return refuse("unreadable", "This zip archive is damaged: its central directory could not be found.");
   }
 
   const entryCount = view.getUint16(eocd + 10, true);
@@ -1126,7 +1126,7 @@ function collectRawZipEntries(bytes: Uint8Array, options: { namesOnly?: boolean 
 
   for (let index = 0; index < entryCount; index += 1) {
     if (cursor + 46 > bytes.byteLength || view.getUint32(cursor, true) !== CENTRAL_SIGNATURE) {
-      return refuse("unreadable", "This zip archive is damaged — its central directory entries could not be read.");
+      return refuse("unreadable", "This zip archive is damaged: its central directory entries could not be read.");
     }
 
     const flags = view.getUint16(cursor + 8, true);
@@ -1190,7 +1190,7 @@ function collectRawZipEntries(bytes: Uint8Array, options: { namesOnly?: boolean 
 function inflateFailureRefusal(name: string, uncompressedSize: number): SpatialFileImportRefusal {
   return refuse(
     "unreadable",
-    `The archive entry "${name}" could not be decompressed, so the zip is damaged — its contents do not match ` +
+    `The archive entry "${name}" could not be decompressed, so the zip is damaged: its contents do not match ` +
       `the ${uncompressedSize.toLocaleString("en-US")} bytes its own directory declares.`
   );
 }
@@ -1272,7 +1272,7 @@ function readShapefileUpload(files: ZipFile[], decision: SpatialFileCrsDecision 
   if (!parts) {
     return refuse(
       "unreadable",
-      "This zip contains no .shp file. A shapefile upload must be a zip of the whole shapefile — at least the " +
+      "This zip contains no .shp file. A shapefile upload must be a zip of the whole shapefile: at least the " +
         ".shp and the .prj, and normally the .shx and .dbf as well."
     );
   }
@@ -1311,7 +1311,7 @@ function readShapefileUpload(files: ZipFile[], decision: SpatialFileCrsDecision 
     return refuse(
       "srs_undetermined",
       `This shapefile has no .prj file, so its coordinate system cannot be established. OpenPlan will not guess a ` +
-        `projection — a layer placed on a guess can be tens of metres from where it belongs and still look right. ` +
+        `projection. A layer placed on a guess can be tens of metres from where it belongs and still look right. ` +
         `Re-export "${baseName(shp.name)}" from your GIS with its .prj included, or supply the layer as GeoJSON.`
     );
   } else {
@@ -1643,7 +1643,7 @@ export function readPrj(wktRaw: string): PrjResult {
       "srs_unsupported",
       `This shapefile is in a projected coordinate system: ${projectedName}${identifier}. OpenPlan reads ` +
         `longitude/latitude data and does not reproject, so it will not place this layer rather than place it ` +
-        `wrongly. In your GIS, re-export the layer with the coordinate system set to WGS 84 (EPSG:4326) — in ` +
+        `wrongly. In your GIS, re-export the layer with the coordinate system set to WGS 84 (EPSG:4326). In ` +
         `ArcGIS that is "Project", in QGIS it is "Export → Save Features As…" with a different CRS.`
     );
   }
@@ -1808,8 +1808,8 @@ function readShpGeometry(bytes: Uint8Array): ShpResult {
       "no_drawable_features",
       undrawableCount > 0
         ? `The .shp file in this archive holds ${undrawableCount.toLocaleString("en-US")} ` +
-          `${undrawableCount === 1 ? "record" : "records"} of a shape type OpenPlan does not draw — usually ` +
-          `MultiPatch, the 3D surface type ArcGIS writes for buildings and TINs — and no point, line, or area ` +
+          `${undrawableCount === 1 ? "record" : "records"} of a shape type OpenPlan does not draw (usually ` +
+          `MultiPatch, the 3D surface type ArcGIS writes for buildings and TINs) and no point, line, or area ` +
           `records at all. OpenPlan will not flatten a 3D surface onto a guess. Re-export the layer as points, ` +
           `lines, or polygons and upload it again.`
         : "The .shp file in this archive contains no point, line, or area records that OpenPlan could read."

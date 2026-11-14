@@ -34,7 +34,8 @@ async function fixture() {
 }
 beforeEach(() => { vi.resetAllMocks(); mocks.page.mockResolvedValue({ entries: [1,2].map(n => ({ receipt: receipt(n) })), nextCursor: id(2) }); });
 afterEach(async () => { for (const p of directories.splice(0)) await rm(p, { recursive: true, force: true }); });
-describe("durable execution page coordinator", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("durable execution page coordinator", () => {
   it("saves each original entry before dispatch and advances only after return", async () => {
     const f = await fixture();
     mocks.run.mockImplementation(async args => {

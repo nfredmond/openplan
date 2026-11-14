@@ -90,7 +90,7 @@ export function mergeScenarioLaunchPayload({
     : null;
 
   const queryBase = overrideQueryText?.trim() || assumptionQuery || modelTemplate.queryText || null;
-  const queryText = queryBase ? [queryBase, assumptionSuffix].filter(Boolean).join(" — ") : null;
+  const queryText = queryBase ? [queryBase, assumptionSuffix].filter(Boolean).join(", ") : null;
   const corridorGeojson = overrideCorridorGeojson || assumptionCorridor || modelTemplate.corridorGeojson || null;
 
   return {

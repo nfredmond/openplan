@@ -12,15 +12,23 @@ import json
 import pathlib
 import shutil
 import subprocess
+import tarfile
 import tempfile
 import unittest
 import urllib.parse
+from unittest import mock
 
 import backup
+import verify_capture
+
+# Synthetic keys only. LEGACY_JWT decodes to {"alg":"HS256"} / {"role":"service_role"}
+# with a made-up signature; SECRET_KEY only borrows the documented prefix.
+LEGACY_JWT = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c3ludGhldGljLXNpZ25hdHVyZQ"
+SECRET_KEY = "sb_secret_synthetic-unit-test-only_0000"
 
 BASE_ENV = {
     "SUPABASE_URL": "https://example.supabase.co/",
-    "SUPABASE_SERVICE_ROLE_KEY": "synthetic-service-role",
+    "SUPABASE_SERVICE_ROLE_KEY": LEGACY_JWT,
     "BACKUP_BUCKET": "synthetic-bucket",
     "BACKUP_GPG_FINGERPRINT": "abc",
     "BACKUP_GPG_PUBLIC_KEY": "synthetic",
@@ -82,13 +90,19 @@ class FakeResponse(io.BytesIO):
 class FakeStorage:
     """Two buckets, a nested folder and more than one list page."""
 
-    def __init__(self):
+    def __init__(self, key=LEGACY_JWT):
+        self.key = key
         self.files = {("maps", f"p/{i:04d}.zip"): f"zip-{i}".encode() for i in range(1001)}
         self.files[("maps", "p/sub/readme.md")] = b"nested"
         self.files[("reports", "r.pdf")] = b"%PDF"
 
     def __call__(self, request, timeout):
-        assert request.headers["Authorization"] == "Bearer synthetic-service-role"
+        # urllib stores header names capitalized: "apikey" arrives as "Apikey".
+        expected = {"Apikey": self.key}
+        if self.key == LEGACY_JWT:
+            expected["Authorization"] = "Bearer " + LEGACY_JWT
+        sent = {name: value for name, value in request.headers.items() if name in ("Apikey", "Authorization")}
+        assert sent == expected, sorted(sent)
         path = urllib.parse.unquote(request.full_url.split("/storage/v1", 1)[1])
         if path == "/bucket":
             return FakeResponse(json.dumps([{"id": "maps"}, {"id": "reports"}]).encode())
@@ -124,6 +138,19 @@ class StorageCopyTest(unittest.TestCase):
                 data = fake.files[(item["bucket"], item["path"])]
                 self.assertEqual(item["sha256"], hashlib.sha256(data).hexdigest())
                 self.assertEqual((root / item["bucket"] / item["path"]).read_bytes(), data)
+
+    def test_secret_key_reaches_storage_only_on_apikey(self):
+        fake = FakeStorage(SECRET_KEY)
+        client = backup.StorageClient(backup.Settings.from_env({**BASE_ENV, "SUPABASE_SERVICE_ROLE_KEY": SECRET_KEY}),
+                                      opener=fake)
+        with tempfile.TemporaryDirectory() as raw:
+            result = backup.copy_storage(client, pathlib.Path(raw))
+        self.assertEqual(len(result["objects"]), len(fake.files))
+
+    def test_legacy_jwt_headers_keep_their_original_order(self):
+        self.assertEqual(list(backup.service_key_headers(LEGACY_JWT).items()),
+                         [("Authorization", "Bearer " + LEGACY_JWT), ("apikey", LEGACY_JWT)])
+        self.assertEqual(backup.service_key_headers(SECRET_KEY), {"apikey": SECRET_KEY})
 
     def test_refuses_an_object_path_that_escapes_the_capture(self):
         for bad in ("../etc/passwd", "a//b", "/abs", "a/./b", ""):
@@ -205,6 +232,91 @@ class UploadTest(unittest.TestCase):
         with self.assertRaisesRegex(backup.BackupError, "does not match"):
             self.run_upload(s3)
         self.assertNotIn("captures/20261012T101700Z/summary.json", s3.objects)
+
+
+class OldPythonTarFile(tarfile.TarFile):
+    """Debian bookworm's Python 3.11.2: extractall has no filter argument."""
+
+    def extractall(self, path=".", members=None, *, numeric_owner=False, **kwargs):
+        if "filter" in kwargs:
+            raise TypeError("extractall() got an unexpected keyword argument 'filter'")
+        return super().extractall(path, members, numeric_owner=numeric_owner)
+
+
+class VerifyExtractTest(unittest.TestCase):
+    """Review 15, B1: the verifier must run on the backup image's Python and refuse unsafe members."""
+
+    def make_tar(self, root, add):
+        path = root / "capture.tar"
+        with tarfile.open(path, "w") as tar:
+            add(tar, root)
+        return path
+
+    def add_capture(self, tar, root):
+        src = root / "src" / "20261115T120000Z"
+        (src / "storage" / "maps").mkdir(parents=True)
+        (src / "manifest.json").write_text("{}")
+        (src / "storage" / "maps" / "a.zip").write_bytes(b"zip")
+        tar.add(src, arcname="20261115T120000Z")
+
+    def test_extracts_a_capture_on_a_python_without_the_tar_filter(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root = pathlib.Path(raw)
+            path = self.make_tar(root, self.add_capture)
+            out = root / "out"
+            out.mkdir()
+            # Hide data_filter if this Python has it; bookworm's 3.11.2 never did.
+            saved = getattr(tarfile, "data_filter", None)
+            if saved is not None:
+                del tarfile.data_filter
+            try:
+                with mock.patch.object(verify_capture.tarfile, "open", OldPythonTarFile.open):
+                    with verify_capture.tarfile.open(path) as tar:
+                        verify_capture.extract_capture(tar, out, "20261115T120000Z")
+            finally:
+                if saved is not None:
+                    tarfile.data_filter = saved
+            self.assertEqual((out / "20261115T120000Z" / "storage" / "maps" / "a.zip").read_bytes(), b"zip")
+
+    def test_refuses_a_symlink_member(self):
+        def add(tar, root):
+            self.add_capture(tar, root)
+            link = tarfile.TarInfo("20261115T120000Z/storage/maps/link")
+            link.type = tarfile.SYMTYPE
+            link.linkname = "/etc/passwd"
+            tar.addfile(link)
+        self.assert_refused(add)
+
+    def test_refuses_paths_outside_the_capture_folder(self):
+        for name in ("../escape.txt", "/abs.txt", "20261115T120000Z/../../x", "other/x.txt", "20261115T120000Z/./x"):
+            def add(tar, root, name=name):
+                self.add_capture(tar, root)
+                info = tarfile.TarInfo(name)
+                info.size = 1
+                tar.addfile(info, io.BytesIO(b"x"))
+            with self.subTest(name=name):
+                self.assert_refused(add)
+
+    def test_refuses_a_hard_link_and_a_device(self):
+        for kind in (tarfile.LNKTYPE, tarfile.CHRTYPE, tarfile.FIFOTYPE):
+            def add(tar, root, kind=kind):
+                self.add_capture(tar, root)
+                info = tarfile.TarInfo("20261115T120000Z/storage/maps/special")
+                info.type = kind
+                info.linkname = "20261115T120000Z/manifest.json"
+                tar.addfile(info)
+            with self.subTest(kind=kind):
+                self.assert_refused(add)
+
+    def assert_refused(self, add):
+        with tempfile.TemporaryDirectory() as raw:
+            root = pathlib.Path(raw)
+            path = self.make_tar(root, add)
+            out = root / "out"
+            out.mkdir()
+            with tarfile.open(path) as tar, self.assertRaisesRegex(SystemExit, "refusing capture member"):
+                verify_capture.extract_capture(tar, out, "20261115T120000Z")
+            self.assertEqual(list(out.iterdir()), [])
 
 
 if __name__ == "__main__":

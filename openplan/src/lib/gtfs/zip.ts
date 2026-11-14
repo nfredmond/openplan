@@ -396,7 +396,7 @@ export async function openGtfsZip(
       code: "ambiguous_archive",
       detail:
         `This archive contains more than one copy of ${named.length === 1 ? "a GTFS file" : "several GTFS files"}: ${detail}. ` +
-        `OpenPlan will not guess which one is the real table — re-zip the feed with one copy of each file.`,
+        `OpenPlan will not guess which one is the real table. Re-zip the feed with one copy of each file.`,
     };
   }
 

@@ -42,7 +42,7 @@ export interface TdmStrategy {
 }
 
 const CAPCOA_SCREENING_SOURCE_NOTE =
-  "Screening default informed by general TDM literature; not verified against CAPCOA's Handbook for Analyzing GHG Mitigation Measures (2021) — confirm the measure-specific value before CEQA or grant use.";
+  "Screening default informed by general TDM literature; not verified against CAPCOA's Handbook for Analyzing GHG Mitigation Measures (2021). Confirm the measure-specific value before CEQA or grant use.";
 
 export const TDM_STRATEGY_CATALOG: readonly TdmStrategy[] = [
   // -- infrastructure -------------------------------------------------------
@@ -72,7 +72,7 @@ export const TDM_STRATEGY_CATALOG: readonly TdmStrategy[] = [
     defaultVmtReductionPct: 1.0,
     countsTowardVmt: false,
     sourceNote:
-      "Emissions-side measure, not a VMT measure: EV charging lowers CO2e per mile driven, and its effect on VMT is negligible. The 1.0% default is inherited from the harvest catalog for parity only — do not count it as a VMT reduction in CEQA or grant analysis.",
+      "Emissions-side measure, not a VMT measure: EV charging lowers CO2e per mile driven, and its effect on VMT is negligible. The 1.0% default is inherited from the harvest catalog for parity only. Do not count it as a VMT reduction in CEQA or grant analysis.",
   },
   {
     key: "car-share",

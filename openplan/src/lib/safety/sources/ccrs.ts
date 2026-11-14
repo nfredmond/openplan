@@ -19,9 +19,10 @@
  *     and NumberInjured, so this adapter can separate fatal / injury / PDO but
  *     NOT suspected-serious-injury (KABCO A). Hence
  *     severityCompleteness = "fatal_injury_only". Serious injury lives on
- *     InjuredWitnessPassengers_YYYY.ExtentOfInjuryCode and requires a join —
- *     that is a separate, later slice, and until it lands nothing in this module
- *     may present a KSI figure.
+ *     InjuredWitnessPassengers_YYYY.ExtentOfInjuryCode and requires a join,
+ *     which is this adapter's `enrichSeriousInjury` capability
+ *     (`ccrs-injury.ts`). CCRS separates KABCO A only where that join ran;
+ *     `serious-injury-availability.ts` decides and words it.
  *   - `NumberKilled` is typed TEXT in the DataStore while `NumberInjured` is
  *     numeric. Both are parsed defensively here.
  *   - Pedestrian / bicyclist involvement is derived from
@@ -49,6 +50,8 @@ import {
 } from "@/lib/safety/vocabulary";
 import { CCRS_CRASH_COLUMNS, CCRS_DIMENSION_SUPPORT, CCRS_VOCABULARY } from "./ccrs-vocabulary";
 import { fetchCcrsParties } from "./ccrs-parties";
+import { upgradeCcrsSeriousInjuries } from "./ccrs-injury";
+import { CALIFORNIA_STATE_FIPS } from "@/lib/safety/county-code";
 import {
   CrashSourceUnavailableError,
   type CrashFetchParams,
@@ -519,7 +522,7 @@ export const ccrsAdapter: CrashSourceAdapter = {
   id: CCRS_SOURCE_ID,
   label: "California Crash Reporting System (CCRS)",
   attribution:
-    "California Highway Patrol, California Crash Reporting System (CCRS), published on data.ca.gov. Public domain — no restrictions on public use.",
+    "California Highway Patrol, California Crash Reporting System (CCRS), published on data.ca.gov. Public domain, no restrictions on public use.",
   license: "Other (Public Domain)",
   coverageState: "ccrs_ca_statewide",
   severityCompleteness: "fatal_injury_only",
@@ -532,8 +535,12 @@ export const ccrsAdapter: CrashSourceAdapter = {
   roadContextProvider: "us-census-tiger-line",
   // California only — a national backstop's records in state 06 are redundant
   // with CCRS and must be dropped when the two are merged.
-  coversStateFips: ["06"],
+  coversStateFips: [CALIFORNIA_STATE_FIPS],
+  // CCRS is California's crash file and holds no other state's crashes.
+  servesStateFips: [CALIFORNIA_STATE_FIPS],
   covers: overlapsCalifornia,
   fetch: fetchCcrsCrashes,
   fetchParties: fetchCcrsParties,
+  // The crash file cannot separate KABCO A; the injured-person table can.
+  enrichSeriousInjury: ({ records, signal }) => upgradeCcrsSeriousInjuries(records, signal),
 };

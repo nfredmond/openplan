@@ -23,9 +23,9 @@ export function isEstimatedSource(snapshot: SourceSnapshotLike): boolean {
 }
 
 export const ESTIMATED_SOURCE_NOTES = {
-  crashes: "Crash source API unavailable — area-based estimate.",
-  transit: "Transit stop inventory unavailable — area-based estimate.",
-  lodes: "LODES employment not yet ingested — ACS-based estimate.",
+  crashes: "Crash source API unavailable, area-based estimate.",
+  transit: "Transit stop inventory unavailable, area-based estimate.",
+  lodes: "LODES employment not yet ingested, ACS-based estimate.",
 } as const;
 
 export type EstimatedDomain = keyof typeof ESTIMATED_SOURCE_NOTES;
@@ -87,5 +87,5 @@ export function describeEstimatedAccessibilityInputs(
     return null;
   }
 
-  return `Includes estimated inputs (${parts.join(", ")}) — source data unavailable or not yet ingested.`;
+  return `Includes estimated inputs (${parts.join(", ")}): source data unavailable or not yet ingested.`;
 }

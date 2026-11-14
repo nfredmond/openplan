@@ -8,6 +8,7 @@ import {
   type FundingOpportunityNarrativeDraftRow,
 } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import { FundingOpportunityApplicationWorkspace } from "@/components/grants/funding-opportunity-application-workspace";
+import { FundingOpportunityProjectLink } from "@/components/grants/funding-opportunity-project-link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import type { ProjectEngagementEvidence } from "@/lib/grants/engagement-evidence";
@@ -65,6 +66,7 @@ export function GrantsOpportunityRegistryCard({
   latestBcaScreening = null,
   engagementEvidence = null,
   latestNarrativeDraft = null,
+  projectLinkOptions = null,
 }: {
   opportunity: NormalizedOpportunity;
   activeFocusedOpportunityId: string | null;
@@ -73,6 +75,8 @@ export function GrantsOpportunityRegistryCard({
   latestBcaScreening?: ProjectBcaScreeningSummary | null;
   engagementEvidence?: ProjectEngagementEvidence | null;
   latestNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
+  /** Workspace projects for the link control; null hides it (read-only callers). */
+  projectLinkOptions?: Array<{ id: string; name: string }> | null;
 }) {
   const projectHref = opportunity.project
     ? `/projects/${opportunity.project.id}#project-funding-opportunities`
@@ -158,6 +162,15 @@ export function GrantsOpportunityRegistryCard({
             </>
           ) : null}
         </div>
+
+        {projectLinkOptions ? (
+          <FundingOpportunityProjectLink
+            opportunityId={opportunity.id}
+            workspaceId={opportunity.workspace_id}
+            currentProject={opportunity.project}
+            projectOptions={projectLinkOptions}
+          />
+        ) : null}
 
         {/*
           LABELED ROWS, NOT THREE MORE BOXES. These sat as boxed tiles inside the
@@ -277,9 +290,12 @@ export function GrantsOpportunityRegistryCard({
           />
         ) : null}
 
+        {pursuitKind === "grant" && opportunity.project ? <Link className="text-sm font-semibold underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Save award conditions</Link> : null}
+        {opportunity.has_source_backed_issuance ? <p className="text-sm">Source-backed award issuance is documented. Pursuit and administrative status remain separate.</p> : null}
         <FundingOpportunityApplicationWorkspace
           opportunityId={opportunity.id}
           pursuitKind={pursuitKind}
+          linkedProjectId={opportunity.project?.id ?? null}
         />
 
         {projectHref || programHref || projectGrantModelingEvidence || projectGrantDualDemandAgreementEvidence ? (
@@ -317,6 +333,15 @@ export function GrantsOpportunityRegistryCard({
                 className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
               >
                 Make maps for this application
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
+            {opportunity.project ? (
+              <Link
+                href={`/grants/bca/${opportunity.project.id}`}
+                className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+              >
+                Benefit-cost analysis
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}

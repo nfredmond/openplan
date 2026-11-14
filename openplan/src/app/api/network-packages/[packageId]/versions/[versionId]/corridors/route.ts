@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireNetworkPackageWriteAccess } from "@/lib/network-packages/access";
+import { isUuid } from "@/lib/uuid";
 
 // GET /api/network-packages/[packageId]/versions/[versionId]/corridors
 export async function GET(
@@ -10,7 +11,9 @@ export async function GET(
   { params }: { params: Promise<{ packageId: string; versionId: string }> }
 ) {
   const audit = createApiAuditLogger("network_corridors.list", req);
-  const { versionId } = await params;
+  const { packageId, versionId } = await params;
+  if (!isUuid(packageId)) return NextResponse.json({ error: "Network package not found" }, { status: 404 });
+  if (!isUuid(versionId)) return NextResponse.json({ error: "Network package version not found" }, { status: 404 });
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -37,6 +40,8 @@ export async function POST(
 ) {
   const audit = createApiAuditLogger("network_corridors.create", req);
   const { packageId, versionId } = await params;
+  if (!isUuid(packageId)) return NextResponse.json({ error: "Network package not found" }, { status: 404 });
+  if (!isUuid(versionId)) return NextResponse.json({ error: "Network package version not found" }, { status: 404 });
   const supabase = await createClient();
   const bodyBody = await readJsonOrNullWithLimit<Record<string, unknown>>(req, BODY_LIMITS.networkGeoJson);
   if (!bodyBody.ok) return bodyBody.response;

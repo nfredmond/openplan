@@ -29,12 +29,12 @@ export function GrantsBcaScreeningSection({ projects, canSave }: GrantsBcaScreen
               Screens a project&apos;s pursue/skip posture before anyone commits to a full
               application benefit-cost analysis: operator-supplied costs and benefits, USDOT-style
               monetization defaults, a seeded uncertainty screen, and a downloadable memo.
-              Arithmetic on operator-supplied magnitudes — no missing input is invented, and
+              Arithmetic on operator-supplied magnitudes: no missing input is invented, and
               nothing is stored unless an operator saves a screening to the project record.
             </p>
           </div>
         </div>
-        <StatusBadge tone="warning">Screening-level — not an application BCA</StatusBadge>
+        <StatusBadge tone="warning">Screening-level, not an application BCA</StatusBadge>
       </div>
 
       <section className="space-y-3 border-b border-border p-4 sm:p-6" aria-label="Benefit-cost analysis workbench">

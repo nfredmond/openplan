@@ -478,7 +478,7 @@ export const RTP_EXTRACTION_DISCARD_SENTENCES: Record<RtpExtractionDiscardReason
   value_not_a_number: "gave something other than a number where a number belongs",
   value_out_of_range: "gave a number outside what the field can hold",
   zero_is_not_unpriced:
-    "recorded a zero where the plan gives no figure — unpriced is a real answer and it is not zero",
+    "recorded a zero where the plan gives no figure (unpriced is a real answer and it is not zero)",
   figure_not_in_quote: "used a figure that does not appear in the text it quoted",
   text_not_in_quote: "used wording that does not appear in the text it quoted",
   text_too_long: "returned more text than the field can hold",

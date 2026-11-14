@@ -129,6 +129,8 @@ export function buildPacketFundingReview(input: {
     };
   }
 
+  if (![input.outstandingReimbursementAmount,input.uninvoicedAwardAmount].every(Number.isFinite)) return {label:"Funding comparability unassessed",tone:"warning" as const,detail:"Review exact award currency and terms versions. Unassessed totals do not establish settled funding or reimbursement.",needsAttention:true};
+
   if (input.unfundedProjectCount > 0) {
     return {
       label: "Funding gap review",

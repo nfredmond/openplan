@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { PROJECT_RECORD_COMPOSER_TYPES } from "@/components/projects/project-record-composer";
 import { buildProjectTabs } from "@/app/(app)/projects/[projectId]/_components/_tabs";
+import { posixRelative } from "./helpers/posix-path";
 import { stripSourceComments } from "./helpers/source-text";
 
 /**
@@ -105,9 +106,9 @@ describe("a tabbed page names itself on every tab", () => {
       // in a component that only one tab renders. Nothing in the page file can
       // see that, so the whole route directory is swept.
       const offenders = filesInRoute(path.join(SRC, page.routeDir))
-        .filter((file) => path.relative(SRC, file) !== page.stripFile)
+        .filter((file) => posixRelative(SRC, file) !== page.stripFile)
         .filter((file) => /<h1[\s>]/.test(stripSourceComments(readFileSync(file, "utf8"))))
-        .map((file) => path.relative(SRC, file));
+        .map((file) => posixRelative(SRC, file));
 
       expect(
         offenders,
@@ -122,7 +123,7 @@ describe("a tabbed page names itself on every tab", () => {
  * The `recordTypes` each `<ProjectRecordComposer>` on the project page is
  * given, keyed by the tab whose panel it sits in.
  */
-function composersByTab(): Map<string, string[]> {
+function composersByTab(deliverablesReadable = true): Map<string, string[]> {
   const source = code("app/(app)/projects/[projectId]/page.tsx");
   const byTab = new Map<string, string[]>();
 
@@ -135,7 +136,9 @@ function composersByTab(): Map<string, string[]> {
     const composer = body.match(/<ProjectRecordComposer[\s\S]*?\/>/);
     if (!composer) continue;
 
-    const list = composer[0].match(/recordTypes=\{\[([^\]]*)\]\}/)?.[1] ?? "";
+    const fixed = composer[0].match(/recordTypes=\{\[([^\]]*)\]\}/)?.[1];
+    const conditional = composer[0].match(/recordTypes=\{deliverableReadState === "readable" \? \[([^\]]*)\] : \[([^\]]*)\]\}/);
+    const list = fixed ?? conditional?.[deliverablesReadable ? 1 : 2] ?? "";
     byTab.set(
       panel[1],
       [...list.matchAll(/"([a-z]+)"/g)].map((match) => match[1]),
@@ -146,6 +149,11 @@ function composersByTab(): Map<string, string[]> {
 }
 
 describe("every project record type can be created on the tab that reads it", () => {
+  it("withholds only deliverable creation while its source is unavailable", () => {
+    const byTab = composersByTab(false);
+    expect(byTab.get("delivery")).toEqual(["milestone", "submittal"]);
+    expect([...byTab.values()].flat().sort()).toEqual(PROJECT_RECORD_COMPOSER_TYPES.filter(type => type !== "deliverable").sort());
+  });
   it("splits the composer across Delivery and Record, covering all seven types once", () => {
     const byTab = composersByTab();
 

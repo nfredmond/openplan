@@ -167,7 +167,7 @@ export function ProjectFundingAwardCreator({
       {
         id: "spending",
         title: "Where does the money stand?",
-        hint: "A new award has not been spent yet — unless you are recording one that closed before OpenPlan saw it.",
+        hint: "A new award has not been spent yet, unless you are recording one that closed before OpenPlan saw it.",
         fields: [
           { name: "spendingStatus", label: "a spending status" },
           { name: "isAlreadyClosed", label: "whether it closed already" },
@@ -190,7 +190,7 @@ export function ProjectFundingAwardCreator({
               {flow.values.isAlreadyClosed ? (
                 <p className="text-xs text-muted-foreground">
                   {/* Not "below" any more: the basis moved to its own step. */}
-                  Not used — you are recording this award as already closed.
+                  Not used: you are recording this award as already closed.
                 </p>
               ) : null}
             </GuidedFlowRow>
@@ -234,7 +234,7 @@ export function ProjectFundingAwardCreator({
             label: "a basis for the closure",
             required: true,
             requiredMessage:
-              "Recording an award as already closed needs a written basis — what closed it, and on whose record.",
+              "Recording an award as already closed needs a written basis: what closed it, and on whose record.",
           },
         ],
         render: (flow) => (
@@ -271,7 +271,7 @@ export function ProjectFundingAwardCreator({
               flow={flow}
               name="expenditureDeadlineAt"
               label="Expenditure deadline"
-              hint="The date the funds must be spent by, if your agreement sets one — separate from the obligation date above. Recording it turns on a daily reminder that names what is still unclaimed on this award. Leave it blank if your agreement does not set one."
+              hint="The date the funds must be spent by, if your agreement sets one (separate from the obligation date above). Recording it turns on a daily reminder that names what is still unclaimed on this award. Leave it blank if your agreement does not set one."
             >
               <Input {...flow.text("expenditureDeadlineAt")} type="datetime-local" />
             </GuidedFlowRow>

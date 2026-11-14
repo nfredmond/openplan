@@ -7,6 +7,7 @@ import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { parseCorridorText, type ResolvedStudyArea } from "@/lib/models/study-area";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import type { CorridorGeometry, HomeGeographyLoadState } from "./_types";
 
 /**
@@ -46,6 +47,8 @@ type ExploreStudyAreaPanelProps = {
   corridorGeojson: CorridorGeometry | null;
   /** Publishes a new study area, or `null` when it is cleared. */
   onCorridorChange: (geometry: CorridorGeometry | null) => void;
+  /** The place a search resolved, or `null` for a drawn or cleared area. */
+  onPlaceResolved?: (place: PlaceBoundaryResponse | null) => void;
   /**
    * What the shared precedence resolved to, from `resolveStudyArea`. Applying it
    * is the page's job; this panel only needs to recognize it so it can say where
@@ -72,6 +75,7 @@ type ExploreStudyAreaPanelProps = {
 export function ExploreStudyAreaPanel({
   corridorGeojson,
   onCorridorChange,
+  onPlaceResolved,
   studyArea,
   homeGeographyLoadState,
   openedForProject,
@@ -130,8 +134,8 @@ export function ExploreStudyAreaPanel({
     studyArea.origin === "project"
       ? `Prefilled from the study area of ${
           openedForProject?.name ?? "the project this page was opened for"
-        }${inheritedPlace}. Change or clear it here — the project record itself is not affected.`
-      : `Prefilled from this workspace's home geography${inheritedPlace}. Change or clear it here — the workspace setting itself is not affected.`;
+        }${inheritedPlace}. Change or clear it here. The project record itself is not affected.`
+      : `Prefilled from this workspace's home geography${inheritedPlace}. Change or clear it here. The workspace setting itself is not affected.`;
 
   return (
     <>
@@ -141,7 +145,7 @@ export function ExploreStudyAreaPanel({
             <p className="analysis-studio-label">Study area</p>
             <h3 className="analysis-studio-title">Pick the area to analyze</h3>
             <p className="analysis-studio-description">
-              Search for any US county, city, town, CDP, or metro area — or draw the area on the map. No
+              Search for any US county, city, town, CDP, or metro area, or draw the area on the map. No
               file needed. This sets the boundary for the run; it does not analyze anything on its own.
             </p>
           </div>
@@ -197,6 +201,7 @@ export function ExploreStudyAreaPanel({
           <StudyAreaPicker
             corridorText={corridorText}
             onCorridorChange={handlePickerChange}
+            onPlaceResolved={onPlaceResolved}
             // `originLabel`, not the bare place name: the resolver documents it
             // as what the planner is TOLD about where the area came from. When
             // the place has a name that name IS the label; when it does not,

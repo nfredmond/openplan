@@ -183,15 +183,10 @@ function sweepInPage(step) {
 function chromeOverlapInPage() {
   const surface = document.querySelector('.op-cart-surface');
   if (!surface) return [];
-  // THE ONE PLACE THE CHROME IS SUPPOSED TO FLOAT OVER THE PAGE. On a route
-  // whose content IS a map, the surface goes full-bleed and the rail, the
-  // account card and the launcher sit on top of it deliberately — the map is
-  // the scarce resource and pushing it aside for a nav column was the thing
-  // that decision reversed. Flagging it here would be a permanent false alarm,
-  // and a report with a permanent false alarm in it stops being read. The hit
-  // test above still covers that route: it asks whether any CONTROL is under
-  // the chrome, which is the part the exemption does not license.
-  if (document.body.dataset.mapFillsSurface === 'true') return [];
+  // No exemption for a full-bleed map page (2026-11-02). There used to be one
+  // for /safety, from when its rail floated over the map. Once the rail became
+  // solid, that exemption hid 60px of page under it: the "Active project"
+  // strip read "ive project" at 1440 by 900 and this check said nothing.
   const page = surface.getBoundingClientRect();
   const chrome = ['.op-cart-rail', '.op-cart-account', '.op-cart-copilot-launch', '.op-cart-mapdock', '.op-cart-zoom'];
   const findings = [];

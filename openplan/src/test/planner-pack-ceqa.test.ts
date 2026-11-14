@@ -174,10 +174,10 @@ describe("ceqaVmtFactBlocks", () => {
     // ceqa_vmt_fact_blocks output for the same inputs.
     const byScenario = new Map(blocks.map((block) => [block.scenario_id, block]));
     expect(byScenario.get("hi")?.claim_text).toBe(
-      "Under CEQA §15064.3, scenario hi VMT per capita is 25.0 — potentially significant, 33.7% above the 15%-below-regional threshold of 18.7 VMT/capita."
+      "Under CEQA §15064.3, scenario hi VMT per capita is 25.0: potentially significant, 33.7% above the 15%-below-regional threshold of 18.7 VMT/capita."
     );
     expect(byScenario.get("lo")?.claim_text).toBe(
-      "Under CEQA §15064.3, scenario lo VMT per capita is 15.0 — less than significant, 19.8% below the 15%-below-regional threshold of 18.7 VMT/capita."
+      "Under CEQA §15064.3, scenario lo VMT per capita is 15.0: less than significant, 19.8% below the 15%-below-regional threshold of 18.7 VMT/capita."
     );
   });
 });
@@ -195,9 +195,9 @@ describe("renderCeqaVmtMarkdown", () => {
     );
     const markdown = renderCeqaVmtMarkdown(result, options);
 
-    expect(markdown).toContain("# CEQA §15064.3 VMT Significance Determination — run `run-1`");
+    expect(markdown).toContain("# CEQA §15064.3 VMT Significance Determination: run `run-1`");
     expect(markdown).toContain("- Project type: **residential**");
-    expect(markdown).toContain("- Reference baseline: **regional** — 22.0 VMT per capita");
+    expect(markdown).toContain("- Reference baseline: **regional** (22.0 VMT per capita)");
     expect(markdown).toContain(
       "- Screening threshold: **15% below regional** → 18.7 VMT per capita"
     );
@@ -214,10 +214,10 @@ describe("renderCeqaVmtMarkdown", () => {
       "| `lo` | 100.0 | 1500.0 | 15.0 | 18.7 | -19.8% | **less than significant** |"
     );
     expect(markdown).toContain(
-      "- `hi`: 25.0 VMT per capita — 33.7% above the 18.7 VMT per capita threshold. Mitigation required."
+      "- `hi`: 25.0 VMT per capita, 33.7% above the 18.7 VMT per capita threshold. Mitigation required."
     );
     expect(markdown).toContain(
-      "- `lo`: 15.0 VMT per capita — -19.8% versus the 18.7 VMT per capita threshold."
+      "- `lo`: 15.0 VMT per capita, -19.8% versus the 18.7 VMT per capita threshold."
     );
   });
 
@@ -237,7 +237,7 @@ describe("renderCeqaVmtMarkdown", () => {
     });
     const markdown = renderCeqaVmtMarkdown(result, { ...options, calibratedBasis: true });
     // The title and body must make the calibrated basis unmistakable in the artifact of record.
-    expect(markdown).toContain("# CEQA §15064.3 VMT Significance Determination (CALIBRATED-INPUT BASIS) — run `run-1`");
+    expect(markdown).toContain("# CEQA §15064.3 VMT Significance Determination (CALIBRATED-INPUT BASIS): run `run-1`");
     expect(markdown).toContain("Determination basis: CALIBRATED (count-tuned) VMT");
     expect(markdown).toContain("Do not present this memo as a screening-basis determination.");
   });
@@ -294,7 +294,7 @@ describe("renderCeqaVmtMarkdown", () => {
     expect(markdown).toContain("## Jurisdiction basis and modeling claim tier");
     expect(markdown).toContain("**Jurisdiction basis: none established.**");
     expect(markdown).toContain(
-      "not authority over a project in your area — the determinations in this memo are arithmetic screening results, not significance determinations for your area."
+      "not authority over a project in your area. The determinations in this memo are arithmetic screening results, not significance determinations for your area."
     );
     expect(markdown).toContain(
       "**Modeling claim tier:** not established on this surface."
@@ -338,7 +338,7 @@ describe("renderCeqaVmtMarkdown", () => {
       "- **Jurisdiction basis:** CEQA §15064.3 VMT significance screening, California, United States. CEQA §15064.3 applies to projects subject to review under the California Environmental Quality Act."
     );
     expect(markdown).not.toContain("none established");
-    expect(markdown).toContain("**Modeling claim tier:** Screening-grade — recorded for this run.");
+    expect(markdown).toContain("**Modeling claim tier:** Screening-grade, recorded for this run.");
   });
 
   it("states an honestly absent tier when the run has no recorded claim decision", () => {

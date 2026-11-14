@@ -191,7 +191,7 @@ export function describeTransitAccess(core: TransitAccessCore): string {
       );
     } else {
       parts.push(
-        `A frequent-service share is not reported for this study area — no single ingested feed's stops span ` +
+        `A frequent-service share is not reported for this study area. No single ingested feed's stops span ` +
           `it, so a share taken over the part that is covered would describe that part rather than the area. ` +
           `The frequency half of the accessibility score's transit term is therefore scored as zero rather ` +
           `than credited back as stop density: measuring less must never raise the score.`

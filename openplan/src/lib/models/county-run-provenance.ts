@@ -3,6 +3,7 @@ import {
   accuracyByClassSvg,
   type RoadClassAccuracy,
 } from "@/lib/models/charts/accuracy-by-class";
+import { countyRunDisplayableClaim, countyRunScientificClaimBasis, modelingClaimStatusLabel, type ModelingEvidenceSnapshot } from "@/lib/models/evidence-backbone";
 import type { CountyOnrampManifest } from "@/lib/models/county-onramp";
 
 /**
@@ -22,6 +23,7 @@ export type ProvenanceSource = {
 
 export type ProvenanceEvidence = {
   sourceManifests: ProvenanceSource[];
+  claimDecision?: ModelingEvidenceSnapshot["claimDecision"];
 };
 
 /**
@@ -173,30 +175,22 @@ function inlineSvg(svg: string, altText: string): string {
 }
 
 export function claimCeiling(input: CountyRunProvenanceInput): string {
-  const gate = asRecord(asRecord(input.validationSummary)?.screening_gate);
-  const gateLabel = asText(gate?.status_label);
-
-  if (!hasCountsComparison(input.validationSummary)) {
-    return (
-      "This run has NOT been compared against observed traffic counts. Its road-by-road volumes " +
-      "are unvalidated model output and must not be presented as measured or forecast traffic. " +
-      "Study-area totals may be used for screening and prioritisation with this document attached."
-    );
-  }
-  if (gateLabel && gateLabel.toLowerCase().includes("bounded screening-ready")) {
-    return (
-      `This run was compared against observed counts and met OpenPlan's screening thresholds ` +
-      `("${gateLabel}"). That supports screening and prioritisation, and supporting figures in a ` +
-      "funding application when accompanied by this record. It is NOT a calibrated forecast and " +
-      "must not be used for environmental review."
-    );
-  }
-  return (
-    `This run was compared against observed counts and DID NOT meet OpenPlan's screening ` +
-    `thresholds (recorded as "${stated(gateLabel)}"). Its road-by-road volumes must not be ` +
-    "presented as measured traffic. The comparison itself, and the gap it found, are reportable — " +
-    "the figures are not. It must not be used for environmental review."
-  );
+  const stored = input.modelingEvidence?.claimDecision;
+  const basis = countyRunScientificClaimBasis(input.validationSummary);
+  const claim = stored ? countyRunDisplayableClaim(stored, input.validationSummary) : null;
+  const tier = claim ? modelingClaimStatusLabel(claim.claimStatus) : "Untiered";
+  const reason = claim?.statusReason ?? `No assignment claim decision is recorded. ${basis.reason}`;
+  const comparison = hasCountsComparison(input.validationSummary)
+    ? "The count comparison and the gap it found are reportable diagnostics. The retired screening gate cannot authorize a claim."
+    : "This run has NOT been compared against observed traffic counts. Its road-by-road volumes are unvalidated model output and must not be presented as measured or forecast traffic.";
+  return [
+    `**Assignment claim tier: ${tier}.** ${reason}`,
+    comparison,
+    claim?.claimStatus === "screening_grade"
+      ? "Use for planning context only, with the recorded validation caveats. This is not a calibrated forecast."
+      : "This record does not authorize outward planning claims from the model outputs.",
+    "Do not use sketch VMT for a CEQA determination. These outputs must not be used for environmental review.",
+  ].join(" ");
 }
 
 function sourcesSection(evidence: ProvenanceEvidence | null): string[] {
@@ -256,7 +250,7 @@ function setAsideStations(validation: Record<string, unknown>): string[] {
   const ramps = asNumber(validation.stations_excluded_not_mainline);
   if (ramps !== null && ramps > 0) {
     lines.push(
-      `- **Set aside — ramps and connectors:** ${ramps}. The count measures a facility the ` +
+      `- **Set aside (ramps and connectors):** ${ramps}. The count measures a facility the ` +
         `screening network does not contain, so it would be paired with the mainline it leaves.`
     );
   }
@@ -266,13 +260,13 @@ function setAsideStations(validation: Record<string, unknown>): string[] {
     const ambiguous = asNumber(shared.stations_excluded_as_ambiguous);
     if (merged !== null && merged > 0) {
       lines.push(
-        `- **Set aside — several stations on one link:** ${merged}. Their counts agree, so the ` +
+        `- **Set aside (several stations on one link):** ${merged}. Their counts agree, so the ` +
           `link is compared once at their median rather than several times.`
       );
     }
     if (ambiguous !== null && ambiguous > 0) {
       lines.push(
-        `- **Set aside — one link, disagreeing counts:** ${ambiguous}. The model holds a single ` +
+        `- **Set aside (one link, disagreeing counts):** ${ambiguous}. The model holds a single ` +
           `volume for the link and nothing in the data says which station belongs to it.`
       );
     }
@@ -312,7 +306,7 @@ function stationsOnUnloadedLinks(validation: Record<string, unknown>): string[] 
     `- **Counted roads this run put no traffic on:** ${onUnloaded}${ofMatched}. The comparison ` +
       `keeps them, and each scores a 100% error because the model assigned that road nothing. ` +
       `That measures how much of the road network these zones reach, not how good the traffic ` +
-      `estimate is — and because the error is exactly 100%, they pull the median toward 100 from ` +
+      `estimate is, and because the error is exactly 100%, they pull the median toward 100 from ` +
       `whichever side it sits on. Removing them would raise the reported accuracy without ` +
       `changing the model.`,
   ];
@@ -362,7 +356,7 @@ function networkCoverage(validation: Record<string, unknown>): string[] {
     `This run put traffic on **${percent(carrying)}** of the ${links.toLocaleString("en-US")} road links inside ` +
       `your study area, and none on the other ${percent(empty)}.${worstSentence}`,
     "",
-    "**A road that received no traffic has no estimate — which is not the same as a low one.** The " +
+    "**A road that received no traffic has no estimate, which is not the same as a low one.** The " +
       "model routes travel between zone centres, so most minor streets never sit on any route and " +
       "no volume should be read off this run for them. That is the resolution of a screening model, " +
       "not a fault in this particular run, and it is why a corridor figure here is defensible where " +
@@ -377,7 +371,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
       "**This run was never compared against observed traffic counts.**",
       "",
       "No accuracy figure exists for it. That is not the same as an accuracy figure that has not",
-      "been reported — nothing was measured, so nothing can be claimed about how close these",
+      "been reported. Nothing was measured, so nothing can be claimed about how close these",
       "volumes are to real traffic.",
     ];
   }
@@ -392,7 +386,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
     : [];
 
   const lines = [
-    `- **Verdict:** ${stated(asText(gate?.status_label))}`,
+    `- **Legacy diagnostic gate:** ${stated(asText(gate?.status_label))}`,
     `- **Counts published by:** ${agencies.length ? agencies.join(", ") : "_not recorded_"}`,
     `- **Stations matched:** ${stated(asNumber(validation.stations_matched))} of ${stated(
       asNumber(validation.stations_total)
@@ -412,7 +406,7 @@ function validationSection(input: CountyRunProvenanceInput): string[] {
     )}`,
   ];
   if (reasons.length) {
-    lines.push("", "Why the verdict reads as it does:", ...reasons.map((reason) => `- ${reason}`));
+    lines.push("", "Recorded diagnostic reasons:", ...reasons.map((reason) => `- ${reason}`));
   }
 
   // A SINGLE MEDIAN ERROR IS TRUE OF NO ROAD IN PARTICULAR. Measured across 24
@@ -458,7 +452,7 @@ function calibrationSection(manifest: CountyOnrampManifest | null): string[] {
   const calibration = asRecord((manifest as unknown as Record<string, unknown>)?.calibration);
   if (!calibration) {
     return [
-      "**Not calibrated.** This run uses OpenPlan's generic screening parameters — trip rates and",
+      "**Not calibrated.** This run uses OpenPlan's generic screening parameters: trip rates and",
       "road speeds and capacities that were not fitted to anything in this study area.",
     ];
   }
@@ -490,7 +484,7 @@ function calibrationSection(manifest: CountyOnrampManifest | null): string[] {
     "",
     "**That last figure is not this run's accuracy, and must not be quoted as one.** The stations",
     "it is measured on were kept back from the fitting, but every calibration candidate was scored",
-    "against them and the best-scoring one was kept — so it is a best-of-several and reads better",
+    "against them and the best-scoring one was kept, so it is a best-of-several and reads better",
     "than the model performs. On one measured county it read 16% where an independent set of counts",
     "put the same run at 60%.",
     "",
@@ -652,7 +646,7 @@ export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput
   const intrazonal = asNumber(run?.intrazonal_trip_share);
 
   return [
-    `# Traffic modelling record — ${input.runName}`,
+    `# Traffic modelling record: ${input.runName}`,
     "",
     `**Study area:** ${stated(input.geographyLabel)}${
       input.geographyId ? ` (${input.geographyId})` : ""
@@ -682,7 +676,7 @@ export function buildCountyRunProvenanceDocument(input: CountyRunProvenanceInput
     `- **Assignment reached equilibrium:** ${yesNoUnknown(
       (run as Record<string, unknown> | null)?.assignment_converged as boolean | null | undefined,
       "yes",
-      "**NO — the volumes below are from part-way through a calculation**"
+      "**NO: the volumes below are from part-way through a calculation**"
     )}`,
     `- **Final convergence gap:** ${stated(asNumber(run?.final_gap))}`,
     ...(asText((run as Record<string, unknown> | null)?.assignment_convergence_caveat)

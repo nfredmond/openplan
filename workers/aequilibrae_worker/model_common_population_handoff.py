@@ -19,6 +19,7 @@ from types import SimpleNamespace
 import uuid
 
 from model_handoff_files import copy_registered
+from supabase_service_headers import service_key_headers
 
 REQUEST_SCHEMA = 'openplan.common-population-request.v1'
 SOURCE_SCHEMA = 'openplan.common-population-source.v1'
@@ -131,7 +132,7 @@ def read_stage_custody(reader, run_id, stage_id, artifact_id=None):
                 'custody': 'legacy_stage_snapshot', 'workspace_id': reader.context.workspace_id,
                 'run_id': run_id, 'stage_id': stage_id, 'artifact_id': artifact_id, 'eligible': True}
     with closing(post(reader.base_url.rstrip('/') + '/rest/v1/rpc/read_common_population_stage_custody',
-            headers={'apikey': reader.service_key, 'Authorization': 'Bearer ' + reader.service_key},
+            headers=service_key_headers(reader.service_key),
             json={'p_workspace': reader.context.workspace_id, 'p_run': run_id,
                   'p_stage': stage_id, 'p_artifact': artifact_id},
             timeout=(5, 30), allow_redirects=False)) as response:
@@ -193,7 +194,7 @@ def _row(writer, table, projection, **scope):
         import requests
         get = requests.get
     with closing(get(writer.base_url.rstrip('/') + '/rest/v1/' + table,
-            headers={'apikey': writer.service_key, 'Authorization': 'Bearer ' + writer.service_key},
+            headers=service_key_headers(writer.service_key),
             params={**{key: 'eq.' + value for key, value in scope.items()}, 'select': projection},
             timeout=(5, 30), allow_redirects=False)) as response:
         rows = response.json() if response.status_code == 200 else None
@@ -276,7 +277,7 @@ def _completed_output(writer, run, artifact, *, custody='managed_attempt'):
         import requests
         post = requests.post
     with closing(post(writer.base_url.rstrip('/') + '/rest/v1/rpc/read_model_attempt_outputs',
-            headers={'apikey': writer.service_key, 'Authorization': 'Bearer ' + writer.service_key},
+            headers=service_key_headers(writer.service_key),
             json={'p_run_id': run['id'], 'p_workspace_id': writer.context.workspace_id},
             timeout=(5, 30), allow_redirects=False)) as response:
         result = response.json() if response.status_code == 200 else None

@@ -62,6 +62,12 @@ type SeedContext = {
   userCId: string;
   projectBId: string;
   projectBRevision: string;
+  fundingOpportunityBId: string;
+  fundingAwardBId: string;
+  awardHandoffRevisionBId: string;
+  awardHandoffRequestBId: string;
+  awardHandoffOccurrenceBId: string;
+  awardClosureReceiptBId: string;
   planBId: string;
   reportArtifactBId: string;
   evidenceBundleBId: string;
@@ -440,9 +446,11 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "funding_opportunities",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, suffix }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, projectBId, fundingOpportunityBId, suffix }) => ({
+      id: fundingOpportunityBId,
       workspace_id: workspaceBId,
+      project_id: projectBId,
+      pursuit_kind: "grant",
       title: `RLS opportunity ${suffix}`,
     }),
   },
@@ -450,11 +458,65 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "funding_awards",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, projectBId, suffix }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, projectBId, fundingOpportunityBId, fundingAwardBId, suffix }) => ({
+      id: fundingAwardBId,
       workspace_id: workspaceBId,
       project_id: projectBId,
+      funding_opportunity_id: fundingOpportunityBId,
       title: `RLS award ${suffix}`,
+    }),
+  },
+  {
+    // Direct service fixtures test reads, not the reviewed handoff command.
+    // Synthetic history leaves issuance and latest/current award pointers unset.
+    table: "funding_award_handoff_revisions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, projectBId, fundingOpportunityBId, fundingAwardBId, awardHandoffRevisionBId, awardHandoffRequestBId, userBId }) => ({
+      id: awardHandoffRevisionBId,
+      workspace_id: workspaceBId,
+      project_id: projectBId,
+      opportunity_id: fundingOpportunityBId,
+      award_id: fundingAwardBId,
+      sequence: 1,
+      request_key: awardHandoffRequestBId,
+      reviewed_hash: "0".repeat(64),
+      reviewed_payload: { fixture: "SYNTHETIC RLS read isolation, no reviewed command" },
+      proposal: { fixture: "SYNTHETIC RLS proposal, no submitted application" },
+      proposal_hash: "0".repeat(64),
+      terms: { fixture: "SYNTHETIC RLS terms", issued: false, effective: false },
+      receipt: { fixture: "SYNTHETIC RLS history, no apply receipt" },
+      actor_id: userBId,
+    }),
+  },
+  {
+    // Array order seeds the exact revision tuple before this composite FK.
+    table: "funding_award_handoff_occurrences",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, projectBId, fundingAwardBId, awardHandoffRevisionBId, awardHandoffOccurrenceBId }) => ({
+      id: awardHandoffOccurrenceBId,
+      workspace_id: workspaceBId,
+      project_id: projectBId,
+      award_id: fundingAwardBId,
+      revision_id: awardHandoffRevisionBId,
+      condition_key: "synthetic-rls-condition",
+      occurrence_key: "synthetic-rls-occurrence",
+      requirement: { fixture: "SYNTHETIC RLS occurrence, no project task or fulfillment" },
+    }),
+  },
+  {
+    table: "funding_award_closure_receipts",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, fundingAwardBId, awardHandoffRevisionBId, awardClosureReceiptBId, userBId }) => ({
+      id: awardClosureReceiptBId,
+      workspace_id: workspaceBId,
+      award_id: fundingAwardBId,
+      revision_id: awardHandoffRevisionBId,
+      event: "recorded_on_import",
+      basis: { fixture: "SYNTHETIC RLS receipt, no paid coverage or award closure" },
+      actor_id: userBId,
     }),
   },
   {
@@ -1683,7 +1745,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(92);
+    expect(tables).toHaveLength(95);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -1709,6 +1771,9 @@ describe("workspace RLS isolation inventory", () => {
       "engagement_survey_questions",
       "engagement_survey_review_history",
       "engagement_translation_history",
+      "funding_award_closure_receipts",
+      "funding_award_handoff_occurrences",
+      "funding_award_handoff_revisions",
       "funding_awards",
       "funding_opportunities",
       "gtfs_feed_versions",
@@ -2283,6 +2348,12 @@ liveDescribe("workspace RLS live isolation", () => {
       userCId: createdC.data.user.id,
       projectBId: randomUUID(),
       projectBRevision: "",
+      fundingOpportunityBId: randomUUID(),
+      fundingAwardBId: randomUUID(),
+      awardHandoffRevisionBId: randomUUID(),
+      awardHandoffRequestBId: randomUUID(),
+      awardHandoffOccurrenceBId: randomUUID(),
+      awardClosureReceiptBId: randomUUID(),
       planBId: randomUUID(),
       reportArtifactBId: randomUUID(),
       evidenceBundleBId: randomUUID(),
@@ -2381,12 +2452,34 @@ liveDescribe("workspace RLS live isolation", () => {
 
     const retained = new Set<string>();
     async function removeFixtureWorkspace(workspaceId: string) {
-      const removed = await service.from("workspaces").delete().eq("id",workspaceId);
-      if (!removed.error) return;
-      // Engagement custody deliberately survives ordinary deletion. Keep only
-      // this suite's immutable fixture, and revoke every membership below.
-      const versions = await service!.from("engagement_campaigns").select("id").eq("workspace_id",workspaceId);
-      if(removed.error.code!=="23503" || versions.error || !versions.data?.length)throw Error(`Fixture workspace cleanup failed: ${removed.error.message}`);
+      // Award history restricts workspace/project/award/actor deletion even
+      // without current pointers. Retain only our exact inserted revision;
+      // do not treat an arbitrary FK error as evidence of this fixture.
+      let retainsAwardHistory = false;
+      if (workspaceId === context.workspaceBId) {
+        const revision = await service.from("funding_award_handoff_revisions")
+          .select("id,workspace_id,project_id,opportunity_id,award_id,actor_id")
+          .eq("id", context.awardHandoffRevisionBId).maybeSingle();
+        if (revision.error) throw Error(`Fixture award history lookup failed: ${revision.error.message}`);
+        if (revision.data) {
+          expect(revision.data, "retained award fixture identity").toEqual({
+            id: context.awardHandoffRevisionBId,
+            workspace_id: context.workspaceBId,
+            project_id: context.projectBId,
+            opportunity_id: context.fundingOpportunityBId,
+            award_id: context.fundingAwardBId,
+            actor_id: context.userBId,
+          });
+          retainsAwardHistory = true;
+        }
+      }
+      if (!retainsAwardHistory) {
+        const removed = await service.from("workspaces").delete().eq("id",workspaceId);
+        if (!removed.error) return;
+        // Preserve the existing engagement-only fallback when no award history landed.
+        const versions = await service!.from("engagement_campaigns").select("id").eq("workspace_id",workspaceId);
+        if(removed.error.code!=="23503" || versions.error || !versions.data?.length)throw Error(`Fixture workspace cleanup failed: ${removed.error.message}`);
+      }
       retained.add(workspaceId);
       const revoked=await service!.from("workspace_members").delete().eq("workspace_id",workspaceId);
       if(revoked.error)throw revoked.error;

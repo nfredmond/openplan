@@ -191,7 +191,7 @@ export function buildTripGenComparisonPayload({
 
   const trimmedLabel = label.trim();
   const resolvedLabel = clamp(
-    trimmedLabel || `Trip generation — ${candidateEntry.label} vs ${baselineEntry.label}`.trim(),
+    trimmedLabel || `Trip generation: ${candidateEntry.label} vs ${baselineEntry.label}`.trim(),
     SPINE_LABEL_MAX_LENGTH
   );
 

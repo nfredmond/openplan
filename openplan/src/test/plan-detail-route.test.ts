@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { pagingFake } from "./helpers/paging-fake";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -74,8 +75,13 @@ const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
 const engagementCategoriesInMock = vi.fn();
 const engagementCategoriesSelectMock = vi.fn(() => ({ in: engagementCategoriesInMock }));
 
+// Paged, through a fake that slices like PostgREST and holds its 1,000-row cap.
 const engagementItemsInMock = vi.fn();
-const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsInMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 const reportRunsInMock = vi.fn();
 const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
@@ -190,6 +196,7 @@ import { GET as getPlanDetail, PATCH as patchPlanDetail } from "@/app/api/plans/
 describe("/api/plans/[planId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    engagementItemsPaging.reset();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -347,6 +354,70 @@ describe("/api/plans/[planId]", () => {
         planningOutputLabel: "No planning outputs linked",
       }),
     });
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The project
+    campaign's comments were read in one request, so 1,234 approved comments
+    counted as 1,000 and the 7 flagged ones, which sort last, as none.
+  */
+  it("GET counts every engagement comment past the 1,000-row cap", async () => {
+    const campaignId = "99999999-9999-4999-8999-999999999999";
+    campaignOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: campaignId,
+          project_id: PROJECT_ID,
+          title: "Corridor survey",
+          summary: null,
+          status: "active",
+          engagement_type: "comment_collection",
+          updated_at: "2026-10-01T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValue({
+      data: [
+        ...Array.from({ length: 1234 }, () => ({ campaign_id: campaignId, status: "approved" })),
+        ...Array.from({ length: 7 }, () => ({ campaign_id: campaignId, status: "flagged" })),
+      ],
+      error: null,
+    });
+
+    const response = await getPlanDetail(new NextRequest("http://localhost/api/plans/plan-1"), {
+      params: Promise.resolve({ planId: PLAN_ID }),
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.linkedCampaigns).toEqual([
+      expect.objectContaining({ id: campaignId, itemCount: 1241, approvedItemCount: 1234, flaggedItemCount: 7 }),
+    ]);
+    expect(engagementItemsPaging.calls[0]).toEqual(["select", "campaign_id, status"]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", [campaignId]]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
+  });
+
+  it("GET refuses the detail when a comment page fails part way", async () => {
+    const campaignId = "99999999-9999-4999-8999-999999999999";
+    campaignOrderMock.mockResolvedValue({
+      data: [{ id: campaignId, project_id: PROJECT_ID, title: "Corridor survey", summary: null, status: "active", engagement_type: null, updated_at: null }],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValue({
+      data: Array.from({ length: 1234 }, () => ({ campaign_id: campaignId, status: "approved" })),
+      error: null,
+    });
+    engagementItemsPaging.failPage(2, { message: "statement timeout", code: "57014" });
+
+    const response = await getPlanDetail(new NextRequest("http://localhost/api/plans/plan-1"), {
+      params: Promise.resolve({ planId: PLAN_ID }),
+    });
+
+    expect(response.status).toBe(500);
   });
 
   it("PATCH updates plan metadata and replaces plan links", async () => {

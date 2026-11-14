@@ -1,9 +1,13 @@
 import { z } from "zod";
 import { bcaDocumentSchema, type BcaDocument } from "./schema";
+import { bcaProjectPlaceSchema } from "./project-place";
 
 // Editing can temporarily violate calculation bounds. Retain the complete typed
 // structure without requiring a finished analysis, so a reload can repair it.
 function editableShape(schema: z.core.$ZodType): z.ZodType {
+  if (schema === bcaProjectPlaceSchema) return bcaProjectPlaceSchema;
+  if (schema instanceof z.ZodDiscriminatedUnion)
+    return z.union(schema.options.map(option => editableShape(option)));
   if (schema instanceof z.ZodString) return z.string();
   if (schema instanceof z.ZodNumber) return z.number().finite();
   if (schema instanceof z.ZodNullable) return editableShape(schema.unwrap()).nullable();
@@ -15,18 +19,33 @@ function editableShape(schema: z.core.$ZodType): z.ZodType {
   if (schema instanceof z.ZodEnum || schema instanceof z.ZodLiteral) return schema;
   throw new Error("Unsupported draft field schema");
 }
-export const bcaDraftSchema = editableShape(bcaDocumentSchema) as z.ZodType<BcaDocument>;
+export const bcaDraftSchema = (editableShape(bcaDocumentSchema) as z.ZodType<BcaDocument>)
+  .refine(doc => doc.schemaVersion !== 2 || doc.projectPlace.projectId === doc.projectId,
+    "The place snapshot belongs to a different project.");
 export const bcaRetainedSaveSchema = z.object({
   id: z.string().uuid(), document: bcaDocumentSchema,
 }).strict();
 export type BcaRetainedSave = z.infer<typeof bcaRetainedSaveSchema>;
 
+/**
+ * What the open analysis started from. "blank" is a blank analysis nobody chose
+ * on a project that may hold saved versions; saving it needs an explicit choice.
+ */
+const bcaDraftBasisSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("saved"), id: z.string().uuid(), savedAt: z.string() }).strict(),
+  z.object({ kind: z.literal("blank") }).strict(),
+  z.object({ kind: z.literal("other") }).strict(),
+]);
+export type BcaDraftBasis = z.infer<typeof bcaDraftBasisSchema>;
+
 /** Recover draft and pending request independently; callers preserve any unreadable original. */
 export function readBcaDraft(raw: string, projectId: string) {
-  const stored = z.object({document: z.unknown(), pending: z.unknown().optional()}).strict().parse(JSON.parse(raw));
+  const stored = z.object({document: z.unknown(), pending: z.unknown().optional(), basis: z.unknown().optional()}).strict().parse(JSON.parse(raw));
   const draft = bcaDraftSchema.safeParse(stored.document);
   const save = stored.pending == null ? null : bcaRetainedSaveSchema.safeParse(stored.pending);
   const document = draft.success && draft.data.projectId === projectId ? draft.data : null;
   const pending = save?.success && save.data.document.projectId === projectId ? save.data : null;
-  return { document, pending, unreadable: !document || (stored.pending != null && !pending) };
+  // A draft from before the basis was recorded, or a damaged basis, reads as "other".
+  const basis: BcaDraftBasis = bcaDraftBasisSchema.safeParse(stored.basis).data ?? { kind: "other" };
+  return { document, pending, basis, unreadable: !document || (stored.pending != null && !pending) };
 }

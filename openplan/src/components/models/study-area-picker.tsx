@@ -57,9 +57,10 @@ function describeUnavailableKinds(kinds: PlaceKind[]): string {
 }
 
 /**
- * The single geography front door for the whole app (any US county / city / CDP
- * / metro / micro, TIGERweb-backed). Do not build a second one — see the
- * "Product non-negotiables" section of CLAUDE.md.
+ * The single geography front door for the whole app (any US county / city /
+ * CDP / town or township / tribal area / metro / micro, TIGERweb-backed). Do
+ * not build a second one — see the "Product non-negotiables" section of
+ * CLAUDE.md.
  *
  * `onPlaceResolved` is optional and additive: callers that need to know WHICH
  * place was chosen (not just its geometry) can receive the resolved boundary —
@@ -253,7 +254,7 @@ export function StudyAreaPicker({
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Type any US city, town, CDP, county, or metro area…"
+              placeholder="Type any US city, town, county, township, tribal area, or metro area…"
               className="pl-9"
               aria-label="Search for a place"
               autoComplete="off"
@@ -361,9 +362,12 @@ export function StudyAreaPicker({
           {showRunEngineHint && summary.areaKm2 !== null && summary.areaKm2 > LARGE_AREA_KM2 ? (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-              Large study area, best run on the <strong>AequilibraE (Fast Screening)</strong> engine. A metro-scale
-              sketch run exceeds the 150-tract in-process cap and is routed to the AequilibraE worker automatically;
-              expect a few minutes either way.
+              {/* One text child, so the flex row is icon then paragraph, not one column per text run. */}
+              <span className="min-w-0" data-testid="study-area-engine-hint">
+                Large study area, best run on the <strong>AequilibraE (Fast Screening)</strong> engine. A metro-scale
+                sketch run exceeds the 150-tract in-process cap and is routed to the AequilibraE worker automatically;
+                expect a few minutes either way.
+              </span>
             </p>
           ) : null}
         </div>

@@ -1,0 +1,342 @@
+{
+  "label": "Proof inputs for Lincoln County, Nevada: section text and values for one OpenPlan first-job proof journey, written from public sources read on 2026-11-14 and listed in facts. A demonstration only; not prepared, reviewed, adopted or submitted by Lincoln County.",
+  "organization": "OpenPlan proof run, Lincoln County demonstration",
+  "secondOrganization": "Second account for the cross-workspace check, Lincoln County",
+  "projectName": "Lincoln County safety demonstration",
+  "projectSummary": "Demonstration safety action plan and SS4A application for Lincoln County, Nevada, prepared by an automated OpenPlan proof run from public sources. Not prepared or adopted by the County.",
+  "planType": "safety_plan",
+  "countermeasures": [
+    "Enhanced Delineation for Horizontal Curves",
+    "Lighting"
+  ],
+  "treatedSegments": 3,
+  "bca": {
+    "title": "Safety action plan BCA, chevron signs on one treated segment (demonstration values)",
+    "cmf": "0.84",
+    "cmfClearinghouseId": "2438",
+    "seriousInjuryPersons": null,
+    "capitalCost": "6634",
+    "costYear": null
+  },
+  "campaignTitle": null,
+  "comments": [
+    "Curve signs: demonstration comment entered by the automated OpenPlan proof run, not by a resident. It tests the comment form with a request for clearer warning signs on curves.",
+    "Night lighting: demonstration comment entered by the automated OpenPlan proof run, not by a resident. It tests the comment form with a request for lighting where the road is dark at night."
+  ],
+  "reviewReason": "Demonstration review by the automated proof run: the comment is on topic and holds no personal information.",
+  "staffReview": {
+    "groupLabel": "Curve signs and night lighting",
+    "groupSummary": "Demonstration summary by the automated proof run: the two approved comments, both entered by the proof run, ask for clearer curve signs and lighting at night.",
+    "correctionReason": "Demonstration correction by the automated proof run: name the group from the two comments it holds.",
+    "approvalReason": "Demonstration approval by the automated proof run: the label and summary match the approved comments."
+  },
+  "budgetTitle": "Project budget (demonstration, no cost estimate)",
+  "facts": [
+    {
+      "id": "ss4a-federal-share",
+      "statement": "The federal share of an SS4A grant may not exceed 80 percent; recipients contribute at least 20 percent, from non-federal sources unless a statute authorizes otherwise.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), section C.5, PDF page 13. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790 | Public Law 117-58, Infrastructure Investment and Jobs Act, section 24112, Safe Streets and Roads for All Grant Program (135 Stat. 815-817), govinfo.gov, section 24112(e). https://www.govinfo.gov/content/pkg/PLAW-117publ58/html/PLAW-117publ58.htm",
+      "readOn": "2026-11-14",
+      "sections": [
+        "budget-narrative"
+      ],
+      "supports": "The FY 2026 SS4A notice limits the federal share to 80 percent of total eligible project costs and requires a local match of at least 20 percent, generally from non-federal sources; section 24112(e) of the Infrastructure Investment and Jobs Act sets the same 80 percent cap.",
+      "excerpt": "\"The Federal share of an SS4A grant may not exceed 80 percent of total eligible SS4A project costs. Recipients are required to contribute a local matching share of no less than 20 percent of total eligible project costs.\" (NOFO p. 13); \"(e) Federal Share.--The Federal share of the cost of an eligible project carried out using a grant provided under the program shall not exceed 80 percent.\" (IIJA 24112(e))"
+    },
+    {
+      "id": "ss4a-fy26-closed",
+      "statement": "The FY 2026 SS4A notice set the application deadline at 5:00 PM EDT on May 26, 2026; grants.gov shows the opportunity closed and listed no posted or forecasted SS4A opportunity on 2026-11-14.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), PDF page 3. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790 | Grants.gov opportunity DOT-SS4A-FY26-01, Safe Streets and Roads for All Funding Opportunity (fetchOpportunity API record 361291). https://www.grants.gov/search-results-detail/361291 | Grants.gov search2 API, keyword SS4A and keyword Safe Streets and Roads for All, statuses forecasted and posted. https://api.grants.gov/v1/api/search2",
+      "readOn": "2026-11-14",
+      "sections": [
+        "project-overview"
+      ],
+      "supports": "The FY 2026 notice closed to applications at 5:00 PM EDT on May 26, 2026, and grants.gov listed no posted or forecasted SS4A opportunity on November 14, 2026, so no open round exists for this text.",
+      "excerpt": "\"Planning and Demonstration Grant and Implementation Grant applications must be submitted by 5:00 PM (EDT) on May 26, 2026.\" (NOFO p. 3); grants.gov record: oppStatus \"closed\", closeDate 05/26/2026; search2 with statuses forecasted|posted returned no SS4A opportunity."
+    },
+    {
+      "id": "ss4a-planning-range",
+      "statement": "The FY 2026 notice gives an expected funding range of $100,000 to $5,000,000 for Planning and Demonstration Grants.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), PDF page 2. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "budget-narrative"
+      ],
+      "supports": "The notice expects Planning and Demonstration Grants of $100,000 to $5,000,000.",
+      "excerpt": "\"$305,678,320 is available for Planning and Demonstration Grants ... Expected funding range: $100,000 to $5,000,000\" (NOFO p. 2)"
+    },
+    {
+      "id": "ss4a-performance-period",
+      "statement": "The FY 2026 notice expects a period of performance between 24 months and five years, not to exceed five years.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), section D.3, PDF page 16. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "implementation-and-capacity"
+      ],
+      "supports": "The FY 2026 SS4A notice expects a period of performance between 24 months and five years and caps it at five years.",
+      "excerpt": "\"The expected period of performance for Planning and Demonstration and Implementation Grant agreements is between 24 months and five years ... may not exceed five years.\" (NOFO p. 16)"
+    },
+    {
+      "id": "ss4a-table1",
+      "statement": "Table 1 of the FY 2026 notice lists seven action plan components.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), Table 1, PDF pages 18-19. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "implementation-and-capacity"
+      ],
+      "supports": "Its Table 1 lists the components a qualifying action plan includes: leadership commitment and goal setting, a planning structure, safety analysis, engagement and collaboration, policy and process changes, strategy and project selections, and progress and transparency.",
+      "excerpt": "Table 1: Action Plan Components: Leadership Commitment and Goal Setting; Planning Structure; Safety Analysis; Engagement and Collaboration; Policy and Process Changes; Strategy and Project Selections; Progress and Transparency (NOFO pp. 18-19)"
+    },
+    {
+      "id": "ss4a-all-roadways",
+      "statement": "The FY 2026 notice says the safety analysis should include all roadways in the jurisdiction without regard to ownership, to the extent practical.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), Table 1, PDF page 18. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "implementation-and-capacity"
+      ],
+      "supports": "The notice states that the safety analysis should include all roadways within the jurisdiction, without regard to ownership, to the extent practical.",
+      "excerpt": "\"To the extent practical, the analysis should include all roadways within the jurisdiction, without regard to ownership.\" (NOFO p. 18)"
+    },
+    {
+      "id": "ss4a-engagement",
+      "statement": "Table 1 of the FY 2026 notice describes the Engagement and Collaboration component.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), Table 1, PDF page 19. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "engagement-and-collaboration"
+      ],
+      "supports": "Table 1 of the FY 2026 SS4A notice calls for engagement with the public, stakeholders and partners, analysis of what that engagement yields, inclusion of overlapping jurisdictions, and coordination with other governmental plans.",
+      "excerpt": "\"Robust engagement with the public and relevant stakeholders and partners ... Information received from engagement and collaboration is analyzed and incorporated into the Action Plan. Overlapping jurisdictions are included in the process. Plans and processes are coordinated and aligned with other governmental plans\" (NOFO p. 19)"
+    },
+    {
+      "id": "ss4a-app-definition",
+      "statement": "The FY 2026 notice defines Areas of Persistent Poverty and uses the same definition for Underserved Community.",
+      "source": "Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), section B, PDF page 6. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "equity-and-underserved-communities"
+      ],
+      "supports": "The FY 2026 SS4A notice defines an Area of Persistent Poverty, and uses the same definition for an underserved community, as a county with 20 percent or more of its population in poverty over the 30 years before November 15, 2021, or a census tract with a poverty rate of at least 20 percent in the 2014–2018 American Community Survey (ACS) 5-year data.",
+      "excerpt": "\"Any county that has consistently had greater than or equal to 20 percent of the population living in poverty during the 30-year period preceding November 15, 2021 ... Any census tract with a poverty rate of at least 20 percent as measured by the 2014 - 2018 5-year data series ... Underserved Community will use the same definition as APP\" (NOFO p. 6)"
+    },
+    {
+      "id": "fhwa-psc-list",
+      "statement": "Enhanced Delineation for Horizontal Curves (Roadway Departure) and Lighting (Crosscutting) appear on FHWA's Proven Safety Countermeasures list page in its 2026-11-04 Internet Archive capture; the live FHWA page answered HTTP 403 on 2026-11-14.",
+      "source": "FHWA, Proven Safety Countermeasures list page, Internet Archive capture of November 4, 2026 16:51 UTC (live page answered HTTP 403). https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures",
+      "readOn": "2026-11-14",
+      "sections": [
+        "implementation-and-capacity"
+      ],
+      "supports": "Enhanced Delineation for Horizontal Curves and Lighting both appear on FHWA's Proven Safety Countermeasures list page in its Internet Archive capture of November 4, 2026, read that way because FHWA's site refused automated reads on November 14, 2026.",
+      "excerpt": "List page links read \"Enhanced Delineation for Horizontal Curves\" under Roadway Departure and \"Lighting\" under Crosscutting (capture 2026-11-04 16:51 UTC); no newer capture exists in the CDX index on 2026-11-14."
+    },
+    {
+      "id": "fhwa-lighting",
+      "statement": "FHWA's Lighting countermeasure page states that research indicates continuous lighting on rural and urban highways has an established safety benefit for motorized vehicles.",
+      "source": "FHWA, Lighting (FHWA-SA-21-050 page), Internet Archive capture of July 24, 2026 01:11 UTC, the newest capture (live page answered HTTP 403), Applications, Roadway Segments. https://web.archive.org/web/20260724011124/https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",
+      "readOn": "2026-11-14",
+      "sections": [
+        "implementation-and-capacity"
+      ],
+      "supports": "FHWA's Lighting page states that research indicates continuous lighting on both rural and urban highways has an established safety benefit for motorized vehicles.",
+      "excerpt": "\"Research indicates that continuous lighting on both rural and urban highways (including freeways) has an established safety benefit for motorized vehicles.\""
+    },
+    {
+      "id": "cmf-2438",
+      "statement": "CMF Clearinghouse entry 2438, Install chevron signs on horizontal curves: CMF 0.84 (CRF 16), unadjusted standard error 0.104 (no adjusted standard error given), 4 stars (125 rating points), crash type non-intersection, severity K, A, B, C, rural, 2 lanes, undivided, AADT 261 to 14,790, prior condition no sign, WA data 1993 to 2007, study Srinivasan et al. 2009, Safety Evaluation of Improved Curve Delineation.",
+      "source": "CMF Clearinghouse, CMF / CRF Details, Countermeasure ID 2438, Install chevron signs on horizontal curves (FHWA, maintained by UNC Highway Safety Research Center). https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2438",
+      "readOn": "2026-11-14",
+      "sections": [
+        "safety-problem-and-impact"
+      ],
+      "supports": "For the benefit estimate, this demonstration uses CMF Clearinghouse entry 2438, Install chevron signs on horizontal curves, with a crash modification factor of 0.84 and a four-star quality rating, from Srinivasan and others, Safety Evaluation of Improved Curve Delineation (2009).",
+      "excerpt": "\"Install chevron signs on horizontal curves ... Countermeasure ID: 2438 ... Prior Condition: No sign ... Study: Safety Evaluation of Improved Curve Delineation, Srinivasan et al., 2009 ... Star Quality Rating: 4 Stars ... Crash Modification Factor (CMF) Value: 0.84 Adjusted Standard Error: Unadjusted Standard Error: 0.104\" (live page re-read 2026-11-14 09:17 UTC, byte-identical to the earlier read)"
+    },
+    {
+      "id": "openplan-cm-list-no-cmf",
+      "statement": "OpenPlan's FHWA Proven Safety Countermeasures catalog gives cmf null and the cmfNote \"No CMF Clearinghouse entry read; no value given\" (preceded by the app's verify marker) for both Enhanced Delineation for Horizontal Curves and Lighting, and the safety action plan HTML prints that note beside each countermeasure.",
+      "source": "OpenPlan repository, FHWA Proven Safety Countermeasures catalog, file openplan/src/lib/safety/countermeasures/fhwa-proven-safety-countermeasures.v1.json at commit 93e57089488d436253369eac2ab0cf4dba093df9 (the reference tree integration-fj-4-20261114); printed per countermeasure by openplan/src/lib/reports/html.ts line 1410 at the same commit. openplan/src/lib/safety/countermeasures/fhwa-proven-safety-countermeasures.v1.json@93e57089488d436253369eac2ab0cf4dba093df9",
+      "readOn": "2026-11-14",
+      "sections": [
+        "safety-problem-and-impact"
+      ],
+      "supports": "OpenPlan's countermeasure list holds no crash modification factor for either countermeasure, and the attached plan says so beside each one; the factor used here is this demonstration's own reading of the CMF Clearinghouse.",
+      "excerpt": "Entries id \"enhanced-delineation-horizontal-curves\" and id \"lighting\": \"cmf\": null, \"cmfNote\" text ending \"No CMF Clearinghouse entry read; no value given.\"; html.ts line 1410 renders each countermeasure as a list item ending with ${esc(item.cmfNote)}. (The marker itself is left out of this excerpt on purpose.)"
+    },
+    {
+      "id": "caltrans-ss-82-3-04",
+      "statement": "Caltrans Standard Specifications 2023, section 82-3.04: a roadside sign on one post is one measurement unit of roadside sign - one post, and payment for furnishing sign panels is not included in the payment for roadside signs; section 82-2.04 pays for furnishing sign panels by area.",
+      "source": "California Department of Transportation, Standard Specifications 2023 Edition (unofficial version with vertical bars), sections 82-2.04 and 82-3.04 Payment, section 82-3.04, page 1111 of the unofficial version (PDF page 1115), and section 82-2.04. https://dot.ca.gov/-/media/dot-media/programs/design/documents/standard-specifications-2023-edition-unofficial-version-with-vertical-bars-dor.pdf",
+      "readOn": "2026-11-14",
+      "sections": [
+        "budget-narrative"
+      ],
+      "supports": "The sign count is a planning assumption, not a field inventory of curves, and the price covers that one bid item only: Caltrans pays for sign panels separately (2023 Standard Specifications, section 82-3.04), and traffic control, design and contingency are not counted.",
+      "excerpt": "82-3.04: \"An installed roadside sign consisting of one or more sign panels attached to: 1. 1 post is 1 measurement unit of roadside sign - one post\" and \"Payment for furnishing sign panels is not included in the payment for roadside signs.\"; 82-2.04: \"The payment quantity for furnishing any type of sign panel is the area determined from the dimensions shown.\""
+    },
+    {
+      "id": "cmf-2438-limits",
+      "statement": "Entry 2438 applies to non-intersection crashes of severity K, A, B and C on rural, two-lane undivided roads with AADT of 261 to 14,790, from Washington data for 1993 to 2007, with no prior sign.",
+      "source": "CMF Clearinghouse, CMF / CRF Details, Countermeasure ID 2438, Install chevron signs on horizontal curves (FHWA, maintained by UNC Highway Safety Research Center), Applicability and Development Details. https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2438",
+      "readOn": "2026-11-14",
+      "sections": [
+        "safety-problem-and-impact"
+      ],
+      "supports": "That factor applies to fatal and injury (KABC) non-intersection crashes on rural, two-lane undivided roads carrying 261 to 14,790 vehicles a day, studied in Washington State with 1993 to 2007 data, and it assumes no curve sign was there before.",
+      "excerpt": "\"Crash Type: Non-intersection; Crash Severity: K (fatal),A (serious injury),B (minor injury),C (possible injury); Minimum Number of Lanes: 2; Maximum Number of Lanes: 2; Road Division Type: Undivided; Area Type: Rural; Traffic Volume: Minimum of 261 to Maximum of 14790 Annual Average Daily Traffic (AADT); Date Range of Data Used: 1993 to 2007; State: WA\""
+    },
+    {
+      "id": "caltrans-820840-2025",
+      "statement": "Caltrans Contract Cost Data, item 820840 Roadside Sign - One Post, unit EA, all districts, 2025, awarded bidder only: 196 bid lines, 15,304 signs, $8,460,798.90 total; weighted average $552.85 per sign (8,460,798.90 / 15,304). 12 signs x $552.85 = $6,634.20, entered as 6634.",
+      "source": "Caltrans Contract Cost Data, results for item ROADSIDE SIGN - ONE POST (item 820840), unit EA, all districts, year 2025, awarded bidder only (query timestamp 11/14/2026 00:38:33). https://sv08data.dot.ca.gov/results.php?item=ROADSIDE+SIGN+-+ONE+POST&ob=1&Year%5B%5D=y2025&min=&max=&minU=&maxU=&unit=EA&start=Search",
+      "readOn": "2026-11-14",
+      "sections": [
+        "budget-narrative"
+      ],
+      "supports": "The one cost in this packet is the benefit-cost analysis's capital cost, which this demonstration assumes: 12 one-post roadside signs on one treated segment at $552.85 each, the weighted average unit price of 2025 awarded bids statewide for Caltrans item 820840, Roadside Sign - One Post, for a total of $6,634 in 2025 bid dollars.",
+      "excerpt": "Rows read as \"820840 - ROADSIDE SIGN - ONE POST | EA | district | quantity | unit price | adjusted price | total | bid open date\", for example \"820840 - ROADSIDE SIGN - ONE POST|EA|03|352|$625.00|...|$220000.00|05-15-2025\"; footer \"Item = ROADSIDE SIGN - ONE POST; Units: EA; District=All; Year=2025; Bidders=Awarded Only\"."
+    },
+    {
+      "id": "ss4a-eligible-subdivision",
+      "statement": "IIJA section 24112(a)(2)(B) names a political subdivision of a State as an eligible entity; the FY 2026 notice lists political subdivisions of a State or territory, e.g., cities, towns, counties.",
+      "source": "Public Law 117-58, Infrastructure Investment and Jobs Act, section 24112, Safe Streets and Roads for All Grant Program (135 Stat. 815-817), govinfo.gov, section 24112(a)(2). https://www.govinfo.gov/content/pkg/PLAW-117publ58/html/PLAW-117publ58.htm | Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), PDF page 2. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "project-overview"
+      ],
+      "supports": "Section 24112 of the Infrastructure Investment and Jobs Act names a political subdivision of a State as an eligible entity, and the FY 2026 notice gives counties as an example.",
+      "excerpt": "\"(2) Eligible entity.--The term ``eligible entity'' means-- (A) a metropolitan planning organization; (B) a political subdivision of a State\"; NOFO p. 2: \"Political subdivisions of a State or territory (e.g., cities, towns, counties)\""
+    },
+    {
+      "id": "lincoln-pop-area",
+      "statement": "2020 Census population of Lincoln County, Nevada: 4,499 (DHC P1_001N). 2020 Gazetteer land area: 10,633.386 square miles. Density 4,499 / 10,633.386 = 0.42 residents per square mile.",
+      "source": "U.S. Census Bureau, 2020 Census Demographic and Housing Characteristics File (DHC), tables P1 (Total Population) and P2 (Urban and Rural), via data.census.gov table API, table P1, GEO_ID 0500000US32017. https://data.census.gov/api/access/data/table?id=DECENNIALDHC2020.P1&g=0500000US32017 | U.S. Census Bureau, 2020 Gazetteer Files, Counties (2020_Gaz_counties_national), column ALAND_SQMI, GEOID 32017. https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2020_Gazetteer/2020_Gaz_counties_national.zip",
+      "readOn": "2026-11-14",
+      "sections": [
+        "project-overview"
+      ],
+      "supports": "The 2020 Census counted 4,499 residents in Lincoln County on 10,633.4 square miles of land, about 0.42 residents per square mile.",
+      "excerpt": "P1: [\"0500000US32017\", null, \"4499\", \"Lincoln County, Nevada\"]; Gazetteer: NV 32017 Lincoln County ALAND_SQMI 10633.386"
+    },
+    {
+      "id": "lincoln-tiger-roads",
+      "statement": "TIGER/Line 2024 primary and secondary roads clipped to Lincoln County (GEOID 32017) include features named US Hwy 93, State Hwy 318, State Rte 319 and State Hwy 375, among others such as State Hwy 317, 320, 321 and 322.",
+      "source": "U.S. Census Bureau, TIGER/Line Shapefiles 2024, Primary and Secondary Roads, Nevada (tl_2024_32_prisecroads), clipped to the 2024 county boundary for GEOID 32017. https://www2.census.gov/geo/tiger/TIGER2024/PRISECROADS/tl_2024_32_prisecroads.zip",
+      "readOn": "2026-11-14",
+      "sections": [
+        "project-overview"
+      ],
+      "supports": "The Census Bureau's 2024 TIGER/Line primary and secondary roads file shows roads in the County that include US Highway 93 and State Routes 318, 319 and 375.",
+      "excerpt": "FULLNAME values in the clip include \"US Hwy 93\", \"State Hwy 318\", \"State Rte 319\" and \"State Hwy 375\", and also \"State Hwy 317\", \"State Hwy 320\", \"State Hwy 321\", \"State Hwy 322\" and local street names"
+    },
+    {
+      "id": "lincoln-departments",
+      "statement": "Lincoln County's website lists a Road Department with a Caliente mailing address and a Planning Department in Pioche; Planning Commission meetings are held on the 2nd Thursday of every month.",
+      "source": "Lincoln County, Nevada, Road Department web page. https://lincolncountynv.org/departments/road-department/ | Lincoln County, Nevada, Planning Department web page. https://lincolncountynv.org/departments/planning-department/",
+      "readOn": "2026-11-14",
+      "sections": [
+        "project-overview"
+      ],
+      "supports": "The County's website lists a Road Department with a Caliente mailing address and a Planning Department in Pioche.",
+      "excerpt": "Road Department: \"P.O. Box 396 Caliente, NV 89008\"; Planning Department: \"181 North Main Street, Suite 107 P.O. Box 329 Pioche, NV 89043\""
+    },
+    {
+      "id": "fars-scope",
+      "statement": "NHTSA's FARS Analytical User's Manual (DOT HS 813 794) describes FARS as a census of fatal motor vehicle crashes; a case must involve a motor vehicle on a trafficway customarily open to the public and a death within 30 days.",
+      "source": "NHTSA, Fatality Analysis Reporting System Analytical User's Manual, 1975-2024, DOT HS 813 794 (April 2026), PDF page 6. https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813794",
+      "readOn": "2026-11-14",
+      "sections": [
+        "safety-problem-and-impact"
+      ],
+      "supports": "Where the attached plan draws on the Fatality Analysis Reporting System (FARS), it holds fatal crashes only: NHTSA describes FARS as a census of fatal motor vehicle crashes on trafficways customarily open to the public, counting deaths within 30 days of the crash.",
+      "excerpt": "\"FARS is a census of fatal motor vehicle crashes ... To qualify as a FARS case, the crash had to involve a motor vehicle traveling on a trafficway customarily open to the public and must have resulted in the death of a motorist or a non-motorist within 30 days of the crash.\""
+    },
+    {
+      "id": "nv-shsp-2026-areas",
+      "statement": "The 2026-2030 Nevada Strategic Highway Safety Plan lists Impaired Driving, Lane Departures, Human Factors, Rural/Tribal Communities, Vulnerable Road Users, Safer Speeds, Intersections and Post-Crash Care/Emergency Services as its critical areas.",
+      "source": "2026-2030 Nevada Strategic Highway Safety Plan (PDF created December 15, 2025), posted on Nevada's Zero Fatalities site, printed page 19 (PDF page 24). https://zerofatalitiesnv.com/app/uploads/2026/01/2026-2030-NV-SHSP_Dec-2025.pdf",
+      "readOn": "2026-11-14",
+      "sections": [
+        "safety-problem-and-impact"
+      ],
+      "supports": "Nevada's 2026–2030 Strategic Highway Safety Plan lists Lane Departures and Rural/Tribal Communities among its critical areas (page 19), and the 2021–2025 plan defined lane departure crashes as non-intersection crashes in which a vehicle crosses an edge line or lane line and may leave the roadway or cross the centerline (page 17).",
+      "excerpt": "\"In addition to the critical areas, Strategy Teams and Task Forces will also track and discuss actions related to other important topics such as Motorcyclists and Work Zones.\" beside the list \"Impaired Driving, Lane Departures, Human Factors, Rural/Tribal Communities, Vulnerable Road Users, Safer Speeds, Intersections, Post-Crash Care/Emergency Services\" (p. 19). The State's page https://zerofatalitiesnv.com/strategic-highway-safety-plan-2026-2030/ links this PDF."
+    },
+    {
+      "id": "nv-shsp-lane-departure",
+      "statement": "The 2021-2025 Nevada SHSP defines lane departure crashes as non-intersection crashes in which a vehicle crosses an edgeline or lane line and may leave the roadway or cross the centerline.",
+      "source": "2021-2025 Nevada Strategic Highway Safety Plan (dated 02/19/2021), posted on Nevada's Zero Fatalities site, printed page 17 (PDF page 25). https://zerofatalitiesnv.com/app/uploads/2021/03/2021-2025_NV_SHSP.pdf",
+      "readOn": "2026-11-14",
+      "sections": [
+        "safety-problem-and-impact"
+      ],
+      "supports": "Nevada's 2026–2030 Strategic Highway Safety Plan lists Lane Departures and Rural/Tribal Communities among its critical areas (page 19), and the 2021–2025 plan defined lane departure crashes as non-intersection crashes in which a vehicle crosses an edge line or lane line and may leave the roadway or cross the centerline (page 17).",
+      "excerpt": "p. 17: \"Lane departure crashes are non-intersection crashes in which a vehicle crosses an edgeline or lane line and may leave the roadway or cross the centerline.\""
+    },
+    {
+      "id": "lincoln-acs-tracts",
+      "statement": "ACS 2014-2018 B17001: Census Tract 9501, 59 below poverty of 2,060 (2.9 percent; MOE 63 and 272); Census Tract 9502, 254 of 2,572 (9.9 percent; MOE 142 and 294).",
+      "source": "U.S. Census Bureau, American Community Survey 2014-2018 5-year estimates, table B17001 (Poverty Status in the Past 12 Months by Sex by Age), via data.census.gov table API, tracts in 0500000US32017. https://data.census.gov/api/access/data/table?id=ACSDT5Y2018.B17001&g=0500000US32017$1400000",
+      "readOn": "2026-11-14",
+      "sections": [
+        "equity-and-underserved-communities"
+      ],
+      "supports": "Lincoln County holds two census tracts in that data series, and the 2014–2018 ACS (table B17001) estimates 59 of 2,060 people, 2.9 percent, below the poverty level in Census Tract 9501 and 254 of 2,572, 9.9 percent, in Census Tract 9502, so neither tract meets the tract test.",
+      "excerpt": "\"Census Tract 9501, Lincoln County, Nevada\" B17001_001E 2060, B17001_002E 59; \"Census Tract 9502, Lincoln County, Nevada\" B17001_001E 2572, B17001_002E 254"
+    },
+    {
+      "id": "lincoln-rural",
+      "statement": "2020 Census DHC P2 for Lincoln County: total 4,499, urban 0, rural 4,499; the 2020 Urban Areas to County file shows 0 urban blocks, 0 urban population and 0 urban land in the county. Census urban territory is territory inside Urban Areas, so no part of the county's population lies in an Urban Area; the FY 2026 notice treats jurisdictions outside an Urban Area, or in Urban Areas under 200,000, as rural.",
+      "source": "U.S. Census Bureau, 2020 Census Demographic and Housing Characteristics File (DHC), tables P1 (Total Population) and P2 (Urban and Rural), via data.census.gov table API, table P2, GEO_ID 0500000US32017. https://data.census.gov/api/access/data/table?id=DECENNIALDHC2020.P2&g=0500000US32017 | U.S. Census Bureau, 2020 Census Urban Areas to County relationship file (2020_UA_COUNTY.xlsx), sheet 2020_UA_COUNTY, row STATE 32, COUNTY 017. https://www2.census.gov/geo/docs/reference/ua/2020_UA_COUNTY.xlsx | Safe Streets and Roads for All FY2026 Notice of Funding Opportunity (U.S. DOT, posted March 27, 2026; PDF attachment SS4A-FY26-NOFO.pdf to opportunity DOT-SS4A-FY26-01), section B, PDF page 6. https://apply07.grants.gov/grantsws/rest/opportunity/att/download/350790",
+      "readOn": "2026-11-14",
+      "sections": [
+        "equity-and-underserved-communities"
+      ],
+      "supports": "The 2020 Census counted all 4,499 residents in rural territory, which places the County outside any Census Urban Area, the condition the FY 2026 notice uses to treat a jurisdiction as rural.",
+      "excerpt": "P2_001N 4499, P2_002N (urban) 0, P2_003N (rural) 4499; UA-county file row 32 017 Nevada Lincoln: POP_URB 0, URBANBLOCKS 0, ALAND_URB 0, POP_RUR 4499, RURALBLOCKS 1329 of TOTALBLOCKS 1329; NOFO p. 6: \"jurisdictions outside an Urban Area (UA) or located within UAs with populations fewer than 200,000, based on the 2020 Census, will be considered rural\""
+    },
+    {
+      "id": "lincoln-planning-commission",
+      "statement": "The Lincoln County Planning Department page states Planning Commission meetings are held on the 2nd Thursday of every month.",
+      "source": "Lincoln County, Nevada, Planning Department web page. https://lincolncountynv.org/departments/planning-department/",
+      "readOn": "2026-11-14",
+      "sections": [
+        "engagement-and-collaboration"
+      ],
+      "supports": "The County's website lists a Road Department and a Planning Department, whose Planning Commission meets on the second Thursday of each month.",
+      "excerpt": "\"Planning Commission meetings are held on the 2nd Thursday of every month at 5:30 pm Pacific Time.\""
+    },
+    {
+      "id": "lincoln-routes-again",
+      "statement": "TIGER/Line 2024 shows US Hwy 93 and State Routes 318, 319 and 375, among other roads, within Lincoln County (same read as lincoln-tiger-roads).",
+      "source": "U.S. Census Bureau, TIGER/Line Shapefiles 2024, Primary and Secondary Roads, Nevada (tl_2024_32_prisecroads), clipped to the 2024 county boundary for GEOID 32017. https://www2.census.gov/geo/tiger/TIGER2024/PRISECROADS/tl_2024_32_prisecroads.zip",
+      "readOn": "2026-11-14",
+      "sections": [
+        "engagement-and-collaboration"
+      ],
+      "supports": "US Highway 93 and State Routes 318, 319 and 375 are among the roads in the County; this demonstration did not read which agency owns or maintains each road, so it names no road-owning partner.",
+      "excerpt": "FULLNAME values \"US Hwy 93\", \"State Hwy 318\", \"State Rte 319\", \"State Hwy 375\""
+    }
+  ],
+  "sections": {
+    "project-overview": {
+      "text": "This text is a demonstration prepared by an automated OpenPlan proof run from public sources read on November 14, 2026; Lincoln County did not prepare, review, adopt or submit it, and it commits the County to nothing.\n\nThe demonstration describes a Planning and Demonstration Grant request under the fiscal year (FY) 2026 Safe Streets and Roads for All (SS4A) notice to develop a comprehensive safety action plan for all public roads in Lincoln County, Nevada.\n\nSection 24112 of the Infrastructure Investment and Jobs Act names a political subdivision of a State as an eligible entity, and the FY 2026 notice gives counties as an example.\n\nThe 2020 Census counted 4,499 residents in Lincoln County on 10,633.4 square miles of land, about 0.42 residents per square mile.\n\nThe Census Bureau's 2024 TIGER/Line primary and secondary roads file shows roads in the County that include US Highway 93 and State Routes 318, 319 and 375.\n\nThe County's website lists a Road Department with a Caliente mailing address and a Planning Department in Pioche.\n\nThe FY 2026 notice closed to applications at 5:00 PM EDT on May 26, 2026, and grants.gov listed no posted or forecasted SS4A opportunity on November 14, 2026, so no open round exists for this text.\n\nThe attached safety action plan carries the crash summary, high-injury network, candidate countermeasures and benefit-cost summary the proof run produced."
+    },
+    "safety-problem-and-impact": {
+      "text": "The attached safety action plan reports and ranks the crashes the proof run retrieved.\n\nWhere the attached plan draws on the Fatality Analysis Reporting System (FARS), it holds fatal crashes only: NHTSA describes FARS as a census of fatal motor vehicle crashes on trafficways customarily open to the public, counting deaths within 30 days of the crash.\n\nNevada's 2026–2030 Strategic Highway Safety Plan lists Lane Departures and Rural/Tribal Communities among its critical areas (page 19), and the 2021–2025 plan defined lane departure crashes as non-intersection crashes in which a vehicle crosses an edge line or lane line and may leave the roadway or cross the centerline (page 17).\n\nThis demonstration assumes two countermeasures from FHWA's Proven Safety Countermeasures list for up to three of the highest-ranked segments: Enhanced Delineation for Horizontal Curves and Lighting.\n\nFor the benefit estimate, this demonstration uses CMF Clearinghouse entry 2438, Install chevron signs on horizontal curves, with a crash modification factor of 0.84 and a four-star quality rating, from Srinivasan and others, Safety Evaluation of Improved Curve Delineation (2009).\n\nOpenPlan's countermeasure list holds no crash modification factor for either countermeasure, and the attached plan says so beside each one; the factor used here is this demonstration's own reading of the CMF Clearinghouse.\n\nThat factor applies to fatal and injury (KABC) non-intersection crashes on rural, two-lane undivided roads carrying 261 to 14,790 vehicles a day, studied in Washington State with 1993 to 2007 data, and it assumes no curve sign was there before.\n\nThe benefit-cost analysis applies it to every death recorded on one treated segment, including any at an intersection or away from a curve, and assumes deaths fall by the same share the study found for all injury crashes combined; Lighting enters with no factor and no cost."
+    },
+    "equity-and-underserved-communities": {
+      "text": "The FY 2026 SS4A notice defines an Area of Persistent Poverty, and uses the same definition for an underserved community, as a county with 20 percent or more of its population in poverty over the 30 years before November 15, 2021, or a census tract with a poverty rate of at least 20 percent in the 2014–2018 American Community Survey (ACS) 5-year data.\n\nLincoln County holds two census tracts in that data series, and the 2014–2018 ACS (table B17001) estimates 59 of 2,060 people, 2.9 percent, below the poverty level in Census Tract 9501 and 254 of 2,572, 9.9 percent, in Census Tract 9502, so neither tract meets the tract test.\n\nThis demonstration did not test the county measure, which needs the 1990 and 2000 decennial census and the Small Area Income and Poverty Estimates.\n\nThe 2020 Census counted all 4,499 residents in rural territory, which places the County outside any Census Urban Area, the condition the FY 2026 notice uses to treat a jurisdiction as rural.\n\nHow the action plan reaches people who walk, bike, ride transit or drive the County's roads, and which communities it names, are decisions for Lincoln County; this demonstration makes none of them."
+    },
+    "engagement-and-collaboration": {
+      "text": "No public engagement took place for this demonstration.\n\nThe two comments and the staff review summarized in Appendix E were entered by the automated proof run to test the comment, moderation and review screens; no resident, staff member or partner agency wrote them, and they are not evidence of public opinion in Lincoln County.\n\nTable 1 of the FY 2026 SS4A notice calls for engagement with the public, stakeholders and partners, analysis of what that engagement yields, inclusion of overlapping jurisdictions, and coordination with other governmental plans.\n\nThe County's website lists a Road Department and a Planning Department, whose Planning Commission meets on the second Thursday of each month.\n\nUS Highway 93 and State Routes 318, 319 and 375 are among the roads in the County; this demonstration did not read which agency owns or maintains each road, so it names no road-owning partner.\n\nWhich partners to invite, and how and when to engage the public, are decisions for Lincoln County; this demonstration makes none of them."
+    },
+    "implementation-and-capacity": {
+      "text": "Who manages the grant, who prepares the action plan, the schedule from award to adoption and the body that adopts the plan are decisions for Lincoln County; this demonstration does not make them.\n\nThe FY 2026 SS4A notice expects a period of performance between 24 months and five years and caps it at five years.\n\nIts Table 1 lists the components a qualifying action plan includes: leadership commitment and goal setting, a planning structure, safety analysis, engagement and collaboration, policy and process changes, strategy and project selections, and progress and transparency.\n\nThe attached safety action plan covers part of the safety analysis component, fatal crash locations from the proof run's retrieval and a ranked high-injury network, and it supplies no leadership commitment, planning structure or policy review.\n\nThe notice states that the safety analysis should include all roadways within the jurisdiction, without regard to ownership, to the extent practical.\n\nIn Lincoln County that includes US Highway 93 and the state routes as well as local roads; this demonstration read no source for road ownership or mileage.\n\nThis demonstration assumes chevron signs on one treated segment as an example item for the benefit-cost analysis; that choice is this demonstration's, not the County's.\n\nEnhanced Delineation for Horizontal Curves and Lighting both appear on FHWA's Proven Safety Countermeasures list page in its Internet Archive capture of November 4, 2026, read that way because FHWA's site refused automated reads on November 14, 2026.\n\nFHWA's Lighting page states that research indicates continuous lighting on both rural and urban highways has an established safety benefit for motorized vehicles."
+    },
+    "budget-narrative": {
+      "text": "The budget amount, the local match and its source are decisions for Lincoln County; this demonstration sets none of them, and the attached budget document holds no cost estimate.\n\nThe FY 2026 SS4A notice limits the federal share to 80 percent of total eligible project costs and requires a local match of at least 20 percent, generally from non-federal sources; section 24112(e) of the Infrastructure Investment and Jobs Act sets the same 80 percent cap.\n\nThe notice expects Planning and Demonstration Grants of $100,000 to $5,000,000.\n\nThe one cost in this packet is the benefit-cost analysis's capital cost, which this demonstration assumes: 12 one-post roadside signs on one treated segment at $552.85 each, the weighted average unit price of 2025 awarded bids statewide for Caltrans item 820840, Roadside Sign - One Post, for a total of $6,634 in 2025 bid dollars.\n\nThis demonstration could not read a Nevada Department of Transportation unit price on November 14, 2026, so it uses the California price for a Nevada place.\n\nThe sign count is a planning assumption, not a field inventory of curves, and the price covers that one bid item only: Caltrans pays for sign panels separately (2023 Standard Specifications, section 82-3.04), and traffic control, design and contingency are not counted.\n\nThe analysis enters the cost as one outlay in its first analysis year, without escalation from 2025 dollars.\n\nSet against one avoided death, that cost yields a very large ratio in the attached plan; the ratio rests on one segment, an assumed factor and an incomplete cost, and it does not show that the project is cost-effective."
+    }
+  }
+}

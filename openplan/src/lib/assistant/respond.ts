@@ -204,7 +204,7 @@ function describeReadFailures(context: ContextWithReadFailures): string | null {
     labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
 
   return (
-    `Read failure — this copilot could not read ${listed}, so anything depending on ${labels.length === 1 ? "it" : "them"} is unknown rather than zero. ` +
+    `Read failure: this copilot could not read ${listed}, so anything depending on ${labels.length === 1 ? "it" : "them"} is unknown rather than zero. ` +
     "Do not state a count, a total, or an absence for those, and say so if asked. " +
     `Reported by the database: ${failures.map((failure) => `${failure.label}: ${failure.message}`).join("; ")}.`
   );
@@ -678,7 +678,7 @@ function rtpFinancialElementLines(context: RtpAssistantContext): string[] {
 /** An evidence line naming a count, or the same line saying the read failed. */
 function rtpEvidenceLine(context: RtpAssistantContext, label: string, value: number, subject: string): string {
   const failure = readFailure(context, subject);
-  return failure ? `${label}: unknown — ${failure.label} could not be read (${failure.message})` : `${label}: ${value}`;
+  return failure ? `${label}: unknown, ${failure.label} could not be read (${failure.message})` : `${label}: ${value}`;
 }
 
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
@@ -1472,7 +1472,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       `Plan type: ${context.project.planType}`,
       context.stageGateSummary.decisionsRead.readable
         ? `Stage-gate pass count: ${context.stageGateSummary.passCount}`
-        : `Stage-gate pass count: unknown — the decision log could not be read (${context.stageGateSummary.decisionsRead.reason}).`,
+        : `Stage-gate pass count: unknown. The decision log could not be read (${context.stageGateSummary.decisionsRead.reason}).`,
       `Recent run count: ${context.counts.recentRuns}`,
     ],
     quickLinks: buildAssistantOperations(context),
@@ -2193,18 +2193,18 @@ function buildModelFirstRunResponse(context: ModelAssistantContext, workflowId: 
     label,
     title: `Plan the first run of ${context.model.title}`,
     summary:
-      "This model has no recorded runs yet. A first run is three choices — where (the study area), how (the engine), and at what resolution (the zone geography) — and every one of them is yours to make on the launcher. This walkthrough explains each choice in the launcher's own words; it creates and launches nothing.",
+      "This model has no recorded runs yet. A first run is three choices: where (the study area), how (the engine), and at what resolution (the zone geography). Every one of them is yours to make on the launcher. This walkthrough explains each choice in the launcher's own words; it creates and launches nothing.",
     findings: [
-      "STUDY AREA — where the run looks. OpenPlan never assumes your geography: you pick your own county, city, or region through the study area picker on the launcher, and the analysis covers exactly what you picked. A study area inherited from a project says where it came from on the launcher itself.",
+      "STUDY AREA: where the run looks. OpenPlan never assumes your geography: you pick your own county, city, or region through the study area picker on the launcher, and the analysis covers exactly what you picked. A study area inherited from a project says where it came from on the launcher itself.",
       ...offeredEngines.map(
         (definition) =>
-          `ENGINE — ${definition.label}: ${definition.summaryDetail} ${definition.runtimeExpectation} Caveat: ${definition.caveatSummary}`
+          `ENGINE (${definition.label}): ${definition.summaryDetail} ${definition.runtimeExpectation} Caveat: ${definition.caveatSummary}`
       ),
-      `ZONE GEOGRAPHY — how finely the study area is divided (census tracts by default, block groups about three times finer, offered for Fast Screening runs). Resolution decides what a run's results can later be tested against: ${LINK_VALIDATION_NOT_SUPPORTED_CAVEAT}`,
+      `ZONE GEOGRAPHY: how finely the study area is divided (census tracts by default, block groups about three times finer, offered for Fast Screening runs). Resolution decides what a run's results can later be tested against: ${LINK_VALIDATION_NOT_SUPPORTED_CAVEAT}`,
       context.readiness.reason,
     ],
     nextSteps: [
-      `Open the launcher at ${launcherHref}, pick the study area, choose an engine, and press launch yourself — the copilot does not create runs, so nothing happens until you do.`,
+      `Open the launcher at ${launcherHref}, pick the study area, choose an engine, and press launch yourself. The copilot does not create runs, so nothing happens until you do.`,
       context.scenarioEntryOptions.length > 0
         ? "Choose a scenario entry with explicit assumptions so the first run has a traceable planning frame."
         : "A scenario set is optional for a first run; you can attach one later so execution evidence does not float free of planning context.",
@@ -2215,7 +2215,7 @@ function buildModelFirstRunResponse(context: ModelAssistantContext, workflowId: 
       `Engines offered by the launcher registry: ${offeredEngines.map((definition) => definition.label).join(", ")}`,
     ],
     caution:
-      "Every engine's caveat above is quoted from the launcher itself — repeat it with any result. A completed first run is working material for screening, not a calibrated forecast.",
+      "Every engine's caveat above is quoted from the launcher itself. Repeat it with any result. A completed first run is working material for screening, not a calibrated forecast.",
     quickLinks: buildAssistantOperations(context),
   };
 }
@@ -2571,11 +2571,11 @@ function buildGrantsLaneResponse(context: WorkspaceAssistantContext, workflowId:
         ? opportunities.closingSoon > 0 || opportunities.overdueDecision > 0
           ? `${opportunities.closingSoon + opportunities.overdueDecision} ${opportunities.closingSoon + opportunities.overdueDecision === 1 ? "opportunity needs" : "opportunities need"} a timing-driven decision: ${opportunities.overdueDecision} already overdue, ${opportunities.closingSoon} closing within ${FUNDING_CLOSING_SOON_WINDOW_DAYS} days.`
           : "No opportunity is currently under deadline pressure, so decision work can follow the ordinary queue."
-        : "Whether any grant decision is due is unknown — the opportunity read failed, and an empty queue over a failed read is not a clear queue.",
+        : "Whether any grant decision is due is unknown. The opportunity read failed, and an empty queue over a failed read is not a clear queue.",
       findings: [deadlineLine, opportunityLine, awardLine],
       nextSteps: [
         opportunities && opportunities.overdueDecision > 0
-          ? "Resolve the lapsed decisions first — record pursue or skip on each so the queue reflects a real call, not silence."
+          ? "Resolve the lapsed decisions first. Record pursue or skip on each so the queue reflects a real call, not silence."
           : "Review the closing-soon windows on the grants register and record pursue, monitor, or skip before the timing decides for you.",
         "Record a decision on the register itself so the shared queue and this panel stay in agreement.",
       ],
@@ -2596,8 +2596,8 @@ function buildGrantsLaneResponse(context: WorkspaceAssistantContext, workflowId:
       title: "Funding award posture",
       summary: awards
         ? awards.total > 0
-          ? `${pluralize(awards.total, "award")} recorded${awards.awardedAmount !== null ? ` totalling ${formatCurrency(awards.awardedAmount)}` : ""} — ${awards.activeSpending} actively spending and ${awards.riskFlagged} carrying a risk flag.`
-          : "No funding award is recorded in this workspace yet — grant work here is still opportunities, not committed dollars."
+          ? `${pluralize(awards.total, "award")} recorded${awards.awardedAmount !== null ? ` totalling ${formatCurrency(awards.awardedAmount)}` : ""}: ${awards.activeSpending} actively spending and ${awards.riskFlagged} carrying a risk flag.`
+          : "No funding award is recorded in this workspace yet. Grant work here is still opportunities, not committed dollars."
         : "The award posture is unknown: the funding award read failed, and an empty award list over a failed read is not an award-free workspace.",
       findings: [
         awardLine,
@@ -2609,7 +2609,7 @@ function buildGrantsLaneResponse(context: WorkspaceAssistantContext, workflowId:
         opportunityLine,
       ],
       nextSteps: [
-        "Check that every opportunity marked awarded has a matching funding-award record — committed dollars that exist only as an opportunity status are invisible to reimbursement.",
+        "Check that every opportunity marked awarded has a matching funding-award record. Committed dollars that exist only as an opportunity status are invisible to reimbursement.",
         "Open the invoicing register for awards whose reimbursement trail has not started.",
       ],
       evidence: [
@@ -2633,7 +2633,7 @@ function buildGrantsLaneResponse(context: WorkspaceAssistantContext, workflowId:
     findings: [opportunityLine, deadlineLine, awardLine],
     nextSteps: [
       opportunities && opportunities.awaitingDecision + opportunities.overdueDecision > 0
-        ? `Decide the ${pluralize(opportunities.awaitingDecision + opportunities.overdueDecision, "monitored opportunity", "monitored opportunities")} still awaiting a call — pursue or skip — so gap math stops counting maybes.`
+        ? `Decide the ${pluralize(opportunities.awaitingDecision + opportunities.overdueDecision, "monitored opportunity", "monitored opportunities")} still awaiting a call (pursue or skip) so gap math stops counting maybes.`
         : "Keep decision states current so the workspace funding queue stays trustworthy.",
       "Use the grants register itself for any change; this panel reads and explains only.",
     ],
@@ -2674,11 +2674,11 @@ function buildInvoicingLaneResponse(context: WorkspaceAssistantContext, workflow
         ? reimbursements.outstandingNetAmount !== null
           ? `${formatCurrency(reimbursements.outstandingNetAmount)} net is submitted or approved and not yet paid across ${pluralize(reimbursements.submitted + reimbursements.approvedForPayment, "invoice")}.`
           : "No reimbursement invoice is currently sitting between submission and payment."
-        : "The outstanding reimbursement picture is unknown — the invoice read failed, and a quiet register over a failed read is not a settled one.",
+        : "The outstanding reimbursement picture is unknown. The invoice read failed, and a quiet register over a failed read is not a settled one.",
       findings: [reimbursementLine, unlinkedLine, receivableLine],
       nextSteps: [
         unlinkedCount !== null && unlinkedCount > 0
-          ? "Link the unlinked invoices to their funding awards first — reimbursement follow-through cannot be measured around them."
+          ? "Link the unlinked invoices to their funding awards first. Reimbursement follow-through cannot be measured around them."
           : "Advance draft and internal-review invoices toward submission so committed dollars start coming back.",
         "Any linkage or status change happens on the invoicing register; this panel reads and explains only.",
       ],
@@ -2704,7 +2704,7 @@ function buildInvoicingLaneResponse(context: WorkspaceAssistantContext, workflow
           : receivables.invoiceCount > 0
             ? "Client invoices exist but nothing is currently sent and awaiting payment."
             : "No client invoice is recorded yet."
-        : "The receivables picture is unknown — the client invoice read failed, and an empty register over a failed read is not a paid-up client list.",
+        : "The receivables picture is unknown. The client invoice read failed, and an empty register over a failed read is not a paid-up client list.",
       findings: [receivableLine, reimbursementLine],
       nextSteps: [
         "Follow up sent-and-unpaid invoices before drafting new ones.",
@@ -2729,7 +2729,7 @@ function buildInvoicingLaneResponse(context: WorkspaceAssistantContext, workflow
     findings: [reimbursementLine, unlinkedLine, receivableLine],
     nextSteps: [
       unlinkedCount !== null && unlinkedCount > 0
-        ? "Start with the unlinked reimbursement invoices — nothing downstream reconciles until they name their award."
+        ? "Start with the unlinked reimbursement invoices. Nothing downstream reconciles until they name their award."
         : "Advance whichever register holds the oldest outstanding invoice.",
       "Any invoice change happens on the invoicing register; this panel reads and explains only.",
     ],
@@ -2748,12 +2748,12 @@ function buildEngagementLaneResponse(context: WorkspaceAssistantContext, workflo
   const moderation = lane?.moderation ?? null;
   const moderationCount = moderation ? moderation.pending + moderation.flagged : null;
   const campaignLine = campaigns
-    ? `${pluralize(campaigns.total, "campaign")}: ${campaigns.draft} draft, ${campaigns.active} active, ${campaigns.closed} closed, ${campaigns.archived} archived — ${campaigns.publicOpen} collecting public input right now.`
+    ? `${pluralize(campaigns.total, "campaign")}: ${campaigns.draft} draft, ${campaigns.active} active, ${campaigns.closed} closed, ${campaigns.archived} archived. ${campaigns.publicOpen} collecting public input right now.`
     : laneUnknown(context, "the campaign register", ASSISTANT_READ_SUBJECTS.engagementCampaigns);
   const moderationLine =
     moderation && moderationCount !== null
       ? moderationCount > 0
-        ? `${moderation.pending} submission${moderation.pending === 1 ? "" : "s"} pending review and ${moderation.flagged} flagged. These are counts only — submission text is never loaded into this panel.`
+        ? `${moderation.pending} submission${moderation.pending === 1 ? "" : "s"} pending review and ${moderation.flagged} flagged. These are counts only. Submission text is never loaded into this panel.`
         : "The moderation queue is clear."
       : laneUnknown(
           context,
@@ -2772,10 +2772,10 @@ function buildEngagementLaneResponse(context: WorkspaceAssistantContext, workflo
           ? moderationCount > 0
             ? `${pluralize(moderationCount, "public submission")} ${moderationCount === 1 ? "waits" : "wait"} on moderation across this workspace's campaigns.`
             : "Nothing is waiting on moderation."
-          : "The moderation queue is unknown — its read failed, and a quiet queue over a failed read is not a clear one.",
+          : "The moderation queue is unknown. Its read failed, and a quiet queue over a failed read is not a clear one.",
       findings: [moderationLine, campaignLine],
       nextSteps: [
-        "Review pending submissions in the campaign console — a public window that collects input nobody reads erodes the trust the window was meant to build.",
+        "Review pending submissions in the campaign console. A public window that collects input nobody reads erodes the trust the window was meant to build.",
         "Approving, flagging, or hiding a submission happens in the console; this panel carries counts only.",
       ],
       evidence: [
@@ -2792,12 +2792,12 @@ function buildEngagementLaneResponse(context: WorkspaceAssistantContext, workflo
       label,
       title: "Campaign publication state",
       summary: campaigns
-        ? `${campaigns.active} campaign${campaigns.active === 1 ? " is" : "s are"} live and ${campaigns.draft} ${campaigns.draft === 1 ? "is" : "are"} staged as ${campaigns.draft === 1 ? "a draft" : "drafts"} — ${campaigns.publicOpen} ${campaigns.publicOpen === 1 ? "has" : "have"} an open public submission window.`
-        : "The publication state is unknown — the campaign read failed, and an empty register over a failed read is not a workspace with no campaigns.",
+        ? `${campaigns.active} campaign${campaigns.active === 1 ? " is" : "s are"} live and ${campaigns.draft} ${campaigns.draft === 1 ? "is" : "are"} staged as ${campaigns.draft === 1 ? "a draft" : "drafts"}. ${campaigns.publicOpen} ${campaigns.publicOpen === 1 ? "has" : "have"} an open public submission window.`
+        : "The publication state is unknown. The campaign read failed, and an empty register over a failed read is not a workspace with no campaigns.",
       findings: [
         campaignLine,
         campaigns && campaigns.draft > 0
-          ? `${campaigns.draft} staged campaign${campaigns.draft === 1 ? "" : "s"} can go public through the guided publish flow on ${campaigns.draft === 1 ? "its" : "each"} campaign page — publishing is a person's decision there, never this panel's.`
+          ? `${campaigns.draft} staged campaign${campaigns.draft === 1 ? "" : "s"} can go public through the guided publish flow on ${campaigns.draft === 1 ? "its" : "each"} campaign page. Publishing is a person's decision there, never this panel's.`
           : campaigns
             ? "No campaign is currently staged as a draft."
             : laneUnknown(context, "staged campaigns", ASSISTANT_READ_SUBJECTS.engagementCampaigns),
@@ -2826,7 +2826,7 @@ function buildEngagementLaneResponse(context: WorkspaceAssistantContext, workflo
     findings: [campaignLine, moderationLine],
     nextSteps: [
       moderationCount !== null && moderationCount > 0
-        ? "Work the moderation queue before publication questions — waiting residents come first."
+        ? "Work the moderation queue before publication questions. Waiting residents come first."
         : "Review which campaigns should open or close their public windows next.",
       "Any campaign change happens on the engagement pages; this panel reads counts only.",
     ],
@@ -2850,7 +2850,7 @@ function buildSafetyLaneResponse(context: WorkspaceAssistantContext, workflowId:
       : "No crash data has been imported into this workspace yet."
     : laneUnknown(context, "this workspace's crash imports", ASSISTANT_READ_SUBJECTS.crashImports);
   const latestLine = latest
-    ? `Latest import${latest.sourceLabel ? ` (${latest.sourceLabel})` : ""}: status ${latest.status}, coverage ${latest.coverageState}, ${latest.crashCount} crashes (${latest.geocodedCount} geocoded)${latest.yearsRequested.length > 0 ? `, years ${latest.yearsRequested.join(", ")}` : ""}${latest.truncated ? " — TRUNCATED: the source returned more rows than were stored" : ""}${latest.fetchError ? `. The source reported: ${latest.fetchError}` : ""}.`
+    ? `Latest import${latest.sourceLabel ? ` (${latest.sourceLabel})` : ""}: status ${latest.status}, coverage ${latest.coverageState}, ${latest.crashCount} crashes (${latest.geocodedCount} geocoded)${latest.yearsRequested.length > 0 ? `, years ${latest.yearsRequested.join(", ")}` : ""}${latest.truncated ? ", TRUNCATED: the source returned more rows than were stored" : ""}${latest.fetchError ? `. The source reported: ${latest.fetchError}` : ""}.`
     : null;
   const severityLine = severityMix
     ? `Severity mix of the latest ready import: ${severityMix.fatal} fatal, ${severityMix.severeInjury} severe injury, ${severityMix.injury} other injury, ${severityMix.pdo} property damage only.`
@@ -2858,7 +2858,7 @@ function buildSafetyLaneResponse(context: WorkspaceAssistantContext, workflowId:
       ? "No ready import exists yet, so there is no severity mix to count."
       : laneUnknown(context, "the severity mix of the latest ready crash import", ASSISTANT_READ_SUBJECTS.crashSeverityMix, ASSISTANT_READ_SUBJECTS.crashImports);
   const completenessCaution = latest
-    ? `Severity completeness of the latest import is recorded as "${latest.severityCompleteness}" — repeat that caveat with any severity claim, and treat coverage as "${latest.coverageState}" only, never as everywhere.`
+    ? `Severity completeness of the latest import is recorded as "${latest.severityCompleteness}". Repeat that caveat with any severity claim, and treat coverage as "${latest.coverageState}" only, never as everywhere.`
     : "Crash data claims must carry their import's own coverage and severity-completeness caveats.";
 
   if (workflowId === "safety-coverage") {
@@ -2868,14 +2868,14 @@ function buildSafetyLaneResponse(context: WorkspaceAssistantContext, workflowId:
       title: "Crash data coverage",
       summary: ingests
         ? latest
-          ? `Coverage is exactly what the imports establish: the latest import answers for coverage state ${latest.coverageState}${latest.yearsRequested.length > 0 ? ` and years ${latest.yearsRequested.join(", ")}` : ""} — everywhere else the crash data is silent, which is a limit, not an absence of crashes.`
-          : "No import exists yet, so the crash data currently answers for nowhere — that is a limit, not a finding of zero crashes."
-        : "Coverage is unknown — the import read failed, so nothing can be said about where the crash data answers.",
+          ? `Coverage is exactly what the imports establish: the latest import answers for coverage state ${latest.coverageState}${latest.yearsRequested.length > 0 ? ` and years ${latest.yearsRequested.join(", ")}` : ""}. Everywhere else the crash data is silent, which is a limit, not an absence of crashes.`
+          : "No import exists yet, so the crash data currently answers for nowhere. That is a limit, not a finding of zero crashes."
+        : "Coverage is unknown. The import read failed, so nothing can be said about where the crash data answers.",
       findings: [
         ingestLine,
         ...(latestLine ? [latestLine] : []),
         ingests && ingests.noCoverage > 0
-          ? `${ingests.noCoverage} import${ingests.noCoverage === 1 ? "" : "s"} found no source coverage for the requested area — a disclosed limit of the source, not an empty result.`
+          ? `${ingests.noCoverage} import${ingests.noCoverage === 1 ? "" : "s"} found no source coverage for the requested area: a disclosed limit of the source, not an empty result.`
           : ingests
             ? "No import has been refused for lack of source coverage."
             : laneUnknown(context, "coverage refusals", ASSISTANT_READ_SUBJECTS.crashImports),
@@ -2902,10 +2902,10 @@ function buildSafetyLaneResponse(context: WorkspaceAssistantContext, workflowId:
         ? `The latest ready import counts ${severityMix.fatal} fatal, ${severityMix.severeInjury} severe injury, ${severityMix.injury} other injury, and ${severityMix.pdo} property-damage-only crashes.`
         : ingests && ingests.ready === 0
           ? "There is no ready import to count a severity mix from yet."
-          : "The severity mix is unknown — its count failed, and an empty mix over a failed read is not a crash-free record.",
+          : "The severity mix is unknown. Its count failed, and an empty mix over a failed read is not a crash-free record.",
       findings: [severityLine, ingestLine, ...(latestLine ? [latestLine] : [])],
       nextSteps: [
-        "Quote the severity completeness caveat with any severity figure — a mix from partial severity data understates the serious end.",
+        "Quote the severity completeness caveat with any severity figure. A mix from partial severity data understates the serious end.",
         "Use the safety page for per-crash detail; this panel carries counts only.",
       ],
       evidence: [
@@ -2924,13 +2924,13 @@ function buildSafetyLaneResponse(context: WorkspaceAssistantContext, workflowId:
     title: `Safety data in ${context.workspace.name ?? "this workspace"}`,
     summary: ingests
       ? ingests.recentCount > 0
-        ? `${pluralize(ingests.recentCount, "recent crash import")} ground this workspace's safety picture — ${ingests.ready} ready to analyse, ${ingests.failed} failed.`
+        ? `${pluralize(ingests.recentCount, "recent crash import")} ground this workspace's safety picture: ${ingests.ready} ready to analyse, ${ingests.failed} failed.`
         : "No crash data has been imported yet, so the safety lane has nothing to answer from."
       : "The crash import register could not be read, so this brief reports the failure rather than inventing an empty safety record.",
     findings: [ingestLine, ...(latestLine ? [latestLine] : []), severityLine],
     nextSteps: [
       ingests && ingests.failed > 0
-        ? "Review the failed imports on the safety page — until they are retried, coverage claims stop at the last ready import."
+        ? "Review the failed imports on the safety page. Until they are retried, coverage claims stop at the last ready import."
         : "Check that the imported years and coverage match the analysis you are about to make.",
       "Any import or retry happens on the safety page; this panel reads and explains only.",
     ],
@@ -2954,10 +2954,10 @@ function buildAerialLaneResponse(context: WorkspaceAssistantContext, workflowId:
     ? `${pluralize(missions.total, "mission")}: ${missions.planned} planned, ${missions.active} active, ${missions.complete} complete, ${missions.cancelled} cancelled.`
     : laneUnknown(context, "this workspace's aerial missions", ASSISTANT_READ_SUBJECTS.aerialMissions);
   const processingLine = processing
-    ? `${pluralize(processing.total, "processing job")}: ${processing.active} active, ${processing.failed} failed, ${processing.succeeded} succeeded — artifact custody complete on ${processing.custodyComplete}, partial on ${processing.custodyPartial}, none on ${processing.custodyNone}.`
+    ? `${pluralize(processing.total, "processing job")}: ${processing.active} active, ${processing.failed} failed, ${processing.succeeded} succeeded. Artifact custody complete on ${processing.custodyComplete}, partial on ${processing.custodyPartial}, none on ${processing.custodyNone}.`
     : laneUnknown(context, "aerial processing jobs", ASSISTANT_READ_SUBJECTS.aerialProcessingJobs);
   const packageLine = packages
-    ? `${pluralize(packages.total, "evidence package")}: ${packages.processing} processing, ${packages.qaPending} in QA, ${packages.ready} ready, ${packages.shared} shared — ${packages.verificationReady} verification-ready.`
+    ? `${pluralize(packages.total, "evidence package")}: ${packages.processing} processing, ${packages.qaPending} in QA, ${packages.ready} ready, ${packages.shared} shared. ${packages.verificationReady} verification-ready.`
     : laneUnknown(context, "aerial evidence packages", ASSISTANT_READ_SUBJECTS.aerialEvidencePackages);
 
   if (workflowId === "aerial-jobs") {
@@ -2967,13 +2967,13 @@ function buildAerialLaneResponse(context: WorkspaceAssistantContext, workflowId:
       title: "Aerial processing jobs",
       summary: processing
         ? processing.failed > 0 || (custodyPendingCount ?? 0) > 0
-          ? `${processing.failed} job${processing.failed === 1 ? "" : "s"} failed and ${custodyPendingCount} hold${custodyPendingCount === 1 ? "s" : ""} incomplete artifact custody — evidence those jobs produced is not fully in OpenPlan's keeping yet.`
+          ? `${processing.failed} job${processing.failed === 1 ? "" : "s"} failed and ${custodyPendingCount} hold${custodyPendingCount === 1 ? "s" : ""} incomplete artifact custody. Evidence those jobs produced is not fully in OpenPlan's keeping yet.`
           : `${processing.active} job${processing.active === 1 ? " is" : "s are"} active and custody is complete on everything finished.`
-        : "The processing job picture is unknown — its read failed, and a quiet queue over a failed read is not a healthy one.",
+        : "The processing job picture is unknown. Its read failed, and a quiet queue over a failed read is not a healthy one.",
       findings: [processingLine, missionLine, packageLine],
       nextSteps: [
         (custodyPendingCount ?? 0) > 0
-          ? "Open the affected missions and resolve artifact custody — evidence that is not in custody cannot back a submittal."
+          ? "Open the affected missions and resolve artifact custody. Evidence that is not in custody cannot back a submittal."
           : "Review active jobs from their mission records as they finish.",
         "Job retries and custody fixes happen on the mission records; this panel reads and explains only.",
       ],
@@ -2993,12 +2993,12 @@ function buildAerialLaneResponse(context: WorkspaceAssistantContext, workflowId:
       summary: packages
         ? packages.ready > 0
           ? `${packages.ready} package${packages.ready === 1 ? " is" : "s are"} ready to use as evidence, ${packages.verificationReady} of them verification-ready.`
-          : `No package is ready yet — ${packages.processing} still processing, ${packages.qaPending} awaiting QA.`
-        : "Package readiness is unknown — the package read failed, and an empty shelf over a failed read is not an empty shelf.",
+          : `No package is ready yet: ${packages.processing} still processing, ${packages.qaPending} awaiting QA.`
+        : "Package readiness is unknown. The package read failed, and an empty shelf over a failed read is not an empty shelf.",
       findings: [packageLine, processingLine, missionLine],
       nextSteps: [
         packages && packages.qaPending > 0
-          ? "Clear the QA queue — packages sitting in QA are finished flying but unusable as evidence."
+          ? "Clear the QA queue. Packages sitting in QA are finished flying but unusable as evidence."
           : "Attach ready packages where the delivery record needs them, from the mission records.",
         "QA decisions and sharing happen on the mission records; this panel reads and explains only.",
       ],
@@ -3019,7 +3019,7 @@ function buildAerialLaneResponse(context: WorkspaceAssistantContext, workflowId:
     findings: [missionLine, processingLine, packageLine],
     nextSteps: [
       processing && processing.failed > 0
-        ? "Start with the failed processing jobs — they hold up every package downstream."
+        ? "Start with the failed processing jobs. They hold up every package downstream."
         : "Review mission status and package readiness before the next flight window.",
       "Any mission, job, or package change happens on the aerial pages; this panel reads and explains only.",
     ],
@@ -3037,13 +3037,13 @@ function buildKnowledgeBaseLaneResponse(context: WorkspaceAssistantContext, work
   const lane = moduleLaneOf(context, "knowledge_base");
   const documents = lane?.documents ?? null;
   const documentLine = documents
-    ? `${pluralize(documents.total, "document")}: ${documents.ready} ready, ${documents.inFlight} still extracting, ${documents.extractionFailed} failed extraction, ${pluralize(documents.stored, "stored file")} that cannot be cited yet, ${documents.archived} archived — ${documents.linkedToProject} linked across ${pluralize(documents.projectCount, "project")}.`
+    ? `${pluralize(documents.total, "document")}: ${documents.ready} ready, ${documents.inFlight} still extracting, ${documents.extractionFailed} failed extraction, ${pluralize(documents.stored, "stored file")} that cannot be cited yet, ${documents.archived} archived. ${documents.linkedToProject} linked across ${pluralize(documents.projectCount, "project")}.`
     : laneUnknown(context, "the knowledge base corpus", ASSISTANT_READ_SUBJECTS.knowledgeBaseDocuments);
   const failureLine = documents
     ? documents.extractionFailed > 0
-      ? `${documents.extractionFailed} document${documents.extractionFailed === 1 ? "" : "s"} failed text extraction — ${documents.extractionFailed === 1 ? "it is" : "they are"} invisible to retrieval until re-uploaded or re-extracted, so answers drawing on this corpus silently omit ${documents.extractionFailed === 1 ? "it" : "them"}.`
+      ? `${documents.extractionFailed} document${documents.extractionFailed === 1 ? "" : "s"} failed text extraction. ${documents.extractionFailed === 1 ? "It is" : "They are"} invisible to retrieval until re-uploaded or re-extracted, so answers drawing on this corpus silently omit ${documents.extractionFailed === 1 ? "it" : "them"}.`
       : documents.stored > 0
-        ? `No extraction failed, but OpenPlan did not index text from ${pluralize(documents.stored, "stored file")} — stored by design, not a failure — so retrieval sees the indexed corpus and cannot cite the stored ${documents.stored === 1 ? "file" : "files"}.`
+        ? `No extraction failed, but OpenPlan did not index text from ${pluralize(documents.stored, "stored file")} (stored by design, not a failure), so retrieval sees the indexed corpus and cannot cite the stored ${documents.stored === 1 ? "file" : "files"}.`
         : "Every non-archived document extracted cleanly, so retrieval sees the whole corpus."
     : laneUnknown(context, "extraction failures", ASSISTANT_READ_SUBJECTS.knowledgeBaseDocuments);
 
@@ -3056,10 +3056,10 @@ function buildKnowledgeBaseLaneResponse(context: WorkspaceAssistantContext, work
         ? documents.extractionFailed > 0
           ? `${pluralize(documents.extractionFailed, "document")} failed extraction and cannot be retrieved from.`
           : "No document is currently failing extraction."
-        : "Extraction health is unknown — the document read failed, and a clean sheet over a failed read is not a clean sheet.",
+        : "Extraction health is unknown. The document read failed, and a clean sheet over a failed read is not a clean sheet.",
       findings: [failureLine, documentLine],
       nextSteps: [
-        "Re-upload or re-extract the failed documents from the knowledge base page — a corpus with silent holes answers confidently and incompletely.",
+        "Re-upload or re-extract the failed documents from the knowledge base page. A corpus with silent holes answers confidently and incompletely.",
         "Document changes happen on the knowledge base page; this panel reads and explains only.",
       ],
       evidence: [
@@ -3079,7 +3079,7 @@ function buildKnowledgeBaseLaneResponse(context: WorkspaceAssistantContext, work
     findings: [documentLine, failureLine],
     nextSteps: [
       documents && documents.extractionFailed > 0
-        ? "Fix the extraction failures first — they are the corpus's silent holes."
+        ? "Fix the extraction failures first. They are the corpus's silent holes."
         : "Link unlinked documents to their projects so retrieval can scope to the work at hand.",
       "Document changes happen on the knowledge base page; this panel reads and explains only.",
     ],
@@ -3100,11 +3100,11 @@ function buildDataHubLaneResponse(context: WorkspaceAssistantContext, workflowId
     ? `${pluralize(datasets.total, "dataset")}: ${datasets.ready} ready, ${datasets.stale} stale, ${datasets.error} erroring, ${datasets.other} in other states.`
     : laneUnknown(context, "data hub datasets", ASSISTANT_READ_SUBJECTS.dataHubDatasets);
   const connectorLine = connectors
-    ? `${pluralize(connectors.total, "connector")}: ${connectors.active} active, ${connectors.degraded} degraded, ${connectors.offline} offline — ${connectors.withLastError} carrying a recorded last error.`
+    ? `${pluralize(connectors.total, "connector")}: ${connectors.active} active, ${connectors.degraded} degraded, ${connectors.offline} offline. ${connectors.withLastError} carrying a recorded last error.`
     : laneUnknown(context, "data hub connectors", ASSISTANT_READ_SUBJECTS.dataHubConnectors);
   const refreshLine = refreshJobs
     ? refreshJobs.recentCount > 0
-      ? `${pluralize(refreshJobs.recentCount, "recent refresh job")}, ${refreshJobs.failed} failed${refreshJobs.latest ? ` — latest ${refreshJobs.latest.jobName ?? "job"} is ${refreshJobs.latest.status}${refreshJobs.latest.errorSummary ? ` (${refreshJobs.latest.errorSummary})` : ""}` : ""}.`
+      ? `${pluralize(refreshJobs.recentCount, "recent refresh job")}, ${refreshJobs.failed} failed${refreshJobs.latest ? `, latest ${refreshJobs.latest.jobName ?? "job"} is ${refreshJobs.latest.status}${refreshJobs.latest.errorSummary ? ` (${refreshJobs.latest.errorSummary})` : ""}` : ""}.`
       : "No refresh job has run recently."
     : laneUnknown(context, "data refresh jobs", ASSISTANT_READ_SUBJECTS.dataRefreshJobs);
 
@@ -3117,7 +3117,7 @@ function buildDataHubLaneResponse(context: WorkspaceAssistantContext, workflowId
         ? connectors.degraded + connectors.offline > 0
           ? `${connectors.degraded + connectors.offline} connector${connectors.degraded + connectors.offline === 1 ? " is" : "s are"} degraded or offline, so the data they feed is aging while they are down.`
           : "Every connector is currently active."
-        : "Connector state is unknown — its read failed, and a quiet register over a failed read is not a healthy one.",
+        : "Connector state is unknown. Its read failed, and a quiet register over a failed read is not a healthy one.",
       findings: [connectorLine, datasetLine, refreshLine],
       nextSteps: [
         "Open the data hub for each degraded or offline connector's last error before trusting downstream freshness.",
@@ -3137,13 +3137,13 @@ function buildDataHubLaneResponse(context: WorkspaceAssistantContext, workflowId
       title: "Refresh job posture",
       summary: refreshJobs
         ? refreshJobs.failed > 0
-          ? `${pluralize(refreshJobs.failed, "recent refresh job")} failed${refreshJobs.latest?.errorSummary ? ` — the latest reported: ${refreshJobs.latest.errorSummary}` : ""}.`
+          ? `${pluralize(refreshJobs.failed, "recent refresh job")} failed${refreshJobs.latest?.errorSummary ? `. The latest reported: ${refreshJobs.latest.errorSummary}` : ""}.`
           : "No recent refresh job has failed."
-        : "Refresh health is unknown — the job read failed, and a quiet log over a failed read is not a clean log.",
+        : "Refresh health is unknown. The job read failed, and a quiet log over a failed read is not a clean log.",
       findings: [refreshLine, datasetLine, connectorLine],
       nextSteps: [
         refreshJobs && refreshJobs.failed > 0
-          ? "Re-run the failed refreshes from the data hub once their cause is fixed — a dataset served from a failed refresh is silently stale."
+          ? "Re-run the failed refreshes from the data hub once their cause is fixed. A dataset served from a failed refresh is silently stale."
           : "Keep an eye on stale datasets; they are the refreshes that never got scheduled.",
         "Re-runs happen on the data hub page; this panel reads and explains only.",
       ],
@@ -3164,7 +3164,7 @@ function buildDataHubLaneResponse(context: WorkspaceAssistantContext, workflowId
     findings: [datasetLine, connectorLine, refreshLine],
     nextSteps: [
       datasets && datasets.stale + datasets.error > 0
-        ? `Refresh the ${datasets.stale + datasets.error} dataset${datasets.stale + datasets.error === 1 ? "" : "s"} whose own status says stale or error — analyses drawing on them are working from data the hub no longer stands behind.`
+        ? `Refresh the ${datasets.stale + datasets.error} dataset${datasets.stale + datasets.error === 1 ? "" : "s"} whose own status says stale or error. Analyses drawing on them are working from data the hub no longer stands behind.`
         : "Keep connectors healthy so dataset freshness holds without manual refreshes.",
       "Dataset and connector changes happen on the data hub page; this panel reads and explains only.",
     ],

@@ -274,18 +274,18 @@ describe("finding B — a rejected claim is excluded from every 'requested' figu
       />
     );
 
-    // This surface rounds to whole dollars. $119,999.67 is still claimable;
+    // This surface preserves cents. $119,999.67 is still claimable;
     // the defect rendered $6,000 — the rejected $64,000.00 and the unsent
     // $50,000.00 draft both subtracted from what may still be invoiced.
     expect(uninvoicedCommittedAmount).toBeCloseTo(119999.67, 2);
-    expect(screen.getByText("$120,000")).toBeInTheDocument();
-    expect(screen.queryByText("$6,000")).not.toBeInTheDocument();
+    expect(screen.getByText("$119,999.67")).toBeInTheDocument();
+    expect(screen.queryByText("$5,999.67")).not.toBeInTheDocument();
 
     // "Requested" is the claimed total, not the register total…
-    expect(screen.getByText("$130,000")).toBeInTheDocument();
-    expect(screen.queryByText("$244,000")).not.toBeInTheDocument();
+    expect(screen.getByText("$130,000.33")).toBeInTheDocument();
+    expect(screen.queryByText("$244,000.33")).not.toBeInTheDocument();
     // …and what was excluded is disclosed rather than silently dropped.
-    expect(screen.getByText(/\$64,000 across 1 rejected record is excluded/)).toBeInTheDocument();
+    expect(screen.getByText(/\$64,000\.00 across 1 rejected record is excluded/)).toBeInTheDocument();
   });
 
   it("the project funding panel's award row reports claims, not the register", () => {

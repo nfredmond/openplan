@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const generateTextMock = vi.fn();
+// The caller's AI usage reservation (reserveAiUsage in the route).
+const reserveUsage = vi.fn(async (_call: { model: string }) => {});
 
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
@@ -52,7 +54,7 @@ describe("engagement AI synthesis", () => {
   });
 
   it("falls back to a fully grounded deterministic synthesis when AI is offline", async () => {
-    const synthesis = await generateEngagementSynthesis(items(6));
+    const synthesis = await generateEngagementSynthesis(items(6), { reserveUsage });
     expect(synthesis.source).toBe("deterministic-fallback");
     expect(synthesis.fallback_reason).toBe("missing_api_key");
     expect(synthesis.item_count).toBe(6);
@@ -74,7 +76,7 @@ describe("engagement AI synthesis", () => {
   });
 
   it("handles an empty campaign without themes or narrative", async () => {
-    const synthesis = await generateEngagementSynthesis([]);
+    const synthesis = await generateEngagementSynthesis([], { reserveUsage });
     expect(synthesis.source).toBe("deterministic-fallback");
     expect(synthesis.item_count).toBe(0);
     expect(synthesis.themes).toEqual([]);
@@ -99,7 +101,7 @@ describe("engagement AI synthesis", () => {
       }),
     });
 
-    const synthesis = await generateEngagementSynthesis(corpus);
+    const synthesis = await generateEngagementSynthesis(corpus, { reserveUsage });
 
     expect(synthesis.source).toBe("ai");
     // Raw narrative is stored verbatim.
@@ -124,10 +126,48 @@ describe("engagement AI synthesis", () => {
       }),
     });
 
-    const synthesis = await generateEngagementSynthesis(corpus);
+    const synthesis = await generateEngagementSynthesis(corpus, { reserveUsage });
 
     expect(synthesis.source).toBe("ai");
     expect(synthesis.grounding.is_fully_grounded).toBe(true);
     expect(synthesis.grounding.faithfulness_checked).toBe(true);
+  });
+});
+
+describe("engagement AI synthesis counts its model call before making it (KI-2026-10-12-014)", () => {
+  const originalKey = process.env.ANTHROPIC_API_KEY;
+  beforeEach(() => {
+    vi.clearAllMocks();
+    reserveUsage.mockImplementation(async () => {});
+    process.env.ANTHROPIC_API_KEY = "sk-test";
+    generateTextMock.mockResolvedValue({
+      text: JSON.stringify({ overall_sentiment: "neutral", themes: [], narrative: "" }),
+    });
+  });
+  afterEach(() => {
+    if (originalKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = originalKey;
+  });
+
+  it("reserves once, with its model id, before the model call", async () => {
+    await generateEngagementSynthesis(items(3), { reserveUsage });
+    expect(reserveUsage).toHaveBeenCalledTimes(1);
+    expect(reserveUsage).toHaveBeenCalledWith({ model: expect.any(String) });
+    expect(reserveUsage.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it("does not reserve for the free paths: no key, or nothing to read", async () => {
+    await generateEngagementSynthesis([], { reserveUsage });
+    delete process.env.ANTHROPIC_API_KEY;
+    await generateEngagementSynthesis(items(3), { reserveUsage });
+    expect(reserveUsage).not.toHaveBeenCalled();
+    expect(generateTextMock).not.toHaveBeenCalled();
+  });
+
+  it("makes no call and passes the refusal to the caller when the reservation throws", async () => {
+    const refusal = new Error("SYNTHETIC refusal");
+    reserveUsage.mockRejectedValue(refusal);
+    await expect(generateEngagementSynthesis(items(3), { reserveUsage })).rejects.toBe(refusal);
+    expect(generateTextMock).not.toHaveBeenCalled();
   });
 });

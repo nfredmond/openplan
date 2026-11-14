@@ -14,7 +14,7 @@ const operatingPosture = [
   {
     title: "Internal prototype posture",
     description:
-      "Some OpenPlan modules — notably the behavioral modeling runtime — are labeled internal prototype only. Those outputs are shared with caveats, not as planning-grade conclusions.",
+      "Some OpenPlan modules (notably the behavioral modeling runtime) are labeled internal prototype only. Those outputs are shared with caveats, not as planning-grade conclusions.",
   },
   {
     title: "Open-source license boundary",
@@ -45,9 +45,9 @@ const aiDisclosure = [
 const ceiling = publishedValidationCeiling();
 
 const modelLimits = [
-  `Behavioral modeling runtime outputs carry a documented error envelope. The worst published validation figure is max APE ${ceiling.maxApePercent}% (${ceiling.label}, ${ceiling.runDate}) — suitable for screening-grade comparison, not for funding-grade conclusions. This ceiling is computed from the published example records and updates when a new one is published.`,
+  `Behavioral modeling runtime outputs carry a documented error envelope. The worst published validation figure is max APE ${ceiling.maxApePercent}% (${ceiling.label}, ${ceiling.runDate}), suitable for screening-grade comparison, not for funding-grade conclusions. This ceiling is computed from the published example records and updates when a new one is published.`,
   "Aerial imagery outputs (orthos, models, surfaces) produced through the Aerial Operations OS modules are measurable but prototype-grade until the QA bundle for that mission is signed off.",
-  "Grants and RTP decision records are authoritative once a packet is adopted by the responsible agency — not before. Drafts, preset packets, and preview surfaces are not substitutes for adopted records.",
+  "Grants and RTP decision records are authoritative once a packet is adopted by the responsible agency, not before. Drafts, preset packets, and preview surfaces are not substitutes for adopted records.",
 ];
 
 const covenant = [

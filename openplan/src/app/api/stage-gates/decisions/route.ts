@@ -293,7 +293,7 @@ export async function POST(request: NextRequest) {
         {
           error: "The Planner Agent may not record a gate PASS",
           details:
-            "An affirmative stage-gate verdict is a person's signature — it is what a board or a funder " +
+            "An affirmative stage-gate verdict is a person's signature: it is what a board or a funder " +
             "relies on to let a project advance. The Planner Agent can propose a HOLD, with its rationale " +
             "and cited evidence, and a person records the PASS that clears it.",
         },

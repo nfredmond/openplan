@@ -34,6 +34,8 @@ import { loadSchemaInventory } from "./migrations/schema-inventory";
  */
 
 const CA_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
+// The study area's state, as the route derives it from the place identity.
+const CA_STATE_FIPS = ["06"];
 
 function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
   return {
@@ -224,7 +226,7 @@ describe("the ingest stores people and discloses when it could not", () => {
     const result = await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: CA_BBOX,
+      bbox: CA_BBOX, stateFips: CA_STATE_FIPS,
       years: [2025],
       enrichSeriousInjury: false,
       includeParties: options.includeParties,

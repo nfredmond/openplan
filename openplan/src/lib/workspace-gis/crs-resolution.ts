@@ -181,7 +181,7 @@ export function resolveWorkspaceGisCrs(
       reason: "crs_evidence_missing",
       message:
         "This shapefile has no .prj file, so nothing in it says which coordinate system its numbers are in. Choose " +
-        "the system it was made in and OpenPlan will record that as your statement — it will not guess, because a " +
+        "the system it was made in and OpenPlan will record that as your statement. It will not guess, because a " +
         "wrong guess puts the layer tens of kilometres from where it belongs and looks exactly like a right one.",
     };
   }
@@ -204,7 +204,7 @@ export function resolveWorkspaceGisCrs(
         reason: "crs_not_in_registry",
         message:
           "This file names a coordinate system OpenPlan does not carry, so it cannot be placed. It is not read as " +
-          "anything nearby — a neighbouring zone lands the layer in the wrong place and nothing on screen would say so. " +
+          "anything nearby: a neighbouring zone lands the layer in the wrong place and nothing on screen would say so. " +
           `The system it names is: ${summarizePrj(prjText)}.`,
       };
     }

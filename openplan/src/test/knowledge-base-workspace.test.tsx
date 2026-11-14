@@ -7,6 +7,7 @@ import {
 } from "@/components/knowledge-base/knowledge-base-workspace";
 import type { KbDocumentRow } from "@/lib/knowledge-base/documents";
 import type { DocumentLibraryEntry } from "@/lib/document-library/types";
+import { jsonAnswer, stagedUploadFetch } from "./helpers/staged-upload-fetch";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
@@ -122,7 +123,7 @@ describe("KnowledgeBaseWorkspace", () => {
     source_kind: "uploaded_pdf" as const,
     chunk_count: 0,
     extraction_error:
-      "No extractable text layer was found. Scanned or image-only documents are not supported yet — OCR is not enabled.",
+      "No extractable text layer was found. Scanned or image-only documents are not supported yet. OCR is not enabled.",
   };
 
   it("offers OCR on a scanned PDF when this deployment has a worker", () => {
@@ -209,13 +210,12 @@ describe("KnowledgeBaseWorkspace", () => {
   it("selecting a project filters the list and attaches subsequent uploads to it", async () => {
     const filteredDoc = doc({ id: "doc-2", title: "Corridor comment letter", project_id: "proj-1" });
     const uploadedDoc = doc({ id: "doc-3", title: "Corridor NOFO", project_id: "proj-1" });
-    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
-      if (init?.method === "POST") {
-        return { ok: true, json: async () => ({ document: uploadedDoc }) };
-      }
-      return { ok: true, json: async () => ({ documents: [filteredDoc] }) };
-    });
-    vi.stubGlobal("fetch", fetchMock);
+    const fetchMock = vi.fn().mockImplementation(async () => ({
+      ok: true,
+      json: async () => ({ documents: [filteredDoc] }),
+    }));
+    const staged = stagedUploadFetch({ complete: () => jsonAnswer({ document: uploadedDoc }, 201), other: fetchMock });
+    vi.stubGlobal("fetch", staged.fetch);
 
     render(
       <KnowledgeBaseWorkspace workspaceId="ws-1" initialDocuments={[doc()]} projects={PROJECTS} />
@@ -238,9 +238,17 @@ describe("KnowledgeBaseWorkspace", () => {
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput, { target: { files: [file] } });
     await waitFor(() => expect(screen.getByText("Corridor NOFO")).toBeInTheDocument());
-    const uploadCall = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === "POST");
-    expect(uploadCall).toBeDefined();
-    expect(String(uploadCall?.[0])).toContain("projectId=proj-1");
+    expect(staged.uploads).toHaveLength(1);
+    expect(staged.uploads[0].start).toMatchObject({
+      workspaceId: "ws-1",
+      projectId: "proj-1",
+      filename: "nofo.pdf",
+      contentType: "application/pdf",
+    });
+    expect(staged.uploads[0].putBody).toBe(file);
+    expect(staged.uploads[0].complete).toMatchObject({ projectId: "proj-1", objectPath: "staged-object-1" });
+    // Only the list reads reached the app routes; the file did not.
+    expect(fetchMock.mock.calls.every(([url]) => String(url).startsWith("/api/knowledge-base/documents?"))).toBe(true);
   });
 
   it("shows a project chip linking to the project on attached document rows", () => {
@@ -307,7 +315,7 @@ describe("KnowledgeBaseWorkspace", () => {
         screen.getByText(/could not be read, so this screen cannot say how many documents/)
       ).toBeInTheDocument();
       // The disclosure that was already there must survive alongside it.
-      expect(screen.getByText(/do not re-upload on the strength of this screen/)).toBeInTheDocument();
+      expect(screen.getByText(/Do not re-upload on the strength of this screen/)).toBeInTheDocument();
       expect(screen.queryByText(/No documents yet/)).not.toBeInTheDocument();
     });
 
@@ -491,7 +499,7 @@ describe("KnowledgeBaseWorkspace", () => {
               libraryEntry({
                 sourceId: "aerial_artifact_custody",
                 id: "cust-1",
-                title: "Orthomosaic — Bridge Survey",
+                title: "Orthomosaic: Bridge Survey",
                 hasBytes: false,
                 downloadHref: null,
                 badge: { label: "Custody failed", tone: "critical" },
@@ -508,7 +516,7 @@ describe("KnowledgeBaseWorkspace", () => {
         screen.getByText(/The processing provider's file could not be retrieved/)
       ).toBeInTheDocument();
       expect(
-        screen.queryByRole("link", { name: /Orthomosaic — Bridge Survey/ })
+        screen.queryByRole("link", { name: /Orthomosaic: Bridge Survey/ })
       ).not.toBeInTheDocument();
     });
 
@@ -561,7 +569,7 @@ describe("KnowledgeBaseWorkspace", () => {
             entries: [],
             perSource: { report_artifacts: { count: 0, pending: false, failed: true } },
             readFailureSummary:
-              "This page could not read report files. Anything below that depends on it is shown as unavailable rather than as zero — an empty list here would not mean the records are absent.",
+              "This page could not read report files. Anything below that depends on it is shown as unavailable rather than as zero. An empty list here would not mean the records are absent.",
           })}
         />
       );

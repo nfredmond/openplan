@@ -113,7 +113,7 @@ export async function probeCensusKey(key: string): Promise<IntegrationProbeResul
   if (outcome.status !== 200) {
     return {
       ok: false,
-      detail: `The Census API answered HTTP ${outcome.status} instead of data — the key looks invalid, or the service is temporarily unavailable.`,
+      detail: `The Census API answered HTTP ${outcome.status} instead of data. The key looks invalid, or the service is temporarily unavailable.`,
     };
   }
   if (Array.isArray(parseJson(outcome.bodyText))) {
@@ -122,7 +122,7 @@ export async function probeCensusKey(key: string): Promise<IntegrationProbeResul
   return {
     ok: false,
     detail:
-      "The Census API did not answer with data. That is how it responds to an invalid or missing key — it redirects to an explanation page instead of returning an error.",
+      "The Census API did not answer with data. That is how it responds to an invalid or missing key: it redirects to an explanation page instead of returning an error.",
   };
 }
 
@@ -150,7 +150,7 @@ export async function probeMapboxToken(key: string): Promise<IntegrationProbeRes
     case "TokenMalformed":
       return {
         ok: false,
-        detail: "Mapbox reports the token is malformed — check that the whole token was copied.",
+        detail: "Mapbox reports the token is malformed. Check that the whole token was copied.",
       };
     case "TokenInvalid":
       return { ok: false, detail: "Mapbox rejected the token as invalid." };

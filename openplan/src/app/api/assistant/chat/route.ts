@@ -277,7 +277,7 @@ export async function POST(request: NextRequest) {
           audit.error("assistant_chat_stream_error_frame", {
             message: error instanceof Error ? error.message : String(error),
           });
-          return "The Planner Agent reply failed mid-stream — the model may be busy. Try again.";
+          return "The Planner Agent reply failed mid-stream. The model may be busy. Try again.";
         },
       });
     });

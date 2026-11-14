@@ -70,6 +70,8 @@ export type CrashSeverityCompleteness =
 export type SafetyCoverageState =
   | "ccrs_ca_statewide"
   | "fars_fatal_only"
+  /** A state's own crash file with injury severity. */
+  | "state_injury_file"
   | "switrs_legacy_local"
   | "out_of_coverage"
   | "source_unavailable";
@@ -132,18 +134,15 @@ export type CrashRecord = {
   latitude: number;
   longitude: number;
   /**
-   * 2-digit state FIPS ("06" = California), when the source carries it. Used to
-   * dedup a national backstop against a regional primary: a FARS fatal in
-   * California is already in CCRS, so the multi-source read drops backstop
-   * records whose state the primary already covers. Undefined when the source
-   * does not expose state.
+   * 2-digit state FIPS ("06" = California), when the source carries it.
+   * Undefined when the source does not expose state. No reader merges sources
+   * by it any more: since 2026-11-02 every caller picks one source that serves
+   * every state of the study area.
    */
   stateFips?: string;
   /**
-   * The adapter id that produced this record. Set so a MERGED result (a primary
-   * plus a national backstop) can carry per-point provenance — otherwise every
-   * merged crash point would inherit the primary source id and a FARS Nevada
-   * fatal would render as CCRS. Undefined falls back to the summarizing adapter.
+   * The adapter id that produced this record, so each point carries its own
+   * provenance. Undefined falls back to the summarizing adapter.
    */
   sourceId?: string;
 };
@@ -233,7 +232,52 @@ export type CrashPublishedCutoff = {
     sourceUrl: string;
     label: string;
     retrievedAt: string;
+    /**
+     * One receipt per source file this read asked for, read or failed. Kept
+     * with the acquisition so a stored count can be traced to the exact bytes
+     * it came from, and so a year that failed is recorded as failed rather
+     * than left to look like a year with no crashes.
+     */
+    sourceFiles?: CrashSourceFileReceipt[];
   };
+};
+
+/** What one read of one published source file found. */
+export type CrashSourceFileReceipt = {
+  year: number;
+  sourceUrl: string;
+  status: "read" | "failed";
+  /** SHA-256 of the file as the source published it. Null when it was not read. */
+  sha256: string | null;
+  bytes: number | null;
+  /** When OpenPlan downloaded the file from the source. A kept copy keeps its first read date. */
+  readAt: string | null;
+  retrieval: "source_download" | "kept_copy" | null;
+  /**
+   * When a kept copy was compared with the live file and still matched. Null
+   * when the source could not be reached for that check; the kept copy is then
+   * used as it was first read.
+   */
+  sourceCheckedAt?: string | null;
+  /**
+   * After a download, whether a reduced copy was kept for later reads. False
+   * when Storage refused it or the upload ran past its own time limit; the
+   * read itself still counts. Absent when no kept-file store was offered.
+   */
+  copyKept?: boolean;
+  /** Why the file was not read. Present only when `status` is "failed". */
+  failure?: string;
+};
+
+/**
+ * Private server storage where an adapter may keep a reduced copy of a large
+ * public source file between acquisitions. Both calls fail soft: a read that
+ * cannot answer returns null, a write that cannot complete returns false, and
+ * the adapter then reads the source itself.
+ */
+export type KeptSourceFileStore = {
+  read: (path: string) => Promise<Uint8Array | null>;
+  write: (path: string, bytes: Uint8Array, contentType: string) => Promise<boolean>;
 };
 
 export type CrashFetchParams = {
@@ -254,6 +298,11 @@ export type CrashFetchParams = {
    */
   maxRecords?: number;
   signal?: AbortSignal;
+  /**
+   * Where a reduced copy of a large published file may be kept between
+   * acquisitions. Optional: without it the adapter reads the source each time.
+   */
+  keptFiles?: KeptSourceFileStore;
 };
 
 export type CrashSourceAdapter = {
@@ -298,13 +347,22 @@ export type CrashSourceAdapter = {
   persistable: boolean;
   /**
    * The state FIPS codes this source AUTHORITATIVELY covers, when it is a
-   * regional source. Used by the multi-source read to dedup a national backstop:
-   * backstop records whose state is in a regional primary's `coversStateFips` are
-   * already represented by the primary and are dropped. Undefined means the
-   * source is national (a backstop, e.g. FARS) and claims no exclusive state.
+   * regional source. Undefined means the source is national (e.g. FARS) and
+   * claims no exclusive state; only such a source may answer for a study area
+   * whose state is unknown (see `crashSourcesForStudyArea`).
    */
   coversStateFips?: readonly string[];
-  /** True when this adapter can serve the given study area. */
+  /**
+   * The state FIPS codes this adapter actually reads crash records for.
+   *
+   * This, not `covers()`, decides which source a study area gets once its
+   * state is known. `covers()` is a coarse rectangle and a rectangle cannot
+   * tell Reno from Sacramento: the California envelope contains most of Nevada.
+   * A state missing from this list is a state this adapter cannot answer for,
+   * so it is never asked, and its silence is never stored as zero crashes.
+   */
+  servesStateFips: readonly string[];
+  /** True when this adapter's coarse envelope overlaps the study area. */
   covers: (bbox: StudyAreaBbox) => boolean;
   fetch: (params: CrashFetchParams) => Promise<CrashFetchResult>;
   /**
@@ -322,6 +380,22 @@ export type CrashSourceAdapter = {
    * that there were none.
    */
   fetchParties?: (params: CrashPartyFetchParams) => Promise<CrashPartyRecord[]>;
+  /**
+   * Separate suspected serious injury (KABCO A) for crashes this adapter already
+   * returned, when its crash file cannot and another table of the same source
+   * can.
+   *
+   * OPTIONAL, and the absence is the declaration: a source without it either
+   * records severity on the crash (`kabco_full`) or has no way to separate
+   * serious injury at all. Only meaningful beside `fatal_injury_only`. Callers
+   * reach it through `enrichSeriousInjuries`, so the Safety acquisition, the
+   * live read and the corridor scorecard run the same join. A throw means the
+   * join did not apply; the crashes are kept.
+   */
+  enrichSeriousInjury?: (params: {
+    records: CrashRecord[];
+    signal?: AbortSignal;
+  }) => Promise<{ records: CrashRecord[]; upgraded: number }>;
 };
 
 /**

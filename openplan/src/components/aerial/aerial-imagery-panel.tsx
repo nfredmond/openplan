@@ -7,6 +7,7 @@ import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { formatFileSize } from "@/lib/models/evidence-packet";
 import type { AerialImageryRow } from "@/lib/aerial/imagery";
+import { sendFileThroughStorage } from "@/lib/files/staged-upload-client";
 
 /**
  * The mission's source photos: upload, list, download, delete.
@@ -88,10 +89,14 @@ export function AerialImageryPanel({
       const file = list[index];
       setUploadProgress(`Uploading ${index + 1} of ${list.length}: ${file.name}`);
       try {
-        const response = await fetch(
-          `/api/aerial/missions/${missionId}/imagery?filename=${encodeURIComponent(file.name)}`,
-          { method: "POST", body: file }
-        );
+        // Through Storage, not as a request body: hosted functions refuse
+        // bodies over about 4.5 MB, and a mapping frame runs 8 to 40 MB.
+        const response = await sendFileThroughStorage({
+          startUrl: `/api/aerial/missions/${missionId}/imagery/upload/start`,
+          completeUrl: `/api/aerial/missions/${missionId}/imagery/upload/complete`,
+          fields: {},
+          file,
+        });
         const body = (await response.json().catch(() => null)) as
           | { deduped?: boolean; error?: string }
           | null;
@@ -163,7 +168,7 @@ export function AerialImageryPanel({
                 : `${total} photo${total === 1 ? "" : "s"} · ${formatFileSize(totalBytes) ?? `${totalBytes} bytes`} · ` +
                   `${withLocation} of ${total} carry a location recorded by the camera` +
                   (withLocation < total
-                    ? ` — the other ${total - withLocation} recorded none, so they cannot appear on the map`
+                    ? ` (the other ${total - withLocation} recorded none, so they cannot appear on the map)`
                     : "")}
             </p>
           ) : null}
@@ -208,7 +213,7 @@ export function AerialImageryPanel({
             >
               {outcome.ok
                 ? outcome.deduped
-                  ? `${outcome.filename}: already stored for this mission — the existing copy was kept.`
+                  ? `${outcome.filename}: already stored for this mission. The existing copy was kept.`
                   : `${outcome.filename}: stored.`
                 : `${outcome.filename}: ${outcome.message}`}
             </li>

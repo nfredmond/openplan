@@ -43,7 +43,7 @@ export async function TopNav() {
             <span className="text-sm text-muted-foreground">Maps, engagement, reporting</span>
           </div>
           <span className="hidden max-w-3xl text-sm text-muted-foreground sm:block">
-            Maps, public comments, projects and reports — in one place, for the people who plan and build communities.
+            Maps, public comments, projects and reports in one place, for the people who plan and build communities.
           </span>
         </Link>
 
@@ -55,7 +55,7 @@ export async function TopNav() {
             <p className="text-sm text-muted-foreground">
               {user
                 ? "Move between the public pages and your workspace without losing your place."
-                : "OpenPlan is free and open source. Look around first, or make a free workspace for your team — nothing is gated."}
+                : "OpenPlan is free and open source. Look around first, or make a free workspace for your team. Nothing is gated."}
             </p>
           </div>
 

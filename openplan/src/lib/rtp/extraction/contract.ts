@@ -244,7 +244,7 @@ export const RTP_EXTRACTION_TARGETS: Record<RtpExtractionTargetKind, RtpExtracti
     ],
     instructions: [
       "One candidate per ROW of a revenue or cost table, or per figure stated in a sentence.",
-      "Do not add rows together. A total, a subtotal and a balance are arithmetic OpenPlan does itself — never transcribe one.",
+      "Do not add rows together. A total, a subtotal and a balance are arithmetic OpenPlan does itself. Never transcribe one.",
       "If the plan does not state an amount for a row, skip the row entirely. An amount nobody stated is not a zero.",
     ],
   },
@@ -309,7 +309,7 @@ export const RTP_EXTRACTION_TARGETS: Record<RtpExtractionTargetKind, RtpExtracti
     ],
     instructions: [
       "One candidate per measure.",
-      "A baseline is a measurement of the world. If the plan does not print one, leave it out — do not estimate it and do not carry a target back into it.",
+      "A baseline is a measurement of the world. If the plan does not print one, leave it out. Do not estimate it and do not carry a target back into it.",
     ],
   },
 
@@ -345,7 +345,7 @@ export const RTP_EXTRACTION_TARGETS: Record<RtpExtractionTargetKind, RtpExtracti
       yearField(
         "escalationTargetYear",
         false,
-        "the dollar year this period's costs are escalated to — ONLY if the plan states that exact year on this page"
+        "the dollar year this period's costs are escalated to, ONLY if the plan states that exact year on this page"
       ),
       {
         key: "costEstimateBasis",
@@ -646,7 +646,7 @@ export function buildExtractionPrompt(params: {
     "",
     "RULES THAT DECIDE WHETHER A CANDIDATE IS KEPT AT ALL:",
     "- `quote` must be copied character for character out of ONE passage below, and `source_chunk_id` must be that passage's id. A quote that is not in the passage is discarded.",
-    "- Every number in `fields` must appear inside your own `quote`, in any written form ($24 million in the quote licenses 24000000). A figure that is not in the quote is discarded — the whole candidate, not just the field.",
+    "- Every number in `fields` must appear inside your own `quote`, in any written form ($24 million in the quote licenses 24000000). A figure that is not in the quote is discarded: the whole candidate, not just the field.",
     "- Quote enough of the passage to contain every value you return, and no more than a few sentences or one table row.",
     "- Never return a total, a subtotal, a balance, a sum, an average, a year-of-expenditure figure, a period midpoint, a score or a ranking. OpenPlan computes those itself and will not accept them from you.",
     "- Never return an id, a uuid, or a database key of any kind.",

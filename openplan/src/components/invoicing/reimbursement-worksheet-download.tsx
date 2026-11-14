@@ -164,7 +164,7 @@ export function ReimbursementWorksheetDownload({
         Reimbursement worksheet
       </p>
       <p className="mt-1 text-sm text-muted-foreground">
-        A PDF of this award&apos;s claim position — awarded, claimed, paid and remaining — built from
+        A PDF of this award&apos;s claim position (awarded, claimed, paid and remaining), built from
         the invoice records linked to it, with the project&apos;s costs for the period listed
         underneath. Prepared as supporting work for your own reimbursement request; it is not your
         funder&apos;s form.

@@ -15,6 +15,7 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { REPORT_SUMMARY_MAX_LENGTH, REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
 import { guidedComparisonRequestSchema, verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
 import { writeGuidedComparisonSelection, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
+import { writeReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
 
 const reportsFilterSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -38,6 +39,9 @@ const createReportSchema = z
     modelRunIds: z.array(z.string().uuid()).max(20).optional(),
     guidedComparisonSelectionV1: guidedComparisonRequestSchema,
     countyRunIds: z.array(z.string().uuid()).max(20).optional(),
+    // The crash acquisition chosen when the report is created, saved with it
+    // so the planner does not have to save it again on the report page.
+    safetyIngestSelections: z.array(z.object({ ingestId: z.string().uuid() })).max(1).optional(),
     sections: z
       .array(
         z.object({
@@ -200,6 +204,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/** Report metadata for the evidence chosen at creation, if any. */
+function writeCreationSelections(
+  guidedSelection: GuidedComparisonSelectionV1 | null,
+  safetyIngestSelections: ReadonlyArray<{ ingestId: string }>,
+): Record<string, unknown> {
+  const withGuided = guidedSelection ? writeGuidedComparisonSelection({}, guidedSelection) : {};
+  return safetyIngestSelections.length > 0
+    ? writeReportSafetyIngestSelections(withGuided, safetyIngestSelections)
+    : withGuided;
+}
+
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("reports.create", request);
   const startedAt = Date.now();
@@ -351,6 +366,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const safetyIngestSelections = parsed.data.safetyIngestSelections ?? [];
+    if (safetyIngestSelections.length > 0) {
+      if (target.kind !== "project") {
+        return NextResponse.json({ error: "Crash evidence requires a project report" }, { status: 400 });
+      }
+      const { data: ingestRows, error: ingestError } = await supabase
+        .from("safety_crash_ingests")
+        .select("id")
+        .eq("workspace_id", target.workspaceId)
+        .eq("project_id", target.id)
+        .in("id", safetyIngestSelections.map(({ ingestId }) => ingestId));
+      if (ingestError) {
+        audit.error("safety_ingest_lookup_failed", {
+          workspaceId: target.workspaceId,
+          message: ingestError.message,
+          code: ingestError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify crash evidence" }, { status: 500 });
+      }
+      if ((ingestRows ?? []).length !== safetyIngestSelections.length) {
+        return NextResponse.json(
+          { error: "The selected crash acquisition is not attached to this report's project" },
+          { status: 400 },
+        );
+      }
+    }
+
     if (target.kind === "project" && runIds.length > 0) {
       const { data: runRows, error: runError } = await supabase
         .from("runs")
@@ -481,7 +523,7 @@ export async function POST(request: NextRequest) {
                 detail: "Created RTP packet record.",
               },
             }
-          : guidedSelection ? writeGuidedComparisonSelection({}, guidedSelection) : {},
+          : writeCreationSelections(guidedSelection, safetyIngestSelections),
     };
 
     let reportInsertResult = await supabase
@@ -491,9 +533,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (reportInsertResult.error && looksLikePendingSchema(reportInsertResult.error.message)) {
-      if (guidedSelection) {
+      if (guidedSelection || safetyIngestSelections.length > 0) {
         return NextResponse.json({
-          error: "The selected comparison needs the complete Reports schema. Creation cannot use a fallback that drops its sealed selection.",
+          error: guidedSelection
+            ? "The selected comparison needs the complete Reports schema. Creation cannot use a fallback that drops its sealed selection."
+            : "Crash evidence needs the complete Reports schema. Creation cannot use a fallback that drops the selection.",
           details: reportInsertResult.error.message,
         }, { status: 503 });
       }

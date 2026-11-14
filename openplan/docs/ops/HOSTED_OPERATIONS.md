@@ -30,16 +30,22 @@ replaces the matching line here.
 ## Apply a migration
 
 Code deploys on merge; hosted migrations are applied by hand. Apply the
-migration before, or together with, the merge whose code reads it.
+migration before the merge whose code reads it.
 
-1. Take a protected database capture (see
-   [hosted recovery](HOSTED_RECOVERY.md#capture-and-retain)), or confirm the
-   daily offsite capture is current.
-2. From `openplan/`, linked to the hosted project, run
-   `npm exec -- supabase migration up --linked --include-all`.
-   `--include-all` is needed because migrations may be applied out of
-   numeric order.
-3. Run the Production Health workflow by hand and read the migration line.
+Follow the procedure in
+[`scripts/ops/hosted-install/`](../../../scripts/ops/hosted-install/README.md):
+a fresh offsite capture proven by a network-free restore, the whole window
+rehearsed on that restored copy, a rollback-only dry run on hosted, then one
+transaction through `psql` that installs every file and its history row, with
+lock, statement and transaction timeouts and no retry. The install is pinned
+to the dry run's catalog and history, and refuses any other change. No hosted
+dry run or install runs between 10:05 and 10:50 UTC, around the daily capture.
+
+Do not use `supabase migration up --linked` or `supabase db query --linked`
+on hosted. A file that carries its own `BEGIN` and `COMMIT` commits before
+its history row is written, and each linked call writes a login role on the
+hosted database. `/api/health` reports only the migrations the build expects;
+the kit's catalog read gives the applied history.
 
 ## Roll back
 
@@ -59,9 +65,11 @@ file.
 
 Follow [hosted recovery](HOSTED_RECOVERY.md#restore-into-a-disposable-target)
 and the offsite capture's [deployment record](../../../workers/hosted-backup/DEPLOY.md).
-The decryption key for offsite captures exists only on Nathaniel's workstation
-until he stores a second copy. A full replacement of Auth, Storage and the
-workers has not been rehearsed.
+The decryption key for offsite captures exists only on the operator's
+workstation, on two internal disks that are not encrypted; captures made
+before the November 2026 rotation cannot be decrypted (see
+[the capture key section](HOSTED_RECOVERY.md#capture-key-loss-and-the-install-kit-november-14-2026)).
+A full replacement of Auth, Storage and the workers has not been rehearsed.
 
 ## Rotate a key
 
@@ -74,12 +82,13 @@ works, then revoke the old value. Set Railway values with
 |---|---|
 | `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Legacy JWT keys rotate together: a new JWT secret replaces both keys and signs every user out. Update Vercel and every Railway service, then redeploy all of them in one window. Supabase's newer per-key secret keys are not yet tested with OpenPlan. |
 | `NEXT_PUBLIC_MAPBOX_TOKEN`, `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`, `MAPBOX_ACCESS_TOKEN`, `MAPBOX_TOKEN` | Create a new public token in the Mapbox account, restricted to the site's URL. Set all four names in Vercel and redeploy, because public values are built into the bundle. Then delete the old token. |
-| `ANTHROPIC_API_KEY` | Create a key in the Anthropic Console, set it in Vercel, redeploy, revoke the old key. Workspace-owned keys are separate and belong to each workspace. |
+| `ANTHROPIC_API_KEY` | Not set on the hosted project's Production or Preview environments, and must not be: with public sign-up a deployment-wide key would bill every workspace. It was found set on both on November 14, 2026 (created about October 10) and removed that day; the app had been withholding it because `OPENPLAN_SHARED_AI_KEY` is not set. Workspace-owned keys are separate and belong to each workspace. A single-agency installation that wants a deployment key follows [self-hosting](../SELF_HOSTING.md). |
 | `RESEND_API_KEY` | Create a sending key in Resend; set it in Vercel and the Railway application workers; restart; revoke the old key. Supabase Auth's SMTP uses its own key, set in the Supabase dashboard. |
 | `CRON_SECRET` | Set a new random value in Vercel and redeploy. Vercel's scheduler sends it automatically. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET`, `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` | Follow the staged [integration secret rotation procedure](../SELF_HOSTING.md#rotate-the-integration-encryption-secret). Prepare both secrets on Vercel and every credential-reading worker before changing the primary. Preserve both with database and journal backups. Reads do not re-encrypt retained records; no hosted rotation has been performed by this change. |
 | `OPENPLAN_KB_OCR_WORKER_TOKEN`, `OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN` | Set the same new values in Vercel and the Railway OCR service. Document extraction fails between the two changes. |
 | `CENSUS_API_KEY` | Request a new key from the Census Bureau, activate it, set it in Vercel and the Railway model host. |
+| `BACKUP_GPG_PUBLIC_KEY`, `BACKUP_GPG_FINGERPRINT` (offsite capture key) | Follow Phase B of the [install kit procedure](../../../scripts/ops/hosted-install/README.md): new pair on the workstation, both variables set with `--skip-deploys`, redeploy, one capture proven by decrypt and restore. Captures made before the change stay encrypted to the old key until they age out. |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (offsite backup) | Create new bucket credentials in Railway, set them on the `offsite-backup` service, confirm the next capture. |
 | `OPENPLAN_HEALTH_TOKEN` | Set the same new random value in Vercel and as the GitHub repository secret, then redeploy. |
 | `SUPABASE_ACCESS_TOKEN` (GitHub secret) | Create a new personal access token in the Supabase dashboard, replace the repository secret, delete the old token. |
@@ -90,7 +99,7 @@ Names only. "Vercel" means the `openplan` project's Production environment.
 
 - **Vercel, read by the app:** `NEXT_PUBLIC_SUPABASE_URL`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
-  `NEXT_PUBLIC_SITE_URL`, the four Mapbox names above, `ANTHROPIC_API_KEY`,
+  `NEXT_PUBLIC_SITE_URL`, the four Mapbox names above,
   `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CRON_SECRET`,
   `OPENPLAN_INTEGRATION_KEY_SECRET`, optional `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET`, `CENSUS_API_KEY`,
   `OPENPLAN_MODELING_WORKER`, `OPENPLAN_HOSTED_ARTIFACT_MIRROR`,
@@ -131,8 +140,12 @@ Names only. "Vercel" means the `openplan` project's Production environment.
   `SUPABASE_ACCESS_TOKEN` (not set yet).
 - **Supabase dashboard:** Auth SMTP password (a Resend key), Auth site URL and
   redirect list.
-- **Nathaniel's workstation only:** the offsite backup private key and its
-  passphrase, under `~/.local/state/openplan/offsite-backup-key/`.
+- **The operator's Windows workstation only:** the offsite capture private key
+  and its passphrase, under
+  `%USERPROFILE%\.local\state\openplan\offsite-capture-key-<date>\`, with a
+  copy on the second internal disk at `D:\openplan-key-escrow\`. Neither disk
+  is encrypted. Both copies are lost with this machine; the folder belongs on
+  any machine-move checklist.
 
 All four accounts (Vercel, Supabase, Railway, Resend) are under Nathaniel's
 login. If he is unavailable, no one else can rotate a key, roll back or

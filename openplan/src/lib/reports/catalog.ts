@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure, readComparableFunding } from "@/lib/grants/award-handoff";
 import { isDateOnly } from "@/lib/time/workspace-calendar";
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import {
@@ -859,8 +860,7 @@ function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
 }
 
 function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" ? value : 0;
-  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function normalizeFundingStatus(
@@ -1068,6 +1068,7 @@ export function parseStoredFundingSnapshot(
   }
 
   return {
+    comparableFunding: readComparableFunding(summary.comparableFunding),
     capturedAt: asNullableString(summary.capturedAt),
     projectUpdatedAt: asNullableString(summary.projectUpdatedAt),
     latestSourceUpdatedAt: asNullableString(summary.latestSourceUpdatedAt),
@@ -1223,6 +1224,8 @@ export function describeFundingSnapshot(
     return null;
   }
 
+  if (summary.comparableFunding) return {headline:"Recorded award ceilings; coverage unassessed",detail:comparableFundingDisclosure(summary.comparableFunding),timingDetail:summary.latestSourceUpdatedAt ? `Funding sources current through ${formatDateTime(summary.latestSourceUpdatedAt)}.` : null};
+
   const headlineParts = [
     summary.awardCount > 0 ? `${summary.awardCount} award${summary.awardCount === 1 ? "" : "s"}` : null,
     isPositiveAmount(summary.committedFundingAmount)
@@ -1267,7 +1270,7 @@ export function describeFundingSnapshot(
   };
 }
 
-export function formatDateTime(value: string | null | undefined): string {
+function formatDateTimeIn(value: string | null | undefined, timeZone: "UTC" | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -1276,5 +1279,21 @@ export function formatDateTime(value: string | null | undefined): string {
       ? parsed.toLocaleDateString("en-US", { timeZone: "UTC" })
       : value;
   }
-  return parsed.toLocaleString("en-US");
+  return timeZone ? parsed.toLocaleString("en-US", { timeZone }) : parsed.toLocaleString("en-US");
+}
+
+/** A timestamp for a screen, in the time zone of whatever renders it. */
+export function formatDateTime(value: string | null | undefined): string {
+  return formatDateTimeIn(value, undefined);
+}
+
+/**
+ * A timestamp inside a stored fact claim. Accepted narratives keep a hash of
+ * their facts, so the text must not move with the server's time zone. Always
+ * UTC, and on a UTC host byte-identical to `formatDateTime`, so hashes stored
+ * by the hosted site (which runs in UTC) still match. No zone label: adding
+ * one would change every stored hash.
+ */
+export function formatFactDateTime(value: string | null | undefined): string {
+  return formatDateTimeIn(value, "UTC");
 }

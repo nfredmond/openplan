@@ -351,7 +351,7 @@ export function describeWorkerLaunchRefusal(
   const whatWouldHappen =
     "this launch would report success, the run would sit queued, and it would be failed some minutes later with nothing to show.";
   const nothingToBuy =
-    "Nothing about this workspace, this account or this study area is blocking it, and there is nothing to buy — OpenPlan is free.";
+    "Nothing about this workspace, this account or this study area is blocking it, and there is nothing to buy. OpenPlan is free.";
 
   if (reason === "deployment_declares_no_worker") {
     return {
@@ -364,7 +364,7 @@ export function describeWorkerLaunchRefusal(
   if (reason === "declared_worker_never_started") {
     return {
       heading: `${modeLabel} needs a processing worker, and the one this OpenPlan installation declares has not been picking up its runs`,
-      body: `${doesNotRunHere} This installation declares that an AequilibraE worker runs against it. ${evidence ?? ""} A declaration is a statement of configuration, not a live check — the worker looks for runs on its own schedule, and OpenPlan cannot check on it from here — so what is on screen is the run history contradicting the configuration. On this evidence ${whatWouldHappen}`,
+      body: `${doesNotRunHere} This installation declares that an AequilibraE worker runs against it. ${evidence ?? ""} A declaration is a statement of configuration, not a live check (the worker looks for runs on its own schedule, and OpenPlan cannot check on it from here), so what is on screen is the run history contradicting the configuration. On this evidence ${whatWouldHappen}`,
       operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation is the person to hand this to; it is not something your account can fix from here. For that person: check that the worker is running and pointed at this installation's own database, and read its logs; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
     };
   }
@@ -397,8 +397,8 @@ export function describeWorkerQueueRisk(
 
   if (declaration === "deployed") {
     return observed
-      ? `${observed}This OpenPlan installation declares that an AequilibraE worker runs against it, so the configuration and the history disagree — the worker looks for runs on its own schedule and OpenPlan cannot check on it, so both can only be reported, not resolved.`
-      : "This OpenPlan installation declares that an AequilibraE worker runs against it, which is a statement of configuration rather than a live check — the worker looks for runs on its own schedule, and OpenPlan cannot check on it.";
+      ? `${observed}This OpenPlan installation declares that an AequilibraE worker runs against it, so the configuration and the history disagree. The worker looks for runs on its own schedule and OpenPlan cannot check on it, so both can only be reported, not resolved.`
+      : "This OpenPlan installation declares that an AequilibraE worker runs against it, which is a statement of configuration rather than a live check. The worker looks for runs on its own schedule, and OpenPlan cannot check on it.";
   }
 
   /*
@@ -421,6 +421,6 @@ export function describeWorkerQueueRisk(
     a second thing nobody here can check.
   */
   return observed
-    ? `${observed}Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look.`
-    : "Nobody has told OpenPlan whether a modeling worker runs on this installation, and it cannot check for itself. If none is running, this run will sit queued and then be marked failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look.";
+    ? `${observed}Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing, and nothing will notify you. The dashboard will show it as a failed run when you next look.`
+    : "Nobody has told OpenPlan whether a modeling worker runs on this installation, and it cannot check for itself. If none is running, this run will sit queued and then be marked failed rather than finishing, and nothing will notify you. The dashboard will show it as a failed run when you next look.";
 }

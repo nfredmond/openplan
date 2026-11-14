@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -26,10 +28,11 @@ vi.mock("@/lib/observability/audit", () => ({
 
 import { POST as prepareCountyRunValidation } from "@/app/api/county-runs/[countyRunId]/validate/route";
 
-const runDir = "/tmp/openplan-validate-route-test";
-const runOutputDir = `${runDir}/run_output`;
-const countsCsvPath = `${runDir}/scaffold.csv`;
-const projectDbPath = `${runDir}/work/aeq_project/project_database.sqlite`;
+// Host paths, because the route joins them with the host's separator.
+const runDir = path.join(tmpdir(), "openplan-validate-route-test");
+const runOutputDir = path.join(runDir, "run_output");
+const countsCsvPath = path.join(runDir, "scaffold.csv");
+const projectDbPath = path.join(runDir, "work", "aeq_project", "project_database.sqlite");
 
 function request() {
   return new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/validate", {
@@ -45,7 +48,7 @@ describe("POST /api/county-runs/[countyRunId]/validate", () => {
 
     await rm(runDir, { recursive: true, force: true });
     await mkdir(runOutputDir, { recursive: true });
-    await mkdir(`${runDir}/work/aeq_project`, { recursive: true });
+    await mkdir(path.dirname(projectDbPath), { recursive: true });
     await writeFile(countsCsvPath, "station_id,observed_volume,source_agency,source_description\nA,123,Caltrans,PM 1.2\n", "utf8");
     await writeFile(projectDbPath, "", "utf8");
 
@@ -156,7 +159,7 @@ describe("POST /api/county-runs/[countyRunId]/validate", () => {
       callbackAuthMode: "session-only",
       runOutputDir,
       countsCsvPath,
-      outputDir: `${runDir}/validation`,
+      outputDir: path.join(runDir, "validation"),
       projectDbPath,
     });
     expect(payload.automationCommand).toBeNull();

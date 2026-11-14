@@ -1,9 +1,10 @@
 import type { BcaDocument, BcaFlow } from "./schema";
 import { getBcaProfile } from "./profiles";
+import { bcaProjectPlaceSchema, type BcaProjectPlace } from "./project-place";
 
-export function newBcaDocument(projectId: string): BcaDocument {
+export function newBcaDocument(projectId: string, projectPlace?: BcaProjectPlace): BcaDocument {
   const profile = getBcaProfile("usdot-2026")!;
-  return {
+  const document: BcaDocument = {
     schemaVersion: 1,
     projectId,
     title: "Benefit-cost analysis",
@@ -36,6 +37,14 @@ export function newBcaDocument(projectId: string): BcaDocument {
         "Illustrative stress ranges. Replace with project-specific evidence; these are not confidence bounds.",
     },
   };
+  return projectPlace ? reviewBcaProjectPlace(document, projectPlace) : document;
+}
+
+/** Explicit local review creates a successor draft, preserving the scope narrative. */
+export function reviewBcaProjectPlace(document: BcaDocument, snapshot: BcaProjectPlace): BcaDocument {
+  const projectPlace = bcaProjectPlaceSchema.parse(snapshot);
+  if (projectPlace.projectId !== document.projectId) throw new Error("The place snapshot belongs to a different project.");
+  return { ...document, schemaVersion: 2, projectPlace: structuredClone(projectPlace) };
 }
 export function newBcaFlow(
   doc: BcaDocument,

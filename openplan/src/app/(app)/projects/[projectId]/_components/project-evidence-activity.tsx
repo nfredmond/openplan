@@ -97,7 +97,7 @@ export function ProjectEvidenceAndActivity({
           ) : linkedDatasetsReadFailed ? (
             <div className="module-alert mt-5 text-sm">
               Linked datasets could not be read, so this panel is unavailable. The failure is named at the top of this
-              page — a failed lookup is not a project with no data sources attached.
+              page. A failed lookup is not a project with no data sources attached.
             </div>
           ) : linkedDatasets.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">

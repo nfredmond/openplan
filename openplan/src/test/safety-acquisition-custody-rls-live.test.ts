@@ -70,7 +70,7 @@ import { globalProbeGrid } from "./helpers/crash-coverage-probe";
     vi.spyOn(ccrsAdapter, "fetchParties").mockResolvedValue([{ crashExternalId: "synthetic-repeat",
       externalPartyId: "synthetic-person", role: "driver", ageBand: "unknown",
       injury: "fatal", sourceAttributes: {} }]);
-    const run = () => ingestCrashesForStudyArea({ service, workspaceId, bbox: bbox!,
+    const run = () => ingestCrashesForStudyArea({ service, workspaceId, bbox: bbox!, stateFips: ["06"],
       years: [2024], enrichSeriousInjury: false, includeParties: true });
     const first = await run();
     expect(first.status, first.error ?? "first acquisition").toBe("ready");
