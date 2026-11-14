@@ -164,11 +164,12 @@ export async function checkAiUsageRateLimit(
  * migration 20260424000072; its stripe_* columns stay NULL forever.)
  *
  * BEST-EFFORT by design: any insert error is swallowed with a single console
- * warning and reported only through the returned boolean.
- * {@link reserveAiUsage} is the caller that acts on that boolean, and every
- * model call the deployment's key can pay for goes through it. The direct
- * callers left are the integration-key probes, which relay the caller's own
- * key and meter their own bucket.
+ * warning and reported only through the returned boolean. Every model call
+ * the deployment's key can pay for goes through {@link reserveAiUsage}, which
+ * records through its SQL function instead and uses this only for the
+ * workspace's own key when that function cannot answer. The direct callers
+ * left are the integration-key probes, which relay the caller's own key and
+ * meter their own bucket.
  */
 export async function recordAiUsageEvent(params: {
   workspaceId: string;
@@ -205,44 +206,121 @@ export async function recordAiUsageEvent(params: {
   }
 }
 
+/** The migration that installs {@link reserveAiUsage}'s atomic SQL function. */
+export const AI_USAGE_RESERVATION_MIGRATION = "20261102110000_reserve_ai_usage";
+
+type ReserveSupabaseLike = CountSupabaseLike & {
+  rpc: ReturnType<typeof createServiceRoleClient>["rpc"];
+};
+
+type ReserveParams = {
+  workspaceId: string;
+  bucketKey: string;
+  eventKey: string;
+  sourceRoute?: string;
+  metadataJson?: Record<string, unknown>;
+  serviceSupabase?: ReserveSupabaseLike;
+};
+
+/**
+ * PostgREST answers PGRST202 when its schema cache has no such function, and
+ * Postgres answers 42883 (undefined_function). Either means this database has
+ * not applied {@link AI_USAGE_RESERVATION_MIGRATION}.
+ */
+function reservationFunctionMissing(error: { code?: string | null; message?: string | null }): boolean {
+  if (error.code === "PGRST202" || error.code === "42883") return true;
+  const message = error.message ?? "";
+  return /reserve_ai_usage/.test(message) && /could not find|does not exist|schema cache/i.test(message);
+}
+
+/** The SQL function's answer: `{ allowed, count }`, or null for any other shape. */
+function parseReservation(data: unknown): { allowed: boolean; count: number } | null {
+  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+  const { allowed, count } = data as { allowed?: unknown; count?: unknown };
+  if (typeof allowed !== "boolean" || typeof count !== "number" || !Number.isInteger(count) || count < 0) return null;
+  return { allowed, count };
+}
+
 /**
  * Check the limit and record the call BEFORE it is dispatched, for calls the
  * provider bills even when the caller never sees the end: a streamed chat
  * reply the planner closes mid-stream still costs every token generated so
  * far. Recording after the stream finished left those calls uncounted.
  *
- * A refused check records nothing. When the deployment's shared key pays, a
- * failed lookup or a failed insert throws {@link AiUsageMeterUnavailableError}
- * instead of letting an unmetered call through; with the workspace's own key
- * both stay best-effort, as {@link checkAiUsageRateLimit} describes.
+ * ATOMIC: the count and the insert run in one SQL function,
+ * `public.reserve_ai_usage` (migration {@link AI_USAGE_RESERVATION_MIGRATION}),
+ * under the per-workspace advisory lock the SQL dispatchers for Planner Agent
+ * API tasks, workspace-connection chat and staff translation take. Parallel
+ * requests for one workspace queue on that lock, so the window admits exactly
+ * its limit. A refused check records nothing.
+ *
+ * When the function cannot answer (not installed yet, a lock timeout, any
+ * other error or an unexpected reply) the answer depends on who pays. With the
+ * deployment's shared key it throws {@link AiUsageMeterUnavailableError}: an
+ * unmetered call bills the operator for every workspace. With the workspace's
+ * own key, or no shared key, it falls back to the earlier best-effort count
+ * then record, which is not atomic and never takes a workspace's own AI
+ * offline.
  *
  * A reservation is KEPT when the provider call then fails. A provider can bill
  * a call that times out or errors after generating tokens, a refund would be a
  * second write that can fail on its own, and a caller who can make calls fail
  * must not get free retries. The cost is one of the window's calls per failed
  * attempt.
- *
- * NOT ATOMIC: the count and the insert are two requests with no lock between
- * them, so parallel requests can all pass one count and together exceed the
- * window's limit by up to the number running at once. The SQL dispatchers
- * for Planner Agent API tasks, workspace-connection chat and public
- * translation count and insert under one advisory lock; this path does not.
  */
-export async function reserveAiUsage(params: {
-  workspaceId: string;
-  bucketKey: string;
-  eventKey: string;
-  sourceRoute?: string;
-  metadataJson?: Record<string, unknown>;
-  serviceSupabase?: CountSupabaseLike;
-}): Promise<AiRateLimitResult> {
+export async function reserveAiUsage(params: ReserveParams): Promise<AiRateLimitResult> {
   const failClosed = deploymentKeyPays();
+  const windowSeconds = AI_RATE_LIMIT_WINDOW_SECONDS;
+
+  let failure: string;
+  try {
+    const supabase = params.serviceSupabase ?? createServiceRoleClient();
+    const { data, error } = await supabase.rpc("reserve_ai_usage", {
+      p_workspace_id: params.workspaceId,
+      p_bucket_keys: [...AI_RATE_LIMIT_BUCKET_KEYS],
+      p_max_per_window: AI_RATE_LIMIT_MAX_PER_WINDOW,
+      p_window_seconds: windowSeconds,
+      p_bucket_key: params.bucketKey,
+      p_event_key: params.eventKey,
+      p_source_route: params.sourceRoute ?? null,
+      p_metadata: params.metadataJson ?? {},
+    });
+    if (error) {
+      failure = reservationFunctionMissing(error)
+        ? `the reserve_ai_usage function is not installed; apply migration ${AI_USAGE_RESERVATION_MIGRATION}`
+        : error.message;
+    } else {
+      const verdict = parseReservation(data);
+      if (verdict) {
+        return {
+          allowed: verdict.allowed,
+          count: verdict.count,
+          retryAfterSeconds: verdict.allowed ? 0 : windowSeconds,
+        };
+      }
+      failure = "the usage reservation returned an unexpected answer";
+    }
+  } catch (error) {
+    failure = error instanceof Error ? error.message : String(error);
+  }
+
+  if (failClosed) throw new AiUsageMeterUnavailableError(failure);
+  console.warn(`[ai-rate-limit] atomic usage reservation unavailable (${params.bucketKey}): ${failure}`);
+  return reserveWithoutLock(params);
+}
+
+/**
+ * The earlier two-request reservation, kept only for the workspace's own key
+ * when the SQL function cannot answer. NOT ATOMIC: parallel requests can all
+ * pass one count. Both steps stay best-effort, as
+ * {@link checkAiUsageRateLimit} and {@link recordAiUsageEvent} describe.
+ */
+async function reserveWithoutLock(params: ReserveParams): Promise<AiRateLimitResult> {
   const limit = await checkAiUsageRateLimit(params.workspaceId, {
     serviceSupabase: params.serviceSupabase,
-    failClosed,
+    failClosed: false,
   });
   if (!limit.allowed) return limit;
-  const recorded = await recordAiUsageEvent(params);
-  if (!recorded && failClosed) throw new AiUsageMeterUnavailableError("the usage event was not recorded");
+  await recordAiUsageEvent(params);
   return limit;
 }
