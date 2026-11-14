@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { recordMetadata } from "@/lib/ui/page-title";
+import { requireRecordRow } from "@/lib/routing/record-not-found";
+import { loadPlanRowForRequest } from "./_components/plan-row-for-request";
 
 /**
  * The browser-tab title for this record.
@@ -24,7 +26,18 @@ export async function generateMetadata({
   });
 }
 
-// Pass-through: this layout exists to name the tab, not to add chrome.
-export default function PlanRecordLayout({ children }: { children: ReactNode }) {
+/**
+ * Answers a real HTTP 404 for a plan the reader cannot see, before
+ * `loading.tsx` starts the stream (see `requireRecordRow`).
+ */
+export default async function PlanRecordLayout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ planId: string }>;
+}) {
+  const { planId } = await params;
+  await requireRecordRow(planId, loadPlanRowForRequest);
   return children;
 }

@@ -10,6 +10,11 @@ export default async function ContractPage({params}:{params:Promise<{engagementI
  const {engagementId}=await params;
  if(!isUuid(engagementId))notFound();
  const access=await contractAccess(engagementId);
+ // The contract read refuses a missing contract and one the reader has no role on with one error
+ // ("Contract access denied", 42501), so both answer the same real 404 (KI-2026-11-14-280). Every other
+ // failure keeps the notice below under 200, as before: a read that did not complete (503), and a 403
+ // from any other 42501, such as a missing EXECUTE grant, which is a deployment fault, not absence.
+ if(access.response&&access.refusedReader)notFound();
  if(access.response)return <div className="p-8"><h1 className="text-2xl">Contract management unavailable</h1><p className="mt-3">Sign in with access to this contract, and confirm the contract is linked to a project.</p></div>;
  const state=access.state as ContractState;
  // Form dates default to today on the workspace calendar. The read uses the service client because a

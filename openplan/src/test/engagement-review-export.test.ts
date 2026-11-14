@@ -9,8 +9,10 @@ describe('campaign review records',()=>{
  it.each(['internal','public'] as const)('keeps approval separate from publication in %s files',async(scope)=>{
   const source:EngagementReviewSnapshot={...snapshot,scope,items:[{id:'approved-note',status:'approved',body:'Retained note'}],sessions:[],answers:[]};
   const page=document.createElement('div');page.innerHTML=buildCampaignReviewHtml(source,'checksum');
-  expect([...page.querySelectorAll('th')].map(node=>node.textContent)).toContain('Approved');
-  expect([...page.querySelectorAll('th')].map(node=>node.textContent)).not.toContain('Published');
+  // The counts name approval; the only thing they call published is a staff response, never a contribution.
+  const countLines=[...page.querySelectorAll('ul.review-counts li')].map(node=>node.textContent??'');
+  expect(countLines).toContain('Approved 1 contribution.');
+  expect(countLines.filter(line=>/^Published/.test(line))).toEqual(['Published 0 staff responses.']);
   const workbook=XLSX.read(await buildCampaignReviewWorkbook(source,'checksum'),{type:'buffer'});
   const meaning=XLSX.utils.sheet_to_json<{Field:string;Value:string}>(workbook.Sheets['Read me']).find(row=>row.Field==='Meaning')?.Value;
   expect(meaning).toContain('Approval does not establish public release.');
@@ -104,7 +106,7 @@ describe('campaign review records',()=>{
  });
  it('labels every long narrative continuation without losing its contents',()=>{
   const body='Japanese 日本語 and Farsi فارسی\n'.repeat(70),html=buildCampaignReviewHtml({...snapshot,items:[{id:'long-id',status:'pending',body}]},'checksum');
-  expect(html).toContain('Record long-id · part 1 of 4');expect(html).toContain('Record long-id · part 4 of 4');
+  expect(html).toContain('Contribution 1 · part 1 of 4');expect(html).toContain('Contribution 1 · part 4 of 4');
   expect(html.match(/Japanese 日本語 and Farsi فارسی/g)).toHaveLength(70);
  });
 

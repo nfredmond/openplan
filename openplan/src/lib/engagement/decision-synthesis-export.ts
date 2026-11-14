@@ -1,16 +1,46 @@
 import type { VerifiedDecisionLink } from "./decision-links";
 import { decisionSynthesisDetails, decisionSynthesisLegacyNotice, decisionSynthesisEmptyNotice, decisionSynthesisAuthorityNotice, type DecisionSynthesisDetails } from "./decision-synthesis-display";
+import { reviewTime, reviewWord, type RecordIdentifiers } from "./review-pdf-words";
 
 type Cell = string | number;
 type ExportRow = Record<string, Cell>;
 type Member = DecisionSynthesisDetails[number]["events"][number]["members"][number];
-type TextRenderer = { escape: (value: unknown) => string; narrative: (value: unknown, record: unknown) => string };
+/** How the review PDF prints a retained value: escaped text, numbered names and the identifier appendix. */
+type ReportWords = {
+  escape: (value: unknown) => string;
+  narrative: (value: unknown, label: string) => string;
+  /** "Contribution 4", or a phrase for a contribution outside this file's selection. */
+  contribution: (itemId: string) => string;
+  /** "Survey answer 2", or a phrase for an answer outside this file's selection. */
+  answer: (answerId: string) => string;
+  /** "staff member 1": actors are numbered and their ids listed in the appendix. */
+  staff: (actorId: unknown) => string;
+  identifiers: RecordIdentifiers;
+};
 
-/** Source words appear once in a keyed appendix; each retained action lists its exact reviewed membership. */
-export function decisionSynthesisReport(rows: VerifiedDecisionLink[], { escape, narrative }: TextRenderer) {
-  const sources = new Map<string, { anchor: string; member: Member; sourceId: string; sourceSha256: string; capturedAt: string }>();
+/** Printed beside every staff group, so a theme of a few comments is not read as what the public thinks. */
+export const decisionSynthesisGroupCountCaveat = "Counts are records, not people. A staff group shows what these contributors wrote; it does not measure public opinion or show representative support.";
+
+/** A retained survey answer's words. Its structured value stays in the workbook and snapshot, never as JSON in the PDF. */
+function memberWords(member: Member): string {
+  if (member.kind === "item") return member.text;
+  const answer = member.record as { answer_text?: unknown };
+  return typeof answer.answer_text === "string" && answer.answer_text.trim()
+    ? answer.answer_text
+    : "Structured answer. Its exact value is in the workbook and portable snapshot.";
+}
+
+/**
+ * Source words appear once in a numbered appendix; each retained action lists
+ * its exact reviewed membership by number. Identifiers and hashes go to the
+ * report's "Record identifiers" appendix under the same numbers.
+ */
+export function decisionSynthesisReport(rows: VerifiedDecisionLink[], { escape, narrative, contribution, answer, staff, identifiers }: ReportWords) {
+  const sources = new Map<string, { anchor: string; number: number; member: Member; sourceId: string; sourceSha256: string; capturedAt: string }>();
   const sections = new Map<string, string>();
-  for (const row of rows) {
+  const memberName = (member: Member) => member.kind === "item" ? contribution(member.id) : answer(member.id);
+  rows.forEach((row, rowIndex) => {
+    const action = `Decision action ${rowIndex + 1}`;
     const histories = decisionSynthesisDetails(row.context);
     let html = `<h4>Retained synthesis evidence</h4>`;
     if (histories === null) html += `<p>${decisionSynthesisLegacyNotice}</p>`;
@@ -18,35 +48,51 @@ export function decisionSynthesisReport(rows: VerifiedDecisionLink[], { escape, 
     else {
       html += `<p>${histories.length} review-group histories, ${histories.reduce((sum, history) => sum + history.events.length, 0)} saved response-link actions. ${decisionSynthesisAuthorityNotice}</p>`;
       for (const history of histories) for (const event of history.events) {
+        const linkAction = `${action}, response-link action ${event.eventNo}`;
+        identifiers.add("Decision history", linkAction, event.intent.requestId);
+        identifiers.add("Decision history", `${linkAction}, staff review`, history.reviewId);
+        identifiers.add("Decision history", `${linkAction}, staff review group`, history.groupId);
+        identifiers.add("Decision history", `${linkAction}, SHA-256`, event.eventSha256);
+        identifiers.add("Decision history", `${linkAction}, approval`, event.approval.intent.requestId);
+        identifiers.add("Decision history", `${linkAction}, approval SHA-256`, event.retained.approval.eventSha256);
         const references = event.members.map(member => {
           const key = `${event.retained.sourceId}-${event.retained.sourceSha256}-${member.key.replace(":", "-")}`;
           // Keep PDF destination names short while the map retains the full custody key.
-          const anchor = sources.get(key)?.anchor ?? `synthesis-source-${sources.size + 1}`;
-          sources.set(key, { anchor, member, sourceId: event.retained.sourceId, sourceSha256: event.retained.sourceSha256, capturedAt: event.source.capturedAt });
-          return `<li><a href="#${anchor}">${escape(member.key)}: ${escape(member.title)}</a></li>`;
+          const known = sources.get(key);
+          const number = known?.number ?? sources.size + 1;
+          const anchor = known?.anchor ?? `synthesis-source-${number}`;
+          sources.set(key, { anchor, number, member, sourceId: event.retained.sourceId, sourceSha256: event.retained.sourceSha256, capturedAt: event.source.capturedAt });
+          return `<li><a href="#${anchor}">Synthesis source ${number}: ${escape(memberName(member))}, ${escape(member.title)}</a></li>`;
         }).join("");
-        html += `<section><h4>Response-link action ${event.eventNo}: ${event.intent.operation}</h4>
-          <p class="meta">Action ${escape(event.intent.requestId)} | Recorded ${escape(event.createdAt)} | Actor ${escape(event.intent.actorId)}<br>Review ${escape(history.reviewId)} | Group ${escape(history.groupId)}<br>Action SHA-256 ${event.eventSha256}</p>
-          <h4>Reason for this link action</h4>${narrative(event.intent.reason, event.intent.requestId)}
+        html += `<section><h4>Response-link action ${event.eventNo}: ${escape(reviewWord("operation", event.intent.operation, "operation"))}</h4>
+          <p class="meta">Recorded ${escape(reviewTime(event.createdAt))} by ${escape(staff(event.intent.actorId))}</p>
+          <h4>Reason for this link action</h4>${narrative(event.intent.reason, `${linkAction}, reason`)}
           <h4>Retained review revision ${event.retained.revision.number}: ${escape(event.content.title)}</h4>
-          <p>${escape(event.group.label)} | Staff sentiment: ${escape(event.group.sentiment)}</p>${narrative(event.group.summary || "No group summary.", event.retained.revision.id)}
-          <h4>Review notes</h4>${narrative(event.content.notes || "None recorded.", event.retained.revision.id)}
-          <h4>Recorded approval</h4><p>Revision ${event.approval.intent.revisionNo} approved at ${escape(event.approval.createdAt)}.</p>
-          <p class="meta">Approval ${escape(event.approval.intent.requestId)} | Actor ${escape(event.approval.intent.actorId)}<br>Approval SHA-256 ${event.retained.approval.eventSha256}</p>${narrative(event.approval.intent.reason, event.approval.intent.requestId)}
-          <h4>Response at this action</h4><p>Revision ${event.retained.responseHistory.revision}: ${escape(event.response.theme_title)} | ${escape(event.response.status)}</p>
-          <h4>You said</h4>${narrative(event.response.you_said, event.retained.responseHistory.id)}<h4>Agency response</h4>${narrative(event.response.we_did, event.retained.responseHistory.id)}
-          <h4>${event.members.length} retained source references</h4><p>Source captured ${escape(event.source.capturedAt)}. The references below link to the retained words in the synthesis source appendix.</p><ul>${references}</ul></section>`;
+          <p>${escape(event.group.label)} | ${event.members.length} ${event.members.length === 1 ? "contribution" : "contributions"} in this group | Staff sentiment: ${escape(reviewWord("sentiment", event.group.sentiment, "sentiment"))}</p><p class="meta">${decisionSynthesisGroupCountCaveat}</p>${narrative(event.group.summary || "No group summary.", `${linkAction}, group summary`)}
+          <h4>Review notes</h4>${narrative(event.content.notes || "None recorded.", `${linkAction}, review notes`)}
+          <h4>Recorded approval</h4><p>Revision ${event.approval.intent.revisionNo} approved ${escape(reviewTime(event.approval.createdAt))} by ${escape(staff(event.approval.intent.actorId))}.</p>
+          ${narrative(event.approval.intent.reason, `${linkAction}, approval reason`)}
+          <h4>Response at this action</h4><p>Revision ${event.retained.responseHistory.revision}: ${escape(event.response.theme_title)} | ${escape(reviewWord("responseStatus", event.response.status, "response status"))}</p>
+          <h4>You said</h4>${narrative(event.response.you_said, `${linkAction}, you said`)}<h4>Agency response</h4>${narrative(event.response.we_did, `${linkAction}, agency response`)}
+          <h4>${event.members.length} retained source references</h4><p>Source captured ${escape(reviewTime(event.source.capturedAt))}. The references below link to the retained words in the synthesis source appendix.</p><ul>${references}</ul></section>`;
       }
     }
     sections.set(row.id, html);
+  });
+  for (const value of sources.values()) {
+    const label = `Synthesis source ${value.number}`;
+    identifiers.add("Synthesis sources", `${label}, record`, value.member.key);
+    identifiers.add("Synthesis sources", `${label}, source snapshot`, value.sourceId);
+    identifiers.add("Synthesis sources", `${label}, source SHA-256`, value.sourceSha256);
+    identifiers.add("Synthesis sources", `${label}, original campaign settings`, value.member.configurationId);
+    identifiers.add("Synthesis sources", `${label}, settings definition SHA-256`, value.member.definition?.sha256);
   }
   const appendix = sources.size ? `<h2 id="synthesis-sources">Retained synthesis source appendix</h2><p>${sources.size} distinct source references across the captured decision evidence. Repeated references to the same retained source version share one entry. These are historical words, not current source or publication status. Exact source records, survey sessions and configuration definitions remain in the workbook and portable snapshot.</p>${[...sources.values()].map(value => {
     const { member } = value;
-    return `<section id="${value.anchor}"><h3>${member.kind === "item" ? "Contribution" : "Survey answer"}: ${escape(member.title)}</h3>
-      <p class="meta">${escape(member.key)}<br>Source ${escape(value.sourceId)} | Captured ${escape(value.capturedAt)}<br>Source SHA-256 ${value.sourceSha256}</p>
-      ${narrative(member.text || "No answer text or structured value recorded.", member.key)}
-      <p>Original configuration: ${member.configurationAvailability}${member.configurationId ? ` (${escape(member.configurationId)})` : ""}.</p>
-      ${member.definition ? `<p class="meta">Definition SHA-256 ${member.definition.sha256}</p>` : ""}</section>`;
+    return `<section id="${value.anchor}"><h3>Synthesis source ${value.number}: ${escape(memberName(member))}, ${escape(member.title)}</h3>
+      <p class="meta">Captured ${escape(reviewTime(value.capturedAt))}</p>
+      ${narrative(memberWords(member) || "No answer text or structured value recorded.", `Synthesis source ${value.number}`)}
+      <p>Original campaign settings: ${escape(reviewWord("availability", member.configurationAvailability, "availability"))}.</p></section>`;
   }).join("")}` : "";
   return { sections, appendix };
 }

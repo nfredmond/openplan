@@ -69,7 +69,7 @@ const WORKLIST_ROUTES = [
   "src/app/(app)/dashboard/page.tsx",
   "src/app/(app)/my-work/page.tsx",
   "src/app/(app)/projects/page.tsx",
-  "src/app/(app)/grants/page.tsx",
+  "src/app/(app)/grants/(overview)/page.tsx",
   "src/app/(app)/programs/page.tsx",
   "src/app/(app)/models/page.tsx",
   "src/app/(app)/scenarios/page.tsx",

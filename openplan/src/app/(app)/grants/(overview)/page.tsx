@@ -98,7 +98,7 @@ import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PageTabNav } from "@/components/ui/page-tab-nav";
 import { PageTabPanel } from "@/components/ui/page-tab-panel";
 import { resolvePageTab } from "@/lib/ui/page-tabs";
-import { GRANTS_TABS, defaultGrantsTab } from "./_tabs";
+import { GRANTS_TABS, defaultGrantsTab } from "../_tabs";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext } from "@/lib/projects/planning-context";
 

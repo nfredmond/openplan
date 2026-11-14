@@ -40,7 +40,12 @@ describe("private decision history in engagement exports", () => {
       ],
     });
     const html = buildCampaignReviewHtml(saved, "test");
-    expect(html).toContain(`Published 2026-11-02T07:24:46Z<br>Answers contribution 2, Untitled contribution (${ids[1]}); contribution 1, Near misses crossing Fifth at Cedar (${ids[0]}); ${ids[2]} (not in this selection)`);
+    expect(html).toContain("Published Nov 2, 2026, 07:24 UTC<br>Answers contributions 1 and 2, and 1 contribution not in this selection");
+    // The identifiers moved to the closing appendix, against the same numbers.
+    const appendix = html.slice(html.indexOf('id="record-identifiers"'));
+    expect(appendix).toContain(`Contribution 1: <code>${ids[0]}</code>`);
+    expect(appendix).toContain(`Contribution 2: <code>${ids[1]}</code>`);
+    expect(appendix).toContain(`Staff response 1, source not in this selection: <code>${ids[2]}</code>`);
     expect(html).toContain("Not published<br>Answers No contributions recorded");
     expect(html).not.toContain("Sources [");
   });
@@ -89,7 +94,9 @@ describe("private decision history in engagement exports", () => {
     expect(rows.map(row => row.operation)).toEqual(["link", "withdraw"]);
     const sources = XLSX.utils.sheet_to_json(book.Sheets["Decision sources"]);
     expect(sources).toHaveLength(10);
-    expect(book.Sheets.Summary["!autofilter"]?.ref).toBe("A1:B6");
+    // The filter covers every Summary row, the decision count among them.
+    expect(book.Sheets.Summary["!autofilter"]?.ref).toBe(book.Sheets.Summary["!ref"]);
+    expect(book.Sheets.Summary.A6.v).toBe("Decision history actions");
     expect(book.Sheets.Summary.B6).toMatchObject({ t: "n", v: 2, f: "COUNTA(\'Decision history\'!A2:A3)" });
     const parts = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets["Long text"]);
     for (const entry of native.withdrawn.entries) {

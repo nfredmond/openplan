@@ -296,7 +296,7 @@ const SWEPT_PAGES = [
   "app/(app)/scenarios/[scenarioSetId]/page.tsx",
   "app/(app)/invoicing/_components/reimbursement-lane.tsx",
   "app/(app)/aerial/missions/[missionId]/page.tsx",
-  "app/(app)/grants/page.tsx",
+  "app/(app)/grants/(overview)/page.tsx",
   // The report detail page reaches the same defect through its own component.
   "components/reports/report-read-failure-notice.tsx",
 ];

@@ -41,6 +41,7 @@ import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 import { isUuid } from "@/lib/uuid";
+import { loadPlanRowForRequest } from "./_components/plan-row-for-request";
 
 type LinkedArtifactBase = {
   id: string;
@@ -209,13 +210,8 @@ export default async function PlanDetailPage({
   // empty table — stated the failure as a fact about the planner's workspace.
   const reads = new ReadFailureLog();
 
-  const planResult = await supabase
-    .from("plans")
-    .select(
-      "id, workspace_id, project_id, title, plan_type, status, geography_label, horizon_year, summary, created_at, updated_at"
-    )
-    .eq("id", planId)
-    .maybeSingle();
+  // Shared with `layout.tsx`, which answers 404 for an absent plan first.
+  const planResult = await loadPlanRowForRequest(planId);
 
   // The one load-bearing read on this page, and the one place where "could not
   // read it" and "it is not there" must not be merged: `notFound()` tells the

@@ -10,8 +10,12 @@ vi.mock("@/lib/engagement/public-portal-data", () => ({
   // The page now asks for the three-way result so it can tell a closed
   // campaign from an absent one. The mock still hands back a bundle or null,
   // and this adapter gives it the result shape.
-  loadPublicPortalResultForShareValue: async (...args: unknown[]) => {
-    const bundle = await loadPublicPortalBundleMock(...args);
+  //
+  // The page resolves the address once per request and finishes it in the
+  // reader's language, so the adapter carries the value from one to the other.
+  resolvePublicPortalShareValue: async (value: string) => ({ status: "resolved", value }),
+  finishPublicPortalResult: async (resolution: { value: string }, localeRequest: unknown) => {
+    const bundle = await loadPublicPortalBundleMock(resolution.value, localeRequest);
     return bundle ? { status: "ok", bundle } : { status: "absent" };
   },
   PortalReadUnavailableError: class PortalReadUnavailableError extends Error {},

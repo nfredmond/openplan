@@ -966,13 +966,33 @@ export async function loadPublicPortalResult(
   shareToken: string,
   localeRequest?: PublicPortalLocaleRequest
 ): Promise<PublicPortalLoadResult> {
+  const supabase = createServiceRoleClient();
+  return finishPublicPortalResult(await resolvePublicPortalToken(supabase, shareToken), localeRequest);
+}
+
+/**
+ * Which campaign a share token or printable slug reaches, before any campaign
+ * content or the reader's language is read.
+ *
+ * It exists so a route can decide "this address answers nothing" (a real 404)
+ * before it starts streaming, and then build the page from the same answer.
+ * `active` carries the campaign row the bundle is built from; `closed` carries
+ * nothing from the campaign, for the reasons on `PublicPortalLoadResult`.
+ */
+export type PublicPortalResolution =
+  | { status: "active"; shareToken: string; campaign: PublicPortalCampaign }
+  | { status: "closed" }
+  | { status: "absent" }
+  | { status: "unreadable"; error: { message: string } };
+
+/** The token half of the lookup rule: an active campaign, else a closed one. */
+async function resolvePublicPortalToken(
+  supabase: PortalDataClient,
+  shareToken: string
+): Promise<PublicPortalResolution> {
   // Nothing has been read yet, so this really is absence: a token this short
   // cannot be one this product ever minted.
   if (!shareToken || shareToken.length < 8) return { status: "absent" };
-
-  const supabase = createServiceRoleClient();
-
-  const { locale, messages } = await resolvePortalLanguage(localeRequest);
 
   const campaignResult = await supabase
     .from("engagement_campaigns")
@@ -992,13 +1012,30 @@ export async function loadPublicPortalResult(
   }
 
   if (!campaignResult.data) {
-    return loadClosedPortalResult(supabase, shareToken, locale, messages);
+    return resolveClosedPortalToken(supabase, shareToken);
   }
 
+  return { status: "active", shareToken, campaign: campaignResult.data as PublicPortalCampaign };
+}
+
+/**
+ * The page's answer for a resolved address: the bundle in the reader's
+ * language, the closed notice, or the resolution's own absence or failure.
+ * Language is resolved only when there is a page to show.
+ */
+export async function finishPublicPortalResult(
+  resolution: PublicPortalResolution,
+  localeRequest?: PublicPortalLocaleRequest
+): Promise<PublicPortalLoadResult> {
+  if (resolution.status === "absent" || resolution.status === "unreadable") return resolution;
+
+  const { locale, messages } = await resolvePortalLanguage(localeRequest);
+  if (resolution.status === "closed") return { status: "closed", locale, messages };
+
   const bundle = await buildPublicPortalBundle(
-    supabase,
-    campaignResult.data as PublicPortalCampaign,
-    shareToken,
+    createServiceRoleClient(),
+    resolution.campaign,
+    resolution.shareToken,
     locale,
     messages
   );
@@ -1022,12 +1059,10 @@ export async function loadPublicPortalResult(
  * `buildPublicPortalBundle`. No title, description, comment, response or map
  * layer is read for a closed campaign, so none can reach the page.
  */
-async function loadClosedPortalResult(
+async function resolveClosedPortalToken(
   supabase: PortalDataClient,
-  shareToken: string,
-  locale: ResolvedPortalLocale,
-  messages: PortalMessageBundle
-): Promise<PublicPortalLoadResult> {
+  shareToken: string
+): Promise<PublicPortalResolution> {
   const closedResult = await supabase
     .from("engagement_campaigns")
     .select("id, status")
@@ -1048,7 +1083,7 @@ async function loadClosedPortalResult(
   // draft into a public notice.
   if (!row || row.status !== "closed") return { status: "absent" };
 
-  return { status: "closed", locale, messages };
+  return { status: "closed" };
 }
 
 /**
@@ -1449,7 +1484,18 @@ export async function loadPublicPortalResultForShareValue(
   value: string,
   localeRequest?: PublicPortalLocaleRequest
 ): Promise<PublicPortalLoadResult> {
-  const byToken = await loadPublicPortalResult(value, localeRequest);
+  return finishPublicPortalResult(await resolvePublicPortalShareValue(value), localeRequest);
+}
+
+/**
+ * The lookup rule `loadPublicPortalResultForShareValue` applies, on its own:
+ * the token first, then the printable slug, each active before closed. A route
+ * layout uses it to answer 404 for an address that reaches nothing, and the
+ * page finishes the same answer with `finishPublicPortalResult`.
+ */
+export async function resolvePublicPortalShareValue(value: string): Promise<PublicPortalResolution> {
+  const supabase = createServiceRoleClient();
+  const byToken = await resolvePublicPortalToken(supabase, value);
   if (byToken.status !== "absent") return byToken;
 
   // Lowercased before matching: a slug is printed on paper and typed back by
@@ -1458,7 +1504,6 @@ export async function loadPublicPortalResultForShareValue(
   const slug = normalizePublicSlugInput(value);
   if (!isPublicSlugCandidate(slug)) return byToken;
 
-  const supabase = createServiceRoleClient();
   const slugResult = await supabase
     .from("engagement_campaigns")
     .select("share_token")
@@ -1508,7 +1553,7 @@ export async function loadPublicPortalResultForShareValue(
   // to the public is absence.
   if (!token) return { status: "absent" };
 
-  return loadPublicPortalResult(token, localeRequest);
+  return resolvePublicPortalToken(supabase, token);
 }
 
 /**

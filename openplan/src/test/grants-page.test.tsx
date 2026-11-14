@@ -190,7 +190,7 @@ vi.mock("@/components/projects/project-funding-profile-editor", () => ({
   ProjectFundingProfileEditor: () => <div data-testid="project-funding-profile-editor" />,
 }));
 
-import GrantsPage from "@/app/(app)/grants/page";
+import GrantsPage from "@/app/(app)/grants/(overview)/page";
 import {
   INTERIM_DEFAULT_RATIONALE,
   resolveReimbursementProfile,

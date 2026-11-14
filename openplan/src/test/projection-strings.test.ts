@@ -76,7 +76,7 @@ describe("the model-run claim-status loader asks for the columns the evidence sn
 
 describe("the funding-awards page asks for the closure provenance it renders", () => {
   it("the derived select still contains the closure columns, and the derivation still fires", () => {
-    const source = sourceOf("src/app/(app)/grants/page.tsx");
+    const source = sourceOf("src/app/(app)/grants/(overview)/page.tsx");
     // The final select is DERIVED: legacy.replace("spending_status," → closure
     // columns). `String.replace` with a missing needle silently returns the
     // input unchanged, so the derivation must be re-run here and proven to
