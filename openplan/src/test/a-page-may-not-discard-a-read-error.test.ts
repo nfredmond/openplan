@@ -165,7 +165,7 @@ function pageFiles(): string[] {
  * to the page's `ReadFailureLog`.
  */
 const KNOWN_DISCARDED: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/grants/page.tsx", 3],
+  ["src/app/(app)/grants/(overview)/page.tsx", 3],
 ];
 
 describe("a page may not discard a read error", () => {
@@ -285,7 +285,7 @@ const KNOWN_UNCHECKED_RESULT: ReadonlyArray<readonly [string, number]> = [
   // Recorded and then BUILT UPON is the pattern to watch for: two of those
   // charts were added long after this line was written.
   ["src/app/(app)/data-hub/page.tsx", 1],
-  ["src/app/(app)/grants/page.tsx", 2],
+  ["src/app/(app)/grants/(overview)/page.tsx", 2],
   ["src/app/(app)/projects/[projectId]/page.tsx", 1],
   ["src/app/(app)/reports/[reportId]/page.tsx", 5],
   ["src/app/(auth)/invitations/[token]/page.tsx", 1],
@@ -349,7 +349,7 @@ ratchet(
  * the read failed without collecting the result into the page's
  * ReadFailureLog:
  *
- *   grants/page.tsx      the workspace home geography (×2) — a failed read
+ *   grants/(overview)/page.tsx the workspace home geography (×2): a failed read
  *                        renders the grants registry as though no home
  *                        geography were configured.
  *   projects/[projectId] the workspace row falls back to a second, narrower
@@ -357,7 +357,7 @@ ratchet(
  *                        workspace and neither failure is disclosed.
  */
 const KNOWN_ERROR_TERNARY: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/grants/page.tsx", 2],
+  ["src/app/(app)/grants/(overview)/page.tsx", 2],
   ["src/app/(app)/projects/[projectId]/page.tsx", 1],
 ];
 

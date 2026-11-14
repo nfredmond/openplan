@@ -56,6 +56,7 @@ import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { formatMoney } from "@/lib/money/format";
 import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 import { isUuid } from "@/lib/uuid";
+import { loadProgramRowForRequest } from "./_components/program-row-for-request";
 
 function formatCurrency(value: number | string | null | undefined) {
   return formatMoney(Number(value ?? 0), { precision: "whole" });
@@ -217,13 +218,8 @@ export default async function ProgramDetailPage({
   // empty table — stated the failure as a fact about the planner's package.
   const reads = new ReadFailureLog();
 
-  const programResult = await supabase
-    .from("programs")
-    .select(
-      "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
-    )
-    .eq("id", programId)
-    .maybeSingle();
+  // Shared with `layout.tsx`, which answers 404 for an absent program first.
+  const programResult = await loadProgramRowForRequest(programId);
 
   // The one load-bearing read on this page, and the one place where "could not
   // read it" and "it is not there" must not be merged: `notFound()` tells the
