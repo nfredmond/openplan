@@ -252,14 +252,23 @@ def execute(args: argparse.Namespace, target: Target, now: dt.datetime | None = 
         envelope["status"] = "read" if ok else "read-failed"
     if results:
         envelope["result"] = results[-1] if len(results) == 1 else results
-    raw_name = f"{mode}-{stamp}.out"
-    kc.write_new(out / raw_name, stdout)
-    envelope["output"] = raw_name
-    kc.write_new(out / f"{mode}-{stamp}.json", json.dumps(envelope, indent=2, sort_keys=True) + "\n")
+    base = free_name(out, f"{mode}-{stamp}")
+    kc.write_new(out / f"{base}.out", stdout)
+    envelope["output"] = f"{base}.out"
+    kc.write_new(out / f"{base}.json", json.dumps(envelope, indent=2, sort_keys=True) + "\n")
     summary = {k: envelope[k] for k in ("mode", "target", "status", "exitCode", "elapsedMs") if k in envelope}
-    summary["envelope"] = f"{mode}-{stamp}.json"
+    summary["envelope"] = f"{base}.json"
     print(json.dumps(summary))
     return (0 if ok else 1), envelope
+
+
+def free_name(out: pathlib.Path, base: str) -> str:
+    """The first of BASE, BASE-2, BASE-3 ... with no envelope yet. Evidence is never overwritten."""
+    name, n = base, 1
+    while (out / f"{name}.json").exists() or (out / f"{name}.out").exists():
+        n += 1
+        name = f"{base}-{n}"
+    return name
 
 
 def _safe_tail(stderr: str) -> str:

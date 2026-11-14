@@ -136,7 +136,11 @@ def restore(args: argparse.Namespace) -> dict:
     env = dict(os.environ)
     env["POSTGRES_PASSWORD"] = secrets.token_urlsafe(24)
     docker("run", "-d", "--network", "none", "--label", LABEL, "--name", args.name,
-           "-e", "POSTGRES_PASSWORD", "-v", f"{capture.resolve().as_posix()}:/capture:ro", args.image, env=env)
+           "-e", "POSTGRES_PASSWORD", args.image, env=env)
+    # The archive is copied in, not bind-mounted: the verifier leaves it mode
+    # 0600 for its own user, and the copy goes away with the container (N4).
+    docker("cp", str(dump.resolve()), f"{args.name}:/tmp/capture.dump")
+    docker("exec", "-u", "root", args.name, "chown", "postgres", "/tmp/capture.dump")
     wait_ready(args.name)
     server = in_container(args.name, "psql -X -At -U supabase_admin -d postgres -c 'show server_version'").stdout.strip()
     evidence["serverVersion"] = server
@@ -152,13 +156,13 @@ def restore(args: argparse.Namespace) -> dict:
     if created:
         in_container(args.name, "psql -X -q -v ON_ERROR_STOP=1 -U supabase_admin -d postgres -f -", input_text="\n".join(created) + "\n")
     evidence["rolesCreated"] = [s.split('"')[1] for s in created]
-    listing = in_container(args.name, "pg_restore -l /capture/database.dump").stdout
+    listing = in_container(args.name, "pg_restore -l /tmp/capture.dump").stdout
     toc, held = toc_split(listing)
     evidence["tocEntries"] = sum(1 for line in listing.splitlines() if line and not line.startswith(";"))
     evidence["eventTriggersHeld"] = [line.split(" EVENT TRIGGER ", 1)[1] for line, _ in held]
     in_container(args.name, "cat > /tmp/restore.list", input_text=toc)
     started = time.monotonic()
-    result = in_container(args.name, f"pg_restore --exit-on-error -U supabase_admin -d {DATABASE} -L /tmp/restore.list /capture/database.dump", check=False)
+    result = in_container(args.name, f"pg_restore --exit-on-error -U supabase_admin -d {DATABASE} -L /tmp/restore.list /tmp/capture.dump", check=False)
     evidence["restoreExit"] = result.returncode
     evidence["restoreStderr"] = result.stderr.strip()[-2000:]
     if result.returncode != 0:
@@ -167,7 +171,7 @@ def restore(args: argparse.Namespace) -> dict:
     for line, owner in held:
         user = "postgres" if owner == "postgres" else "supabase_admin"
         in_container(args.name, "cat > /tmp/event-trigger.list", input_text=line + "\n")
-        one = in_container(args.name, f"pg_restore --exit-on-error -U {user} -d {DATABASE} -L /tmp/event-trigger.list /capture/database.dump", check=False)
+        one = in_container(args.name, f"pg_restore --exit-on-error -U {user} -d {DATABASE} -L /tmp/event-trigger.list /tmp/capture.dump", check=False)
         replayed.append({"entry": line.split(" EVENT TRIGGER ", 1)[1], "as": user, "exit": one.returncode,
                          "stderr": one.stderr.strip()[-400:]})
         if one.returncode != 0:
