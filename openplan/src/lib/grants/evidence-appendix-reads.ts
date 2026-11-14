@@ -86,9 +86,15 @@ export async function loadProjectBcaRead(client: EvidenceQueryClient, projectId:
 type CountRead = { count: number; createdAt: string | null } | null;
 
 async function countComments(client: EvidenceQueryClient, campaignId: string, input: { approvedOnly: boolean; ascending: boolean }): Promise<CountRead> {
-  let query = client.from("engagement_items").select(ENGAGEMENT_COMMENT_COUNT_PROJECTION, { count: "exact" }).eq("campaign_id", campaignId);
-  if (input.approvedOnly) query = query.eq("status", "approved");
-  const result = await query.order("created_at", { ascending: input.ascending }).limit(1);
+  // Each branch is one whole chain ending in `.limit(1)`, so the bounded-read
+  // guard can see the bound. The exact count header carries the total.
+  const result = await (input.approvedOnly
+    ? client.from("engagement_items").select(ENGAGEMENT_COMMENT_COUNT_PROJECTION, { count: "exact" })
+        .eq("campaign_id", campaignId).eq("status", "approved")
+        .order("created_at", { ascending: input.ascending }).limit(1)
+    : client.from("engagement_items").select(ENGAGEMENT_COMMENT_COUNT_PROJECTION, { count: "exact" })
+        .eq("campaign_id", campaignId)
+        .order("created_at", { ascending: input.ascending }).limit(1));
   if (result.error || !Array.isArray(result.data) || typeof result.count !== "number") return null;
   const first = result.data[0] as { created_at?: unknown } | undefined;
   return { count: result.count, createdAt: typeof first?.created_at === "string" ? first.created_at : null };
