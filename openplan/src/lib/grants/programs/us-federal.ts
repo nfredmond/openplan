@@ -29,7 +29,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Typically 90% federal / 10% local; certain safety countermeasures qualify for 100% federal funding. Verify the current call.",
     url: "https://highways.dot.gov/safety/hsip",
     summary:
-      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a local road safety plan or safety action plan.",
+      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A local road safety plan or safety action plan can document the collision patterns an application cites.",
     bcaNote:
       "States that select local HSIP projects by benefit/cost compute it with the state's own method, crash-reduction factors and crash costs, and those control the actual score. The screening BCA is a USDOT-style screening analogue (crashes avoided by severity at USDOT crash costs), not a preview of the state's B/C.",
     applicationSections: [
@@ -119,8 +119,10 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     cycleNote: "Annual NOFO under BIL through the current authorization. Verify current-round status with USDOT before planning an application.",
     matchRequirement: "Generally 80% federal share maximum, so plan for roughly a 20% local match. Verify the current NOFO.",
     url: "https://www.transportation.gov/grants/SS4A",
+    // Summary facts from USDOT's FY 2026 SS4A NOFO (DOT-SS4A-FY26-01, issued
+    // March 27, 2026), sections A, C.1, C.5 and D, read November 14, 2026.
     summary:
-      "USDOT discretionary program funding Vision Zero-style safety action plans and the projects that implement them, with dedicated planning grants that are very accessible to small and rural agencies. An adopted action plan is the gateway to larger implementation awards.",
+      "USDOT discretionary safety program with two grant types. Planning and Demonstration Grants develop, complete or supplement a comprehensive safety action plan and fund demonstration activities that inform one. Implementation Grants fund projects and strategies identified in an existing action plan, which the applicant must certify it has. Under the FY 2026 NOFO, metropolitan planning organizations, political subdivisions of a state or territory (such as cities, towns and counties), federally recognized Tribal governments and multijurisdictional groups of these may apply; states and territories may not. The federal share may not exceed 80 percent, so the local match is at least 20 percent; a tribe may count Tribal Transportation Program funds as match.",
     applicationSections: [
       {
         key: "project-overview",
@@ -214,7 +216,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Urban projects generally capped at 80% federal share; rural projects can reach up to 100%. Verify the current NOFO.",
     url: "https://www.transportation.gov/BUILDgrants",
     summary:
-      "USDOT's broad multimodal discretionary program (TIGER, then RAISE, now BUILD) for locally significant capital projects, with funding reserved for rural awards and smaller minimum award sizes for rural applicants. Highly competitive, but one of the few federal programs where a small agency can fund a transformative corridor project directly.",
+      "USDOT's broad multimodal discretionary program (TIGER, then RAISE, now BUILD) for locally significant capital projects, with funding reserved for rural awards and smaller minimum award sizes for rural applicants. A local agency can apply to USDOT directly.",
     bcaNote:
       "USDOT expects a benefit-cost analysis following its BCA Guidance with capital applications. A screening BCR below 1.0 is an early warning to rescope before committing to a full application-of-record analysis.",
     applicationSections: [
@@ -292,7 +294,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     matchRequirement: "INFRA funds capped at 60% of project cost; total federal share capped at 80%. Verify the current NOFO.",
     url: "https://www.transportation.gov/grants/infra-grant-program",
     summary:
-      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with the state DOT or a regional agency on a goods-movement or corridor application.",
+      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. A rural agency can apply in partnership with the state DOT or a regional agency on a goods-movement or corridor application.",
     bcaNote:
       "USDOT requires a benefit-cost analysis per its BCA Guidance for INFRA applications, with freight benefits typically driving the ratio. Run the screening BCA early: a BCR below 1.0 at screening grade is a signal to rescope or firm up benefit evidence before committing to the full analysis.",
     applicationSections: [
@@ -440,7 +442,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     matchRequirement: "Typically 80/20 federal/local for capital and 50/50 for operating; toll credits may cover match. Verify.",
     url: "https://www.transit.dot.gov/funding/grants/enhanced-mobility-seniors-individuals-disabilities-section-5310",
     summary:
-      "Federal formula funds passed through states and designated recipients to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. The standard source for paratransit vehicle replacement and mobility management in small and rural communities.",
+      "Federal formula funds passed through states and designated recipients to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. Eligible uses include paratransit vehicle replacement and mobility management.",
     applicationSections: [
       {
         key: "need-for-service",
@@ -515,7 +517,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     matchRequirement: "Operating assistance roughly 50/50 and capital roughly 80/20 federal share; sliding scale and toll credits apply. Verify.",
     url: "https://www.transit.dot.gov/rural-formula-grants-5311",
     summary:
-      "The backbone federal funding source for public transit in areas under 50,000 population, covering both operating and capital needs. Rural operators access it through their state, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
+      "Federal formula funding for public transit in areas under 50,000 population, covering both operating and capital needs. Rural operators access it through their state, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
     applicationSections: [
       {
         key: "service-description",
@@ -579,7 +581,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     matchRequirement: "Typically 80% federal / 20% local; states with large areas of federal land use a higher sliding-scale federal share. Verify with the programming agency.",
     url: "https://highways.dot.gov/iija/fact-sheets/carbon-reduction-program-crp",
     summary:
-      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split between a share the state programs and shares suballocated by population and programmed regionally. Eligibility overlaps heavily with active transportation, ITS, and ZEV infrastructure work small agencies already plan.",
+      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split between a share the state programs and shares suballocated by population and programmed regionally. Eligible projects include active transportation, ITS, and ZEV infrastructure.",
     applicationSections: [
       {
         key: "project-description",
@@ -642,7 +644,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     matchRequirement: "Typically 80% federal share; planning activities can reach a higher federal share. Verify the current guidance.",
     url: "https://highways.dot.gov/iija/fact-sheets/protect-formula-program",
     summary:
-      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes. Directly relevant to rural agencies managing wildfire corridors and storm-damaged roads.",
+      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes.",
     applicationSections: [
       {
         key: "resilience-need",
