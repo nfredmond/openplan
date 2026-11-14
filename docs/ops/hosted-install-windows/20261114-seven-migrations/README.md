@@ -40,7 +40,10 @@ added. Install 765 ms inside the database, dry run 792 ms. The lock column is
 the span a 2 ms poller saw each lock granted; `projects` is locked last. Every
 read of `projects`, the Safety tables, invoices and the export register waits
 behind these locks for that span; on hosted Micro compute it will be longer.
-The kit stops the window if the hosted dry run takes over 5 s.
+The kit now sends each transaction as one message, so no network round trip
+happens under these locks. It stops the window if the hosted dry run holds its
+first ACCESS EXCLUSIVE lock for more than 2,000 ms, measured on the server, and
+a lock that cannot be taken within 1 s fails the run at 448.
 
 No file depends on another being installed in the same window. They run in
 version order. Holding hosted at 455 with the old code is safe: the old code
