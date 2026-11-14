@@ -409,7 +409,7 @@ class RunnerTest(unittest.TestCase):
             target.cleanup()
 
     def test_copy_target_must_be_labeled_and_network_free(self):
-        good = {"Config": {"Labels": {run_sql.LABEL: ""}}, "HostConfig": {"NetworkMode": "none"}}
+        good = {"Config": {"Labels": {run_sql.COPY_LABEL: ""}}, "HostConfig": {"NetworkMode": "none"}}
         run_sql.CopyTarget("c", inspect=lambda name: good)
         with self.assertRaisesRegex(kc.KitError, "label"):
             run_sql.CopyTarget("c", inspect=lambda name: {**good, "Config": {"Labels": {}}})

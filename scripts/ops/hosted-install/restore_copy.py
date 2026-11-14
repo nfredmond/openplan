@@ -38,7 +38,7 @@ import time
 
 import kitcommon as kc
 
-LABEL = "openplan-hosted-install"
+LABEL = "openplan-hosted-install-copy"
 DATABASE = "restore_target"
 
 

@@ -41,6 +41,9 @@ import kitcommon as kc
 import sqllex
 
 LABEL = "openplan-hosted-install"
+# The restored copy runs for the whole window, so it carries its own label and
+# the "no containers left" check after each step does not count it.
+COPY_LABEL = "openplan-hosted-install-copy"
 _VAR = re.compile(r"^([a-z_][a-z0-9_]*)=([A-Za-z0-9:.+\-_ ]{0,64})$")
 
 
@@ -104,8 +107,8 @@ class CopyTarget(Target):
         inspect = inspect or _docker_inspect
         info = inspect(container)
         labels = (info.get("Config") or {}).get("Labels") or {}
-        if LABEL not in labels:
-            raise kc.KitError(f"container {container} does not carry the {LABEL} label")
+        if COPY_LABEL not in labels:
+            raise kc.KitError(f"container {container} does not carry the {COPY_LABEL} label")
         if (info.get("HostConfig") or {}).get("NetworkMode") != "none":
             raise kc.KitError(f"container {container} has a network; a restored copy must run with --network none")
         self.container = container
