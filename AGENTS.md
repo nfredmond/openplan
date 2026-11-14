@@ -60,11 +60,18 @@ because its name sounds commercial. Check provider licenses and operating costs;
 a provider's free tier is not proof of free agency operation.
 
 Consequential facts, money, publication, legal applicability and adoption belong
-to responsible humans. Agents may propose grounded changes; never fabricate data,
-impersonate users, remove public caveats or silently promote a scientific claim.
-Nathaniel owns outreach and product priorities. Engineering decisions belong to
-the technical lead; request only the product judgments or authorization actually
-missing from the current task.
+to responsible humans. Agents may propose grounded changes; never fabricate
+data, impersonate users, remove public caveats or silently promote a scientific
+claim. Nathaniel's November 13, 2026 standing direction is to take OpenPlan as
+far as possible without his check-ins or decisions. Agents make product,
+engineering, scientific and sequencing decisions themselves, record the reason,
+and have a fresh-context reviewer check consequential calls. Do not ask
+Nathaniel for decisions or check-ins. Free, open-source dependencies with
+compatible licenses need no approval. These limits stay fixed: no paid services
+or spending; no shared AI keys on the hosted installation; credentials are never
+printed or committed; a fresh capture comes before any hosted migration; and
+agents never make a real agency's adoption, spending or publication decisions.
+Nathaniel still owns outreach, and his earlier dated decisions stand.
 
 The contract explicitly preserves full OWP/UPWP administration, complete RTP updates from the adopted predecessor, planning contract drawdown by task/employee/deliverable linked to forecast delivery, superior public engagement, API/installed CLI provider choice, full capital administration, local-tax/grant program administration with recipient reporting and measured project outputs, and complete consultant/agency procurement from discovery and solicitation through receipt, evaluation, award and contract handoff. Maintain their requirement-to-evidence mapping in `docs/product/CORE_REQUIREMENTS_LEDGER.md`; the roadmap stays the sole queue. These do not replace the remaining whole-product floor.
 
@@ -113,12 +120,18 @@ on selected fields. Live RLS and recovery tests protect different boundaries.
 A visible workflow requires an identified-build journey from real navigation,
 desktop and 390px evidence, console review and usable artifacts. Green unit
 tests, screenshots without provenance and server health do not establish that.
-Use the local browser skill before opening OpenPlan; never interfere with another
-session's browser, accounts or workers. Nathaniel's October 17, 2026 direction
-makes agent-run planner and public-participant workflow checks valid acceptance
-evidence for milestones and v1. Human feedback is post-v1, not a release gate.
-Do not recruit reviewers or ask Nathaniel for human feedback. Label agent-run
-results accurately and retain technical, scientific and workflow requirements.
+Use the local browser skill before opening OpenPlan; never interfere with
+another session's browser, accounts or workers. Human feedback never gates
+OpenPlan development, milestones, merges, releases or v1. Agent-run planner,
+operator and public-participant checks are the acceptance evidence: an agent
+performs the named role's task on permitted records or labeled fixtures, and the
+record names the executor. Nathaniel made this permanent on November 13, 2026.
+It settles his October 17, 2026 direction, and direction reviews do not reopen
+it. Do not recruit reviewers or ask Nathaniel for human feedback; after v1 it
+stays optional research under the [observation
+protocol](docs/product/PLANNER_OBSERVATION_PROTOCOL.md). A screen-reader check
+is an agent-driven NVDA or VoiceOver run. Label agent-run results accurately and
+retain technical, scientific and workflow requirements.
 
 Use the existing action registry for agent writes or record an executable
 refusal. Preserve distinct authorship, exact approved-payload hashes, route-local
