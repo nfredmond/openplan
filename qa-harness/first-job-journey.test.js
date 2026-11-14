@@ -197,7 +197,7 @@ test('the SS4A finder reads the five appendix headings', { skip: !hasPoppler() &
     { lines: ['Appendix A. High-injury network map', 'Source: Safety report artifact.'] },
     { lines: ['Ranked segments, numbered by rank.'], rect: { x: 80, y: 150, w: 400, h: 300, rgb: RED } },
     { lines: ['Appendix B. Crash summary', 'California Crash Reporting System (CCRS). Years requested: 2022, 2023.'] },
-    { lines: ['Appendix C. Countermeasures', 'Proposed by staff for review.', 'Appendix D. Benefit-cost summary', 'Source: Saved benefit-cost analysis version 1.'] },
+    { lines: ['Appendix C. Countermeasures', 'Proposed by staff for review.', 'Appendix D. Benefit-cost summary', 'Benefit-cost ratio 4.2.', 'Source: Saved benefit-cost analysis version 1.'] },
     { lines: ['Appendix E. Engagement summary', 'Source: Engagement campaign 1.', 'Prepared by planner@agency.gov'] },
   ]);
   const { items, missing } = find('ss4a-application', file, dir);
@@ -378,8 +378,18 @@ test('the section badge is read as the screen shows it, and no badge is zero', (
 });
 
 test('the provenance table must name a workspace role in each Finalized by cell and print no email address', () => {
-  const rows = ['Project overview  Final  Typed  None  Not checked  Workspace owner  Nov 14, 2026', 'Budget narrative  Final  Typed  None  Not checked  Workspace', '                                                      owner'];
+  // As run 20's export read back with pdftotext -layout: the role wraps
+  // under "Workspace" in the same column.
+  const at = (left, cell, right = '') => `${left.padEnd(64)}${cell.padEnd(19)}${right}`;
+  const rows = [
+    at(' Project overview   Final    Code-built', 'Workspace', 'November'),
+    at('                             Safety', 'owner', '14, 2026 at'),
+    at(' Budget narrative   Final    Typed', 'Workspace owner', 'November'),
+    at(' Safety problem     Final    Typed', 'Workspace', 'November'),
+    at('', '         owner'),
+  ];
   const pages = ['Cover page', `Provenance appendix\n${rows.join('\n')}`, 'Workspace admin  Nov 14, 2026'];
+  // The last row's role sits under another column, so it does not count.
   assert.deepEqual(lib.finalizerCells(pages), { provenancePages: [2, 3], roleCells: 3, emailLines: [] });
   const leaked = [...pages.slice(0, 2), 'Finalized by planner@example.org'];
   assert.deepEqual(lib.finalizerCells(leaked).emailLines, [{ page: 3, line: 1 }]);

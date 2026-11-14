@@ -170,6 +170,8 @@ function pdfPages(pdfPath, options) {
  * checker re-reads on the recorded page. `present` is printed only when the
  * item is there (a source line or a note), on the heading page or the next
  * one, which tells the item's heading from the same words in a table column.
+ * The BCA block can run over three pages (its source line last), so its
+ * phrase is a fact label printed under the heading, not the source line.
  * The map has no `present` phrase: its red pixels are the test.
  */
 const ITEM_RULES = {
@@ -177,14 +179,14 @@ const ITEM_RULES = {
     'high-injury-map': { heading: 'High-injury network map' },
     'crash-summary': { heading: 'Crash summary', present: 'Years requested' },
     countermeasures: { heading: 'Countermeasures', present: 'Proposed by staff for review' },
-    bca: { heading: 'Benefit-cost summary', present: 'Source: Saved benefit-cost' },
+    bca: { heading: 'Benefit-cost summary', present: 'Benefit-cost ratio' },
     'engagement-summary': { heading: 'Engagement summary', present: 'Source: Engagement campaign' },
   },
   'ss4a-application': {
     'high-injury-map': { heading: 'Appendix A. High-injury network map' },
     'crash-summary': { heading: 'Appendix B. Crash summary', present: 'Years requested' },
     countermeasures: { heading: 'Appendix C. Countermeasures', present: 'Proposed by staff for review' },
-    bca: { heading: 'Appendix D. Benefit-cost summary', present: 'Source: Saved benefit-cost' },
+    bca: { heading: 'Appendix D. Benefit-cost summary', present: 'Benefit-cost ratio' },
     'engagement-summary': { heading: 'Appendix E. Engagement summary', present: 'Source: Engagement campaign' },
   },
 };
@@ -469,8 +471,19 @@ function finalizerCells(pages) {
   const start = findPdfPhrase(pages, 'Provenance appendix')[0];
   if (!start) return { provenancePages: [], roleCells: 0, emailLines: [] };
   const provenancePages = pages.map((_, index) => index + 1).filter((page) => page >= start);
-  const text = provenancePages.map((page) => pages[page - 1]).join('\n');
-  const roleCells = (text.replace(/\s+/g, ' ').match(/\bWorkspace (?:owner|admin|member)\b/g) || []).length;
+  let roleCells = 0;
+  for (const page of provenancePages) {
+    const lines = pages[page - 1].split(/\r?\n/);
+    lines.forEach((line, index) => {
+      for (const match of line.matchAll(/\bWorkspace\b/g)) {
+        // The role follows on the same line, or wraps to the next line in the
+        // same column (pdftotext -layout keeps column offsets).
+        const after = line.slice(match.index + match[0].length);
+        const below = (lines[index + 1] || '').slice(Math.max(0, match.index - 1), match.index + 12);
+        if (/^\s+(?:owner|admin|member)\b/.test(after) || /^\s?(?:owner|admin|member)\b/.test(below)) roleCells += 1;
+      }
+    });
+  }
   const emailLines = locateEmails(pages).filter((entry) => entry.page >= start).map(({ page, line }) => ({ page, line }));
   return { provenancePages, roleCells, emailLines };
 }
