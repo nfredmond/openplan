@@ -80,7 +80,7 @@ export default async function CountyRunsPage({
       <WorkspaceMembershipRequired
         moduleLabel="Model Validation"
         title="Model Validation needs a workspace"
-        description="Validation runs belong to a workspace. You are signed in, but this account is not in one yet — join a workspace or create one before launching and reviewing validation runs."
+        description="Validation runs belong to a workspace. You are signed in, but this account is not in one yet. Join a workspace or create one before launching and reviewing validation runs."
       />
     );
   }

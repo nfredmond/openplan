@@ -309,7 +309,7 @@ describe("describeStageGateBinding for a workspace row", () => {
 
     expect(binding.templateJurisdiction).toEqual({
       country: "US",
-      label: "United States — federal-aid floor",
+      label: "United States: federal-aid floor",
     });
     expect(disclosure.isJurisdictionAssumed).toBe(false);
     expect(disclosure.detail).toContain("country-level");

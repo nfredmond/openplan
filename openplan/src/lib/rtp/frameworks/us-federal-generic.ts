@@ -24,7 +24,7 @@ import type { RtpPriorityFrameworkDescriptor } from "../priority-frameworks";
 
 export const US_FEDERAL_GENERIC_RTP_PRIORITY_FRAMEWORK: RtpPriorityFrameworkDescriptor = {
   frameworkId: "us-federal-generic",
-  label: "United States — federal metropolitan planning factors",
+  label: "United States: federal metropolitan planning factors",
   jurisdiction: { country: "US", subdivision: null },
   isInterimDefault: true,
   framingNote:

@@ -31,9 +31,9 @@ describe("jurisdiction readiness evidence handoff", () => {
       {
         id: "33333333-3333-4333-8333-333333333333",
         jurisdiction_context: null,
-        place_label: "A Nevada county",
-        place_country_code: "US",
-        place_subdivision_code: "NV",
+        place_label: "A British Columbia regional district",
+        place_country_code: "CA",
+        place_subdivision_code: "BC",
       },
       "d".repeat(64),
     );
@@ -41,6 +41,28 @@ describe("jurisdiction readiness evidence handoff", () => {
     const payload = JSON.parse(text);
 
     expect(payload.entries[0].assessment.reports.every((report: { status: string }) => report.status === "unassessed")).toBe(true);
+    expect(text).not.toContain("California");
+  });
+
+  it("freezes a newly registered state's own entry without borrowing another jurisdiction", () => {
+    const file = buildJurisdictionReadinessEvidenceFile(
+      {
+        id: "44444444-4444-4444-8444-444444444444",
+        jurisdiction_context: null,
+        place_label: "A Nevada county",
+        place_country_code: "US",
+        place_subdivision_code: "NV",
+      },
+      "e".repeat(64),
+    );
+    const text = file.bytes.toString("utf8");
+    const payload = JSON.parse(text);
+    const reports: Array<{ job: { id: string }; status: string; jurisdiction: { id: string } }> =
+      payload.entries[0].assessment.reports;
+
+    expect(reports.every((report) => report.jurisdiction.id === "US-NV")).toBe(true);
+    expect(reports.find((report) => report.job.id === "project-evidence-handoff")?.status).toBe("unassessed");
+    expect(reports.find((report) => report.job.id === "safety-analysis")?.status).toBe("partial");
     expect(text).not.toContain("California");
   });
 

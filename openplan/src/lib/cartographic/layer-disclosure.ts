@@ -255,8 +255,8 @@ export function describeMapLayerCoverage(
   if (disclosure.truncated) {
     notes.push(
       `${noun.plural[0].toUpperCase()}${noun.plural.slice(1)}: showing ` +
-        `${disclosure.returnedCount.toLocaleString("en-US")} of ${disclosure.matchedCount.toLocaleString("en-US")} — ` +
-        `the map draws at most ${disclosure.limit.toLocaleString("en-US")}. The rest are not drawn, which is not ` +
+        `${disclosure.returnedCount.toLocaleString("en-US")} of ${disclosure.matchedCount.toLocaleString("en-US")}. ` +
+        `The map draws at most ${disclosure.limit.toLocaleString("en-US")}. The rest are not drawn, which is not ` +
         `a finding that they do not exist.`
     );
   }

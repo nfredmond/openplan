@@ -10,12 +10,12 @@
   ],
   "description": "The sequence a California lead agency runs when reviewing a project under the state's environmental quality act: preliminary review, the document-type decision, technical studies, a public draft, responses, and certification or adoption.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
     "This template assumes a project in California reviewed under the California Environmental Quality Act, and it is the only assumption in the set that names a state. A project anywhere else should use the jurisdiction-neutral environmental review template instead.",
-    "The offsets are placeholders, not the review periods. California's review periods, notice requirements and filing steps vary by document type and by whether a state agency is a reviewing agency — confirm the ones that apply to your project and replace these dates.",
+    "The offsets are placeholders, not the review periods. California's review periods, notice requirements and filing steps vary by document type and by whether a state agency is a reviewing agency. Confirm the ones that apply to your project and replace these dates.",
     "It stops at certification or adoption. Post-approval mitigation monitoring runs for the life of the project and belongs in its own record set.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "jurisdiction": {
     "country": "US",

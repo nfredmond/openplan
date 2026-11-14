@@ -7,6 +7,8 @@ from urllib.parse import quote, urlsplit
 import requests
 from urllib3.exceptions import HTTPError as RawHTTPError
 
+from supabase_service_headers import service_key_headers
+
 CHUNK_BYTES = 1024 * 1024
 
 
@@ -41,8 +43,7 @@ def verify_object(*, base_url, service_key, bucket, object_path, sha256, size_by
         raise ValueError('Storage credential required')
     url = object_url(base_url, bucket, object_path)
     try:
-        with (get or requests.get)(url, headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key,
-                                                'Accept-Encoding': 'identity'},
+        with (get or requests.get)(url, headers={**service_key_headers(service_key), 'Accept-Encoding': 'identity'},
                                    timeout=(15, 60), allow_redirects=False, stream=True) as response:
             if response.status_code == 404:
                 return False

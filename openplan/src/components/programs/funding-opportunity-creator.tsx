@@ -119,7 +119,7 @@ export function FundingOpportunityCreator({
             <GuidedFlowRow flow={flow} name="opportunityTitle" label="Opportunity name">
               <Input
                 {...flow.text("opportunityTitle")}
-                placeholder="Safe Streets and Roads for All — planning grant"
+                placeholder="Safe Streets and Roads for All: planning grant"
               />
             </GuidedFlowRow>
 
@@ -150,7 +150,7 @@ export function FundingOpportunityCreator({
         // first step while still being declared by it.
         id: "solicitation",
         title: "Which solicitation is it answering?",
-        hint: "Optional — from the solicitation document itself.",
+        hint: "Optional, from the solicitation document itself.",
         when: (values) => values.pursuitKind === "proposal",
         fields: [{ name: "solicitationNumber", label: "a solicitation number" }],
         render: (flow) => (
@@ -236,7 +236,7 @@ export function FundingOpportunityCreator({
               flow={flow}
               name="expectedAwardAmount"
               label="Expected award"
-              hint="A plain number — no commas, no currency sign."
+              hint="A plain number: no commas, no currency sign."
             >
               <Input {...flow.text("expectedAwardAmount")} placeholder="250000" />
             </GuidedFlowRow>

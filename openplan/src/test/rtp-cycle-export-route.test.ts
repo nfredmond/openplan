@@ -216,7 +216,7 @@ describe("GET /api/rtp-cycles/[rtpCycleId]/export", () => {
     // This section used to be ABSENT from this document while the board packet
     // contained it, and neither document said so.
     expect(html).toContain("Funding source context");
-    expect(html).toContain("committed funding captured");
+    expect(html).toContain("recorded award ceilings captured");
     // And the public-review posture card, which was also packet-only.
     expect(html).toContain("cycle targets");
   });

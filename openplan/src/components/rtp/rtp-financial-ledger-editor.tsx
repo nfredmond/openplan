@@ -288,7 +288,7 @@ function validateDraft(draft: LineDraft): DraftValidation {
   if (!rawAmount) {
     return {
       ok: false,
-      message: "Enter an amount. A blank amount is not zero — a line with no figure would quietly leave money out of the balance.",
+      message: "Enter an amount. A blank amount is not zero. A line with no figure would quietly leave money out of the balance.",
     };
   }
 
@@ -311,7 +311,7 @@ function validateDraft(draft: LineDraft): DraftValidation {
     return {
       ok: false,
       message:
-        "Enter the amount as plain digits — for example 1250000 or 1250000.75. Leave out currency symbols, thousands separators, and scientific notation.",
+        "Enter the amount as plain digits, for example 1250000 or 1250000.75. Leave out currency symbols, thousands separators, and scientific notation.",
     };
   }
 
@@ -319,7 +319,7 @@ function validateDraft(draft: LineDraft): DraftValidation {
   if (cents.length > 2) {
     return {
       ok: false,
-      message: "Enter the amount in dollars and cents, with at most two decimal places — the ledger records money to the cent.",
+      message: "Enter the amount in dollars and cents, with at most two decimal places. The ledger records money to the cent.",
     };
   }
 
@@ -761,7 +761,7 @@ export function RtpFinancialLedgerEditor({
         <p className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
           {canWrite
             ? "This plan records no revenue or costs yet, because every revenue source and every cost has to belong to one of the plan's periods and this plan has none. Add the plan's periods first, using the planning periods control on this page, and the ledger opens for each period you add."
-            : "This plan records no revenue or costs yet. Every revenue source and every cost belongs to one of the plan's periods, and this plan has no periods yet — someone with edit access adds those first, and the ledger opens for each period they add."}
+            : "This plan records no revenue or costs yet. Every revenue source and every cost belongs to one of the plan's periods, and this plan has no periods yet. Someone with edit access adds those first, and the ledger opens for each period they add."}
         </p>
       </section>
     );
@@ -790,7 +790,7 @@ export function RtpFinancialLedgerEditor({
       {!hasOperationsMaintenance ? (
         <p className="rounded-[0.5rem] border border-amber-400/45 bg-amber-400/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
           No operating and maintenance costs are recorded yet. A financial plan is expected to cover what it costs to run
-          and maintain the system, not only what it costs to build the projects — leave that out and the plan can look
+          and maintain the system, not only what it costs to build the projects. Leave that out and the plan can look
           affordable when it is not.
         </p>
       ) : null}
@@ -856,7 +856,7 @@ export function RtpFinancialLedgerEditor({
                   {unreadableLineCount === 1
                     ? "One line in this period has no readable amount, so it is not in either subtotal above."
                     : `${unreadableLineCount} lines in this period have no readable amount, so they are not in either subtotal above.`}{" "}
-                  Open the line and enter its figure — a missing amount is not a zero.
+                  Open the line and enter its figure. A missing amount is not a zero.
                 </p>
               ) : null}
 

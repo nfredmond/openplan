@@ -64,7 +64,7 @@ export function buildReportRefreshLogNote(
   }
 
   const described = describeRefreshJobStatus(recordedOnly[0].status, recordedOnly[0].refresh_mode ?? null);
-  return `Refresh log: ${recordedOnly.length} dataset entr${recordedOnly.length === 1 ? "y is" : "ies are"} "${described.label}" — ${described.caveat}`;
+  return `Refresh log: ${recordedOnly.length} dataset entr${recordedOnly.length === 1 ? "y is" : "ies are"} "${described.label}". ${described.caveat}`;
 }
 
 function isOverlayReadyDataset(dataset: ReportDataHubDatasetRow): boolean {

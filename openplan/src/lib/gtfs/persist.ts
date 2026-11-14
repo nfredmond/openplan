@@ -579,7 +579,7 @@ export async function writeParsedFeedVersion(
       ok: false,
       code: "no_usable_service",
       detail:
-        "This feed parsed, but produced no service levels that could be stored — it has no " +
+        "This feed parsed, but produced no service levels that could be stored: it has no " +
         "departures that can be attributed to a route and a placed stop on any day. A feed " +
         "whose calendar has expired entirely, or whose stop_times reference stops that " +
         "stops.txt never defines, reads this way.",
@@ -721,7 +721,7 @@ export function assessFeedVersionCollapse(
     detail:
       `This refetch derived ${parts.join(", and ")}. It has been stored, but it has NOT replaced ` +
       `the feed this workspace analyses with, because a drop that size is as likely to be a ` +
-      `truncated download as a real service cut — and adopting it would move every number that ` +
+      `truncated download as a real service cut, and adopting it would move every number that ` +
       `reads transit service without anything on screen changing.`,
     routeCount: next.routeCount,
     stopCount: next.stopCount,

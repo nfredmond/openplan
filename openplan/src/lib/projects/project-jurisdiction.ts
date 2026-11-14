@@ -1,5 +1,12 @@
 import { z } from "zod";
-import { placeKindSchema, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import {
+  normalizePlaceGeoid,
+  placeGeoidStringSchema,
+  placeKindSchema,
+  refinePlaceReference,
+  type PlaceBoundaryResponse,
+  type PlaceKind,
+} from "@/lib/api/place-geographies";
 import { projectPlaceFromPlaceBoundary } from "./project-place";
 
 const label = z.string().trim().min(1).max(200);
@@ -14,21 +21,35 @@ const descriptorFields = {
   reference,
   scope: z.enum(["administrative", "sovereign", "overlap", "other"]),
 };
+/**
+ * Read a server-resolved `tigerweb:{kind}:{geoid}` reference, checking the
+ * GEOID against its own kind's format. Null for anything else.
+ */
+export function parseTigerwebJurisdictionReference(
+  reference: string | null | undefined
+): { kind: PlaceKind; geoid: string } | null {
+  const matched = /^tigerweb:([^:]+):([0-9A-Z]{4,10})$/.exec(reference ?? "");
+  const kind = placeKindSchema.safeParse(matched?.[1]);
+  if (!matched || !kind.success) return null;
+  // Exact, not normalized: a stored reference that needs repair is not one the
+  // server wrote.
+  return normalizePlaceGeoid(kind.data, matched[2]) === matched[2] ? { kind: kind.data, geoid: matched[2] } : null;
+}
+
 export const jurisdictionDescriptorSchema = z.object({
   ...descriptorFields,
   identity: z.enum(["staff_declared", "server_resolved"]),
 }).strict().superRefine((entry, ctx) => {
   if (entry.identity === "server_resolved") {
-    const matched = /^tigerweb:([^:]+):(\d{5,7})$/.exec(entry.reference ?? "");
-    const kind = placeKindSchema.safeParse(matched?.[1]);
-    if (!matched || !kind.success || entry.kind !== `tigerweb:${kind.data}` || entry.scope !== "administrative") {
+    const resolved = parseTigerwebJurisdictionReference(entry.reference);
+    if (!resolved || entry.kind !== `tigerweb:${resolved.kind}` || entry.scope !== "administrative") {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Resolved identity does not match the recorded source reference." });
     }
   }
 });
 export const jurisdictionEntryInputSchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("staff"), ...descriptorFields }).strict(),
-  z.object({ mode: z.literal("resolved"), kind: placeKindSchema, geoid: z.string().regex(/^\d{5,7}$/) }).strict(),
+  z.object({ mode: z.literal("resolved"), kind: placeKindSchema, geoid: placeGeoidStringSchema }).strict().superRefine(refinePlaceReference),
 ]);
 export const projectJurisdictionInputSchema = z.discriminatedUnion("state", [
   z.object({ version: z.literal(1), state: z.literal("unresolved"), entries: z.array(jurisdictionEntryInputSchema).max(0) }).strict(),
@@ -91,9 +112,8 @@ export async function resolveProjectJurisdiction(
 
 export function jurisdictionDraft(context: ProjectJurisdiction | null): JurisdictionEntryInput[] {
   return context?.entries.map(({ identity, ...fields }): JurisdictionEntryInput => {
-    const matched = /^tigerweb:([^:]+):(\d{5,7})$/.exec(fields.reference ?? "");
-    const kind = placeKindSchema.safeParse(matched?.[1]);
-    if (identity === "server_resolved" && matched && kind.success) return { mode: "resolved", kind: kind.data, geoid: matched[2] };
+    const resolved = parseTigerwebJurisdictionReference(fields.reference);
+    if (identity === "server_resolved" && resolved) return { mode: "resolved", kind: resolved.kind, geoid: resolved.geoid };
     return { mode: "staff", ...fields };
   }) ?? [];
 }

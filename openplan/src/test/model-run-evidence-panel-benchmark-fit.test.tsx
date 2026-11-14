@@ -20,8 +20,8 @@ const BENCHMARK_FIT_BLOCK = {
     vmt_per_capita: 22,
     mode_split_pct: { auto: 88, transit: 1.5, walk: 6, bike: 1.5, shared: 3 },
   },
-  sources: ["VMT per capita reference 22.0 — a screening reference, not a local observation."],
-  recommendation: "Large deviation from reference benchmarks — treat results as illustrative",
+  sources: ["VMT per capita reference 22.0, a screening reference, not a local observation."],
+  recommendation: "Large deviation from reference benchmarks: treat results as illustrative",
 };
 
 function mockEvidenceFetch(packet: Record<string, unknown>) {
@@ -76,7 +76,7 @@ describe("ModelRunEvidencePanel benchmark fit block", () => {
     expect(block).toHaveTextContent("+18.2%");
     expect(block).toHaveTextContent("6.4 pct-pts");
     expect(block).toHaveTextContent(
-      "Large deviation from reference benchmarks — treat results as illustrative"
+      "Large deviation from reference benchmarks: treat results as illustrative"
     );
     expect(block).toHaveTextContent("not a local observation");
     // The one-sentence distinction between county-run validation and

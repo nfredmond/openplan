@@ -169,7 +169,7 @@ export function TranscribedChapterDraftCard({
       {status === "draft" ? (
         <p className="text-label text-muted-foreground">
           Accepting records that you have read this and stand behind it. It does not put it in the
-          plan — the chapter&apos;s text is what you write in the chapter editor, so copy this in and
+          plan. The chapter&apos;s text is what you write in the chapter editor, so copy this in and
           save the chapter when you want it there.
         </p>
       ) : null}

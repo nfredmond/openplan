@@ -86,7 +86,7 @@ function roadFeatures(
   });
 }
 
-function queryUrl(longitude: number, latitude: number, layerId: number): URL {
+function queryUrl(longitude: number, latitude: number, layerId: number, recordCount = 25): URL {
   const url = new URL(`${TIGERWEB_ROOT}/${layerId}/query`);
   const envelope = [
     longitude - POINT_BUFFER_DEGREES,
@@ -103,7 +103,7 @@ function queryUrl(longitude: number, latitude: number, layerId: number): URL {
     outFields: "NAME,OID,OBJECTID",
     returnGeometry: "true",
     outSR: "4326",
-    resultRecordCount: "25",
+    resultRecordCount: String(recordCount),
     f: "geojson",
   }).toString();
   return url;
@@ -159,5 +159,86 @@ export async function loadUsTigerRoadContext(
       coverageLimit: "U.S. Census TIGER/Line road context could not be read. Coordinates remain the source location; no road name was inferred.",
       sourceVintage: null,
     };
+  }
+}
+
+/** At most this many distinct crash locations are queried in one pass. */
+export const ROAD_LINE_QUERY_LOCATION_LIMIT = 40;
+/**
+ * The project road cache is read back under the PostgREST row cap, so no more
+ * lines are stored than one read returns.
+ */
+const ROAD_LINE_STORE_LIMIT = 1000;
+/** Per layer and location. A full answer may be cut short, so it fails the load. */
+const ROAD_LINE_QUERY_RECORD_LIMIT = 200;
+const ROAD_LINE_QUERY_CONCURRENCY = 8;
+
+export type UsRoadLinesNearCrashes =
+  | { status: "read"; roads: SafetyRoadContextFeature[]; sourceVintage: string }
+  | { status: "too_many_locations"; locations: number }
+  | { status: "too_many_lines" }
+  | { status: "failed" };
+
+async function inBatches<T, R>(items: readonly T[], size: number, run: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = [];
+  for (let start = 0; start < items.length; start += size) {
+    results.push(...(await Promise.all(items.slice(start, start + size).map(run))));
+  }
+  return results;
+}
+
+/**
+ * Named US Census road lines near each crash location, for the high-injury
+ * network. Unlike the concentration lookup above, this is all or nothing: one
+ * failed or possibly cut-short answer fails the whole load, because a missing
+ * line would leave a crash unplaced and the list would blame the road.
+ *
+ * Locations are merged into cells the size of the query buffer, and each cell
+ * is queried with that buffer around its center, so every crash sits at least
+ * half a buffer inside its query box, farther than the network's snap distance.
+ */
+export async function loadUsTigerRoadLinesNearCrashes(
+  points: readonly { longitude: number; latitude: number }[],
+  fetcher: FetchLike = fetch,
+): Promise<UsRoadLinesNearCrashes> {
+  const cells = Array.from(new Map(
+    points
+      .filter((point) => Number.isFinite(point.longitude) && Number.isFinite(point.latitude))
+      .map((point) => {
+        const column = Math.round(point.longitude / POINT_BUFFER_DEGREES);
+        const row = Math.round(point.latitude / POINT_BUFFER_DEGREES);
+        return [`${column}:${row}`, { longitude: column * POINT_BUFFER_DEGREES, latitude: row * POINT_BUFFER_DEGREES }] as const;
+      }),
+  ).values());
+  if (cells.length === 0) return { status: "failed" };
+  if (cells.length > ROAD_LINE_QUERY_LOCATION_LIMIT) return { status: "too_many_locations", locations: cells.length };
+
+  try {
+    const metadataResponse = await fetcher(`${TIGERWEB_ROOT}/2?f=pjson`, fetchOptions());
+    if (!metadataResponse.ok) return { status: "failed" };
+    const vintage = readVintage(await metadataResponse.json());
+    if (!vintage) return { status: "failed" };
+
+    const requests = cells.flatMap((cell) => ROAD_LAYER_IDS.map((layerId) => ({ cell, layerId })));
+    const answers = await inBatches(requests, ROAD_LINE_QUERY_CONCURRENCY, async ({ cell, layerId }) => {
+      const response = await fetcher(
+        queryUrl(cell.longitude, cell.latitude, layerId, ROAD_LINE_QUERY_RECORD_LIMIT),
+        fetchOptions(),
+      );
+      if (!response.ok) return null;
+      const payload = await response.json() as TigerGeoJsonResponse;
+      if (payload.error || !Array.isArray(payload.features)) return null;
+      if (payload.features.length >= ROAD_LINE_QUERY_RECORD_LIMIT) return "cut_short" as const;
+      return roadFeatures(payload, layerId, vintage);
+    });
+    if (answers.some((answer) => answer === null)) return { status: "failed" };
+    if (answers.some((answer) => answer === "cut_short")) return { status: "too_many_lines" };
+    const roads = Array.from(new Map(
+      answers.flatMap((answer) => (Array.isArray(answer) ? answer : [])).map((road) => [road.id, road]),
+    ).values());
+    if (roads.length > ROAD_LINE_STORE_LIMIT) return { status: "too_many_lines" };
+    return { status: "read", roads, sourceVintage: vintage };
+  } catch {
+    return { status: "failed" };
   }
 }

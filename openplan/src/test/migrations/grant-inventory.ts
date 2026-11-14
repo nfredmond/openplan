@@ -571,14 +571,13 @@ export function loadGrantInventory(options: { dir?: string } = {}): GrantInvento
       const parsed = parseGrantStatement(expanded.sql);
       if (!parsed) continue;
 
-      // A loop over every table in the schema names no table in particular, even
-      // though the rendered statement does. That is precisely what makes it
-      // unable to re-establish a deliberate denial.
+      // Catalogue loops remain blanket. A finite literal FOREACH list names
+      // each subject in source, so its explicit restoration is a named grant.
       emit(
         [fileIndex, expanded.blockOffset, expanded.row, expanded.site],
         file,
         expanded.line,
-        { ...parsed, reach: "blanket" },
+        { ...parsed, reach: parsed.reach === "blanket" ? "blanket" : expanded.reach },
         parsed.tables
       );
     }

@@ -38,7 +38,7 @@ export type { ProjectAssigneeRoster };
 
 /** Shown instead of a name when the roster itself could not be read. */
 export const ASSIGNEE_ROSTER_UNAVAILABLE_SENTENCE =
-  "Assignee unavailable — the team roster could not be read";
+  "Assignee unavailable: the team roster could not be read";
 
 /** Shown when a member's account carries no email address the app can show. */
 export const ASSIGNEE_EMAIL_UNAVAILABLE_LABEL = "Member (email unavailable)";

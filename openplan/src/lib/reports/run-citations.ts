@@ -337,19 +337,19 @@ export async function resolveCitedRuns(
 /** What a citation says when its row is not there, per reason. Never "no runs". */
 const UNRESOLVED_CITATION_COPY: Record<CitedRunUnresolvedReason, { title: string; line: string }> = {
   "read-failed": {
-    title: "Cited run — could not be read",
+    title: "Cited run: could not be read",
     line: "This citation's run could not be read. That is a lookup failure, not evidence that the run is gone; the citation is kept so readers can see exactly what was cited.",
   },
   "module-unavailable": {
-    title: "Cited run — not resolvable in this deployment",
+    title: "Cited run: not resolvable in this deployment",
     line: "This deployment does not expose the modeling tables this citation points at, so its engine, status and claim tier cannot be shown here. The citation is kept rather than dropped.",
   },
   "not-found": {
-    title: "Cited run — no longer readable",
+    title: "Cited run: no longer readable",
     line: "The cited run is no longer readable in this workspace: it may have been deleted, or access to it may have changed. The citation is kept so readers can see exactly what was cited.",
   },
   unknown: {
-    title: "Cited run — could not be resolved",
+    title: "Cited run: could not be resolved",
     line: "This citation's run could not be resolved. Whether it was deleted or the lookup failed is not established here; the citation is kept so readers can see exactly what was cited.",
   },
 };

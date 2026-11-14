@@ -9,14 +9,14 @@
     "tdm_plan",
     "commute_program"
   ],
-  "description": "A plan to change how existing trips are made — mode, time and necessity — through programs, incentives and partnerships rather than construction.",
+  "description": "A plan to change how existing trips are made (mode, time and necessity) through programs, incentives and partnerships rather than construction.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
     "It assumes measures the agency can actually deliver or require. Where a measure depends on employers or developers, name the partner in the record rather than leaving the action ownerless.",
     "A measure with no monitoring is a measure nobody can defend later, which is why the monitoring framework is a deliverable rather than a chapter.",
     "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "deliverables": [
     {

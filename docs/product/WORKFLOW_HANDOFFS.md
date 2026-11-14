@@ -64,12 +64,15 @@ program, grant and invoice records rather than re-entering unbound copies.
 
 ## Evidence for a completed handoff
 
-Observe one planner's actual job and the recipient's reuse. Start at visible
+Run one planner's actual job and the recipient's reuse as agent-run journeys;
+an agent performs each role and the record names the executor. Start at visible
 navigation, retain candidate/deployment identity, test desktop and 390px plus
 keyboard access, inspect the console and the stored/exported artifact, and test
-an interrupted or rejected step. A second person must understand what the record
-means and what remains unsupported. Agent journeys help expose regressions;
-they cannot establish professional usefulness, legal sufficiency or public trust.
+an interrupted or rejected step. A second agent session, separate from the one
+that did the work, must be able to tell what the record means and what remains
+unsupported. Under Nathaniel's permanent November 13, 2026 decision these
+agent-run journeys are the acceptance evidence; legal sufficiency stays with the
+responsible agency.
 
 ## Early priority handoffs: engagement, agents and capital delivery
 

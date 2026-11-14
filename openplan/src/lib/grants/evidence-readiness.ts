@@ -151,7 +151,7 @@ export function buildGrantEvidenceReadinessCues(
       tone: bcaScreening ? "success" : "neutral",
       detail: bcaScreening
         ? `${summarizeBcaScreeningForCue(bcaScreening)} ${BCA_SCREENING_CAVEAT}`
-        : "No screening-level benefit-cost analysis is saved for this project. A benefit-cost case matters most for benefit-cost-scored sources — USDOT BUILD and INFRA-class programs require an application BCA, and California's Local HSIP scores on a Local Roadway Safety Manual benefit/cost.",
+        : "No screening-level benefit-cost analysis is saved for this project. A benefit-cost case matters most for benefit-cost-scored sources: USDOT BUILD and INFRA-class programs require an application BCA, and California's Local HSIP scores on a Local Roadway Safety Manual benefit/cost.",
       nextAction: bcaScreening
         ? "Re-run and re-save the screening if costs or benefits have changed. This is a USDOT-style screening analogue; confirm the source's own required method (USDOT BCA Guidance, or the Caltrans LRSM for Local HSIP) before application use."
         : "If this source scores on benefit-cost, run the benefit-cost screen on the grants worksurface and save it to the project record.",
@@ -180,7 +180,7 @@ export function summarizeGrantEvidenceReadiness(cues: GrantEvidenceReadinessCue[
   const warningCount = cues.filter((cue) => cue.tone === "warning" || cue.tone === "danger").length;
 
   if (warningCount === 0) {
-    return "Each check below has something recorded against it. Read them yourself before you apply — OpenPlan does not decide eligibility or fiscal compliance for you.";
+    return "Each check below has something recorded against it. Read them yourself before you apply. OpenPlan does not decide eligibility or fiscal compliance for you.";
   }
 
   return `${warningCount} of ${cues.length} checks below still need your attention before you rely on this for an application.`;

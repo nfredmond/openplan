@@ -34,7 +34,9 @@ vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: () => { throw
 import { readContainedLocalArtifact } from "@/lib/models/artifact-source";
 import { readPinnedLocalFile } from "@/lib/models/local-artifact-file";
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
-it.each(["none", "resolved", "ancestor", "root-open", "directory-open", "final-file"])("keeps foreign bytes out during %s replacement", async (phase) => {
+// Linux only: readPinnedLocalFile pins each directory through /proc/self/fd and refuses other hosts by design;
+// elsewhere every phase would "keep foreign bytes out" only by refusing the read.
+it.skipIf(process.platform !== "linux").each(["none", "resolved", "ancestor", "root-open", "directory-open", "final-file"])("keeps foreign bytes out during %s replacement", async (phase) => {
   const base = await mkdtemp(path.join(tmpdir(), "openplan-native-race-"));
   const root = path.join(base, "worker", "run-a"), parent = path.join(root, "output"), foreign = path.join(base, "run-b");
   try {

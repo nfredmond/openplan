@@ -63,7 +63,9 @@ Census keys on the live front door — a workspace that self-served a key was
 told the deployment had none. The seam is restored in
 `api/geographies/places/route.ts` and pinned by
 `src/test/places-route-workspace-census-key.test.ts`, which asserts the search
-runs INSIDE the context. Lesson: before deleting an orphan, diff its body
+runs INSIDE the context. (2026-11-02: county search now reads keyless
+TIGERweb, so the places route no longer needs the context. The wrapper is
+removed and the test is now `src/test/places-route.test.ts`.) Lesson: before deleting an orphan, diff its body
 against its replacement for seams the replacement never carried, not just for
 reachability. And `/api/csp-report`
 turned out to be genuinely browser-called via the CSP header's `report-uri` —

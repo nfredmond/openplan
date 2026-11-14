@@ -144,9 +144,9 @@ const VALUE_LABELS = new Map<readonly string[], Readonly<Record<string, string>>
     CRASH_LIGHTING_CONDITIONS,
     labelsFor(CRASH_LIGHTING_CONDITIONS, {
       dawn_dusk: "Dawn or dusk",
-      dark_lighted: "Dark — street lights on",
-      dark_unlighted: "Dark — no street lights",
-      dark_lighting_inoperative: "Dark — street lights not working",
+      dark_lighted: "Dark, street lights on",
+      dark_unlighted: "Dark, no street lights",
+      dark_lighting_inoperative: "Dark, street lights not working",
       unknown: "Not reported",
     }),
   ],

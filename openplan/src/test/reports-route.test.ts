@@ -47,6 +47,11 @@ const campaignMaybeSingleMock = vi.fn();
 const campaignEqMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
 const campaignSelectMock = vi.fn(() => ({ eq: campaignEqMock }));
 
+const safetyIngestsInMock = vi.fn();
+const safetyIngestsEqProjectMock = vi.fn(() => ({ in: safetyIngestsInMock }));
+const safetyIngestsEqWorkspaceMock = vi.fn(() => ({ eq: safetyIngestsEqProjectMock }));
+const safetyIngestsSelectMock = vi.fn(() => ({ eq: safetyIngestsEqWorkspaceMock }));
+
 const reportSectionsInsertMock = vi.fn();
 const reportRunsInsertMock = vi.fn();
 
@@ -98,6 +103,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return {
       select: campaignSelectMock,
+    };
+  }
+
+  if (table === "safety_crash_ingests") {
+    return {
+      select: safetyIngestsSelectMock,
     };
   }
 
@@ -229,6 +240,7 @@ describe("/api/reports", () => {
 
     reportSectionsInsertMock.mockResolvedValue({ error: null });
     reportRunsInsertMock.mockResolvedValue({ error: null });
+    safetyIngestsInMock.mockResolvedValue({ data: [{ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }], error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -280,6 +292,47 @@ describe("/api/reports", () => {
     expect(reportsInsertMock).toHaveBeenCalledTimes(2);
     expect((reportsInsertMock.mock.calls as unknown as Array<[Record<string, unknown>]>)[1][0]).not.toHaveProperty("metadata_json");
     expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+  });
+
+  // Rehearsal defect D4: the crash pull chosen in the new-report dialog was
+  // not saved, so the report opened with "Unsaved ... evidence choices".
+  it("saves the crash acquisition chosen at creation after checking it belongs to the project", async () => {
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "project_status",
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }] }));
+    expect(response.status).toBe(201);
+    expect(safetyIngestsSelectMock).toHaveBeenCalledWith("id");
+    expect(safetyIngestsEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", "44444444-4444-4444-8444-444444444444");
+    expect(safetyIngestsEqProjectMock).toHaveBeenCalledWith("project_id", "33333333-3333-4333-8333-333333333333");
+    expect(safetyIngestsInMock).toHaveBeenCalledWith("id", ["bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"]);
+    expect(reportsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ metadata_json: {
+      safetyIngestSelectionsVersion: "openplan.report_safety_selection.v1",
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }],
+    } }));
+  });
+
+  it("refuses a crash acquisition from another project before creating the report", async () => {
+    safetyIngestsInMock.mockResolvedValueOnce({ data: [], error: null });
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "project_status",
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }] }));
+    expect(response.status).toBe(400);
+    expect(reportsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses crash evidence on a campaign report", async () => {
+    const response = await postReports(jsonRequest({ engagementCampaignId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", reportType: "project_status",
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }] }));
+    expect(response.status).toBe(400);
+    expect(safetyIngestsSelectMock).not.toHaveBeenCalled();
+    expect(reportsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses the pending-schema fallback when it would drop the chosen crash acquisition", async () => {
+    reportsSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column "engagement_campaign_id" of relation "reports" does not exist' } });
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "project_status",
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }] }));
+    expect(response.status).toBe(503);
+    expect(reportsInsertMock).toHaveBeenCalledTimes(1);
+    expect(reportSectionsInsertMock).not.toHaveBeenCalled();
   });
 
   it("refuses client-computed comparison payloads and unknown versions before writing", async () => {

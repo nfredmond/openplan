@@ -156,7 +156,7 @@ export function describeCensusTractCoverage(input: CensusTractCoverageInput): st
     notes.push(
       `Equity tracts are not shown: census tract coverage is loaded county by county, and this ` +
         `workspace's home geography is ${kind}. This is not a finding that ${placeName(input.scopeLabel)} ` +
-        `has no census tracts — tract data for it has simply never been requested. Multi-county and ` +
+        `has no census tracts. Tract data for it has simply never been requested. Multi-county and ` +
         `city-level tract coverage is not built yet.`
     );
     return notes;
@@ -166,7 +166,7 @@ export function describeCensusTractCoverage(input: CensusTractCoverageInput): st
   if (input.matchedCount === 0) {
     notes.push(
       `Equity tracts are scoped to ${placeName(input.scopeLabel)}, but none have been loaded for it yet. ` +
-        `This is not a finding that the county has no census tracts — none have been fetched. ` +
+        `This is not a finding that the county has no census tracts. None have been fetched. ` +
         GEOGRAPHY_REMEDY_COVERAGE
     );
     return notes;
@@ -176,12 +176,12 @@ export function describeCensusTractCoverage(input: CensusTractCoverageInput): st
   if (drawn + input.droppedCount < input.matchedCount) {
     notes.push(
       `Showing ${drawn.toLocaleString("en-US")} of ${input.matchedCount.toLocaleString("en-US")} census tracts in ` +
-        `${placeName(input.scopeLabel)} — the first ${input.limit.toLocaleString("en-US")} by tract ID, not the ` +
+        `${placeName(input.scopeLabel)}: the first ${input.limit.toLocaleString("en-US")} by tract ID, not the ` +
         `tracts nearest you. The rest of the county is not drawn, which is not a finding that it has no tracts.`
     );
   } else {
     notes.push(
-      `Equity tracts are scoped to ${placeName(input.scopeLabel)} — this workspace's home geography.`
+      `Equity tracts are scoped to ${placeName(input.scopeLabel)}, this workspace's home geography.`
     );
   }
 

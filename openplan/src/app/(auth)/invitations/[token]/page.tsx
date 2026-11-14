@@ -67,7 +67,7 @@ function Refusal({ heading, detail }: { heading: string; detail: string }) {
       <h2 className="font-display text-2xl font-semibold tracking-tight">{heading}</h2>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{detail}</p>
       <p className="mt-4 text-sm leading-6 text-muted-foreground">
-        Ask whoever invited you to send a new link — an invitation can be reissued from the workspace&apos;s
+        Ask whoever invited you to send a new link. An invitation can be reissued from the workspace&apos;s
         team panel.
       </p>
     </section>
@@ -102,7 +102,7 @@ export default async function InvitationPage({ params }: PageProps) {
     return (
       <Refusal
         heading="This invitation could not be loaded."
-        detail="Something went wrong reading it — this is a problem on our side, not with your link. Try again in a moment."
+        detail="Something went wrong reading it. This is a problem on our side, not with your link. Try again in a moment."
       />
     );
   }

@@ -160,7 +160,7 @@ function matrixPostureFor(
   if (approved && categorized && internalOrPrivate) {
     return {
       posture: "excluded_internal_private",
-      postureLabel: "Excluded — internal/private note",
+      postureLabel: "Excluded: internal/private note",
       reason: "Approved categorized item is retained for staff context, but excluded from the public-comment appendix matrix.",
     };
   }
@@ -183,7 +183,7 @@ function matrixPostureFor(
 
   return {
     posture: "excluded_not_ready",
-    postureLabel: "Excluded — not appendix-ready",
+    postureLabel: "Excluded: not appendix-ready",
     reason: approved
       ? "Item is not categorized as a public comment ready for appendix matrix use."
       : "Item is not approved for appendix matrix use.",

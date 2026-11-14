@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "jurisdiction": "US",
   "effective_date": "2026-08-05",
-  "description": "The FHWA local-agency federal-aid lifecycle — the floor that is true anywhere in the United States because it comes from 2 CFR 200 (Uniform Guidance), 23 CFR (federal-aid highways), NEPA (23 CFR 771), and the Uniform Relocation Act (49 CFR 24).",
+  "description": "The FHWA local-agency federal-aid lifecycle: the floor that is true anywhere in the United States because it comes from 2 CFR 200 (Uniform Guidance), 23 CFR (federal-aid highways), NEPA (23 CFR 771), and the Uniform Relocation Act (49 CFR 24).",
   "scope_notes": [
-    "Your state DOT's local-agency manual (LAG, LPA, LGP, or your state's name for it) implements these same steps and may add its own — this template is the federal floor, not your state's full checklist.",
+    "Your state DOT's local-agency manual (LAG, LPA, LGP, or your state's name for it) implements these same steps and may add its own. This template is the federal floor, not your state's full checklist.",
     "FTA-funded transit projects follow different mechanics (grant agreements, TrAMS) and are not covered by this template.",
-    "State and local environmental law (CEQA, SEPA, and their siblings) is a jurisdiction overlay — this template carries NEPA only."
+    "State and local environmental law (CEQA, SEPA, and their siblings) is a jurisdiction overlay. This template carries NEPA only."
   ],
   "decision_model": {
     "gate_states": ["not_started", "in_progress", "hold", "pass"],
@@ -34,7 +34,7 @@
       "required_evidence": [
         {
           "evidence_id": "stip-tip-listing",
-          "title": "STIP/TIP listing or documented exemption — federal-aid projects must be programmed before funds can obligate",
+          "title": "STIP/TIP listing or documented exemption: federal-aid projects must be programmed before funds can obligate",
           "artifact_type": "document",
           "required": true
         },
@@ -65,13 +65,13 @@
         },
         {
           "evidence_id": "pe-authorization-record",
-          "title": "Federal authorization/obligation record for preliminary engineering (FMIS; states name it differently — California calls it the E-76)",
+          "title": "Federal authorization/obligation record for preliminary engineering (FMIS; states name it differently: California calls it the E-76)",
           "artifact_type": "record",
           "required": true
         },
         {
           "evidence_id": "cost-incurrence-start",
-          "title": "Documented PE start date on or after the authorization date — costs incurred before federal authorization are not reimbursable (23 CFR 630)",
+          "title": "Documented PE start date on or after the authorization date: costs incurred before federal authorization are not reimbursable (23 CFR 630)",
           "artifact_type": "record",
           "required": true
         }
@@ -96,7 +96,7 @@
         },
         {
           "evidence_id": "permits-inventory",
-          "title": "Resource permits identified with status (401/404, ESA consultation, and similar) — listed, not necessarily issued, at this gate",
+          "title": "Resource permits identified with status (401/404, ESA consultation, and similar): listed, not necessarily issued, at this gate",
           "artifact_type": "checklist",
           "required": true
         }
@@ -128,7 +128,7 @@
       "required_evidence": [
         {
           "evidence_id": "row-certification-record",
-          "title": "Right-of-way certification, or certification that no acquisition is needed — construction cannot advertise without it",
+          "title": "Right-of-way certification, or certification that no acquisition is needed: construction cannot advertise without it",
           "artifact_type": "document",
           "required": true
         },
@@ -159,7 +159,7 @@
         },
         {
           "evidence_id": "procurement-record",
-          "title": "Competitive award per 2 CFR 200.317-327 and 23 CFR 635 — responsive-low-bidder determination and required federal contract provisions (FHWA-1273 on highway work; Buy America; Davis-Bacon; DBE commitment)",
+          "title": "Competitive award per 2 CFR 200.317-327 and 23 CFR 635: responsive-low-bidder determination and required federal contract provisions (FHWA-1273 on highway work; Buy America; Davis-Bacon; DBE commitment)",
           "artifact_type": "document",
           "required": true
         }
@@ -184,7 +184,7 @@
         },
         {
           "evidence_id": "change-order-record",
-          "title": "Change orders with participating / non-participating cost designation — where eligibility quietly leaks on real projects",
+          "title": "Change orders with participating / non-participating cost designation, where eligibility quietly leaks on real projects",
           "artifact_type": "record",
           "required": true
         }
@@ -209,7 +209,7 @@
         },
         {
           "evidence_id": "audit-and-retention",
-          "title": "Single-audit determination for the fiscal year (threshold per 2 CFR 200.501) and a records retention plan (2 CFR 200.334 — retention runs from submission of the final expenditure report)",
+          "title": "Single-audit determination for the fiscal year (threshold per 2 CFR 200.501) and a records retention plan (2 CFR 200.334: retention runs from submission of the final expenditure report)",
           "artifact_type": "checklist",
           "required": true
         }

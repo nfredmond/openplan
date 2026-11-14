@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 import { loadMyWork } from "@/lib/my-work/query";
 import { createFakeSupabase, ME, NOW, ROSTER, WS_A, WS_B } from "./helpers/fake-my-work-tables";
 

@@ -84,7 +84,7 @@ export function CampaignLinkedReportsSection({
           <StateBlock
             tone="danger"
             title="The linked project could not be read, so its reports were not looked up"
-            description="This campaign is linked to a project. Because that record could not be read, OpenPlan cannot say which reports exist on it — this is not a campaign without reporting."
+            description="This campaign is linked to a project. Because that record could not be read, OpenPlan cannot say which reports exist on it. This is not a campaign without reporting."
             compact
           />
         </div>
@@ -127,7 +127,7 @@ export function CampaignLinkedReportsSection({
             <StateBlock
               tone="danger"
               title="Which reports source this campaign could not be read"
-              description="The report sections could not be read, so every report below is shown as project-linked only. That is the fallback label, not a finding — a report may well already name this campaign as a source."
+              description="The report sections could not be read, so every report below is shown as project-linked only. That is the fallback label, not a finding. A report may well already name this campaign as a source."
               compact
             />
           ) : null}

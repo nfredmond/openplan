@@ -3,8 +3,8 @@ import {
   CCRS_SERIOUS_INJURY_CODES,
   chunk,
   fetchSeriousInjuryCollisionIds,
+  upgradeCcrsSeriousInjuries as applySeriousInjuryUpgrade,
 } from "@/lib/safety/sources/ccrs-injury";
-import { applySeriousInjuryUpgrade } from "@/lib/safety/ingest";
 import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
 import type { CrashRecord } from "@/lib/safety/sources/types";
 
@@ -122,6 +122,27 @@ describe("fetchSeriousInjuryCollisionIds", () => {
     expect(serious.size).toBe(0);
   });
 
+  it("throws when the injured-person query fails, rather than reporting no serious injuries", async () => {
+    // `fetchJsonWithRetry` answers a failure with null. Read as "no rows", that
+    // null published zero serious injuries for crashes nobody had checked.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: unknown) => {
+        if (String(input).includes("package_show")) return jsonResponse(PACKAGE_BODY);
+        return { ok: false, status: 404, headers: new Headers(), json: async () => ({}), text: async () => "" } as unknown as Response;
+      }) as unknown as typeof fetch
+    );
+    await expect(fetchSeriousInjuryCollisionIds({ year: 2025, collisionIds: ["c1"] })).rejects.toThrow(/did not answer/);
+  });
+
+  it("throws when the package manifest is unreachable, rather than treating every year as tableless", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({ ok: false, status: 404, headers: new Headers(), json: async () => ({}), text: async () => "" }) as unknown as Response) as unknown as typeof fetch
+    );
+    await expect(fetchSeriousInjuryCollisionIds({ year: 2025, collisionIds: ["c1"] })).rejects.toThrow(/manifest unreachable/);
+  });
+
   it("short-circuits on an empty id list without calling the API", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
@@ -174,6 +195,15 @@ describe("applySeriousInjuryUpgrade", () => {
     expect(result.upgraded).toBe(0);
     expect(result.records[0].severity).toBe("fatal");
     expect(result.records[1].severity).toBe("pdo");
+  });
+
+  it("refuses to call the join complete when a year with injury crashes has no injured-person table", async () => {
+    // Otherwise that year's injury crashes stay `injury` under a run that says
+    // serious injuries were separated, and the count is a floor read as a total.
+    stubSerious([]);
+    await expect(
+      applySeriousInjuryUpgrade([record({ externalId: "c1" }), record({ externalId: "old", collisionYear: 2019, collisionDate: "2019-05-01" })])
+    ).rejects.toThrow(/no injured-person table for 2019/);
   });
 
   it("skips records with no collision year rather than querying the wrong table", async () => {

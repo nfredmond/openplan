@@ -287,7 +287,7 @@ export function ExploreResultsBoard({
         value: population.value,
         note: population.measured
           ? "Census tract population intersecting the corridor bounding area."
-          : "No census tract population universe was returned for this study area — this is an unanswered read, not a count of zero.",
+          : "No census tract population universe was returned for this study area. This is an unanswered read, not a count of zero.",
       },
       {
         label: "Median income",

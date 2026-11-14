@@ -219,7 +219,7 @@ export function ModelRunCeqaVmtScreen({
         return;
       }
       setScreenState((current) => ({ ...current, screenings: [record, ...current.screenings] }));
-      setSaveNotice(`Determination saved — ${summarizeRecord(record)}`);
+      setSaveNotice(`Determination saved: ${summarizeRecord(record)}`);
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : "The determination was not saved.");
     } finally {
@@ -268,14 +268,14 @@ export function ModelRunCeqaVmtScreen({
           <div className="module-section-heading">
             <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
             <p className="module-section-description">
-              Screens this run&apos;s stored VMT KPIs — derived from assignment link volumes
-              (Σ volume × length), <ScreeningGradeLink />, not measured — against an
+              Screens this run&apos;s stored VMT KPIs, derived from assignment link volumes
+              (Σ volume × length), <ScreeningGradeLink />, not measured, against an
               operator-supplied reference baseline using the OPR percent-below threshold. Arithmetic
               only; nothing is estimated when the KPI set lacks VMT.
             </p>
           </div>
         </div>
-        <StatusBadge tone="warning">Screening-level — not a determination of record</StatusBadge>
+        <StatusBadge tone="warning">Screening-level, not a determination of record</StatusBadge>
       </div>
 
       {/* THE COLLAPSED FORM. This is the shape a determination is most likely to

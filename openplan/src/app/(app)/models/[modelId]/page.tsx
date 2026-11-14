@@ -58,6 +58,7 @@ import { OperatorDetail, ReadFailureNotice } from "@/components/ui/read-failure-
 import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { isGuidedProjectComparisonModel } from "@/lib/models/project-comparison";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
+import { isUuid } from "@/lib/uuid";
 
 type RouteParams = Promise<{ modelId: string }>;
 
@@ -142,6 +143,7 @@ export default async function ModelDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { modelId } = await params;
+  if (!isUuid(modelId)) notFound();
   const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {

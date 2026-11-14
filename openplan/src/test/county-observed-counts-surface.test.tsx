@@ -10,7 +10,10 @@ vi.mock("@/lib/api/county-onramp-client", () => ({
   saveCountyRunScaffold: (...args: unknown[]) => saveScaffoldMock(...args),
 }));
 
-import { CountyRunObservedCounts } from "@/components/county-runs/county-run-observed-counts";
+import {
+  CountyRunObservedCounts,
+  OBSERVED_COUNTS_NO_WORKER_NOTE,
+} from "@/components/county-runs/county-run-observed-counts";
 
 /**
  * THE DOOR ONTO THE OBSERVED COUNTS, RENDERED.
@@ -177,5 +180,21 @@ describe("a planner can reach and edit the observed counts", () => {
     // planner loses an afternoon of counts.
     expect(screen.getByLabelText("observed volume for station S-1")).toHaveValue("8750");
     expect(screen.getByRole("button", { name: "Save counts" })).toBeEnabled();
+  });
+});
+
+describe("observed counts on a copy with no county worker", () => {
+  it("says so before the planner clicks, and only when the page said there is no worker", () => {
+    const { rerender } = render(<CountyRunObservedCounts countyRunId="run-1" workerConfigured={false} />);
+    expect(screen.getByTestId("observed-counts-no-worker").textContent).toBe(OBSERVED_COUNTS_NO_WORKER_NOTE);
+    // Nothing was fetched to decide this: the line comes from the page.
+    expect(getScaffoldMock).not.toHaveBeenCalled();
+
+    rerender(<CountyRunObservedCounts countyRunId="run-1" workerConfigured />);
+    expect(screen.queryByTestId("observed-counts-no-worker")).toBeNull();
+
+    // A caller that did not say claims nothing.
+    rerender(<CountyRunObservedCounts countyRunId="run-1" />);
+    expect(screen.queryByTestId("observed-counts-no-worker")).toBeNull();
   });
 });

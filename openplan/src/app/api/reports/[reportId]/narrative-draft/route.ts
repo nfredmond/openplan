@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateText } from "ai";
@@ -9,7 +10,7 @@ import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
@@ -200,7 +201,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json(
           {
             error:
-              "AI narrative drafting supports project-targeted reports only in this version. RTP-cycle packets assemble operator-authored chapters — use the chapter draft assist on the RTP cycle page instead.",
+              "AI narrative drafting supports project-targeted reports only in this version. RTP-cycle packets assemble operator-authored chapters. Use the chapter draft assist on the RTP cycle page instead.",
           },
           { status: 405 }
         );
@@ -229,20 +230,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
             )}. Only the whitelisted summary section of each packet type can be drafted.`,
           },
           { status: 400 }
-        );
-      }
-
-      const rateLimit = await checkAiUsageRateLimit(report.workspace_id);
-      if (!rateLimit.allowed) {
-        audit.warn("narrative_draft_rate_limited", {
-          reportId: report.id,
-          workspaceId: report.workspace_id,
-          userId: user.id,
-          recentCount: rateLimit.count,
-        });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
         );
       }
 
@@ -283,7 +270,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           () =>
             supabase
               .from("funding_awards")
-              .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+              .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
               .eq("project_id", report.project_id),
           [] as Array<Record<string, unknown>>
         ),
@@ -291,7 +278,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           () =>
             supabase
               .from("funding_opportunities")
-              .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+              .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
               .eq("project_id", report.project_id),
           [] as Array<Record<string, unknown>>
         ),
@@ -299,7 +286,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           () =>
             supabase
               .from("billing_invoice_records")
-              .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+              .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
               .eq("project_id", report.project_id),
           [] as Array<Record<string, unknown>>
         ),
@@ -335,6 +322,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
       }
 
+      assertCompleteFundingRead(fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult);
       const reportRunLinkRows = (reportRunLinksResult.data ?? []) as Array<{
         run_id?: string | null;
         model_run_id?: string | null;
@@ -484,8 +472,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- Write 1-3 paragraphs of clear, professional planning-report prose in markdown (paragraphs only; no headings, no bullet lists).",
         "- Ground every statement STRICTLY in the numbered WORKSPACE FACTS below. Do not invent numbers, dollar amounts, dates, statuses, run results, or project details that are not present in the facts.",
         "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on.",
-        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
-        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
+        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual. When in doubt, prefer citing.",
+        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented. Never fabricate it.",
         "- NEVER upgrade a claim: modeling and analysis facts below are screening-grade planning support. If a fact carries a caveat sentence, repeat that caveat verbatim in the same paragraph whenever you reference that fact, and never present screening results as forecasts, calibrated models, or decisions.",
         // Stated only when uploaded-document facts actually exist: an
         // instruction about facts that are not in the list below teaches the
@@ -501,6 +489,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
         ...renderNarrativeFactPromptLines(facts),
       ].join("\n");
+
+      // Counted before the call (reserveAiUsage). When the deployment's key
+      // pays, a usage lookup or record that fails throws here, so no unmetered
+      // call is made. A failed call keeps its reservation.
+      const rateLimit = await reserveAiUsage({
+        workspaceId: report.workspace_id,
+        bucketKey: "document_narrative_draft",
+        eventKey: "report_section_narrative_draft",
+        sourceRoute: "/api/reports/[reportId]/narrative-draft",
+        metadataJson: { model: modelId, sectionKey },
+      });
+      if (!rateLimit.allowed) {
+        audit.warn("narrative_draft_rate_limited", {
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          userId: user.id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
 
       let draftText: string;
       let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
@@ -524,17 +535,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
       }
-
-      // Fire-and-forget spend metering: the model call succeeded (a thrown
-      // generation returned 502 above without recording, so a user retry after a
-      // failure is never double-counted).
-      void recordAiUsageEvent({
-        workspaceId: report.workspace_id,
-        bucketKey: "document_narrative_draft",
-        eventKey: "report_section_narrative_draft",
-        sourceRoute: "/api/reports/[reportId]/narrative-draft",
-        metadataJson: { model: modelId, sectionKey },
-      });
 
       if (!draftText) {
         audit.error("narrative_generation_empty", {

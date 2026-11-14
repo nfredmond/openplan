@@ -14,6 +14,7 @@ import model_publication_values as publication
 import model_assessment_values as assessment
 import model_legacy_artifact_command as legacy_artifact
 import model_legacy_kpi_command as legacy_kpi
+from supabase_service_headers import service_key_headers
 from datetime import datetime
 
 
@@ -401,7 +402,7 @@ def deliver(directory, command: dict, *, base_url: str, deployment_id: str, serv
         post = requests.post
     try:
         response = post(base_url.rstrip('/') + '/rest/v1/rpc/' + command['operation'],
-                        headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+                        headers=service_key_headers(service_key),
                         json=rpc_arguments(command), timeout=(5, 30), allow_redirects=False)
     except Exception:
         raise DeliveryUnconfirmed('Model RPC transport did not confirm a receipt') from None
@@ -452,7 +453,7 @@ def inspect_ownership(claim_command: dict, claim_receipt: dict, *, workspace_id:
         get = requests.get
     try:
         response = get(base_url.rstrip('/') + '/rest/v1/model_run_stages',
-                       headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+                       headers=service_key_headers(service_key),
                        params={'id': 'eq.' + args['stage_id'], 'run_id': 'eq.' + args['run_id'],
                                'model_runs.workspace_id': 'eq.' + workspace_id,
                                'select': 'id,run_id,status,attempt_managed,active_attempt_id,model_runs!inner(id,workspace_id,status,attempt_managed)'},

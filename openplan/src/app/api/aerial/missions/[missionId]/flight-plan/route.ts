@@ -84,7 +84,7 @@ const putFlightPlanSchema = z
   .strict()
   .refine((data) => (data.targetGsdCmPerPx ?? null) !== null || (data.altitudeAglM ?? null) !== null, {
     message:
-      "State the plan's vertical intent: a target ground resolution (cm/px), a flight altitude (m above ground), or both — given the camera, either one derives the other.",
+      "State the plan's vertical intent: a target ground resolution (cm/px), a flight altitude (m above ground), or both. Given the camera, either one derives the other.",
   });
 
 type RouteContext = { params: Promise<{ missionId: string }> };

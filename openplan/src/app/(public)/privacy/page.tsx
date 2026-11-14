@@ -13,7 +13,7 @@ const dataHandling = [
   {
     title: "Workspace-scoped access",
     description:
-      "Planning records, engagement inputs, modeling runs, and grant artifacts are isolated to the workspace they belong to. Row-level access controls enforce this at the database layer — not just in the UI.",
+      "Planning records, engagement inputs, modeling runs, and grant artifacts are isolated to the workspace they belong to. Row-level access controls enforce this at the database layer, not just in the UI.",
   },
   {
     title: "No cross-client reuse",
@@ -42,7 +42,7 @@ const storagePosture = [
 const userRights = [
   "Workspace owners may request export of their data, deletion of specific records, or full workspace teardown. Requests are handled through the operator support channel once a workspace is active.",
   "Engagement participants and survey respondents retain the rights granted by the agency or consulting team administering the engagement. OpenPlan does not independently monetize respondent data.",
-  "Where a planning deliverable must be preserved for regulatory or audit purposes, records may be retained in line with the agency's own retention rules — not OpenPlan's default lifecycle.",
+  "Where a planning deliverable must be preserved for regulatory or audit purposes, records may be retained in line with the agency's own retention rules, not OpenPlan's default lifecycle.",
 ];
 
 export default function PrivacyPage() {
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
           </div>
           <p className="public-rail-copy">
             Workspace isolation is enforced at the database layer. Planning records, engagement inputs, and modeling outputs
-            belong to the workspace that produced them — not to OpenPlan, and not to other workspaces on the platform.
+            belong to the workspace that produced them, not to OpenPlan, and not to other workspaces on the platform.
           </p>
         </aside>
       </section>

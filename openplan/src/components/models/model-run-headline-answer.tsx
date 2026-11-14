@@ -141,7 +141,7 @@ export function ModelRunHeadlineAnswer({
         <h2 className="text-sm font-semibold text-foreground">What this run found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           OpenPlan could not read this run&rsquo;s results just now. That is a failed read, not an
-          empty result — the run may well have measured everything. Reload the page to try again.
+          empty result. The run may well have measured everything. Reload the page to try again.
         </p>
         <p className="mt-1 font-mono text-xs text-muted-foreground">{state.reason}</p>
       </section>
@@ -175,7 +175,7 @@ export function ModelRunHeadlineAnswer({
         ))}
       </dl>
       <p className="mt-3 text-xs text-muted-foreground">
-        These are screening-grade figures — good for comparing options, not for a number you would
+        These are screening-grade figures: good for comparing options, not for a number you would
         defend on their own. <ScreeningGradeLink />
       </p>
     </section>

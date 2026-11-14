@@ -566,10 +566,40 @@ describe("Safety opens on the right study area", () => {
     }
   });
 
+  it("reads the acquisition's source so the banner words serious injury the way the corridor does (KI-2026-11-02-046)", async () => {
+    // CCRS recorded as fatal_injury_only means its injured-person join did not
+    // run. Without `source_id` in the projection the banner cannot tell that
+    // from a source that never separates serious injury.
+    mountSupabase({
+      projectPlace: { data: projectPlaceRow(), error: null },
+      ingests: [retainedAcquisition({ source_id: "ccrs-ca", coverage_state: "ccrs_ca_statewide", severity_completeness: "fatal_injury_only" })],
+    });
+    await renderSafety({ projectId: PROJECT_ID });
+    const currentQuery = ingestQueries.find((query) => query.limit === 1);
+    expect(currentQuery?.projection.split(",")).toEqual(expect.arrayContaining(["source_id", "severity_completeness"]));
+    expect(within(screen.getByLabelText("Crash data coverage")).getByTestId("safety-serious-injury-caveat")).toHaveTextContent(
+      "injured-person records, which do, were not joined for these crashes"
+    );
+  });
+
   it("keeps round-trip coordinate tolerance when restoring a retained source", async () => {
     mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition({ min_lon: -121.06 + 0.0000005 })] });
     await renderSafety({ projectId: PROJECT_ID });
     expect(within(screen.getByLabelText("Crash data coverage")).getByText("Retained corridor source")).toBeInTheDocument();
+  });
+
+  it("reads which area the retained counts describe from the acquisition's coverage (KI-2026-11-02-021)", async () => {
+    mountSupabase({
+      projectPlace: { data: projectPlaceRow(), error: null },
+      ingests: [retainedAcquisition({
+        dimension_coverage: { study_area: { basis: "place_boundary", boundarySource: "project_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false } },
+      })],
+    });
+    await renderSafety({ projectId: PROJECT_ID });
+    const coverage = screen.getByLabelText("Crash data coverage");
+    expect(within(coverage).getByText(
+      "Crashes are counted inside the place boundary. 9 crashes inside its bounding rectangle but outside the boundary are left out."
+    )).toBeInTheDocument();
   });
 
   it("discloses a failed current-acquisition lookup even when recent history loads", async () => {

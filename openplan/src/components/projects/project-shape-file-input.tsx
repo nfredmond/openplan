@@ -312,7 +312,7 @@ async function readShapeFile(
   const [longitude, latitude] = boxCenter(positions);
   notes.push(
     "This file holds a shape rather than a point, so the pin was put in the middle of the box " +
-      "around that shape. Check it before you save — it may not be where you mean."
+      "around that shape. Check it before you save. It may not be where you mean."
   );
   return { ok: true, shape: { kind: "point", longitude, latitude, fileName, notes } };
 }

@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 import type { AttemptInstrument } from "@/lib/models/attempt-instrument-read";
 import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
 import type { GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/reports/engagement";
 import { DEMOGRAPHIC_DIMENSIONS } from "@/lib/engagement/demographics";
 import { JOINT_READING_LABELS } from "@/lib/engagement/joint-representativeness";
+import type { ReportTraceDecision, ReportTraceResponse, ReportTraceSource } from "@/lib/reports/engagement-trace";
 import {
   buildEvidenceChainSummary,
   type EvidenceChainSummary,
@@ -34,14 +36,18 @@ import {
   type PacketGeographyFigure,
   type PacketGeographyInput,
 } from "@/lib/reports/geography-figure";
-import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE, safetyEvidenceSeriousInjury, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
+import { describeHighInjuryNetworkTie } from "@/lib/safety/high-injury-network";
 import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import {
   SAFETY_ACTION_PLAN_SECTION_TITLE,
   type SafetyActionPlanSectionDraft,
 } from "@/lib/reports/safety-action-plan";
+import type { SafetyPlanSupport } from "@/lib/reports/safety-plan-support";
+import type { EvidenceAppendix } from "@/lib/grants/evidence-appendices";
+import { formatSavedDate } from "@/lib/grants/bca-evidence";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -67,7 +73,7 @@ import type { ReportProjectJurisdictionSchemaPendingPayload } from "./project-ju
  * Verbatim, always — an AI-assisted block is never presented as unassisted
  * prose, and the label only ever appears on operator-ACCEPTED drafts.
  */
-export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance — reviewed and accepted";
+export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance, reviewed and accepted";
 
 /**
  * The disclosure rendered when the fact list recomputed at generation time no
@@ -75,7 +81,7 @@ export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance — revie
  * never silently dropped, never silently regenerated.
  */
 export const AI_NARRATIVE_STALE_NOTICE =
-  "Underlying data changed since acceptance — the workspace facts this narrative was grounded against no longer match the current records. Re-review or regenerate the draft before relying on this block.";
+  "Underlying data changed since acceptance. The workspace facts this narrative was grounded against no longer match the current records. Re-review or regenerate the draft before relying on this block.";
 
 type ProjectRecord = {
   id: string;
@@ -251,6 +257,12 @@ export type ReportGenerationData = {
    * the report no longer cites; it renders as that notice, never as the old plan.
    */
   safetyActionPlan?: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null;
+  /**
+   * The engagement summary, benefit-cost summary and network map printed in
+   * the safety action plan section. Rendered only, never frozen into the
+   * Safety snapshot. Absent on callers that do not read them.
+   */
+  safetyActionPlanSupport?: SafetyPlanSupport | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   guidedComparison?: GuidedComparisonSelectionV1 | null;
@@ -353,8 +365,7 @@ function esc(value: string): string {
 }
 
 function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" ? value : 0;
-  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function listMarkup(items: ProjectItem[], emptyMessage: string): string {
@@ -551,7 +562,7 @@ export function compactModelRunKpiLine(resultSummary: Record<string, unknown> | 
  */
 function citedModelRunClaimTierLine(run: ReportCitedModelRun): string | null {
   if (run.claimReadFailed) {
-    return "Claim tier could not be read — a lookup failure, not evidence that no claim decision exists for this run.";
+    return "Claim tier could not be read: a lookup failure, not evidence that no claim decision exists for this run.";
   }
   if (run.claimStatus === undefined && run.claimReadFailed === undefined) {
     return null;
@@ -829,7 +840,7 @@ function engagementSelfReportedDemographicsMarkup(data: EngagementMarkupContext)
     <h3>Self-reported respondent demographics (screening)</h3>
     <p>${selfReported.respondentsWithDemographics} respondent${
       selfReported.respondentsWithDemographics === 1 ? "" : "s"
-    } shared optional demographics. Counts only — no percentages, because suppression and multi-select answers make a share misleading.</p>
+    } shared optional demographics. Counts only: no percentages, because suppression and multi-select answers make a share misleading.</p>
     <ul class="record-list">${dimensions}</ul>
     <p>${esc(selfReported.suppressionNote)}</p>
     <p class="meta">${esc(selfReported.caveat)}</p>
@@ -858,7 +869,7 @@ function engagementJointRepresentativenessMarkup(data: EngagementMarkupContext):
   if (joint.limits.length === 0) {
     return `<div class="warning-box" style="margin-top: 18px;">
       <strong>Joint representativeness reading withheld</strong>
-      <p>This reading arrived without the disclosure of what it cannot say, and the headline is not publishable on its own — the two screenings count different people. Nothing is claimed here either way.</p>
+      <p>This reading arrived without the disclosure of what it cannot say, and the headline is not publishable on its own. The two screenings count different people. Nothing is claimed here either way.</p>
     </div>`;
   }
 
@@ -875,6 +886,104 @@ function engagementJointRepresentativenessMarkup(data: EngagementMarkupContext):
     <ul class="record-list">${joint.limits.map((limit) => `<li>${esc(limit)}</li>`).join("")}</ul>
     <p>${esc(joint.dimension.rationale)}</p>
     <p class="meta">${esc(joint.caveat)}</p>
+  </div>`;
+}
+
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+function traceSourceMarkup(source: ReportTraceSource): string {
+  if (source.kind === "approved") {
+    return `<li>${esc(source.title?.trim() || "Untitled contribution")} <span class="meta">(${esc(source.id)})</span></li>`;
+  }
+  if (source.kind === "withheld") {
+    return `<li>A contribution not approved for release <span class="meta">(${esc(source.id)}, ${esc(source.status ?? "status not recorded")}). Its words are left out of this packet.</span></li>`;
+  }
+  return `<li>A contribution no longer in this campaign's records <span class="meta">(${esc(source.id)})</span></li>`;
+}
+
+function traceThemeMarkup(themes: ReportTraceDecision["themes"]): string {
+  if (themes.state === "not_captured") return "Staff review theme not captured in this earlier link format; unknown, not none.";
+  if (themes.state === "unreadable") return "Staff review theme could not be read; unknown, not none.";
+  if (themes.rows.length === 0) return "No staff review theme was linked when this decision link was saved.";
+  return themes.rows
+    .map((theme) =>
+      theme.kind === "linked"
+        ? `Staff review theme: ${esc(theme.label)} (approved revision ${theme.revision})`
+        : `Staff review theme link withdrawn: ${esc(theme.label)}`
+    )
+    .join("<br />");
+}
+
+function traceDecisionMarkup(decision: ReportTraceDecision): string {
+  const state = decision.withdrawn
+    ? "Link withdrawn"
+    : decision.sourceState === "changed"
+      ? "The response or its sources changed after the last saved action"
+      : decision.sourceState === "unavailable"
+        ? "The current response or sources could not be compared"
+        : "Unchanged since the last saved action";
+  return `<li>
+    <strong>${esc(decision.title)}</strong> · ${esc(titleize(decision.status))} · ${esc(decision.projectName)}${
+      decision.onLinkedProject ? "" : " <span class=\"meta\">(as retained; the decision is no longer on a linked project)</span>"
+    }
+    <br /><span class="meta">Link record ${esc(decision.linkId)} · ${esc(decision.operations.join(", "))} · last saved ${esc(formatDateTime(decision.lastActionAt))} · ${esc(state)}</span>
+    <br /><span class="meta">${traceThemeMarkup(decision.themes)}</span>
+  </li>`;
+}
+
+function traceResponseMarkup(response: ReportTraceResponse, decisionReadFailed: boolean): string {
+  const decisions = response.decisions === null || decisionReadFailed
+    ? `<p class="meta">Decision links unknown: the read failed.</p>`
+    : response.decisions.length > 0
+      ? `<ul class="record-list">${response.decisions.map(traceDecisionMarkup).join("")}</ul>`
+      : `<p class="meta">No decision link recorded.</p>`;
+  return `<article style="margin-top: 12px;">
+    <h4>${esc(response.themeTitle)}</h4>
+    <p class="meta">Response ${esc(response.id)} · Published ${esc(response.publishedAt ? formatDateTime(response.publishedAt) : "time not recorded")}</p>
+    <p><strong>You said:</strong> ${esc(response.youSaid)}</p>
+    <p><strong>We did:</strong> ${esc(response.weDid)}</p>
+    <p><strong>Answers ${plural(response.sources.length, "contribution", "contributions")}</strong></p>
+    ${response.sources.length > 0 ? `<ul class="record-list">${response.sources.map(traceSourceMarkup).join("")}</ul>` : ""}
+    <p><strong>Decision</strong></p>
+    ${decisions}
+  </article>`;
+}
+
+/**
+ * The comment-to-decision trace. A failed read prints as unknown with its
+ * cause, never as none. Withheld comments, names and review notes stay out.
+ */
+function engagementTraceMarkup(data: EngagementMarkupContext): string {
+  const trace = data.engagement?.trace;
+  if (!trace || trace.state !== "loaded") return "";
+  const { counts } = trace;
+  const responseCount = counts.publishedResponses === null
+    ? "Published staff responses unknown"
+    : plural(counts.publishedResponses, "published staff response", "published staff responses");
+  const actionCount = counts.decisionLinkActions === null
+    ? "decision-link actions unknown"
+    : plural(counts.decisionLinkActions, "decision-link action", "decision-link actions");
+  const failures = [
+    trace.responseReadError
+      ? `<p><strong>Staff responses could not be read.</strong> They are unknown here, not zero. Reported cause: ${esc(trace.responseReadError)}</p>`
+      : "",
+    trace.decisionReadError
+      ? `<p><strong>Decision links could not be read.</strong> They are unknown here, not none. Reported cause: ${esc(trace.decisionReadError)}</p>`
+      : "",
+  ].join("");
+  const responses = trace.responses === null
+    ? ""
+    : trace.responses.length > 0
+      ? trace.responses.map((response) => traceResponseMarkup(response, trace.decisionReadError !== null)).join("")
+      : `<p class="empty">No staff response has been published for this campaign.</p>`;
+  return `<div style="margin-top: 18px;">
+    <h3>From comment to decision</h3>
+    <p>${plural(counts.contributions, "contribution", "contributions")}: ${counts.byState.approved} approved, ${counts.byState.rejected} withheld, ${counts.byState.pending} pending, ${counts.byState.flagged} flagged. ${responseCount}. ${actionCount} (links, refreshes and withdrawals).</p>
+    <p class="meta">Counted as in the internal engagement review files. Withheld comments, names, review notes and demographics are left out of this packet.</p>
+    ${failures}
+    ${responses}
   </div>`;
 }
 
@@ -906,11 +1015,12 @@ function fundingSnapshotMarkup(snapshot: ProjectFundingSnapshot | null): string 
     return "";
   }
 
+  if (snapshot.comparableFunding) return `<div class="warning-box"><strong>Funding posture at generation</strong><p>${esc(comparableFundingDisclosure(snapshot.comparableFunding))}</p><p>${esc(snapshot.reason)}</p></div>`;
   return `<div class="warning-box" style="margin-top: 18px;">
     <strong>Funding posture at generation</strong>
     <p>${esc(snapshot.label)} • ${esc(snapshot.pipelineLabel)} • ${esc(snapshot.reimbursementLabel)}</p>
-    <p>${snapshot.awardCount} award${snapshot.awardCount === 1 ? "" : "s"} • ${snapshot.pursuedOpportunityCount} pursued opportunit${snapshot.pursuedOpportunityCount === 1 ? "y" : "ies"} • ${esc(formatCurrency(snapshot.committedFundingAmount))} committed${snapshot.fundingNeedAmount > 0 ? ` • ${esc(formatCurrency(snapshot.fundingNeedAmount))} need` : ""}</p>
-    <p>${snapshot.unfundedAfterLikelyAmount > 0 ? `Uncovered after likely dollars: ${esc(formatCurrency(snapshot.unfundedAfterLikelyAmount))}` : snapshot.remainingFundingGap > 0 ? `Current committed gap: ${esc(formatCurrency(snapshot.remainingFundingGap))}` : "No remaining funding gap was recorded in this snapshot."}${snapshot.uninvoicedAwardAmount > 0 ? ` • Uninvoiced awards: ${esc(formatCurrency(snapshot.uninvoicedAwardAmount))}` : ""}</p>
+    <p>${snapshot.awardCount} award${snapshot.awardCount === 1 ? "" : "s"} • ${snapshot.pursuedOpportunityCount} pursued opportunit${snapshot.pursuedOpportunityCount === 1 ? "y" : "ies"} • ${esc(formatCurrency(snapshot.committedFundingAmount))} committed${snapshot.fundingNeedAmount !== null && snapshot.fundingNeedAmount > 0 ? ` • ${esc(formatCurrency(snapshot.fundingNeedAmount))} need` : ""}</p>
+    <p>${snapshot.unfundedAfterLikelyAmount !== null && snapshot.unfundedAfterLikelyAmount > 0 ? `Uncovered after likely dollars: ${esc(formatCurrency(snapshot.unfundedAfterLikelyAmount))}` : snapshot.remainingFundingGap !== null && snapshot.remainingFundingGap > 0 ? `Current committed gap: ${esc(formatCurrency(snapshot.remainingFundingGap))}` : "No remaining funding gap was recorded in this snapshot."}${snapshot.uninvoicedAwardAmount !== null && snapshot.uninvoicedAwardAmount > 0 ? ` • Uninvoiced awards: ${esc(formatCurrency(snapshot.uninvoicedAwardAmount))}` : ""}</p>
     ${snapshot.latestSourceUpdatedAt ? `<p>Funding source records current through ${esc(formatDateTime(snapshot.latestSourceUpdatedAt))}.</p>` : ""}
   </div>`;
 }
@@ -1139,14 +1249,14 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
       <h3>${esc(acquisition.sourceLabel)}</h3>
       <p>Years requested: ${esc(acquisition.years)}</p>
       <p>${acquisition.resourceUpdateNote ? `${esc(acquisition.resourceUpdateNote)}${acquisition.publishedThroughSourceUrl ? ` <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source file metadata")}</a>` : ""}` : acquisition.publishedThrough
-        ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? ` — <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
+        ? `Source publication cutoff: ${esc(acquisition.publishedThrough)}${acquisition.publishedThroughSourceUrl ? `, <a href="${esc(acquisition.publishedThroughSourceUrl)}">${esc(acquisition.publishedThroughSourceLabel ?? "source publication metadata")}</a>` : ""}.`
         : "The source supplied no exact publication cutoff; requested and returned years are not substitutes."}</p>
       <dl class="detail-grid">
         ${acquisition.figures
           .map(
             (figure) => `<div><dt>${esc(figure.label)}</dt><dd>${
               figure.value === null
-                ? `Not available — ${esc(figure.absentBecause ?? "no reason recorded")}`
+                ? `Not available: ${esc(figure.absentBecause ?? "no reason recorded")}`
                 : esc(figure.value.toLocaleString("en-US"))
             }</dd></div>`
           )
@@ -1163,7 +1273,7 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   const concentrations = data.safetyKsiConcentrations;
   const acquisitionCoverage = data.safetyEvidence ?? [];
   const ksiPresentationSupported = acquisitionCoverage.length > 0
-    && acquisitionCoverage.every(item => separatesSeriousInjuries(item.severityCompleteness));
+    && acquisitionCoverage.every(item => safetyEvidenceSeriousInjury(item).separable);
   const concentrationMarkup = concentrations === undefined
     ? ""
     : !ksiPresentationSupported
@@ -1221,7 +1331,35 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
  * figure keeps its source line, and the uncovered components are listed so the
  * draft cannot read as a finished plan.
  */
-export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionPlan"]): string {
+/**
+ * One shared evidence block (the SS4A appendix model) inside the safety
+ * action plan section. Absent records print "Missing", failed reads print
+ * "Could not be read", and dates print as calendar dates.
+ */
+function safetyPlanEvidenceBlockMarkup(block: EvidenceAppendix): string {
+  const heading = `<h3>${esc(block.title)}</h3>`;
+  if (block.status !== "included") {
+    return `${heading}<p><strong>${block.status === "unreadable" ? "Could not be read." : "Missing."}</strong> ${esc(block.statusNote ?? "")}</p>`;
+  }
+  const source = block.source
+    ? `<p class="source-line">Source: ${esc(block.source.record)} ${esc(block.source.id)}. ${esc(block.source.dateLabel)} ${esc(block.source.date ? formatSavedDate(block.source.date) : "date not recorded")}. ${esc(block.source.hash ? `${block.source.hashLabel}: ${block.source.hash}.` : `${block.source.hashLabel}.`)}${block.source.details.length > 0 ? ` ${esc(block.source.details.join(" "))}` : ""}</p>`
+    : "";
+  const facts = block.facts.length > 0
+    ? `<dl class="detail-grid">${block.facts.map((fact) => `<div><dt>${esc(fact.label)}</dt><dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
+    : "";
+  const table = block.table
+    ? `<table class="wrap-cells"><thead><tr>${block.table.headers.map((header) => `<th>${esc(header)}</th>`).join("")}</tr></thead>
+      <tbody>${block.table.rows.map((row) => `<tr>${row.map((cell) => `<td>${esc(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`
+    : "";
+  return `${heading}${block.statusNote ? `<p>${esc(block.statusNote)}</p>` : ""}${facts}${table}${
+    block.notes.length > 0 ? `<ul>${block.notes.map((note) => `<li>${esc(note)}</li>`).join("")}</ul>` : ""
+  }${source}`;
+}
+
+export function safetyActionPlanMarkup(
+  plan: ReportGenerationData["safetyActionPlan"],
+  support: SafetyPlanSupport | null = null
+): string {
   if (!plan) return "";
   const heading = `<h2 class="section-title">${esc(SAFETY_ACTION_PLAN_SECTION_TITLE)}</h2>`;
   if ("kind" in plan && plan.kind === "stale_acquisition") {
@@ -1246,6 +1384,7 @@ export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionP
     ? `<h3>High-injury network</h3><p>${esc(network.reason)}</p>`
     : `<h3>High-injury network</h3>
       <p><strong>${esc(network.measureLabel)}</strong>, ${esc(network.years)}.</p>
+      ${describeHighInjuryNetworkTie(network.rows) ? `<p>${esc(describeHighInjuryNetworkTie(network.rows) ?? "")}</p>` : ""}
       ${network.rows.length > 0 ? `<table>
         <thead><tr><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
         <tbody>${network.rows.map((row) => `<tr>
@@ -1258,6 +1397,7 @@ export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionP
           <td>${row.countermeasureNames.length > 0 ? row.countermeasureNames.map(esc).join("; ") : "None attached"}</td>
         </tr>`).join("")}</tbody>
       </table>` : ""}
+      ${networkMapMarkup(support?.networkMap ?? null, network.rows.length)}
       <p><strong>Method:</strong> ${esc(network.method)}</p>
       <p><strong>Coverage:</strong> ${esc(network.coverage)}</p>
       <p class="source-line">${esc(network.sourceLine)}</p>`;
@@ -1267,7 +1407,7 @@ export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionP
     : `<h3>Countermeasures</h3>
       <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
       <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
-        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}. Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
+        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? `<span class="list-status">${esc(item.listStatus)}</span>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a class="source-url" href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
       </li>`).join("")}</ul>
       <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
 
@@ -1275,7 +1415,21 @@ export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionP
     <ul>${draft.components.map((component) => `<li><strong>${esc(component.component)}:</strong> ${component.status === "partial" ? "Partly covered." : "Not covered."} ${esc(component.gap)}</li>`).join("")}</ul>
     <p class="source-line">${esc(draft.componentSourceLine)}</p>`;
 
-  return `<section id="safety_action_plan">${heading}<p>${esc(draft.draftNotice)}</p>${summary}${networkMarkup}${treatments}${components}</section>`;
+  const evidence = support
+    ? `${safetyPlanEvidenceBlockMarkup(support.engagement)}${safetyPlanEvidenceBlockMarkup(support.bca)}`
+    : "";
+
+  return `<section id="safety_action_plan">${heading}<p>${esc(draft.draftNotice)}</p>${summary}${networkMarkup}${treatments}${evidence}${components}</section>`;
+}
+
+/**
+ * The ranked network as a figure. Its count comes from the same ranked list
+ * as the table, so the text, the numbered marks and the rows agree.
+ */
+function networkMapMarkup(map: SafetyPlanSupport["networkMap"], rowCount: number): string {
+  if (!map) return "";
+  if (map.kind === "not_drawn") return `<p><strong>Map not drawn.</strong> ${esc(map.reason)}</p>`;
+  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red and numbered by rank${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}. The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
@@ -1905,6 +2059,7 @@ function engagementSummaryMarkup(data: EngagementMarkupContext): string {
         }</p>
       </div>
     </div>
+    ${engagementTraceMarkup(data)}
     ${engagementSynthesisMarkup(data)}
     ${engagementHotspotsMarkup(data)}
     ${engagementRepresentativenessMarkup(data)}
@@ -1946,15 +2101,25 @@ function engagementSummaryMarkup(data: EngagementMarkupContext): string {
     </div>`;
 }
 
-/** The one report stylesheet, shared by the project and campaign builders so
- * both packet families stay visually coherent. */
+/**
+ * The one report stylesheet, shared by the project and campaign builders so
+ * both packet families stay visually coherent.
+ *
+ * Letter spacing stays under 0.1em: Poppler and most PDF readers start a new
+ * word at a gap wider than a tenth of the font size, so wider tracking makes a
+ * label read back as single letters and a search for it fails
+ * (KI-2026-11-14-117). Table rows do not split across pages, so a long URL in
+ * a cell prints, and copies, whole on one page. Cells are top-aligned and
+ * padded: a one-line cell centered beside a two-line cell was read between
+ * that cell's lines, and unpadded cells ran into each other.
+ */
 const REPORT_DOCUMENT_STYLES = `
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
       body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, "Times New Roman", serif; }
       main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
       .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); box-shadow: 0 30px 70px rgba(19, 34, 43, 0.08); }
-      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }
+      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #965c2a; }
       h1, h2, h3 { margin: 0; }
       h1 { margin-top: 12px; font-size: 42px; line-height: 1.05; }
       .hero p { max-width: 760px; font-size: 17px; line-height: 1.6; }
@@ -1963,13 +2128,13 @@ const REPORT_DOCUMENT_STYLES = `
       .two-col { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
       .facts, .metrics-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
       .facts div, .metrics-grid div, .transparency-item, .metric-card { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
-      dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }
+      dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       dd, strong { margin: 6px 0 0; font-size: 18px; }
       .record-list, .timeline { margin: 0; padding-left: 20px; display: grid; gap: 12px; }
       .record-list li, .timeline li { padding-left: 4px; }
       .run-card { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 22px; padding: 18px; background: #fffdf8; }
       .run-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
-      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
+      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; }
       .pill-pass { background: #d8f3df; color: #15653a; }
       .pill-hold { background: #fde2d2; color: #9a3412; }
       .warning-box { border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
@@ -1992,6 +2157,14 @@ const REPORT_DOCUMENT_STYLES = `
       .geo-scale-line { stroke: #13222b; stroke-width: 2; }
       .geo-figure figcaption { margin-top: 12px; font-size: 14px; line-height: 1.55; color: #3b4952; }
       .geo-figure figcaption p { margin: 6px 0 0; }
+      .safety-network-map { margin: 14px 0; break-inside: avoid; }
+      .safety-network-map figcaption { margin-top: 8px; font-size: 13px; line-height: 1.5; color: #3b4952; }
+      tr { break-inside: avoid; }
+      th, td { text-align: left; vertical-align: top; padding: 6px 8px; }
+      table.wrap-cells { width: 100%; table-layout: fixed; }
+      table.wrap-cells th, table.wrap-cells td { overflow-wrap: anywhere; }
+      .list-status { display: block; margin: 2px 0; font-size: 14px; color: #3b4952; }
+      .source-url, .source-line { overflow-wrap: anywhere; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {
@@ -2070,7 +2243,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           </section>`
         )
         .join("")}
-      ${safetyActionPlanMarkup(data.safetyActionPlan)}
+      ${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}
     </main>
   </body>
 </html>`;

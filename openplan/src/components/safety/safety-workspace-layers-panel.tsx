@@ -135,7 +135,7 @@ export function SafetyWorkspaceLayersPanel() {
                     rather than as an upload that never landed. */}
                 {!layer.currentVersion ? (
                   <p className="ml-6 text-xs italic text-muted-foreground" role="note">
-                    No finished upload yet — nothing is drawn for this layer.
+                    No finished upload yet. Nothing is drawn for this layer.
                   </p>
                 ) : null}
               </li>

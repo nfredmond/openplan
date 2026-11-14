@@ -107,7 +107,7 @@ export function CampaignAccessibilityEditor({
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-foreground">Who to contact</span>
         <span className="text-xs text-muted-foreground">
-          In your agency&apos;s own words — &ldquo;ADA Coordinator&rdquo;, &ldquo;Community Engagement
+          In your agency&apos;s own words: &ldquo;ADA Coordinator&rdquo;, &ldquo;Community Engagement
           Team&rdquo;, a named officer. OpenPlan does not choose this for you.
         </span>
         <input maxLength={200} className={FIELD} {...field("contactLabel")} />
@@ -127,7 +127,7 @@ export function CampaignAccessibilityEditor({
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-foreground">Other ways to take part</span>
         <span className="text-xs text-muted-foreground">
-          Paper copies, a phone line, an interpreter, a staffed meeting — whatever you actually offer.
+          Paper copies, a phone line, an interpreter, a staffed meeting: whatever you actually offer.
           This text is translated alongside the rest of the campaign.
         </span>
         <textarea rows={3} maxLength={2000} className={FIELD} {...field("alternateFormats")} />

@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   loadUsTigerRoadContext,
+  loadUsTigerRoadLinesNearCrashes,
+  ROAD_LINE_QUERY_LOCATION_LIMIT,
   roadContextForFrozenPacket,
 } from "@/lib/safety/us-road-context-adapter";
 
@@ -67,5 +69,62 @@ describe("US TIGER/Line road-context adapter", () => {
 
     expect(roadContextForFrozenPacket([road], null)).toEqual([road]);
     expect(roadContextForFrozenPacket([road], { message: "cache unavailable" })).toEqual([]);
+  });
+});
+
+/**
+ * Road lines for the high-injury network, read near each ranked crash. All or
+ * nothing: a missing line would leave a crash unplaced, and the list would say
+ * no road was near it. Blind category: the live service's own record limit
+ * and response wording.
+ */
+describe("US TIGER/Line road lines near crashes", () => {
+  const road = (name: string, oid: string, lon: number, lat: number) => ({
+    type: "Feature",
+    properties: { NAME: name, OID: oid },
+    geometry: { type: "LineString", coordinates: [[lon - 0.005, lat], [lon + 0.005, lat]] },
+  });
+
+  it("merges nearby crashes into one query box and keeps every named line", async () => {
+    const fetcher = vi.fn((input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("?f=pjson")) return response({ description: "Roads as of January 1, 2025" });
+      return response({ type: "FeatureCollection", features: url.includes("/0/query") ? [road("County Road 12", "a", -114.5, 37.6)] : [] });
+    });
+    const result = await loadUsTigerRoadLinesNearCrashes(
+      [{ longitude: -114.5, latitude: 37.6 }, { longitude: -114.5004, latitude: 37.6003 }, { longitude: Number.NaN, latitude: 1 }],
+      fetcher,
+    );
+    expect(result).toMatchObject({ status: "read", sourceVintage: "2025-01-01" });
+    expect(result.status === "read" && result.roads.map((line) => line.name)).toEqual(["County Road 12"]);
+    // One metadata read, then three road layers for the one shared box.
+    expect(fetcher).toHaveBeenCalledTimes(4);
+  });
+
+  it("asks nothing when there are more crash locations than one pass reads", async () => {
+    const fetcher = vi.fn();
+    const points = Array.from({ length: ROAD_LINE_QUERY_LOCATION_LIMIT + 1 }, (_, index) => ({ longitude: -110 + index * 0.1, latitude: 40 }));
+    expect(await loadUsTigerRoadLinesNearCrashes(points, fetcher)).toEqual({ status: "too_many_locations", locations: ROAD_LINE_QUERY_LOCATION_LIMIT + 1 });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("fails the whole load when one layer query fails", async () => {
+    const fetcher = vi.fn((input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("?f=pjson")) return response({ description: "Roads as of January 1, 2025" });
+      if (url.includes("/1/query")) return response({ error: "busy" }, false);
+      return response({ type: "FeatureCollection", features: [road("County Road 12", "a", -114.5, 37.6)] });
+    });
+    expect(await loadUsTigerRoadLinesNearCrashes([{ longitude: -114.5, latitude: 37.6 }], fetcher)).toEqual({ status: "failed" });
+  });
+
+  it("refuses an answer that may have been cut short at the record limit", async () => {
+    const fetcher = vi.fn((input: string | URL | Request) => {
+      const url = String(input);
+      if (url.includes("?f=pjson")) return response({ description: "Roads as of January 1, 2025" });
+      const limit = Number(new URL(url).searchParams.get("resultRecordCount"));
+      return response({ type: "FeatureCollection", features: Array.from({ length: limit }, (_, index) => road(`Street ${index}`, String(index), -114.5, 37.6)) });
+    });
+    expect(await loadUsTigerRoadLinesNearCrashes([{ longitude: -114.5, latitude: 37.6 }], fetcher)).toEqual({ status: "too_many_lines" });
   });
 });

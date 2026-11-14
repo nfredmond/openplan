@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -12,7 +13,7 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure, type RouteReadResultLike } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
@@ -266,18 +267,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         audit.warn("ai_offline", { chapterId: parsedParams.data.chapterId });
         return NextResponse.json({ error: "ai_offline" }, { status: 503 });
       }
-      const rateLimit = await checkAiUsageRateLimit(chapter.workspace_id);
-      if (!rateLimit.allowed) {
-        audit.warn("chapter_draft_rate_limited", {
-          chapterId: chapter.id,
-          workspaceId: chapter.workspace_id,
-          recentCount: rateLimit.count,
-        });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
-      }
 
       // Deterministic cycle context — the same summaries the RTP packet renders.
       const [cycleResult, linksResult, campaignsResult, countyRunsResult] = await Promise.all([
@@ -367,15 +356,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 .in("project_id", linkedProjectIds),
               supabase
                 .from("funding_awards")
-                .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+                .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
                 .in("project_id", linkedProjectIds),
               supabase
                 .from("funding_opportunities")
-                .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+                .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
                 .in("project_id", linkedProjectIds),
               supabase
                 .from("billing_invoice_records")
-                .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+                .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
                 .in("project_id", linkedProjectIds),
             ])
           : [
@@ -392,6 +381,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ["grant reimbursement invoices", invoicesResult],
       ]);
       if (fundingFailure) return fundingFailure;
+      if (linkedProjectIds.length) assertCompleteFundingRead(fundingAwardsResult, fundingOpportunitiesResult, invoicesResult);
 
       type ByProject<T> = Map<string, T[]>;
       const groupByProject = <T extends { project_id: string }>(rows: T[] | null | undefined): ByProject<T> => {
@@ -640,9 +630,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- Write 2-5 paragraphs of professional long-range-plan prose in markdown (paragraphs only; no headings, no bullet lists).",
         "- Ground every statement STRICTLY in the numbered WORKSPACE FACTS below. Do not invent numbers, dollar amounts, dates, project names, comment counts, or model results that are not present in the facts.",
         "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on.",
-        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
-        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
-        "- NEVER upgrade a claim: modeling facts below carry their claim-registry framing (screening-grade, prototype-only, etc.) — keep that framing verbatim whenever you reference them, and never present screening results as forecasts or calibrated models.",
+        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual. When in doubt, prefer citing.",
+        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented. Never fabricate it.",
+        "- NEVER upgrade a claim: modeling facts below carry their claim-registry framing (screening-grade, prototype-only, etc.). Keep that framing verbatim whenever you reference them, and never present screening results as forecasts or calibrated models.",
         "- If (and only if) you reference the community-engagement facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must never describe comment counts or sentiment as community consensus, a survey result, or completed public-participation requirements:",
         `  "${ENGAGEMENT_NARRATIVE_CAVEAT}"`,
         "- If (and only if) you reference the uploaded-document facts below, you MUST include the following caveat sentence verbatim in the same paragraph, attribute the content to the named document, and never present it as OpenPlan's own finding or as independently verified:",
@@ -652,6 +642,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
         ...renderNarrativeFactPromptLines(facts),
       ].join("\n");
+
+      // Counted before the call (reserveAiUsage). When the deployment's key
+      // pays, a usage lookup or record that fails throws here, so no unmetered
+      // call is made. A failed call keeps its reservation.
+      const rateLimit = await reserveAiUsage({
+        workspaceId: chapter.workspace_id,
+        bucketKey: "document_narrative_draft",
+        eventKey: "rtp_chapter_narrative_draft",
+        sourceRoute: "/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft",
+        metadataJson: { model: modelId, chapterId: chapter.id },
+      });
+      if (!rateLimit.allowed) {
+        audit.warn("chapter_draft_rate_limited", {
+          chapterId: chapter.id,
+          workspaceId: chapter.workspace_id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
 
       let draftText: string;
       let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
@@ -674,15 +686,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
       }
-
-      // Fire-and-forget spend metering after a successful model call only.
-      void recordAiUsageEvent({
-        workspaceId: chapter.workspace_id,
-        bucketKey: "document_narrative_draft",
-        eventKey: "rtp_chapter_narrative_draft",
-        sourceRoute: "/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft",
-        metadataJson: { model: modelId, chapterId: chapter.id },
-      });
 
       if (!draftText) {
         audit.error("chapter_draft_generation_empty", { chapterId: chapter.id, model: modelId });

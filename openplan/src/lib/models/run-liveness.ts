@@ -134,7 +134,7 @@ export function stalenessMessage(liveness: RunLiveness): string {
   if (liveness === "stale_queued") {
     return (
       `No modeling worker picked up this run within ${QUEUE_STALE_MINUTES} minutes. ` +
-      `The AequilibraE worker may be offline — start the worker, then re-launch this run.`
+      `The AequilibraE worker may be offline. Start the worker, then re-launch this run.`
     );
   }
   if (liveness === "stale_running") {

@@ -104,7 +104,7 @@ export function CommentImportPanel({ campaignId }: { campaignId: string }) {
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-foreground">Where these came from</span>
           <span className="text-xs text-muted-foreground">
-            Applies to the whole file. This is not cosmetic — it is what the appendix and the
+            Applies to the whole file. This is not cosmetic. It is what the appendix and the
             representativeness reading use to tell in-person input apart from portal input.
           </span>
           <select
@@ -123,7 +123,7 @@ export function CommentImportPanel({ campaignId }: { campaignId: string }) {
 
       <p className="rounded-md border border-border/60 px-3 py-2 text-xs leading-5 text-muted-foreground">
         Imported comments arrive as <strong>pending</strong> and go through the same moderation queue as
-        everything else — a file is not a review. They cannot be marked as public portal submissions:
+        everything else. A file is not a review. They cannot be marked as public portal submissions:
         that means somebody submitted it themselves under a rate limit and a share token, which a
         spreadsheet row cannot be given afterwards.
       </p>
@@ -137,7 +137,7 @@ export function CommentImportPanel({ campaignId }: { campaignId: string }) {
       {imported !== null ? (
         <p role="status" className="rounded-md border border-emerald-300/70 bg-emerald-50/60 px-3 py-2 text-sm dark:border-emerald-900 dark:bg-emerald-950/20">
           Imported {imported} comment{imported === 1 ? "" : "s"}. They are waiting in the moderation
-          queue — nothing is on the public portal until you approve it.
+          queue. Nothing is on the public portal until you approve it.
         </p>
       ) : null}
 
@@ -179,7 +179,7 @@ export function CommentImportPanel({ campaignId }: { campaignId: string }) {
           {blocked ? (
             <div>
               <p className="font-medium text-amber-900 dark:text-amber-200">
-                {preview.errorCount} problem{preview.errorCount === 1 ? "" : "s"} — nothing will be
+                {preview.errorCount} problem{preview.errorCount === 1 ? "" : "s"}. Nothing will be
                 imported until the file is fixed. Every problem is listed so you can fix them in one
                 pass.
               </p>

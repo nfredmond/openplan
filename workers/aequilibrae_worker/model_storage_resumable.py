@@ -16,6 +16,7 @@ import uuid
 
 import requests
 from model_storage_readback import object_url, verify_object, ObjectReadbackUnconfirmed
+from supabase_service_headers import service_key_headers
 
 CHUNK_BYTES = 6 * 1024 * 1024
 
@@ -115,7 +116,7 @@ def upload_file(*, source, state_dir, base_url, service_key, bucket, object_path
         def verified():
             return verify_object(base_url=base_url, service_key=service_key, bucket=bucket, object_path=object_path,
                 sha256=sha256, size_bytes=size_bytes, get=lambda url, **kwargs: request('GET', url, **kwargs))
-        headers = {'apikey':service_key, 'Authorization':'Bearer '+service_key, 'Tus-Resumable':'1.0.0', 'x-upsert':'false'}
+        headers = {**service_key_headers(service_key), 'Tus-Resumable':'1.0.0', 'x-upsert':'false'}
         def send(method, url, extra=None, data=None):
             return request(method, url, headers={**headers, **(extra or {})}, data=data,
                            timeout=(15,60), allow_redirects=False, stream=True)

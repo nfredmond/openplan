@@ -28,7 +28,7 @@ export function EngagementTextInspection({ text, label, language, script }: { te
           {inspection.counts.map(entry => <li key={entry.codePoint} className="break-words"><code>{entry.codePoint}</code> {entry.name}: {entry.count}</li>)}
         </ul>}
         <p>Escaped inspection view. Markers use {"\\u{HEX}"}; literal backslashes appear doubled. Readable text above remains unchanged. Tabs and newlines remain readable.</p>
-        <pre aria-label={`${label}, escaped inspection`} dir="ltr" className="max-h-80 overflow-auto whitespace-pre-wrap break-all rounded bg-muted p-2 text-xs" style={{ unicodeBidi: "isolate" }}>{inspection.escaped}</pre>
+        <pre aria-label={`${label}, escaped inspection`} dir="ltr" className="max-h-80 overflow-auto whitespace-pre-wrap break-all rounded bg-secondary p-2 text-xs" style={{ unicodeBidi: "isolate" }}>{inspection.escaped}</pre>
       </div> : null}
     </details>
   </div>;

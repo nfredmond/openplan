@@ -24,7 +24,7 @@
  */
 
 /** The departed-member sentence, shared so every surface says the same thing. */
-export const DEPARTED_ASSIGNEE_SENTENCE = "Unassigned — previously a member";
+export const DEPARTED_ASSIGNEE_SENTENCE = "Unassigned, previously a member";
 
 export const WORKSPACE_ROSTER_LIMIT = 200;
 

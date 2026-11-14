@@ -29,7 +29,7 @@ import type {
 /** No extractable text layer (e.g. a scanned PDF) — surfaced honestly, never faked. */
 export class NoExtractableTextError extends Error {
   constructor(
-    message = "No extractable text layer was found. Scanned or image-only documents are not supported yet — OCR is not enabled."
+    message = "No extractable text layer was found. Scanned or image-only documents are not supported yet. OCR is not enabled."
   ) {
     super(message);
     this.name = "NoExtractableTextError";

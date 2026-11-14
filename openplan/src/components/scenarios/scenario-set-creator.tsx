@@ -91,7 +91,7 @@ export function ScenarioSetCreator({
               flow={flow}
               name="planningQuestion"
               label="What decision should it help with?"
-              hint="Optional. In plain words — what would you like to be able to say at the end?"
+              hint="Optional. In plain words: what would you like to be able to say at the end?"
             >
               <Textarea
                 {...flow.text("planningQuestion")}
@@ -189,7 +189,7 @@ export function ScenarioSetCreator({
         <p className="font-semibold text-foreground">Projects could not be read</p>
         <p className="text-muted-foreground">
           This workspace&apos;s project list could not be loaded, so no project can be offered here. That is a failed
-          read, not a workspace without projects — do not create a duplicate project on the strength of it.
+          read, not a workspace without projects. Do not create a duplicate project on the strength of it.
         </p>
       </div>
     );

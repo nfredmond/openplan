@@ -1,3 +1,5 @@
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
 import React from "react";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
@@ -133,7 +135,7 @@ describe("my work — the board", () => {
     await renderBoard({ scope: "all_projects", roster: { ok: false } });
 
     expect(
-      screen.getAllByText("Assignee unavailable — the team roster could not be read").length
+      screen.getAllByText("Assignee unavailable: the team roster could not be read").length
     ).toBeGreaterThan(0);
     // And it does not silently narrow "unassigned" without saying so.
     expect(screen.queryByText(DEPARTED_ASSIGNEE_SENTENCE)).toBeNull();
@@ -193,8 +195,8 @@ describe("my work — the board", () => {
       empty: false,
       failures: {
         project_deliverables: "permission denied",
-        project_milestones: "permission denied",
-        project_submittals: "permission denied",
+        active_project_milestones: "permission denied",
+        active_project_submittals: "permission denied",
       },
     });
     const dated = blockNamed("Dated work");
@@ -235,7 +237,7 @@ describe("my work — the review queue on screen", () => {
     // which is the whole point of the block.
     expect(waiting.getByText(/The crossing at 4th and Main/)).toBeInTheDocument();
     expect(waiting.getByText("Corridor screening — build alternative")).toBeInTheDocument();
-    expect(waiting.getByText("Draft narrative — Existing conditions")).toBeInTheDocument();
+    expect(waiting.getByText("Draft narrative: Existing conditions")).toBeInTheDocument();
     // Nothing here is presented as belonging to anyone.
     expect(waiting.queryByText(DEPARTED_ASSIGNEE_SENTENCE)).toBeNull();
     expect(waiting.getByText("Flagged")).toBeInTheDocument();

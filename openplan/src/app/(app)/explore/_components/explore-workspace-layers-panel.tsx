@@ -152,7 +152,7 @@ export function ExploreWorkspaceLayersPanel({
                   */}
                   {!version ? (
                     <p className="analysis-workspace-layer__note" role="note">
-                      No finished upload yet — nothing is drawn for this layer.
+                      No finished upload yet. Nothing is drawn for this layer.
                     </p>
                   ) : null}
                 </li>

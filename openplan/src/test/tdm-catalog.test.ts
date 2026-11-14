@@ -109,7 +109,7 @@ describe("getTdmStrategy", () => {
       defaultVmtReductionPct: 6.5,
       countsTowardVmt: true,
       sourceNote:
-        "Screening default informed by general TDM literature; not verified against CAPCOA's Handbook for Analyzing GHG Mitigation Measures (2021) — confirm the measure-specific value before CEQA or grant use.",
+        "Screening default informed by general TDM literature; not verified against CAPCOA's Handbook for Analyzing GHG Mitigation Measures (2021). Confirm the measure-specific value before CEQA or grant use.",
     });
   });
 

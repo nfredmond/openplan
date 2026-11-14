@@ -329,6 +329,6 @@ describe("GrantsBcaScreeningSection", () => {
     render(<GrantsBcaScreeningSection projects={PROJECTS} canSave />);
     const article = screen.getByTestId("grants-bca-screening");
     expect(article.id).toBe("grants-benefit-cost");
-    expect(article.textContent).toContain("Screening-level — not an application BCA");
+    expect(article.textContent).toContain("Screening-level, not an application BCA");
   });
 });

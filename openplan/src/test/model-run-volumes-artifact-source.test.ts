@@ -1,3 +1,4 @@
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const downloadMock = vi.fn();
@@ -67,7 +68,7 @@ describe("workerLocalRoot", () => {
     expect(workerLocalRoot()).toBeNull();
     process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
     expect(workerLocalRoot()).toBe("/srv/runs");
-    expect(resolveRunWorkDir("/srv/runs", "12345678-1234-4123-8123-123456789abc")).toBe("/srv/runs/runs/12345678-1234-4123-8123-123456789abc");
+    expect(resolveRunWorkDir("/srv/runs", "12345678-1234-4123-8123-123456789abc")).toBe(path.join("/srv/runs", "runs", "12345678-1234-4123-8123-123456789abc"));
   });
 });
 
@@ -127,7 +128,7 @@ describe("loadJsonArtifact", () => {
     const result = await loadJsonArtifact("local:///srv/runs/runs/abc/volumes.geojson");
 
     expect(result).toEqual(payload);
-    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson", expect.objectContaining({ flag: expect.any(Number) }));
+    expect(readFileMock).toHaveBeenCalledWith(path.resolve("/srv/runs/runs/abc/volumes.geojson"), expect.objectContaining({ flag: expect.any(Number) }));
   });
 
   it("refuses local paths that escape the worker root", async () => {

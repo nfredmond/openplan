@@ -25,6 +25,7 @@ type EngagementReportCreateButtonProps = {
       readyForHandoffCount: number;
     };
     uncategorizedItems: number;
+    uncategorizedItemsNeedingCategory: number;
     totalItems: number;
   };
   existingReportGuidance?: {
@@ -42,13 +43,13 @@ function buildReportSummary({
   summary,
   readyForHandoffCount,
   actionableCount,
-  uncategorizedItems,
+  uncategorizedItemsNeedingCategory,
 }: {
   campaignTitle: string;
   summary: string | null;
   readyForHandoffCount: number;
   actionableCount: number;
-  uncategorizedItems: number;
+  uncategorizedItemsNeedingCategory: number;
 }) {
   return [
     `Engagement handoff packet for ${campaignTitle}.`,
@@ -57,9 +58,9 @@ function buildReportSummary({
     actionableCount > 0
       ? `${actionableCount} items still need moderation attention.`
       : "No items are currently blocked in the moderation queue.",
-    uncategorizedItems > 0
-      ? `${uncategorizedItems} items still need category assignment before downstream reporting is complete.`
-      : "Category assignment is complete for all current items.",
+    uncategorizedItemsNeedingCategory > 0
+      ? `${uncategorizedItemsNeedingCategory} items still need category assignment before downstream reporting is complete.`
+      : "Every item a report can include has a category.",
   ]
     .filter(Boolean)
     .join(" ");
@@ -176,7 +177,7 @@ export function EngagementReportCreateButton({
             summary: campaign.summary,
             readyForHandoffCount: counts.moderationQueue.readyForHandoffCount,
             actionableCount: counts.moderationQueue.actionableCount,
-            uncategorizedItems: counts.uncategorizedItems,
+            uncategorizedItemsNeedingCategory: counts.uncategorizedItemsNeedingCategory,
           }),
           sections,
         }),

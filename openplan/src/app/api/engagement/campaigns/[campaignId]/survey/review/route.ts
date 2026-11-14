@@ -6,6 +6,7 @@ import { createClient,createServiceRoleClient } from '@/lib/supabase/server';
 import { loadCampaignAccess } from '@/lib/engagement/api';
 import { loadSurveyReviewPage } from '@/lib/engagement/survey-responses';
 import { BODY_LIMITS,readJsonOrNullWithLimit } from '@/lib/http/body-limit';
+import { isUuid } from "@/lib/uuid";
 async function authorize(campaignId:string) {
  const client=await createClient();const {data:{user}}=await client.auth.getUser();if(!user)return null;
  const access=await loadCampaignAccess(client,campaignId,user.id,'engagement.write');return access.allowed&&!access.error?client:null;
@@ -13,7 +14,7 @@ async function authorize(campaignId:string) {
 export async function GET(request:NextRequest,context:{params:Promise<{campaignId:string}>}) {
  const audit=createApiAuditLogger("engagement.survey_review", request);
  audit.info("request_received");
- const {campaignId}=await context.params;const client=await authorize(campaignId);if(!client)return NextResponse.json({error:'Staff access required'},{status:403});
+ const {campaignId}=await context.params;if(!isUuid(campaignId))return NextResponse.json({error:'Invalid campaign id'},{status:400});const client=await authorize(campaignId);if(!client)return NextResponse.json({error:'Staff access required'},{status:403});
  const sessionId=new URL(request.url).searchParams.get('sessionId');
  if(sessionId){
   if(!z.string().uuid().safeParse(sessionId).success)return NextResponse.json({error:'Invalid response'},{status:400});
@@ -28,7 +29,7 @@ export async function GET(request:NextRequest,context:{params:Promise<{campaignI
 export async function PATCH(request:NextRequest,context:{params:Promise<{campaignId:string}>}) {
  const audit=createApiAuditLogger("engagement.survey_review", request);
  audit.info("request_received");
- const {campaignId}=await context.params;const client=await authorize(campaignId);if(!client)return NextResponse.json({error:'Staff access required'},{status:403});
+ const {campaignId}=await context.params;if(!isUuid(campaignId))return NextResponse.json({error:'Invalid campaign id'},{status:400});const client=await authorize(campaignId);if(!client)return NextResponse.json({error:'Staff access required'},{status:403});
  const body=await readJsonOrNullWithLimit(request,BODY_LIMITS.normalJson);if(!body.ok)return body.response;
  const parsed=z.object({sessionId:z.string().uuid(),expectedUpdatedAt:z.string().datetime({offset:true}),status:z.enum(['pending','flagged','approved','rejected']),reason:z.string().trim().min(1).max(2000),redactions:z.record(z.string().uuid(),z.string().max(8000)).default({})}).safeParse(body.data);
  if(!parsed.success)return NextResponse.json({error:'A review reason, state and exact response version are required'},{status:400});

@@ -131,7 +131,7 @@ describe("CountyRunCeqaVmtScreen", () => {
     expect(screen.getByTestId("ceqa-vmt-caveat")).toHaveTextContent(
       "not a CEQA determination of record"
     );
-    expect(screen.getByText("Screening-level — not a determination of record")).toBeInTheDocument();
+    expect(screen.getByText("Screening-level, not a determination of record")).toBeInTheDocument();
   });
 
   it("renders the explanatory empty state for the seeded behavioral-onramp KPI set", () => {

@@ -14,7 +14,7 @@ import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import {
   factClaimTextMap,
@@ -139,19 +139,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "ai_offline" }, { status: 503 });
       }
-      const rateLimit = await checkAiUsageRateLimit(opportunity.workspace_id);
-      if (!rateLimit.allowed) {
-        audit.warn("section_draft_rate_limited", {
-          opportunityId: opportunity.id,
-          workspaceId: opportunity.workspace_id,
-          userId: user.id,
-          recentCount: rateLimit.count,
-        });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
-      }
 
       const { data: sectionRow, error: sectionError } = await supabase
         .from("funding_opportunity_application_sections")
@@ -257,6 +244,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
       );
 
+      // Failed evidence remains unknown even when a section emphasizes another family.
+      if (evidence.readFailures.length > 0) {
+        const subjects = evidence.readFailures.map((failure) => failure.subject);
+        audit.error("section_draft_evidence_read_failed", {
+          opportunityId: opportunity.id,
+          sectionId: section.id,
+          workspaceId: opportunity.workspace_id,
+          userId: user.id,
+          failedReads: evidence.readFailures,
+          durationMs: Date.now() - startedAt,
+        });
+        return NextResponse.json(
+          {
+            error: `Could not draft this section: OpenPlan could not read ${subjects.join(", ")}. Evidence availability is unknown. Try again in a moment.`,
+            failedReads: subjects,
+          },
+          { status: 500 }
+        );
+      }
+
       const scopedKinds = section.suggested_evidence;
       const included = (kind: GrantApplicationEvidenceKind) =>
         scopedKinds.length === 0 || scopedKinds.includes(kind);
@@ -291,7 +298,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "",
         ...(section.guidance
           ? [
-              "SECTION GUIDANCE (orientation only — the funder's current NOFO/guidelines control what this section must contain):",
+              "SECTION GUIDANCE (orientation only: the funder's current NOFO/guidelines control what this section must contain):",
               section.guidance,
               "",
             ]
@@ -308,7 +315,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               priorDraftMarkdown,
               "",
               "REVISION INSTRUCTIONS FROM THE OPERATOR:",
-              instructions ?? "(none provided — improve clarity and flow without changing the substance.)",
+              instructions ?? "(none provided. Improve clarity and flow without changing the substance.)",
               "",
             ]
           : instructions
@@ -318,12 +325,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- Write 1-4 paragraphs of professional grant-application prose in markdown (paragraphs only; no headings, no bullet lists).",
         "- Ground every statement STRICTLY in the numbered WORKSPACE FACTS below. Do not invent numbers, dollar amounts, dates, deadlines, commitments, partners, or project details that are not present in the facts.",
         "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on, e.g. \"The project carries a documented funding need. [fact:fact_3]\".",
-        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
-        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
+        "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual. When in doubt, prefer citing.",
+        "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented. Never fabricate it.",
         "- Dates: the facts say whether a recorded close date or decision due date has passed. Never describe a passed close date as open or upcoming, and do not compute day counts the facts do not state.",
         "- If (and only if) you reference the modeling evidence or model results below, you MUST include the following caveat sentence verbatim in the same paragraph:",
         `  "${GRANT_MODELING_PLANNING_CAVEAT}"`,
-        "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level — never as an application benefit-cost analysis:",
+        "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level, never as an application benefit-cost analysis:",
         `  "${BCA_NARRATIVE_CAVEAT}"`,
         "- If (and only if) you reference the community-engagement facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must never describe comment counts or sentiment as community consensus, a survey result, or completed public-participation requirements:",
         `  "${ENGAGEMENT_NARRATIVE_CAVEAT}"`,
@@ -349,6 +356,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
           ? "Uploaded-document facts above are verbatim excerpts from this workspace's Knowledge Base, matched by keyword; cite them only as uploaded-document content attributed to the named document, never as OpenPlan analysis or a verified finding."
           : "No Knowledge Base documents are in scope for this section; do not reference uploaded documents.",
       ].join("\n");
+
+      // Counted before the call (reserveAiUsage). When the deployment's key
+      // pays, a usage lookup or record that fails throws here, so no unmetered
+      // call is made. A failed call keeps its reservation.
+      const rateLimit = await reserveAiUsage({
+        workspaceId: opportunity.workspace_id,
+        bucketKey: "grant_narrative_draft",
+        eventKey: "grant_section_draft",
+        sourceRoute: "/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft",
+        metadataJson: { model: modelId, sectionId: section.id },
+      });
+      if (!rateLimit.allowed) {
+        audit.warn("section_draft_rate_limited", {
+          opportunityId: opportunity.id,
+          workspaceId: opportunity.workspace_id,
+          userId: user.id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
 
       let draftText: string;
       let usage: Awaited<ReturnType<typeof generateText>>["usage"] | undefined;
@@ -383,17 +413,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
         return NextResponse.json({ error: "section_draft_generation_failed" }, { status: 502 });
       }
-
-      // Fire-and-forget spend metering: the model call succeeded (a thrown
-      // generation returned 502 above without recording, so a user retry after a
-      // failure is never double-counted).
-      void recordAiUsageEvent({
-        workspaceId: opportunity.workspace_id,
-        bucketKey: "grant_narrative_draft",
-        eventKey: "grant_section_draft",
-        sourceRoute: "/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft",
-        metadataJson: { model: modelId, sectionId: section.id },
-      });
 
       const grounding = summarizeNarrativeGrounding(
         validateGroundedNarrative(draftText, factIds, "annotated", factClaimTextMap(facts)),

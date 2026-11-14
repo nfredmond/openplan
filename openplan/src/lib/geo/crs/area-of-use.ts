@@ -155,7 +155,7 @@ export function checkCrsPlacement(input: CrsPlacementInput): CrsPlacementCheck {
       ok: false,
       reason: "crs_null_island",
       message:
-        `Read as ${entry.name}, this layer lands at 0°N 0°E — the origin of the coordinate system, in the ocean ` +
+        `Read as ${entry.name}, this layer lands at 0°N 0°E, the origin of the coordinate system, in the ocean ` +
         `off West Africa. That is where coordinates end up when a projection was never applied or a false ` +
         `easting is missing, so OpenPlan will not place it. Check that the file really is in ${entry.name}, and ` +
         `that the export completed.`,
@@ -180,10 +180,10 @@ export function checkCrsPlacement(input: CrsPlacementInput): CrsPlacementCheck {
           ok: false,
           reason: "crs_unit_mismatch",
           message:
-            `Read as ${entry.name}, this layer lands at ${formatPosition(centre.longitude, centre.latitude)} — ` +
+            `Read as ${entry.name}, this layer lands at ${formatPosition(centre.longitude, centre.latitude)}, ` +
             `outside the area that system covers (${entry.areaOfUse.description}). Read as the same zone in ` +
-            `${sibling.unit === "metre" ? "metres" : sibling.unit + "s"} — ${sibling.name} ` +
-            `(${sibling.authority}:${sibling.code}) — it lands at ` +
+            `${sibling.unit === "metre" ? "metres" : sibling.unit + "s"}, ${sibling.name} ` +
+            `(${sibling.authority}:${sibling.code}), it lands at ` +
             `${formatPosition(alternativeCentre.longitude, alternativeCentre.latitude)}, which is inside it. ` +
             `The file is almost certainly in ${sibling.unit === "metre" ? "metres" : sibling.unit + "s"}, not ` +
             `${entry.unit === "metre" ? "metres" : entry.unit + "s"}.`,
@@ -216,7 +216,7 @@ export function checkCrsPlacement(input: CrsPlacementInput): CrsPlacementCheck {
       message:
         `Part of this layer reaches outside the area ${entry.name} covers (${entry.areaOfUse.description}). ` +
         `That is normal for a layer that crosses a zone boundary, and accuracy degrades gradually with distance ` +
-        `from the zone rather than failing — but the far edge is the least accurate part of it.`,
+        `from the zone rather than failing, but the far edge is the least accurate part of it.`,
     });
   }
 
@@ -237,7 +237,7 @@ export function checkCrsPlacement(input: CrsPlacementInput): CrsPlacementCheck {
         message:
           `This layer lands at ${formatPosition(centre.longitude, centre.latitude)}, roughly ` +
           `${Math.round(distance * 111)} km from your workspace's geography. That is expected for a statewide or ` +
-          `regional dataset and worth a second look otherwise — nothing is wrong with the file, it is just a long ` +
+          `regional dataset and worth a second look otherwise. Nothing is wrong with the file, it is just a long ` +
           `way from where you work.`,
       });
     }

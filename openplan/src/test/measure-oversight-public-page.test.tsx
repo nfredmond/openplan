@@ -429,7 +429,7 @@ describe("the public measure oversight page", () => {
     expect(plain(coverage.textContent)).toBe(
       "Adds up the 3 reporting periods the agency has recorded a receipt for, covering April 1, 2025 to " +
         "December 31, 2025. 1 period has been opened with no amount recorded yet (FY26 Q3), so this is at " +
-        "least what came in — not necessarily all of it."
+        "least what came in, not necessarily all of it."
     );
     // The floor is also said in a word beside the number, for a reader who does
     // not read the sentence. Scoped to THIS figure's own card: the page carries
@@ -604,7 +604,7 @@ describe("the public measure oversight page", () => {
     // The page says so in words too, because a reader who does not add the
     // column up is still owed the answer.
     expect(
-      screen.getByText(/The purposes below add up to USD.6,583,012\.90 — the same as the amount left for them/)
+      screen.getByText(/The purposes below add up to USD.6,583,012\.90, the same as the amount left for them/)
     ).toBeTruthy();
   });
 
@@ -683,7 +683,7 @@ describe("the public measure oversight page", () => {
     // the four figures only mean anything together.
     expect(screen.queryByText("Kept back in reserve")).toBeNull();
     expect(screen.queryByText("Taken out first")).toBeNull();
-    expect(screen.getByText(/it does not mean nothing was kept back/)).toBeTruthy();
+    expect(screen.getByText(/It does not mean nothing was kept back/)).toBeTruthy();
     expect(screen.getByText(/some sections are shown as unavailable rather than as zero/)).toBeTruthy();
   });
 
@@ -697,7 +697,7 @@ describe("the public measure oversight page", () => {
     // nothing before dividing, which for most measures is false and is the
     // agency's word, not a failed query's.
     expect(screen.queryByText("Taken out first")).toBeNull();
-    expect(screen.getByText(/it does not mean nothing was taken out/)).toBeTruthy();
+    expect(screen.getByText(/It does not mean nothing was taken out/)).toBeTruthy();
     expect(screen.getByText(/some sections are shown as unavailable rather than as zero/)).toBeTruthy();
   });
 
@@ -740,7 +740,7 @@ describe("the public measure oversight page", () => {
 
     // And the page refuses to net one area's surplus against another's shortfall.
     expect(
-      screen.getAllByText(/one area spending more does not make up for another spending less/).length
+      screen.getAllByText(/One area spending more does not make up for another spending less/).length
     ).toBeGreaterThan(0);
   });
 
@@ -777,7 +777,7 @@ describe("the public measure oversight page", () => {
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(screen.getByText("This record could not be loaded")).toBeTruthy();
     expect(
-      screen.getByText(/it does not mean the record is missing, unpublished, or that the fund has received nothing/)
+      screen.getByText(/It does not mean the record is missing, unpublished, or that the fund has received nothing/)
     ).toBeTruthy();
     // The database's own words are operator detail and stay off a public page.
     expect(screen.queryByText(/public_share_enabled does not exist/)).toBeNull();
@@ -799,7 +799,7 @@ describe("the public measure oversight page", () => {
     expect(screen.getByText(/USD.11,812,340\.17/)).toBeTruthy();
     // ...and the claims say they could not be read, in the resident's words.
     expect(
-      screen.getAllByText(/it does not mean nobody has claimed anything/).length
+      screen.getAllByText(/It does not mean nobody has claimed anything/).length
     ).toBeGreaterThan(0);
     expect(
       screen.getByText(/some sections are shown as unavailable rather than as zero/)
@@ -838,7 +838,7 @@ describe("the public measure oversight page", () => {
     expect(screen.getAllByText("Could not be loaded").length).toBeGreaterThan(0);
     // The headings themselves still render — the ordinance read fine.
     expect(screen.getByText("Local streets and roads")).toBeTruthy();
-    expect(screen.getByText(/it does not mean nothing has been set aside/)).toBeTruthy();
+    expect(screen.getByText(/It does not mean nothing has been set aside/)).toBeTruthy();
   });
 
   it("does not print a failed maintenance-of-effort read as no commitments", async () => {
@@ -849,7 +849,7 @@ describe("the public measure oversight page", () => {
     // A statement about what an ordinance requires of every city in the county,
     // made on the agency's behalf by a failed query.
     expect(screen.queryByText("No local-spending commitments have been recorded for this measure.")).toBeNull();
-    expect(screen.getByText(/it does not mean no area promised anything/)).toBeTruthy();
+    expect(screen.getByText(/It does not mean no area promised anything/)).toBeTruthy();
   });
 
   it("does not print a failed recipients read as areas the agency never named", async () => {
@@ -858,7 +858,7 @@ describe("the public measure oversight page", () => {
     await renderPage();
 
     expect(screen.queryByText(/An area the agency has not named/)).toBeNull();
-    expect(screen.getByText(/it does not mean nobody has asked/)).toBeTruthy();
+    expect(screen.getByText(/It does not mean nobody has asked/)).toBeTruthy();
   });
 
   /*

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { z } from "zod";
+import { isUuid } from "@/lib/uuid";
 import { createClient } from "@/lib/supabase/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BcaWorkbench } from "@/components/grants/bca-workbench/workbench";
@@ -8,6 +8,9 @@ import { loadGuidedComparisonEvidence } from "@/lib/models/guided-comparison-evi
 import { buildGuidedComparisonResults } from "@/lib/models/guided-comparison-results";
 import type { BcaModelEvidence } from "@/lib/bca/workbench/model-evidence";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { BCA_PROJECT_PROJECTION, readBcaProjectPlace } from "@/lib/bca/workbench/project-place";
+import { loadLatestBcaVersion, type BcaLatestVersionClient } from "@/lib/bca/workbench/latest-version";
+import { loadBcaSafetyPlanOffers, type BcaSafetySupabaseLike } from "@/lib/safety/bca-evidence-loader";
 export const metadata = moduleMetadata("Benefit-cost analysis");
 export default async function BcaPage({
   params,
@@ -15,7 +18,8 @@ export default async function BcaPage({
   params: Promise<{ projectId: string }>;
 }) {
   const { projectId } = await params;
-  if (!z.string().uuid().safeParse(projectId).success) notFound();
+  // The same id check as the project page, so a project that opens there never answers 404 here first.
+  if (!isUuid(projectId)) notFound();
   const supabase = await createClient();
   const {
     data: { user },
@@ -23,7 +27,7 @@ export default async function BcaPage({
   if (!user) redirect("/sign-in");
   const { data: project, error } = await supabase
     .from("projects")
-    .select("id, name, workspace_id")
+    .select(BCA_PROJECT_PROJECTION)
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw new Error("Could not load the BCA project");
@@ -40,6 +44,7 @@ export default async function BcaPage({
     !canAccessWorkspaceAction("programs.read", membership.data.role)
   )
     notFound();
+  const latestSaved = await loadLatestBcaVersion(supabase as unknown as BcaLatestVersionClient, projectId);
   const reads = new ReadFailureLog();
   const sets = await supabase
     .from("scenario_sets")
@@ -80,12 +85,19 @@ export default async function BcaPage({
           result,
         })),
       );
+  const safety = await loadBcaSafetyPlanOffers(supabase as unknown as BcaSafetySupabaseLike, {
+    workspaceId: project.workspace_id,
+    projectId,
+  });
   return (
     <BcaWorkbench
       models={models}
       modelReadFailed={reads.any}
+      safety={safety}
       projectId={projectId}
       projectName={project.name}
+      projectPlace={readBcaProjectPlace(projectId, project)}
+      latestSaved={latestSaved}
       userId={user.id}
       canSave={canAccessWorkspaceAction("programs.write", membership.data.role)}
     />

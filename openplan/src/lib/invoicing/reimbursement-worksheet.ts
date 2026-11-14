@@ -1,3 +1,4 @@
+import { subtractMoney, type ExactMoneyAmount } from "@/lib/money/optional-amount";
 /**
  * THE REIMBURSEMENT WORKSHEET — the printable packet an agency takes into a
  * reimbursement claim against its funder.
@@ -158,7 +159,7 @@ export type WorksheetCostSection =
        */
       recordedTotal: number | null;
     }
-  | { ok: false; pending: boolean; message: string };
+  | { ok: false; pending: boolean; message: string; unassessed?: boolean };
 
 /**
  * Sum the period's recorded project costs.
@@ -337,7 +338,7 @@ function textOr(value: string | null | undefined, fallback: string): string {
 function periodLabel(period: WorksheetPeriod | null): string {
   const start = period?.start?.trim();
   const end = period?.end?.trim();
-  if (!start && !end) return "Award to date — no period selected";
+  if (!start && !end) return "Award to date (no period selected)";
   return `${start ? esc(start) : "…"} to ${end ? esc(end) : "…"}`;
 }
 
@@ -350,12 +351,22 @@ function figureRow(label: string, value: string, note?: string): string {
 
 function ledgerSection(data: ReimbursementWorksheetData): string {
   const { ledger } = data;
+  if (ledger.managed) {
+    const { funding, invoices } = ledger.managed;
+    const fmt = (v: ExactMoneyAmount | null) => v === null ? "Unassessed" : formatMoney(v,{ precision:"cents",currency:funding.currency,currencyDisplay:"code" });
+    const rows = [figureRow("Recorded award ceiling",fmt(funding.ceiling)),figureRow("Recorded required match",fmt(funding.match)),
+      figureRow("Claimed gross",fmt(invoices.grossClaimed)),figureRow("Paid net",fmt(invoices.paid)),figureRow("Outstanding net",fmt(invoices.outstanding)),
+      figureRow("Retention withheld on paid invoices",fmt(invoices.retentionHeld)),figureRow("Proposed retention on unpaid claims",fmt(invoices.retentionPending)),
+      figureRow("Draft net, not claimed",fmt(invoices.draft)),figureRow("Rejected gross",fmt(invoices.rejected)),
+      figureRow("Remaining against recorded award ceiling",fmt(funding.ceiling !== null && invoices.grossClaimed !== null ? subtractMoney(funding.ceiling,invoices.grossClaimed):null))].join("");
+    return `<section><h2>Version-bound award ledger</h2><p>${esc(funding.currency ?? "Currency unassessed")}. Amounts compare recorded ceilings, claims and payments. They do not establish spending authorization.</p><table>${rows}</table><p>${esc([...funding.reasons,...invoices.reasons].join("; "))}</p><p>Terms: ${esc(JSON.stringify(funding.versions))}</p><h3>Invoice terms versions</h3><ul>${invoices.rows.map((i) => `<li>${esc(i.id ?? "Invoice")} | ${esc(i.status ?? "unknown")} | original terms ${esc(i.award_handoff_revision_id ?? "unbound")} | current applicability ${esc(i.handoff_applicable_revision_id ?? "not recorded")} | ${esc(i.currency_code ?? "currency unknown")} | gross ${i.currency_code?formatMoney(i.amount,{precision:"cents",currency:i.currency_code,currencyDisplay:"code"}):"Unassessed"} | retention ${i.currency_code?formatMoney(i.retention_amount,{precision:"cents",currency:i.currency_code,currencyDisplay:"code"}):"Unassessed"} | net ${i.currency_code?formatMoney(i.net_amount,{precision:"cents",currency:i.currency_code,currencyDisplay:"code"}):"Unassessed"}</li>`).join("")}</ul></section>`;
+  }
   const resolvedCurrency = resolveWorksheetCurrency(data);
   const currency = resolvedCurrency.code;
-  const overClaimed = ledger.remainingAuthorized !== null && ledger.remainingAuthorized < 0;
+  const overClaimed = ledger.remainingAgainstCeiling !== null && ledger.remainingAgainstCeiling < 0;
 
   const rows = [
-    figureRow("Authorized amount", formatNullableAmount(ledger.authorizedAmount, currency)),
+    figureRow("Recorded award ceiling", formatNullableAmount(ledger.recordedAwardCeiling, currency)),
     figureRow(
       "Claimed to date (gross)",
       formatAmount(ledger.claimedGrossToDate, currency),
@@ -377,16 +388,16 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
       formatAmount(ledger.retentionPendingOnUnpaid, currency),
       "proposed, not yet withheld"
     ),
-    figureRow("Remaining against the authorization", formatNullableAmount(ledger.remainingAuthorized, currency)),
+    figureRow("Remaining against recorded award ceiling", formatNullableAmount(ledger.remainingAgainstCeiling, currency)),
     figureRow(
       "Drafted, not yet claimed (net)",
       formatAmount(ledger.draftedNotClaimed, currency),
-      `${ledger.draftedCount} draft${ledger.draftedCount === 1 ? "" : "s"} — not included in any total above`
+      `${ledger.draftedCount} draft${ledger.draftedCount === 1 ? "" : "s"} (not included in any total above)`
     ),
     figureRow(
       "Rejected by the funder (gross)",
       formatAmount(ledger.rejectedGross, currency),
-      `${ledger.rejectedCount} record${ledger.rejectedCount === 1 ? "" : "s"} — not included in any total above`
+      `${ledger.rejectedCount} record${ledger.rejectedCount === 1 ? "" : "s"} (not included in any total above)`
     ),
     figureRow(
       "Local match recorded on the award",
@@ -396,7 +407,7 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
   ].join("\n");
 
   const overClaimNotice = overClaimed
-    ? `<p class="alert">Claims against this award exceed its authorized amount. The remaining figure above is negative and is shown as recorded, not clamped to zero.</p>`
+    ? `<p class="alert">Claims against this award exceed its recorded award ceiling. The remaining figure above is negative and is shown as recorded, not clamped to zero.</p>`
     : "";
 
   // The currency, named on the document. Every figure below used to be
@@ -491,7 +502,9 @@ function costSection(data: ReimbursementWorksheetData): string {
   const { costs } = data;
 
   if (!costs.ok) {
-    const reason = costs.pending
+    const reason = "unassessed" in costs && costs.unassessed
+      ? "Project costs are not linked to this award's terms version and currency, so their applicability to this claim is unassessed. No cost detail or total is included. This is not a statement that no costs were recorded."
+      : costs.pending
       ? "The project cost ledger is not available on this deployment yet, so no cost detail is shown. This is not a statement that no costs were recorded."
       : "The project cost ledger could not be read, so no cost detail is shown. This is not a statement that no costs were recorded.";
     return `<section class="costs">
@@ -572,7 +585,7 @@ function profileSection(data: ReimbursementWorksheetData): string {
 
   if (profile.submittedToHint) {
     parts.push(
-      `<p><strong>Typically submitted to:</strong> ${esc(profile.submittedToHint)} — a hint from the process profile, not an address recorded for this award.</p>`
+      `<p><strong>Typically submitted to:</strong> ${esc(profile.submittedToHint)} (a hint from the process profile, not an address recorded for this award).</p>`
     );
   }
 
@@ -622,9 +635,9 @@ function disclosureSection(data: ReimbursementWorksheetData): string {
     );
   }
 
-  if (data.ledger.authorizedAmount === null) {
+  if (!data.ledger.managed && data.ledger.recordedAwardCeiling === null) {
     disclosures.push(
-      "No authorized amount is recorded on this award, so no remaining balance and no percentage of the award is shown."
+      "No award ceiling is recorded on this award, so no remaining balance and no percentage of the award is shown."
     );
   }
 
@@ -691,7 +704,7 @@ export function buildReimbursementWorksheetHtml(data: ReimbursementWorksheetData
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>${esc(WORKSHEET_DOCUMENT_TITLE)} — ${esc(awardTitle)}</title>
+    <title>${esc(WORKSHEET_DOCUMENT_TITLE)}: ${esc(awardTitle)}</title>
     <style>${DOCUMENT_STYLES}</style>
   </head>
   <body>
@@ -707,7 +720,7 @@ export function buildReimbursementWorksheetHtml(data: ReimbursementWorksheetData
     </header>
     <p class="prepared-note">${WORKSHEET_PREPARED_NOTE}</p>
     ${ledgerSection(data)}
-    ${invoiceSection(data, selection)}
+    ${data.ledger.managed ? "" : invoiceSection(data, selection)}
     ${costSection(data)}
     ${profileSection(data)}
     ${checklistSection(data)}

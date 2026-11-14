@@ -192,7 +192,7 @@ export function groupUnbilledTime(
       const staffName = (entry.staff_id && options.staffNamesById?.[entry.staff_id]) || null;
       axisKey = `staff:${staffId}::${(category ?? "").toLowerCase()}`;
       const categoryLabel = category ?? "Uncategorized time";
-      description = staffName ? `${categoryLabel} — ${staffName}` : categoryLabel;
+      description = staffName ? `${categoryLabel}: ${staffName}` : categoryLabel;
     } else {
       const deliverableId = entry.deliverable_id ?? null;
       axisKey = `deliverable:${deliverableId ?? "none"}`;

@@ -1,3 +1,4 @@
+import { managedInvoiceTotals, type ManagedInvoice, type ManagedInvoiceTotals } from "@/lib/grants/award-handoff";
 import { isDeadlinePast } from "@/lib/work/deadlines";
 
 export const BILLING_INVOICE_STATUSES = [
@@ -33,7 +34,7 @@ export function isClaimedInvoiceStatus(status: string): boolean {
   return (CLAIMED_INVOICE_STATUSES as readonly string[]).includes(status);
 }
 
-export type BillingInvoiceRecordLike = {
+export type BillingInvoiceRecordLike = ManagedInvoice & {
   status?: string | null;
   amount?: number | string | null;
   retention_percent?: number | string | null;
@@ -50,6 +51,7 @@ export type BillingInvoiceLinkageFilter = "all" | "linked" | "unlinked";
 export type BillingInvoiceOverdueFilter = "all" | "overdue";
 
 export type BillingInvoiceSummary = {
+  managed?: ManagedInvoiceTotals;
   totalCount: number;
   draftCount: number;
   submittedCount: number;
@@ -137,9 +139,10 @@ export type BillingInvoicePriorityQueueClassifierResult = {
   isExactRelink?: boolean;
 };
 
-export type FundingAwardSubstantiationReadiness = "substantiated" | "partial" | "none";
+export type FundingAwardSubstantiationReadiness = "unavailable" | "substantiated" | "partial" | "none";
 
 export type FundingAwardSubstantiationAwardLike = {
+  current_handoff_revision_id?: string | null; latest_handoff_revision_id?: string | null;
   id?: string | null;
   project_id?: string | null;
 };
@@ -287,6 +290,10 @@ export function summarizeBillingInvoiceRecords(
 ): BillingInvoiceSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
 
+  if (records?.some((r) => r.award_handoff_revision_id)) {
+    return { managed:managedInvoiceTotals(records),totalCount:records.length,draftCount:records.filter((r) => r.status==='draft').length,submittedCount:records.filter((r) => isOutstandingStatus(r.status ?? '')).length,paidCount:records.filter((r) => r.status==='paid').length,overdueCount:records.filter((r) => isOverdue(r.status ?? '',r.due_date,now)).length,rejectedCount:records.filter((r) => r.status==='rejected').length,
+      overdueNetAmount:Number.NaN,totalNetAmount:Number.NaN,claimedNetAmount:Number.NaN,claimedGrossAmount:Number.NaN,outstandingNetAmount:Number.NaN,paidNetAmount:Number.NaN,draftNetAmount:Number.NaN,rejectedNetAmount:Number.NaN };
+  }
   return (records ?? []).reduce<BillingInvoiceSummary>(
     (summary, record) => {
       const status = typeof record.status === "string" ? record.status : "draft";
@@ -420,8 +427,10 @@ export function summarizeAwardSubstantiation({
   awards,
   milestones,
   submittals,
+  managedOccurrences,
 }: {
   awards: FundingAwardSubstantiationAwardLike[] | null | undefined;
+  managedOccurrences?: Array<{award_id:string;revision_id:string;submittal_status:string|null;submitted_at:string|null;fulfillment_evidence:string|null;milestone_status?:string|null;actual_date?:string|null}>;
   milestones?: FundingAwardSubstantiationMilestoneLike[] | null;
   submittals?: FundingAwardSubstantiationSubmittalLike[] | null;
 }): Map<string, FundingAwardSubstantiationSummary> {
@@ -434,9 +443,16 @@ export function summarizeAwardSubstantiation({
       continue;
     }
 
+    if (award.latest_handoff_revision_id) {
+      if (!managedOccurrences) { summaries.set(award.id,{obligationMilestoneStatus:null,milestoneCount:0,submittalCount:0,latestSubmittalAt:null,readiness:'unavailable'}); continue; }
+      const current=(managedOccurrences).filter((o)=>o.award_id===award.id && o.revision_id===award.current_handoff_revision_id);
+      const fulfilled=current.filter((o)=>((o.submittal_status==='accepted' && o.submitted_at)||(o.milestone_status==='complete' && o.actual_date)) && o.fulfillment_evidence?.trim());
+      summaries.set(award.id,{obligationMilestoneStatus:null,milestoneCount:0,submittalCount:fulfilled.length,latestSubmittalAt:fulfilled.map((o)=>o.submitted_at!).sort().at(-1)??null,readiness:current.length>0 && fulfilled.length===current.length?'substantiated':fulfilled.length?'partial':'none'});
+      continue;
+    }
     const awardMilestones = milestoneRecords.filter((milestone) => milestone.funding_award_id === award.id);
     const awardSubmittals = submittalRecords.filter((submittal) =>
-      submittal.funding_award_id
+      award.latest_handoff_revision_id ? false : submittal.funding_award_id
         ? submittal.funding_award_id === award.id
         : Boolean(award.project_id) && submittal.project_id === award.project_id
     );
@@ -460,7 +476,7 @@ export function summarizeAwardSubstantiation({
     const milestoneCount = awardMilestones.length;
     const submittalCount = awardSubmittals.length;
     const readiness: FundingAwardSubstantiationReadiness =
-      milestoneCount > 0 && submittalCount > 0
+      !award.latest_handoff_revision_id && milestoneCount > 0 && submittalCount > 0
         ? "substantiated"
         : milestoneCount > 0 || submittalCount > 0
           ? "partial"

@@ -1,3 +1,5 @@
+import { managedCloseout } from "@/lib/grants/award-handoff-server";
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -30,6 +32,7 @@ const awardIdSchema = z.object({
 
 const closeoutPayloadSchema = z
   .object({
+    expectedCurrentRevisionId:z.string().uuid().optional(),
     notes: z.string().trim().max(4000).optional(),
   })
   .optional();
@@ -115,6 +118,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    if (closeableAward.latest_handoff_revision_id) {
+      if (readAssistantExecutionSource(request)!=="manual") return NextResponse.json({error:"Managed closeout requires a manual operation; no registered agent action covers it."},{status:403});
+      return managedCloseout({actorId:user.id,awardId:closeableAward.id,expectedRevisionId:parsedPayload.data?.expectedCurrentRevisionId,event:"earned_coverage",note:notes});
+    }
     const evaluation = await evaluateFundingAwardCloseoutCoverage({
       supabase,
       award: closeableAward,

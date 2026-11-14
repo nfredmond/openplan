@@ -139,7 +139,7 @@ export function EngagementCampaignCreator({
                   <p className="mt-1.5">
                     Creates {selectedTemplate.categories.length} starter categories and{" "}
                     {selectedTemplate.questions.length} survey questions. The questions arrive as
-                    drafts — nothing is shown to the public until you publish it from the survey
+                    drafts. Nothing is shown to the public until you publish it from the survey
                     builder.
                   </p>
                 </div>
@@ -157,7 +157,7 @@ export function EngagementCampaignCreator({
             name: "title",
             label: "Title",
             required: true,
-            requiredMessage: "Give the campaign a title — this is what residents see first.",
+            requiredMessage: "Give the campaign a title. This is what residents see first.",
           },
           { name: "engagementType", label: "Engagement type", required: true },
         ],
@@ -291,7 +291,7 @@ export function EngagementCampaignCreator({
       {partialTemplateNotice ? (
         <div className="mt-3 max-w-md text-left">
           <StateBlock
-            title="The campaign was created — its starter content was not"
+            title="The campaign was created. Its starter content was not"
             description={partialTemplateNotice}
             tone="warning"
             compact

@@ -162,7 +162,7 @@ function CloseLoopCard({ entry, categories, submit, broadcast }: {
           </div>
           {entry.status === "published" && !entry.we_did.trim() ? (
             <p className="text-xs text-amber-700 dark:text-amber-300">
-              Published with no “we did” response yet — the public sees only what was heard.
+              Published with no “we did” response yet. The public sees only what was heard.
             </p>
           ) : null}
           {error ? <p role="alert" className={ERROR_CLASS}>{error}</p> : null}
@@ -359,7 +359,7 @@ export function EngagementCloseLoopBuilder({
           <p className="text-xs text-muted-foreground">
             {draftMeta.source === "ai"
               ? `AI-drafted from ${draftMeta.itemCount} approved item${draftMeta.itemCount === 1 ? "" : "s"}${draftMeta.model ? ` (${draftMeta.model})` : ""}. Review and edit before publishing.`
-              : `AI is offline${draftMeta.fallbackReason ? ` (${draftMeta.fallbackReason})` : ""} — grouped ${draftMeta.itemCount} approved item${draftMeta.itemCount === 1 ? "" : "s"} by theme instead. Review and edit before publishing.`}
+              : `AI is offline${draftMeta.fallbackReason ? ` (${draftMeta.fallbackReason})` : ""}. Grouped ${draftMeta.itemCount} approved item${draftMeta.itemCount === 1 ? "" : "s"} by theme instead. Review and edit before publishing.`}
           </p>
         ) : null}
         {draftError ? <p role="alert" className={ERROR_CLASS}>{draftError}</p> : null}

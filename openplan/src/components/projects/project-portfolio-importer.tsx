@@ -17,6 +17,7 @@ import type {
   PortfolioWorkbookRowReview,
 } from "@/lib/projects/portfolio-import";
 import type { PortfolioWorkbookInspection } from "@/lib/projects/portfolio-workbook";
+import { uploadKnowledgeBaseFile } from "@/lib/knowledge-base/upload-client";
 import {
   mappingForOpenPlanRoundTripHeaders,
 } from "@/lib/projects/portfolio-round-trip-contract";
@@ -137,11 +138,10 @@ export function ProjectPortfolioImporter({
     invalidateReview();
   }
   async function uploadDocument(file: File): Promise<StoredDocument> {
-    const query = new URLSearchParams({ workspaceId, filename: file.name, title: file.name });
-    const response = await fetch(`/api/knowledge-base/documents?${query.toString()}`, {
-      method: "POST",
-      headers: { "content-type": file.type || "application/octet-stream" },
-      body: file,
+    const response = await uploadKnowledgeBaseFile(file, {
+      workspaceId,
+      title: file.name,
+      contentType: file.type || "application/octet-stream",
     });
     const payload = (await response.json()) as { document?: StoredDocument; error?: string };
     if (!response.ok || !payload.document) throw new Error(payload.error ?? `Could not store ${file.name}.`);

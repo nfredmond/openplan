@@ -11,7 +11,7 @@ vi.mock("@/components/land-use-plans/public-designation-map", () => ({ PublicDes
 function packet(sourceUrls: string[]): PublishedLandUsePlanPacket {
   return {
     descriptorCustody: "frozen",
-    plan: { id: "test-plan", title: "Test published plan", planKindKey: "area", authorityLabel: "Test authority", geographyLabel: "Test area" },
+    plan: { id: "74000000-0000-4000-8000-000000000002", title: "Test published plan", planKindKey: "area", authorityLabel: "Test authority", geographyLabel: "Test area" },
     version: { id: "test-version", versionNumber: 1, contentHash: "test-hash", frozenAt: null },
     decision: { decision_kind: "adopt", decision_body: "Test body", instrument_type: "test", instrument_identifier: "test", vote: null, decided_on: "2026-08-01", effective_on: null, version_content_hash: "test-hash" },
     descriptor: { terminology: { plan: "plan", section: "section", adoptionInstrument: "decision", implementationReport: "report" }, disclosure: "Test coverage disclosure", sourceUrls, verifiedAt: "2026-08-23", reviewDueAt: "2027-01-15" },
@@ -26,7 +26,7 @@ describe("published plan source-review disclosure", () => {
       const value = { ...packet([]), content };
       if (kind === "adopted") {
         vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: value });
-        render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
+        render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "74000000-0000-4000-8000-000000000002" }) }));
       } else {
         vi.mocked(loadPublicLandUsePlanReviewPacket).mockResolvedValue({ ok: true, packet: { ...value,
           release: { id: "synthetic-release", roundNumber: 1, reviewOpenOn: "2026-10-07", reviewCloseOn: "2026-10-08", reviewMethod: "external_process", status: "open", outcomeHash: null } } });
@@ -45,7 +45,7 @@ describe("published plan source-review disclosure", () => {
       expect(screen.getByText(/They do not establish legal sufficiency/)).toBeVisible();
       expect(screen.queryByText("SYNTHETIC private sentinel")).toBeNull();
       expect(screen.getByRole("link", { name: /Download/ })).toHaveAttribute("download", `openplan-${kind === "adopted" ? "adopted" : "review"}-v1.json`);
-      expect(screen.getByRole("link", { name: /Download/ })).toHaveAttribute("href", kind === "adopted" ? "/api/public/land-use-plans/test-plan" : "/api/public/land-use-plan-reviews/synthetic-token");
+      expect(screen.getByRole("link", { name: /Download/ })).toHaveAttribute("href", kind === "adopted" ? "/api/public/land-use-plans/74000000-0000-4000-8000-000000000002" : "/api/public/land-use-plan-reviews/synthetic-token");
     });
     it.each([{}, { planContext: null }])("discloses unretained context without substituting display labels", async content => {
       await show(content);
@@ -104,7 +104,7 @@ describe("published plan source-review disclosure", () => {
   });
   it("withholds review dates when the descriptor has no sources", async () => {
     vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: packet([]) });
-    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
+    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "74000000-0000-4000-8000-000000000002" }) }));
     expect(screen.queryByText(/Sources reviewed/)).not.toBeInTheDocument();
     expect(screen.getByText(/source review is not established/i)).toBeVisible();
     expect(screen.getByText(/checklist, terminology and source-review dates were saved with this version/i)).toBeVisible();
@@ -114,14 +114,14 @@ describe("published plan source-review disclosure", () => {
     const legacy = packet(["https://example.test/official-source"]);
     legacy.descriptorCustody = "not_retained";
     vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: legacy });
-    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
+    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "74000000-0000-4000-8000-000000000002" }) }));
     expect(screen.getByText(/may differ from what reviewers saw/i)).toBeVisible();
     expect(screen.queryByText(/checklist, terminology and source-review dates were saved with this version/i)).not.toBeInTheDocument();
   });
 
   it("preserves the recorded review date beside a sourced descriptor", async () => {
     vi.mocked(loadPublishedLandUsePlanPacket).mockResolvedValue({ ok: true, packet: packet(["https://example.test/official-source"]) });
-    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "test-plan" }) }));
+    render(await PublishedLandUsePlanPage({ params: Promise.resolve({ planId: "74000000-0000-4000-8000-000000000002" }) }));
     expect(screen.getByText(/Sources reviewed 2026-08-23; review due 2027-01-15/)).toBeVisible();
     expect(screen.queryByText(/source review is not established/i)).not.toBeInTheDocument();
   });

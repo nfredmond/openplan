@@ -18,7 +18,7 @@ const paramsSchema = z.object({
 });
 
 const INVOICE_SELECT_LEGACY =
-  "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at";
+  "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at";
 
 // caltrans_posture stays selected as the legacy read fallback for rows that
 // predate the reimbursement-profile backfill (20260727000009).
@@ -33,6 +33,8 @@ function looksLikePendingProfileSchema(message: string | null | undefined): bool
 const patchBillingInvoiceSchema = z
   .object({
     workspaceId: z.string().uuid(),
+    awardHandoffRevisionId: z.string().uuid().optional(),
+    currencyCode: z.string().regex(/^[A-Z]{3}$/).optional(),
     fundingAwardId: z.union([z.string().uuid(), z.null()]).optional(),
     status: z.enum(["draft", "internal_review", "submitted", "approved_for_payment", "paid", "rejected"]).optional(),
   })
@@ -134,7 +136,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from("billing_invoice_records")
-      .select("id, workspace_id, project_id, funding_award_id")
+      .select("id, workspace_id, project_id, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id")
       .eq("id", parsedParams.data.invoiceId)
       .single();
 
@@ -147,6 +149,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invoice is not available in the requested workspace" }, { status: 404 });
     }
 
+    if (invoice.award_handoff_revision_id && executionSource !== "manual") return NextResponse.json({error:"Managed reimbursement writes require a manual operation."},{status:403});
+    let handoffBinding: {award_handoff_revision_id:string;currency_code:string} | undefined;
     let effectiveProjectId = invoice.project_id ?? null;
     let effectiveFundingAwardId: string | null =
       parsed.data.fundingAwardId === undefined ? invoice.funding_award_id ?? null : parsed.data.fundingAwardId;
@@ -154,7 +158,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.fundingAwardId) {
       const { data: fundingAward, error: fundingAwardError } = await supabase
         .from("funding_awards")
-        .select("id, workspace_id, project_id")
+        .select("id, workspace_id, project_id, latest_handoff_revision_id, current_handoff_revision_id, currency_code")
         .eq("id", parsed.data.fundingAwardId)
         .single();
 
@@ -172,11 +176,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
 
       effectiveProjectId = effectiveProjectId ?? fundingAward.project_id ?? null;
+      if (fundingAward.latest_handoff_revision_id && invoice.funding_award_id !== fundingAward.id) {
+        if (executionSource !== "manual") return NextResponse.json({error:"Managed award binding has no registered agent action."},{status:403});
+        if (!fundingAward.current_handoff_revision_id || parsed.data.awardHandoffRevisionId !== fundingAward.current_handoff_revision_id || parsed.data.currencyCode !== fundingAward.currency_code) return NextResponse.json({error:"Review current award terms before binding this invoice."},{status:409});
+        handoffBinding={award_handoff_revision_id:fundingAward.current_handoff_revision_id,currency_code:fundingAward.currency_code};
+      }
       effectiveFundingAwardId = fundingAward.id;
     }
 
     const runUpdate = async () => {
       const updatePayload = {
+        ...handoffBinding,
         project_id: effectiveProjectId,
         funding_award_id: effectiveFundingAwardId,
         status: parsed.data.status ?? undefined,

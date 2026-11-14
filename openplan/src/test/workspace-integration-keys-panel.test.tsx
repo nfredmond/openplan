@@ -47,7 +47,7 @@ const AI_PROVIDER = provider({
 const DATA_PROVIDER = provider({
   id: "census",
   label: "US Census Bureau",
-  purpose: "County search and demographics.",
+  purpose: "Demographics and equity data.",
   keySignupUrl: "https://example.test/data-keys",
   envVar: "CENSUS_API_KEY",
 });
@@ -187,7 +187,7 @@ describe("WorkspaceIntegrationKeysPanel", () => {
     // just the workspace's team.
     expect(
       screen.getByText(
-        /AI usage from this workspace — including its public engagement portal — bills this workspace's own Anthropic account/,
+        /AI usage from this workspace, including its public engagement portal, bills this workspace's own Anthropic account/,
       ),
     ).toBeInTheDocument();
   });

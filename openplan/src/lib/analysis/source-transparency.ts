@@ -172,7 +172,7 @@ export function buildSourceTransparency(
       key: "equity",
       label: "Equity Screening",
       status: formatSourceToken(equitySource),
-      detail: `Equity flags are an ACS income + burden PROXY (${formatSourceToken(equitySource)}, corridor-level tract aggregation) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.`,
+      detail: `Equity flags are an ACS income + burden PROXY (${formatSourceToken(equitySource)}, corridor-level tract aggregation), a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.`,
       tone: "info",
     },
     {

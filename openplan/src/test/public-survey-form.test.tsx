@@ -331,13 +331,13 @@ describe("PublicSurveyForm", () => {
       ...unframed,
       id: "q-map-framed",
       config: { geometry_types: ["Point"], center: [-83.0, 39.98], zoom: 10 },
-      mapFramingNote: "This map opens on Franklin County, Ohio — the linked project's study area.",
+      mapFramingNote: "This map opens on Franklin County, Ohio, the linked project's study area.",
     };
     render(
       <PublicSurveyForm shareToken="token12345678" questions={await englishQuestions([framed])} messages={EN_BUNDLE} />
     );
     expect(
-      screen.getByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
+      screen.getByText(/This map opens on Franklin County, Ohio, the linked project's study area\./i)
     ).toBeTruthy();
     // The continental instruction belongs only to the unframed case.
     expect(screen.queryByText(/zoom to your neighbourhood before dropping a pin/i)).toBeNull();
@@ -427,7 +427,7 @@ describe("PublicSurveyForm", () => {
     expect(byId["q-rating"]).toBeUndefined();
     expect(byId["q-map"]).toBeUndefined();
 
-    await screen.findByText("Thank you — your survey response has been received.");
+    await screen.findByText("Thank you. Your survey response has been received.");
   });
 
   it("drops the selected option_id and stores only free text when 'Other' is chosen", async () => {
