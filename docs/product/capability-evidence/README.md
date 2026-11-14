@@ -16,10 +16,34 @@ No record exists yet. The list is empty and no job is proven.
 - `schemas/proven_job_definitions.v1.json`: what each job requires, as data.
   Places are rules (a place kind and a state), never a named place. The record
   names the places a run used.
-- `schemas/examples/proven_job_record.v1.synthetic.json`: a complete synthetic
-  record. The checker tests accept it against synthetic files. It is not
-  evidence.
+- `schemas/examples/proven_job_record.v1.synthetic.json` and
+  `proven_job_record.v1.engagement.synthetic.json`: complete synthetic
+  records, one per job. The checker tests accept them against synthetic
+  files. They are not evidence.
 - `openplan/scripts/ops/capability-evidence.mjs`: `validateProvenJobRecord`.
+
+## Which rules live where
+
+The record schema holds the fields every job shares, and each job's own
+fields in a sub-schema chosen by `jobId` (its `allOf`). The checker's code
+holds the rules every job shares: the hosted origin, one commit read back at
+the start and end of each journey, place kinds and Census ids, named
+executors, artifact custody, no DRAFT stamp, accessibility rows at the stated
+widths and modes, the cross-workspace rule, required limits and the string
+scans. What a job needs because of what it is lives in its definition entry:
+value rules on journey fields (`journeyFields`, and `fields` on one journey),
+an independent source check (`sourceCheck`), required screens, workbooks, the
+campaign agreement rules (`campaign`) and the public participant's refusals
+(`participantChecks`).
+
+On November 14, 2026 (lane 39) the first job's saved benefit-cost analysis,
+its Nevada crash source and stored count, and its crash source check moved
+from code into its definition entry. A test runs the first job's synthetic
+example and every case in `capability-evidence.test.ts` through main's
+checker before the move (frozen in
+`openplan/src/test/fixtures/proven-job-checker-main-1fbfe95ed/`) and through
+the current one, and requires the same verdict and refusal text
+(`proven-job-checker-equivalence.test.ts`).
 
 ## What the checker refuses
 
@@ -75,6 +99,43 @@ The registry entry holds the job id, the places (kind, Census id, state FIPS,
 in journey order), the commit, a review date and `evidence: [{path, sha256}]`.
 The entry's evidence must include exactly one record, and its job, commit and
 places must match that record.
+
+For the job `engagement-campaign-review-and-response-in-three-places`, decided
+in the [second proven job note](../../reviews/product-direction/proven-jobs/2026-11-14-second-proven-job.md),
+the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
+
+1. It has three journeys in any state: a county, a city or town (`city` or
+   `cousub`) and a tribal area (`aiannh`), and each names a staff executor and
+   a public participant executor.
+2. No AI feature ran, the staff review was approved, and the response is
+   published and was not drafted with AI.
+3. Contributions include a map point, a comment without a map point and one
+   made at 390 px with the keyboard only; moderation approved at least one and
+   rejected at least one with a reason.
+4. Every comment a staff review theme lists was approved; the response answers
+   only comments the themes hold and links to a decision on the campaign's
+   project.
+5. The internal review PDF and XLSX are committed files that match the
+   record. The PDF reads "Internal review copy" and the phrases "Approved N",
+   "Withheld N" and "Answered N" with the journey's counts, each found on its
+   page with the shared matcher. The XLSX, read by cell, has the status the
+   journey recorded for each moderated comment, the same approved and
+   rejected totals, and published responses answering the same comments.
+6. The public response page was read at 1440 and 390 pixels in light and dark
+   mode, shows the same approved and answered counts, was searched for every
+   rejected text (by hash in the record) and shows none.
+7. The portal and staff campaign screens have zero serious and critical axe
+   violations at both widths and modes.
+8. A second account was refused the review PDF and XLSX downloads and the
+   campaign read as data checks, and the staff campaign page as a page check.
+9. An anonymous participant was refused the campaign read, the staff item list
+   and both downloads (401, 403 or 404), and the public portal read carried no
+   staff-only field.
+10. The record states the job's limits (see the definition entry).
+
+No record of this job can pass yet: the review PDF prints its counts in a
+table the matcher reads as a column gap and prints no answered count
+(KI-2026-11-14-310, -311), and no journey script exists (KI-2026-11-14-313).
 
 ## What it cannot tell
 

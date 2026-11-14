@@ -1,11 +1,12 @@
 {
   "schema": "openplan.proven_job_definitions.v1",
-  "note": "What each named planning job must show before a proven job record is accepted. Places are rules (kind and state), never a named place: the record names the places a run actually used.",
+  "note": "What each named planning job must show before a proven job record is accepted. Places are rules (kind and state), never a named place: the record names the places a run actually used. Rules every job shares live in openplan/scripts/ops/capability-evidence.mjs; what a job needs because of what it is lives in its entry here.",
   "geoidPatterns": {
     "source": "openplan/src/lib/api/place-geographies.ts (PLACE_GEOID_PATTERNS)",
     "county": "^\\d{5}$",
     "aiannh": "^\\d{4}[RT]$"
   },
+  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, or atLeast a number. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check and the limit to state when it did not match.",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -16,9 +17,15 @@
           "role": "nevada-county",
           "placeKind": "county",
           "stateFips": "32",
-          "crashes": { "sourceId": "fars-national", "minStoredCount": 1 }
+          "fields": [
+            { "field": "crashes.sourceId", "equals": "fars-national", "refusal": "crashes come from {found}, not {expected}" },
+            { "field": "crashes.storedCount", "atLeast": 1, "refusal": "stored {found} crashes; at least {expected} required" }
+          ]
         },
         { "role": "tribal-area", "placeKind": "aiannh" }
+      ],
+      "journeyFields": [
+        { "field": "bcaSaved", "equals": true, "refusal": "did not save a benefit-cost analysis" }
       ],
       "pdfs": ["safety-action-plan", "ss4a-application"],
       "items": {
@@ -39,13 +46,96 @@
         "minSearchedStrings": 3,
         "pageAnsweredOkLimit": "report-page-answers-200-with-not-found-screen"
       },
+      "sourceCheck": { "subject": "crash", "unconfirmedLimit": "crash-counts-not-independently-confirmed" },
       "requiredLimits": [
         "no-pdf-ua-check",
         "no-keyboard-or-screen-reader-pass",
         "no-human-usefulness-review",
         "fars-is-fatal-only"
+      ]
+    },
+    {
+      "id": "engagement-campaign-review-and-response-in-three-places",
+      "decidedIn": "docs/reviews/product-direction/proven-jobs/2026-11-14-second-proven-job.md",
+      "journeys": [
+        { "role": "county", "placeKind": "county" },
+        { "role": "city-or-town", "placeKinds": ["city", "cousub"] },
+        { "role": "tribal-area", "placeKind": "aiannh" }
       ],
-      "unconfirmedCrashCountLimit": "crash-counts-not-independently-confirmed"
+      "geoidPatterns": {
+        "source": "openplan/src/lib/api/place-geographies.ts (PLACE_GEOID_PATTERNS); kinds this job adds to the shared list",
+        "city": "^\\d{7}$",
+        "cousub": "^\\d{10}$"
+      },
+      "executorRoles": ["staff", "public-participant"],
+      "journeyFields": [
+        { "field": "campaign.aiFeaturesUsed", "equals": false, "refusal": "used an AI feature; translation, AI moderation and AI synthesis are out of scope for this job" },
+        { "field": "campaign.staffReview.approved", "equals": true, "refusal": "staff review was not approved" },
+        { "field": "campaign.response.status", "equals": "published", "refusal": "response is {found}, not {expected}" },
+        { "field": "campaign.response.aiAssisted", "equals": false, "refusal": "response was drafted with AI assistance" }
+      ],
+      "pdfs": ["campaign-review"],
+      "items": {
+        "scope-badge": "pdftotext",
+        "approved-count": "pdftotext",
+        "rejected-count": "pdftotext",
+        "responded-count": "pdftotext"
+      },
+      "workbooks": ["campaign-review"],
+      "screens": { "widths": [1440, 390], "modes": ["light", "dark"], "required": ["portal", "staff-campaign"] },
+      "campaign": {
+        "note": "Counts come from the journey's moderation outcomes and published response. The review PDF must carry each count as the phrase below, found on its page with the shared matcher (scripts/lib/pdf-text-match.mjs). The workbook is read by cell: one Contributions row per comment with its status, one Staff responses row per response with its sources. The public response page is read by the journey at every width and mode.",
+        "contributions": { "requiredKinds": ["map-point", "no-map-point"], "keyboardOnlyWidth": 390 },
+        "moderation": { "minApproved": 1, "minRejected": 1 },
+        "reviewPdf": "campaign-review",
+        "scopeItem": { "item": "scope-badge", "text": "Internal review copy" },
+        "counts": {
+          "approved": { "item": "approved-count", "phrase": "Approved {count}" },
+          "rejected": { "item": "rejected-count", "phrase": "Withheld {count}" },
+          "responded": { "item": "responded-count", "phrase": "Answered {count}" }
+        },
+        "workbook": {
+          "kind": "campaign-review",
+          "source": "openplan/src/lib/engagement/review-export.ts (buildCampaignReviewWorkbook)",
+          "scopeCell": { "sheet": "Read me", "field": "Scope", "value": "internal" },
+          "contributions": {
+            "sheet": "Contributions",
+            "idColumn": "id",
+            "statusColumn": "status",
+            "statusValues": { "approved": "approved", "rejected": "rejected" }
+          },
+          "responses": { "sheet": "Staff responses", "idColumn": "id", "sourcesColumn": "source_item_ids", "publishedColumn": "published_at" },
+          "longText": { "sheet": "Long text" }
+        }
+      },
+      "crossWorkspace": {
+        "note": "The same rule as the first job (KI-2026-11-14-060). The staff campaign target needs its API read refused as a data check and its page checked as a page check.",
+        "targets": ["campaign-review-pdf", "campaign-review-workbook", "staff-campaign"],
+        "requiredDataRequests": {
+          "campaign-review-pdf": "review-pdf-download",
+          "campaign-review-workbook": "review-xlsx-download",
+          "staff-campaign": "campaign-read"
+        },
+        "requiredPageRequests": { "staff-campaign": "campaign-page" },
+        "minSearchedStrings": 3,
+        "pageAnsweredOkLimit": "campaign-page-answers-200-with-not-found-screen"
+      },
+      "participantChecks": {
+        "note": "Requests an anonymous participant sends with no session. campaign-read is GET /api/engagement/campaigns/<id>; campaign-items-read is GET /api/engagement/campaigns/<id>/items; review-pdf-download and review-xlsx-download are GET /api/engagement/campaigns/<id>/reports/<jobId>/download with format pdf or xlsx. public-portal-read is GET /api/engage/<shareToken>, which answers 200 and must carry none of the staff-only field names.",
+        "requiredRequests": ["campaign-read", "campaign-items-read", "review-pdf-download", "review-xlsx-download"],
+        "publicRead": {
+          "request": "public-portal-read",
+          "staffOnlyFields": ["moderation_notes", "review_reason", "metadata_json", "respondent_fingerprint"]
+        }
+      },
+      "requiredLimits": [
+        "no-pdf-ua-check",
+        "no-keyboard-or-screen-reader-pass-beyond-one-contribution",
+        "no-human-usefulness-review",
+        "test-comments-represent-no-one",
+        "response-speaks-for-no-agency",
+        "no-translation-or-ai-synthesis"
+      ]
     }
   ]
 }
