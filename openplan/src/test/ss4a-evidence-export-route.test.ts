@@ -179,7 +179,7 @@ describe("SS4A application export with evidence appendices", () => {
     for (const title of ["Appendix A. High-injury network map", "Appendix B. Crash summary", "Appendix C. Countermeasures", "Appendix D. Benefit-cost summary", "Appendix E. Engagement summary"]) {
       expect(html).toContain(title);
     }
-    expect(html).toContain('aria-label="Ranked high-injury network segments, numbered by rank"');
+    expect(html).toContain('aria-label="Ranked high-injury network segments, numbered by table row"');
     expect(html).toContain(snapshot.hash);
     expect(html).toContain(EVIDENCE_IDS.bcaVersion);
     expect(html).toContain(EVIDENCE_IDS.campaign);
