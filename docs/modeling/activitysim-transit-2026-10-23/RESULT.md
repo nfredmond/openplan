@@ -37,9 +37,10 @@ Artifact SHA-256: `00a2224d8254d6cbd5a701b22387fbcc604ba60c84c0d8478c5807ee06ae6
 
 Implementation SHA-256: `db2e85963579cac7c78148561393b9c5870ed905c0cf3e53214236f5468df3a6`.
 
-The final invocation uses the 6 GiB memory scope and no swap. Its wall time,
-peak resident memory, and successful exit appear in
-[twin-cities.log](evidence/twin-cities.log). The source record carries CPython
+The final invocation uses the 6 GiB memory scope and no swap. It exits with
+status 0 after 10 minutes 29.85 seconds of wall time, with a peak resident set
+of 3,362,608 KiB. The captured timing log is listed by SHA-256 in
+[VERIFICATION.md](VERIFICATION.md#removed-captures). The source record carries CPython
 3.11.15, NumPy 1.25.2, and SciPy 1.16.3.
 
 This result does not resolve the frozen study's other multimodal admission

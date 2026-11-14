@@ -10,9 +10,9 @@ or observed travel-choice comparison runs in this task.
 
 The final scoped Python run has 79 passing tests and no skips: 24 new transit
 tests plus 55 existing MTC/bundle tests. The existing installed-stock tests use
-an explicit path to ActivitySim 1.5.1. [tests.log](evidence/tests.log) retains the
-results. The scoped dependency guard has two passing tests and no skips in
-[dependencies.log](evidence/dependencies.log).
+an explicit path to ActivitySim 1.5.1. The scoped dependency guard has two
+passing tests and no skips. The captured logs are not kept in git; see
+[removed captures](#removed-captures) for their SHA-256 values.
 
 The synthetic feed has a first vehicle at 08:05, arriving at the transfer stop
 at 08:15, and a second vehicle from 08:20 to 08:35. Zero-distance endpoint
@@ -78,17 +78,37 @@ runner rejects import/setup errors as proof of an assertion's sensitivity.
 
 Two earlier mutation rounds exposed test weaknesses, not clean controls.
 Ignoring a calendar addition and bypassing the feed hash check each reached a
-`KeyError` before the intended assertion. Those outputs remain in
-[attempt 1](evidence/mutations-attempt1.json) and
-[attempt 2](evidence/mutations-attempt2.json). The tests now assert the status
+`KeyError` before the intended assertion. Those two attempt records are not
+kept in git; their SHA-256 values are listed under
+[removed captures](#removed-captures). The tests now assert the status
 before reading dependent results. The final controls fail by assertion for the
 intended wrong behavior.
 
 Two dependency-test attempts also failed before valid verification. The first
 ran from the repository root and resolved the wrong scan path; the second used
 the package directory before its Node dependencies were installed. Both logs
-remain beside the final passing result. `npm ci --ignore-scripts` installed this
-checkout's locked dependencies. No dependency versions changed.
+are listed under [removed captures](#removed-captures). `npm ci --ignore-scripts`
+installed this checkout's locked dependencies. No dependency versions changed.
+
+## Removed captures
+
+These captured outputs were removed from git before merge and remain in this
+branch's history at commit `fe3bd7c21`. The final Twin Cities routing summary
+stays in [twin-cities.json](evidence/twin-cities.json).
+
+| File under `evidence/` | Content | SHA-256 |
+|---|---|---|
+| `tests.log` | Final scoped Python run, 79 tests, OK | `06981f9e4ae467122b255fed716598062bc8d3a3a38bc03c611a25646a44ea96` |
+| `dependencies.log` | Dependency guard, 2 tests passed | `a7aafb828df2565a91a009ca544de1f43331705a7c48918411d365ba7f961505` |
+| `dependency-wrong-cwd.log` | First dependency-test attempt, wrong scan path | `2ac98bde0d62b202e77506717b3f5b278686bf4abeaff1023ecac7ae2675cfcf` |
+| `dependency-missing-install.log` | Second dependency-test attempt, Node dependencies absent | `884a3a5f5a12d40446e6f4cd06b5e2d6eca16fbf24bf1bed950cc6312c01380c` |
+| `hdf-clock-probe.log` | Ordinary OMX bytes differ across two seconds; controlled-clock bytes match | `f1e379b040c0f439c1d890abb64c3c6f0fa4af9562a22f96702603a1e28d2490` |
+| `stock-inventory.log` | Installed-stock probe output | `656a034745cf152b97a7946993a1734bc617b41157cc8ba66839b240aff95624` |
+| `twin-cities.log` | Final routing run timing | `32e319c1e738face81ee09077bee89cd11a42ed345dece6622a1e6cb76487571` |
+| `twin-cities-initial.log` | Initial routing run status | `52b713bd0538dadd2d052c3b4e75d47e66cb4e26b204790dbceb3dabd43c8b95` |
+| `twin-cities-initial.json` | Initial routing run summary, before the repeat described in `run-source-history.json` | `e7d58f89ddcd76008499e6929fd07e99f2c1bf0f5161cd744a87d369d95cc4c1` |
+| `mutations-attempt1.json` | First mutation round | `68f6b796bd195b96e7ead0b3ca17951a7098989af0380c7a66665ce9d69d1506` |
+| `mutations-attempt2.json` | Second mutation round | `de5fc5663103ca7f4d64a87396c91b8878d3268bb964b1efe5ec0d8be01c698b` |
 
 ## What these checks cannot see
 
