@@ -80,7 +80,9 @@ function OpenAnalysisLine({ basis, recovered, latest, blankUnchosen, disabled, o
   const newer = latest.status === "found" && !(basis.kind === "saved" && basis.id === latest.id);
   return <p className="text-sm">
     {recovered ? `Open: this tab's draft${from ? `, started from ${from}` : ""}.` : from ? `Open: ${from}.` : "Open: a blank analysis."}
-    {newer && <> Latest saved: {formatBcaSavedAt(latest.createdAt)}. {openLatest}</>}
+    {newer ? <> Latest saved: {formatBcaSavedAt(latest.createdAt)}. {openLatest}</>
+      /* A draft started from the latest version still needs a way back to it. */
+      : recovered && openLatest ? <> {openLatest}</> : null}
   </p>;
 }
 export function BcaWorkbench({

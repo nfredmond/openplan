@@ -42,6 +42,20 @@ it("keeps this tab's draft open over the saved version and says so", async () =>
   expect(screen.getByText(/^Open: the version saved Nov 13, 2026/)).toBeVisible();
 });
 
+// Found by the agent-run browser check of November 14: after an edit and a
+// reload, a draft started from the latest version offered no way back to it.
+it("offers the saved version again from a draft that was started from it", async () => {
+  sessionStorage.setItem(key, JSON.stringify({ document: { ...saved, title: "Edited after opening" }, pending: null,
+    basis: { kind: "saved", id: versionId, savedAt } }));
+  render(<BcaWorkbench {...props} latestSaved={found} />);
+  expect(await screen.findByText(/^Open: this tab's draft, started from the version saved Nov 13, 2026/)).toBeVisible();
+  // No newer version exists, so the line does not announce one.
+  expect(screen.queryByText(/Latest saved:/)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Open latest saved version" }));
+  confirmWith("Open saved version");
+  await waitFor(() => expect(title()).toHaveValue("Saved Hwy 89 analysis"));
+});
+
 it("will not save a blank analysis over saved work until the planner chooses it", async () => {
   render(<BcaWorkbench {...props} latestSaved={{ status: "failed" }} />);
   const alert = await screen.findByText("Saved versions could not be read. That does not mean none exist.");
