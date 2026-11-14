@@ -85,6 +85,12 @@ from the project lists, the financial summary and the map. No migration.
 Safety page no longer runs under the 60px rail, so the active-project banner and
 the map's left edge are fully visible.
 
+**RTP project links stay inside one workspace (KI-2026-11-02-053):** both public
+plan pages now publish only links, and linked projects, from the plan's own workspace.
+Migration `20261102140000_project_rtp_cycle_link_workspace_scope.sql` refuses a link
+whose project, cycle, horizon band or evidence run is in another workspace; the page
+change does not depend on it.
+
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
 American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.
