@@ -38,8 +38,8 @@ import type { StudyAreaBbox } from "@/lib/models/study-area";
  *
  * Order is "richest severity coverage first": CCRS separates fatal from injury
  * (and, after the KSI join, serious injury) where it applies; the state
- * layers for Oregon, Iowa, Ohio and DC carry each agency's own severity but
- * are read-only until `safety_crashes` admits them; FARS is the fatal-only
+ * layers for Oregon, Iowa, Ohio and DC carry each agency's own severity and,
+ * since migration 20261102100000, are stored like CCRS; FARS is the fatal-only
  * national backstop. Each state layer serves one state, so their order among
  * themselves never decides anything; all of them come before FARS. Adding coverage should mean adding an entry
  * here, not editing callers — the same shape the WA/CO/OR traffic-count

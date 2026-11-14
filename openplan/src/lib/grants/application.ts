@@ -79,6 +79,22 @@ export function looksLikePendingFinalizerSchema(message: string | null | undefin
   return /finalized_(?:by|at)/i.test(text) && /column|schema cache/i.test(text);
 }
 
+const APPLICATION_EXPORT_CUSTODY_MIGRATION = "20261102110100_application_export_custody";
+
+export const APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR = `This deployment's database predates export custody records (sha256 / appendix_manifest_json). Apply migration ${APPLICATION_EXPORT_CUSTODY_MIGRATION}, then retry.`;
+
+/**
+ * PostgREST/Postgres shapes for "the export custody columns are not migrated
+ * yet": `column … sha256 does not exist` (42703) on a read, `Could not find the
+ * 'sha256' column … in the schema cache` (PGRST204) on a write. Both name the
+ * column. The export answers 503 naming the migration rather than storing a
+ * PDF whose register row cannot carry its hash.
+ */
+export function looksLikePendingExportCustodySchema(message: string | null | undefined): boolean {
+  const text = message ?? "";
+  return /\bsha256\b|appendix_manifest_json/i.test(text) && /column|schema cache/i.test(text);
+}
+
 // ---------------------------------------------------------------------------
 // Row shapes (as read back through the untyped Supabase client)
 // ---------------------------------------------------------------------------

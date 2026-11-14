@@ -24,7 +24,9 @@ vi.mock("@/lib/integrations/workspace-keys", () => ({
   listWorkspaceIntegrationKeyMetadata: async () => [],
   withWorkspaceIntegrationContext: (_workspace: string, fn: () => unknown) => fn(),
 }));
-// The limiter's own service client: usage_events count and insert.
+// The limiter's own service client. reserve_ai_usage plays the SQL function
+// (20261102110000) on the same count and insert mocks: count, refuse at the
+// limit, else insert; a count or insert error is the function's error.
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({
     from: (table: string) => {
@@ -33,6 +35,16 @@ vi.mock("@/lib/supabase/server", () => ({
         select: () => ({ eq: () => ({ in: () => ({ gte: mocks.count }) }) }),
         insert: mocks.insert,
       };
+    },
+    rpc: async (fn: string, args: Record<string, unknown>) => {
+      if (fn !== "reserve_ai_usage") throw new Error(`unexpected function ${fn}`);
+      const counted = await mocks.count();
+      if (counted.error) return { data: null, error: counted.error };
+      if (counted.count >= (args.p_max_per_window as number)) return { data: { allowed: false, count: counted.count }, error: null };
+      const inserted = await mocks.insert({ workspace_id: args.p_workspace_id, bucket_key: args.p_bucket_key, event_key: args.p_event_key,
+        weight: 1, source_route: args.p_source_route, metadata_json: args.p_metadata });
+      if (inserted.error) return { data: null, error: inserted.error };
+      return { data: { allowed: true, count: counted.count }, error: null };
     },
   }),
 }));

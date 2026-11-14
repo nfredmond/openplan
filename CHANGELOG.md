@@ -21,6 +21,11 @@ stable enough to promise smooth upgrades indefinitely.
 ## Unreleased
 
 **Every record page answers 404 for a record you cannot see (KI-2026-11-14-280):** plans, programs, projects, RTP cycles, benefit-cost analyses, county runs, contracts, land use plans and the public engagement portal now return HTTP 404 with the not-found screen for a record that does not exist, a malformed link or another workspace's record, instead of HTTP 200. A closed engagement campaign still shows that its comment period has ended, and a read that fails still says the record could not be read.
+**The SS4A packet says what its countermeasure table is before the table (KI-2026-11-14-302):** Appendix C now opens with the sentence that the countermeasures are proposed by staff for review and are not an engineering finding. It used to follow the table, which can run for two pages. No migration.
+**PDFs from the hosted site now come from the browser engine (KI-2026-11-14-301):** until now every PDF the hosted site made was a plain text version with no map, no table rules and no layout, because the bundled browser could not start on the hosted site's Node.js 24 runtime and the failure was silent. The bundle is updated to the release that supports that runtime, and a failed browser start is now written to the log with its reason. Reports and applications exported on the hosted site before this change can be exported again to get the full version. Self-hosted installations with Chrome installed were not affected. No migration.
+**The hosted database is up to date with the code again (KI-2026-11-14-300):** on November 14, 2026 seven waiting migrations were installed on the hosted site in one transaction, after a fresh backup was restored and compared and the same change was rehearsed on that copy. The tables involved were locked for about three quarters of a second. Planners now get what those migrations carry: a benefit-cost analysis can be saved for a tribal area or a town, crash records can be stored for Oregon, Iowa, Ohio and the District of Columbia, large crash pulls no longer time out, application exports record a hash of the file, only an owner or an administrator can write client invoices, and a project can be linked only to an RTP cycle in its own workspace. Saved report packets ask to be regenerated once more.
+**November migration window, seven files (history 448 to 455):** install `20261102100000` through `20261102140000` in one transaction before deploying this code; the inputs for the hosted install kit, with each file's locks and rollback, are in `docs/ops/hosted-install-windows/20261114-seven-migrations/`. The Oregon, Iowa, Ohio and DC crash adapters and the crash source registry now say their state's crashes are stored, so their pinned hashes and the readiness registry hash changed after the November 14 re-pin: saved report packets say their registry inputs changed and ask to be regenerated once more. An award handoff preview left open during the install is refused once at apply ("Sources, outcomes or terms pointers changed; review again") because the two new export columns change the grant's application fingerprint; previewing again fixes it, and stored handoffs do not change.
+**The hosted site has a usable offsite backup again (KI-2026-11-14-160, -161, -118):** on November 14, 2026 the daily capture was moved to a new encryption key (fingerprint `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`), and capture `20261114T072635Z` was decrypted and restored into an empty database with no network, where every table's row count, the migration history and every Storage object matched the live site. Captures made before that time were encrypted to a key whose private half was lost with a wiped workstation; they cannot be read and age out within 30 days. The private key exists only on the operator's workstation, on two disks, so losing that machine loses the backups again; the operations page says so. The same day a deployment-wide AI key that should never have been set on the hosted project was removed from its Production and Preview settings; the app had not been using it. No migration.
 **A report from another workspace answers 404 (KI-2026-11-14-060):** opening a report page for a report that does not exist, or one in a workspace the reader does not belong to, now returns HTTP 404 with the not-found screen instead of the same screen under HTTP 200. The report page reads the report once per request, as before.
 **Place search finds a place by the name the search shows (KI-2026-11-14-230):** search now matches the start of the full Census name as well as the base name, so "Pyramid Lake Paiute Reservation, NV", "Navajo Nation Reservation, AZ-NM-UT", "Washington township, Shelby County, OH" and "Columbus, GA-AL Metro Area" each find their place, and names with accents, slashes or parentheses work. A match on the base name still ranks first.
 **The first-job journey and the proven job checker read PDFs and cross-workspace answers the same way (KI-2026-11-14-060, -061, -190):** both read PDF text only with Poppler's `pdftotext` and refuse another one, such as the xpdf copy Git Bash finds first, with a message that says how to fix PATH. The journey finds each PDF item with the checker's own matcher and records the heading it searched. Each cross-workspace check now says whether it asked for a page or for data: data must answer 403 or 404, and a page may answer 200 only when the journey read the not-found screen on it and none of the first account's names; a record with such a page states that limit. The journey types each SS4A section's final text from an inputs file on screen instead of finalizing the seed unedited, and a proof run refuses the labeled rehearsal inputs.
@@ -95,6 +100,12 @@ from the project lists, the financial summary and the map. No migration.
 **Safety starts beside the navigation rail (KI-2026-11-02-024):** on a desktop the
 Safety page no longer runs under the 60px rail, so the active-project banner and
 the map's left edge are fully visible.
+
+**RTP project links stay inside one workspace (KI-2026-11-02-053):** both public
+plan pages now publish only links, and linked projects, from the plan's own workspace.
+Migration `20261102140000_project_rtp_cycle_link_workspace_scope.sql` refuses a link
+whose project, cycle, horizon band or evidence run is in another workspace; the page
+change does not depend on it.
 
 **"Can OpenPlan do this here?" answers for every state, DC and territory:**
 the jurisdiction support panel now has an entry for all 50 states, DC,
@@ -246,6 +257,18 @@ the rectangle is shown beside them. The corridor scorecard also counts inside
 the corridor polygon and divides crash density by the polygon's area. No
 migration.
 
+**Large crash acquisitions store again (KI-2026-11-02-020):** an acquisition
+above about 100 crashes failed with "Failed to persist crashes: canceling
+statement due to statement timeout". Each stored crash or person row updated its
+acquisition and its project, so one 500-row write updated the project about
+1,000 times. Migration `20261102130000_safety_crash_statement_revision.sql`
+keeps the per-row locks and refusals and moves those updates to one per
+acquisition and one per project for each write. Locally, 500 crashes on a
+project with a 1.4 MB study polygon now store in about 0.15 s; before, 50 took
+5 s. The acquisition's `evidence_revision` now advances once per write instead
+of once per row; it is compared only for equality. Apply the migration before or
+after deploying this code; the code does not depend on it.
+
 **First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
 fatal or serious-injury crash in the window can now save its safety action plan
 from the high-injury network ("Save plan with no ranked segments"), so the
@@ -257,9 +280,8 @@ a severity that is switched off or a facet the source does not record. The
 project page names the workspace's home geography when the project has no study
 area. Workspace health now reports `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` as a
 partial map configuration (most maps draw; the backdrop, aerial and model maps
-need a Mapbox token) and offers it when neither is set. Still open: crash
-acquisitions above about 100 crashes fail to store (needs a migration). No
-migration.
+need a Mapbox token) and offers it when neither is set. No migration (the crash
+store fix in this list has its own).
 
 **SS4A seed after logging the opportunity (KI-2026-11-02-022):** logging or
 exporting the SS4A funding opportunity no longer makes the Safety report look
@@ -271,6 +293,18 @@ place, still refuses the seed until the report is regenerated. Safety reports
 generated before this change keep the old check: regenerate one once to use the
 new one. The benefit-cost analysis place review still treats any project write
 as a change (needs a migration). No migration.
+
+**Client invoice writes (KI-2026-10-12-007):** apply
+`20261102120000_client_invoice_owner_admin_writes.sql` before or with this
+code. The database now holds the invoice route's rule for every client,
+including the Data API: only a workspace owner or admin can create, edit, void
+or delete a client invoice or change its lines. Members and viewers can still
+read invoices. No existing invoice or line is changed, including drafts a
+member created earlier. Contract exports (the management snapshot tables and
+the closeout accounting handoff) no longer list the billing source of a voided
+draft invoice, so work billed again on a later invoice appears once. The source
+row stays in the database as history, and a closeout package issued earlier
+also leaves it out when downloaded again.
 
 **Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
 `/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
@@ -331,6 +365,23 @@ and a read stopped by the allowance answers 429 and keeps nothing.
 Engagement scans and drafts that use the free fallback are no longer
 counted. No migration.
 
+**Atomic AI usage reservation and export hashes (KI-2026-10-12-014):** apply
+`20261102110000_reserve_ai_usage.sql` and
+`20261102110100_application_export_custody.sql` before deploying this change.
+The first adds `reserve_ai_usage`, which counts a workspace's AI usage and
+records the call in one transaction under the workspace lock the SQL
+dispatchers already take, so requests sent at the same time can no longer pass
+the 20-call window together. Only the service role can call it. If the function
+is missing, a call paid by the deployment's shared key is refused and the error
+names the migration; a workspace's own key keeps the earlier unlocked count.
+The second adds nullable `sha256` and `appendix_manifest_json` columns to
+`funding_opportunity_application_exports`. Application exports now store the
+PDF's SHA-256 and, for SS4A, the appendix manifest; the export list and the
+document library show the hash. Older exports show none. Until the second
+migration is applied, application export and the export list answer 503 naming
+it, and the document library reports grant application exports as waiting on a
+migration.
+
 **Engagement counts above 1,000 comments:** the database API returns at most
 1,000 rows per request and reports no error when it stops. Several screens and
 records read a campaign's comments in one request, so a campaign above 1,000
@@ -349,10 +400,10 @@ subdivisions (New England towns, townships, boroughs). Either can be a
 workspace home geography, a project or campaign area, a plan area or a
 resolved project jurisdiction. A tribal area records no state, because many
 cross state lines and state rules on tribal land are not a map fact; its states
-appear in its name. A town records its state. A benefit-cost analysis cannot
-yet record a project whose area or jurisdiction is either kind: the installed
-database guard lists only the earlier five kinds, and widening it needs a
-migration. No action is needed to deploy.
+appear in its name. A town records its state. A benefit-cost analysis can
+record a project whose area or jurisdiction is either kind once
+`20261102100100_bca_tribal_and_town_place_kinds.sql` is applied (see "Stored
+state injury crashes and BCA place kinds" below).
 
 **Crash sources follow the study area's state:** Safety now chooses a crash source
 from the state of the linked project's place or the picked county, city or CDP,
@@ -385,9 +436,9 @@ shared crash map layer also checks coverage by the workspace's stated state.
 read ODOT's published crash layer (Oregon Transportation Safety Data Explorer),
 which carries ODOT's own KABCO severity, so they report serious-injury and injury
 crashes instead of fatal-only FARS. Crashes ODOT could not locate are left out,
-because the layer places them at a default point. The layer is read live and not
-stored: a Safety acquisition in Oregon still saves FARS until a migration admits
-the new source. ODOT names no open license; the attribution says so. A research
+because the layer places them at a default point. A Safety acquisition in Oregon
+stores these crashes once `20261102100000_persist_state_injury_crashes.sql` is
+applied (see below). ODOT names no open license; the attribution says so. A research
 note, `docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md`, records which
 states publish open injury-crash data (California, DC, Iowa, Ohio and Oregon
 qualify; 27 states publish with limits). No action is needed to deploy.
@@ -396,10 +447,31 @@ qualify; 27 states publish with limits). No action is needed to deploy.
 Iowa, Ohio or the District of Columbia now read the state's published crash
 layer (Iowa DOT Crash Data, ODOT TIMS crash locations, DDOT Crashes in DC), so
 they report serious-injury and injury crashes instead of fatal-only FARS. Like
-Oregon, the layers are read live and not stored: a Safety acquisition in these
-places still saves FARS until a migration admits the new sources. Ohio's layer
-has no casualty counts or crash day; DC's years are the years crashes were
-reported; Iowa's newest year is partial. No action is needed to deploy.
+Oregon, a Safety acquisition stores them once
+`20261102100000_persist_state_injury_crashes.sql` is applied (see below). Ohio's
+layer has no casualty counts or crash day; DC's years are the years crashes were
+reported; Iowa's newest year is partial.
+
+**Stored state injury crashes and BCA place kinds (KI-2026-11-02-001,
+KI-2026-11-01-001):** two migrations. Operators must apply both before
+deploying this code, in this order:
+
+- `20261102100000_persist_state_injury_crashes.sql` widens
+  `safety_crashes.source_id` to admit `odot-or`, `iowadot-ia`, `odot-oh` and
+  `ddot-dc`, and `safety_crash_ingests.coverage_state` to admit
+  `state_injury_file`. A Safety acquisition in Oregon, Iowa, Ohio or DC now
+  stores the state's crashes with KABCO severity (`kabco_full`) instead of
+  fatal-only FARS. Ohio's stored crashes keep their missing casualty counts as
+  blank, not zero. Person rows stay CCRS-only. Acquisitions saved before this
+  change keep FARS; re-run a study area to store the state file.
+- `20261102100100_bca_tribal_and_town_place_kinds.sql` lets a benefit-cost
+  analysis record a project whose place or resolved jurisdiction is a tribal
+  area or a town or township. Each GEOID is checked by its own kind's format;
+  a city or CDP reference must now be 7 digits, as the reader already
+  required.
+
+Code deployed without them fails: an acquisition in those four places fails at
+its first write, and a BCA save for those place kinds returns 409.
 
 **CEQA screen on county runs:** the §15064.3 screening panel now appears only on
 county runs whose county is in California.
@@ -430,8 +502,9 @@ names its source record, date and stored hash. Missing, unreadable and
 deselected appendices are listed, never dropped. Planners choose appendices
 before export; all are on by default. The map is drawn only when the stored
 crash records and cached road lines reproduce the frozen ranking exactly. The
-export response and audit log carry the PDF's SHA-256; the export record does
-not store it yet. No migration is needed.
+export response and audit log carry the PDF's SHA-256. The appendices need no
+migration; storing the hash on the export record does (see "Atomic AI usage
+reservation and export hashes").
 
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep

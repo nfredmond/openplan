@@ -87,6 +87,8 @@
   "guard_engagement_response_publication()",
   "guard_management_storage()",
   "guard_master_relationship()",
+  "guard_project_rtp_cycle_link_scope()",
+  "guard_rtp_link_parent_workspace()",
   "guard_work_program_cash_matches()",
   "guard_work_program_export_document()",
   "guard_work_program_packet_document()",

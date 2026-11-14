@@ -19,7 +19,7 @@ Paths are under `openplan/` unless they start with `openplan/`, `workers/`,
 | `openplan/` | Next.js 16 web app (`package.json`), API routes, Node queue workers and Supabase migrations |
 | `src/app/` | Planner pages `(app)`, sign-in `(auth)`, public share-token pages `(portal)`, `(published)` and `(embed)`, static pages `(public)`, and `api/` routes |
 | `src/lib/`, `src/components/` | Domain logic, source adapters, permissions and UI, one folder per module |
-| `supabase/migrations/` | Forward migrations (448 files at `de7c950`) |
+| `supabase/migrations/` | Forward migrations (455 files at `2fbce717c`) |
 | `openplan/scripts/workers/` | Node queue workers that claim work from Postgres |
 | `workers/` | Python model, OCR, imagery and county services; hosted images; the local Planner Agent connector |
 | `scripts/modeling/`, `scripts/research/`, `data/modeling/`, `schemas/` | Offline scientific preparation, published evidence and its contracts |
