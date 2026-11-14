@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { OBSERVED_CRASH_SOURCE_IDS } from "@/lib/safety/sources/registry";
+import { CRASH_SOURCE_ADAPTERS, OBSERVED_CRASH_SOURCE_IDS } from "@/lib/safety/sources/registry";
 import {
   CRASH_AGE_BANDS,
   CRASH_COLLISION_TYPES,
@@ -17,9 +17,13 @@ const sql = readFileSync(
   "utf8"
 );
 
-/** The HEAD source-domain constraint after national FARS persistence. */
+/**
+ * The HEAD source-domain and coverage-state constraints, after the four state
+ * injury-crash layers were admitted. 20260904000001 (FARS) set the source
+ * domain before it.
+ */
 const sourceDomainSql = readFileSync(
-  path.resolve(process.cwd(), "supabase/migrations/20260904000001_persist_fars_crashes.sql"),
+  path.resolve(process.cwd(), "supabase/migrations/20261102100000_persist_state_injury_crashes.sql"),
   "utf8"
 );
 
@@ -73,7 +77,24 @@ describe("safety_crashes migration", () => {
     // The DB allowlist and the TS registry must not drift apart.
     expect(allowed.sort()).toEqual([...OBSERVED_CRASH_SOURCE_IDS].sort());
     expect(allowed.some((id) => /estimate/i.test(id))).toBe(false);
-    expect(sourceDomainSql).toMatch(/safety_crash_parties intentionally remains CCRS-only/i);
+    expect(sourceDomainSql).toMatch(/safety_crash_parties stays CCRS-only/i);
+  });
+
+  it("admits the coverage state of every adapter an acquisition can store", () => {
+    // An ingest row records its adapter's coverage state. A persistable adapter
+    // whose state the CHECK refuses fails every acquisition at the first insert.
+    const admitted = checkValues(
+      sourceDomainSql,
+      /ADD CONSTRAINT safety_crash_ingests_coverage_state_check\s+CHECK \(coverage_state IN \(([^)]*)\)\)/
+    );
+    for (const adapter of CRASH_SOURCE_ADAPTERS.filter((candidate) => candidate.persistable)) {
+      expect(admitted, adapter.id).toContain(adapter.coverageState);
+    }
+    // The ingest also writes these two states itself, for a failed or empty run.
+    expect(admitted).toEqual(expect.arrayContaining(["out_of_coverage", "source_unavailable"]));
+    // Widening, not replacing: every state the original table admitted remains.
+    const original = checkValues(sql, /coverage_state\s+text NOT NULL CHECK \(coverage_state IN \(([^)]*)\)\)/);
+    expect(admitted).toEqual(expect.arrayContaining(original));
   });
 
   it("keeps the severity domain aligned with the TypeScript buckets, at HEAD", () => {

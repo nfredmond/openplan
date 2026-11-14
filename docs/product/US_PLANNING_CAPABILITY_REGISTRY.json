@@ -8,7 +8,7 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "e9c5aed6b2925668c9075abad16acd73b3c7e3879c3c104b22ffd6ba31a820cc"
+    "sha256": "997125c6b7509b477012a27efc3cee596db25bc7e9437154786b1a6d3d3854b2"
   },
   "provenJobs": [],
   "dimensions": {
