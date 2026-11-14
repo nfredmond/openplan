@@ -363,6 +363,21 @@ test('inputs are refused when their text could not finalize honestly or a fact h
   assert.doesNotThrow(() => lib.validateJourneyInputs(proof, 'proof', '2026-11-14'));
 });
 
+test('the two accounts never share a workspace name', () => {
+  // No names given: the place and a label, as every rehearsal before used.
+  assert.deepEqual(lib.workspaceNames({ organization: null }, 'Sierra County, CA'), { first: 'Sierra County, CA journey', second: 'Sierra County, CA second account' });
+  // Both given and distinct.
+  assert.deepEqual(
+    lib.workspaceNames({ organization: 'OpenPlan proof run, Sierra County demonstration', secondOrganization: 'Second account, Sierra County check' }, 'Sierra County, CA'),
+    { first: 'OpenPlan proof run, Sierra County demonstration', second: 'Second account, Sierra County check' },
+  );
+  // One name for both accounts would make the cross-workspace check find the
+  // first workspace's name in the second account's own header.
+  assert.throws(() => lib.workspaceNames({ organization: 'OpenPlan proof run' }, 'Sierra County, CA'), /must also set secondOrganization/);
+  assert.throws(() => lib.workspaceNames({ organization: 'OpenPlan proof run', secondOrganization: 'OpenPlan proof run' }, 'Sierra County, CA'), /contains the first workspace name/);
+  assert.throws(() => lib.workspaceNames({ organization: 'OpenPlan proof run', secondOrganization: 'openplan PROOF run, second account' }, 'Sierra County, CA'), /contains the first workspace name/);
+});
+
 test('the journey counts markers with the export\'s own patterns', () => {
   const source = fs.readFileSync(path.join(__dirname, '..', 'openplan', 'src', 'lib', 'grants', 'application-draft-stamps.ts'), 'utf8');
   assert.ok(source.includes('const VERIFY_MARKER = /\\[VERIFY(?:\\]|:[^\\]\\n]*\\])/g;'));

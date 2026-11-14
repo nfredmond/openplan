@@ -42,6 +42,11 @@ place of a screen step; it only reads responses the screens request, for ids.
   (`PROOF_ORIGIN` in `openplan/scripts/ops/capability-evidence.mjs`) and also
   needs `--inputs`, `--budget-file` and `--expected-commit`, so rehearsal values
   never enter a proof.
+- Workspace names: `organization` names the first account's workspace and
+  `secondOrganization` the second account's. A file that sets the first must
+  set the second, and the second may not contain the first, because the
+  cross-workspace check searches what the second account sees for the first
+  workspace's name. With neither set, the names are the place plus a label.
 - Inputs: a JSON file of what a planner types, including the six SS4A section
   texts and the facts behind them (each with its source and the date read).
   The script types each text into the section's "Final text" box and saves it

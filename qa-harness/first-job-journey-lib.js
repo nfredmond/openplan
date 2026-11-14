@@ -439,6 +439,28 @@ function validateJourneyInputs(inputs, mode, today = utcNow().slice(0, 10)) {
   return inputs;
 }
 
+/**
+ * The workspace name each account types at sign-up. The second account's name
+ * must differ from the first's and must not contain it: the cross-workspace
+ * check searches what the second account sees for the first workspace's name,
+ * and the second account's own header shows its own workspace name. With
+ * `organization` set and no `secondOrganization`, both accounts would type the
+ * same name and that check would fail on an honest run.
+ */
+function workspaceNames(inputs, placeQuery) {
+  const first = String((inputs && inputs.organization) || `${placeQuery} journey`).trim();
+  const given = inputs && inputs.secondOrganization;
+  if (inputs && inputs.organization && !given) {
+    throw new Error('The inputs file sets organization, so it must also set secondOrganization, a different workspace name for the second account.');
+  }
+  const second = String(given || `${placeQuery} second account`).trim();
+  if (!first || !second) throw new Error('A workspace name is empty.');
+  if (second.toLowerCase().includes(first.toLowerCase())) {
+    throw new Error('secondOrganization contains the first workspace name, so the cross-workspace check could not tell the two workspaces apart.');
+  }
+  return { first, second };
+}
+
 /** Read and check the inputs: --inputs, or the labeled rehearsal file in rehearsal mode. */
 function loadJourneyInputs(mode, inputsFile) {
   if (!inputsFile && mode === 'proof') throw new Error('A proof run needs --inputs with sourced section text and facts.');
@@ -578,4 +600,5 @@ module.exports = {
   summarizeAxe,
   utcNow,
   validateJourneyInputs,
+  workspaceNames,
 };

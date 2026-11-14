@@ -309,7 +309,8 @@ async function main() {
   async function signUpAndConfirm(targetPage, email, accountPassword, confirmFile, label) {
     await targetPage.goto(new URL('/sign-up', origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
     await settle(targetPage);
-    const organization = inputs.organization || `${options.placeQuery} ${label}`;
+    const names = lib.workspaceNames(inputs, options.placeQuery);
+    const organization = label === 'journey' ? names.first : names.second;
     if (label === 'journey') ids.workspaceName = organization;
     await targetPage.type('#org-name', organization);
     await targetPage.type('#email', email);
