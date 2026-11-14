@@ -23,6 +23,11 @@ const IDS = {
 
 const bytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3]);
 const checksum = createHash("sha256").update(bytes).digest("hex");
+const QUOTA = 5 * 1024 ** 3;
+const room = () => vi.fn(async (incomingBytes: number) => {
+  void incomingBytes;
+  return { status: "room" as const, usedBytes: 0, quotaBytes: QUOTA };
+});
 
 function layer() {
   return {
@@ -129,13 +134,16 @@ describe("report aerial orthophoto evidence", () => {
           : { download: vi.fn(), upload }),
       },
     };
+    const storageRoom = room();
     const result = await freezeSelectedReportAerialOrtho({
       supabase: user,
       serviceSupabase: service,
       ...IDS,
       frozenAt: "2026-08-23T17:00:00.000Z",
+      storageRoom,
     });
     expect(result.status).toBe("verified");
+    expect(storageRoom).toHaveBeenCalledWith(bytes.byteLength);
     expect(upload).toHaveBeenCalledWith(
       `${IDS.workspaceId}/${IDS.reportId}/${IDS.artifactId}/aerial/${IDS.custodyId}.png`,
       bytes,
@@ -143,12 +151,38 @@ describe("report aerial orthophoto evidence", () => {
     );
   });
 
+  for (const refused of [
+    { status: "full" as const, usedBytes: QUOTA - 4, quotaBytes: QUOTA, message: "over the limit" },
+    { status: "unreadable" as const, message: "could not be checked", detail: "rpc failed" },
+  ]) {
+    it(`asks the storage limit about the preview's actual bytes and copies nothing when it is ${refused.status}`, async () => {
+      const user = queryClient();
+      const upload = vi.fn(async () => ({ error: null }));
+      const service = {
+        storage: {
+          from: vi.fn(() => ({ download: vi.fn(async () => ({ data: new Blob([bytes]), error: null })), upload })),
+        },
+      };
+      const storageRoom = vi.fn(async (incomingBytes: number) => {
+        void incomingBytes;
+        return refused;
+      });
+      const result = await freezeSelectedReportAerialOrtho({
+        supabase: user, serviceSupabase: service, ...IDS, frozenAt: "2026-08-23T17:00:00.000Z", storageRoom,
+      });
+      expect(result).toEqual({ status: "storage_refused", room: refused });
+      expect(storageRoom).toHaveBeenCalledTimes(1);
+      expect(storageRoom).toHaveBeenCalledWith(bytes.byteLength);
+      expect(upload).not.toHaveBeenCalled();
+    });
+  }
+
   it("refuses altered bytes before they can enter a packet", async () => {
     const altered = new Uint8Array([...bytes.slice(0, -1), 4]);
     const user = queryClient();
     const upload = vi.fn();
     const service = { storage: { from: vi.fn(() => ({ download: vi.fn(async () => ({ data: new Blob([altered]), error: null })), upload })) } };
-    const result = await freezeSelectedReportAerialOrtho({ supabase: user, serviceSupabase: service, ...IDS, frozenAt: "2026-08-23T17:00:00.000Z" });
+    const result = await freezeSelectedReportAerialOrtho({ supabase: user, serviceSupabase: service, ...IDS, frozenAt: "2026-08-23T17:00:00.000Z", storageRoom: room() });
     expect(result).toMatchObject({ status: "invalid", reason: expect.stringMatching(/custody hash/i) });
     expect(upload).not.toHaveBeenCalled();
   });

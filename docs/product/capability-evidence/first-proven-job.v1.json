@@ -1,0 +1,2553 @@
+{
+  "schema": "openplan.proven_job_record.v1",
+  "jobId": "safety-action-plan-and-ss4a-in-three-places",
+  "commit": "ccf88a9219fa58b67842a8f1dd41dbe3b371f8e5",
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "recordedOn": "2026-11-14",
+  "journeys": [
+    {
+      "role": "california-county",
+      "place": {
+        "kind": "county",
+        "geoid": "06091",
+        "stateFips": [
+          "06"
+        ],
+        "label": "Sierra County, CA"
+      },
+      "executor": {
+        "agent": "Claude Code",
+        "model": "claude-fable-5-2"
+      },
+      "accountCreatedAt": "2026-11-14T17:28:25Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        {
+          "point": "start",
+          "checkedAt": "2026-11-14T17:28:20Z",
+          "status": "ok",
+          "commit": "ccf88a9219fa",
+          "version": "0.72.0",
+          "migrationsExpected": 455,
+          "migrationsLatest": "20261102140000"
+        },
+        {
+          "point": "end",
+          "checkedAt": "2026-11-14T18:03:32Z",
+          "status": "ok",
+          "commit": "ccf88a9219fa",
+          "version": "0.72.0",
+          "migrationsExpected": 455,
+          "migrationsLatest": "20261102140000"
+        }
+      ],
+      "crashes": {
+        "sourceId": "ccrs-ca",
+        "severityCoverage": "kabco_full",
+        "reportedCount": 288,
+        "storedCount": 286
+      },
+      "highInjuryNetwork": {
+        "method": "Fatal and serious-injury crashes per mile. Stored road lines are cut into pieces of about 0.5 mile. Each crash goes to the nearest piece within 50 meters. Pieces shorter than 0.25 mile are measured as 0.25 mile.",
+        "segmentCount": 20
+      },
+      "countermeasureCount": 6,
+      "bcaSaved": true,
+      "engagement": {
+        "campaignId": "959cd1df-9683-4bc5-885a-67ad1d365f62",
+        "approvedCommentIds": [
+          "487151de-4108-419f-8bda-4cbd9aac2340",
+          "cf50fa16-a74a-4206-845d-1205e65fdde6"
+        ],
+        "staffReviewIds": [
+          "3001f787-1c15-40b1-9aef-3aefd9555c28"
+        ]
+      },
+      "pdfs": [
+        {
+          "kind": "safety-action-plan",
+          "path": "docs/product/capability-evidence/first-proven-job/california-county-safety-action-plan.pdf",
+          "sha256": "afb093311f472e094e0a1669bcdc09aaca61acf5bc216c22b9af48f36b8691ee",
+          "bytes": 835853,
+          "pages": 23,
+          "draftStamp": false,
+          "items": [
+            {
+              "item": "high-injury-map",
+              "page": 17,
+              "method": "page-image",
+              "imageSha256": "4e00e0945dd8f455aaf973b298865635390d251a850b0ac5d3141ef7e3adce50"
+            },
+            {
+              "item": "crash-summary",
+              "page": 14,
+              "method": "pdftotext",
+              "text": "Crash summary"
+            },
+            {
+              "item": "countermeasures",
+              "page": 18,
+              "method": "pdftotext",
+              "text": "Countermeasures"
+            },
+            {
+              "item": "bca",
+              "page": 20,
+              "method": "pdftotext",
+              "text": "Benefit-cost summary"
+            },
+            {
+              "item": "engagement-summary",
+              "page": 19,
+              "method": "pdftotext",
+              "text": "Engagement summary"
+            }
+          ]
+        },
+        {
+          "kind": "ss4a-application",
+          "path": "docs/product/capability-evidence/first-proven-job/california-county-ss4a-application.pdf",
+          "sha256": "822dd8fe67252a57db1ad669cb12fc7e617573e9c7cf6b288b49ff847f83f0f8",
+          "bytes": 479455,
+          "pages": 19,
+          "draftStamp": false,
+          "items": [
+            {
+              "item": "high-injury-map",
+              "page": 9,
+              "method": "page-image",
+              "imageSha256": "cfe5bffdfbe94dfd268f60d19e11b719a4bc32ab951bfbdc9e2a6e72ba560a53"
+            },
+            {
+              "item": "crash-summary",
+              "page": 11,
+              "method": "pdftotext",
+              "text": "Appendix B. Crash summary"
+            },
+            {
+              "item": "countermeasures",
+              "page": 12,
+              "method": "pdftotext",
+              "text": "Appendix C. Countermeasures"
+            },
+            {
+              "item": "bca",
+              "page": 14,
+              "method": "pdftotext",
+              "text": "Appendix D. Benefit-cost summary"
+            },
+            {
+              "item": "engagement-summary",
+              "page": 15,
+              "method": "pdftotext",
+              "text": "Appendix E. Engagement summary"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "screen": "sign-up",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        }
+      ]
+    },
+    {
+      "role": "nevada-county",
+      "place": {
+        "kind": "county",
+        "geoid": "32017",
+        "stateFips": [
+          "32"
+        ],
+        "label": "Lincoln County, NV"
+      },
+      "executor": {
+        "agent": "Claude Code",
+        "model": "claude-fable-5-2"
+      },
+      "accountCreatedAt": "2026-11-14T17:28:25Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        {
+          "point": "start",
+          "checkedAt": "2026-11-14T17:28:20Z",
+          "status": "ok",
+          "commit": "ccf88a9219fa",
+          "version": "0.72.0",
+          "migrationsExpected": 455,
+          "migrationsLatest": "20261102140000"
+        },
+        {
+          "point": "end",
+          "checkedAt": "2026-11-14T18:03:34Z",
+          "status": "ok",
+          "commit": "ccf88a9219fa",
+          "version": "0.72.0",
+          "migrationsExpected": 455,
+          "migrationsLatest": "20261102140000"
+        }
+      ],
+      "crashes": {
+        "sourceId": "fars-national",
+        "severityCoverage": "fatal_only",
+        "reportedCount": 12,
+        "storedCount": 12
+      },
+      "highInjuryNetwork": {
+        "method": "Fatal crashes per mile (fatal crashes only). Stored road lines are cut into pieces of about 0.5 mile. Each crash goes to the nearest piece within 50 meters. Pieces shorter than 0.25 mile are measured as 0.25 mile.",
+        "segmentCount": 11
+      },
+      "countermeasureCount": 6,
+      "bcaSaved": true,
+      "engagement": {
+        "campaignId": "a97bab0c-d769-412a-be0d-348b379d701a",
+        "approvedCommentIds": [
+          "8b1e9064-a69c-4c94-87da-9bb97fce2be1",
+          "ef867292-3a0f-4496-a9cb-52774954d691"
+        ],
+        "staffReviewIds": [
+          "df5194af-1ca0-449e-983b-91c23ce84912"
+        ]
+      },
+      "pdfs": [
+        {
+          "kind": "safety-action-plan",
+          "path": "docs/product/capability-evidence/first-proven-job/nevada-county-safety-action-plan.pdf",
+          "sha256": "db69fa0fc1b97eaab8e7486ad16a9cd55d79ec90ea17a27003410856a72960ac",
+          "bytes": 490079,
+          "pages": 21,
+          "draftStamp": false,
+          "items": [
+            {
+              "item": "high-injury-map",
+              "page": 15,
+              "method": "page-image",
+              "imageSha256": "2b28740a9b2fc3d6b6552dea425ecdcfa720697101f3dd07b6e1d5fa7567fff7"
+            },
+            {
+              "item": "crash-summary",
+              "page": 12,
+              "method": "pdftotext",
+              "text": "Crash summary"
+            },
+            {
+              "item": "countermeasures",
+              "page": 16,
+              "method": "pdftotext",
+              "text": "Countermeasures"
+            },
+            {
+              "item": "bca",
+              "page": 17,
+              "method": "pdftotext",
+              "text": "Benefit-cost summary"
+            },
+            {
+              "item": "engagement-summary",
+              "page": 17,
+              "method": "pdftotext",
+              "text": "Engagement summary"
+            }
+          ]
+        },
+        {
+          "kind": "ss4a-application",
+          "path": "docs/product/capability-evidence/first-proven-job/nevada-county-ss4a-application.pdf",
+          "sha256": "2443dce9243fd062779096690b676723f8bafa770c4d670af525807e1f0453e9",
+          "bytes": 341282,
+          "pages": 19,
+          "draftStamp": false,
+          "items": [
+            {
+              "item": "high-injury-map",
+              "page": 9,
+              "method": "page-image",
+              "imageSha256": "889358b9730f7ee35c565f4c8edbf0adc2df9933f5687a44c6aebc75ce2116f1"
+            },
+            {
+              "item": "crash-summary",
+              "page": 10,
+              "method": "pdftotext",
+              "text": "Appendix B. Crash summary"
+            },
+            {
+              "item": "countermeasures",
+              "page": 12,
+              "method": "pdftotext",
+              "text": "Appendix C. Countermeasures"
+            },
+            {
+              "item": "bca",
+              "page": 14,
+              "method": "pdftotext",
+              "text": "Appendix D. Benefit-cost summary"
+            },
+            {
+              "item": "engagement-summary",
+              "page": 15,
+              "method": "pdftotext",
+              "text": "Appendix E. Engagement summary"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "screen": "sign-up",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        }
+      ]
+    },
+    {
+      "role": "tribal-area",
+      "place": {
+        "kind": "aiannh",
+        "geoid": "3010R",
+        "stateFips": [
+          "32"
+        ],
+        "label": "Pyramid Lake Paiute Reservation, NV"
+      },
+      "executor": {
+        "agent": "Claude Code",
+        "model": "claude-fable-5-2"
+      },
+      "accountCreatedAt": "2026-11-14T18:03:50Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        {
+          "point": "start",
+          "checkedAt": "2026-11-14T18:03:47Z",
+          "status": "ok",
+          "commit": "ccf88a9219fa",
+          "version": "0.72.0",
+          "migrationsExpected": 455,
+          "migrationsLatest": "20261102140000"
+        },
+        {
+          "point": "end",
+          "checkedAt": "2026-11-14T18:38:30Z",
+          "status": "ok",
+          "commit": "ccf88a9219fa",
+          "version": "0.72.0",
+          "migrationsExpected": 455,
+          "migrationsLatest": "20261102140000"
+        }
+      ],
+      "crashes": {
+        "sourceId": "fars-national",
+        "severityCoverage": "fatal_only",
+        "reportedCount": 3,
+        "storedCount": 3
+      },
+      "highInjuryNetwork": {
+        "method": "Fatal crashes per mile (fatal crashes only). Stored road lines are cut into pieces of about 0.5 mile. Each crash goes to the nearest piece within 50 meters. Pieces shorter than 0.25 mile are measured as 0.25 mile.",
+        "segmentCount": 3
+      },
+      "countermeasureCount": 6,
+      "bcaSaved": true,
+      "engagement": {
+        "campaignId": "ff6d83ea-e9e1-4556-b9cc-e0361697015c",
+        "approvedCommentIds": [
+          "1e81cf20-13e2-4620-acf5-1bb19867b5a1",
+          "e0de74de-9919-4172-ad8c-41c42572e47d"
+        ],
+        "staffReviewIds": [
+          "9b6ee7ee-a5a4-43d4-af9c-156520ed16c1"
+        ]
+      },
+      "pdfs": [
+        {
+          "kind": "safety-action-plan",
+          "path": "docs/product/capability-evidence/first-proven-job/tribal-area-safety-action-plan.pdf",
+          "sha256": "7d01024a1b8254974b632e3033344b94f31755f2d42b7a2ad89f303c07873406",
+          "bytes": 421336,
+          "pages": 20,
+          "draftStamp": false,
+          "items": [
+            {
+              "item": "high-injury-map",
+              "page": 14,
+              "method": "page-image",
+              "imageSha256": "2dd23354e6fddcc745aed8783ec85f3ba35129486202bd6bf441406efd382242"
+            },
+            {
+              "item": "crash-summary",
+              "page": 12,
+              "method": "pdftotext",
+              "text": "Crash summary"
+            },
+            {
+              "item": "countermeasures",
+              "page": 14,
+              "method": "pdftotext",
+              "text": "Countermeasures"
+            },
+            {
+              "item": "bca",
+              "page": 16,
+              "method": "pdftotext",
+              "text": "Benefit-cost summary"
+            },
+            {
+              "item": "engagement-summary",
+              "page": 15,
+              "method": "pdftotext",
+              "text": "Engagement summary"
+            }
+          ]
+        },
+        {
+          "kind": "ss4a-application",
+          "path": "docs/product/capability-evidence/first-proven-job/tribal-area-ss4a-application.pdf",
+          "sha256": "83f592feb9b354f2491e3f94aafbfc0b94ae795e0ef473acec14f59e34137b46",
+          "bytes": 292165,
+          "pages": 19,
+          "draftStamp": false,
+          "items": [
+            {
+              "item": "high-injury-map",
+              "page": 9,
+              "method": "page-image",
+              "imageSha256": "77ff9c312777e8c9c2e0a5a5482c4a3cdaba7b01522418c268d7b5c247cba762"
+            },
+            {
+              "item": "crash-summary",
+              "page": 10,
+              "method": "pdftotext",
+              "text": "Appendix B. Crash summary"
+            },
+            {
+              "item": "countermeasures",
+              "page": 12,
+              "method": "pdftotext",
+              "text": "Appendix C. Countermeasures"
+            },
+            {
+              "item": "bca",
+              "page": 14,
+              "method": "pdftotext",
+              "text": "Appendix D. Benefit-cost summary"
+            },
+            {
+              "item": "engagement-summary",
+              "page": 15,
+              "method": "pdftotext",
+              "text": "Appendix E. Engagement summary"
+            }
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "screen": "sign-up",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "sign-up",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "portal",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "dashboard",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "project",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "safety",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "bca",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "campaign-responses",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "report",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 1440,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 390,
+          "mode": "light",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "grants-application",
+          "width": 390,
+          "mode": "dark",
+          "axe": {
+            "version": "4.11.1",
+            "tags": [
+              "wcag2a",
+              "wcag2aa",
+              "wcag21a",
+              "wcag21aa"
+            ],
+            "serious": 0,
+            "critical": 0
+          },
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        }
+      ]
+    }
+  ],
+  "crossWorkspace": {
+    "checks": [
+      {
+        "target": "safety-action-plan",
+        "request": "report-page",
+        "kind": "page",
+        "status": 404,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "7441cd70d12eea449d1b925e8b5ccb59e650b668146c9a9bc346ac4236a016bb",
+          "07af3380318b114f66c825c9735359c61fb254f20c7ce3fcb694d5ac053c5a4e",
+          "a60cbce680d6e70acd5f5593fd646641ddac935ebd0d4cb24616db1c1270f54a",
+          "c0046a947e35c3709410afe8573b8ccfec96119c34860b9a9468d2f653b9f5ef"
+        ],
+        "searchedStringCount": 4
+      },
+      {
+        "target": "safety-action-plan",
+        "request": "report-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "ss4a-application",
+        "request": "application-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "ss4a-application",
+        "request": "application-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "safety-action-plan",
+        "request": "report-page",
+        "kind": "page",
+        "status": 404,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "3724d9d75e026488b26e42067ff945d2d58bbed2f85d192729924a9e2058cfeb",
+          "f245d04959a5680d4ac77c0dd7e803830ceec99772f9bb2685dde3a0b7591101",
+          "85564402e46a1897cfe02e990f755a9a530d01986c5668a0724c41e5b2ff011e",
+          "ae74ea71f880da1f4645262c90657eb720a62187cb1eea31a25ff35d9fa279b1"
+        ],
+        "searchedStringCount": 4
+      },
+      {
+        "target": "safety-action-plan",
+        "request": "report-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "ss4a-application",
+        "request": "application-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "ss4a-application",
+        "request": "application-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "safety-action-plan",
+        "request": "report-page",
+        "kind": "page",
+        "status": 404,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "d009011be316dfb15c1d11ba5ef318297d9abaf3686c1ae107f24b524843b64c",
+          "733de35808c3abfb402d549e33dab99077a10ea2b5f394e3b417afb07f028168",
+          "8bdb12b0361bd6b7797a0a0ccdbb509d0a81d786cd06d57e9a5224fc476a54b9",
+          "c874cc4e7ec3531fba83077c6f9721661b86e31bb6254565bee9f3a9e4768c9e"
+        ],
+        "searchedStringCount": 4
+      },
+      {
+        "target": "safety-action-plan",
+        "request": "report-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "ss4a-application",
+        "request": "application-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "ss4a-application",
+        "request": "application-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      }
+    ]
+  },
+  "sourceCheck": {
+    "status": "matched",
+    "checkedOn": "2026-11-14",
+    "url": "https://static.nhtsa.gov/nhtsa/downloads/FARS/2024/National/FARS2024NationalCSV.zip",
+    "note": "Lincoln County, Nevada only. After the hosted journey, the case numbers it stored were read from the hosted database, read-only: 12 fatal crashes (6 in 2022, 4 in 2023, 2 in 2024; 12 people killed). They are the same 12 state case numbers that NHTSA's FARS national annual files for 2022, 2023 and 2024 hold for state 32, county 17, read with a script that uses no OpenPlan code. NHTSA's query service answered HTTP 403 to an automated request, so this compares OpenPlan with the published files it reads, not with a second NHTSA product. Sierra County (CCRS) and the tribal area were not checked this way."
+  },
+  "limits": [
+    {
+      "id": "no-pdf-ua-check",
+      "text": "No PDF/UA check was run on the exported PDFs."
+    },
+    {
+      "id": "no-keyboard-or-screen-reader-pass",
+      "text": "No keyboard-only or screen-reader pass was made."
+    },
+    {
+      "id": "no-human-usefulness-review",
+      "text": "No planner reviewed whether the PDFs are useful. Every check in this record was run by an agent."
+    },
+    {
+      "id": "fars-is-fatal-only",
+      "text": "FARS records fatal crashes only, so the Nevada county and tribal area counts omit serious injuries."
+    },
+    {
+      "id": "source-check-covers-one-place",
+      "text": "Crash counts were compared with the source's published files for Lincoln County only; the California county and the tribal area counts are the sources' own and were not confirmed independently."
+    },
+    {
+      "id": "section-text-is-a-labeled-demonstration",
+      "text": "The SS4A section text was written by an agent from public sources and says so in its first sentence. No county or tribe prepared, reviewed, adopted or submitted it, and it speaks for none of them."
+    },
+    {
+      "id": "benefit-cost-ratio-is-not-a-finding",
+      "text": "The benefit-cost ratio rests on one treated segment, one assumed crash modification factor and an incomplete cost. It shows that the screen and the export work, not that any project is cost-effective."
+    },
+    {
+      "id": "exports-carry-product-verify-markers",
+      "text": "The exported PDFs carry the product's own [VERIFY] markers on items it did not read from a primary source: the countermeasure list's factor notes, the attachment list and the action plan component names."
+    },
+    {
+      "id": "campaign-comments-are-demonstration",
+      "text": "The two comments in each campaign were entered by the proof run and say so in their own text. They represent no one. Each safety action plan counts them as approved public comments toward its engagement component without that label."
+    },
+    {
+      "id": "exports-print-stored-identifiers",
+      "text": "The declared hand check for stored codes was not met. The severity-coverage code it was written for is gone, but the PDFs print other stored identifiers as they are kept (a benefit-cost status and ledger name, crash source ids, a segment id, template and schema names, repository file paths), and each plan's cover prints its creation time in UTC with no zone named."
+    },
+    {
+      "id": "map-page-not-rechecked-by-the-checker",
+      "text": "The checker re-reads every text item in each PDF but does not render the map page again. That the high-injury map is drawn on the recorded page rests on the journey's own count of highlight-colored pixels on that page, whose image hash is recorded, and on the lead agent's separate render and look at all six map pages."
+    },
+    {
+      "id": "hosted-pdf-fonts-are-one-family",
+      "text": "The hosted site prints PDFs in one font family, so headings that are serif on a workstation print in the same sans-serif face as the body."
+    }
+  ]
+}

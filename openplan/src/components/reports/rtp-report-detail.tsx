@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 import { artifactGenerationWritebackIsCurrent, resolveTrackedReportSourceUpdatedAt } from "@/lib/reports/report-registry-freshness";
 import Link from "next/link";
 import { ReportArtifactPreview } from "@/app/(app)/reports/[reportId]/_components/report-artifact-preview";
@@ -84,8 +85,8 @@ function driftStatusLabel(status: "unchanged" | "updated" | "count_changed") {
 }
 
 /** Report detail rounds to the dollar; the surface discloses that once. */
-function formatCurrency(value: number) {
-  return formatMoney(value, { precision: "whole" });
+function formatCurrency(value: number | null | undefined) {
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 export function RtpReportDetail({
@@ -571,13 +572,13 @@ export function RtpReportDetail({
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
                     <p className="text-label font-semibold text-muted-foreground">Generation-time funding posture</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{generationContext.fundingSnapshot?.label ?? "Unknown"}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.reason ?? "No RTP funding posture was captured on this artifact."}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.comparableFunding ? comparableFundingDisclosure(generationContext.fundingSnapshot.comparableFunding) : generationContext.fundingSnapshot?.reason ?? "No RTP funding posture was captured on this artifact."}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{generationContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
                   </div>
                   <div className="rounded-xl border border-border/70 bg-background px-3 py-3">
                     <p className="text-label font-semibold text-muted-foreground">Current funding posture</p>
                     <p className="mt-2 text-sm font-semibold text-foreground">{currentContext.fundingSnapshot?.label ?? "Unknown"}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reason ?? "No current RTP funding posture is available."}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.comparableFunding ? comparableFundingDisclosure(currentContext.fundingSnapshot.comparableFunding) : currentContext.fundingSnapshot?.reason ?? "No current RTP funding posture is available."}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{currentContext.fundingSnapshot?.reimbursementLabel ?? "Unknown reimbursement posture"}</p>
                   </div>
                 </div>
@@ -712,11 +713,11 @@ export function RtpReportDetail({
               </div>
               <div className="module-metric-card">
                 <p className="module-metric-label">Funding gap after likely</p>
-                <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.unfundedAfterLikelyAmount ?? 0)}</p>
+                <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.unfundedAfterLikelyAmount)}</p>
               </div>
               <div className="module-metric-card">
                 <p className="module-metric-label">Outstanding reimbursement</p>
-                <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.outstandingReimbursementAmount ?? 0)}</p>
+                <p className="module-metric-value text-sm">{formatCurrency(generationContext.fundingSnapshot?.outstandingReimbursementAmount)}</p>
               </div>
             </div>
             {/*

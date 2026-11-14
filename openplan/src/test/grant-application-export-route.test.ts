@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -63,7 +64,7 @@ vi.mock("@/lib/grants/pursuit", async () => {
   };
 });
 
-import { POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
+import { GET as listExports, POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
 import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportunityId]/application/export/[exportId]/download/route";
 
@@ -206,6 +207,53 @@ function postRequest() {
 }
 
 const postContext = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+
+type ServiceCall = { table: string; method: string; args: unknown[] };
+
+/**
+ * A service-role client with the workspace roster: `members` are the
+ * workspace's member ids, `emails` the auth records the admin API holds (for
+ * anyone, members or not). Records every roster query and auth lookup.
+ */
+function rosterService(options: {
+  members: string[];
+  /** Each member's workspace role; "member" when not given. */
+  roles?: Record<string, string>;
+  emails: Record<string, string>;
+  rosterError?: { message: string };
+}) {
+  const calls: ServiceCall[] = [];
+  const getUserById = vi.fn(async (id: string) => ({
+    data: { user: options.emails[id] ? { email: options.emails[id] } : null },
+  }));
+  const from = (table: string) => {
+    let columns = "";
+    const chain: Record<string, unknown> = {};
+    for (const method of ["eq", "order"]) {
+      chain[method] = (...args: unknown[]) => {
+        calls.push({ table, method, args });
+        return chain;
+      };
+    }
+    chain.select = (value: string) => {
+      columns = value;
+      calls.push({ table, method: "select", args: [value] });
+      return chain;
+    };
+    // The caller's membership check, then the roster read.
+    chain.maybeSingle = async () => ({ data: { user_id: USER_ID }, error: null });
+    chain.limit = async () =>
+      options.rosterError
+        ? { data: null, error: options.rosterError }
+        : { data: columns === "user_id, role" ? options.members.map((id) => ({ user_id: id, role: options.roles?.[id] ?? "member" })) : [], error: null };
+    return chain;
+  };
+  return {
+    service: { storage: { from: storageFromMock }, from, auth: { admin: { getUserById } } },
+    calls,
+    getUserById,
+  };
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -386,10 +434,31 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
 
     expect(response.status).toBe(201);
     const html = renderReportPdfMock.mock.calls[0][0] as string;
-    expect(html).toContain("DRAFT — 1 required attachment(s) outstanding");
+    expect(html).toContain("DRAFT: 1 required attachment(s) outstanding");
     const body = await response.json();
     expect(body.isDraftStamped).toBe(true);
     expect(body.outstandingRequiredCount).toBe(1);
+    expect(body.draftStamps).toEqual(["DRAFT: 1 required attachment(s) outstanding"]);
+  });
+
+  it("stamps the document DRAFT when a final section still holds [VERIFY] markers, and says why (KI-2026-11-14-061)", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ ...finalOperatorSection, final_markdown: "Crashes doubled [VERIFY]. [OPERATOR: Enter the budget.]" }], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    const stamp = "DRAFT: 1 unverified item, 1 unfilled placeholder remain in 1 section";
+    expect(html).toContain(`<div class="draft-stamp">${stamp}</div>`);
+    const body = await response.json();
+    expect(body.isDraftStamped).toBe(true);
+    expect(body.outstandingRequiredCount).toBe(0);
+    expect(body.draftStamps).toEqual([stamp]);
   });
 
   it("stores the PDF under the opportunity's own prefix and registers the export row", async () => {
@@ -424,6 +493,11 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(inserted.id).toBe((storagePath as string).split("/")[2].replace(".pdf", ""));
 
     const body = await response.json();
+    // The register row carries the stored bytes' hash; no appendix manifest
+    // outside SS4A.
+    expect(inserted.sha256).toBe(createHash("sha256").update(bytes as Buffer).digest("hex"));
+    expect(inserted.sha256).toBe(body.sha256);
+    expect(inserted.appendix_manifest_json).toBeNull();
     expect(body.export).toMatchObject({ id: EXPORT_ID, pdf_engine: "builtin" });
     expect(body.engineDisclosure).toContain("built-in PDF writer");
 
@@ -523,7 +597,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(html).not.toContain("Expected award");
 
     const pdfOptions = renderReportPdfMock.mock.calls[0][1] as { title: string };
-    expect(pdfOptions.title).toBe("Corridor safety package — Proposal packet");
+    expect(pdfOptions.title).toBe("Corridor safety package: Proposal packet");
   });
 
   it("refuses an uninitialized application rather than exporting an empty shell", async () => {
@@ -561,6 +635,12 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     // reordered the packet after USER finalized — the stored PDF must still
     // credit the finalizer, never the last toucher.
     const REORDERING_TEAMMATE_ID = "77777777-7777-4777-8777-777777777777";
+    const roster = rosterService({
+      members: [USER_ID, REORDERING_TEAMMATE_ID],
+      roles: { [USER_ID]: "admin" },
+      emails: { [USER_ID]: "finalizer@example.gov", [REORDERING_TEAMMATE_ID]: "teammate@example.gov" },
+    });
+    createServiceRoleClientMock.mockReturnValue(roster.service);
     installTables({
       funding_opportunity_application_sections: () =>
         makeQuery({
@@ -585,8 +665,78 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(response.status).toBe(201);
 
     const html = renderReportPdfMock.mock.calls[0][0] as string;
-    expect(html).toContain(USER_ID);
+    // The finalizer's workspace role, not an id (KI-2026-11-02-044) and not an
+    // email address (KI-2026-11-14-100): the PDF goes to a funder.
+    expect(html).toContain("<td>Workspace admin</td>");
+    expect(html).not.toContain(USER_ID);
+    expect(html).not.toContain("finalizer@example.gov");
+    expect(html).not.toContain("teammate@example.gov");
     expect(html).not.toContain(REORDERING_TEAMMATE_ID);
+    // No auth record is read; the roster's role is enough.
+    expect(roster.getUserById).not.toHaveBeenCalled();
+    expect(roster.calls.filter((call) => call.method === "select").map((call) => call.args)).toEqual([["user_id"], ["user_id, role"]]);
+    expect(roster.calls.filter((call) => call.method === "eq").map((call) => call.args)).toEqual([
+      ["workspace_id", WORKSPACE_ID],
+      ["user_id", USER_ID],
+      ["workspace_id", WORKSPACE_ID],
+    ]);
+  });
+
+  it("never looks up or prints a finalizer who is not on this workspace's roster", async () => {
+    const OUTSIDER_ID = "88888888-8888-4888-8888-888888888888";
+    // The auth admin API would answer for anyone; the export must not ask.
+    const roster = rosterService({ members: [USER_ID], emails: { [OUTSIDER_ID]: "someone@other-agency.example" } });
+    createServiceRoleClientMock.mockReturnValue(roster.service);
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ ...finalOperatorSection, finalized_by: OUTSIDER_ID }], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("<td>Not on record as a member of this workspace</td>");
+    expect(html).not.toContain("someone@other-agency.example");
+    expect(html).not.toContain(OUTSIDER_ID);
+    expect(roster.getUserById).not.toHaveBeenCalled();
+  });
+
+  it("says the name could not be read when the roster read fails, never that the person is not on record", async () => {
+    const roster = rosterService({ members: [USER_ID], emails: { [USER_ID]: "finalizer@example.gov" }, rosterError: { message: "timeout" } });
+    createServiceRoleClientMock.mockReturnValue(roster.service);
+    installTables({
+      funding_opportunity_application_sections: () => makeQuery({ data: [finalOperatorSection], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("<td>Not named: the workspace roster could not be read when this package was assembled</td>");
+    expect(html).not.toContain(USER_ID);
+    expect(mockAudit.warn).toHaveBeenCalledWith("application_export_finalizer_roster_unread", expect.objectContaining({ opportunityId: OPPORTUNITY_ID }));
+  });
+
+  it("prints times on the workspace's own calendar, read from the workspace row", async () => {
+    const workspaceQuery = makeQuery({ data: { time_zone: "America/Los_Angeles", home_country_code: "US" }, error: null });
+    installTables({
+      funding_opportunity_application_sections: () => makeQuery({ data: [finalOperatorSection], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+      workspaces: () => workspaceQuery,
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(workspaceQuery.select).toHaveBeenCalledWith("time_zone, home_country_code");
+    expect(workspaceQuery.eq).toHaveBeenCalledWith("id", WORKSPACE_ID);
+    // 00:00 UTC on September 30 is the evening of September 29 in Los Angeles.
+    expect(html).toContain("<dt>Closes</dt><dd>September 29, 2026 at 17:00 (America/Los_Angeles)</dd>");
+    expect(html).toContain("<td>July 26, 2026 at 19:00 (America/Los_Angeles)</td>");
   });
 
   it("discloses an unrecorded finalizer honestly instead of falling back to updated_by", async () => {
@@ -635,6 +785,34 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(response.status).toBe(503);
     expect((await response.json()).error).toContain("20260727000016_application_section_finalizer");
     expect(renderReportPdfMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/funding-opportunities/[opportunityId]/application/export", () => {
+  const listContext = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+  const listRequest = () =>
+    new NextRequest(`http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application/export`, { method: "GET" });
+
+  it("lists each export with its stored hash and appendix manifest", async () => {
+    const row = { ...exportRowResult, sha256: "a".repeat(64), appendix_manifest_json: null };
+    const listChain = makeQuery({ data: [row], error: null });
+    installTables({ funding_opportunity_application_exports: () => listChain });
+    const response = await listExports(listRequest(), listContext);
+    expect(response.status).toBe(200);
+    expect((await response.json()).exports[0].sha256).toBe("a".repeat(64));
+    expect(listChain.select).toHaveBeenCalledWith(
+      "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json"
+    );
+  });
+
+  it("answers 503 naming the custody migration when the columns are missing", async () => {
+    installTables({
+      funding_opportunity_application_exports: () =>
+        makeQuery({ data: null, error: { message: "column funding_opportunity_application_exports.sha256 does not exist", code: "42703" } }),
+    });
+    const response = await listExports(listRequest(), listContext);
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20261102110100_application_export_custody");
   });
 });
 

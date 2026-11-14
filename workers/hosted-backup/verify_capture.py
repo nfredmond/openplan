@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import posixpath
 import shutil
 import subprocess
 import sys
@@ -34,6 +35,36 @@ def newest_capture(s3, bucket: str) -> str:
     if not stamps:
         raise SystemExit("no completed capture in the bucket")
     return max(stamps)
+
+
+def safe_members(tar: tarfile.TarFile, root: str) -> list[tarfile.TarInfo]:
+    """Every member must be a plain file or directory under ROOT/.
+
+    The backup image runs Debian bookworm's Python 3.11.2, whose tarfile has no
+    extraction filter (review 15, B1). This check runs on every Python, so a
+    link, device, absolute path or ".." member is refused before anything is
+    written. Modes are reset so decrypted files stay private.
+    """
+    members = tar.getmembers()
+    for member in members:
+        name = member.name
+        parts = name.split("/")
+        if (not name or name.startswith("/") or "\\" in name or ":" in parts[0]
+                or any(part in ("", ".", "..") for part in parts)
+                or posixpath.normpath(name) != name
+                or not (parts[0] == root)
+                or not (member.isfile() or member.isdir())):
+            raise SystemExit(f"refusing capture member {name!r}: only plain files and folders under {root}/")
+        member.mode = 0o700 if member.isdir() else 0o600
+    return members
+
+
+def extract_capture(tar: tarfile.TarFile, out: pathlib.Path, root: str) -> None:
+    members = safe_members(tar, root)
+    if hasattr(tarfile, "data_filter"):
+        tar.extractall(out, members=members, filter="data")
+    else:
+        tar.extractall(out, members=members)
 
 
 def main(outdir: str) -> int:
@@ -58,7 +89,7 @@ def main(outdir: str) -> int:
         gpg += ["--passphrase-file", env["BACKUP_GPG_PASSPHRASE_FILE"]]
     subprocess.run(gpg + ["--output", str(plain), "--decrypt", str(cipher)], check=True)
     with tarfile.open(plain) as tar:
-        tar.extractall(out, filter="data")
+        extract_capture(tar, out, stamp)
     plain.unlink()
     root = out / stamp
     manifest = json.loads((root / "manifest.json").read_text())

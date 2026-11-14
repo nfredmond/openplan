@@ -1,3 +1,14 @@
+# Check out every text file with LF, whatever core.autocrlf says. Git for
+# Windows defaults autocrlf to true, which rewrites checkouts to CRLF and breaks
+# hash-pinned sources, metadata parsers and byte-exact evidence on that host.
+* text=auto eol=lf
+
+# Files committed with CRLF or mixed endings keep their exact bytes.
+*.csv -text
+/openplan/pnpm-workspace.yaml -text
+/workers/planner_agent_connector/map-package-skill/transportation-gis/assets/vendor/** -text
+/docs/reviews/2026-10-07-land-use-authority/**/*.log -text
+
 # Retain upstream notice bytes, including original line endings and spaces.
 /openplan/src/app/fonts/*/OFL.txt -text whitespace=-blank-at-eol,cr-at-eol
 /openplan/src/app/fonts/*/METADATA.pb -text

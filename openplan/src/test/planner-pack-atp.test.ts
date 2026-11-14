@@ -7,7 +7,7 @@ import {
   atpGrantFactBlocks,
   computeAtpPacket,
 } from "@/lib/planner-pack/atp";
-import { renderAtpPacketMarkdown } from "@/lib/planner-pack/render";
+import { ATP_VERIFY_GUIDELINES, renderAtpPacketMarkdown } from "@/lib/planner-pack/render";
 import { InsufficientDataError, type AtpScoreRow } from "@/lib/planner-pack/types";
 
 // Ported from clawmodeler tests/test_atp_packet.py (ComputeAtpPacketTest +
@@ -304,25 +304,27 @@ describe("renderAtpPacketMarkdown", () => {
     });
     const markdown = renderAtpPacketMarkdown(result, options);
 
-    expect(markdown).toContain("# California ATP Application Packet — run `run-1`");
+    expect(markdown).toContain("# California ATP screening packet");
+    expect(markdown).toContain("- Corridor analysis run: `run-1`");
     expect(markdown).toContain("- Lead agency: **City of Grass Valley**");
     expect(markdown).toContain("- ATP cycle: **ATP Cycle 7**");
-    expect(markdown).toContain("- Application drafts in this packet: **2**");
-    expect(markdown).toContain("### `p1` — Downtown complete streets");
+    expect(markdown).toContain("- Projects in this packet: **2**");
+    expect(markdown).toContain("### Downtown complete streets");
     expect(markdown).toContain("| Safety | 80.0 |");
-    expect(markdown).toContain("| **Total (weighted 30/25/25/20)** | **78.0** |");
+    expect(markdown).toContain("| **Total (OpenPlan weights 30/25/25/20, not CTC points)** | **78.0** |");
     expect(markdown).toContain("- SB 535 DAC: Yes");
-    expect(markdown).toContain("- ATP DAC benefit bonus eligible: **Yes**");
+    expect(markdown).toContain("- Equity-lens category in the DAC, Low-income near DAC or Low-income group: **Yes** (screening fact; OpenPlan does not decide ATP eligibility).");
     expect(markdown).toContain(
       "- Estimated programmed cost: **$2500000** (lead agency estimate; allocate across PA&ED / PS&E / R/W / CON per LAPM Chapter 3)."
     );
     expect(markdown).toContain("2026 RTP");
     expect(markdown).toContain(
-      "- California Streets & Highways Code §§ 2380–2383 — Active Transportation Program."
+      "- California Streets and Highways Code, Section 2380 and following: Active Transportation Program."
     );
-    expect(markdown).toContain("- California Government Code §39711 — SB 535 (De León, 2012).");
+    expect(markdown).toContain("- California Health and Safety Code §39711: SB 535 (De León, 2012).");
+    expect(markdown).not.toContain("Government Code §39711");
     expect(markdown).toContain(
-      "- California Health & Safety Code §39713 — AB 1550 (Gomez, 2016)."
+      "- California Health and Safety Code §39713: AB 1550 (Gomez, 2016)."
     );
   });
 
@@ -507,7 +509,7 @@ describe("ATP scores the run did not record", () => {
 
     const markdown = renderAtpPacketMarkdown(result, { runId: "r-partial", engineVersion: "1.0.0" });
     expect(markdown).toContain("| Safety | Not recorded |");
-    expect(markdown).toContain("| **Total (weighted 30/25/25/20)** | **Not recorded** |");
+    expect(markdown).toContain("| **Total (OpenPlan weights 30/25/25/20, not CTC points)** | **Not recorded** |");
     expect(markdown).toContain(
       "- Mean screening total score: **78.0** (partial: 1 of 2 applications scored)"
     );
@@ -533,10 +535,51 @@ describe("ATP scores the run did not record", () => {
     expect(result.summary?.scored_application_count).toBe(2);
     const markdown = renderAtpPacketMarkdown(result, { runId: "r-zero", engineVersion: "1.0.0" });
     expect(markdown).toContain("| Safety | 0.0 |");
-    expect(markdown).toContain("| **Total (weighted 30/25/25/20)** | **0.0** |");
+    expect(markdown).toContain("| **Total (OpenPlan weights 30/25/25/20, not CTC points)** | **0.0** |");
     expect(markdown).toContain("- Mean screening total score: **39.0**\n");
     expect(atpGrantFactBlocks(result, "/tmp/atp_packet.csv")[1].claim_text).toContain(
       "total screening score 0.0/100 (safety 0.0,"
     );
+  });
+});
+
+/**
+ * What a California planner downloads from the application workspace. The
+ * 2026-11-02 ATP journey found the packet naming CLI files OpenPlan never
+ * writes, citing SB 535 to the Government Code, calling OpenPlan screening
+ * dimensions "ATP scoring areas", and claiming placeholders for a project
+ * whose sensitivity was never screened.
+ *
+ * Blind category: these are string checks on the rendered Markdown. They do
+ * not prove a citation is current law; the dated source check is recorded in
+ * the renderer's doc comment and the pull request.
+ */
+describe("ATP packet text a planner can rely on", () => {
+  const unscreened = computeAtpPacket(
+    [{ project_id: "p9", name: "Main Street safe routes", safety_score: "60", sensitivity_flag: null }],
+    { runId: "run-9", generatedAt: "2026-11-02T00:00:00Z" }
+  );
+  const markdown = renderAtpPacketMarkdown(unscreened, { runId: "run-9", engineVersion: "test" });
+
+  it("names no file or command that OpenPlan does not produce", () => {
+    for (const internal of ["project_scores.csv", "lapm_exhibit.csv", "ceqa_vmt.csv", "equity_lens.csv", "fact_blocks.jsonl", "planner-pack ", "Planner Pack"]) {
+      expect(markdown, internal).not.toContain(internal);
+    }
+  });
+
+  it("marks cycle-dependent program facts for verification against the CTC", () => {
+    expect(ATP_VERIFY_GUIDELINES).toMatch(/^\[VERIFY: .*https:\/\/catc\.ca\.gov\/programs\/active-transportation-program\]$/);
+    expect(markdown).toContain(`- ATP cycle: **ATP cycle to be provided** ${ATP_VERIFY_GUIDELINES}`);
+    expect(markdown).toContain("**OpenPlan screening scores (not CTC scores)**");
+    expect(markdown).not.toContain("scoring areas");
+    expect(markdown).not.toContain("bonus");
+  });
+
+  it("says readiness is not recorded when no sensitivity screen ran", () => {
+    const app = unscreened.applications[0];
+    expect(app.sensitivity_flag).toBe("UNKNOWN");
+    expect(app.readiness_note).toContain("Readiness not recorded");
+    expect(app.readiness_note).not.toContain("placeholders");
+    expect(markdown).toContain("| Sensitivity flag | Not recorded |");
   });
 });

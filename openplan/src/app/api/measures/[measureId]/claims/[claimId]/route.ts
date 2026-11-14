@@ -186,8 +186,8 @@ export async function PATCH(
             error: `A ${formatMeasureClaimStatusLabel(existing.status)} claim cannot become ${formatMeasureClaimStatusLabel(nextStatus)}`,
             details:
               allowed.length === 0
-                ? `${formatMeasureClaimStatusLabel(existing.status)} is final. Reversing it is a new record — ` +
-                  "a refund, or a fresh claim — not an edit of this one."
+                ? `${formatMeasureClaimStatusLabel(existing.status)} is final. Reversing it is a new record (` +
+                  "a refund, or a fresh claim), not an edit of this one."
                 : `From here it can become: ${allowed.map(formatMeasureClaimStatusLabel).join(", ")}.`,
             allowedNextStatuses: allowed,
           },
@@ -331,8 +331,8 @@ export async function DELETE(
         {
           error: "A submitted claim cannot be deleted",
           details:
-            `This claim is ${formatMeasureClaimStatusLabel(existing.status)}. Withdraw or deny it instead — ` +
-            "both leave the claim and its reason on the record, which is what an oversight committee reads.",
+            `This claim is ${formatMeasureClaimStatusLabel(existing.status)}. Withdraw or deny it instead. ` +
+            "Both leave the claim and its reason on the record, which is what an oversight committee reads.",
         },
         { status: 409 }
       );

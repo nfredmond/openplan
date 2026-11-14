@@ -31,10 +31,11 @@ import type {
 } from "@/lib/safety/client-types";
 
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { readCrashStudyAreaCoverage } from "@/lib/safety/crash-study-area";
 
 export const metadata = moduleMetadata("Safety");
 
-const INGEST_SUMMARY_COLUMNS = "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code";
+const INGEST_SUMMARY_COLUMNS = "id,project_id,source_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code,dimension_coverage";
 
 /**
  * `?projectId=` is how this page is TOLD which project it was opened for.
@@ -93,7 +94,7 @@ export default async function SafetyPage({
         <div className="module-intro-card">
           <h1 className="module-section-title">Workspace access required</h1>
           <p className="module-note">
-            You need to belong to a workspace to review its crash data — reported collisions
+            You need to belong to a workspace to review its crash data: reported collisions
             retrieved from the source agency, mapped for screening-level safety analysis.
           </p>
           <div className="module-inline-list">
@@ -280,6 +281,7 @@ export default async function SafetyPage({
   const latestIngest: SafetyIngestSummary | null = ingestRow
     ? {
         id: ingestRow.id as string,
+        sourceId: typeof ingestRow.source_id === "string" ? ingestRow.source_id : null,
         sourceLabel: (ingestRow.source_label as string | null) ?? null,
         attribution: (ingestRow.attribution as string | null) ?? null,
         coverageState: ingestRow.coverage_state as string,
@@ -296,6 +298,7 @@ export default async function SafetyPage({
             : null,
         fetchError: (ingestRow.fetch_error as string | null) ?? null,
         createdAt: ingestRow.created_at as string,
+        studyArea: readCrashStudyAreaCoverage(ingestRow.dimension_coverage),
       }
     : null;
 

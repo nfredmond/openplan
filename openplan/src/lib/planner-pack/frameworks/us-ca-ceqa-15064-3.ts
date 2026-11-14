@@ -53,5 +53,5 @@ export const US_CA_CEQA_15064_3_FRAMEWORK: VmtSignificanceFrameworkDescriptor = 
   // there; importing it keeps one number rather than two that can drift.
   defaultReferenceVmtPerCapita: DEFAULT_REFERENCE_VMT_PER_CAPITA,
   defaultReferenceRationale:
-    "California statewide average total VMT per capita (FHWA Highway Statistics 2022–2023, Table PS-1: 21.8–21.9 mi/day). This is total travel on public roads divided by resident population — a coarse screening reference, not the narrower resident-generated VMT the residential efficiency metric contemplates. Replace it with your region's adopted baseline where one exists.",
+    "California statewide average total VMT per capita (FHWA Highway Statistics 2022–2023, Table PS-1: 21.8–21.9 mi/day). This is total travel on public roads divided by resident population: a coarse screening reference, not the narrower resident-generated VMT the residential efficiency metric contemplates. Replace it with your region's adopted baseline where one exists.",
 };

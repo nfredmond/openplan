@@ -29,7 +29,7 @@ export function emailTransportName(): string {
 export async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
   if (!isEmailTransportConfigured()) {
     // Honest no-op. The outbox row (written by the caller) is the durable record.
-    console.info("[notifications] email transport not configured — skipping send");
+    console.info("[notifications] email transport not configured, skipping send");
     return { delivered: false, transport: "none", reason: "not_configured" };
   }
 

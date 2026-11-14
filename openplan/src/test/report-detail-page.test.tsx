@@ -1,3 +1,5 @@
+import { exactCountResult } from "./helpers/exact-count-result";
+import { pagingFake } from "./helpers/paging-fake";
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
@@ -74,9 +76,14 @@ const engagementCategoriesOrderSortMock = vi.fn(() => ({ order: engagementCatego
 const engagementCategoriesEqCampaignMock = vi.fn(() => ({ order: engagementCategoriesOrderSortMock }));
 const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEqCampaignMock }));
 
+// The campaign's comments are paged; the fake slices like PostgREST and holds
+// its 1,000-row cap, so a single unpaged read would come back short.
 const engagementItemsOrderMock = vi.fn();
-const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
-const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsOrderMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 const scenarioSetsInMock = vi.fn();
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
@@ -95,19 +102,19 @@ const scenarioComparisonSnapshotsSelectMock = vi.fn(() => ({ in: scenarioCompari
 
 const projectFundingProfileMaybeSingleMock = vi.fn();
 const projectFundingProfileEqMock = vi.fn(() => ({ maybeSingle: projectFundingProfileMaybeSingleMock }));
-const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const fundingAwardsOrderMock = vi.fn();
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
-const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const fundingAwardsEqMock = vi.fn(() => ({ order: (...args: unknown[]) => fundingAwardsOrderMock(...args).then(exactCountResult) }));
+const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const fundingOpportunitiesOrderMock = vi.fn();
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: (...args: unknown[]) => fundingOpportunitiesOrderMock(...args).then(exactCountResult) }));
+const fundingOpportunitiesSelectMock = vi.fn((_columns: string) => ({ eq: fundingOpportunitiesEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const billingInvoicesOrderMock = vi.fn();
-const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
-const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const billingInvoicesEqMock = vi.fn(() => ({ order: (...args: unknown[]) => billingInvoicesOrderMock(...args).then(exactCountResult) }));
+const billingInvoicesSelectMock = vi.fn((_columns: string) => ({ eq: billingInvoicesEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const dataDatasetLinksOrderMock = vi.fn();
 const dataDatasetLinksEqMock = vi.fn(() => ({ order: dataDatasetLinksOrderMock }));
@@ -328,7 +335,7 @@ type ReportTabKey = "packet" | "evidence" | "history";
 async function renderReport(tab: ReportTabKey) {
   render(
     await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
+      params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve({ tab }),
     })
   );
@@ -345,7 +352,7 @@ function selectGuidedPageFixture(fault?: string, sourceContext: Record<string, u
   saved.bindingSha256 = guidedReportDigest(saved.payload);
   if (fault === "digest") saved.bindingSha256 = "f".repeat(64);
   if (fault === "version") Object.assign(saved, { version: 2 });
-  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "72000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", project_id: "project-1",
     report_type: "analysis_summary", title: "Saved guided comparison", status: "generated", summary: null,
     rtp_cycle_id: null, engagement_campaign_id: null, generated_at: "2026-03-28T18:00:00Z",
     latest_artifact_kind: "html", latest_artifact_url: null, created_at: "2026-03-28T17:00:00Z", updated_at: "2026-03-28T18:05:00Z",
@@ -387,7 +394,7 @@ function selectReadinessSeamFixture(state: string) {
   const jurisdiction = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
   const updatedAt = state === "complete-writeback" ? "2026-10-18T01:00:00Z" : at;
   projectMaybeSingleMock.mockResolvedValueOnce({ data: project, error: null });
-  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "72000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", project_id: "project-1",
     title: "Synthetic source review packet", report_type: "project_status", status: "generated", summary: null,
     engagement_campaign_id: null, rtp_cycle_id: null, metadata_json: {}, latest_artifact_kind: "html", generated_at: at,
     updated_at: updatedAt, created_at: at }, error: null });
@@ -424,7 +431,7 @@ function expectNoGuidedWorkerReads() {
     expect(fromMock).not.toHaveBeenCalledWith(table);
   }
   expect(reportSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
-  expect(reportEqMock).toHaveBeenCalledWith("id", "report-1");
+  expect(reportEqMock).toHaveBeenCalledWith("id", "72000000-0000-4000-8000-000000000001");
 }
 
 function expectLinkByHref(name: RegExp, href: string) {
@@ -464,6 +471,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // the NEXT test's first read instead. Proven by the pair of tests at the
     // end of this file.
     vi.resetAllMocks();
+    engagementItemsPaging.reset();
     guidedPageMocks.realControls = false;
     guidedPageMocks.verify.mockRejectedValue(new Error("Full guided verification must not run on ordinary page load"));
     guidedPageMocks.bytes.mockRejectedValue(new Error("Worker artifact downloads must not run on ordinary page load"));
@@ -517,7 +525,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
     reportMaybeSingleMock.mockResolvedValue({
       data: {
-        id: "report-1",
+        id: "72000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "Downtown Safety Packet",
@@ -850,7 +858,11 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       data: [
         {
           id: "award-1",
-          awarded_amount: 700000,
+          latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
+        has_source_backed_issuance: false,
+        awarded_amount: 700000,
           match_amount: 100000,
           risk_flag: null,
           obligation_due_at: "2026-06-30T00:00:00.000Z",
@@ -1230,7 +1242,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       const retained = state === "unavailable" ? { ...snapshot, payloadSha256: "f".repeat(64) }
         : state === "legacy" ? { ...snapshot, schema: "historical.v3" } : snapshot;
       projectMaybeSingleMock.mockResolvedValueOnce({ data: state === "changed" ? { ...project, place_country_code: "CA" } : project, error: null });
-      reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+      reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "72000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", project_id: "project-1",
         title: "Synthetic jurisdiction packet", report_type: "project_status", status: "generated", summary: null,
         latest_artifact_kind: "html", generated_at: at, updated_at: at, created_at: at }, error: null });
       artifactsOrderMock.mockResolvedValueOnce(state === "unreadable" ? { data: null, error: { message: "Artifact read unavailable" } }
@@ -1355,7 +1367,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
     projectMaybeSingleMock.mockResolvedValueOnce({ data: { ...oldProject, workspace_id: "workspace-1", name: "Downtown Mobility Plan", status: "active", plan_type: "corridor", delivery_phase: "analysis", updated_at: "2026-03-28T18:01:00.000Z", place_country_code: "CA" }, error: null });
     artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", generated_at: "2026-10-18T00:00:00Z", metadata_json: { sourceContext: { jurisdictionReadiness: snapshot } } }], error: null });
-    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
     expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
     expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
   });
@@ -1364,8 +1376,8 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     try {
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
-      expect(screen.getByRole("link", { name: "Open Safety evidence and applicability comparison" })).toHaveAttribute("href", "/reports/report-1?safetyComparison=1");
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
+      expect(screen.getByRole("link", { name: "Open Safety evidence and applicability comparison" })).toHaveAttribute("href", "/reports/72000000-0000-4000-8000-000000000001?safetyComparison=1");
 
       expect(
         consoleErrorSpy.mock.calls.some((call) =>
@@ -1379,7 +1391,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
   it("reads source metrics with linked summaries so the evidence view can enforce disclosure", async () => {
     reportRunsOrderMock.mockResolvedValue({ data: [{ run_id: "run-1", sort_order: 0 }], error: null });
-    await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) });
+    await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) });
     expect(runsSelectMock).toHaveBeenCalledWith("id, title, summary_text, metrics, created_at");
   });
 
@@ -1565,7 +1577,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       "href",
       "/engagement/campaign-1"
     );
-    expectLinkByHref(/Build the report packet/i, "/reports/report-1");
+    expectLinkByHref(/Build the report packet/i, "/reports/72000000-0000-4000-8000-000000000001");
     expect(screen.getByRole("button", { name: /Generate the report packet/i })).toBeInTheDocument();
     expect(screen.getAllByText(/Current surface/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Analysis behind a grant case")).toBeInTheDocument();
@@ -1581,6 +1593,41 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       "href",
       "#report-controls"
     );
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The campaign's live
+    comments were read in one request, so a campaign with 1,234 comments showed
+    "1000 items" against its packet, a drift that never happened.
+  */
+  it("compares the packet against every live comment past the 1,000-row cap", async () => {
+    engagementItemsOrderMock.mockResolvedValue({
+      data: Array.from({ length: 1234 }, (_, i) => ({
+        id: `item-${i}`,
+        campaign_id: "campaign-1",
+        category_id: "category-1",
+        status: "pending",
+        source_type: "map_pin",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-28T17:20:00.000Z",
+        updated_at: "2026-03-28T18:10:00.000Z",
+      })),
+      error: null,
+    });
+
+    await renderReport("history");
+
+    expect(screen.getByText(/Live Active · 0 ready \/ 1234 items/i)).toBeInTheDocument();
+    expect(engagementItemsPaging.calls[0]).toEqual([
+      "select",
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at",
+    ]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", ["campaign-1"]]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
   });
 
   it("shows what drifted between the frozen packet and the live sources", async () => {
@@ -1630,7 +1677,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
   it("shows latest artifact timing in the summary card when report generated_at is null", async () => {
     reportMaybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "report-1",
+        id: "72000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         project_id: "project-1",
         title: "Downtown Safety Packet",
@@ -1659,7 +1706,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // same workspace would show up as this packet's own gate posture — in a
     // document an agency sends to a funder.
     const page = await ReportDetailPage({
-      params: Promise.resolve({ reportId: "report-1" }),
+      params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }),
     });
 
     render(page);
@@ -1905,7 +1952,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     it("still says No packet when the artifact read SUCCEEDS and there genuinely is none", async () => {
       reportMaybeSingleMock.mockResolvedValueOnce({
         data: {
-          id: "report-1",
+          id: "72000000-0000-4000-8000-000000000001",
           workspace_id: "workspace-1",
           project_id: "project-1",
           title: "Downtown Safety Packet",
@@ -1935,7 +1982,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     it("does not answer No packet when the artifact read FAILED", async () => {
       reportMaybeSingleMock.mockResolvedValueOnce({
         data: {
-          id: "report-1",
+          id: "72000000-0000-4000-8000-000000000001",
           workspace_id: "workspace-1",
           project_id: "project-1",
           title: "Downtown Safety Packet",
@@ -2013,7 +2060,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
         error: { message: 'permission denied for table "reports"' },
       });
 
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
 
       // `if (!data) notFound()` is the same defect wearing a different face: it
       // tells a planner the report does not exist when the truth is that it
@@ -2108,7 +2155,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
       await expect(
-        ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
+        ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) })
       ).rejects.toThrow("notFound");
       expect(notFoundMock).toHaveBeenCalled();
     });
@@ -2138,7 +2185,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       });
 
       await expect(
-        ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
+        ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) })
       ).rejects.toThrow("notFound");
 
       // Exactly one of the two queued values was consumed, so the second is
@@ -2148,12 +2195,20 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     });
 
     it("reads the shared fixture, not the previous test's leftover", async () => {
-      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }) }));
 
       expect(screen.getByRole("heading", { level: 1, name: "Downtown Safety Packet" })).toBeInTheDocument();
       expect(notFoundMock).not.toHaveBeenCalled();
       expect(screen.queryByText(/The report record could not be read/i)).not.toBeInTheDocument();
     });
+  });
+  it("refuses an incomplete successful funding read while retaining the version projections", async () => {
+    fundingAwardsOrderMock.mockResolvedValueOnce({ data: [], count: 1, error: null });
+    await expect(ReportDetailPage({ params: Promise.resolve({ reportId: "72000000-0000-4000-8000-000000000001" }), searchParams: Promise.resolve({}) })).rejects.toThrow("No partial financial snapshot is accepted");
+    for (const select of [fundingAwardsSelectMock, fundingOpportunitiesSelectMock, billingInvoicesSelectMock]) expect(select).toHaveBeenCalledWith(expect.any(String), { count: "exact" });
+    const columns = fundingAwardsSelectMock.mock.calls[0][0];
+    for (const field of ["currency_code", "current_handoff_revision_id", "latest_handoff_revision_id"]) expect(columns).toContain(field);
+    expect(billingInvoicesSelectMock.mock.calls[0][0]).toContain("handoff_applicable_revision_id");
   });
 it.each(["legacy", "explicit"] as const)("renders unassessed grant support for a retained %s comparison with no known drift", async (summary) => {
   selectRetainedScenarioFixture(summary);

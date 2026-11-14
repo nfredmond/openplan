@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireNetworkPackageWriteAccess } from "@/lib/network-packages/access";
+import { isUuid } from "@/lib/uuid";
 
 export async function GET(
   request: NextRequest,
@@ -10,6 +11,7 @@ export async function GET(
 ) {
   const audit = createApiAuditLogger("network_package_versions.list", request);
   const { packageId } = await params;
+  if (!isUuid(packageId)) return NextResponse.json({ error: "Network package not found" }, { status: 404 });
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -36,6 +38,7 @@ export async function POST(
 ) {
   const audit = createApiAuditLogger("network_package_versions.create", request);
   const { packageId } = await params;
+  if (!isUuid(packageId)) return NextResponse.json({ error: "Network package not found" }, { status: 404 });
   const supabase = await createClient();
   let body;
   try {

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { pagingFake } from "./helpers/paging-fake";
 
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
@@ -75,8 +76,13 @@ const campaignsSelectMock = vi.fn((columns: string) => {
   return { eq: campaignsEqWorkspaceMock };
 });
 
+// Paged, through a fake that slices like PostgREST and holds its 1,000-row cap.
 const engagementItemsInMock = vi.fn();
-const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsInMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 const reportArtifactsInMock = vi.fn();
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
@@ -153,6 +159,7 @@ import { GET as getProgramDetail, PATCH as patchProgramDetail } from "@/app/api/
 describe("/api/programs/[programId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    engagementItemsPaging.reset();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -308,6 +315,50 @@ describe("/api/programs/[programId]", () => {
         label: "Ready for package assembly",
       }),
     });
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The campaign's
+    comments were read in one request, so 1,234 approved comments counted as
+    1,000 and the 7 pending ones, which sort last, as none.
+  */
+  it("GET counts every engagement comment past the 1,000-row cap", async () => {
+    engagementItemsInMock.mockResolvedValue({
+      data: [
+        ...Array.from({ length: 1234 }, () => ({ campaign_id: CAMPAIGN_ID, status: "approved" })),
+        ...Array.from({ length: 7 }, () => ({ campaign_id: CAMPAIGN_ID, status: "pending" })),
+      ],
+      error: null,
+    });
+
+    const response = await getProgramDetail(new NextRequest(`http://localhost/api/programs/${PROGRAM_ID}`), {
+      params: Promise.resolve({ programId: PROGRAM_ID }),
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.relatedRecords.engagementCampaigns).toEqual([
+      expect.objectContaining({ id: CAMPAIGN_ID, approvedItemCount: 1234, pendingItemCount: 7 }),
+    ]);
+    expect(engagementItemsPaging.calls[0]).toEqual(["select", "campaign_id, status"]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", [CAMPAIGN_ID]]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
+  });
+
+  it("GET refuses to report counts when a comment page fails part way", async () => {
+    engagementItemsInMock.mockResolvedValue({
+      data: Array.from({ length: 1234 }, () => ({ campaign_id: CAMPAIGN_ID, status: "approved" })),
+      error: null,
+    });
+    engagementItemsPaging.failPage(2, { message: "statement timeout", code: "57014" });
+
+    const response = await getProgramDetail(new NextRequest(`http://localhost/api/programs/${PROGRAM_ID}`), {
+      params: Promise.resolve({ programId: PROGRAM_ID }),
+    });
+
+    expect(response.status).toBe(500);
   });
 
   it("PATCH updates the program metadata and links", async () => {

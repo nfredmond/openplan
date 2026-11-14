@@ -55,7 +55,9 @@ describe("withCensusApiKey", () => {
  * county search returned NOTHING on every deployment — including ones with a
  * key configured. Nothing caught it because the symptom was emptiness.
  *
- * Any new Census request URL must go through `withCensusApiKey`.
+ * Any new Census request URL must go through `withCensusApiKey`. (County
+ * search has since moved to keyless TIGERweb, 2026-11-02, so `us-counties.ts`
+ * no longer calls the Census API at all.)
  */
 describe("every Census API request URL carries the key", () => {
   const SRC = path.join(process.cwd(), "src");
@@ -88,7 +90,7 @@ describe("every Census API request URL carries the key", () => {
     expect(offenders.map((file) => path.relative(process.cwd(), file))).toEqual([]);
   });
 
-  it("still detects the two known request-building modules", () => {
+  it("still detects the known request-building module", () => {
     // Guard the guard: if the detector stops matching anything, the test above
     // would pass while protecting nothing.
     const builders = walk(SRC).filter((file) => {
@@ -100,6 +102,5 @@ describe("every Census API request URL carries the key", () => {
 
     const names = builders.map((file) => path.basename(file)).sort();
     expect(names).toContain("census.ts");
-    expect(names).toContain("us-counties.ts");
   });
 });

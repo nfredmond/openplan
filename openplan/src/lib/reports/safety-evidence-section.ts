@@ -1,4 +1,4 @@
-import { separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import { safetyEvidenceSeriousInjury, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 
 /**
@@ -77,7 +77,8 @@ export function buildPacketSafetyEvidence(
   const acquisitions = evidence.map((item): PacketSafetyAcquisition => {
     const publication = readCrashPublicationEvidence(item.publishedThrough, item.publishedThroughProvenance);
     const counts = item.severityCounts;
-    const seriousInjuriesCovered = separatesSeriousInjuries(item.severityCompleteness);
+    const seriousInjury = safetyEvidenceSeriousInjury(item);
+    const seriousInjuriesCovered = seriousInjury.separable;
     const figures: PacketSafetyFigure[] = [
       figure("Reported collisions", item.reportedTotal, "The source returned no count."),
       figure(
@@ -88,7 +89,7 @@ export function buildPacketSafetyEvidence(
       figure(
         "Fatal or serious-injury crashes",
         seriousInjuriesCovered ? item.ksi : null,
-        "This source does not separate crashes involving suspected serious injuries, so a severe-crash count cannot be formed from it."
+        seriousInjuriesCovered ? "The severity breakdown could not be read." : seriousInjury.statement
       ),
       figure(
         "Fatal crashes",
@@ -98,9 +99,7 @@ export function buildPacketSafetyEvidence(
       figure(
         "Serious-injury crashes",
         seriousInjuriesCovered && counts ? (counts.severe_injury ?? null) : null,
-        seriousInjuriesCovered
-          ? "The severity breakdown could not be read."
-          : "This source does not separate suspected serious injuries, or its severity coverage was not recorded. Missing coverage is not zero."
+        seriousInjuriesCovered ? "The severity breakdown could not be read." : seriousInjury.statement
       ),
       figure(
         "No casualty detail recorded",

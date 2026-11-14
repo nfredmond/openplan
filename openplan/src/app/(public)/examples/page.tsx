@@ -27,7 +27,7 @@ export default function ExamplesEvidenceCatalogPage() {
           <p className="public-kicker">OpenPlan evidence catalog</p>
           <div className="public-headline-block">
             <h1 className="public-title">
-              A transparent record of what OpenPlan has actually run — caveats intact.
+              A transparent record of what OpenPlan has actually run, caveats intact.
             </h1>
             <p className="public-lead max-w-4xl">
               This is not a product tour and not a forecasting claim. It is a transparency-first look
@@ -89,7 +89,7 @@ export default function ExamplesEvidenceCatalogPage() {
               Caveats are quoted verbatim from the validation artifact, not paraphrased.
             </div>
             <div className="public-rail-item">
-              The screening gate is displayed as the run recorded it — internal prototype only.
+              The screening gate is displayed as the run recorded it: internal prototype only.
               See the{" "}
               <Link href="/legal" className="underline underline-offset-4 hover:text-foreground">
                 legal notice
@@ -257,7 +257,7 @@ export default function ExamplesEvidenceCatalogPage() {
 
           <p className="mt-4 border-t border-border/60 pt-4 text-xs text-muted-foreground">
             This page is generated from a single validation artifact snapshot. If the underlying
-            run is re-validated or superseded, this page should be updated or removed — it is not
+            run is re-validated or superseded, this page should be updated or removed. It is not
             a guarantee of current runtime state.
           </p>
         </article>
@@ -294,7 +294,7 @@ export default function ExamplesEvidenceCatalogPage() {
                 <p className="public-ledger-label">Run it yourself</p>
                 <p className="public-ledger-copy text-foreground">
                   Nothing here is a demo you have to be shown. Create a free workspace and run the
-                  same screening against your own geography — the caveats travel with the output.
+                  same screening against your own geography. The caveats travel with the output.
                 </p>
               </div>
             </div>

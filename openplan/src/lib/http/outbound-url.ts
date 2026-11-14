@@ -154,10 +154,10 @@ const IPV4_BLOCKED: AddressRange[] = [
   { label: "0.0.0.0/8", reason: "this host, on this network", bytes: v4(0, 0, 0, 0), prefixBits: 8 },
   { label: "10.0.0.0/8", reason: "private network", bytes: v4(10, 0, 0, 0), prefixBits: 8 },
   { label: "100.64.0.0/10", reason: "carrier-grade NAT", bytes: v4(100, 64, 0, 0), prefixBits: 10 },
-  { label: "127.0.0.0/8", reason: "loopback — the server itself", bytes: v4(127, 0, 0, 0), prefixBits: 8 },
+  { label: "127.0.0.0/8", reason: "loopback, the server itself", bytes: v4(127, 0, 0, 0), prefixBits: 8 },
   {
     label: "169.254.0.0/16",
-    reason: "link-local — cloud instance metadata lives here",
+    reason: "link-local, where cloud instance metadata lives",
     bytes: v4(169, 254, 0, 0),
     prefixBits: 16,
   },
@@ -187,7 +187,7 @@ function v6(...groups: number[]): Uint8Array {
  */
 const IPV6_BLOCKED: AddressRange[] = [
   { label: "::/128", reason: "the unspecified address", bytes: v6(), prefixBits: 128 },
-  { label: "::1/128", reason: "loopback — the server itself", bytes: v6(0, 0, 0, 0, 0, 0, 0, 1), prefixBits: 128 },
+  { label: "::1/128", reason: "loopback, the server itself", bytes: v6(0, 0, 0, 0, 0, 0, 0, 1), prefixBits: 128 },
   {
     label: "::ffff:0:0/96",
     reason: "an IPv4 address wearing IPv6 clothes",
@@ -196,7 +196,7 @@ const IPV6_BLOCKED: AddressRange[] = [
   },
   {
     label: "64:ff9b::/96",
-    reason: "NAT64 — an IPv4 address a gateway will translate",
+    reason: "NAT64, an IPv4 address a gateway will translate",
     bytes: v6(0x64, 0xff9b, 0, 0, 0, 0, 0, 0),
     prefixBits: 96,
   },
@@ -319,8 +319,8 @@ export function classifyAddress(address: string): AddressVerdict {
       kind: "blocked",
       label: hit.label,
       reason: embeddedHit
-        ? `${hit.reason} — ${embedded.text} is ${embeddedHit.reason} (${embeddedHit.label})`
-        : `${hit.reason} — ${embedded.text}`,
+        ? `${hit.reason}: ${embedded.text} is ${embeddedHit.reason} (${embeddedHit.label})`
+        : `${hit.reason}: ${embedded.text}`,
     };
   }
 
@@ -416,7 +416,7 @@ export async function assertPublicHttpUrl(
       ok: false,
       code: "has_credentials",
       detail:
-        "That address carries a username and password in it. Remove them — a credential in a URL is stored and logged wherever the address goes.",
+        "That address carries a username and password in it. Remove them. A credential in a URL is stored and logged wherever the address goes.",
     };
   }
 

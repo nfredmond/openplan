@@ -10,12 +10,12 @@
   ],
   "description": "A focused study of whether a proposed project can work: purpose and need, concepts, evaluation against agreed criteria, and a recommendation the sponsor can act on.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the notice-to-proceed date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
     "The single most important record here is the criteria milestone. A study whose evaluation criteria are agreed after the concepts exist will be argued about rather than used.",
-    "It stops short of design. A study that recommends a project usually hands off to environmental review and then to design — those are separate work plans.",
+    "It stops short of design. A study that recommends a project usually hands off to environmental review and then to design. Those are separate work plans.",
     "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "deliverables": [
     {
@@ -34,7 +34,7 @@
       "key": "existing_conditions",
       "title": "Existing conditions summary",
       "offset_days": 75,
-      "summary": "What is true at the site today — physical, operational, environmental and ownership — with sources named."
+      "summary": "What is true at the site today (physical, operational, environmental and ownership), with sources named."
     },
     {
       "key": "concepts",

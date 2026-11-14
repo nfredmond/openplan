@@ -36,6 +36,8 @@ export function InvoiceFundingAwardLinker({
 }: InvoiceFundingAwardLinkerProps) {
   const router = useRouter();
   const [selectedFundingAwardId, setSelectedFundingAwardId] = useState(currentFundingAwardId ?? "");
+  const [terms,setTerms]=useState<{award:{current_handoff_revision_id:string|null;latest_handoff_revision_id:string|null;currency_code:string|null};history:unknown}|null>(null);
+  const [reviewed,setReviewed]=useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedFundingAwardId, setLastSavedFundingAwardId] = useState<string | null>(null);
@@ -80,6 +82,7 @@ export function InvoiceFundingAwardLinker({
     setSelectedFundingAwardId(exactMatchAward.id);
   }, [autoSelectExactMatch, currentFundingAwardId, exactMatchAward, selectedFundingAwardId]);
 
+  useEffect(()=>{let cancelled=false;setTerms(null);setReviewed(false);if(selectedFundingAwardId)void fetch(`/api/funding-awards/${selectedFundingAwardId}/handoff`,{cache:"no-store"}).then(async(r)=>{const data=await r.json();if(!r.ok)throw new Error(data.error);if(!cancelled)setTerms(data);}).catch((e)=>{if(!cancelled)setError(String(e));});return()=>{cancelled=true;};},[selectedFundingAwardId]);
   async function handleSave() {
     if (!canWrite || !hasChanges) return;
 
@@ -87,6 +90,8 @@ export function InvoiceFundingAwardLinker({
     setIsSaving(true);
 
     try {
+      if(selectedFundingAwardId && !terms)throw new Error("Load award conditions before linking.");
+      if(terms?.award.latest_handoff_revision_id && (!reviewed || !terms.award.current_handoff_revision_id))throw new Error("Review effective award terms before linking.");
       const response = await fetch(`/api/invoicing/invoices/${invoiceId}`, {
         method: "PATCH",
         headers: {
@@ -95,6 +100,8 @@ export function InvoiceFundingAwardLinker({
         body: JSON.stringify({
           workspaceId,
           fundingAwardId: selectedFundingAwardId || null,
+          awardHandoffRevisionId:terms?.award.current_handoff_revision_id ?? undefined,
+          currencyCode:terms?.award.currency_code ?? undefined,
         }),
       });
 
@@ -140,7 +147,8 @@ export function InvoiceFundingAwardLinker({
           </div>
 
           <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <select
+            {terms?.award.latest_handoff_revision_id?<details><summary>Review award terms for this binding</summary><pre className="whitespace-pre-wrap break-words text-xs">{JSON.stringify(terms.history,null,2)}</pre><label><input type="checkbox" checked={reviewed} onChange={(e)=>setReviewed(e.target.checked)}/> I reviewed the current award conditions and currency.</label></details>:null}
+      <select
               aria-label="Funding award link"
               className="module-select md:max-w-sm"
               value={selectedFundingAwardId}

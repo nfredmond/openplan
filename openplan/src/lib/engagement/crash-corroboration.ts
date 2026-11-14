@@ -37,6 +37,7 @@ import {
   SAFETY_GEOCODING_CAVEAT,
   SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
 } from "@/lib/safety/caveats";
+import { readEveryPageAsResult } from "@/lib/supabase/paged-read";
 
 /**
  * The default radius around a resident's pin, in metres.
@@ -409,10 +410,27 @@ export function countUnmoderatedMapped(items: readonly MappableItem[] | null): n
 /** The shape `ReadFailureLog.check` classifies, and what the RPC returns. */
 export type CrashReadResult = { data: unknown; error?: { message?: string | null } | null };
 
+/** The PostgREST builder an RPC call returns, as far as paging needs it. */
+type RpcPageBuilder = {
+  order(column: string, options: { ascending: boolean; nullsFirst?: boolean }): RpcPageBuilder;
+  range(from: number, toInclusive: number): PromiseLike<CrashReadResult>;
+};
+
 /** The slice of a Supabase client this module needs. Structural, as elsewhere here. */
 type RpcClient = {
-  rpc(name: string, args: Record<string, unknown>): PromiseLike<CrashReadResult>;
+  rpc(name: string, args: Record<string, unknown>): RpcPageBuilder;
 };
+
+/**
+ * The function's own severity order, as returned columns, ending on `id`. The
+ * `id` makes it total, so a comment cannot repeat or drop between pages.
+ */
+const NEARBY_CRASH_ORDER: ReadonlyArray<{ column: string; ascending: boolean }> = [
+  { column: "killed_total", ascending: false },
+  { column: "injured_total", ascending: false },
+  { column: "crash_total", ascending: false },
+  { column: "id", ascending: true },
+];
 
 /**
  * The one call site of `engagement_items_with_nearby_crashes`.
@@ -421,20 +439,40 @@ type RpcClient = {
  * untyped Supabase client will not catch a renamed argument, and the failure
  * would surface as an unreadable lane rather than as a build error. Keeping the
  * call here means one place to change when the signature does.
+ *
+ * PAGED. The function returns one row per mapped comment, and PostgREST stops a
+ * function result at `max_rows` (1,000 here) with no error, exactly as it does a
+ * table read. A campaign above 1,000 mapped comments would otherwise report
+ * 1,000 as its mapped total. A read that fails part way or stops at the page
+ * ceiling comes back as an error, so the panel says it could not be read.
  */
 export function readNearbyCrashes(
   client: RpcClient,
   workspaceId: string,
   campaignId: string,
   radiusMeters: number
-): PromiseLike<CrashReadResult> {
-  return client.rpc("engagement_items_with_nearby_crashes", {
-    p_workspace_id: workspaceId,
-    p_campaign_id: campaignId,
-    p_radius_meters: radiusMeters,
-    p_from_year: null,
-    p_to_year: null,
-  });
+): Promise<CrashReadResult> {
+  return readEveryPageAsResult<unknown, { message: string }>(
+    (from, toInclusive) =>
+      NEARBY_CRASH_ORDER.reduce(
+        (builder, { column, ascending }) => builder.order(column, { ascending, nullsFirst: false }),
+        client.rpc("engagement_items_with_nearby_crashes", {
+          p_workspace_id: workspaceId,
+          p_campaign_id: campaignId,
+          p_radius_meters: radiusMeters,
+          p_from_year: null,
+          p_to_year: null,
+        })
+      )
+        .range(from, toInclusive)
+        .then((page) => ({
+          data: Array.isArray(page.data) ? (page.data as unknown[]) : null,
+          // The whole error passes through (PostgREST's `code` beside the
+          // message is what marks an unapplied migration), with a message.
+          error: page.error ? { ...page.error, message: page.error.message ?? "the nearby-crash read failed" } : null,
+        })),
+    "the nearby-crash read could not be completed, so its totals would understate the campaign"
+  );
 }
 
 /** What the console needs to render the seam, from what it read. */

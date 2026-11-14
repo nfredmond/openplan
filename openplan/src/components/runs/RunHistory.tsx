@@ -227,8 +227,8 @@ export function RunHistory({
           <h2 className="module-section-title">Analysis run history</h2>
           <p className="module-section-description">
             {hasActiveComparison
-              ? "The pinned baseline is managed here — replace it from the stored runs, clear it, or load an earlier run as current, all without leaving Run History."
-              : "Every stored run for this workspace — load an earlier run, pin a baseline to compare against, or delete work you no longer need."}
+              ? "The pinned baseline is managed here: replace it from the stored runs, clear it, or load an earlier run as current, all without leaving Run History."
+              : "Every stored run for this workspace: load an earlier run, pin a baseline to compare against, or delete work you no longer need."}
           </p>
         </div>
 
@@ -253,7 +253,7 @@ export function RunHistory({
               </p>
               <p className="module-run-history-bridge-copy">
                 {hasActiveComparison
-                  ? "This run stays loaded as current while the rows below replace or clear the pinned baseline — the results above stay put."
+                  ? "This run stays loaded as current while the rows below replace or clear the pinned baseline. The results above stay put."
                   : "Pin any stored run below as a baseline when you want to compare it against the current results."}
               </p>
             </div>
@@ -421,7 +421,7 @@ export function RunHistory({
                         </div>
                       ) : (
                         <p className="module-run-history-detail-copy">
-                          Only the core run record — no summary, AI brief, or map geometry has been saved yet.
+                          Only the core run record: no summary, AI brief, or map geometry has been saved yet.
                         </p>
                       )}
                     </div>

@@ -34,6 +34,12 @@ import { identifySeededCatalogKey, isAtpApplication } from "@/lib/grants/atp-pac
 import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel";
 import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
 import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
+import { evidenceAppendixProgramFor } from "@/lib/grants/evidence-appendix-keys";
+import {
+  applicationDraftStamps,
+  countUnverifiedItems,
+  unverifiedItemsLabel,
+} from "@/lib/grants/application-draft-stamps";
 
 /**
  * The application workspace for one funding opportunity: initialize from a
@@ -114,7 +120,7 @@ const ATTACHMENT_STATUS_TONES: Record<
 };
 
 const NEVER_AI_NOTE =
-  "Drafted by you, never by AI — budget figures, cost estimates, fee schedules, and certifications come from your own estimates, records, and signatories.";
+  "Drafted by you, never by AI. Budget figures, cost estimates, fee schedules, and certifications come from your own estimates, records, and signatories.";
 
 function parseSectionRows(rows: unknown): ApplicationSectionRow[] {
   if (!Array.isArray(rows)) return [];
@@ -168,10 +174,13 @@ function formatDate(value: string | null): string {
 export function FundingOpportunityApplicationWorkspace({
   opportunityId,
   pursuitKind = "grant",
+  linkedProjectId = null,
 }: {
   opportunityId: string;
   /** Drives the per-kind copy; the server decides seeding independently. */
   pursuitKind?: "grant" | "proposal";
+  /** The opportunity's linked project. A change reloads the ATP scores. */
+  linkedProjectId?: string | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -210,9 +219,16 @@ export function FundingOpportunityApplicationWorkspace({
   const [exportResult, setExportResult] = useState<{
     exportId: string;
     engineDisclosure: string | null;
-    isDraftStamped: boolean;
-    outstandingRequiredCount: number;
+    draftStamps: string[];
+    sha256: string | null;
   } | null>(null);
+  // The reasons the PDF will carry a DRAFT stamp, from the same rule the export uses.
+  const pendingDraftStamps = useMemo(
+    () => applicationDraftStamps(sections, attachments),
+    [sections, attachments]
+  );
+  // Appendices the planner turned off; every declared appendix is on by default.
+  const [deselectedAppendices, setDeselectedAppendices] = useState<ReadonlySet<string>>(() => new Set());
 
   const catalogTemplateOptions = useMemo(
     () =>
@@ -486,6 +502,10 @@ export function FundingOpportunityApplicationWorkspace({
     }
   }
 
+  const seededCatalogKey = pursuitKind === "grant" ? identifySeededCatalogKey(sections) : null;
+  const isSs4aApplication = seededCatalogKey === "ss4a";
+  const appendixProgram = evidenceAppendixProgramFor(seededCatalogKey);
+
   async function handleExport() {
     setIsExporting(true);
     setExportError(null);
@@ -494,7 +514,13 @@ export function FundingOpportunityApplicationWorkspace({
     try {
       const response = await fetch(
         `/api/funding-opportunities/${opportunityId}/application/export`,
-        { method: "POST" }
+        appendixProgram
+          ? {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ appendices: appendixProgram.keys.filter((key) => !deselectedAppendices.has(key)) }),
+            }
+          : { method: "POST" }
       );
       const payload = (await response.json()) as Record<string, unknown>;
       if (!response.ok) {
@@ -517,9 +543,10 @@ export function FundingOpportunityApplicationWorkspace({
         exportId: typeof exportRow?.id === "string" ? exportRow.id : "",
         engineDisclosure:
           typeof payload.engineDisclosure === "string" ? payload.engineDisclosure : null,
-        isDraftStamped: payload.isDraftStamped === true,
-        outstandingRequiredCount:
-          typeof payload.outstandingRequiredCount === "number" ? payload.outstandingRequiredCount : 0,
+        draftStamps: Array.isArray(payload.draftStamps)
+          ? payload.draftStamps.filter((stamp): stamp is string => typeof stamp === "string")
+          : [],
+        sha256: typeof payload.sha256 === "string" ? payload.sha256 : null,
       });
     } catch (error) {
       setExportError(error instanceof Error ? error.message : "Failed to export the application");
@@ -587,7 +614,7 @@ export function FundingOpportunityApplicationWorkspace({
             <div className="space-y-3" data-testid="application-init">
               {pursuitKind === "proposal" ? (
                 <p className="text-muted-foreground">
-                  No proposal response is set up yet. Initializing seeds the proposal template —
+                  No proposal response is set up yet. Initializing seeds the proposal template:
                   approach, team and qualifications, past performance, schedule, and the fee
                   placeholder (never AI-drafted). The current solicitation always controls the real
                   structure; add custom sections to match it.
@@ -596,7 +623,7 @@ export function FundingOpportunityApplicationWorkspace({
                 <p className="text-muted-foreground">
                   No application is set up for this opportunity yet. Seed it from a catalog program
                   template (matched by explicit key only, and always verify against the current
-                  NOFO/guidelines) or start a custom scaffold — any funder anywhere works without a
+                  NOFO/guidelines) or start a custom scaffold. Any funder anywhere works without a
                   template.
                 </p>
               )}
@@ -628,13 +655,13 @@ export function FundingOpportunityApplicationWorkspace({
             <>
               {latestDraftsUnavailable ? (
                 <p className="text-muted-foreground">
-                  Stored draft history could not be loaded right now — sections may show no working
+                  Stored draft history could not be loaded right now. Sections may show no working
                   draft even though one exists.
                 </p>
               ) : null}
 
-              {showAtpPacket ? <AtpScoringPacketPanel opportunityId={opportunityId} /> : null}
-              {pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a" ? (
+              {showAtpPacket ? <AtpScoringPacketPanel key={linkedProjectId ?? "unlinked"} opportunityId={opportunityId} /> : null}
+              {isSs4aApplication ? (
                 <SafetyPlanSeedPanel opportunityId={opportunityId} onApplied={loadApplication} />
               ) : null}
 
@@ -644,7 +671,7 @@ export function FundingOpportunityApplicationWorkspace({
                 </p>
                 {sections.length === 0 ? (
                   <p className="text-muted-foreground">
-                    No sections yet — add the first one below.
+                    No sections yet. Add the first one below.
                   </p>
                 ) : null}
                 {sections.map((section, index) => (
@@ -680,7 +707,7 @@ export function FundingOpportunityApplicationWorkspace({
                     <Textarea
                       aria-label="New section guidance"
                       rows={2}
-                      placeholder="Optional guidance — what the current call asks this section to contain."
+                      placeholder="Optional guidance: what the current call asks this section to contain."
                       value={newSectionGuidance}
                       onChange={(event) => setNewSectionGuidance(event.target.value)}
                     />
@@ -690,7 +717,7 @@ export function FundingOpportunityApplicationWorkspace({
                         checked={newSectionAiDrafting}
                         onChange={(event) => setNewSectionAiDrafting(event.target.checked)}
                       />
-                      Allow AI drafting support (uncheck for budget, fee, or certification content —
+                      Allow AI drafting support (uncheck for budget, fee, or certification content:
                       those are always drafted by you)
                     </label>
                     <Button
@@ -713,13 +740,13 @@ export function FundingOpportunityApplicationWorkspace({
                 </p>
                 {attachSourcesDegraded ? (
                   <p className="text-muted-foreground">
-                    Some attachment sources could not be loaded — the pickers below may be missing
+                    Some attachment sources could not be loaded. The pickers below may be missing
                     documents or report artifacts that do exist.
                   </p>
                 ) : null}
                 {attachments.length === 0 ? (
                   <p className="text-muted-foreground">
-                    No checklist items yet — add what the current call requires.
+                    No checklist items yet. Add what the current call requires.
                   </p>
                 ) : null}
                 {attachments.map((attachment) => (
@@ -737,10 +764,44 @@ export function FundingOpportunityApplicationWorkspace({
                     {pursuitKind === "proposal" ? "Export proposal packet" : "Export application packet"}
                   </p>
                   <p className="mt-1 text-muted-foreground">
-                    Assembles the cover, every section (final text, or a disclosed outstanding
-                    item), the attachment checklist, and a provenance appendix into one PDF.
-                    Missing required attachments stamp the document DRAFT; they never disappear.
+                    One PDF: the cover, every section, the attachment checklist, and who
+                    finalized each section and from what. Missing required attachments and
+                    unverified items in final sections stamp it DRAFT.
                   </p>
+                  {pendingDraftStamps.length > 0 ? (
+                    <div className="mt-2 text-[color:var(--copper)]" data-testid="export-draft-stamps">
+                      <p className="font-semibold">Will be stamped</p>
+                      <ul className="list-disc pl-5">
+                        {pendingDraftStamps.map((stamp) => (
+                          <li key={stamp}>{stamp}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                  {appendixProgram ? (
+                    <fieldset className="mt-2" data-testid="export-appendices">
+                      <legend className="text-xs font-semibold text-foreground/80">Evidence appendices</legend>
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                        {appendixProgram.keys.map((key) => (
+                          <label key={key} className="flex items-center gap-1.5 text-xs">
+                            <input
+                              type="checkbox"
+                              checked={!deselectedAppendices.has(key)}
+                              onChange={(event) =>
+                                setDeselectedAppendices((current) => {
+                                  const next = new Set(current);
+                                  if (event.target.checked) next.delete(key);
+                                  else next.add(key);
+                                  return next;
+                                })
+                              }
+                            />
+                            {appendixProgram.titles[key]}
+                          </label>
+                        ))}
+                      </div>
+                    </fieldset>
+                  ) : null}
                   <Button
                     type="button"
                     variant="outline"
@@ -763,7 +824,7 @@ export function FundingOpportunityApplicationWorkspace({
                               <li key={sentenceIndex}>
                                 {stripFactCitationTokens(sentence.text)}{" "}
                                 <span className="">
-                                  — {sentence.reason.replace(/_/g, " ")}
+                                  ({sentence.reason.replace(/_/g, " ")})
                                 </span>
                               </li>
                             ))}
@@ -774,14 +835,16 @@ export function FundingOpportunityApplicationWorkspace({
                   ) : null}
                   {exportResult ? (
                     <div className="mt-2 space-y-1" data-testid="export-result">
-                      {exportResult.isDraftStamped ? (
-                        <p className="font-semibold text-[color:var(--copper)]">
-                          Stamped DRAFT — {exportResult.outstandingRequiredCount} required
-                          attachment(s) outstanding.
+                      {exportResult.draftStamps.map((stamp) => (
+                        <p key={stamp} className="font-semibold text-[color:var(--copper)]">
+                          Stamped {stamp}
                         </p>
-                      ) : null}
+                      ))}
                       {exportResult.engineDisclosure ? (
                         <p className="text-muted-foreground">{exportResult.engineDisclosure}</p>
+                      ) : null}
+                      {exportResult.sha256 ? (
+                        <p className="break-all text-xs text-muted-foreground">SHA-256 {exportResult.sha256}</p>
                       ) : null}
                       {exportResult.exportId ? (
                         <a
@@ -861,6 +924,7 @@ function SectionRowView({
   onDraftStored: (draft: ApplicationSectionDraftView) => void;
   opportunityId: string;
 }) {
+  const unverified = section.status === "final" ? countUnverifiedItems(section.final_markdown) : null;
   return (
     <div
       className="rounded-xl border border-border/70 bg-background/70 px-3 py-2.5"
@@ -880,6 +944,9 @@ function SectionRowView({
           <StatusBadge tone={SECTION_STATUS_TONES[section.status]}>
             {SECTION_STATUS_LABELS[section.status]}
           </StatusBadge>
+          {unverified && unverified.verify + unverified.placeholders > 0 ? (
+            <StatusBadge tone="warning">{unverifiedItemsLabel(unverified)}</StatusBadge>
+          ) : null}
           {section.source === "custom" ? <StatusBadge tone="neutral">Custom</StatusBadge> : null}
           {!section.ai_drafting_enabled ? (
             <StatusBadge tone="warning">Never AI-drafted</StatusBadge>
@@ -1108,7 +1175,7 @@ function SectionDetailView({
             <div className="space-y-2">
               <p className="text-label font-semibold text-foreground/70">
                 AI draft{latestDraft.model ? ` · ${latestDraft.model}` : ""} ·{" "}
-                {formatDate(latestDraft.created_at)} — review before use
+                {formatDate(latestDraft.created_at)}. Review before use
               </p>
               <NarrativeGroundingSummaryLine
                 groundingJson={latestDraft.grounding_json}
@@ -1132,8 +1199,8 @@ function SectionDetailView({
             rows={2}
             placeholder={
               latestDraft
-                ? "Revision instructions — tone or emphasis only; revisions can restyle prose but can never add unverified claims."
-                : "Optional drafting instructions — tone or emphasis only."
+                ? "Revision instructions: tone or emphasis only; revisions can restyle prose but can never add unverified claims."
+                : "Optional drafting instructions: tone or emphasis only."
             }
             value={instructions}
             onChange={(event) => setInstructions(event.target.value)}
@@ -1162,7 +1229,7 @@ function SectionDetailView({
             <div className="flex items-start gap-2 rounded-xl border border-[color:var(--copper)]/40 bg-[color:var(--copper)]/10 px-3 py-2.5 text-[color:var(--copper)]">
               <CloudOff className="mt-0.5 h-4 w-4 shrink-0" />
               <p>
-                AI drafting is offline — no Anthropic API key is configured for this deployment.
+                AI drafting is offline: no Anthropic API key is configured for this deployment.
                 Stored drafts remain available; write and finalize your own text below.
               </p>
             </div>
@@ -1248,7 +1315,7 @@ function SectionDetailView({
                     <span className="text-foreground/80">
                       {stripFactCitationTokens(sentence.text)}
                     </span>{" "}
-                    <span className="">— {sentence.reason.replace(/_/g, " ")}</span>
+                    <span className="">({sentence.reason.replace(/_/g, " ")})</span>
                   </li>
                 ))}
               </ul>
@@ -1273,7 +1340,7 @@ function SectionDetailView({
               Save as final
             </Button>
             <p className="text-xs text-muted-foreground">
-              Edited text is your reviewed work product — you, not a stored validation verdict, are
+              Edited text is your reviewed work product. You, not a stored validation verdict, are
               the authority for it.
             </p>
           </div>
@@ -1432,7 +1499,7 @@ function AttachmentRowView({
           {artifactOptions.map((option) => (
             <option key={option.id} value={option.id}>
               {option.reportTitle}
-              {option.artifactKind ? ` — ${option.artifactKind.toUpperCase()}` : ""}
+              {option.artifactKind ? ` · ${option.artifactKind.toUpperCase()}` : ""}
               {option.generatedAt ? ` (${formatDate(option.generatedAt)})` : ""}
             </option>
           ))}

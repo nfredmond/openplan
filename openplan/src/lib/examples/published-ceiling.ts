@@ -35,7 +35,7 @@ export function worstPublishedRecord(
   records: readonly PublishedValidationRecord[]
 ): PublishedValidationRecord {
   if (records.length === 0) {
-    throw new Error("No published validation records exist — /legal cannot state a ceiling.");
+    throw new Error("No published validation records exist: /legal cannot state a ceiling.");
   }
   return records.reduce((worst, record) =>
     record.maxApePercent > worst.maxApePercent ? record : worst

@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 /**
  * RTP chapter narrative facts — the numbered fact list a chapter draft may
  * cite, assembled from the SAME deterministic summaries the RTP packet path
@@ -89,8 +90,8 @@ export type RtpChapterFactsInput = {
   kbClaims: string[];
 };
 
-function formatAmount(value: number): string {
-  return formatMoney(Number.isFinite(value) ? value : 0, { precision: "whole" });
+function formatAmount(value: number | null): string {
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function portfolioRoleBreakdown(linkedProjects: RtpChapterFactsInput["linkedProjects"]): string {
@@ -115,7 +116,7 @@ function modelingEvidenceClaims(modelingEvidence: ReportModelingEvidence[]): str
     // The claim registry's own report language is the honest framing — never
     // upgraded here, and its absence is stated as a prohibition.
     const claimText = claim
-      ? `${modelingClaimStatusLabel(claim.claimStatus)} — ${
+      ? `${modelingClaimStatusLabel(claim.claimStatus)}. ${
           item.evidence?.reportLanguage ?? claim.statusReason
         }`
       : "no structured claim decision is recorded, so model-backed language must not be used as an outward planning claim";
@@ -152,16 +153,16 @@ export function buildRtpChapterFacts(input: RtpChapterFactsInput): NarrativeFact
     cycle.public_review_open_at && cycle.public_review_close_at
       ? `The public review window on record runs ${formatRtpDate(cycle.public_review_open_at)} through ${formatRtpDate(cycle.public_review_close_at)}.`
       : null,
-    `Cycle readiness: ${readiness.label} — ${readiness.reason} (${readiness.readyCheckCount} of ${readiness.totalCheckCount} readiness checks in place).`,
-    `Cycle workflow posture: ${workflow.label} — ${workflow.detail}`,
+    `Cycle readiness: ${readiness.label}. ${readiness.reason} (${readiness.readyCheckCount} of ${readiness.totalCheckCount} readiness checks in place).`,
+    `Cycle workflow posture: ${workflow.label}. ${workflow.detail}`,
     linkedProjects.length > 0
       ? `${linkedProjects.length} project(s) are linked to this RTP cycle: ${portfolioRoleBreakdown(linkedProjects)}.`
       : `No projects are linked to this RTP cycle yet.`,
     portfolioFunding
-      ? `Linked-project funding posture: ${portfolioFunding.label} — ${portfolioFunding.reason}`
+      ? `Linked-project funding posture: ${portfolioFunding.label}. ${portfolioFunding.reason}`
       : null,
     portfolioFunding && portfolioFunding.trackedProjectCount > 0
-      ? `Across ${portfolioFunding.trackedProjectCount} tracked project(s): ${formatAmount(portfolioFunding.committedFundingAmount)} committed, ${formatAmount(portfolioFunding.likelyFundingAmount)} pursued-likely, ${formatAmount(portfolioFunding.unfundedAfterLikelyAmount)} uncovered after likely dollars; ${portfolioFunding.fundedProjectCount} funded, ${portfolioFunding.gapProjectCount} with a funding gap.`
+      ? portfolioFunding.comparableFunding ? comparableFundingDisclosure(portfolioFunding.comparableFunding) : `Across ${portfolioFunding.trackedProjectCount} tracked project(s): ${formatAmount(portfolioFunding.committedFundingAmount)} committed, ${formatAmount(portfolioFunding.likelyFundingAmount)} pursued-likely, ${formatAmount(portfolioFunding.unfundedAfterLikelyAmount)} uncovered after likely dollars; ${portfolioFunding.fundedProjectCount} funded, ${portfolioFunding.gapProjectCount} with a funding gap.`
       : null,
     engagement && engagement.campaignCount > 0
       ? `${engagement.campaignCount} engagement campaign(s) are attached to this cycle (${engagement.cycleLevelCampaignCount} cycle-level, ${engagement.chapterLevelCampaignCount} chapter-level) with ${engagement.totalItems} submitted comment(s): ${engagement.approvedCount} approved, ${engagement.readyForHandoffCount} ready for handoff, ${engagement.pendingCount} pending moderation. ${ENGAGEMENT_NARRATIVE_CAVEAT}`
@@ -178,7 +179,7 @@ export function buildRtpChapterFacts(input: RtpChapterFactsInput): NarrativeFact
     input.fiscalConstraint
       ? `Fiscal constraint finding for this cycle: ${rtpFiscalVerdictLabel(
           input.fiscalConstraint.verdict
-        )} — ${describeRtpFiscalConstraint(input.fiscalConstraint)}${
+        )}. ${describeRtpFiscalConstraint(input.fiscalConstraint)}${
           input.fiscalConstraint.verdict === "not_determined"
             ? " Do not state or imply that this plan is fiscally constrained, that revenues cover programmed costs, or that a constraint demonstration exists, while this finding is not determined."
             : ""

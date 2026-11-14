@@ -57,8 +57,8 @@ type BriefValues = {
 };
 
 const TEMPLATE_LABEL: Record<ReportTemplate, string> = {
-  atp: "ATP — Active Transportation Program",
-  ss4a: "SS4A — Safe Streets and Roads for All",
+  atp: "ATP: Active Transportation Program",
+  ss4a: "SS4A: Safe Streets and Roads for All",
 };
 
 /**

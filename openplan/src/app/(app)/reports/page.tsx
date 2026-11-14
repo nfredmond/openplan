@@ -1,5 +1,6 @@
-import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
-import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
+import { evaluateRegistryPacketFreshness } from "@/lib/reports/packet-freshness-loader";
+import { latestArtifactByReport, latestSafetyAtByProject } from "@/lib/reports/packet-freshness-rules";
+import { loadReportSafetyIngestOptionsByProject } from "@/lib/reports/safety-evidence-selection";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -41,7 +42,6 @@ import {
   formatReportTypeLabel,
   getReportNavigationHref,
   getReportPacketActionLabel,
-  getReportPacketFreshness,
   getReportPacketPriority,
   getReportPacketWorkStatus,
   matchesReportFreshnessFilter,
@@ -61,12 +61,6 @@ import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import {
   describeReportSourceReviewPosture,
 } from "@/lib/reports/source-review-posture";
-import {
-  artifactSafetyEvidenceReadFailed,
-  buildReportRegistryDriftSummary,
-  resolveTrackedReportSourceUpdatedAt,
-  artifactGenerationWritebackIsCurrent,
-} from "@/lib/reports/report-registry-freshness";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import {
   countyRunDisplayableClaim,
@@ -256,12 +250,13 @@ export default async function ReportsPage({
     "project-linked crash evidence used for packet freshness",
     safetyIngestRead,
   );
-  const latestSafetyAtByProjectId = new Map<string, string>();
-  for (const row of (safetyIngestRead.data ?? []) as Array<{ project_id: string | null; created_at: string }>) {
-    if (row.project_id && !latestSafetyAtByProjectId.has(row.project_id)) {
-      latestSafetyAtByProjectId.set(row.project_id, row.created_at);
-    }
-  }
+  const latestSafetyAtByProjectId = latestSafetyAtByProject(
+    (safetyIngestRead.data ?? []) as Array<{ project_id: string | null; created_at: string }>
+  );
+  // Each project's ready crash acquisitions, so a new report can start with
+  // its Safety evidence chosen (KI-2026-08-31-015).
+  const safetyEvidenceRead = await loadReportSafetyIngestOptionsByProject(supabase, membership.workspace_id);
+  reads.check("project crash evidence offered to new reports", safetyEvidenceRead);
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
   const artifactsRead = reportIds.length
@@ -274,12 +269,7 @@ export default async function ReportsPage({
   const artifactsReadFailed = reads.check("report artifacts used for packet freshness", artifactsRead);
   const artifactsData = artifactsRead.data;
 
-  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const artifact of (artifactsData ?? []) as ReportArtifactRow[]) {
-    if (!latestArtifactByReportId.has(artifact.report_id)) {
-      latestArtifactByReportId.set(artifact.report_id, artifact);
-    }
-  }
+  const latestArtifactByReportId = latestArtifactByReport((artifactsData ?? []) as ReportArtifactRow[]);
   const modelingClaimByCountyRunId = new Map<string, ModelingClaimDecisionOptionRow>();
   for (const decision of (modelingClaimDecisionsData ?? []) as ModelingClaimDecisionOptionRow[]) {
     if (decision.county_run_id && !modelingClaimByCountyRunId.has(decision.county_run_id)) {
@@ -336,77 +326,17 @@ export default async function ReportsPage({
       const rtpCycle = Array.isArray(report.rtp_cycles)
         ? report.rtp_cycles[0] ?? null
         : report.rtp_cycles ?? null;
-      const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
-      const safetyUpdatedAt = report.project_id
-        ? latestSafetyAtByProjectId.get(report.project_id) ?? null
-        : null;
-      const jurisdictionState = artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
-        (projectsData ?? []).find((project) => project.id === report.project_id));
-      const generationWritebackCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at);
-      const computedPacketFreshness = getReportPacketFreshness({
-        latestArtifactKind: report.latest_artifact_kind,
-        jurisdictionState,
-        generationWritebackCurrent,
-        generatedAt: packetGeneratedAt,
-        updatedAt: resolveTrackedReportSourceUpdatedAt({
-          generatedAt: packetGeneratedAt,
-          reportUpdatedAt: report.updated_at,
-          cycleUpdatedAt: rtpCycle?.updated_at ?? null,
-          artifactMetadata: latestArtifact?.metadata_json ?? null,
-          safetyUpdatedAt,
-        }),
-      });
-      const packetSafetyEvidenceReadFailed = artifactSafetyEvidenceReadFailed(
-        latestArtifact?.metadata_json
-      );
-      let guidedComparison: { liveEvidenceStatus?: "unassessed"; problem: string | null } | undefined;
-      let guidedSelectionChanged = false;
-      try {
-        const scope = { ...report, metadata_json: report.metadata_json ?? null };
-        const projectScope = report.project_id ? { id: report.project_id, workspace_id: report.workspace_id } : null;
-        const saved = readScopedGuidedComparisonBinding({ reportId: report.id, report: scope, project: projectScope });
-        const retained = readScopedGuidedComparisonBinding({ reportId: report.id,
-          report: { ...scope, metadata_json: latestArtifact?.metadata_json ?? null }, project: projectScope });
-        guidedSelectionChanged = Boolean(packetGeneratedAt && saved?.bindingSha256 !== retained?.bindingSha256);
-        if (saved || retained) guidedComparison = { liveEvidenceStatus: "unassessed" as const, problem: null };
-      } catch (error) {
-        guidedComparison = { problem: error instanceof Error ? error.message : "The saved comparison binding cannot be checked." };
-      }
-      const safetyReadLimitation = packetSafetyEvidenceReadFailed
-        ? "This packet recorded a failed project crash-evidence read. Review the unavailable evidence; that failure does not establish a source change."
-        : safetyIngestReadFailed && report.project_id
-          ? "Project-linked crash evidence could not be checked. This is an unassessed source, not an observed change."
-          : null;
-      const trackedPacketFreshness = safetyReadLimitation && computedPacketFreshness.label !== PACKET_FRESHNESS_LABELS.NO_PACKET
-        ? { ...computedPacketFreshness,
-            label: computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT ? "Source evidence unassessed" : computedPacketFreshness.label,
-            tone: "warning" as const,
-            detail: `${computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT ? "" : `${computedPacketFreshness.detail} `}${safetyReadLimitation}` }
-        : computedPacketFreshness;
-      const packetFreshness = (trackedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT || trackedPacketFreshness.label === "Source evidence unassessed") && guidedComparison
-        ? guidedComparison.problem || guidedSelectionChanged
-          ? { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
-              detail: guidedComparison.problem ?? "The saved guided comparison differs from the retained artifact." }
-          : { label: "Comparison evidence unassessed", tone: "warning" as const,
-              detail: "The saved comparison binding is checked. Live files and their source history remain unassessed; save and generation check them again." }
-        : trackedPacketFreshness;
-      const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
-      const sourceReviewDriftSummary = buildReportRegistryDriftSummary({
-        packetFreshnessLabel: trackedPacketFreshness.label,
-        generatedAt: packetGeneratedAt,
-        reportUpdatedAt: report.updated_at,
+      // The registry's freshness rule lives in the shared loader module.
+      const { packetFreshness, guidedComparison, sourceReviewDriftSummary } = evaluateRegistryPacketFreshness({
+        report,
+        latestArtifact,
         rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
-        safetyUpdatedAt,
-        safetyEvidenceReadFailed: packetSafetyEvidenceReadFailed,
-        jurisdictionState,
-        generationWritebackCurrent,
-        unassessedLabels: safetyIngestReadFailed && report.project_id ? ["Live crash evidence unavailable"] : [],
+        project: (projectsData ?? []).find((project) => project.id === report.project_id),
+        artifactsReadFailed,
+        latestSafetyAtByProjectId,
+        safetyReadFailed: safetyIngestReadFailed,
       });
-      if (guidedSelectionChanged) {
-        sourceReviewDriftSummary.labels.push("Selected guided comparison");
-        sourceReviewDriftSummary.changedCount = sourceReviewDriftSummary.labels.length;
-        sourceReviewDriftSummary.totalCount = sourceReviewDriftSummary.labels.length;
-      }
+      const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
       const evidenceChainDigest = describeEvidenceChainSummary(evidenceChainSummary);
       const sourceReviewPosture = describeReportSourceReviewPosture({
         hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
@@ -794,6 +724,7 @@ export default async function ReportsPage({
               runs={runsData ?? []}
               modelingCountyRuns={modelingCountyRuns}
               reportGuidanceByProject={reportGuidanceByProject}
+              safetyIngestOptionsByProject={safetyEvidenceRead.data ?? {}}
             />
           </div>
         }
@@ -905,7 +836,7 @@ export default async function ReportsPage({
             <EmptyState
               title={reportsReadFailed ? "Reports could not be loaded" : "No reports yet"}
               description={reportsReadFailed
-                ? "The report registry could not be read, so nothing is listed. This does not mean the workspace has no reports — do not regenerate on the strength of this screen."
+                ? "The report registry could not be read, so nothing is listed. This does not mean the workspace has no reports. Do not regenerate on the strength of this screen."
                 : "Reports turns work from across OpenPlan into a shareable document, with every number traceable back to its source. Create your first report to assemble findings for a board, a funder, or the public."}
               action={reportsReadFailed ? undefined : (
                 <a href="#create-report" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">Create a report</a>

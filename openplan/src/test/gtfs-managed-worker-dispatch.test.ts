@@ -64,7 +64,8 @@ async function fixture(){
 function corrupt(raw:Record<string,unknown>){
  return "command" in raw?{...raw,command:id(99)}:"versionId" in raw?{...raw,versionId:id(99)}:{...raw,version:id(99)};
 }
-describe("durable GTFS operation dispatcher",()=>{
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("durable GTFS operation dispatcher",()=>{
  it.each(cases)("syncs and submits exact $rpc arguments and returns retained history without transport",async c=>{
   const f=await fixture();const pending=f.run(c.mutation);await expect(pending).resolves.toMatchObject({retained:false});
   const first=await pending;const saved=await f.saved(), identity=await f.identity();

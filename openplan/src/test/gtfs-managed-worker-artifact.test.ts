@@ -65,7 +65,8 @@ async function fixture(){
  return {directory,bytes,encoded,archive,controller,snapshot,fetcher,calls,deliver,options,consume,run,saved,save};
 }
 
-describe("managed GTFS parser artifact custody",()=>{
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("managed GTFS parser artifact custody",()=>{
  it("binds Storage bytes, confirms custody, parses through descriptors and reuses the checked output",async()=>{
   const f=await fixture();const first=await f.run();expect(first).toEqual({content:f.encoded.toString(),receipt:{byteSize:f.encoded.length,sha256:sha(f.encoded),parsed:false},retained:false});
   expect(f.deliver.mock.calls).toEqual([["archive-confirmation",{operation:"confirm_archive",input:f.archive}],["parsing",{operation:"stage",input:"parsing"}]]);

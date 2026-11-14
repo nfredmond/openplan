@@ -14,6 +14,7 @@ import {
   REPORT_AERIAL_ORTHO_BUCKET,
   type FrozenReportAerialOrthoSnapshotV1,
 } from "@/lib/reports/aerial-ortho-evidence";
+import type { WorkspaceStorageRoom } from "@/lib/workspaces/storage-quota";
 export { readReportAerialOrthoSelections } from "@/lib/reports/aerial-ortho-evidence";
 
 export const REPORT_AERIAL_ORTHO_CUSTODY_SELECT =
@@ -102,6 +103,13 @@ function isPng(bytes: Uint8Array): boolean {
   return bytes.length >= signature.length && signature.every((value, index) => bytes[index] === value);
 }
 
+/**
+ * Copy the selected held preview into the report's own folder.
+ *
+ * `storageRoom` is the workspace storage-limit check (storage-quota.ts). It is
+ * asked about the verified PNG's actual byte count before the copy is stored;
+ * anything but room returns `storage_refused` and stores nothing.
+ */
 export async function freezeSelectedReportAerialOrtho(input: {
   supabase: unknown;
   serviceSupabase: unknown;
@@ -111,9 +119,11 @@ export async function freezeSelectedReportAerialOrtho(input: {
   artifactId: string;
   custodyId: string;
   frozenAt: string;
+  storageRoom: (incomingBytes: number) => Promise<WorkspaceStorageRoom>;
 }): Promise<
   | { status: "verified"; snapshot: FrozenReportAerialOrthoSnapshotV1; bytes: Uint8Array }
   | { status: "absent" | "unreadable" | "invalid"; reason: string }
+  | { status: "storage_refused"; room: Exclude<WorkspaceStorageRoom, { status: "room" }> }
 > {
   const selected = await verifySelectedReportAerialOrtho(input);
   if (selected.status !== "verified") return selected;
@@ -138,6 +148,8 @@ export async function freezeSelectedReportAerialOrtho(input: {
     frozenAt: input.frozenAt,
     frozenChecksumSha256: checksum,
   });
+  const room = await input.storageRoom(bytes.byteLength);
+  if (room.status !== "room") return { status: "storage_refused", room };
   const upload = await service.storage.from(REPORT_AERIAL_ORTHO_BUCKET).upload(
     snapshot.storagePath,
     bytes,

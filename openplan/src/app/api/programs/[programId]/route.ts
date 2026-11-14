@@ -13,6 +13,7 @@ import {
   PROGRAM_TYPE_OPTIONS,
   type ProgramLinkType,
 } from "@/lib/programs/catalog";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 
 const PROGRAM_TYPES = PROGRAM_TYPE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 const PROGRAM_STATUSES = PROGRAM_STATUS_OPTIONS.map((option) => option.value) as [string, ...string[]];
@@ -348,9 +349,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
 
     const [engagementItemsResult, reportArtifactsResult] = await Promise.all([
-      campaignIds.length
-        ? detailSupabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
-        : Promise.resolve({ data: [], error: null }),
+      // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+      readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+        detailSupabase,
+        campaignIds,
+        CAMPAIGN_ITEM_STATUS_COLUMNS
+      ),
       reportIds.length
         ? detailSupabase.from("report_artifacts").select("report_id").in("report_id", reportIds)
         : Promise.resolve({ data: [], error: null }),

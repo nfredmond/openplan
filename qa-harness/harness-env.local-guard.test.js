@@ -1,6 +1,7 @@
 const assert = require('assert');
 const {
   assertLocalTargetUrl,
+  assertProofTargetUrl,
   guardLocalMutationTargets,
   isLocalHostname,
   isSupabaseCloudHostname,
@@ -29,6 +30,15 @@ assertThrowsUrl('https://openplan-natford.vercel.app', /refuses Vercel URLs/);
 assertThrowsUrl('https://abcd.supabase.co', /refuses Supabase cloud URLs/);
 assertThrowsUrl('https://example.com', /refuses non-local URLs/);
 assertThrowsUrl('ftp://localhost:21', /must use http or https/);
+
+// The proof path sits beside the local one and refuses what the local one accepts.
+const proofOrigin = 'https://openplan-zeta.vercel.app';
+assert.equal(assertProofTargetUrl(proofOrigin, proofOrigin).origin, proofOrigin);
+assert.throws(() => assertProofTargetUrl('http://localhost:3000', proofOrigin), /refuses local URLs for a proof run/);
+assert.throws(() => assertProofTargetUrl('http://127.0.0.1:3450', proofOrigin), /refuses local URLs for a proof run/);
+assert.throws(() => assertProofTargetUrl('https://openplan-git-x.vercel.app', proofOrigin), /must be the hosted origin/);
+assert.throws(() => assertProofTargetUrl(proofOrigin, 'http://localhost:3000'), /not a hosted https origin/);
+assert.throws(() => assertLocalTargetUrl(proofOrigin, 'app'), /refuses Vercel URLs/);
 
 const note = guardLocalMutationTargets({
   appUrl: 'http://localhost:3000',

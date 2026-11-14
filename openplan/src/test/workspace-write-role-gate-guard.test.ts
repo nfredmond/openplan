@@ -90,6 +90,12 @@ const RECOGNIZED_GATES = [
   // calls `canAccessWorkspaceAction` for real.
   "authorizeMeasureWrite",
   "authorizeWorkProgram",
+  // The Knowledge Base upload gate (2026-11-01), shared by the body route and
+  // the staged start/complete routes so all three refuse the same callers:
+  // membership, then `isReadOnlyWorkspaceRole`, then the linked project's
+  // workspace. Moving it out of the body route correctly failed this guard; the
+  // prover below holds its defining file to a real role call.
+  "verifyKbUploadTarget",
   "loadModelAccess",
   "loadPlanAccess",
   "loadLandUsePlanAccess",

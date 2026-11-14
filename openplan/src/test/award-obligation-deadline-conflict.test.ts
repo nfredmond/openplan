@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 import { AWARD_MIRRORED, buildDb, loadSeededMyWork } from "./helpers/fake-my-work-tables";
 
 describe("award obligation deadline conflicts", () => {
@@ -7,9 +9,9 @@ describe("award obligation deadline conflicts", () => {
     const award = db.funding_awards.find(row => row.id === AWARD_MIRRORED)!;
     award.obligation_due_at = "2026-08-01T00:00:00Z";
     const { result, selects } = await loadSeededMyWork({ db });
-    expect(selects.funding_awards.split(", ")).toContain("obligation_due_at");
-    expect(selects.project_milestones.split(", ")).toContain("target_date");
-    expect(selects.project_milestones.split(", ")).toContain("funding_award_id");
+    expect(selects.legacy_calendar_funding_awards.split(", ")).toContain("obligation_due_at");
+    expect(selects.active_project_milestones.split(", ")).toContain("target_date");
+    expect(selects.active_project_milestones.split(", ")).toContain("funding_award_id");
     const current = result.items.find(item => item.id === AWARD_MIRRORED);
     expect(current).toMatchObject({ dueOn: "2026-08-01T00:00:00Z", isOverdue: true });
     expect(current?.detail).toContain("linked milestone has a different or unreadable deadline");

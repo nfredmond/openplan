@@ -40,14 +40,14 @@ import { PROCESSING_PRESET_IDS, type ProcessingPresetId } from "@/lib/aerial/pro
  */
 
 const PRESET_DESCRIPTIONS: Record<ProcessingPresetId, string> = {
-  "fast-preview": "Fastest turnaround, lowest resolution — for checking coverage.",
+  "fast-preview": "Fastest turnaround, lowest resolution, for checking coverage.",
   balanced: "Default. Usable orthomosaic and surface model.",
   "high-quality": "Longest runtime, highest detail.",
 };
 
 function describePresetOption(preset: string): string {
   const description = PRESET_DESCRIPTIONS[preset as ProcessingPresetId];
-  return description ? `${preset} — ${description}` : preset;
+  return description ? `${preset}: ${description}` : preset;
 }
 
 type StoredImageryCapability =
@@ -86,14 +86,14 @@ async function describeFailure(response: Response): Promise<string> {
       .map((issue) => (typeof issue?.message === "string" ? issue.message.trim() : ""))
       .filter((message) => message.length > 0);
     if (reasons.length > 0) {
-      return `Nothing was dispatched — the request was refused before it reached the worker: ${reasons.join("; ")}.`;
+      return `Nothing was dispatched. The request was refused before it reached the worker: ${reasons.join("; ")}.`;
     }
   }
 
   if (response.status === 409 && payload?.error === "processing_already_active") {
     return `This mission already has an open processing job${
       payload.requestId ? ` (request ${payload.requestId})` : ""
-    }. It is listed below — wait for it to finish, or have it canceled on the worker, before requesting another.`;
+    }. It is listed below. Wait for it to finish, or have it canceled on the worker, before requesting another.`;
   }
 
   if (response.status === 422 && payload?.error === "no_imagery_available") {
@@ -254,7 +254,7 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
           <span className="font-medium text-foreground">
             {stored.count} stored photo{stored.count === 1 ? "" : "s"} on this mission
           </span>{" "}
-          will be dispatched — the server mints signed, time-limited links for them at request
+          will be dispatched. The server mints signed, time-limited links for them at request
           time. No ZIP link is needed.
         </p>
       ) : (
@@ -273,10 +273,10 @@ export function AerialProcessingRequestForm({ missionId }: { missionId: string }
             required
           />
           <p className="text-label text-muted-foreground">
-            A link the worker itself can fetch — https, or plain http only for a worker on the
+            A link the worker itself can fetch: https, or plain http only for a worker on the
             same machine. The link is passed through to the worker as-is.
             {stored?.status === "counted" && stored.count === 0
-              ? " This mission has no stored photos yet — upload them in the imagery panel to dispatch them directly instead of zipping them yourself."
+              ? " This mission has no stored photos yet. Upload them in the imagery panel to dispatch them directly instead of zipping them yourself."
               : null}
             {stored?.status === "unavailable" ? ` ${stored.reason}` : null}
             {capability === "unreadable"

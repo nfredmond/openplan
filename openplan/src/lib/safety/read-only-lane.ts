@@ -4,14 +4,14 @@
  *
  * THE DEFECT THIS CLOSES. `safety_crashes.source_id` is a closed CHECK domain
  * so the registry marks adapters not yet admitted there `persistable: false`
- * and `resolveCrashSource(bbox, "ingest")` filters them out. That is correct —
+ * and `resolveCrashSource(area, "ingest")` filters them out. That is correct —
  * an ingest must never resolve a source the database would reject mid-write.
  * But the Safety module once reported the FILTERED
  * result as `out_of_coverage`, whose copy told the planner that *no registered
  * crash source covers this study area*. For every US state except California
  * that sentence was false: `farsAdapter` is registered, it covers the whole
  * source's reporting geography, while the Explore corridor scorecard had been
- * reading it (`fetchCrashesForBbox`, `use: "read_only"`). The
+ * reading it (`fetchCrashesForStudyArea`, `use: "read_only"`). The
  * capability was complete, registered, tested — and no planner opening
  * `/safety` could reach it.
  *
@@ -40,7 +40,7 @@
  */
 
 import type { StudyAreaBbox } from "@/lib/models/study-area";
-import { resolveCrashSources } from "./sources/registry";
+import { crashSourcesForStudyArea, type CrashStudyAreaStates } from "./sources/registry";
 import type { CrashFetchResult, CrashSourceAdapter } from "./sources/types";
 
 /**
@@ -80,6 +80,12 @@ export type ReadOnlyCrashLaneResult =
 
 export type ReadOnlyCrashLaneParams = {
   bbox: StudyAreaBbox;
+  /**
+   * The study area's states, from its place identity. Decides which sources
+   * may answer, exactly as it does for an acquisition; null or absent lets
+   * only a national source answer.
+   */
+  stateFips?: CrashStudyAreaStates;
   years: number[];
   maxRecords?: number;
   signal?: AbortSignal;
@@ -92,8 +98,8 @@ function identify(adapter: CrashSourceAdapter): CrashSourceIdentity {
 /**
  * Read observed crashes for a study area without storing anything.
  *
- * Covering adapters are tried in registry order (richest severity coverage
- * first). A covering adapter that THROWS does not end the lane — the next
+ * Adapters that serve the study area's states are tried in registry order
+ * (richest severity coverage first). A covering adapter that THROWS does not end the lane — the next
  * covering adapter is tried, because one source being down is not a statement
  * about the others. Only when every covering adapter fails is the result
  * `source_unavailable`, and it names the first failure rather than inventing a
@@ -102,13 +108,15 @@ function identify(adapter: CrashSourceAdapter): CrashSourceIdentity {
 export async function readCrashesForStudyArea(
   params: ReadOnlyCrashLaneParams
 ): Promise<ReadOnlyCrashLaneResult> {
-  const resolution = resolveCrashSources(params.bbox, "read_only");
+  const { candidates: covering, checked: consulted } = crashSourcesForStudyArea(
+    { bbox: params.bbox, stateFips: params.stateFips },
+    "read_only"
+  );
 
-  if (resolution.kind === "out_of_coverage") {
-    return { kind: "out_of_coverage", checked: resolution.checked };
+  if (covering.length === 0) {
+    return { kind: "out_of_coverage", checked: consulted.map(identify) };
   }
 
-  const covering = [resolution.primary, ...resolution.backstops];
   const checked = covering.map(identify);
 
   let firstFailure: { adapter: CrashSourceAdapter; message: string } | null = null;
@@ -150,9 +158,8 @@ export async function readCrashesForStudyArea(
     };
   }
 
-  // Defensive only. `resolveCrashSources` returned `resolved`, so `covering` is
-  // non-empty and the loop above either returned or recorded a failure. Kept as
-  // a total function rather than a throw, because the caller's job at this point
-  // is to render a state, not to handle an exception.
+  // Defensive only. `covering` is non-empty, so the loop above either returned
+  // or recorded a failure. Kept as a total function rather than a throw,
+  // because the caller's job at this point is to render a state.
   return { kind: "out_of_coverage", checked };
 }

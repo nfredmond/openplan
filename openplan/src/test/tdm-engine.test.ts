@@ -230,7 +230,7 @@ describe("estimateGhgFromVmtReduction", () => {
 describe("TDM_SCREENING_CAVEAT", () => {
   it("is pinned verbatim", () => {
     expect(TDM_SCREENING_CAVEAT).toBe(
-      "Screening-level TDM estimate for early scoping — strategy effectiveness varies with context, baseline mode share, and program design. Confirm measure-level values against the CAPCOA Handbook (2021) or project-specific studies before CEQA or grant use."
+      "Screening-level TDM estimate for early scoping. Strategy effectiveness varies with context, baseline mode share, and program design. Confirm measure-level values against the CAPCOA Handbook (2021) or project-specific studies before CEQA or grant use."
     );
   });
 });

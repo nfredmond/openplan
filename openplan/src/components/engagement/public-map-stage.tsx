@@ -5,6 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { deploymentMapEngine, labelFontsFor, startMap } from "@/lib/maps/map-engine";
+import { expandCluster } from "@/lib/maps/expand-cluster";
 import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
@@ -219,27 +220,6 @@ function syncBuildings(map: mapboxgl.Map, on: boolean): void {
     },
     firstLabel
   );
-}
-
-/**
- * Zoom that opens a group of pins. Mapbox answers through a callback; MapLibre
- * returns a promise. Both are handled, so the same tap works on either.
- */
-function expandCluster(map: mapboxgl.Map, source: mapboxgl.GeoJSONSource, clusterId: number, center: [number, number]) {
-  const ease = (zoom: unknown) => {
-    if (typeof zoom === "number") map.easeTo({ center, zoom });
-  };
-  const result = (
-    source.getClusterExpansionZoom as unknown as (
-      id: number,
-      callback: (error: unknown, zoom?: number) => void
-    ) => Promise<number> | void
-  )(clusterId, (error, zoom) => {
-    if (!error) ease(zoom);
-  });
-  if (result && typeof (result as Promise<number>).then === "function") {
-    (result as Promise<number>).then(ease, () => undefined);
-  }
 }
 
 /**
@@ -1428,7 +1408,7 @@ export function PublicMapStage({
               {mapUnavailable === "no-background" ? (
                 <p>
                   This deployment offers no map background, so no map can be drawn. Check
-                  OPENPLAN_PUBLIC_BASEMAPS — every id it names is one OpenPlan does not know — or unset it
+                  OPENPLAN_PUBLIC_BASEMAPS (every id it names is one OpenPlan does not know) or unset it
                   to use the default set.
                 </p>
               ) : MAP_ENGINE === "maplibre" ? (

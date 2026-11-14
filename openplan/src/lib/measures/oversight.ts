@@ -104,7 +104,7 @@ export const MEASURE_OVERSIGHT_COPY = {
    */
   preparedNote:
     "These figures come from the records the agency has entered into OpenPlan. This page is not an " +
-    "audited financial statement and it is not the agency's official accounting — it is a running " +
+    "audited financial statement and it is not the agency's official accounting. It is a running " +
     "view of what has been recorded, shown so it can be checked.",
 
   /** Printed wherever any hand-entered allocation is in scope. Guard (ii). */
@@ -141,7 +141,7 @@ export const MEASURE_OVERSIGHT_COPY = {
    * now has three subtractions rather than two.
    */
   divisionExplainer:
-    "Most measures take an amount out of every payment before the rest is divided up — to collect the " +
+    "Most measures take an amount out of every payment before the rest is divided up: to collect the " +
     "tax, to run the programme, or to check how the money is spent. Many also keep an amount back in " +
     "reserve, either out of the whole payment or out of one of the purposes below. What the ordinance " +
     "took out, what it kept back, and what was left is shown here so the figures on this page can be " +
@@ -328,7 +328,7 @@ export function receiptCoverageSentence(ledger: MeasureReceiptLedger): string {
         "period has",
         "periods have"
       )} been opened with no amount recorded yet (${joinList(coverage.missingPeriods)}), so this is at ` +
-        "least what came in — not necessarily all of it."
+        "least what came in, not necessarily all of it."
     );
   }
 
@@ -641,7 +641,7 @@ export function buildMeasureDivisionSummary(input: {
       ok: false,
       sentence:
         "What the ordinance took out before the rest was divided could not be loaded, so this part of the " +
-        "page is not shown. That is a problem loading the page — it does not mean nothing was taken out.",
+        "page is not shown. That is a problem loading the page. It does not mean nothing was taken out.",
     };
   }
 
@@ -656,7 +656,7 @@ export function buildMeasureDivisionSummary(input: {
       ok: false,
       sentence:
         "What the ordinance kept back in reserve could not be loaded, so this part of the page is not " +
-        "shown. That is a problem loading the page — it does not mean nothing was kept back.",
+        "shown. That is a problem loading the page. It does not mean nothing was kept back.",
     };
   }
 
@@ -933,8 +933,8 @@ export function buildMeasureDivisionSummary(input: {
           dividedWithNoTake.length,
           "has",
           "have"
-        )} no amount recorded as taken out — either those amounts were worked out by hand, or the period ` +
-        "was divided up before this was written down — so this is at least what was taken."
+        )} no amount recorded as taken out. Either those amounts were worked out by hand, or the period ` +
+        "was divided up before this was written down, so this is at least what was taken."
     );
   }
   if (unreadableTakeCount > 0) {
@@ -1040,7 +1040,7 @@ export function buildMeasureDivisionSummary(input: {
     const difference = roundCurrencyAmount(leftToDivide - input.setAsideShownTotal);
     if (Math.abs(difference) < 0.005) {
       settlement.push(
-        `The purposes below add up to ${shownText} — the same as the amount left for them, so nothing ` +
+        `The purposes below add up to ${shownText}, the same as the amount left for them, so nothing ` +
           "these periods received is left unexplained on this page."
       );
     } else if (difference > 0) {
@@ -1064,7 +1064,7 @@ export function buildMeasureDivisionSummary(input: {
               dividedWithNoReserve.length,
               "has",
               "have"
-            )} nothing recorded as kept back in reserve — either the ordinance keeps nothing back out of ` +
+            )} nothing recorded as kept back in reserve. Either the ordinance keeps nothing back out of ` +
             `${plural(dividedWithNoReserve.length, "it", "them")}, or ${plural(
               dividedWithNoReserve.length,
               "it was",
@@ -1349,7 +1349,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
       ok: false,
       sentence:
         "The record of what this measure has received could not be loaded. This is a problem loading the " +
-        "page — it does not mean the measure has received nothing.",
+        "page. It does not mean the measure has received nothing.",
     };
   } else {
     const ledger = input.receiptResult.ledger;
@@ -1379,7 +1379,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
   /* ---- Claims ---- */
   const claimsUnavailable =
     "The record of what has been claimed against this measure could not be loaded. This is a problem " +
-    "loading the page — it does not mean nobody has claimed anything.";
+    "loading the page. It does not mean nobody has claimed anything.";
 
   let askedFor: OversightSection<OversightFigure>;
   let paidOut: OversightSection<OversightFigure>;
@@ -1525,7 +1525,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
         ok: false,
         sentence:
           "Which periods this measure has divided up could not be loaded, so what the ordinance took out " +
-          "of them is not shown. That is a problem loading the page — it does not mean nothing was taken.",
+          "of them is not shown. That is a problem loading the page. It does not mean nothing was taken.",
       };
     } else if (input.allocationsUnavailableSentence) {
       division = {
@@ -1533,7 +1533,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
         sentence:
           "What each of the ordinance's purposes has been given could not be loaded, so what was taken " +
           "out before the money was divided cannot be set against it here. That is a problem loading the " +
-          "page — it does not mean nothing was taken out.",
+          "page. It does not mean nothing was taken out.",
       };
     } else {
       division = buildMeasureDivisionSummary({
@@ -1580,7 +1580,7 @@ export function buildMeasureOversightModel(input: MeasureOversightInput): Measur
           "does",
           "do"
         )} not, and ${plural(input.moeSummary.notDeterminedCount, "it is", "they are")} shown as not enough ` +
-        "recorded to say. Each area's commitment stands on its own — one area spending more does not make " +
+        "recorded to say. Each area's commitment stands on its own. One area spending more does not make " +
         "up for another spending less, so these are not added together.";
 
   const subtitleParts = [

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
@@ -22,14 +22,16 @@ import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
  *     no legend entry, is a map that cannot be read.
  */
 
-// ── Mapbox double ────────────────────────────────────────────────────────────
+// Independent library doubles exercise the real shared engine and style wait.
+// They cannot prove worker bundling, WebGL, network/CSP or visible attribution.
 
 type Handler = (...args: unknown[]) => void;
 
 type MockMapInstance = {
+  options: Record<string, unknown>;
   handlers: Map<string, Handler[]>;
   layers: Array<{ id: string; paint?: Record<string, unknown> }>;
-  sources: Record<string, { setData: ReturnType<typeof vi.fn> }>;
+  sources: Record<string, { data: unknown; setData: ReturnType<typeof vi.fn> }>;
   addControl: ReturnType<typeof vi.fn>;
   addSource: ReturnType<typeof vi.fn>;
   addLayer: ReturnType<typeof vi.fn>;
@@ -37,77 +39,110 @@ type MockMapInstance = {
   getLayer: ReturnType<typeof vi.fn>;
   fitBounds: ReturnType<typeof vi.fn>;
   remove: ReturnType<typeof vi.fn>;
+  resize: ReturnType<typeof vi.fn>;
+  setStyleLoaded: (loaded: boolean) => void;
   fire: (event: string, payload?: unknown) => void;
 };
 
-const mapboxMocks = vi.hoisted(() => {
-  const instances: MockMapInstance[] = [];
+const { mapboxMocks, maplibreMocks, libraryLoad } = vi.hoisted(() => {
+  function engineDouble() {
+    const instances: MockMapInstance[] = [];
+    const popupBehavior = { closeOnAdd: false };
 
-  const MapCtor = vi.fn(function MockMap() {
-    const handlers = new Map<string, Handler[]>();
-    const layers: Array<{ id: string; paint?: Record<string, unknown> }> = [];
-    const sources: Record<string, { setData: ReturnType<typeof vi.fn> }> = {};
+    const MapCtor = vi.fn(function MockMap(options: Record<string, unknown>) {
+      let styleLoaded = false;
+      const handlers = new Map<string, Handler[]>();
+      const layers: Array<{ id: string; paint?: Record<string, unknown> }> = [];
+      const sources: MockMapInstance["sources"] = {};
 
-    const on = vi.fn((...args: unknown[]) => {
-      // Both `on(event, handler)` and `on(event, layerId, handler)`.
-      const event = args[0] as string;
-      const handler = (typeof args[1] === "function" ? args[1] : args[2]) as Handler | undefined;
-      if (!handler) return;
-      const key = typeof args[1] === "function" ? event : `${event}:${args[1]}`;
-      handlers.set(key, [...(handlers.get(key) ?? []), handler]);
+      const on = vi.fn((...args: unknown[]) => {
+        // Both `on(event, handler)` and `on(event, layerId, handler)`.
+        const event = args[0] as string;
+        const handler = (typeof args[1] === "function" ? args[1] : args[2]) as Handler | undefined;
+        if (!handler) return;
+        const key = typeof args[1] === "function" ? event : `${event}:${args[1]}`;
+        handlers.set(key, [...(handlers.get(key) ?? []), handler]);
+      });
+
+      const instance = {
+        options,
+        handlers,
+        layers,
+        sources,
+        addControl: vi.fn(),
+        on,
+        off: vi.fn((...args: unknown[]) => {
+          const key = typeof args[1] === "function" ? String(args[0]) : `${args[0]}:${args[1]}`;
+          const handler = typeof args[1] === "function" ? args[1] : args[2];
+          handlers.set(key, (handlers.get(key) ?? []).filter((entry) => entry !== handler));
+        }),
+        isStyleLoaded: vi.fn(() => styleLoaded),
+        setStyleLoaded: (loaded: boolean) => { styleLoaded = loaded; },
+        getCanvas: vi.fn(() => ({ style: {} })),
+        addSource: vi.fn((id: string, source: { data: unknown }) => {
+          sources[id] = {
+            data: source.data,
+            setData: vi.fn((data: unknown) => { sources[id].data = data; }),
+          };
+        }),
+        getSource: vi.fn((id: string) => sources[id] ?? undefined),
+        addLayer: vi.fn((layer: { id: string; paint?: Record<string, unknown> }) => {
+          layers.push(layer);
+        }),
+        getLayer: vi.fn((id: string) => layers.find((layer) => layer.id === id) ?? null),
+        fitBounds: vi.fn(),
+        remove: vi.fn(),
+        resize: vi.fn(),
+        fire(event: string, payload?: unknown) {
+          if (event === "load") styleLoaded = true;
+          for (const handler of handlers.get(event) ?? []) handler(payload);
+        },
+      };
+
+      instances.push(instance);
+      return instance;
     });
 
-    const instance = {
-      handlers,
-      layers,
-      sources,
-      addControl: vi.fn(),
-      on,
-      getCanvas: vi.fn(() => ({ style: {} })),
-      addSource: vi.fn((id: string) => {
-        sources[id] = { setData: vi.fn() };
-      }),
-      getSource: vi.fn((id: string) => sources[id] ?? undefined),
-      addLayer: vi.fn((layer: { id: string; paint?: Record<string, unknown> }) => {
-        layers.push(layer);
-      }),
-      getLayer: vi.fn((id: string) => layers.find((layer) => layer.id === id) ?? null),
-      fitBounds: vi.fn(),
-      remove: vi.fn(),
-      fire(event: string, payload?: unknown) {
-        for (const handler of handlers.get(event) ?? []) handler(payload);
-      },
-    };
+    const Popup = vi.fn(function MockPopup() {
+      let element: HTMLElement | undefined = document.createElement("div");
+      const self = {
+        setLngLat: vi.fn(() => self),
+        setDOMContent: vi.fn(() => self),
+        addTo: vi.fn(() => {
+          if (popupBehavior.closeOnAdd) self.remove();
+          return self;
+        }),
+        remove: vi.fn(() => { element = undefined; }),
+        getElement: vi.fn(() => element),
+      };
+      return self;
+    });
 
-    instances.push(instance);
-    return instance;
-  });
+    const LngLatBounds = vi.fn(function MockBounds() {
+      const positions: unknown[] = [];
+      return {
+        positions,
+        extend: vi.fn((position: unknown) => positions.push(position)),
+        isEmpty: vi.fn(() => positions.length === 0),
+      };
+    });
 
-  const Popup = vi.fn(function MockPopup() {
-    const self = {
-      setLngLat: vi.fn(() => self),
-      setDOMContent: vi.fn(() => self),
-      addTo: vi.fn(() => self),
-    };
-    return self;
-  });
-
-  const LngLatBounds = vi.fn(function MockBounds() {
-    const positions: unknown[] = [];
     return {
-      positions,
-      extend: vi.fn((position: unknown) => positions.push(position)),
-      isEmpty: vi.fn(() => positions.length === 0),
+      Map: MapCtor,
+      NavigationControl: vi.fn(),
+      AttributionControl: vi.fn(),
+      Popup,
+      popupBehavior,
+      LngLatBounds,
+      addProtocol: vi.fn(),
+      setWorkerUrl: vi.fn(),
+      instances,
     };
-  });
-
+  }
   return {
-    Map: MapCtor,
-    NavigationControl: vi.fn(),
-    AttributionControl: vi.fn(),
-    Popup,
-    LngLatBounds,
-    instances,
+    mapboxMocks: engineDouble(),
+    maplibreMocks: engineDouble(),
+    libraryLoad: { wait: null as Promise<void> | null, error: null as Error | null, requested: vi.fn() },
   };
 });
 
@@ -121,13 +156,15 @@ vi.mock("mapbox-gl", () => ({
     accessToken: "",
   },
 }));
+vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
+vi.mock("maplibre-gl/dist/maplibre-gl.css", () => ({}));
+vi.mock("pmtiles", () => ({ Protocol: class { tile = () => undefined; } }));
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
 const CYCLE_ID = "22222222-2222-4222-8222-222222222222";
-const ORIGINAL_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
-const ORIGINAL_LEGACY_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 const ORIGINAL_FETCH = global.fetch;
+const OPEN_STYLE = "/maps/operator-style.json";
 
 type FeatureOverrides = {
   linkId?: string;
@@ -205,13 +242,29 @@ async function importPanel() {
 beforeEach(() => {
   vi.clearAllMocks();
   mapboxMocks.instances.length = 0;
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = "pk.test-token";
-  delete process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+  maplibreMocks.instances.length = 0;
+  mapboxMocks.popupBehavior.closeOnAdd = false;
+  maplibreMocks.popupBehavior.closeOnAdd = false;
+  libraryLoad.wait = null;
+  libraryLoad.error = null;
+  vi.doMock("maplibre-gl", async () => {
+    libraryLoad.requested();
+    await libraryLoad.wait;
+    if (libraryLoad.error) throw libraryLoad.error;
+    return { default: maplibreMocks };
+  });
+  vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "pk.test-token");
+  vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+  vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", "");
+  vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
 
 afterEach(() => {
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = ORIGINAL_TOKEN;
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN = ORIGINAL_LEGACY_TOKEN;
+  cleanup();
+  vi.useRealTimers();
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
   global.fetch = ORIGINAL_FETCH;
 });
 
@@ -241,7 +294,7 @@ describe("RtpCycleProjectMap", () => {
     expect(calls[1][0]).toBe(`/api/map-features/rtp-cycle-projects?rtpCycleId=${OTHER_CYCLE}`);
   });
 
-  it("draws the located projects on a real Mapbox source and layer", async () => {
+  it("adds the located projects to the Mapbox double's source and layer", async () => {
     mockLayerFetch(
       collection({
         features: [feature(), feature({ linkId: "a0000001-0000-4000-8000-000000000002", coordinates: [-83, 40] })],
@@ -253,7 +306,7 @@ describe("RtpCycleProjectMap", () => {
 
     await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
     const map = mapboxMocks.instances[0];
-    map.fire("load");
+    act(() => map.fire("load"));
 
     expect(map.addSource).toHaveBeenCalledWith(
       "rtp-cycle-projects",
@@ -437,10 +490,12 @@ describe("RtpCycleProjectMap", () => {
    */
   async function openFirstPopup(properties: Record<string, unknown>) {
     const map = mapboxMocks.instances[0];
-    map.fire("load");
-    map.fire("click:rtp-cycle-projects-circle", {
-      features: [{ properties }],
-      lngLat: { lng: -82.5, lat: 39.5 },
+    act(() => {
+      map.fire("load");
+      map.fire("click:rtp-cycle-projects-circle", {
+        features: [{ properties }],
+        lngLat: { lng: -82.5, lat: 39.5 },
+      });
     });
     const popup = mapboxMocks.Popup.mock.results.at(-1)?.value as
       | { setDOMContent: ReturnType<typeof vi.fn> }
@@ -511,6 +566,84 @@ describe("RtpCycleProjectMap", () => {
     expect(node.textContent).toContain(hostile);
   });
 
+  // These doubles check sizing/stacking intent, not browser geometry or hit testing.
+  it.each(["mapbox", "maplibre"] as const)("bounds the RTP popup and raises it above controls with %s", async (engine) => {
+    if (engine === "maplibre") {
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    }
+    const data = collection({ features: [feature({ estimatedCost: null })] });
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={data} audience="public" />);
+
+    const gl = engine === "maplibre" ? maplibreMocks : mapboxMocks;
+    await waitFor(() => expect(gl.Map).toHaveBeenCalledTimes(1));
+    const map = gl.instances[0];
+    act(() => {
+      map.fire("load");
+      map.fire("click:rtp-cycle-projects-circle", {
+        features: [{ properties: data.features[0].properties }],
+        lngLat: { lng: -82.5, lat: 39.5 },
+      });
+    });
+
+    expect(gl.Popup).toHaveBeenCalledTimes(1);
+    expect(gl.Popup).toHaveBeenCalledWith({ offset: 12, maxWidth: "min(280px, calc(100% - 24px))" });
+    const popup = gl.Popup.mock.results[0].value;
+    const element = popup.getElement();
+    expect(element).toBeDefined();
+    if (!element) throw new Error("the popup has no element after opening");
+    expect(element.style.zIndex).toBe("3");
+    const content = popup.setDOMContent.mock.calls[0][0] as HTMLElement;
+    expect({ minWidth: content.style.minWidth, overflowWrap: content.style.overflowWrap }).toEqual({
+      minWidth: "0px", overflowWrap: "anywhere",
+    });
+    expect(content.textContent).toContain("No cost recorded in this plan");
+    expect(map.addControl).toHaveBeenCalledWith(gl.NavigationControl.mock.instances[0], "top-right");
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["mapbox", "maplibre"] as const)("tolerates a popup closed during addTo and opens the next popup with %s", async (engine) => {
+    if (engine === "maplibre") {
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    }
+    const data = collection({ features: [feature()] });
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={data} audience="public" />);
+
+    const gl = engine === "maplibre" ? maplibreMocks : mapboxMocks;
+    await waitFor(() => expect(gl.Map).toHaveBeenCalledTimes(1));
+    const map = gl.instances[0];
+    act(() => map.fire("load"));
+    const click = () => map.fire("click:rtp-cycle-projects-circle", {
+      features: [{ properties: data.features[0].properties }],
+      lngLat: { lng: -82.5, lat: 39.5 },
+    });
+
+    gl.popupBehavior.closeOnAdd = true;
+    expect(() => act(click)).not.toThrow();
+    expect(gl.Popup).toHaveBeenCalledTimes(1);
+    const closed = gl.Popup.mock.results[0].value;
+    expect(closed.remove).toHaveBeenCalledTimes(1);
+    expect(closed.getElement).toHaveBeenCalledTimes(1);
+    expect(closed.getElement()).toBeUndefined();
+
+    gl.popupBehavior.closeOnAdd = false;
+    expect(() => act(click)).not.toThrow();
+    expect(gl.Popup).toHaveBeenCalledTimes(2);
+    const element = gl.Popup.mock.results[1].value.getElement();
+    expect(element).toBeDefined();
+    if (!element) throw new Error("the next popup has no element after opening");
+    expect(element.style.zIndex).toBe("3");
+    expect(map.remove).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
   /**
    * WebGL unavailable, a blocked style request, a locked-down browser. The
    * degrade must be a sentence, not a grey rectangle — and it must not read as
@@ -518,18 +651,23 @@ describe("RtpCycleProjectMap", () => {
    */
   it("says the map could not start rather than leaving an empty box", async () => {
     mockLayerFetch(collection({ features: [feature(), feature({ linkId: "b2", coordinates: [-83, 40] })] }));
-    mapboxMocks.Map.mockImplementationOnce(() => {
-      throw new Error("WebGL is not supported in this browser");
+    const startupError = new Error("WebGL is not supported in this browser");
+    mapboxMocks.Map.mockImplementationOnce(function MapboxWithoutWebGL() {
+      throw startupError;
     });
     const { RtpCycleProjectMap } = await importPanel();
 
     render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
 
+    await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
+    expect(mapboxMocks.Map.mock.results[0].type).toBe("throw");
+    expect(mapboxMocks.Map.mock.results[0].value).toBe(startupError);
+    expect(console.error).toHaveBeenCalledWith("[map] the map could not start", startupError);
     expect(await screen.findByText(/The map could not start in this browser/i)).toBeTruthy();
     // The plan's own facts survive a browser that cannot draw.
     expect(screen.getByText(/2 located projects in this plan are still listed above/i)).toBeTruthy();
     expect(screen.queryByText(/No projects are in this plan yet/i)).toBeNull();
-    expect(screen.queryByTestId("rtp-cycle-project-map-canvas")).toBeNull();
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas").id).toBe("rtp-cycle-project-map-canvas");
   });
 
   /**
@@ -575,6 +713,395 @@ describe("RtpCycleProjectMap", () => {
     render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
 
     expect(await screen.findByText(/Role not recognised/i)).toBeTruthy();
+  });
+});
+
+describe("RTP fetch identity and audience transitions", () => {
+  const OTHER_CYCLE = "77777777-7777-4777-8777-777777777777";
+
+  function pendingResponse() {
+    let resolve: (response: Response) => void = () => undefined;
+    let reject: (error: Error) => void = () => undefined;
+    const promise = new Promise<Response>((yes, no) => { resolve = yes; reject = no; });
+    return { promise, resolve, reject };
+  }
+
+  function layerResponse(data: ReturnType<typeof collection>) {
+    return { ok: true, status: 200, json: async () => data } as Response;
+  }
+
+  it("shows loading without A coverage or canvas while B is pending, then draws B", async () => {
+    const a = collection({ features: [feature()], withoutGeometry: 3 });
+    const b = collection({ features: [feature({ coordinates: [10, 52] })], withoutGeometry: 1 });
+    const pendingB = pendingResponse();
+    const fetchLayer = vi.fn().mockResolvedValueOnce(layerResponse(a)).mockReturnValueOnce(pendingB.promise);
+    global.fetch = fetchLayer;
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
+    expect(await screen.findByText(/3 of 4 projects have no location recorded/i)).toBeTruthy();
+    await waitFor(() => expect(mapboxMocks.Map).toHaveBeenCalledTimes(1));
+    const canvasA = screen.getByTestId("rtp-cycle-project-map-canvas");
+    const mapA = mapboxMocks.instances[0];
+    act(() => mapA.fire("load"));
+    expect(mapA.sources["rtp-cycle-projects"].data).toEqual(a);
+
+    view.rerender(<RtpCycleProjectMap rtpCycleId={OTHER_CYCLE} />);
+    expect(screen.queryByText(/Loading the projects programmed in this plan/i)).not.toBeNull();
+    expect(screen.queryByText(/3 of 4 projects have no location recorded/i)).toBeNull();
+    expect(screen.queryByTestId("rtp-cycle-project-map-canvas")).toBeNull();
+    expect(screen.queryByText(/No projects are in this plan yet/i)).toBeNull();
+    expect(mapA.remove).toHaveBeenCalledTimes(1);
+    expect(fetchLayer).toHaveBeenCalledTimes(2);
+    expect(fetchLayer.mock.calls[1][0]).toBe(`/api/map-features/rtp-cycle-projects?rtpCycleId=${OTHER_CYCLE}`);
+
+    await act(async () => pendingB.resolve(layerResponse(b)));
+    expect(screen.queryByText(/Loading the projects programmed in this plan/i)).toBeNull();
+    expect(screen.getByText(/1 of 2 projects has no location recorded/i)).toBeTruthy();
+    expect(screen.queryByText(/3 of 4 projects have no location recorded/i)).toBeNull();
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas")).not.toBe(canvasA);
+    expect(mapboxMocks.Map).toHaveBeenCalledTimes(2);
+    const mapB = mapboxMocks.instances[1];
+    act(() => mapB.fire("load"));
+    expect(mapB.sources["rtp-cycle-projects"].data).toEqual(b);
+  });
+
+  it("ignores A's non-AbortError rejection after cancellation instead of overwriting ready B", async () => {
+    const pendingA = pendingResponse();
+    const pendingB = pendingResponse();
+    const b = collection({ features: [feature({ coordinates: [10, 52] })], withoutGeometry: 2 });
+    const fetchLayer = vi.fn().mockReturnValueOnce(pendingA.promise).mockReturnValueOnce(pendingB.promise);
+    global.fetch = fetchLayer;
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
+    expect(fetchLayer).toHaveBeenCalledTimes(1);
+    const signalA = fetchLayer.mock.calls[0][1].signal as AbortSignal;
+
+    view.rerender(<RtpCycleProjectMap rtpCycleId={OTHER_CYCLE} />);
+    expect(signalA.aborted).toBe(true);
+    expect(fetchLayer).toHaveBeenCalledTimes(2);
+    await act(async () => pendingB.resolve(layerResponse(b)));
+    expect(screen.getByText(/2 of 3 projects have no location recorded/i)).toBeTruthy();
+    expect(mapboxMocks.Map).toHaveBeenCalledTimes(1);
+    const canvasB = screen.getByTestId("rtp-cycle-project-map-canvas");
+    const mapB = mapboxMocks.instances[0];
+    act(() => mapB.fire("load"));
+
+    await act(async () => pendingA.reject(new Error("Request A rejected after cancellation")));
+    expect(screen.queryByText(/Loading the projects programmed in this plan/i)).toBeNull();
+    expect(screen.queryByText(/The project map could not be loaded/i)).toBeNull();
+    expect(screen.getByText(/2 of 3 projects have no location recorded/i)).toBeTruthy();
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas")).toBe(canvasB);
+    expect(mapB.sources["rtp-cycle-projects"].data).toEqual(b);
+    expect(mapB.remove).not.toHaveBeenCalled();
+    expect(mapboxMocks.Map).toHaveBeenCalledTimes(1);
+    expect(fetchLayer).toHaveBeenCalledTimes(2);
+  });
+
+  it("renders supplied public data after a failed staff read without another member fetch", async () => {
+    mockFailedFetch(503, { error: "Staff cycle unavailable" });
+    const data = collection({ features: [feature()], withoutReadableProject: 1 });
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
+    expect(await screen.findByText("Staff cycle unavailable")).toBeTruthy();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+
+    view.rerender(<RtpCycleProjectMap collection={data} audience="public" />);
+    expect(screen.queryByText("Staff cycle unavailable")).toBeNull();
+    expect(screen.queryByText(/This is a read failure/i)).toBeNull();
+    expect(screen.queryByText(/Loading the projects programmed in this plan/i)).toBeNull();
+    expect(screen.getByText(/1 linked project record could not be read/i)).toBeTruthy();
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas")).toBeTruthy();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(mapboxMocks.Map).toHaveBeenCalledTimes(1);
+    const map = mapboxMocks.instances[0];
+    act(() => map.fire("load"));
+    expect(map.sources["rtp-cycle-projects"].data).toEqual(data);
+  });
+});
+
+describe("RTP engine choice and asynchronous lifecycle", () => {
+  function useOpenStyle() {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+  }
+
+  function delayLibrary() {
+    let release = () => {};
+    libraryLoad.wait = new Promise<void>((resolve) => { release = () => resolve(); });
+    return release;
+  }
+
+  it.each(["", "javascript:invalid"])("shows no-config facts without constructing either engine for style %s", async (style) => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", style);
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={collection({ features: [feature()], withoutGeometry: 2 })} audience="public" />);
+    expect(screen.getByText(/has no map key set up/i)).toBeTruthy();
+    expect(screen.getByText(/1 of the 3 projects loaded for this plan/i)).toBeTruthy();
+    expect(screen.queryByTestId("rtp-cycle-project-map-canvas")).toBeNull();
+    expect(mapboxMocks.Map).not.toHaveBeenCalled();
+    expect(maplibreMocks.Map).not.toHaveBeenCalled();
+    expect(libraryLoad.requested).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("uses the operator style and MapLibre constructors for map, credits, bounds and popup", async () => {
+    useOpenStyle();
+    const data = collection({ features: [feature({ estimatedCost: null })], withoutGeometry: 2 });
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={data} audience="public" />);
+
+    await waitFor(() => expect(maplibreMocks.Map).toHaveBeenCalledTimes(1));
+    const map = maplibreMocks.instances[0];
+    expect(map.options.style).toBe(OPEN_STYLE);
+    expect(map.options.center).toEqual(data.features[0].geometry.coordinates);
+    expect(maplibreMocks.addProtocol).toHaveBeenCalledWith("pmtiles", expect.any(Function));
+    expect(maplibreMocks.setWorkerUrl).toHaveBeenCalledWith(expect.any(String));
+    expect(maplibreMocks.NavigationControl).toHaveBeenCalledWith({ showCompass: false });
+    expect(maplibreMocks.AttributionControl).toHaveBeenCalledWith({ compact: true });
+    expect(map.addControl).toHaveBeenCalledWith(
+      maplibreMocks.AttributionControl.mock.instances[0], "bottom-right",
+    );
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas").id).toBe("rtp-cycle-project-map-canvas");
+    expect(screen.getByText(/2 of 3 projects have no location recorded/i)).toBeTruthy();
+    expect(screen.queryByText(/has no map key set up/i)).toBeNull();
+
+    act(() => map.fire("load"));
+    expect(map.sources["rtp-cycle-projects"].data).toEqual(data);
+    expect(map.layers.map((layer) => layer.id)).toContain("rtp-cycle-projects-circle");
+    expect(map.fitBounds).toHaveBeenCalledWith(
+      maplibreMocks.LngLatBounds.mock.results[0].value,
+      expect.objectContaining({ padding: 48, maxZoom: 13 }),
+    );
+    act(() => map.fire("click:rtp-cycle-projects-circle", {
+      features: [{ properties: data.features[0].properties }], lngLat: { lng: -82.5, lat: 39.5 },
+    }));
+    expect(maplibreMocks.Popup).toHaveBeenCalledTimes(1);
+    expect(mapboxMocks.Popup).not.toHaveBeenCalled();
+    const popup = maplibreMocks.Popup.mock.results[0].value;
+    expect(popup.addTo).toHaveBeenCalledWith(map);
+    expect(popup.setDOMContent.mock.calls[0][0].textContent).toContain("No cost recorded in this plan");
+    expect(mapboxMocks.Map).not.toHaveBeenCalled();
+    expect(mapboxMocks.NavigationControl).not.toHaveBeenCalled();
+    expect(mapboxMocks.AttributionControl).not.toHaveBeenCalled();
+    expect(mapboxMocks.LngLatBounds).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("loads the staff cycle layer before drawing it with the configured open style", async () => {
+    useOpenStyle();
+    const data = collection({ features: [feature()], withoutReadableProject: 1 });
+    mockLayerFetch(data);
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
+    await waitFor(() => expect(maplibreMocks.Map).toHaveBeenCalledTimes(1));
+    expect(global.fetch).toHaveBeenCalledWith(
+      `/api/map-features/rtp-cycle-projects?rtpCycleId=${CYCLE_ID}`,
+      expect.objectContaining({ method: "GET", credentials: "same-origin" }),
+    );
+    const map = maplibreMocks.instances[0];
+    act(() => map.fire("load"));
+    expect(map.sources["rtp-cycle-projects"].data).toEqual(data);
+    expect(map.options.style).toBe(OPEN_STYLE);
+    expect(screen.getByText(/1 linked project record could not be read/i)).toBeTruthy();
+    const signal = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].signal as AbortSignal;
+    view.unmount();
+    expect(signal.aborted).toBe(true);
+    expect(map.remove).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ["pk.primary", "pk.legacy", "pk.primary"],
+    ["", "pk.legacy", "pk.legacy"],
+    ["sk.unusable", "pk.legacy", "pk.legacy"],
+    ["pk.primary", "invalid-legacy", "pk.primary"],
+  ])("keeps public token precedence with primary %s and legacy %s", async (primary, legacy, expected) => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", primary);
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", legacy);
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    const { RtpCycleProjectMap } = await importPanel();
+    const gl = await import("mapbox-gl");
+    render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    expect(mapboxMocks.Map).toHaveBeenCalledTimes(1);
+    expect(mapboxMocks.instances[0].options.style).toBe("mapbox://styles/mapbox/light-v11");
+    expect(gl.default.accessToken).toBe(expected);
+    expect(libraryLoad.requested).not.toHaveBeenCalled();
+    expect(maplibreMocks.Map).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["sk.unusable", ""], ["malformed", ""], ["", "sk.unusable"],
+  ])("retains the RTP token refusal even with an open style (%s, %s)", async (primary, legacy) => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", primary);
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", legacy);
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    expect(screen.getByText(/is set but is not a public key/i)).toBeTruthy();
+    expect(screen.queryByTestId("rtp-cycle-project-map-canvas")).toBeNull();
+    expect(mapboxMocks.Map).not.toHaveBeenCalled();
+    expect(libraryLoad.requested).not.toHaveBeenCalled();
+    expect(maplibreMocks.Map).not.toHaveBeenCalled();
+  });
+
+  it("uses the latest public collection during delayed engine and style loading, then updates without rebuilding", async () => {
+    useOpenStyle();
+    const release = delayLibrary();
+    const initial = collection({ features: [feature()] });
+    const beforeEngine = collection({ features: [feature({ coordinates: [120, 5] })] });
+    const beforeStyle = collection({ features: [feature({ coordinates: [10, 52] })], withoutGeometry: 1 });
+    const afterStyle = collection({ features: [feature({ coordinates: [-70, -33] })] });
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap collection={initial} audience="public" />);
+    await waitFor(() => expect(libraryLoad.requested).toHaveBeenCalledTimes(1));
+    view.rerender(<RtpCycleProjectMap collection={beforeEngine} audience="public" />);
+    await act(async () => release());
+    await waitFor(() => expect(maplibreMocks.Map).toHaveBeenCalledTimes(1));
+    const map = maplibreMocks.instances[0];
+    expect(map.options.center).toEqual([120, 5]);
+    view.rerender(<RtpCycleProjectMap collection={beforeStyle} audience="public" />);
+    // The early style event can precede readiness while source data arrives.
+    act(() => map.fire("style.load"));
+    expect(map.addSource).not.toHaveBeenCalled();
+    act(() => {
+      map.setStyleLoaded(true);
+      map.fire("styledata");
+    });
+    expect(map.sources["rtp-cycle-projects"].data).toEqual(beforeStyle);
+    expect(maplibreMocks.LngLatBounds.mock.results[0].value.positions).toEqual([[10, 52]]);
+    expect(screen.getByText(/1 of 2 projects has no location recorded/i)).toBeTruthy();
+    view.rerender(<RtpCycleProjectMap collection={afterStyle} audience="public" />);
+    expect(map.sources["rtp-cycle-projects"].setData).toHaveBeenLastCalledWith(afterStyle);
+    expect(maplibreMocks.Map).toHaveBeenCalledTimes(1);
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it("does not construct a map if unmounted before the library arrives", async () => {
+    useOpenStyle();
+    const release = delayLibrary();
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    await waitFor(() => expect(libraryLoad.requested).toHaveBeenCalledTimes(1));
+    view.unmount();
+    await act(async () => release());
+    await waitFor(() => expect(maplibreMocks.addProtocol).toHaveBeenCalled());
+    expect(maplibreMocks.Map).not.toHaveBeenCalled();
+    expect(mapboxMocks.Map).not.toHaveBeenCalled();
+  });
+
+  it("cancels pending style work and disconnects sizing when unmounted", async () => {
+    const disconnect = vi.fn();
+    const observe = vi.fn();
+    vi.stubGlobal("ResizeObserver", class {
+      observe = observe;
+      disconnect = disconnect;
+    });
+    const { RtpCycleProjectMap } = await importPanel();
+    vi.useFakeTimers();
+    const view = render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    const map = mapboxMocks.instances[0];
+    expect(observe).toHaveBeenCalledWith(screen.getByTestId("rtp-cycle-project-map-canvas"));
+    expect(vi.getTimerCount()).toBe(1);
+    view.unmount();
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(map.remove).toHaveBeenCalledTimes(1);
+    expect([...map.handlers.values()].flat()).toEqual([]);
+    expect(vi.getTimerCount()).toBe(0);
+    act(() => map.fire("load"));
+    expect(map.addSource).not.toHaveBeenCalled();
+  });
+
+  it("removes the active popup and delegated listeners on teardown", async () => {
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    const map = mapboxMocks.instances[0];
+    act(() => {
+      map.fire("load");
+      map.fire("click:rtp-cycle-projects-circle", { features: [{ properties: {} }], lngLat: { lng: 0, lat: 0 } });
+    });
+    const popup = mapboxMocks.Popup.mock.results[0].value;
+    view.unmount();
+    expect(popup.remove).toHaveBeenCalledTimes(1);
+    expect([...map.handlers.values()].flat()).toEqual([]);
+    expect(map.remove).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["chunk", "WebGL"])("reports a MapLibre %s failure without trying Mapbox", async (failure) => {
+    useOpenStyle();
+    const startupError = new Error("WebGL unavailable");
+    if (failure === "chunk") libraryLoad.error = new Error("chunk failed");
+    else maplibreMocks.Map.mockImplementationOnce(function MapLibreWithoutWebGL() {
+      throw startupError;
+    });
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    if (failure === "WebGL") {
+      await waitFor(() => expect(maplibreMocks.Map).toHaveBeenCalledTimes(1));
+      expect(maplibreMocks.Map.mock.results[0].type).toBe("throw");
+      expect(maplibreMocks.Map.mock.results[0].value).toBe(startupError);
+      expect(console.error).toHaveBeenCalledWith("[map] the map could not start", startupError);
+    }
+    expect(await screen.findByText(/The map could not start in this browser/i)).toBeTruthy();
+    expect(screen.queryByText(/No projects are in this plan yet/i)).toBeNull();
+    expect(mapboxMocks.Map).not.toHaveBeenCalled();
+  });
+
+  it("keeps the canvas after an initial style error and recovers on late load", async () => {
+    useOpenStyle();
+    const { RtpCycleProjectMap } = await importPanel();
+    const view = render(<RtpCycleProjectMap collection={collection({ features: [feature()], withoutGeometry: 1 })} audience="public" />);
+    await waitFor(() => expect(maplibreMocks.Map).toHaveBeenCalledTimes(1));
+    const map = maplibreMocks.instances[0];
+    const canvas = screen.getByTestId("rtp-cycle-project-map-canvas");
+    act(() => map.fire("error", { error: new Error("style unavailable") }));
+    expect(screen.getByText(/The map background could not be loaded/i).closest('[role="status"]')).not.toBeNull();
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas")).toBe(canvas);
+    expect(screen.getByText(/1 of 2 projects has no location recorded/i)).toBeTruthy();
+    expect(screen.queryByText(/No projects are in this plan yet/i)).toBeNull();
+    act(() => map.fire("load"));
+    expect(screen.queryByText(/The map background could not be loaded/i)).toBeNull();
+    expect(map.sources["rtp-cycle-projects"]).toBeDefined();
+    act(() => map.fire("error", { error: new Error("a later tile failed") }));
+    expect(screen.queryByText(/The map background could not be loaded/i)).toBeNull();
+    expect(mapboxMocks.Map).not.toHaveBeenCalled();
+    view.unmount();
+  });
+
+  it("reports a stalled Mapbox style without provider fallback and clears its watchdog on recovery", async () => {
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    const { RtpCycleProjectMap } = await importPanel();
+    vi.useFakeTimers();
+    const view = render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    const map = mapboxMocks.instances[0];
+    const canvas = screen.getByTestId("rtp-cycle-project-map-canvas");
+    act(() => vi.advanceTimersByTime(14_999));
+    expect(screen.queryByText(/The map background could not be loaded/i)).toBeNull();
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.getByText(/The map background could not be loaded/i)).toBeTruthy();
+    expect(screen.getByTestId("rtp-cycle-project-map-canvas")).toBe(canvas);
+    expect(libraryLoad.requested).not.toHaveBeenCalled();
+    expect(maplibreMocks.Map).not.toHaveBeenCalled();
+    act(() => map.fire("load"));
+    expect(screen.queryByText(/The map background could not be loaded/i)).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+    view.unmount();
+  });
+
+  it("does not switch providers when a configured public token fails at runtime", async () => {
+    vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={collection({ features: [feature()] })} audience="public" />);
+    const map = mapboxMocks.instances[0];
+    act(() => map.fire("error", { error: new Error("401 invalid or expired public token") }));
+    expect(screen.getByText(/The map background could not be loaded/i)).toBeTruthy();
+    expect(libraryLoad.requested).not.toHaveBeenCalled();
+    expect(maplibreMocks.Map).not.toHaveBeenCalled();
+    expect(mapboxMocks.Map).toHaveBeenCalledTimes(1);
   });
 });
 

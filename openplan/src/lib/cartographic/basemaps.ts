@@ -213,7 +213,7 @@ export function describeBasemapAvailability(): string {
   return (
     "These are the map backgrounds Mapbox publishes for every access token. A style you designed in " +
     "Mapbox Studio is not offered: it only loads for the account that owns it, and OpenPlan cannot check " +
-    "from here whose token this deployment uses — so the option would resolve to an empty map for some " +
+    "from here whose token this deployment uses, so the option would resolve to an empty map for some " +
     "installs and work for others."
   );
 }

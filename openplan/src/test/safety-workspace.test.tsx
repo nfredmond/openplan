@@ -575,6 +575,27 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
+  it("says crash, not crashes, for one fatal or serious-injury crash", async () => {
+    const features = [
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "injury" } },
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => mockCrashResponse(features)) as unknown as typeof fetch
+    );
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={ingest({ severityCompleteness: "kabco_full" })}
+        studyArea={seededStudyArea()}
+      />
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId("safety-ksi-headline-label")).toHaveTextContent(/^1 fatal or serious-injury crash \(/);
+    });
+  });
+
   it("shows a severe-crash total only when the source could separate serious injury", async () => {
     const features = [
       { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },
@@ -738,7 +759,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     // The points are on screen…
     expect(screen.getByText(/Showing 2 of 2 mappable crashes from this live read/i)).toBeInTheDocument();
     // …and the page says what they are NOT.
-    expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument();
+    expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument();
     expect(screen.getByText(/were not saved into this workspace/i)).toBeInTheDocument();
   });
 
@@ -767,7 +788,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
 
-    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument());
     expect(screen.queryByLabelText(/Acquisition history/i)).not.toBeInTheDocument();
   });
 
@@ -846,7 +867,7 @@ describe("SafetyWorkspace coverage disclosure", () => {
     const lighting = screen.getByRole("group", { name: /Lighting/i });
     expect(lighting).toHaveTextContent(/does not record lighting/i);
     expect(lighting).toHaveTextContent(/not a finding/i);
-    expect(screen.getByRole("button", { name: /^Dark — no street lights/ })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /^Dark, no street lights/ })).toBeDisabled();
 
     // A facet the source CAN answer stays live on the same screen, so the
     // disabled state above is a statement about that dimension and not an
@@ -863,12 +884,12 @@ describe("SafetyWorkspace coverage disclosure", () => {
     selectStudyArea("tx-county");
     await waitFor(() => expect(screen.getByRole("button", { name: /Retrieve crash data/i })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /Retrieve crash data/i }));
-    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument());
 
     // The mocked picker emits a different polygon for a different pick.
     selectStudyArea("far-county");
 
-    await waitFor(() => expect(screen.queryByText(/Live read — not saved/i)).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/Live read \(not saved\)/i)).not.toBeInTheDocument());
   });
 
   it("drops a saved acquisition banner when the study area changes", async () => {
@@ -977,5 +998,79 @@ describe("crashes the response could not draw", () => {
 
     await waitFor(() => expect(screen.getByText(/Showing 0 of 10 crashes/)).toBeInTheDocument());
     expect(screen.queryByText(/could not be drawn/)).toBeNull();
+  });
+});
+
+describe("which area the Safety counts describe (KI-2026-11-02-021)", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn(async () => mockCrashResponse()) as unknown as typeof fetch);
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("says an acquisition with no boundary was counted by its bounding rectangle", async () => {
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={ingest()} studyArea={seededStudyArea()} />);
+    expect(await screen.findByTestId("safety-crash-area-basis")).toHaveTextContent(
+      "Crashes are counted inside the study area's bounding rectangle, not the place boundary, so these counts can include crashes outside the place."
+    );
+  });
+
+  it("names the place boundary and the crashes it left out", async () => {
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={ingest({
+          studyArea: { basis: "place_boundary", boundarySource: "picked_place", outsideBoundaryCount: 9, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false },
+        })}
+        studyArea={seededStudyArea()}
+      />
+    );
+    const line = await screen.findByTestId("safety-crash-area-basis");
+    expect(line).toHaveTextContent(
+      "Crashes are counted inside the place boundary. 9 crashes inside its bounding rectangle but outside the boundary are left out."
+    );
+    expect(line).not.toHaveTextContent("not the place boundary");
+  });
+
+  it("reads the basis a fresh retrieval recorded", async () => {
+    const fetchMock = routedFetch(
+      mockCrashResponse(),
+      mockIngestResponse({
+        dimensionCoverage: {
+          study_area: { basis: "place_boundary", boundarySource: "drawn_area", outsideBoundaryCount: 1, boundaryUnreadable: false, rectangleReportedCount: 11, rectangleMappableCount: 11, countsAreLowerBound: false },
+        },
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} studyArea={seededStudyArea()} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Retrieve crash data/i }));
+    await waitFor(() =>
+      expect(screen.getByTestId("safety-crash-area-basis")).toHaveTextContent(
+        "Crashes are counted inside the drawn study area boundary. 1 crash inside its bounding rectangle but outside the boundary is left out."
+      )
+    );
+  });
+
+  it("sends a drawn area's polygon with the retrieval, and no polygon for a picked place", async () => {
+    const fetchMock = routedFetch();
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+    const view = render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} studyArea={seededStudyArea()} />);
+    fireEvent.click(await screen.findByRole("button", { name: /Retrieve crash data/i }));
+    await waitFor(() => expect(fetchMock.mock.calls.some((call) => String(call[0]).includes("/ingest"))).toBe(true));
+    const drawnPost = fetchMock.mock.calls.find((call) => String(call[0]).includes("/ingest"))!;
+    expect(JSON.parse(String((drawnPost[1] as RequestInit).body)).boundary).toEqual(JSON.parse(seededStudyArea().corridorText));
+    view.unmount();
+
+    fetchMock.mockClear();
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("ca-county");
+    fireEvent.click(await screen.findByRole("button", { name: /Retrieve crash data/i }));
+    await waitFor(() => expect(fetchMock.mock.calls.some((call) => String(call[0]).includes("/ingest"))).toBe(true));
+    const placePost = fetchMock.mock.calls.find((call) => String(call[0]).includes("/ingest"))!;
+    const body = JSON.parse(String((placePost[1] as RequestInit).body));
+    expect(body.place).toEqual({ kind: "county", geoid: "06057" });
+    expect(body).not.toHaveProperty("boundary");
   });
 });

@@ -32,10 +32,10 @@ export const ASSISTANT_CHAT_CONTEXT_TRUNCATION_MARKER =
 const ASSISTANT_CHAT_INSTRUCTIONS = [
   "You are the OpenPlan Planner Agent, a copilot for city and regional transportation planners.",
   "Ground every answer ONLY in the workspace context below, what your tools return, and general planning knowledge (federal/state programs, RTP practice, modeling methodology).",
-  "Never invent workspace data. If a number, record, or status is not in the context, use a read tool to look it up — and if it is still not visible, say so instead of guessing.",
-  "TOOLS: your list/search/get tools read this workspace under the planner's own permissions (row-level security applies). Use them when the question needs data beyond the context below. Budgets are enforced per question — prefer a few focused calls over broad sweeps, and if a tool refuses for budget reasons, answer from what you already gathered.",
-  "PROPOSALS: the propose_* tools let you PROPOSE a write action, never execute one. Each proposal renders as a card the planner must explicitly approve before anything changes; an unapproved proposal changes nothing. Never claim an action was performed — say the proposal is ready for the planner's approval. Verify target record ids with a read tool before proposing against them.",
-  "When KNOWLEDGE BASE EXCERPTS are provided below, you may use them to answer, but attribute each to its document by title (and page) and treat them as uploaded material that OpenPlan has not independently verified — never present uploaded-document content as OpenPlan's own finding.",
+  "Never invent workspace data. If a number, record, or status is not in the context, use a read tool to look it up, and if it is still not visible, say so instead of guessing.",
+  "TOOLS: your list/search/get tools read this workspace under the planner's own permissions (row-level security applies). Use them when the question needs data beyond the context below. Budgets are enforced per question. Prefer a few focused calls over broad sweeps, and if a tool refuses for budget reasons, answer from what you already gathered.",
+  "PROPOSALS: the propose_* tools let you PROPOSE a write action, never execute one. Each proposal renders as a card the planner must explicitly approve before anything changes; an unapproved proposal changes nothing. Never claim an action was performed. Say the proposal is ready for the planner's approval. Verify target record ids with a read tool before proposing against them.",
+  "When KNOWLEDGE BASE EXCERPTS are provided below, you may use them to answer, but attribute each to its document by title (and page) and treat them as uploaded material that OpenPlan has not independently verified. Never present uploaded-document content as OpenPlan's own finding.",
   "Model results in OpenPlan are screening-grade. When discussing model or run results, preserve that caveat: they support prioritization and narrative, not final engineering or investment-grade forecasts.",
   "Answer concisely in plain language. Prefer short paragraphs or tight lists over long essays.",
 ].join("\n");
@@ -120,7 +120,7 @@ function fundingSummaryLines(
  * and the model must not be handed a sentence it could mistake for "none".
  */
 function laneUnreadableLine(subject: string): string {
-  return `${subject} could not be read while this context was assembled — treat those figures as missing, not zero.`;
+  return `${subject} could not be read while this context was assembled. Treat those figures as missing, not zero.`;
 }
 
 function moduleLaneLines(context: WorkspaceAssistantContext, day: DayFormatter): string[] {
@@ -189,7 +189,7 @@ function moduleLaneLines(context: WorkspaceAssistantContext, day: DayFormatter):
         lines.push(laneUnreadableLine("The moderation queue"));
       } else {
         lines.push(
-          `Moderation queue: ${lane.moderation.pending} pending review · ${lane.moderation.flagged} flagged (counts only — submission text is not loaded into this context)`
+          `Moderation queue: ${lane.moderation.pending} pending review · ${lane.moderation.flagged} flagged (counts only: submission text is not loaded into this context)`
         );
       }
       break;
@@ -206,7 +206,7 @@ function moduleLaneLines(context: WorkspaceAssistantContext, day: DayFormatter):
         if (s.latest) {
           const years = s.latest.yearsRequested.length ? s.latest.yearsRequested.join(", ") : "unspecified years";
           lines.push(
-            `Latest import: ${s.latest.sourceLabel ?? "unknown source"} — status ${s.latest.status}, coverage ${s.latest.coverageState}, severity completeness ${s.latest.severityCompleteness}, ${s.latest.crashCount} crashes (${s.latest.geocodedCount} geocoded)${s.latest.truncated ? ", TRUNCATED" : ""} for years ${years}${s.latest.fetchError ? ` · fetch error: ${s.latest.fetchError}` : ""}`
+            `Latest import: ${s.latest.sourceLabel ?? "unknown source"}, status ${s.latest.status}, coverage ${s.latest.coverageState}, severity completeness ${s.latest.severityCompleteness}, ${s.latest.crashCount} crashes (${s.latest.geocodedCount} geocoded)${s.latest.truncated ? ", TRUNCATED" : ""} for years ${years}${s.latest.fetchError ? ` · fetch error: ${s.latest.fetchError}` : ""}`
           );
         } else {
           lines.push("No crash data has been imported into this workspace yet.");
@@ -234,7 +234,7 @@ function moduleLaneLines(context: WorkspaceAssistantContext, day: DayFormatter):
       } else {
         const j = lane.processing;
         lines.push(
-          `Processing jobs: ${j.total} total — ${j.active} active, ${j.failed} failed, ${j.succeeded} succeeded · artifact custody complete on ${j.custodyComplete}, partial on ${j.custodyPartial}, none on ${j.custodyNone}`
+          `Processing jobs: ${j.total} total: ${j.active} active, ${j.failed} failed, ${j.succeeded} succeeded · artifact custody complete on ${j.custodyComplete}, partial on ${j.custodyPartial}, none on ${j.custodyNone}`
         );
       }
       if (lane.packages === null) {
@@ -300,7 +300,7 @@ function moduleLaneLines(context: WorkspaceAssistantContext, day: DayFormatter):
 function operationsSummaryLines(operationsSummary: WorkspaceAssistantContext["operationsSummary"]): string[] {
   const counts = operationsSummary.counts;
   const lines = [
-    `Operations posture: ${operationsSummary.posture} — ${operationsSummary.headline}`,
+    `Operations posture: ${operationsSummary.posture}. ${operationsSummary.headline}`,
     `Portfolio counts: ${counts.projects} projects (${counts.activeProjects} active) · ${counts.plans} plans (${counts.plansNeedingSetup} needing setup) · ${counts.programs} programs (${counts.activePrograms} active) · ${counts.reports} reports (${counts.reportRefreshRecommended} refresh recommended, ${counts.reportNoPacket} without packets)`,
     `Funding queue: ${counts.fundingOpportunities} opportunities (${counts.openFundingOpportunities} open, ${counts.closingSoonFundingOpportunities} closing soon, ${counts.overdueDecisionFundingOpportunities} overdue decisions) · ${counts.projectFundingGapProjects} projects with funding gaps`,
     `Command queue depth: ${counts.queueDepth} · RTP funding-review packets: ${counts.rtpFundingReviewPackets}`,
@@ -308,7 +308,7 @@ function operationsSummaryLines(operationsSummary: WorkspaceAssistantContext["op
 
   if (operationsSummary.nextCommand) {
     lines.push(
-      `Next queued command: ${operationsSummary.nextCommand.title} — ${operationsSummary.nextCommand.detail}`
+      `Next queued command: ${operationsSummary.nextCommand.title}. ${operationsSummary.nextCommand.detail}`
     );
   }
 
@@ -354,12 +354,12 @@ export function buildAssistantChatContextLines(
       }
       if (context.currentRun) {
         lines.push(
-          `Current run on surface: "${context.currentRun.title}" — metrics ${compactJson(context.currentRun.metrics, 700)}`
+          `Current run on surface: "${context.currentRun.title}", metrics ${compactJson(context.currentRun.metrics, 700)}`
         );
       }
       if (context.baselineRun) {
         lines.push(
-          `Baseline run for comparison: "${context.baselineRun.title}" — metrics ${compactJson(context.baselineRun.metrics, 700)}`
+          `Baseline run for comparison: "${context.baselineRun.title}", metrics ${compactJson(context.baselineRun.metrics, 700)}`
         );
       }
       lines.push(...operationsSummaryLines(context.operationsSummary));
@@ -368,7 +368,7 @@ export function buildAssistantChatContextLines(
 
     case "project": {
       lines.push(
-        `Project: "${context.project.name}" — status ${context.project.status}, type ${context.project.planType}, phase ${context.project.deliveryPhase}, updated ${day(context.project.updatedAt) ?? "unknown"}`
+        `Project: "${context.project.name}", status ${context.project.status}, type ${context.project.planType}, phase ${context.project.deliveryPhase}, updated ${day(context.project.updatedAt) ?? "unknown"}`
       );
       if (context.project.summary) lines.push(`Project summary: ${context.project.summary}`);
       if (context.jurisdictionReadiness) {
@@ -397,7 +397,7 @@ export function buildAssistantChatContextLines(
         lines.push(
           `Recent runs: ${context.recentRuns
             .slice(0, 3)
-            .map((run) => `"${run.title}"${run.summaryText ? ` — ${run.summaryText}` : ""}`)
+            .map((run) => `"${run.title}"${run.summaryText ? `: ${run.summaryText}` : ""}`)
             .join(" | ")}`
         );
       }
@@ -428,7 +428,7 @@ export function buildAssistantChatContextLines(
       const horizon =
         cycle.horizonStartYear && cycle.horizonEndYear ? `${cycle.horizonStartYear}–${cycle.horizonEndYear}` : null;
       lines.push(
-        `RTP cycle: "${cycle.title}" — status ${cycle.status}${horizon ? `, horizon ${horizon}` : ""}${cycle.geographyLabel ? `, geography ${cycle.geographyLabel}` : ""}${cycle.adoptionTargetDate ? `, adoption target ${day(cycle.adoptionTargetDate)}` : ""}`
+        `RTP cycle: "${cycle.title}", status ${cycle.status}${horizon ? `, horizon ${horizon}` : ""}${cycle.geographyLabel ? `, geography ${cycle.geographyLabel}` : ""}${cycle.adoptionTargetDate ? `, adoption target ${day(cycle.adoptionTargetDate)}` : ""}`
       );
       if (cycle.summary) lines.push(`Cycle summary: ${cycle.summary}`);
       lines.push(
@@ -443,7 +443,7 @@ export function buildAssistantChatContextLines(
 
     case "plan": {
       lines.push(
-        `Plan: "${context.plan.title}" — status ${context.plan.status}, type ${context.plan.planType}${context.plan.horizonYear ? `, horizon ${context.plan.horizonYear}` : ""}${context.plan.geographyLabel ? `, geography ${context.plan.geographyLabel}` : ""}`
+        `Plan: "${context.plan.title}", status ${context.plan.status}, type ${context.plan.planType}${context.plan.horizonYear ? `, horizon ${context.plan.horizonYear}` : ""}${context.plan.geographyLabel ? `, geography ${context.plan.geographyLabel}` : ""}`
       );
       if (context.plan.summary) lines.push(`Plan summary: ${context.plan.summary}`);
       if (context.project) lines.push(`Parent project: "${context.project.name}"`);
@@ -456,7 +456,7 @@ export function buildAssistantChatContextLines(
 
     case "program": {
       lines.push(
-        `Program: "${context.program.title}" — status ${context.program.status}, type ${context.program.programType}, cycle ${context.program.cycleName}${context.program.sponsorAgency ? `, sponsor ${context.program.sponsorAgency}` : ""}`
+        `Program: "${context.program.title}", status ${context.program.status}, type ${context.program.programType}, cycle ${context.program.cycleName}${context.program.sponsorAgency ? `, sponsor ${context.program.sponsorAgency}` : ""}`
       );
       if (context.program.summary) lines.push(`Program summary: ${context.program.summary}`);
       if (context.project) lines.push(`Parent project: "${context.project.name}"`);
@@ -473,7 +473,7 @@ export function buildAssistantChatContextLines(
 
     case "scenario_set": {
       lines.push(
-        `Scenario set: "${context.scenarioSet.title}" — status ${context.scenarioSet.status}${context.scenarioSet.planningQuestion ? `, planning question: ${context.scenarioSet.planningQuestion}` : ""}`
+        `Scenario set: "${context.scenarioSet.title}", status ${context.scenarioSet.status}${context.scenarioSet.planningQuestion ? `, planning question: ${context.scenarioSet.planningQuestion}` : ""}`
       );
       if (context.scenarioSet.summary) lines.push(`Scenario summary: ${context.scenarioSet.summary}`);
       if (context.project) lines.push(`Parent project: "${context.project.name}"`);
@@ -485,7 +485,7 @@ export function buildAssistantChatContextLines(
 
     case "model": {
       lines.push(
-        `Model: "${context.model.title}" — status ${context.model.status}, family ${context.model.modelFamily}${context.schemaPending ? " (schema pending — modeling tables not yet applied)" : ""}`
+        `Model: "${context.model.title}", status ${context.model.status}, family ${context.model.modelFamily}${context.schemaPending ? " (schema pending: modeling tables not yet applied)" : ""}`
       );
       if (context.model.summary) lines.push(`Model summary: ${context.model.summary}`);
       if (context.scenarioEntryOptions.length) {
@@ -510,7 +510,7 @@ export function buildAssistantChatContextLines(
     case "report":
     case "rtp_packet_report": {
       lines.push(
-        `Report: "${context.report.title}" — status ${context.report.status}, type ${context.report.reportType}, ${context.enabledSections}/${context.sectionCount} sections enabled, ${context.artifactCount} artifacts${context.latestArtifact ? `, latest artifact ${context.latestArtifact.artifactKind} generated ${day(context.latestArtifact.generatedAt)}` : ", no artifact generated yet"}`
+        `Report: "${context.report.title}", status ${context.report.status}, type ${context.report.reportType}, ${context.enabledSections}/${context.sectionCount} sections enabled, ${context.artifactCount} artifacts${context.latestArtifact ? `, latest artifact ${context.latestArtifact.artifactKind} generated ${day(context.latestArtifact.generatedAt)}` : ", no artifact generated yet"}`
       );
       if (context.report.summary) lines.push(`Report summary: ${context.report.summary}`);
       if (context.project) lines.push(`Linked project: "${context.project.name}"`);
@@ -519,7 +519,7 @@ export function buildAssistantChatContextLines(
         lines.push(
           `Evidence runs: ${context.runs
             .slice(0, 3)
-            .map((run) => `"${run.title}"${run.summaryText ? ` — ${run.summaryText}` : ""}`)
+            .map((run) => `"${run.title}"${run.summaryText ? `: ${run.summaryText}` : ""}`)
             .join(" | ")}`
         );
       }
@@ -528,13 +528,13 @@ export function buildAssistantChatContextLines(
 
     case "run": {
       lines.push(
-        `Analysis run: "${context.run.title}" (created ${day(context.run.createdAt) ?? "unknown"})${context.run.queryText ? ` — query: ${context.run.queryText}` : ""}`
+        `Analysis run: "${context.run.title}" (created ${day(context.run.createdAt) ?? "unknown"})${context.run.queryText ? `, query: ${context.run.queryText}` : ""}`
       );
       if (context.run.summary) lines.push(`Run summary: ${context.run.summary}`);
       lines.push(`Run metrics: ${compactJson(context.run.metrics, 900)}`);
       if (context.baselineRun) {
         lines.push(
-          `Baseline run: "${context.baselineRun.title}" — metrics ${compactJson(context.baselineRun.metrics, 900)}`
+          `Baseline run: "${context.baselineRun.title}", metrics ${compactJson(context.baselineRun.metrics, 900)}`
         );
       }
       break;
@@ -648,7 +648,7 @@ export function buildAssistantChatSystemPrompt(
   if (kbLines.length > 0) {
     sections.push(
       "",
-      "KNOWLEDGE BASE EXCERPTS (uploaded documents, keyword-matched — cite by title/page; not independently verified):",
+      "KNOWLEDGE BASE EXCERPTS (uploaded documents, keyword-matched, cite by title/page; not independently verified):",
       ...kbLines
     );
   }

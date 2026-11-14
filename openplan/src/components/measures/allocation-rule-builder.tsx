@@ -149,7 +149,7 @@ export function AllocationRuleBuilder({
       <div className="rounded-[0.5rem] border border-border/70 p-4">
         <h3 className="text-sm font-semibold">Figures this ordinance divides by</h3>
         <p className="mt-1 text-xs text-muted-foreground">
-          Only needed where the money goes back to the cities and districts — population, maintained road miles,
+          Only needed where the money goes back to the cities and districts: population, maintained road miles,
           assessed value, whatever the ordinance names. OpenPlan never looks one of these up: the ordinance names
           the source and a person records the number.
         </p>
@@ -213,7 +213,7 @@ export function AllocationRuleBuilder({
                   <MeasureField
                     label="Where the number comes from"
                     htmlFor={`figure-source-${basis.key}`}
-                    hint="The ordinance's own words — which published figure, from whom."
+                    hint="The ordinance's own words: which published figure, from whom."
                   >
                     <Input
                       id={`figure-source-${basis.key}`}
@@ -225,7 +225,7 @@ export function AllocationRuleBuilder({
                 <MeasureField
                   label="Which edition governs (optional)"
                   htmlFor={`figure-vintage-${basis.key}`}
-                  hint="If the ordinance does not say, leave this empty — the fund will say it is not recorded rather than pick one."
+                  hint="If the ordinance does not say, leave this empty. The fund will say it is not recorded rather than pick one."
                 >
                   <Input
                     id={`figure-vintage-${basis.key}`}
@@ -267,7 +267,7 @@ export function AllocationRuleBuilder({
       <div className="rounded-[0.5rem] border border-border/70 p-4">
         <h3 className="text-sm font-semibold">Taken off the top, before anything is split</h3>
         <p className="mt-1 text-xs text-muted-foreground">
-          Administration, the collecting authority&rsquo;s fee, debt service — whatever the ordinance takes out of
+          Administration, the collecting authority&rsquo;s fee, debt service: whatever the ordinance takes out of
           the receipt first, in the order it takes them.
         </p>
 
@@ -712,7 +712,7 @@ export function AllocationRuleBuilder({
                           <MeasureField
                             label="The least a recipient may receive in one period"
                             htmlFor={`floor-amount-${category.key}`}
-                            hint="For ONE accounting period. Most ordinances state this per year — if this fund closes quarterly, say which figure applies to a quarter."
+                            hint="For ONE accounting period. Most ordinances state this per year. If this fund closes quarterly, say which figure applies to a quarter."
                           >
                             <Input
                               id={`floor-amount-${category.key}`}
@@ -774,7 +774,7 @@ export function AllocationRuleBuilder({
               value={draft.residualCategoryKey}
               onChange={(event) => patch({ residualCategoryKey: event.target.value })}
             >
-              <option value="">The ordinance does not say — use the last by reference</option>
+              <option value="">The ordinance does not say: use the last by reference</option>
               {draft.categories.map((category, index) => (
                 <option key={category.key} value={category.key}>
                   {category.label.trim() || `Category ${index + 1}`}

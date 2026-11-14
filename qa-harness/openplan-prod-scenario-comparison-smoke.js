@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const { buildBrowserContextOptions, getOpenplanBaseUrl, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
@@ -41,8 +42,7 @@ async function main() {
   const createUserResult = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...serviceKeyHeaders(serviceRoleKey),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password, email_confirm: true }),
@@ -78,7 +78,7 @@ async function main() {
   async function waitForModelRun(modelRunId) {
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const result = await jsonFetch(`${supabaseUrl}/rest/v1/model_runs?select=id,status,source_analysis_run_id,result_summary_json&id=eq.${modelRunId}`, {
-        headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` },
+        headers: serviceKeyHeaders(serviceRoleKey),
       });
       const row = Array.isArray(result.data) ? result.data[0] : null;
       if (row?.status === 'succeeded' && row?.source_analysis_run_id) return row;

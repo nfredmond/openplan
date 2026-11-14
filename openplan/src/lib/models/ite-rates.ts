@@ -17,7 +17,7 @@
  */
 
 export const ITE_RATE_SOURCE =
-  "City of San Diego, Trip Generation Manual (Municipal Code, Land Development Code), Rev. May 2003, Table 1 — driveway rates based on SANDAG \"Traffic Generators\" (1996/1998). Public-agency reference; screening use only — verify against the locally adopted or current licensed rate manual before any regulatory, funding, or design use.";
+  "City of San Diego, Trip Generation Manual (Municipal Code, Land Development Code), Rev. May 2003, Table 1: driveway rates based on SANDAG \"Traffic Generators\" (1996/1998). Public-agency reference; screening use only. Verify against the locally adopted or current licensed rate manual before any regulatory, funding, or design use.";
 
 /** How a land use's quantity is measured. `ksf` = per 1,000 sq ft gross floor area. */
 export const TRIP_GEN_UNIT_BASES = ["dwelling_unit", "ksf", "room"] as const;

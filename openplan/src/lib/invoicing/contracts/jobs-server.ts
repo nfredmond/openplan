@@ -6,9 +6,11 @@ import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-se
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { reportingError } from "@/lib/programs/work-program/reporting-server";
 import { contractCommandSchema } from "./schema";
+import { isUuid } from "@/lib/uuid";
 export const calculationKinds = new Set(["forecast", "response", "closeout", "accounting_import"]);
 /** Queue metadata never includes original accounting rows or a retained financial package. */
 export async function contractCalculationRequest(request: NextRequest, engagementId: string, input?: unknown) {
+ if(!isUuid(engagementId))return NextResponse.json({error:"Invalid engagement id"},{status:400});
  const client=await createClient(),{data:{user}}=await client.auth.getUser();
  if(!user)return NextResponse.json({error:"Sign in to manage this contract"},{status:401});
  const service=createServiceRoleClient();

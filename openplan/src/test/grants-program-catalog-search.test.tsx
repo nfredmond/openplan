@@ -146,7 +146,7 @@ describe("program catalog text search", () => {
     await act(async () => { finish(new Response("{}", { status: 201 })); });
     fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
     const restoredCard = screen.getByText(program.name).closest("div.flex.flex-wrap.items-start")! as HTMLElement;
-    expect(within(restoredCard).getByText("Tracked")).toBeInTheDocument();
+    expect(within(restoredCard).getByText("Added to opportunities")).toBeInTheDocument();
     expect(refresh).toHaveBeenCalledOnce();
   });
 

@@ -318,7 +318,7 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
 
       {inviteUrl ? (
         <div className="mt-4 rounded-md border border-emerald-300/70 bg-emerald-50/60 p-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/20">
-          <p className="font-medium">Invitation link ready — send it yourself.</p>
+          <p className="font-medium">Invitation link ready. Send it yourself.</p>
           <p className="mt-1 text-muted-foreground">
             OpenPlan does not email invitations. Copy this link and send it to your colleague. It is
             shown once and cannot be retrieved again; if you lose it, create a new invitation.
@@ -373,7 +373,7 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
                       <span className="min-w-0">
                         <span className="font-medium">{member.email ?? "Unknown email"}</span>
                         {isSelf ? <span className="text-muted-foreground"> (you)</span> : null}{" "}
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                        <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground">
                           {member.role}
                         </span>
                       </span>

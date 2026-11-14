@@ -323,6 +323,45 @@ describe("a ranked road's map destination", () => {
   });
 });
 
+describe("the legend keys the high-injury network (D7)", () => {
+  async function renderRoadNetwork() {
+    const network: HighInjuryNetwork = {
+      status: "computed", basis: "fatal_only", method: "road_segments", years: [2022, 2023],
+      segments: [{
+        id: "road:example:0", rank: 1, tied: false, label: "Example Road",
+        geometry: { type: "LineString", coordinates: [[-83.1, 39.9], [-83, 40]] },
+        lengthMiles: 0.5, crashCount: 1, fatalCrashCount: 1, seriousInjuryCrashCount: null, crashesPerMile: 2,
+        roadSource: "Retained test roads",
+      }],
+      crashesConsidered: 1, crashesPlaced: 1, segmentsWithCrashes: 1, roadMilesReviewed: 1, listedMiles: 0.5,
+      listedCrashes: 1, roadSources: ["Retained test roads"], parameters: HIGH_INJURY_NETWORK_PARAMETERS,
+    };
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({ type: "FeatureCollection", features: [], returnedCount: 0, matchedCount: 1, undrawableCount: 0, highInjuryNetwork: network }),
+    } as Response);
+    renderWorkspace({ latestIngest: ingest(), studyArea: {
+      corridorText: JSON.stringify({ type: "Polygon", coordinates: [[[-83.2, 39.8], [-82.8, 39.8], [-82.8, 40.1], [-83.2, 40.1], [-83.2, 39.8]]] }),
+      place: null, label: "Saved road study area", origin: "project", originLabel: "Saved project",
+    } });
+    await screen.findByRole("button", { name: "Show Example Road on map" });
+  }
+
+  it("names the network in the legend while it is drawn, and drops it when hidden", async () => {
+    await renderRoadNetwork();
+    // Docked over the map and in the narrow-screen row.
+    await waitFor(() => expect(screen.getAllByTestId("safety-hin-key")).toHaveLength(2));
+    expect(screen.getAllByTestId("safety-hin-key")[0].textContent).toBe("High-injury network");
+    fireEvent.click(screen.getByTestId("safety-hin-show-on-map"));
+    expect(screen.queryAllByTestId("safety-hin-key")).toHaveLength(0);
+  });
+
+  it("has no network entry when no network is ranked", () => {
+    renderWorkspace();
+    expect(screen.queryAllByTestId("safety-hin-key")).toHaveLength(0);
+  });
+});
+
 describe("every caveat survived the move", () => {
   it("carries the whole disclosure set for a stored fatality-census retrieval", async () => {
     renderWorkspace({ latestIngest: ingest(), studyArea: {
@@ -348,8 +387,9 @@ describe("every caveat survived the move", () => {
       (await screen.findAllByText(/NHTSA Fatality Analysis Reporting System/)).length
     ).toBeGreaterThan(0);
     expect(screen.getByText(/120 reported · 96 mappable/)).toBeInTheDocument();
-    // A fatality census records nothing else.
-    expect(screen.getByText(SAFETY_FATAL_ONLY_CAVEAT)).toBeInTheDocument();
+    // A fatality census records nothing else. The sentence opens the
+    // serious-injury statement, which also says what that means for KSI.
+    expect(screen.getByText((content) => content.startsWith(SAFETY_FATAL_ONLY_CAVEAT))).toBeInTheDocument();
     // The geocoding shortfall, computed from THIS extract rather than a constant.
     expect(screen.getByText(/24 of the 120 reported crashes/)).toBeInTheDocument();
     // The record cap.

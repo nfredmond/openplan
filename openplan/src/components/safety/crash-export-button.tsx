@@ -167,7 +167,7 @@ export function CrashExportButton({
         {unavailable ??
           (liveFeatures
             ? "Exports the collisions on screen from this live read. The file states your filters and says the records were never saved into this workspace."
-            : "Exports every collision matching your filters in this extent — not just the ones drawn. The file states your filters, its source, and what it does not cover.")}
+            : "Exports every collision matching your filters in this extent, not just the ones drawn. The file states your filters, its source, and what it does not cover.")}
       </p>
     </div>
   );

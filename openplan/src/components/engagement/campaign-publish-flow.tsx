@@ -489,7 +489,7 @@ function PublishStep({
       ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
       : state === "todo"
         ? "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-        : "bg-muted text-muted-foreground";
+        : "bg-secondary text-muted-foreground";
   return (
     <li data-testid={`publish-step-${id}`} data-state={state} className="rounded-xl border border-border/60 bg-background/70 p-3">
       <div className="flex items-start gap-3">

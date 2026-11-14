@@ -23,8 +23,14 @@ import { stripSourceComments } from "./helpers/source-text";
  * because a list cannot notice what nobody added to it. The set is now walked
  * out of the source: every file that renders a `<PageTabPanel>`, every
  * component named inside one of those panels, and then transitively every
- * component those render, to a fixed point. Whatever in that closure calls
- * `new mapboxgl.Map` has to keep itself sized.
+ * component those render, to a fixed point. Whatever in that closure builds a
+ * map has to keep itself sized.
+ *
+ * A map is `new <namespace>.Map(` under any namespace, the constructor pattern
+ * `every-map-credits-its-sources.test.ts` uses. Until November 2, 2026 only
+ * `new mapboxgl.Map` counted, so a map built through the shared engine's `gl`
+ * parameter (Mapbox or MapLibre, `src/lib/maps/map-engine.ts`) left the walk
+ * once its file moved to the engine.
  *
  * WHAT THE WALK COVERS, AND WHAT CAN STILL SLIP PAST IT. The walk is fully
  * transitive in depth — there is no depth limit — but it is textual, so it
@@ -297,7 +303,9 @@ function filesReachableFromTabPanels(): { seedPages: string[]; reachable: Set<st
 }
 
 const { seedPages, reachable } = filesReachableFromTabPanels();
-const mapsInTabs = [...reachable].filter((file) => code(file).includes("new mapboxgl.Map")).sort();
+// `globalThis.Map` and its kin are the JavaScript Map collection, not a map.
+const NAMESPACED_MAP_CONSTRUCTOR = /\bnew\s+(?!(?:globalThis|window|self|global)\.Map\()(?:[A-Za-z_$][\w$]*\.)+Map\(/;
+const mapsInTabs = [...reachable].filter((file) => NAMESPACED_MAP_CONSTRUCTOR.test(code(file))).sort();
 
 describe("every map that can sit inside a closed tab is kept sized", () => {
   it("finds the tabbed pages and the maps under them", () => {

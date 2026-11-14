@@ -100,7 +100,7 @@ export function RtpCycleOverviewSummary({
           </p>
           <p className="module-summary-detail">
             {projectLinksState === "failed" || fundingReadFailed
-              ? "Funding posture is unavailable because part of the funding record could not be read — this is not a finding that nothing is funded."
+              ? "Funding posture is unavailable because part of the funding record could not be read. This is not a finding that nothing is funded."
               : `${likelyCoveredProjectCount} more look coverable from pursued funding, while ${unfundedProjectCount} still carry a remaining gap.`}
           </p>
         </div>

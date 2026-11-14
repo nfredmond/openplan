@@ -39,6 +39,9 @@ import {
 } from "@/lib/models/catalog";
 import { formatReportStatusLabel, formatReportTypeLabel, reportStatusTone } from "@/lib/reports/catalog";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
+import { isUuid } from "@/lib/uuid";
+import { loadPlanRowForRequest } from "./_components/plan-row-for-request";
 
 type LinkedArtifactBase = {
   id: string;
@@ -172,7 +175,7 @@ function SectionReadFailure({ title, noun }: { title: string; noun: string }) {
       <StateBlock
         tone="danger"
         title={title}
-        description={`The ${noun} for this plan could not be read, so this section cannot say whether any are linked. It is not a statement that none exist — retry, and tell your operator if it persists.`}
+        description={`The ${noun} for this plan could not be read, so this section cannot say whether any are linked. It is not a statement that none exist. Retry, and tell your operator if it persists.`}
         compact
       />
     </div>
@@ -190,6 +193,7 @@ export default async function PlanDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { planId } = await params;
+  if (!isUuid(planId)) notFound();
   const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {
@@ -206,13 +210,8 @@ export default async function PlanDetailPage({
   // empty table — stated the failure as a fact about the planner's workspace.
   const reads = new ReadFailureLog();
 
-  const planResult = await supabase
-    .from("plans")
-    .select(
-      "id, workspace_id, project_id, title, plan_type, status, geography_label, horizon_year, summary, created_at, updated_at"
-    )
-    .eq("id", planId)
-    .maybeSingle();
+  // Shared with `layout.tsx`, which answers 404 for an absent plan first.
+  const planResult = await loadPlanRowForRequest(planId);
 
   // The one load-bearing read on this page, and the one place where "could not
   // read it" and "it is not there" must not be merged: `notFound()` tells the
@@ -415,9 +414,12 @@ export default async function PlanDetailPage({
     campaignIds.length
       ? supabase.from("engagement_categories").select("campaign_id").in("campaign_id", campaignIds)
       : Promise.resolve({ data: [], error: null }),
-    campaignIds.length
-      ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
-      : Promise.resolve({ data: [], error: null }),
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+      supabase,
+      campaignIds,
+      CAMPAIGN_ITEM_STATUS_COLUMNS
+    ),
     reportIds.length
       ? supabase.from("report_runs").select("report_id").in("report_id", reportIds)
       : Promise.resolve({ data: [], error: null }),
@@ -905,7 +907,7 @@ export default async function PlanDetailPage({
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {planLinksUnreadable
-                      ? "The plan's link set could not be read, so the number of stored links is unknown — not zero."
+                      ? "The plan's link set could not be read, so the number of stored links is unknown, not zero."
                       : planLinks.length === 0
                         ? "No explicit links stored on the plan yet."
                         : `${explicitProjectCount} project, ${explicitScenarioCount} scenario, ${explicitCampaignCount} campaign, ${explicitReportCount} report links are recorded.`}
@@ -1036,7 +1038,7 @@ export default async function PlanDetailPage({
                     </p>
                     <p className="mt-2 text-label text-muted-foreground">
                       {scenarioStatsUnreadable
-                        ? "Entry counts unavailable — the scenario entries could not be read"
+                        ? "Entry counts unavailable: the scenario entries could not be read"
                         : `${pluralize(scenario.entryCount, "entry")} · ${pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")} · ${pluralize(scenario.attachedRunCount, "attached run")}`}
                       {" · "}
                       {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
@@ -1083,7 +1085,7 @@ export default async function PlanDetailPage({
                     <p className="mt-2 text-sm text-muted-foreground">{campaign.summary || "No campaign summary captured yet."}</p>
                     <p className="mt-2 text-label text-muted-foreground">
                       {campaignStatsUnreadable
-                        ? "Category and item counts unavailable — the engagement records could not be read"
+                        ? "Category and item counts unavailable: the engagement records could not be read"
                         : `${pluralize(campaign.categoryCount, "category", "categories")} · ${pluralize(campaign.itemCount, "item")} · ${campaign.approvedItemCount} approved · ${campaign.pendingItemCount} pending${campaign.flaggedItemCount > 0 ? ` · ${campaign.flaggedItemCount} flagged` : ""}`}
                       {" · via "}
                       {linkBasisLabel(campaign.linkBasis)}
@@ -1128,7 +1130,7 @@ export default async function PlanDetailPage({
                     <p className="mt-2 text-sm text-muted-foreground">{report.summary || "No report summary captured yet."}</p>
                     <p className="mt-2 text-label text-muted-foreground">
                       {reportStatsUnreadable
-                        ? "Run, section and artifact counts unavailable — those records could not be read"
+                        ? "Run, section and artifact counts unavailable: those records could not be read"
                         : `${pluralize(report.linkedRunCount, "linked run")} · ${pluralize(report.enabledSectionCount, "enabled section")} · ${pluralize(report.artifactCount, "artifact")}`}
                       {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
                       {" · "}
@@ -1181,7 +1183,7 @@ export default async function PlanDetailPage({
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {supportingModelLinksUnreadable
-                      ? "How many pass every readiness check is unknown — each model's link set could not be read."
+                      ? "How many pass every readiness check is unknown. Each model's link set could not be read."
                       : `${supportingModelReadyCount} currently pass every explicit readiness check.`}
                   </p>
                 </div>
@@ -1221,7 +1223,7 @@ export default async function PlanDetailPage({
 
                     <p className="mt-1.5 text-label text-muted-foreground">
                       {supportingModelLinksUnreadable
-                        ? "Readiness and linkage counts unavailable — this model's link set could not be read"
+                        ? "Readiness and linkage counts unavailable: this model's link set could not be read"
                         : `${model.readiness.label} · ${model.linkageCounts.datasets} datasets · ${model.linkageCounts.runs} runs · ${model.linkageCounts.reports} reports`}
                       {" · "}
                       {model.config_version ? `Config ${model.config_version}` : "Config pending"}

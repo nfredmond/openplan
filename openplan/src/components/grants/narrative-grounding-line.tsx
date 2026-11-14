@@ -64,10 +64,10 @@ export function NarrativeGroundingSummaryLine({
                 <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
                 <span className="text-label">
                   {sentence.reason === "missing_citation"
-                    ? "— no citation"
+                    ? "(no citation)"
                     : sentence.reason === "unfaithful_citation"
-                      ? `— figure${sentence.unfaithful_claims.length === 1 ? "" : "s"} not in cited facts: ${sentence.unfaithful_claims.join(", ")}`
-                      : `— unknown fact id${sentence.unknown_fact_ids.length === 1 ? "" : "s"}: ${sentence.unknown_fact_ids.join(", ")}`}
+                      ? `(figure${sentence.unfaithful_claims.length === 1 ? "" : "s"} not in cited facts: ${sentence.unfaithful_claims.join(", ")})`
+                      : `(unknown fact id${sentence.unknown_fact_ids.length === 1 ? "" : "s"}: ${sentence.unknown_fact_ids.join(", ")})`}
                 </span>
               </li>
             ))}

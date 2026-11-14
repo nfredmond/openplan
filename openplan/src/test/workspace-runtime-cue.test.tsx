@@ -139,7 +139,7 @@ describe("WorkspaceRuntimeCue", () => {
 
     expect(
       screen.getByText(
-        "Next across this workspace: 1 current RTP packet still carries grant follow-through from linked projects — finish that in Grants before treating it as settled."
+        "Next across this workspace: 1 current RTP packet still carries grant follow-through from linked projects. Finish that in Grants before treating it as settled."
       )
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Grants follow-through" })).toHaveAttribute(

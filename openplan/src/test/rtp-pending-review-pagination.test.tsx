@@ -31,7 +31,7 @@ let failed: string | null;
 let missingCount: boolean;
 let truncatePending: boolean;
 let omitSource: boolean;
-const cycle = "cycle";
+const cycle = "76000000-0000-4000-8000-000000000003";
 const uuid = (n: number) => `00000000-0000-4000-8000-${n.toString(16).padStart(12, "0")}`;
 const candidateRows = () => tables.rtp_extraction_candidates.filter((row) => row.target_kind !== "chapter_block");
 
@@ -132,7 +132,7 @@ describe("bounded pending review source tests, all UNRUN", () => {
       const next = queue.queryByRole("link", { name: "Next pending proposals" });
       if (!next) { expect(queue.getByText(/End of the current pending list/)).toBeVisible(); view.unmount(); break; }
       const href = next.getAttribute("href")!;
-      expect(new URL(href, "http://localhost").pathname).toBe("/rtp/cycle/extraction");
+      expect(new URL(href, "http://localhost").pathname).toBe(`/rtp/${cycle}/extraction`);
       search = searchOf(href); expect(search.afterId).toMatch(/^[0-9a-f-]{36}$/);
       view.unmount(); if (pages > 3) throw new Error("Navigation repeated a pending page");
     }
@@ -168,7 +168,7 @@ describe("bounded pending review source tests, all UNRUN", () => {
   it("P2_INVALID_NAVIGATION: rejects partial/injected cursors and offers a valid restart", async () => {
     await show({ afterId: "bad),or(anything)" }); const queue = pendingRegion();
     expect(queue.getByText("This pending-review link is invalid")).toBeVisible();
-    expect(queue.getByRole("link", { name: "Restart pending review" })).toHaveAttribute("href", "/rtp/cycle/extraction");
+    expect(queue.getByRole("link", { name: "Restart pending review" })).toHaveAttribute("href", `/rtp/${cycle}/extraction`);
     expect(reads.some((read) => read.cursor)).toBe(false);
   });
   it("P2_STABLE_CONTINUATION: acceptance before the cursor does not skip the next pending page, including timestamp ties", async () => {
@@ -184,7 +184,7 @@ describe("bounded pending review source tests, all UNRUN", () => {
     const href = history.getByRole("link", { name: "Older readings" }).getAttribute("href")!; first.unmount();
     await show(searchOf(href));
     expect(pendingRegion().getByText(String(candidateRows()[0].source_quote))).toBeVisible();
-    expect(screen.getByRole("link", { name: "Newer readings" })).toHaveAttribute("href", "/rtp/cycle/extraction");
+    expect(screen.getByRole("link", { name: "Newer readings" })).toHaveAttribute("href", `/rtp/${cycle}/extraction`);
     expect(reads.filter((read) => read.table === "rtp_extraction_runs" && read.range).at(-1)?.range).toEqual([50, 100]);
   });
   it("P2_EMPTY_IS_EXPLICIT: a complete empty pending list retains history and separate chapter navigation", async () => {
@@ -201,7 +201,7 @@ describe("bounded pending review source tests, all UNRUN", () => {
   it("P2_INVALID_HISTORY_LINK: invalid history bounds have a valid recovery link and preserve pending proposals", async () => {
     await show({ historyPage: "-1" });
     expect(screen.getByText("Reading history is unavailable")).toBeVisible();
-    expect(screen.getByRole("link", { name: "Restart reading history" })).toHaveAttribute("href", "/rtp/cycle/extraction");
+    expect(screen.getByRole("link", { name: "Restart reading history" })).toHaveAttribute("href", `/rtp/${cycle}/extraction`);
     expect(pendingRegion().getByText(String(candidateRows()[0].source_quote))).toBeVisible();
   });
 });

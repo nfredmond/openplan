@@ -123,7 +123,8 @@ describe("the draft section", () => {
       ["Main Street", 1],
       ["Old Road", null],
     ]);
-    expect(draft.treatments[0].countermeasures[0].cmfNote).toContain("[VERIFY]");
+    // The catalog note names the CMF Clearinghouse entries read for the item (KI-2026-11-14-290).
+    expect(draft.treatments[0].countermeasures[0].cmfNote).toMatch(/^CMF Clearinghouse, read November 14, 2026: entry \d+/);
   });
 
   it("lists the components it does not cover and marks none as covered", () => {
@@ -140,6 +141,27 @@ describe("the draft section", () => {
       .toEqual(["Safety analysis", "Strategy and project selections"]);
     expect(draft.componentSourceLine).toContain("https://www.transportation.gov/grants/ss4a/comprehensive-safety-action-plans");
     expect(draft.draftNotice).toMatch(/not an adopted safety action plan/);
+  });
+
+  it("does not claim attached countermeasures for a plan that has none", () => {
+    const empty = buildSafetyActionPlanSection({ plan: { ingestId: INGEST_ID, attachments: [] }, evidence: evidence(), network: network() });
+    const strategy = empty.components.find((component) => component.component === "Strategy and project selections");
+    expect(strategy?.status).toBe("not_covered");
+    expect(strategy?.gap).not.toMatch(/Has countermeasures attached/);
+    expect(safetyActionPlanMarkup(empty)).not.toContain("Has countermeasures attached");
+    const withTreatments = buildSafetyActionPlanSection({ plan: PLAN, evidence: evidence(), network: network() });
+    expect(withTreatments.components.find((component) => component.component === "Strategy and project selections")?.status).toBe("partial");
+  });
+
+  it("does not claim a crash summary when the summary and the network both failed to read", () => {
+    const failed = buildSafetyActionPlanSection({
+      plan: PLAN,
+      evidence: null,
+      network: { status: "unavailable", reason: "crash_read_failed", basis: "ksi" },
+    });
+    const analysis = failed.components.find((component) => component.component === "Safety analysis");
+    expect(analysis?.status).toBe("not_covered");
+    expect(analysis?.gap).not.toMatch(/Has the crash summary/);
   });
 
   it("states a failed crash read and an unranked network instead of printing zeros", () => {

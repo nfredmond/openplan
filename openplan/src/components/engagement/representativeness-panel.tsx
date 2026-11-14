@@ -25,7 +25,7 @@ const STATUS_TONE: Record<RepresentativenessMetric["status"], string> = {
 };
 
 const ERROR_MESSAGE: Record<string, string> = {
-  no_located_respondents: "No approved, geolocated comments yet — representativeness needs mapped input.",
+  no_located_respondents: "No approved, geolocated comments yet. Representativeness needs mapped input.",
   census_unavailable: "ACS data was unavailable for this area. Try again shortly.",
   tract_geometry_unavailable: "Census tract geometry was unavailable for this area. Try again shortly.",
 };

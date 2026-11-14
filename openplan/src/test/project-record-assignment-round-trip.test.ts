@@ -103,6 +103,15 @@ function rlsClient() {
       }
 
       return {
+        select: (columns: string) => {
+          expect(columns).toBe("id, project_id, funding_award_id, handoff_origin_revision_id");
+          const filters: Record<string, string> = {};
+          const query = {
+            eq: (column: string, value: string) => { filters[column] = value; return query; },
+            maybeSingle: async () => ({ data: filters.id === RECORD_ID && filters.project_id === requestedProjectId ? { id: RECORD_ID, project_id: requestedProjectId, funding_award_id: null, handoff_origin_revision_id: null } : null, error: null }),
+          };
+          return query;
+        },
         insert: (row: Record<string, unknown>) => {
           writes.push({ table, op: "insert", row });
           return { select: () => ({ single: async () => ({ data: recordRow(table), error: null }) }) };

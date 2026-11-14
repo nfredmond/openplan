@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import type { AtpGrantResult, AtpProjectApplication } from "@/lib/planner-pack/types";
+import { projectLinkAnchorId } from "@/lib/grants/opportunity-project-link";
 
 /**
  * The ATP scoring packet, read-only, on an application seeded from the ATP
@@ -54,11 +55,13 @@ function ScoreRow({
 }) {
   return (
     <tr className="border-t border-border/60">
-      <th scope="row" className="py-1 pr-3 text-left font-normal text-muted-foreground">
+      <th scope="row" className="py-1 pr-3 text-left align-top font-normal text-muted-foreground">
         {label}
       </th>
-      <td className="py-1 pr-3 text-right tabular-nums text-foreground">{formatScore(value)}</td>
-      <td className="py-1 text-muted-foreground">{value === null ? supplyNote : ""}</td>
+      <td className="min-w-0 break-words py-1 text-foreground">
+        <span className="tabular-nums">{formatScore(value)}</span>
+        {value === null ? <span className="block text-muted-foreground">{supplyNote}</span> : null}
+      </td>
     </tr>
   );
 }
@@ -82,18 +85,17 @@ function ApplicationScores({
           <ScoreRow label="Climate" value={app.climate_score} supplyNote={notComputed} />
           <ScoreRow label="Feasibility" value={app.feasibility_score} supplyNote={notComputed} />
           <ScoreRow
-            label="Total (weighted 30/25/25/20)"
+            label="Total (OpenPlan weights 30/25/25/20)"
             value={app.total_score}
             supplyNote="Needs all four scores."
           />
           <tr className="border-t border-border/60">
-            <th scope="row" className="py-1 pr-3 text-left font-normal text-muted-foreground">
+            <th scope="row" className="py-1 pr-3 text-left align-top font-normal text-muted-foreground">
               Sensitivity
             </th>
-            <td className="py-1 pr-3 text-right text-foreground">
+            <td className="min-w-0 break-words py-1 text-foreground">
               {app.sensitivity_flag === "UNKNOWN" ? NOT_RECORDED : app.sensitivity_flag}
             </td>
-            <td className="py-1 text-muted-foreground" />
           </tr>
         </tbody>
       </table>
@@ -115,7 +117,7 @@ function PortfolioSummary({ packet }: { packet: AtpGrantResult }) {
   const count = (value: number) => (equityRecorded ? String(value) : NOT_RECORDED);
 
   return (
-    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1" data-testid="atp-packet-summary">
+    <dl className="grid grid-cols-1 gap-x-3 gap-y-1 sm:grid-cols-[auto_1fr]" data-testid="atp-packet-summary">
       <dt className="text-muted-foreground">Mean total score</dt>
       <dd className="text-foreground">{mean}</dd>
       <dt className="text-muted-foreground">Disadvantaged community (SB 535)</dt>
@@ -125,7 +127,7 @@ function PortfolioSummary({ packet }: { packet: AtpGrantResult }) {
       <dt className="text-muted-foreground">Tribal area</dt>
       <dd className="text-foreground">{count(summary.tribal_application_count)}</dd>
       {equityRecorded ? null : (
-        <dd className="col-span-2 text-muted-foreground">
+        <dd className="text-muted-foreground sm:col-span-2">
           OpenPlan has no SB 535, AB 1550 or tribal-area lookup yet. Check the CTC&apos;s current definitions.
         </dd>
       )}
@@ -173,7 +175,12 @@ export function AtpScoringPacketPanel({ opportunityId }: { opportunityId: string
         </p>
       ) : null}
       {payload?.missing === "project" ? (
-        <p className="text-muted-foreground">Link a project to this opportunity to see its ATP scores.</p>
+        <p className="text-muted-foreground">
+          <a className="font-semibold text-[color:var(--pine)] underline" href={`#${projectLinkAnchorId(opportunityId)}`}>
+            Link a project
+          </a>{" "}
+          to see its ATP scores.
+        </p>
       ) : null}
       {packet ? (
         <div className="space-y-3 rounded-xl border border-border/70 bg-background/70 px-3 py-3">

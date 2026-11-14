@@ -104,7 +104,7 @@ export const photoManifestImagerySchema = z
       ctx.addIssue({
         code: "custom",
         path: ["imageCount"],
-        message: `imageCount (${value.imageCount}) must equal photos.length (${value.photos.length}) — carried explicitly so a truncated payload is detectable`,
+        message: `imageCount (${value.imageCount}) must equal photos.length (${value.photos.length}), carried explicitly so a truncated payload is detectable`,
       });
     }
   });

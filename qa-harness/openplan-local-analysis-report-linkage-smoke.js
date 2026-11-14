@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const { buildBrowserContextOptions, getOutputDir, guardLocalMutationTargets, loadEnv, repoRoot } = require('./harness-env');
 
@@ -52,10 +53,7 @@ async function main() {
     scriptName: 'local Analysis report linkage smoke',
   });
 
-  const restHeaders = {
-    apikey: serviceRoleKey,
-    Authorization: `Bearer ${serviceRoleKey}`,
-  };
+  const restHeaders = serviceKeyHeaders(serviceRoleKey);
 
   async function restSelect(table, params) {
     const query = new URLSearchParams(params);

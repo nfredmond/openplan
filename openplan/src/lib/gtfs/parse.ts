@@ -355,7 +355,7 @@ export async function parseGtfsFeed(
       code: "missing_required_file",
       detail:
         `This feed is missing its service calendar: it has neither ${GTFS_REQUIRED_CALENDAR_FILES.join(" nor ")}. ` +
-        `Either file is acceptable — many feeds publish only calendar_dates.txt — but without one of them there is no ` +
+        `Either file is acceptable (many feeds publish only calendar_dates.txt), but without one of them there is no ` +
         `way to know which days any trip runs on.`,
     };
   }
@@ -382,8 +382,8 @@ function failureForError(error: unknown): { ok: false; code: GtfsParseFailureCod
       ok: false,
       code: "abandoned",
       detail:
-        `Reading ${error.table} stopped part-way: ${error.message}. The archive may be truncated or corrupt — ` +
-        `re-download or re-export the feed and try again.`,
+        `Reading ${error.table} stopped part-way: ${error.message}. The archive may be truncated or corrupt. ` +
+        `Re-download or re-export the feed and try again.`,
     };
   }
   return null;
@@ -858,7 +858,7 @@ async function readFeed(context: ReadContext): Promise<GtfsParseResult> {
       ok: false,
       code: "no_usable_service",
       detail:
-        "This feed parsed, but it produced no departures on any service day — every trip either has no stop times, " +
+        "This feed parsed, but it produced no departures on any service day: every trip either has no stop times, " +
         "no readable departure times, or runs on no day the calendar describes. There is nothing to report service " +
         "levels from.",
     };

@@ -44,7 +44,7 @@ describe("what the run did not do is visible", () => {
     const document = buildCountyRunProvenanceDocument(input());
     expect(document).toContain("never compared against observed traffic counts");
     // And it distinguishes "not measured" from "measured and not reported".
-    expect(document).toContain("nothing was measured, so nothing can be claimed");
+    expect(document).toContain("Nothing was measured, so nothing can be claimed");
   });
 
   it("says a run was not calibrated rather than staying silent", () => {
@@ -90,7 +90,7 @@ describe("what the run did not do is visible", () => {
         }),
       })
     );
-    expect(document).toContain("**NO — the volumes below are from part-way through a calculation**");
+    expect(document).toContain("**NO: the volumes below are from part-way through a calculation**");
     expect(document).toContain("It stopped after 50 iterations");
   });
 
@@ -108,27 +108,32 @@ describe("the claim ceiling reflects what the run actually established", () => {
     expect(ceiling).toContain("must not be presented as measured");
   });
 
-  it("a run that FAILED its gate says so, and still permits reporting the gap", () => {
-    const ceiling = claimCeiling(
-      input({
-        validationSummary: { screening_gate: { status_label: "internal prototype only" } },
-      })
-    );
-    expect(ceiling).toContain("DID NOT meet");
-    expect(ceiling).toContain("internal prototype only");
-    // The comparison is evidence even when the figures are not.
-    expect(ceiling).toContain("the gap it found, are reportable");
+  it.each(["internal prototype only", "bounded screening-ready"])("does not grant screening use from the retired gate %s", gate => {
+    const ceiling = claimCeiling(input({ validationSummary: { screening_gate: { status_label: gate } } }));
+    expect(ceiling).toContain("Assignment claim tier: Untiered");
+    expect(ceiling).toContain("No assignment claim decision is recorded");
+    expect(ceiling).toContain("no rules-v4 scientific outcome");
+    expect(ceiling).toContain("gap it found are reportable diagnostics");
+    expect(ceiling).not.toContain("met OpenPlan's screening thresholds");
+    expect(ceiling).toContain("must not be used for environmental review");
   });
 
-  it("a run that PASSED says something different, and still refuses environmental review", () => {
-    const ceiling = claimCeiling(
-      input({
-        validationSummary: { screening_gate: { status_label: "bounded screening-ready" } },
-      })
-    );
-    expect(ceiling).toContain("met OpenPlan's screening thresholds");
+  it.each([
+    ["pass", "recorded", "screening_grade", "Screening-grade"],
+    ["fail", "recorded", "screening_grade", "Prototype-only"],
+    ["inconclusive", "recorded", "screening_grade", "Prototype-only"],
+    ["pass", "pending", "screening_grade", "Prototype-only"],
+    ["pass", "recorded", "prototype_only", "Prototype-only"],
+    ["pass", "recorded", "claim_grade_passed", "Screening-grade"],
+  ] as const)("uses the shared ceiling for %s/%s with stored %s", (outcome, write, claimStatus, label) => {
+    const ceiling = claimCeiling(input({
+      validationSummary: { validation_rules_version: 4, model_validation_assessment: { scientific_outcome: outcome, validation_evidence_write: write }, screening_gate: { status_label: "bounded screening-ready" } },
+      modelingEvidence: { sourceManifests: [], claimDecision: { track: "assignment", claimStatus, statusReason: "Stored reason.", reasons: ["Stored reason."], decidedAt: null,
+        validationSummary: { passed: 0, warned: 0, failed: 0, missingRequiredMetricKeys: [], requiredMetricKeys: [] } } },
+    }));
+    expect(ceiling).toContain(`Assignment claim tier: ${label}`);
     expect(ceiling).toContain("must not be used for environmental review");
-    expect(ceiling).not.toContain("DID NOT meet");
+    expect(ceiling).not.toContain("met OpenPlan's screening thresholds");
   });
 
   it("every ceiling refuses environmental review or says the run is unvalidated", () => {
@@ -475,7 +480,7 @@ describe("an empty validation record is a run that was never compared", () => {
         },
       })
     );
-    expect(ceiling).toContain("DID NOT meet");
+    expect(ceiling).toContain("reportable diagnostics");
   });
 });
 
@@ -576,7 +581,7 @@ describe("why fewer stations were matched than published", () => {
 
   it("names ramp counts that were set aside, and why they would mislead", () => {
     const document = withExclusions({ stations_excluded_not_mainline: 12 });
-    expect(document).toContain("Set aside — ramps and connectors:** 12");
+    expect(document).toContain("Set aside (ramps and connectors):** 12");
     expect(document).toContain("mainline it leaves");
   });
 
@@ -584,9 +589,9 @@ describe("why fewer stations were matched than published", () => {
     const document = withExclusions({
       shared_model_links: { stations_merged_away: 9, stations_excluded_as_ambiguous: 12 },
     });
-    expect(document).toContain("several stations on one link:** 9");
+    expect(document).toContain("several stations on one link):** 9");
     expect(document).toContain("compared once at their median");
-    expect(document).toContain("one link, disagreeing counts:** 12");
+    expect(document).toContain("one link, disagreeing counts):** 12");
     expect(document).toContain("nothing in the data says which station belongs");
   });
 
@@ -661,7 +666,7 @@ describe("accuracy figures graded by rules that no longer apply", () => {
     expect(document).toContain("36,096");
     expect(document).toContain("residential");
     // The sentence that stops a planner reading a missing road as a quiet one.
-    expect(document).toContain("no estimate — which is not the same as a low one");
+    expect(document).toContain("no estimate, which is not the same as a low one");
   });
 
   it("says nothing about coverage when the run never measured it", () => {

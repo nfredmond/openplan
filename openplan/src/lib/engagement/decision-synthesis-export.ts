@@ -6,6 +6,9 @@ type ExportRow = Record<string, Cell>;
 type Member = DecisionSynthesisDetails[number]["events"][number]["members"][number];
 type TextRenderer = { escape: (value: unknown) => string; narrative: (value: unknown, record: unknown) => string };
 
+/** Printed beside every staff group, so a theme of a few comments is not read as what the public thinks. */
+export const decisionSynthesisGroupCountCaveat = "Counts are records, not people. A staff group shows what these contributors wrote; it does not measure public opinion or show representative support.";
+
 /** Source words appear once in a keyed appendix; each retained action lists its exact reviewed membership. */
 export function decisionSynthesisReport(rows: VerifiedDecisionLink[], { escape, narrative }: TextRenderer) {
   const sources = new Map<string, { anchor: string; member: Member; sourceId: string; sourceSha256: string; capturedAt: string }>();
@@ -29,7 +32,7 @@ export function decisionSynthesisReport(rows: VerifiedDecisionLink[], { escape, 
           <p class="meta">Action ${escape(event.intent.requestId)} | Recorded ${escape(event.createdAt)} | Actor ${escape(event.intent.actorId)}<br>Review ${escape(history.reviewId)} | Group ${escape(history.groupId)}<br>Action SHA-256 ${event.eventSha256}</p>
           <h4>Reason for this link action</h4>${narrative(event.intent.reason, event.intent.requestId)}
           <h4>Retained review revision ${event.retained.revision.number}: ${escape(event.content.title)}</h4>
-          <p>${escape(event.group.label)} | Staff sentiment: ${escape(event.group.sentiment)}</p>${narrative(event.group.summary || "No group summary.", event.retained.revision.id)}
+          <p>${escape(event.group.label)} | ${event.members.length} ${event.members.length === 1 ? "contribution" : "contributions"} in this group | Staff sentiment: ${escape(event.group.sentiment)}</p><p class="meta">${decisionSynthesisGroupCountCaveat}</p>${narrative(event.group.summary || "No group summary.", event.retained.revision.id)}
           <h4>Review notes</h4>${narrative(event.content.notes || "None recorded.", event.retained.revision.id)}
           <h4>Recorded approval</h4><p>Revision ${event.approval.intent.revisionNo} approved at ${escape(event.approval.createdAt)}.</p>
           <p class="meta">Approval ${escape(event.approval.intent.requestId)} | Actor ${escape(event.approval.intent.actorId)}<br>Approval SHA-256 ${event.retained.approval.eventSha256}</p>${narrative(event.approval.intent.reason, event.approval.intent.requestId)}

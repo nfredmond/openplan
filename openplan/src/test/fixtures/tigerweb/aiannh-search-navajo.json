@@ -1,0 +1,40 @@
+{
+ "capturedAt": "2026-11-01",
+ "trimmed": "Field metadata removed; features unchanged. The other seven AIANNH layers answered with no Navajo feature.",
+ "layers": {
+  "36": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/36/query?where=UPPER%28BASENAME%29+LIKE+UPPER%28%27Navajo%25%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CAIANNHFP1%2CAIANNHFP2%2CAIANNHFP3&returnGeometry=false&orderByFields=BASENAME&resultRecordCount=40&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "2430R",
+       "NAME": "Navajo Nation Reservation",
+       "BASENAME": "Navajo Nation",
+       "AIANNHFP1": "04-48845",
+       "AIANNHFP2": "35-51580",
+       "AIANNHFP3": "49-53920"
+      }
+     }
+    ]
+   }
+  },
+  "38": {
+   "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/38/query?where=UPPER%28BASENAME%29+LIKE+UPPER%28%27Navajo%25%27%29&outFields=GEOID%2CNAME%2CBASENAME%2CAIANNHFP1%2CAIANNHFP2%2CAIANNHFP3&returnGeometry=false&orderByFields=BASENAME&resultRecordCount=40&f=json",
+   "response": {
+    "features": [
+     {
+      "attributes": {
+       "GEOID": "2430T",
+       "NAME": "Navajo Nation Off-Reservation Trust Land",
+       "BASENAME": "Navajo Nation",
+       "AIANNHFP1": "04-48845",
+       "AIANNHFP2": "35-51580",
+       "AIANNHFP3": "49-53920"
+      }
+     }
+    ]
+   }
+  }
+ }
+}

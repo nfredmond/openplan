@@ -19,6 +19,7 @@ import {
 import {
   PORTAL_DEFAULT_LOCALE,
   PORTAL_LOCALE_DIRECTION,
+  portalLocaleBcp47,
   type ResolvedPortalLocale,
 } from "@/lib/engagement/portal-i18n/locales";
 import {
@@ -42,6 +43,7 @@ import { LocationDisplayMap } from "./location-display-map";
 import { PortalLanguageNotice, PortalLanguagePicker } from "./portal-language-picker";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
 import { PublicCloseLoop, type PublicCloseLoopEntry } from "./public-close-loop";
+import { countEngagementReview } from "@/lib/engagement/review-counts";
 import { PublicSubscribeForm } from "./public-subscribe-form";
 import { PortalSubmissionForm } from "./portal-submission-form";
 import { PortalPendingCopyNotice } from "./portal-pending-copy-notice";
@@ -238,6 +240,9 @@ function PortalTabButton({
       onClick={onClick}
       disabled={!ready}
       aria-busy={!ready}
+      // Which view is open was shown only by an underline; say it to assistive
+      // technology too.
+      aria-pressed={active}
       className={cn(
         "inline-flex min-h-11 items-center gap-2 border-b-2 px-1 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
         active
@@ -468,6 +473,10 @@ export function PublicEngagementPortal({
     return map;
   }, [categories]);
 
+  // The label each topic has now, as the agency wrote it. A comment's
+  // received-under definition is worth printing only when it differs.
+  const categorySourceLabelMap = useMemo(() => new Map(categories.map((category) => [category.id, category.label])), [categories]);
+
   const categoryColorMap = useMemo(() => {
     const map = new Map<string, string | null>();
     for (const category of categories) {
@@ -479,8 +488,24 @@ export function PublicEngagementPortal({
   const displayedVotes = (item: ApprovedItem): number => voteCounts[item.id] ?? item.votesCount ?? 0;
 
   // E6 — the feed is threaded: top-level comments with their approved replies
-  // nested underneath. Sorting, the map, and counts operate on top-level items.
+  // nested underneath. Sorting and the map operate on top-level items.
   const { topLevel, repliesByParent } = useMemo(() => groupApprovedItems(approvedItems), [approvedItems]);
+  /*
+    The tab counts come from the function the review PDF, workbook and ZIP
+    manifest count with, so a reader holding the public copy and this page sees
+    the same numbers. The Comments count is every comment the feed shows,
+    replies included, because the review files count each approved reply as a
+    contribution. Every item here is approved: the public read selects nothing
+    else, and the closing-the-loop entries are published ones only.
+  */
+  const reviewCounts = useMemo(
+    () =>
+      countEngagementReview({
+        items: [...topLevel, ...[...repliesByParent.values()].flat()].map((item) => ({ id: item.id, status: "approved" })),
+        responses: closeLoopEntries.map((entry) => ({ sourceItemIds: entry.sourceItemIds ?? [], published: true })),
+      }),
+    [topLevel, repliesByParent, closeLoopEntries]
+  );
 
   function startReply(item: ApprovedItem) {
     setReplyTarget({ id: item.id, label: replyPreviewLabel(item) });
@@ -560,7 +585,7 @@ export function PublicEngagementPortal({
                   <OperatorText as="span" value={categoryText} translator={translator} compact />
                 </span>
               ) : null}
-              {item.historicalCategoryLabel ? <span lang="en" className="public-inline-label">Category definition in original form: <span dir="auto">{item.historicalCategoryLabel}</span></span> : null}
+              {item.historicalCategoryLabel && item.historicalCategoryLabel !== (item.categoryId ? categorySourceLabelMap.get(item.categoryId) : undefined) ? <span lang="en" className="public-inline-label">Category definition in original form: <span dir="auto">{item.historicalCategoryLabel}</span></span> : null}
               {itemIsLocated(item) ? (
                 <span className="inline-flex items-center gap-1">
                   <MapPinned className="h-3 w-3" aria-hidden="true" />
@@ -616,7 +641,7 @@ export function PublicEngagementPortal({
                     <option
                       key={language}
                       value={language}
-                      lang={language}
+                      lang={portalLocaleBcp47(language)}
                       dir={PORTAL_LOCALE_DIRECTION[language]}
                     >
                       {TRANSLATION_LANGUAGE_NATIVE_LABELS[language]}
@@ -798,7 +823,7 @@ export function PublicEngagementPortal({
                 label={t("portal.tab.closeLoop")}
                 /* No badge when the read failed: "(0)" here is a count of the
                    agency's responses, and we did not get to take it. */
-                count={readFailures.closeLoop ? undefined : closeLoopEntries.length}
+                count={readFailures.closeLoop ? undefined : reviewCounts.publishedResponses}
                 bcp47={bcp47}
                 onClick={() => setActiveTab("closeloop")}
               />
@@ -808,7 +833,7 @@ export function PublicEngagementPortal({
               icon={<MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />}
               label={t("portal.tab.feedback")}
               /* No badge when the read failed: "(0)" would say nobody commented. */
-              count={readFailures.comments ? undefined : topLevel.length}
+              count={readFailures.comments ? undefined : reviewCounts.byState.approved}
               bcp47={bcp47}
               onClick={() => setActiveTab("feedback")}
             />

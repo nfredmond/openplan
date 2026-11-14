@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { resolvePortalForRequest } from "../portal-resolution-for-request";
 import { PortalContextPage } from "@/components/engagement/portal-context-page";
 import {
-  loadPublicPortalResultForShareValue,
+  finishPublicPortalResult,
   PortalReadUnavailableError,
   type PublicPortalBundle,
   type PublicPortalLocaleRequest,
@@ -41,7 +42,9 @@ async function loadPortalForPage(
   | { closed: true; locale: ResolvedPortalLocale; messages: PortalMessageBundle }
   | null
 > {
-  const result = await loadPublicPortalResultForShareValue(shareToken, localeRequest);
+  // Resolved once per request and shared with `layout.tsx`, which answers 404
+  // for an address that reaches nothing.
+  const result = await finishPublicPortalResult(await resolvePortalForRequest(shareToken), localeRequest);
   if (result.status === "unreadable") throw new PortalReadUnavailableError(result.error.message);
   if (result.status === "ok") return { closed: false, bundle: result.bundle };
   if (result.status === "closed") return { closed: true, locale: result.locale, messages: result.messages };

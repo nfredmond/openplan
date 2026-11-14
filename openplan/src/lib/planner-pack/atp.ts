@@ -176,6 +176,8 @@ export function computeAtpPacket(
       "PA&ED, PS&E, R/W, and CON schedule to be provided by lead agency"
     );
     const estimatedCost = parseOptionalFloat(lapm.estimated_cost_usd);
+    const estimatedCostNote = coerceStr(lapm.estimated_cost_note) || null;
+    const safetySourceNote = coerceStr(row.safety_source_note) || null;
 
     const equityRecorded = equityById.has(pid);
     const equityRow = equityById.get(pid) ?? {};
@@ -198,6 +200,11 @@ export function computeAtpPacket(
       readinessNote =
         "One of four screening dimensions used a placeholder; lead " +
         "agency should refine before final submittal.";
+    } else if (sensitivity === "UNKNOWN") {
+      // No sensitivity screen ran, so nothing is known about placeholders.
+      readinessNote =
+        "Readiness not recorded: no sensitivity screen ran for this project. " +
+        "The lead agency must supply project-specific evidence before final submittal.";
     } else {
       readinessNote =
         "Two or more screening dimensions used placeholders; lead " +
@@ -220,7 +227,9 @@ export function computeAtpPacket(
       description,
       project_type: projectType,
       estimated_cost_usd: estimatedCost,
+      estimated_cost_note: estimatedCostNote,
       schedule_note: scheduleNote,
+      safety_source_note: safetySourceNote,
       ceqa_determination: ceqaSummary,
       equity_recorded: equityRecorded,
       dac_sb535: dac,

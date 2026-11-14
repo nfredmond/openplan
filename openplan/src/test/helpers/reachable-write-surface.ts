@@ -1,5 +1,6 @@
 import { readFileSync, existsSync, statSync } from "node:fs";
 import path from "node:path";
+import { posixRelative } from "./posix-path";
 
 /**
  * WHAT AN AGENT-REACHABLE ROUTE CAN ACTUALLY WRITE — past its own file.
@@ -137,17 +138,17 @@ export function collectAgentReachableSources(entryFile: string, maxDepth = 4): R
         // A namespace import: follow every member actually called off it.
         for (const call of chunkSource.matchAll(new RegExp(`\\b${local}\\.(\\w+)\\s*\\(`, "g"))) {
           const body = extractExportBody(targetSource, call[1]);
-          if (body) walk(target, body, `${path.relative(REPO_ROOT, target)}#${call[1]}`, depth + 1);
+          if (body) walk(target, body, `${posixRelative(REPO_ROOT, target)}#${call[1]}`, depth + 1);
         }
         continue;
       }
 
       const body = extractExportBody(targetSource, binding.exported);
-      if (body) walk(target, body, `${path.relative(REPO_ROOT, target)}#${binding.exported}`, depth + 1);
+      if (body) walk(target, body, `${posixRelative(REPO_ROOT, target)}#${binding.exported}`, depth + 1);
     }
   };
 
-  walk(entryFile, readFileSync(entryFile, "utf8"), path.relative(REPO_ROOT, entryFile), 0);
+  walk(entryFile, readFileSync(entryFile, "utf8"), posixRelative(REPO_ROOT, entryFile), 0);
   return chunks;
 }
 

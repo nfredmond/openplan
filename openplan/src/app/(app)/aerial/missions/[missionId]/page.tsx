@@ -55,6 +55,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext, withPlanningContext } from "@/lib/projects/planning-context";
+import { isUuid } from "@/lib/uuid";
 
 type PackageRow = {
   id: string;
@@ -98,6 +99,7 @@ type AerialMissionDetailPageProps = {
 
 export default async function AerialMissionDetailPage({ params, searchParams }: AerialMissionDetailPageProps) {
   const { missionId } = await params;
+  if (!isUuid(missionId)) notFound();
   const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
@@ -145,7 +147,7 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
           title="This mission could not be read"
           description={`The database refused the query for this mission: ${
             missionErr.message ?? "no reason was returned"
-          }. This is not the same as the mission not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the record is gone.`}
+          }. This is not the same as the mission not existing. OpenPlan cannot tell you either way right now, so do not treat this page as evidence the record is gone.`}
         />
         <div className="mt-4">
           <Button asChild variant="outline">
@@ -440,7 +442,7 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
               }
               hint={
                 processingPosture.silentCount > 0
-                  ? `${processingPosture.silentCount} job${processingPosture.silentCount === 1 ? " has" : "s have"} sent no callback inside this deployment's ${silenceMinutes}-minute reporting window. That is silence, not a verdict — the work may still be running on the worker.`
+                  ? `${processingPosture.silentCount} job${processingPosture.silentCount === 1 ? " has" : "s have"} sent no callback inside this deployment's ${silenceMinutes}-minute reporting window. That is silence, not a verdict. The work may still be running on the worker.`
                   : "OpenPlan learns a job's state only from worker callbacks; it never polls."
               }
             />

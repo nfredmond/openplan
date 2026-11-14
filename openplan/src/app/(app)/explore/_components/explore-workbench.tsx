@@ -19,6 +19,8 @@ import {
 } from "@/lib/analysis/map-view-state";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import type { PlaceOfRecord } from "@/lib/geographies/place-of-record";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import { placeIdentityForStudyArea } from "@/lib/models/study-area";
 import { resolveStatusTone } from "@/lib/ui/status";
 import type {
   AnalysisContextLoadState,
@@ -105,6 +107,9 @@ export function ExploreWorkbench({
   const [workspaceId, setWorkspaceId] = useState("");
   const [queryText, setQueryText] = useState("");
   const [corridorGeojson, setCorridorGeojson] = useState<CorridorGeometry | null>(null);
+  // The place a search last resolved. Sent with a run only while it is still
+  // the area on screen, so the server can confirm the corridor's state.
+  const [pickedPlace, setPickedPlace] = useState<PlaceBoundaryResponse | null>(null);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
@@ -388,6 +393,7 @@ export function ExploreWorkbench({
 
     setError("");
     setIsSubmitting(true);
+    const placeForRun = placeIdentityForStudyArea(corridorGeojson, [pickedPlace, studyArea.place]);
 
     try {
       const response = await fetch("/api/analysis", {
@@ -400,6 +406,9 @@ export function ExploreWorkbench({
           queryText: queryForRun,
           corridorGeojson,
           ...(projectForRun ? { projectId: projectForRun } : {}),
+          // The place identity, so the server can confirm the corridor's state
+          // and choose that state's crash source. The geometry alone cannot.
+          ...(placeForRun ? { place: placeForRun } : {}),
         }),
       });
 
@@ -784,7 +793,7 @@ export function ExploreWorkbench({
               Start with your study area.
             </h2>
             <p className="mt-1.5 text-compact leading-relaxed text-muted-foreground">
-              Search for your county, city, or metro area — or draw it, or upload a boundary file. Then
+              Search for your county, city, or metro area, or draw it, or upload a boundary file. Then
               frame the planning question and run the analysis.
             </p>
           </div>
@@ -823,7 +832,7 @@ export function ExploreWorkbench({
                 <div className="analysis-studio-heading">
                   <p className="analysis-studio-label">Study setup</p>
                   <h3 className="analysis-studio-title">Workspace and intake</h3>
-                  <p className="analysis-studio-description">Connect the workspace and confirm membership. The study area is set below — pick a place, draw one, or upload a boundary file.</p>
+                  <p className="analysis-studio-description">Connect the workspace and confirm membership. The study area is set below: pick a place, draw one, or upload a boundary file.</p>
                 </div>
                 <StatusBadge tone={resolveStatusTone(workspaceLoadState)}>{workspaceStatusLabel}</StatusBadge>
               </div>
@@ -908,7 +917,7 @@ export function ExploreWorkbench({
                       : analysisContext?.project
                         ? analysisContext.projectSelection === "explicit"
                           ? "Runs you save will be attributed to this project."
-                          : "Showing the most recently updated project — pick one to attribute your runs."
+                          : "Showing the most recently updated project. Pick one to attribute your runs."
                         : analysisContextLoadState === "error"
                           ? "Project context is temporarily unavailable."
                           : "No project is attached to this workspace yet."}
@@ -1022,6 +1031,7 @@ export function ExploreWorkbench({
             <ExploreStudyAreaPanel
               corridorGeojson={corridorGeojson}
               onCorridorChange={setCorridorGeojson}
+              onPlaceResolved={setPickedPlace}
               studyArea={studyArea}
               homeGeographyLoadState={homeGeographyLoadState}
               openedForProject={openedForProject}

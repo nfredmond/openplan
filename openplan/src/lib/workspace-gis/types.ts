@@ -79,11 +79,11 @@ export type WorkspaceGisIngestFailureReason =
 export function describeIngestFailure(reason: WorkspaceGisIngestFailureReason): string {
   switch (reason) {
     case "abandoned":
-      return "This upload stopped partway through and never finished — the browser was closed, or the connection dropped. Nothing was drawn from it. Upload the file again.";
+      return "This upload stopped partway through and never finished: the browser was closed, or the connection dropped. Nothing was drawn from it. Upload the file again.";
     case "client_reported_failure":
       return "The upload was stopped by the browser while it was reading the file, so this version is incomplete and is not drawn.";
     case "feature_cap_exceeded":
-      return "This file holds more shapes than this deployment stores in one layer. Nothing was drawn from it — ask whoever operates this deployment about the per-layer limit, or upload a clipped extract.";
+      return "This file holds more shapes than this deployment stores in one layer. Nothing was drawn from it. Ask whoever operates this deployment about the per-layer limit, or upload a clipped extract.";
     case "geometry_rejected":
       return "Some shapes in this file could not be stored as valid WGS84 geometry, so the upload was stopped rather than left with holes in it.";
     case "worker_conversion_failed":

@@ -57,15 +57,15 @@ describe("buildSourceTransparency", () => {
 
     const crashes = findItem(items, "crashes");
     expect(crashes?.status).toBe("Estimated");
-    expect(crashes?.detail).toContain("Crash source API unavailable — area-based estimate.");
+    expect(crashes?.detail).toContain("Crash source API unavailable, area-based estimate.");
 
     const transit = findItem(items, "transit");
     expect(transit?.status).toBe("Estimated");
-    expect(transit?.detail).toContain("Transit stop inventory unavailable — area-based estimate.");
+    expect(transit?.detail).toContain("Transit stop inventory unavailable, area-based estimate.");
 
     const lodes = findItem(items, "lodes");
     expect(lodes?.status).toBe("Estimated");
-    expect(lodes?.detail).toContain("LODES employment not yet ingested — ACS-based estimate.");
+    expect(lodes?.detail).toContain("LODES employment not yet ingested, ACS-based estimate.");
   });
 
   it("marks unverifiable provenance as Unknown instead of claiming a live source", () => {

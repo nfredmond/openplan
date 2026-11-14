@@ -130,8 +130,8 @@ describe("MissionAoiEditor seeding from project geometry", () => {
 
     const seeded = await renderEditor(SEED_SOURCES);
     expect(seeded.getByText(/Start from the project's area/)).toBeInTheDocument();
-    expect(seeded.getByText("Project boundary — Riverbend")).toBeInTheDocument();
-    expect(seeded.getByText("Corridor — Main Street")).toBeInTheDocument();
+    expect(seeded.getByText("Project boundary: Riverbend")).toBeInTheDocument();
+    expect(seeded.getByText("Corridor: Main Street")).toBeInTheDocument();
   });
 
   it("round-trips a loaded boundary ring into the saved aoi_geojson, and shows its disclosure", async () => {

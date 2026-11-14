@@ -24,7 +24,7 @@ export function NearDuplicatesPanel({
       <p className="text-xs text-muted-foreground">
         {analysis.groupCount} near-duplicate group{analysis.groupCount === 1 ? "" : "s"} · {analysis.itemCount}{" "}
         comments (trigram similarity ≥ {Math.round(analysis.threshold * 100)}%).
-        {analysis.truncated ? " Large campaign — showing a bounded scan of the closest matches." : ""}
+        {analysis.truncated ? " Large campaign: showing a bounded scan of the closest matches." : ""}
       </p>
 
       <div className="space-y-3">

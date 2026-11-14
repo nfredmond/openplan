@@ -1,0 +1,148 @@
+{
+  "scope": "Synthetic unit and route controls, no native database or scientific acceptance",
+  "cases": [
+    {
+      "name": "harmless",
+      "exit": 0,
+      "passed": 88,
+      "failed": 0,
+      "skipped": 0,
+      "failed_tests": []
+    },
+    {
+      "name": "bypass-rules-ceiling",
+      "exit": 1,
+      "passed": 84,
+      "failed": 4,
+      "skipped": 0,
+      "failed_tests": [
+        "the claim ceiling reflects what the run actually established uses the shared ceiling for fail/recorded with stored screening_grade",
+        "the claim ceiling reflects what the run actually established uses the shared ceiling for inconclusive/recorded with stored screening_grade",
+        "the claim ceiling reflects what the run actually established uses the shared ceiling for pass/pending with stored screening_grade",
+        "the claim ceiling reflects what the run actually established uses the shared ceiling for pass/recorded with stored claim_grade_passed"
+      ]
+    },
+    {
+      "name": "hide-missing-claim",
+      "exit": 1,
+      "passed": 85,
+      "failed": 3,
+      "skipped": 0,
+      "failed_tests": [
+        "GET /api/county-runs/[countyRunId] keeps a missing claim explicit in the download without rebuilding one",
+        "the claim ceiling reflects what the run actually established does not grant screening use from the retired gate internal prototype only",
+        "the claim ceiling reflects what the run actually established does not grant screening use from the retired gate bounded screening-ready"
+      ]
+    },
+    {
+      "name": "accept-malformed-manifest",
+      "exit": 1,
+      "passed": 83,
+      "failed": 5,
+      "skipped": 0,
+      "failed_tests": [
+        "county retained metadata custody rejects a malformed nonempty manifest undefined",
+        "county retained metadata custody rejects a malformed nonempty manifest broken",
+        "county retained metadata custody rejects a malformed nonempty manifest { schema_version: 'unknown' }",
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence",
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence"
+      ]
+    },
+    {
+      "name": "accept-malformed-validation",
+      "exit": 1,
+      "passed": 83,
+      "failed": 5,
+      "skipped": 0,
+      "failed_tests": [
+        "county retained metadata custody rejects malformed validation metadata undefined",
+        "county retained metadata custody rejects malformed validation metadata broken",
+        "county retained metadata custody rejects malformed validation metadata { metrics: { median_absolute_percent_error: 'zero' } }",
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence",
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence"
+      ]
+    },
+    {
+      "name": "ignore-summary-mismatch",
+      "exit": 1,
+      "passed": 85,
+      "failed": 3,
+      "skipped": 0,
+      "failed_tests": [
+        "county retained metadata custody keeps loaded, unloaded, unmatched and unsupported accounting unchanged, including genuine zero",
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence",
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence"
+      ]
+    },
+    {
+      "name": "hide-detail-read-failure",
+      "exit": 1,
+      "passed": 86,
+      "failed": 2,
+      "skipped": 0,
+      "failed_tests": [
+        "GET /api/county-runs/[countyRunId] reports unavailable evidence when modeling evidence tables are not migrated yet",
+        "GET /api/county-runs/[countyRunId] refuses a failed source read instead of reporting no sources"
+      ]
+    },
+    {
+      "name": "hide-download-read-failure",
+      "exit": 1,
+      "passed": 87,
+      "failed": 1,
+      "skipped": 0,
+      "failed_tests": [
+        "GET /api/county-runs/[countyRunId] refuses a failed source read instead of reporting no sources"
+      ]
+    },
+    {
+      "name": "skip-detail-custody",
+      "exit": 1,
+      "passed": 87,
+      "failed": 1,
+      "skipped": 0,
+      "failed_tests": [
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence"
+      ]
+    },
+    {
+      "name": "skip-download-custody",
+      "exit": 1,
+      "passed": 87,
+      "failed": 1,
+      "skipped": 0,
+      "failed_tests": [
+        "GET /api/county-runs/[countyRunId] refuses malformed and conflicting retained metadata before reading evidence"
+      ]
+    },
+    {
+      "name": "write-on-download",
+      "exit": 1,
+      "passed": 82,
+      "failed": 6,
+      "skipped": 0,
+      "failed_tests": [
+        "GET /api/county-runs/[countyRunId] keeps display and download tiers identical for outcome pass, rules 4, custody recorded",
+        "GET /api/county-runs/[countyRunId] keeps display and download tiers identical for outcome fail, rules 4, custody recorded",
+        "GET /api/county-runs/[countyRunId] keeps display and download tiers identical for outcome inconclusive, rules 4, custody recorded",
+        "GET /api/county-runs/[countyRunId] keeps display and download tiers identical for outcome pass, rules 3, custody recorded",
+        "GET /api/county-runs/[countyRunId] keeps display and download tiers identical for outcome pass, rules 4, custody pending",
+        "GET /api/county-runs/[countyRunId] keeps display and download tiers identical for outcome null, rules 4, custody null"
+      ]
+    },
+    {
+      "name": "restored",
+      "exit": 0,
+      "passed": 88,
+      "failed": 0,
+      "skipped": 0,
+      "failed_tests": []
+    }
+  ],
+  "restored_sha256": {
+    "src/lib/models/county-run-custody.ts": "933fbac8e95ad213bbb7503db2b78beb9c34553c8af0869a1297da6e3f9f78be",
+    "src/lib/models/county-run-provenance.ts": "b64506ae21186391122d171020c853d0f7c474afebd979680ad8d85687919580",
+    "src/app/api/county-runs/[countyRunId]/route.ts": "34957b1d756879c2aaca11a040b60a13842c0a7f3192517ecc4fd73103a8af99",
+    "src/app/api/county-runs/[countyRunId]/provenance/route.ts": "0e330fc8250caf83c651b9dfb4a4ae4f84d17a8865f79a92b29bd2a6ba076cda"
+  }
+}

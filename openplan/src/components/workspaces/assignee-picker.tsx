@@ -85,7 +85,7 @@ export function AssigneePicker({
       <div className="space-y-1">
         <p className="text-sm text-destructive" role="alert">
           Couldn&apos;t load the team roster, so {label.toLowerCase()} can&apos;t be chosen right
-          now — that&apos;s a loading problem, not an empty team. ({loadError})
+          now. That&apos;s a loading problem, not an empty team. ({loadError})
         </p>
         <Button type="button" variant="outline" size="sm" onClick={() => void load()}>
           Try again

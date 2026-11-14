@@ -25,14 +25,14 @@ export const PROPOSAL_SECTION_TEMPLATE: readonly GrantApplicationSectionTemplate
     key: "approach",
     title: "Understanding and approach",
     guidance:
-      "Describe the understanding of the work and the proposed approach, grounded in the linked project record and any workspace analysis. Follow the solicitation's own outline for this section — the current solicitation always controls what an approach section must contain.",
+      "Describe the understanding of the work and the proposed approach, grounded in the linked project record and any workspace analysis. Follow the solicitation's own outline for this section. The current solicitation always controls what an approach section must contain.",
     suggestedEvidence: ["project", "kb", "modeling"],
   },
   {
     key: "team_qualifications",
     title: "Team and qualifications",
     guidance:
-      "Introduce the proposed team and its qualifications using ONLY documents uploaded to this workspace's Knowledge Base (résumés, statements of qualifications, license records). Credentials are never drafted from model memory — a claim about a person that is not in an uploaded document does not belong in this section. Verify named-staff and licensure requirements against the current solicitation.",
+      "Introduce the proposed team and its qualifications using ONLY documents uploaded to this workspace's Knowledge Base (résumés, statements of qualifications, license records). Credentials are never drafted from model memory. A claim about a person that is not in an uploaded document does not belong in this section. Verify named-staff and licensure requirements against the current solicitation.",
     suggestedEvidence: ["kb"],
   },
   {
@@ -46,14 +46,14 @@ export const PROPOSAL_SECTION_TEMPLATE: readonly GrantApplicationSectionTemplate
     key: "schedule",
     title: "Schedule and management",
     guidance:
-      "Describe the proposed schedule and management approach from the linked project's stage and delivery data. When no dated schedule exists in workspace records, describe sequencing qualitatively — never invent dates or durations. Verify milestone and deliverable expectations against the current solicitation.",
+      "Describe the proposed schedule and management approach from the linked project's stage and delivery data. When no dated schedule exists in workspace records, describe sequencing qualitatively. Never invent dates or durations. Verify milestone and deliverable expectations against the current solicitation.",
     suggestedEvidence: ["project"],
   },
   {
     key: "fee_placeholder",
     title: "Fee and cost proposal",
     guidance:
-      "Fee schedules, rates, and cost content come from your own estimates and rate records — this section is never AI-drafted. Many solicitations require the fee in a separate sealed envelope or portal upload; verify the current solicitation's fee-submission format.",
+      "Fee schedules, rates, and cost content come from your own estimates and rate records. This section is never AI-drafted. Many solicitations require the fee in a separate sealed envelope or portal upload; verify the current solicitation's fee-submission format.",
     suggestedEvidence: ["funding"],
     aiDraftingEnabled: false,
   },
