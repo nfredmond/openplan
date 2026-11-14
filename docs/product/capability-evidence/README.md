@@ -48,6 +48,15 @@ checker before the move (frozen in
 the current one, and requires the same verdict and refusal text
 (`proven-job-checker-equivalence.test.ts`).
 
+On November 14, 2026 (lane 45) the checker gained rules that refuse single
+changes a fresh-context review made to a copy of the first record and the
+checker had accepted (KI-2026-11-14-303). Each new rule is one the committed
+record meets: `first-proven-job-record-accepted.test.ts` runs that record
+and its six PDFs through the current checker, and
+`proven-job-checker-gaps.test.ts` makes each change to a copy of it and
+requires main's checker to accept the copy and the current one to refuse it.
+The strengthened checker accepts the first record.
+
 ## What the checker refuses
 
 For the job `safety-action-plan-and-ss4a-in-three-places`, decided in the
@@ -65,7 +74,10 @@ the checker refuses a record unless:
 4. Each journey names its executor (agent and model) and how the sign-up
    confirmation was read: `email_link`, `operator_relay` or
    `admin_generate_link`.
-5. The Nevada journey stored at least one crash from `fars-national`.
+5. Every journey stored at least one crash, ranked at least one high-injury
+   segment, saved at least one countermeasure and recorded at least one
+   approved comment and one staff review. The Nevada journey's crashes come
+   from `fars-national`.
 6. Each journey saved a benefit-cost analysis and has both PDFs, a safety
    action plan and an SS4A application. Each PDF is a committed file whose
    SHA-256 and size match the record, has the page count the record states,
@@ -73,11 +85,22 @@ the checker refuses a record unless:
    network map (found by a rendered page image and its hash), the crash
    summary, countermeasures, the benefit-cost analysis and the engagement
    summary (each found by `pdftotext` text on the page the record names).
-7. Every screen was checked at 1440 and 390 pixels, in light and dark mode,
-   and every check reports zero serious and zero critical axe violations.
+   Each text item names its own heading from the definition (`itemHeadings`,
+   such as "Appendix B. Crash summary" in the SS4A application), and that
+   heading is a line of its own on the page, not words in a sentence or a
+   table. The map item's page carries the words the export prints with its
+   map (`mapPageText`: "High-injury network map" in the plan, "Source
+   severity coverage" in the SS4A application).
+7. Every journey checked each of the nine screens the definition names
+   (sign-up, portal, dashboard, project, safety, benefit-cost, campaign
+   responses, report and grant application) at 1440 and 390 pixels, in light
+   and dark mode, and every check reports zero serious and zero critical axe
+   violations.
 8. A second account's requests for the first account's safety action plan and
    SS4A application returned no content. Each check names its request and
-   kind. A `data` check (an API route or a file download) counts only with
+   kind. The report page, the report download and the application download
+   are each checked once per journey: the first record's checks name no
+   journey, so the checker counts them. A `data` check (an API route or a file download) counts only with
    403 (workspace access denied) or 404 (not found). A `page` check counts
    with 403 or 404, or with 200 when the journey read the rendered page and
    recorded `notFoundRendered: true`, `recordTextFound: false` and the
@@ -93,7 +116,10 @@ the checker refuses a record unless:
    pass, no human usefulness review, FARS is fatal-only, unless a source check
    matched, crash counts not independently confirmed, and, when a page check
    answered 200, `report-page-answers-200-with-not-found-screen`. A source check
-   that found different counts refuses the record.
+   that found different counts refuses the record. A source check marked
+   matched names an https address on a host the definition lists for the
+   crash sources (`static.nhtsa.gov`, `crashviewer.nhtsa.dot.gov`,
+   `data.ca.gov`) and says in at least 80 characters what was compared.
 10. No text field and no PDF page holds an email address, a plus-address, a
     JWT, a provider token (including any `sk-` key), a sign-in link, a cookie
     or a password. The refusal names the field or page, never the value.
@@ -131,6 +157,8 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
    violations at both widths and modes.
 8. A second account was refused the review PDF and XLSX downloads and the
    campaign read as data checks, and the staff campaign page as a page check.
+   Each check names the journey it was made for, and each journey has each
+   of the four once.
 9. An anonymous participant was refused the campaign read, the staff item list
    and both downloads (401, 403 or 404), and the public portal read carried no
    staff-only field.
@@ -145,6 +173,14 @@ table the matcher reads as a column gap and prints no answered count
 The checker proves that the required parts are present and bound to one
 commit. It cannot tell whether a PDF is useful to a planner, whether the map
 image shows the right network, or whether a place label names the place its
-Census id identifies. It does not check console errors or page-level
+Census id identifies (no committed table maps a Census id to its name). It
+does not render the map page again: Poppler's `pdftoppm` reproduces all six
+recorded image hashes of the first record on the workstation that recorded
+them, but its PNG bytes depend on the Poppler, FreeType and zlib versions, so
+a recomputed hash would pass on one platform only. It reads the words
+printed with the map instead, which shows the page holds the map's figure,
+not that the drawing is there. It cannot repeat a source check's comparison.
+For the first job it counts cross-workspace checks per journey, so one
+journey's checks repeated for each journey would pass. It does not check console errors or page-level
 horizontal scroll; the record states them for a reviewer. Reading PDF text
 needs Poppler's `pdftotext`; without it the checker refuses the record.
