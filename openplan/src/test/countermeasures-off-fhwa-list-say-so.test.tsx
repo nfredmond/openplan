@@ -207,7 +207,7 @@ describe("the benefit-cost Evidence tab", () => {
     }] };
     render(<BcaSafetyEvidencePanel safety={safety} projectId={EVIDENCE_IDS.project} doc={exampleBcaDocument(EVIDENCE_IDS.project)} onChange={vi.fn()} onNotice={vi.fn()} />);
     const items = screen.getAllByRole("listitem").map((item) => item.textContent);
-    expect(items[0]).toMatch(/^Speed Safety Cameras\. Not on FHWA's Proven Safety Countermeasures list since July 2026\. \[VERIFY\]/);
+    expect(items[0]).toMatch(/^Speed Safety Cameras\. Not on FHWA's Proven Safety Countermeasures list since July 2026\. CMF Clearinghouse, read November 14, 2026: entry 11486/);
     expect(items[1]).not.toMatch(ANY_STATUS);
   });
 });

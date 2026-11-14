@@ -12,7 +12,7 @@
     "retrievalNote": "FHWA's site refused direct automated reads on 2026-10-13 and 2026-11-13 (HTTP 403), so the live list page could not be read. The list's membership comes from Internet Archive captures of FHWA's list page, read 2026-11-13: the newest capture read is 2026-11-04, and the same 23 items appear in every capture from 2026-07-10 through 2026-11-04. Whether the live page still matches that capture is [VERIFY]. The six Roadway Departure entries and Pavement Friction Management summarize their FHWA pages as read in full on 2026-11-13 through a reader service (r.jina.ai). The other earlier entries' crash types and descriptions come from 2026-10-13 web search results and were not re-read; Roundabouts still points to an older FHWA roundabouts page. [VERIFY] each of those against its FHWA page before a plan is published."
   },
   "listNote": "FHWA's list, read 2026-11-13 from Internet Archive captures (newest 2026-11-04), names 23 countermeasures in four groups: Pedestrian (6), Roadway Departure (6), Intersections (7) and Crosscutting (4). This file carries 16 of those 23, including all six Roadway Departure items. It does not carry Backplates with Retroreflective Borders, Corridor Access Management, Reduced Left-Turn Conflict Intersections, Systemic Application of Multiple Low-Cost Countermeasures at Stop-Controlled Intersections, Yellow Change Intervals, Local Road Safety Plans or Road Safety Audit. FHWA removed five items from the list between the captures of 2026-06-30 and 2026-07-10: Roadway Reconfiguration (road diets), Bicycle Lanes, Appropriate Speed Limits for All Road Users, Speed Safety Cameras and Variable Speed Limits. This file keeps the first four, because saved plans cite them by id, and marks each with its fhwaList status. Variable Speed Limits was never in this file. Focus areas use FHWA's group names before July 2026 (Pedestrian/Bicyclist, Speed Management).",
-  "cmfPolicy": "A crash modification factor is shown only with its CMF Clearinghouse ID, after that entry has been read. No entry was read for this version, so every value is left out and marked [VERIFY].",
+  "cmfPolicy": "The list never applies a crash modification factor by itself. Each note names up to three CMF Clearinghouse entries read on the date it gives, with each factor's star rating and the crashes and roads it covers; the planner chooses a factor that fits the site. An item with no entry read says so.",
   "countermeasures": [
     {
       "id": "leading-pedestrian-interval",
@@ -23,7 +23,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/leading-pedestrian-interval",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 9903, leading pedestrian interval, 0.81 for pedestrian crashes, five stars; entry 9902, 0.83 for fatal and injury crashes of all types, five stars (both Goughnour and others, 2018, Chicago); entry 1993, 0.413 for pedestrian crashes, four stars (Fayish and Gross, 2009, State College, Pennsylvania). All three come from urban or suburban signalized intersections, not from other crossings.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 9903, "factor": 0.81, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=9903" },
+        { "id": 9902, "factor": 0.83, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=9902" },
+        { "id": 1993, "factor": 0.413, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=1993" }
+      ]
     },
     {
       "id": "road-diets",
@@ -42,7 +48,12 @@
         "readOn": "2026-11-13"
       },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 2841, four lanes to three with a center turn lane, 0.53 for crashes of all types and severities, five stars (Persaud and others, 2010); entry 199, 0.71 for all crashes, five stars (Harkey and others, 2008, urban minor arterials). Both convert four-lane undivided urban or suburban roads, and neither gives a factor for pedestrian crashes alone.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 2841, "factor": 0.53, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2841" },
+        { "id": 199, "factor": 0.71, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=199" }
+      ]
     },
     {
       "id": "medians-and-pedestrian-refuge-islands",
@@ -53,7 +64,12 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/medians-and-pedestrian-refuge-islands-urban-and-suburban-areas",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 8799, raised median with or without a marked crosswalk at uncontrolled crossings, 0.685 for pedestrian crashes, four stars; entry 8800, 0.742 for crashes of all types, four stars (both Zegeer and others, 2017, urban and suburban roads of two to eight lanes in nine states). No five-star entry was found, and these factors are for uncontrolled crossings, not signalized intersections.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 8799, "factor": 0.685, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=8799" },
+        { "id": 8800, "factor": 0.742, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=8800" }
+      ]
     },
     {
       "id": "rectangular-rapid-flashing-beacons",
@@ -64,7 +80,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/rectangular-rapid-flashing-beacons-rrfb",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 11158, rectangular rapid flashing beacon, 0.31 for pedestrian crashes, four stars; entry 11168, 0.3 for fatal and injury pedestrian crashes, four stars; entry 11172, 1.14 for crashes of all types, four stars (all Goswamy and Abdel-Aty, 2022, Florida crossings). The same study found more crashes of all types, so a pedestrian factor is not a factor for all crashes; no five-star entry was found.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 11158, "factor": 0.31, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11158" },
+        { "id": 11168, "factor": 0.3, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11168" },
+        { "id": 11172, "factor": 1.14, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11172" }
+      ]
     },
     {
       "id": "pedestrian-hybrid-beacons",
@@ -75,7 +97,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/pedestrian-hybrid-beacons",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse entries for this item, but none was read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 10591, pedestrian hybrid beacon, 0.567 for pedestrian crashes, five stars; entry 10608, 0.55 for fatal and injury pedestrian crashes, five stars; entry 10586, 0.808 for fatal and injury crashes of all types, five stars (all Fitzpatrick and others, 2019, Arizona). These come from one state's urban and suburban crossings, not from rural roads.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 10591, "factor": 0.567, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10591" },
+        { "id": 10608, "factor": 0.55, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10608" },
+        { "id": 10586, "factor": 0.808, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10586" }
+      ]
     },
     {
       "id": "crosswalk-visibility-enhancements",
@@ -86,7 +114,12 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/crosswalk-visibility-enhancements",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 2697, high-visibility yellow continental crosswalks at schools, 0.63 for pedestrian crashes, four stars (Feldman and others, 2010, San Francisco); entry 9017, advance yield or stop markings and signs, 0.75 for pedestrian crashes, three stars (Zegeer and others, 2017). No five-star entry was found; each factor covers one treatment, not every visibility enhancement, and neither covers crosswalk lighting.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 2697, "factor": 0.63, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2697" },
+        { "id": 9017, "factor": 0.75, "stars": 3, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=9017" }
+      ]
     },
     {
       "id": "walkways",
@@ -97,7 +130,11 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/walkways",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 11246, install sidewalk, 0.598 for pedestrian crashes, four stars (Abou-Senna and others, 2022, Florida). It is the only four- or five-star walkway entry found; it gives no area type and no factor for paved shoulders.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 11246, "factor": 0.598, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11246" }
+      ]
     },
     {
       "id": "bicycle-lanes",
@@ -116,7 +153,12 @@
         "readOn": "2026-11-13"
       },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 11555, install bicycle lanes, 0.571 for fatal and injury crashes of all types at intersections, four stars (Avelar and others, 2023, Texas); entry 10737, 0.435 for crashes of all types on urban four-lane undivided roads where lanes or shoulders were narrowed, four stars (a 2021 study, Texas). Neither counts bicyclist crashes alone, and no four- or five-star entry for bicyclist crashes was found.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 11555, "factor": 0.571, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11555" },
+        { "id": 10737, "factor": 0.435, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10737" }
+      ]
     },
     {
       "id": "lighting",
@@ -127,7 +169,12 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 7774, install lighting, 0.63 for fatal and injury nighttime crashes on all road types, four stars (Abdel-Aty and others, 2014, Florida); entry 11026, raise average lighting from under 0.5 to 0.5 to 1.0 footcandles, 0.679 for nighttime crashes, four stars (Li and others, 2021, Tampa). No five-star entry was found, and neither applies to daytime crashes.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 7774, "factor": 0.63, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=7774" },
+        { "id": 11026, "factor": 0.679, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11026" }
+      ]
     },
     {
       "id": "pavement-friction-management",
@@ -138,7 +185,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/pavement-friction-management",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 10342, 10333 and 2259, but none was read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 10333, high friction surface treatment on curves, 0.515 for fatal and injury crashes, five stars; entry 10342, the same treatment on ramps, 0.365 for fatal and injury crashes, four stars (both Merrit and others, 2020); entry 2259, raised skid resistance on sections with many wet-road crashes and low friction, 0.799 for all crashes, four stars (Lyon and Persaud, 2008, New York). Each applies to its own site type: a curve factor is not a factor for an intersection approach.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 10333, "factor": 0.515, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10333" },
+        { "id": 10342, "factor": 0.365, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10342" },
+        { "id": 2259, "factor": 0.799, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2259" }
+      ]
     },
     {
       "id": "enhanced-delineation-horizontal-curves",
@@ -149,7 +202,12 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/enhanced-delineation-horizontal-curves",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 10612, improve curve delineation, 0.82 for fatal and injury non-intersection crashes, five stars; entry 2438, chevron signs on horizontal curves, 0.84 for the same crashes, four stars (both Srinivasan and others, 2009, rural two-lane roads). Both are for rural two-lane curves, and other curve treatments have other factors.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 10612, "factor": 0.82, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=10612" },
+        { "id": 2438, "factor": 0.84, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2438" }
+      ]
     },
     {
       "id": "longitudinal-rumble-strips-and-stripes",
@@ -160,7 +218,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/longitudinal-rumble-strips-and-stripes-two-lane-roads",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 3358, 3356, 3425 and 3648, but none was read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 3357, centerline rumble strips, 0.55 for fatal and injury head-on and sideswipe crashes, five stars; entry 3454, shoulder rumble strips, 0.64 for fatal and injury run-off-road crashes, five stars (both Torbic and others, 2009); entry 6851, centerline and shoulder rumble strips together, 0.771 for fatal and injury crashes of all types, five stars (Persaud and others, 2015). All three are for rural two-lane undivided roads, and each fits one strip placement and crash type.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 3357, "factor": 0.55, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=3357" },
+        { "id": 3454, "factor": 0.64, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=3454" },
+        { "id": 6851, "factor": 0.771, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=6851" }
+      ]
     },
     {
       "id": "median-barriers",
@@ -171,7 +235,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/median-barriers",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse ID 7040, but it was not read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 11455, high-tension cable median barrier, 0.209 for cross-median crashes, five stars; entry 11463, 0.61 for fatal and serious injury crashes of all types on urban segments, five stars; entry 11451, 1.133 for crashes of all types and severities, five stars (all Gayah and others, 2023, Pennsylvania freeways). A barrier trades cross-median crashes for barrier strikes, and these factors are for freeways, not two-lane roads.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 11455, "factor": 0.209, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11455" },
+        { "id": 11463, "factor": 0.61, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11463" },
+        { "id": 11451, "factor": 1.133, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11451" }
+      ]
     },
     {
       "id": "roadside-design-improvements-curves",
@@ -182,7 +252,12 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/roadside-design-improvements-curves",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 4627, 4632, 35 and 36, but none was read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 8396, w-beam guardrail, 0.74 for fatal and serious injury run-off-road crashes, four stars (Park and others, 2016, Florida freeways); entry 4632, flatten a sideslope from 1V:4H to 1V:6H, 0.88 for single-vehicle crashes on rural two-lane roads, not star-rated (from the Highway Safety Manual; Harkey and others, 2008). No four- or five-star entry specific to curves was found, so neither is a curve factor.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 8396, "factor": 0.74, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=8396" },
+        { "id": 4632, "factor": 0.88, "stars": null, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=4632" }
+      ]
     },
     {
       "id": "safetyedge",
@@ -193,7 +268,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/safetyedgesm",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 9205, 9211 and 9217, but none was read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 4322, safety edge treatment, 0.591 for fatal and injury crashes, five stars (Graham and others, 2011, Indiana); entry 9205, 0.892 for fatal, serious and minor injury crashes, five stars; entry 9211, 0.79 for run-off-road crashes, five stars (both Donnell and others, 2017, five states). All three are for rural two-lane roads, not curbed urban streets.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 4322, "factor": 0.591, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=4322" },
+        { "id": 9205, "factor": 0.892, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=9205" },
+        { "id": 9211, "factor": 0.79, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=9211" }
+      ]
     },
     {
       "id": "wider-edge-lines",
@@ -204,7 +285,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/wider-edge-lines",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse ID 4737, but it was not read here; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 4737, edge lines widened from 4 to 6 inches, 0.635 for fatal and injury crashes, four stars; entry 4736, 0.825 for all crashes, four stars; entry 4745, 0.73 for single-vehicle crashes, four stars (all Park and others, 2012, Kansas). No five-star entry was found, and these factors are for rural two-lane roads, not multilane highways.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 4737, "factor": 0.635, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=4737" },
+        { "id": 4736, "factor": 0.825, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=4736" },
+        { "id": 4745, "factor": 0.73, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=4745" }
+      ]
     },
     {
       "id": "dedicated-turn-lanes",
@@ -215,7 +302,13 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/dedicated-left-and-right-turn-lanes-intersections",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 255, left-turn lane on one major-road approach, 0.45 for fatal and injury crashes at rural three-leg intersections, four stars; entry 265, the same lane, 0.71 for fatal and injury crashes at urban four-leg intersections, four stars; entry 287, right-turn lane on one major-road approach, 0.77 for fatal and injury crashes, four stars (all Harwood and others, 2002). All three are for stop-controlled intersections; signalized intersections have other factors.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 255, "factor": 0.45, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=255" },
+        { "id": 265, "factor": 0.71, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=265" },
+        { "id": 287, "factor": 0.77, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=287" }
+      ]
     },
     {
       "id": "roundabouts",
@@ -226,7 +319,12 @@
       "sourceUrl": "https://highways.dot.gov/safety/intersection-safety/nrw",
       "fhwaList": { "status": "on_list" },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given. The source URL is FHWA's roundabouts page that names this a proven countermeasure; the countermeasure's own page was not confirmed."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 4253, signalized intersection converted to a modern roundabout, 0.342 for fatal and injury crashes, four stars (Srinivasan and others, 2011, urban and suburban sites in ten states); entry 211, rural stop-controlled intersection converted to a single-lane roundabout, 0.18 for injury crashes, four stars (Persaud and others, 2001). A factor for a former signal is not one for a former stop sign, and a single-lane factor is not one for a multilane roundabout.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 4253, "factor": 0.342, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=4253" },
+        { "id": 211, "factor": 0.18, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=211" }
+      ]
     },
     {
       "id": "appropriate-speed-limits",
@@ -245,7 +343,12 @@
         "readOn": "2026-11-13"
       },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 8077, posted speed limit lowered from 50 to 40 km/h, 0.501 for fatal and injury crashes, four stars; entry 8076, 0.74 for crashes of all severities, five stars (both Islam and El-Basyouny, 2015, urban two-lane collectors in Edmonton, Canada). These cover one city's change on one road type; a factor for one limit change is not a factor for every change.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 8077, "factor": 0.501, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=8077" },
+        { "id": 8076, "factor": 0.74, "stars": 5, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=8076" }
+      ]
     },
     {
       "id": "speed-safety-cameras",
@@ -264,7 +367,13 @@
         "readOn": "2026-11-13"
       },
       "cmf": null,
-      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+      "cmfNote": "CMF Clearinghouse, read November 14, 2026: entry 11486, automated speed enforcement cameras, 0.851 for fatal and serious injury crashes, four stars; entry 11485, 0.882 for all crashes, four stars (both Tilahun, 2023, Chicago); entry 2921, 0.52 for injury crashes, four stars (Shin and others, 2009, Scottsdale, Arizona). No five-star entry was found, and fixed urban cameras are not mobile or section enforcement.",
+      "cmfReadOn": "2026-11-14",
+      "cmfEntries": [
+        { "id": 11486, "factor": 0.851, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11486" },
+        { "id": 11485, "factor": 0.882, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=11485" },
+        { "id": 2921, "factor": 0.52, "stars": 4, "url": "https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=2921" }
+      ]
     }
   ]
 }
