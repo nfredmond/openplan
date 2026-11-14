@@ -42,9 +42,37 @@ tag points at it). File hashes match the PR heads.
 | Write in read mode | A read file with an `INSERT` | `REFUSED: line 2: INSERT is not allowed in read mode`; nothing sent. The live test shows the database also refuses a data-modifying CTE in read mode. |
 | Credential in the container record | Canary value passed on stdin, container kept for inspection | The container received it (hashes match); 0 copies in `docker inspect` and 0 in its logs. The `-e NAME` control left it in the record. |
 
+## Lane 28: one message, November 14, 2026
+
+Scratch stack `kitrtt` (ports 58460 to 58469; database, Auth, Storage, REST
+and Kong) at origin/main `7a411a317`, 448 migrations, PostgreSQL 17.11
+(`17.11.0.006`). The kit ran in `openplan-hosted-install:5b3d7b5786b9` (psql
+17.12, Python 3.11.2) with this branch's kit files, connected through the test
+file's `DelayProxy`, which holds every client-to-server packet for 25 ms. The
+seven files came from `work/integration-migrations-20261114` at `4ed350b4a`
+with that branch's `postchecks.sql`; plan purpose `rehearsal`.
+
+| Run at 25 ms | Messages sent | Total | Lock held (server clock) |
+|---|---|---|---|
+| Round trip (`rtt`) | 27 | | median 25.6 ms (25.5 to 25.9) |
+| Dry run, origin/main kit, its old send (`psql -1 -f`) | 182 | 5,400 ms | not measured by that kit |
+| Dry run, this kit's file, old send | 185 | 5,466 ms | 4,618 ms |
+| Dry run, this kit, no proxy (the `--rehearsed` input) | 1 | 629 ms | 270 ms |
+| Dry run, this kit, one message | 1 | 708 ms | 256 ms (estimate printed first: 270 ms) |
+| Install, this kit, one message | 1 | 713 ms | 267 ms (estimate 256 ms) |
+
+The install read `installed`, history 455 through `20261102140000`, and
+post-verify against the proxied dry run passed (48 changed keys, 83 statement
+checks). The old install path was not run: it would have committed the same
+change, and the stack holds one database. Its lock time would be the old dry
+run's plus one round trip for `COMMIT`.
+
 ## What only hosted can prove
 
-The pooler user's right to write `supabase_migrations.schema_migrations`;
+That the session pooler passes a 165 KB multi-statement message unchanged
+and the round trip it adds; how long hosted takes to send the dry run's
+result back while the lock is held (the proxy delays only client packets);
+the pooler user's right to write `supabase_migrations.schema_migrations`;
 dry-run wall time and lock waits under real traffic on Micro compute; the real
 managed default privileges and history row format; whether `railway redeploy`
 applies variables set with `--skip-deploys`; and the restore of a real capture
