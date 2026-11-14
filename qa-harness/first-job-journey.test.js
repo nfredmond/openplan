@@ -6,16 +6,25 @@ const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
 const lib = require('./first-job-journey-lib');
 const { buildMinimalPdf } = require('./fixtures/minimal-pdf');
 
 const sha = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
-/** Poppler prints its version and exits non-zero on -v, so only a missing binary counts as absent. */
+const { findPdfPhrase, pdfTextHasPhrase } = require('../openplan/scripts/lib/pdf-text-match.mjs');
+const poppler = require('../openplan/scripts/lib/poppler-text.mjs');
+
+/** Poppler's own tools on PATH. xpdf's pdftotext (Git Bash on Windows) does not count. */
 function hasPoppler() {
-  return ['pdftotext', 'pdftoppm'].every((tool) => !spawnSync(tool, ['-v'], { stdio: 'ignore' }).error);
+  return ['pdftotext', 'pdftoppm'].every((tool) => poppler.pdfToolVersion(tool).poppler);
 }
+
+/** A stand-in for spawnSync that answers `-v` the way a given program does. */
+function versionStub(output, { missing = false } = {}) {
+  return () => (missing ? { error: Object.assign(new Error('spawn pdftotext ENOENT'), { code: 'ENOENT' }) } : { status: 99, stdout: '', stderr: output });
+}
+const XPDF_VERSION = 'pdftotext version 4.06 [www.xpdfreader.com]\nCopyright 1996-2025 Glyph & Cog, LLC\n';
+const POPPLER_VERSION = 'pdftotext version 25.07.0\nCopyright 2005-2025 The Poppler Developers - http://poppler.freedesktop.org\nCopyright 1996-2011, 2022 Glyph & Cog, LLC\n';
 
 test('rehearsal mode runs only on a local origin', async () => {
   const proofOrigin = await lib.loadProofOrigin();
@@ -115,10 +124,10 @@ const GREY = [82, 99, 111];
 /** A four-page report fixture. `drop` removes one item's heading; `noRed` draws the map in grey. */
 function reportPages(drop = null, { noRed = false } = {}) {
   const pages = [
-    { lines: ['Safety action plan (draft)', 'Crash summary', 'Fatal 5, serious injury 41.'] },
+    { lines: ['Safety action plan (working)', 'Crash summary', 'Synthetic crash source. Years requested: 2022, 2023.', 'Fatal 5, serious injury 41.'] },
     { lines: ['High-injury network map. All 3 ranked segments are drawn in red.'], rect: { x: 100, y: 200, w: 300, h: 200, rgb: RED } },
-    { lines: ['Countermeasures', 'Enhanced Delineation for Horizontal Curves on State Hwy 49.'] },
-    { lines: ['Engagement summary', 'Comments approved: 2.', 'Benefit-cost summary', 'Benefit-cost ratio 4.2.'] },
+    { lines: ['Countermeasures', 'Proposed by staff for review. Not an engineering finding.', 'Enhanced Delineation for Horizontal Curves on State Hwy 49.'] },
+    { lines: ['Engagement summary', 'Comments approved: 2.', 'Source: Engagement campaign 1.', 'Benefit-cost summary', 'Benefit-cost ratio 4.2.', 'Source: Saved benefit-cost analysis version 1.'] },
   ];
   const headings = { 'crash-summary': 'Crash summary', 'high-injury-map': 'High-injury network map. All 3 ranked segments are drawn in red.', countermeasures: 'Countermeasures', 'engagement-summary': 'Engagement summary', bca: 'Benefit-cost summary' };
   return pages.map((page) => {
@@ -170,10 +179,10 @@ test('the PDF item finder reports each item missing when its heading is absent',
 test('a heading printed with "Missing" or a blank map does not count as found', { skip: !hasPoppler() && 'Poppler is not installed' }, () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-pdf-'));
   const pages = reportPages();
-  pages[3] = { lines: ['Engagement summary', 'Comments approved: 2.', 'Benefit-cost summary', 'Missing. No benefit-cost analysis or screening is saved for the linked project.'] };
+  pages[3] = { lines: ['Engagement summary', 'Comments approved: 2.', 'Source: Engagement campaign 1.', 'Benefit-cost summary', 'Missing. No benefit-cost analysis or screening is saved for the linked project.'] };
   const bcaMissing = find('safety-action-plan', writePdf(dir, 'bca-missing.pdf', pages), dir);
   assert.deepEqual(bcaMissing.missing.map((entry) => entry.item), ['bca']);
-  assert.match(bcaMissing.missing[0].reason, /missing\. no benefit-cost/);
+  assert.match(bcaMissing.missing[0].reason, /"Benefit-cost summary" is followed by an absence word on page 4/);
 
   const greyMap = reportPages(null, { noRed: true });
   assert.ok(greyMap[1].rect && greyMap[1].rect.rgb === GREY);
@@ -187,9 +196,9 @@ test('the SS4A finder reads the five appendix headings', { skip: !hasPoppler() &
   const file = writePdf(dir, 'ss4a.pdf', [
     { lines: ['Appendix A. High-injury network map', 'Source: Safety report artifact.'] },
     { lines: ['Ranked segments, numbered by rank.'], rect: { x: 80, y: 150, w: 400, h: 300, rgb: RED } },
-    { lines: ['Appendix B. Crash summary', 'SOURCE', 'California Crash Reporting System (CCRS)'] },
-    { lines: ['Appendix C. Countermeasures', 'Appendix D. Benefit-cost summary', 'Source: Benefit-cost analysis version 1.'] },
-    { lines: ['Appendix E. Engagement summary', 'Source: Engagement campaign.', 'Prepared by planner@agency.gov'] },
+    { lines: ['Appendix B. Crash summary', 'California Crash Reporting System (CCRS). Years requested: 2022, 2023.'] },
+    { lines: ['Appendix C. Countermeasures', 'Proposed by staff for review.', 'Appendix D. Benefit-cost summary', 'Source: Saved benefit-cost analysis version 1.'] },
+    { lines: ['Appendix E. Engagement summary', 'Source: Engagement campaign 1.', 'Prepared by planner@agency.gov'] },
   ]);
   const { items, missing } = find('ss4a-application', file, dir);
   assert.deepEqual(missing, []);
@@ -206,6 +215,56 @@ test('the SS4A finder reads the five appendix headings', { skip: !hasPoppler() &
   assert.ok(!emails[0].context.includes('planner@agency.gov'));
   assert.deepEqual(lib.draftPages(pages), []);
   assert.deepEqual(lib.draftPages(['clean', 'Stamped DRAFT here', 'a draft section']), [2]);
+});
+
+test('items are found with the shared matcher, so a heading that reads back letter-spaced counts', () => {
+  // Linux Chrome and Poppler read a tracked label as single letters, one
+  // space apart ("C O M M E N T S A P P R OV E D", KI-2026-11-14-117). The
+  // checker's matcher accepts that; the journey must find it the same way.
+  const pages = reportPages().map((page) => page.lines.join('\n'));
+  pages[0] = 'Safety action plan (working)\n   C R A S H S U M M A R Y\nSynthetic crash source. Years requested: 2022, 2023.';
+  const { items, missing } = lib.findPdfItems('safety-action-plan', pages, () => ({ redPixels: 500, imageSha256: 'a'.repeat(64) }));
+  assert.deepEqual(missing, []);
+  assert.deepEqual(items.find((entry) => entry.item === 'crash-summary'), { item: 'crash-summary', page: 1, method: 'pdftotext', text: 'Crash summary' });
+  assert.ok(pdfTextHasPhrase(pages[0], 'Crash summary'));
+});
+
+test('the heading words in a table column are not taken for the item', { skip: !hasPoppler() && 'Poppler is not installed' }, () => {
+  // Run 9's report printed "Countermeasures" as a ranked-table column on the
+  // page before the Countermeasures heading.
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-pdf-'));
+  const pages = reportPages();
+  pages[1] = { lines: ['Rank Location Miles Countermeasures', '1 State Hwy 49 0.50 Lighting', ...pages[1].lines], rect: pages[1].rect };
+  const { items } = find('safety-action-plan', writePdf(dir, 'table.pdf', pages), dir);
+  assert.equal(items.find((entry) => entry.item === 'countermeasures').page, 3);
+  assert.deepEqual(lib.findPdfItems('safety-action-plan', lib.pdfPages(path.join(dir, 'table.pdf')), () => ({ redPixels: 0 })).searches.find((entry) => entry.item === 'countermeasures').headingPages, [2, 3]);
+});
+
+test('each recorded item names the phrase searched, and the checker finds it on the recorded page', { skip: !hasPoppler() && 'Poppler is not installed' }, () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-pdf-'));
+  const file = writePdf(dir, 'all.pdf', reportPages());
+  const pages = lib.pdfPages(file);
+  const { items } = find('safety-action-plan', file, dir);
+  for (const entry of items.filter((candidate) => candidate.method === 'pdftotext')) {
+    assert.equal(entry.text, lib.ITEM_RULES['safety-action-plan'][entry.item].heading);
+    assert.ok(pdfTextHasPhrase(pages[entry.page - 1], entry.text), `${entry.item} on page ${entry.page}`);
+    assert.equal(findPdfPhrase(pages, entry.text)[0] <= entry.page, true);
+  }
+});
+
+test('the PDF readers refuse a pdftotext that is not Poppler, and say how to fix PATH', () => {
+  const never = () => { throw new Error('read a page with the wrong program'); };
+  assert.throws(() => lib.pdfPages('x.pdf', { spawn: versionStub(XPDF_VERSION), execFile: never }), /not Poppler's: it reports "pdftotext version 4\.06 \[www\.xpdfreader\.com\]".*ahead of every other folder on PATH/);
+  assert.throws(() => lib.pdfPages('x.pdf', { spawn: versionStub('', { missing: true }), execFile: never }), /pdftotext is not on PATH.*poppler-utils/);
+  assert.throws(() => poppler.assertPopplerTool('pdftoppm', { spawn: versionStub(XPDF_VERSION.replace('pdftotext', 'pdftoppm')) }), /pdftoppm on PATH is not Poppler's/);
+});
+
+test('the PDF readers accept Poppler and split its output into pages', () => {
+  let args = null;
+  const execFile = (tool, argv) => { args = [tool, ...argv]; return 'page one\fpage two\f'; };
+  assert.deepEqual(lib.pdfPages('x.pdf', { spawn: versionStub(POPPLER_VERSION), execFile }), ['page one', 'page two']);
+  assert.deepEqual(args, ['pdftotext', '-layout', '-enc', 'UTF-8', 'x.pdf', '-']);
+  assert.equal(poppler.assertPopplerTool('pdftoppm', { spawn: versionStub(POPPLER_VERSION.replace('pdftotext', 'pdftoppm')) }), 'pdftoppm version 25.07.0');
 });
 
 test('the journey keeps exactly the record fields lane 10 defines', () => {

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,6 +14,7 @@ import {
   validateCapabilityEvidence,
   validateProvenJobRecord,
 } from "../../scripts/ops/capability-evidence.mjs";
+import { pdfToolVersion } from "../../scripts/lib/poppler-text.mjs";
 
 const root = mkdtempSync(join(tmpdir(), "openplan-capability-evidence-"));
 mkdirSync(join(root, "docs"));
@@ -383,16 +384,43 @@ function makePdf(pages: string[]): Buffer {
   return Buffer.from(out, "latin1");
 }
 
-// Poppler's `pdftotext -v` prints its version and exits 99, so only a missing
-// program counts as absent.
-const hasPdftotext = (() => {
-  try {
-    execFileSync("pdftotext", ["-v"], { stdio: "ignore" });
-    return true;
-  } catch (error) {
-    return (error as NodeJS.ErrnoException).code !== "ENOENT";
-  }
-})();
+// Only Poppler's pdftotext counts: Git Bash on Windows finds xpdf's first,
+// and the reader refuses it (KI-2026-11-14-190).
+const hasPdftotext = pdfToolVersion("pdftotext").poppler;
+
+/** A stand-in for spawnSync that answers `-v` the way a given program does. */
+function versionStub(stderr: string) {
+  return (() => ({ status: 99, stdout: "", stderr })) as unknown as typeof spawnSync;
+}
+
+describe("the default PDF reader refuses a pdftotext that is not Poppler's", () => {
+  const neverRun = (() => {
+    throw new Error("read a page with the wrong program");
+  }) as unknown as typeof execFileSync;
+
+  it("refuses xpdf before reading a page, and says how to fix PATH", () => {
+    const xpdf = versionStub("pdftotext version 4.06 [www.xpdfreader.com]\nCopyright 1996-2025 Glyph & Cog, LLC\n");
+    expect(() => pdftotextPages("record.pdf", { spawn: xpdf, execFile: neverRun })).toThrow(
+      /proven job record refused: the pdftotext on PATH is not Poppler's: it reports "pdftotext version 4\.06 \[www\.xpdfreader\.com\]".*ahead of every other folder on PATH/,
+    );
+  });
+
+  it("refuses a missing pdftotext with the same advice", () => {
+    const missing = (() => ({ error: Object.assign(new Error("spawn pdftotext ENOENT"), { code: "ENOENT" }) })) as unknown as typeof spawnSync;
+    expect(() => pdftotextPages("record.pdf", { spawn: missing, execFile: neverRun })).toThrow(/pdftotext is not on PATH.*poppler-utils/);
+  });
+
+  it("reads with Poppler and splits pages on form feeds", () => {
+    const poppler = versionStub("pdftotext version 24.02.0\nCopyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org\n");
+    const calls: string[][] = [];
+    const execFile = ((tool: string, args: string[]) => {
+      calls.push([tool, ...args]);
+      return "Crash summary\fFinalized by Workspace owner\f";
+    }) as unknown as typeof execFileSync;
+    expect(pdftotextPages("record.pdf", { spawn: poppler, execFile })).toEqual(["Crash summary", "Finalized by Workspace owner"]);
+    expect(calls).toEqual([["pdftotext", "-layout", "-enc", "UTF-8", "record.pdf", "-"]]);
+  });
+});
 
 describe.skipIf(!hasPdftotext)("the default PDF reader (needs Poppler's pdftotext)", () => {
   it("returns one text per page, without a trailing empty page", () => {

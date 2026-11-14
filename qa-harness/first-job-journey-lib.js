@@ -151,44 +151,45 @@ function summarizeAxe(results, { version = AXE_VERSION, tags = AXE_TAGS } = {}) 
 // PDFs
 // ---------------------------------------------------------------------------
 
-/** Page texts as the evidence checker reads them: pdftotext -layout, split on form feeds. */
-function pdfPages(pdfPath) {
-  const output = execFileSync('pdftotext', ['-layout', '-enc', 'UTF-8', pdfPath, '-'], {
-    encoding: 'utf8',
-    maxBuffer: 256 * 1024 * 1024,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  const pages = output.split('\f');
-  if (pages.length > 1 && pages[pages.length - 1].trim() === '') pages.pop();
-  return pages;
-}
+/**
+ * The shared PDF readers. The evidence checker reads pages and finds phrases
+ * with these same two modules, so the journey records the question the
+ * checker asks again (KI-2026-11-14-190 for the Poppler check).
+ */
+const { findPdfPhrase, joinLetterSpacing, pdfTextHasPhrase } = require('../openplan/scripts/lib/pdf-text-match.mjs');
+const { assertPopplerTool, popplerPdfPages } = require('../openplan/scripts/lib/poppler-text.mjs');
 
-function squash(text) {
-  return String(text).replace(/\s+/g, ' ').trim().toLowerCase();
+/** Page texts as the evidence checker reads them; refuses a pdftotext that is not Poppler's. */
+function pdfPages(pdfPath, options) {
+  return popplerPdfPages(pdfPath, options);
 }
 
 /**
- * Where each required item is printed. `heading` finds the page; text after the
- * heading that opens with one of the absence phrases means the export printed
- * the heading but not the item, which counts as missing, never found.
+ * The phrases that find each item, searched with the shared matcher.
+ * `heading` is the item's heading; it is the text the record keeps and the
+ * checker re-reads on the recorded page. `present` is printed only when the
+ * item is there (a source line or a note), on the heading page or the next
+ * one, which tells the item's heading from the same words in a table column.
+ * The map has no `present` phrase: its red pixels are the test.
  */
 const ITEM_RULES = {
   'safety-action-plan': {
-    'high-injury-map': { heading: /^\s*High-injury network map\./m, text: 'High-injury network map' },
-    'crash-summary': { heading: /^\s*Crash summary\s*$/m, text: 'Crash summary' },
-    countermeasures: { heading: /^\s*Countermeasures\s*$/m, text: 'Countermeasures' },
-    bca: { heading: /^\s*Benefit-cost summary\s*$/m, text: 'Benefit-cost summary' },
-    'engagement-summary': { heading: /^\s*Engagement summary\s*$/m, text: 'Engagement summary' },
+    'high-injury-map': { heading: 'High-injury network map' },
+    'crash-summary': { heading: 'Crash summary', present: 'Years requested' },
+    countermeasures: { heading: 'Countermeasures', present: 'Proposed by staff for review' },
+    bca: { heading: 'Benefit-cost summary', present: 'Source: Saved benefit-cost' },
+    'engagement-summary': { heading: 'Engagement summary', present: 'Source: Engagement campaign' },
   },
   'ss4a-application': {
-    'high-injury-map': { heading: /^\s*Appendix A\. High-injury network map\s*$/m, text: 'Appendix A. High-injury network map' },
-    'crash-summary': { heading: /^\s*Appendix B\. Crash summary\s*$/m, text: 'Appendix B. Crash summary' },
-    countermeasures: { heading: /^\s*Appendix C\. Countermeasures\s*$/m, text: 'Appendix C. Countermeasures' },
-    bca: { heading: /^\s*Appendix D\. Benefit-cost summary\s*$/m, text: 'Appendix D. Benefit-cost summary' },
-    'engagement-summary': { heading: /^\s*Appendix E\. Engagement summary\s*$/m, text: 'Appendix E. Engagement summary' },
+    'high-injury-map': { heading: 'Appendix A. High-injury network map' },
+    'crash-summary': { heading: 'Appendix B. Crash summary', present: 'Years requested' },
+    countermeasures: { heading: 'Appendix C. Countermeasures', present: 'Proposed by staff for review' },
+    bca: { heading: 'Appendix D. Benefit-cost summary', present: 'Source: Saved benefit-cost' },
+    'engagement-summary': { heading: 'Appendix E. Engagement summary', present: 'Source: Engagement campaign' },
   },
 };
-const ABSENCE = /^(missing\b|could not be read|map not drawn|not drawn|unavailable\b|no benefit-cost|no public engagement)/;
+/** Words an export prints right after a heading whose item is absent. */
+const ABSENT_AFTER_HEADING = ['Missing', 'Could not be read', 'Map not drawn', 'No countermeasure is attached'];
 const MIN_RED_PIXELS = 40;
 
 /** Read a binary PPM (P6) and count highlight-red and non-background pixels. */
@@ -236,50 +237,64 @@ function renderPdfPage(pdfPath, page, outPrefix) {
 }
 
 /**
- * Find the five items in one PDF. Text items are found with the page text the
- * checker reads. The map is found by its heading and confirmed by pixels: the
- * heading page or a neighbour must carry highlight red, or the map is missing.
+ * Find the five items in one PDF with the shared matcher (findPdfPhrase), the
+ * function the checker re-reads with. An item is on the first page that holds
+ * its heading, where the heading is not followed by an absence word
+ * ("Missing", "Could not be read", ...) and its `present` phrase is on that
+ * page, or else on the next one. The map is confirmed by pixels: the heading
+ * page or a neighbour must carry highlight red. Each item keeps the heading
+ * as its text, so the record names the exact phrase searched; `searches`
+ * lists every phrase and the pages that held it, for the run log.
  */
 function findPdfItems(kind, pages, renderPage) {
   const rules = ITEM_RULES[kind];
   if (!rules) throw new Error(`Unknown PDF kind ${kind}`);
   const items = [];
   const missing = [];
+  const searches = [];
   for (const item of ITEMS) {
     const rule = rules[item];
-    const pageIndex = pages.findIndex((text) => rule.heading.test(text));
-    if (pageIndex < 0) {
-      missing.push({ item, reason: 'heading not found' });
+    const headingPages = findPdfPhrase(pages, rule.heading);
+    const presentPages = rule.present ? findPdfPhrase(pages, rule.present) : null;
+    const absentPages = headingPages.filter((page) => ABSENT_AFTER_HEADING.some((word) => pdfTextHasPhrase(pages[page - 1], `${rule.heading} ${word}`)));
+    searches.push({ item, heading: rule.heading, headingPages, present: rule.present || null, presentPages, absentPages });
+    if (headingPages.length === 0) {
+      missing.push({ item, reason: `heading "${rule.heading}" not found` });
       continue;
     }
-    const after = pages[pageIndex].split(rule.heading)[1] || '';
-    const following = squash(after + ' ' + (pages[pageIndex + 1] || '')).replace(/^[.\s]+/, '');
-    if (ABSENCE.test(following)) {
-      missing.push({ item, page: pageIndex + 1, reason: `printed as: ${following.slice(0, 80)}` });
+    const candidates = headingPages.filter((page) => !absentPages.includes(page));
+    const page = !presentPages
+      ? candidates[0]
+      : candidates.find((entry) => presentPages.includes(entry)) || candidates.find((entry) => presentPages.includes(entry + 1));
+    if (!page) {
+      const reason = candidates.length === 0
+        ? `heading "${rule.heading}" is followed by an absence word on page ${absentPages.join(', ')}`
+        : `heading "${rule.heading}" on page ${candidates.join(', ')}, but "${rule.present}" is not on that page or the next`;
+      missing.push({ item, page: headingPages[0], reason });
       continue;
     }
     if (item === 'high-injury-map') {
-      const candidates = [pageIndex, pageIndex + 1, pageIndex - 1].filter((index) => index >= 0 && index < pages.length);
+      const near = [page, page + 1, page - 1].filter((entry) => entry >= 1 && entry <= pages.length);
       let best = null;
-      for (const index of candidates) {
-        const rendered = renderPage(index + 1);
-        if (rendered.redPixels >= MIN_RED_PIXELS && (!best || rendered.redPixels > best.redPixels)) best = { ...rendered, page: index + 1 };
+      for (const entry of near) {
+        const rendered = renderPage(entry);
+        if (rendered.redPixels >= MIN_RED_PIXELS && (!best || rendered.redPixels > best.redPixels)) best = { ...rendered, page: entry };
       }
       if (!best) {
-        missing.push({ item, page: pageIndex + 1, reason: `no page near the heading has ${MIN_RED_PIXELS} or more highlight-red pixels` });
+        missing.push({ item, page, reason: `no page near the heading has ${MIN_RED_PIXELS} or more highlight-red pixels` });
         continue;
       }
       items.push({ item, page: best.page, method: 'page-image', imageSha256: best.imageSha256, redPixels: best.redPixels });
       continue;
     }
-    items.push({ item, page: pageIndex + 1, method: 'pdftotext', text: rule.text });
+    items.push({ item, page, method: 'pdftotext', text: rule.heading });
   }
-  return { items, missing };
+  return { items, missing, searches };
 }
 
-/** Pages carrying a DRAFT stamp, read the way the checker reads them. */
+/** Pages carrying a DRAFT stamp, read the way the checker reads them (letter spacing joined). */
 function draftPages(pages) {
-  return pages.map((text, index) => (/\bDRAFT\b/.test(text) ? index + 1 : null)).filter(Boolean);
+  return pages.map((text, index) => (/\bDRAFT\b/.test(joinLetterSpacing(text)) ? index + 1 : null)).filter(Boolean);
 }
 
 /** Page and line of every email-like string. The address itself is not returned. */
@@ -303,8 +318,9 @@ function describePdf(kind, pdfPath, recordPath, workDir) {
   const bytes = fs.readFileSync(pdfPath);
   if (bytes.subarray(0, 5).toString('latin1') !== '%PDF-') throw new Error(`${kind} download is not a PDF.`);
   const pages = pdfPages(pdfPath);
+  assertPopplerTool('pdftoppm');
   fs.mkdirSync(workDir, { recursive: true });
-  const { items, missing } = findPdfItems(kind, pages, (page) => renderPdfPage(pdfPath, page, path.join(workDir, `${kind}-p${page}`)));
+  const { items, missing, searches } = findPdfItems(kind, pages, (page) => renderPdfPage(pdfPath, page, path.join(workDir, `${kind}-p${page}`)));
   return {
     pdf: {
       kind,
@@ -315,7 +331,7 @@ function describePdf(kind, pdfPath, recordPath, workDir) {
       draftStamp: draftPages(pages).length > 0,
       items: items.map(({ redPixels, ...rest }) => rest),
     },
-    findings: { draftPages: draftPages(pages), missingItems: missing, emailLocations: locateEmails(pages), mapRedPixels: (items.find((entry) => entry.item === 'high-injury-map') || {}).redPixels ?? null },
+    findings: { draftPages: draftPages(pages), missingItems: missing, itemSearches: searches, emailLocations: locateEmails(pages), mapRedPixels: (items.find((entry) => entry.item === 'high-injury-map') || {}).redPixels ?? null },
   };
 }
 

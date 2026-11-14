@@ -1,9 +1,9 @@
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { joinLetterSpacing, pdfTextHasPhrase } from "../lib/pdf-text-match.mjs";
+import { assertPopplerTool, popplerPdfPages } from "../lib/poppler-text.mjs";
 
 /**
  * The one origin whose pages count as proof of a hosted job. A local,
@@ -253,22 +253,24 @@ function checkScreens(journey, job, label) {
   }
 }
 
-/** Read every page's text with Poppler's pdftotext; pages are split on form feeds. */
-export function pdftotextPages(absolutePath) {
-  let output;
+/**
+ * Read every page's text with Poppler's pdftotext, the reader the journey
+ * script uses (scripts/lib/poppler-text.mjs). A pdftotext that is not
+ * Poppler's refuses the record before any page is read.
+ * @param {string} absolutePath
+ * @param {{spawn?: Function, execFile?: Function}} [options] stand-ins for tests
+ */
+export function pdftotextPages(absolutePath, options = {}) {
   try {
-    output = execFileSync("pdftotext", ["-layout", "-enc", "UTF-8", absolutePath, "-"], {
-      encoding: "utf8",
-      maxBuffer: 256 * 1024 * 1024,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    assertPopplerTool("pdftotext", options);
   } catch (error) {
-    const reason = error?.code === "ENOENT" ? "pdftotext (Poppler) is not installed" : "pdftotext could not read it";
-    throw new Error(`proven job record refused: ${reason}: ${absolutePath}`);
+    throw new Error(`proven job record refused: ${error.message}`);
   }
-  const pages = output.split("\f");
-  if (pages.length > 1 && pages[pages.length - 1].trim() === "") pages.pop();
-  return pages;
+  try {
+    return popplerPdfPages(absolutePath, options);
+  } catch {
+    throw new Error(`proven job record refused: pdftotext could not read it: ${absolutePath}`);
+  }
 }
 
 const SECRET_PATTERNS = [

@@ -50,8 +50,15 @@ place of a screen step; it only reads responses the screens request, for ids.
   console errors (scrubbed), page-level horizontal scroll and serious or
   critical axe nodes (tags wcag2a, wcag2aa, wcag21a, wcag21aa).
 - Each PDF: SHA-256, bytes, pages, DRAFT stamp, the page of each of the five
-  items (text by `pdftotext`, the map by `pdftoppm` and a highlight-red pixel
-  count), and the page and line of any email address.
+  items, and the page and line of any email address. Text items are found
+  with `findPdfPhrase` from `openplan/scripts/lib/pdf-text-match.mjs`, the
+  matcher the record checker re-reads with; the record keeps each item's
+  page and the heading searched. The map is found by its heading and a
+  highlight-red pixel count (`pdftoppm`).
+- Poppler only. The script and the checker read pages through
+  `openplan/scripts/lib/poppler-text.mjs`, which refuses a `pdftotext` or
+  `pdftoppm` that is not Poppler's. In Git Bash on Windows, Git's
+  `/ucrt64/bin` puts xpdf first: put Poppler's `Library/bin` first on PATH.
 - It stops at the first step whose expected state is missing and writes
   `journey-<role>.json` with the furthest step passed. A step never passes by
   skipping.
