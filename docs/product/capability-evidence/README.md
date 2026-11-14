@@ -7,7 +7,10 @@ exported PDFs it names beside it. The registry lists a record under
 direction check (`npm run product:direction:check`) then reads the record and
 refuses it unless every rule below holds.
 
-No record exists yet. The list is empty and no job is proven.
+One record exists: `first-proven-job.v1.json`, recorded November 14, 2026, for
+the job `safety-action-plan-and-ss4a-in-three-places` on commit `ccf88a921`.
+[first-proven-job/README.md](first-proven-job/README.md) says what it shows,
+the two attempts that failed first, and its limits.
 
 ## Files
 
