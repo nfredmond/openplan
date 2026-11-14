@@ -180,11 +180,15 @@ describe("the ranked table", () => {
     expect(props.onFocusSegment).toHaveBeenCalledWith(expect.objectContaining({ id: "road:0000beef:1" }));
   });
 
-  it("cites the countermeasure list and marks unverified CMF values", () => {
+  it("cites the countermeasure list and links the CMF Clearinghouse entries read for each item", () => {
     renderPanel();
     const list = screen.getByTestId("safety-countermeasure-list");
     expect(list.textContent).toContain("Retrieved 2026-11-13");
-    expect(list.textContent).toContain("[VERIFY]");
+    // KI-2026-11-14-290: every item names entries read on November 14, 2026, so no cell keeps the marker.
+    const cells = within(list).getAllByTestId("safety-countermeasure-cmf");
+    expect(cells).toHaveLength(20);
+    for (const cell of cells) expect(cell.textContent).not.toContain("[VERIFY]");
+    expect(within(list).getByRole("link", { name: "7774" }).getAttribute("href")).toBe("https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=7774");
     expect(within(list).getByRole("link", { name: "Lighting" }).getAttribute("href")).toBe(
       "https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",
     );

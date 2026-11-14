@@ -2,9 +2,10 @@
  * The countermeasure list a planner can attach to a high-injury segment.
  *
  * The list lives in a versioned data file with its source and retrieval date,
- * not in components. This module only validates and reads it. A crash
- * modification factor appears only with its CMF Clearinghouse ID; without one
- * the value stays out and the entry carries a visible [VERIFY] note.
+ * not in components. This module only validates and reads it. The list never
+ * applies a crash modification factor by itself. An entry's note names up to
+ * three CMF Clearinghouse entries, read on a stated day, for the planner to
+ * choose from; an entry with none read carries a visible [VERIFY] note.
  *
  * Each entry also records whether it is on FHWA's Proven Safety
  * Countermeasures list. FHWA removed four items OpenPlan carries between June
@@ -53,6 +54,14 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const fhwaCaptureUrl = z.string().regex(/^https:\/\/web\.archive\.org\/web\/\d{8,14}\/https:\/\/highways\.dot\.gov\/[^\s]+$/);
 const LIVE_FHWA_URL = /^https:\/\/highways\.dot\.gov\//;
 
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** "2026-07-10" as "July 10, 2026", from the string itself so no host time zone applies. */
+function longDate(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  return `${MONTHS[month - 1]} ${day}, ${year}`;
+}
+
 /** The digits of an ISO date, as they start an Internet Archive timestamp. */
 function captureStamp(date: string): string {
   return date.replace(/-/g, "");
@@ -81,12 +90,53 @@ const fhwaListSchema = z.discriminatedUnion("status", [
   ),
 ]);
 
+const CMF_ENTRY_URL = /^https:\/\/cmfclearinghouse\.fhwa\.dot\.gov\/detail\.php\?facid=\d+$/;
+
 const cmfSchema = z.object({
   value: z.number().positive().lt(10),
   cmfId: z.number().int().positive(),
-  url: z.string().regex(/^https:\/\/cmfclearinghouse\.fhwa\.dot\.gov\/detail\.php\?facid=\d+$/),
+  url: z.string().regex(CMF_ENTRY_URL),
   appliesTo: z.string().min(1),
 });
+
+/**
+ * One CMF Clearinghouse entry a note names, as its page gave it on the day it
+ * was read. `stars` is null for an entry the Clearinghouse cannot rate (some
+ * Highway Safety Manual factors). These entries inform the planner; the list
+ * never applies one (`cmf` stays null).
+ */
+const cmfEntrySchema = z.object({
+  id: z.number().int().positive(),
+  factor: z.number().positive().lt(10),
+  stars: z.number().int().min(1).max(5).nullable(),
+  url: z.string().regex(CMF_ENTRY_URL),
+}).strict().refine((entry) => entry.url.endsWith(`facid=${entry.id}`), { message: "A Clearinghouse entry must cite its own page" });
+type CmfEntry = z.infer<typeof cmfEntrySchema>;
+
+const STAR_WORDS = ["one", "two", "three", "four", "five"];
+
+/** The Clearinghouse ids a note names, in order, each written "entry 1234". */
+function cmfEntryIdsNamed(note: string): number[] {
+  return [...note.matchAll(/\bentry (\d+)/g)].map((match) => Number(match[1]));
+}
+
+/**
+ * A read note names exactly its entries, each followed (before the next
+ * "entry") by its factor and star rating as the Clearinghouse gives them, and
+ * the day it was read. It carries no bracketed marker: exports count those.
+ */
+function readNoteMatchesEntries(note: string, entries: readonly CmfEntry[], readOn: string): boolean {
+  const named = cmfEntryIdsNamed(note);
+  if (note.includes("[") || !note.includes(`read ${longDate(readOn)}`)) return false;
+  if (named.length !== entries.length || new Set(named).size !== named.length) return false;
+  const segments = note.split(/(?=\bentry \d+)/).slice(1);
+  return entries.every((entry) => {
+    const index = named.indexOf(entry.id);
+    if (index < 0) return false;
+    const stars = entry.stars === null ? "not star-rated" : `${STAR_WORDS[entry.stars - 1]} star`;
+    return segments[index].includes(String(entry.factor)) && segments[index].includes(stars);
+  });
+}
 
 const countermeasureSchema = z
   .object({
@@ -99,10 +149,23 @@ const countermeasureSchema = z
     fhwaList: fhwaListSchema,
     cmf: cmfSchema.nullable(),
     cmfNote: z.string().optional(),
+    /** The day the entries in `cmfEntries` were read; present exactly when they are. */
+    cmfReadOn: isoDate.optional(),
+    cmfEntries: z.array(cmfEntrySchema).min(1).max(3).optional(),
   })
   .refine(
-    (entry) => entry.cmf !== null || (entry.cmfNote ?? "").includes("[VERIFY]"),
-    { message: "A countermeasure without a cited CMF must carry a [VERIFY] note" },
+    (entry) => entry.cmf !== null || entry.cmfEntries !== undefined || (entry.cmfNote ?? "").includes("[VERIFY]"),
+    { message: "A countermeasure without a cited CMF or a read Clearinghouse entry must carry a [VERIFY] note" },
+  )
+  .refine(
+    (entry) => (entry.cmfEntries === undefined) === (entry.cmfReadOn === undefined),
+    { message: "Clearinghouse entries need the date they were read, and a read date needs entries" },
+  )
+  .refine(
+    (entry) => entry.cmfEntries === undefined
+      ? cmfEntryIdsNamed(entry.cmfNote ?? "").length === 0
+      : readNoteMatchesEntries(entry.cmfNote ?? "", entry.cmfEntries, entry.cmfReadOn ?? ""),
+    { message: "A note must name exactly its read Clearinghouse entries, each with its factor and stars, and the day read, with no marker" },
   )
   .refine(
     (entry) => entry.cmf === null || entry.cmf.url.endsWith(`facid=${entry.cmf.cmfId}`),
@@ -155,14 +218,6 @@ export const SAFETY_COUNTERMEASURES: readonly SafetyCountermeasure[] = SAFETY_CO
 
 export function getSafetyCountermeasure(id: string): SafetyCountermeasure | null {
   return SAFETY_COUNTERMEASURES.find((entry) => entry.id === id) ?? null;
-}
-
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-/** "2026-07-10" as "July 10, 2026", from the string itself so no host time zone applies. */
-function longDate(date: string): string {
-  const [year, month, day] = date.split("-").map(Number);
-  return `${MONTHS[month - 1]} ${day}, ${year}`;
 }
 
 function monthYear(date: string): string {
