@@ -249,8 +249,20 @@ describe("attaching countermeasures", () => {
 
   it("says where to save from when no report is reachable", () => {
     renderPanel({ reports: [] });
-    expect(screen.getByTestId("safety-hin-save-unavailable").textContent).toMatch(/from a project that has a report/);
+    expect(screen.getByTestId("safety-hin-save-unavailable").textContent).toBe("To save countermeasures, open Safety from a project.");
     expect(screen.queryByTestId("safety-hin-save")).toBeNull();
+  });
+
+  it("offers to create the report when the project has none, instead of the generic Reports link", () => {
+    renderPanel({ reports: [], projectId: "project-1" });
+    expect(screen.getByRole("button", { name: "Create safety action plan report" })).toBeTruthy();
+    expect(screen.queryByRole("link", { name: "Choose or create a project-status report for Safety comparison" })).toBeNull();
+    expect(screen.queryByTestId("safety-hin-save-unavailable")).toBeNull();
+  });
+
+  it("opens Reports for this project when its reports cannot hold the comparison", () => {
+    renderPanel({ reports: [{ id: "analysis", title: "Analysis", safetyActionPlan: null, supportsSafetyComparison: false }], projectId: "project-1" });
+    expect(screen.getByRole("link", { name: "Choose or create a project-status report for Safety comparison" })).toHaveAttribute("href", "/reports?projectId=project-1");
   });
 });
 

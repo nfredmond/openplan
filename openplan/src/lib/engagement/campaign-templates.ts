@@ -123,14 +123,14 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
 
   {
     id: "corridor-safety-study",
-    label: "Corridor safety study",
+    label: "Safety study",
     description:
-      "Location-based safety feedback along a street or corridor: crossing, walking, biking, transit access, and driver-behavior categories, plus a short survey that pairs a map question with travel-habit context.",
+      "Location-based safety feedback for a street, corridor or wider area: crossing, walking, biking, transit access, and driver-behavior categories, plus a short survey that pairs a map question with travel-habit context.",
     engagementType: "map_feedback",
     suggestedSummary:
-      "Collects location-specific safety and comfort feedback along the study corridor (public map comments, survey responses, and staff-entered observations) to surface recurring problem locations and candidate countermeasures for project review.",
+      "Collects location-specific safety and comfort feedback in the study area (public map comments, survey responses, and staff-entered observations) to surface recurring problem locations and candidate countermeasures for project review.",
     suggestedPublicDescription:
-      "We are studying safety along this corridor and want to hear from the people who use it. Share the specific places where walking, biking, driving, or reaching transit feels unsafe or uncomfortable, and what you think would improve them. Your comments are reviewed by the project team and inform which improvements are studied.",
+      "We are studying traffic safety in this area and want to hear from the people who travel here. Share the specific places where walking, biking, driving, or reaching transit feels unsafe or uncomfortable, and what you think would improve them. Your comments are reviewed by the project team and inform which improvements are studied.",
     categories: [
       {
         label: "Crossing safety",

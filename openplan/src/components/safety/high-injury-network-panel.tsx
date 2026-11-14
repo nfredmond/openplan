@@ -22,6 +22,8 @@ import type {
   ReportSafetyActionPlan,
   SafetyActionPlanAttachment,
 } from "@/lib/reports/safety-action-plan";
+import { REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
+import { withPlanningContext } from "@/lib/projects/planning-context";
 
 export type HighInjuryNetworkReportTarget = {
   id: string;
@@ -55,8 +57,13 @@ type Props = {
   /** The acquisition the ranking came from. Required to save a plan. */
   ingestId: string | null;
   reports: HighInjuryNetworkReportTarget[];
+  /** The project the acquisition belongs to. Needed to create a report from here. */
+  projectId?: string | null;
+  projectName?: string | null;
   /** Injected for tests; defaults to `fetch`. */
   saveRequest?: (reportId: string, body: unknown) => Promise<{ ok: boolean; error?: string }>;
+  /** Injected for tests; defaults to `fetch`. */
+  createReportRequest?: (body: unknown) => Promise<{ ok: boolean; reportId?: string; error?: string }>;
 };
 
 async function patchReport(reportId: string, body: unknown): Promise<{ ok: boolean; error?: string }> {
@@ -68,6 +75,25 @@ async function patchReport(reportId: string, body: unknown): Promise<{ ok: boole
   if (response.ok) return { ok: true };
   const payload = (await response.json().catch(() => null)) as { error?: unknown } | null;
   return { ok: false, error: typeof payload?.error === "string" ? payload.error : "The report could not be saved." };
+}
+
+async function postReport(body: unknown): Promise<{ ok: boolean; reportId?: string; error?: string }> {
+  const response = await fetch("/api/reports", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = (await response.json().catch(() => null)) as { reportId?: unknown; error?: unknown } | null;
+  if (response.ok && typeof payload?.reportId === "string") return { ok: true, reportId: payload.reportId };
+  return { ok: false, error: typeof payload?.error === "string" ? payload.error : "The report could not be created." };
+}
+
+/** "<Project> safety action plan", shortened to fit the report title limit. */
+function safetyActionPlanReportTitle(projectName: string | null | undefined): string {
+  const suffix = "safety action plan";
+  const name = projectName?.trim() ?? "";
+  if (!name) return "Safety action plan";
+  return `${name.slice(0, REPORT_TITLE_MAX_LENGTH - suffix.length - 1).trim()} ${suffix}`;
 }
 
 function initialSelections(
@@ -95,9 +121,18 @@ export function HighInjuryNetworkPanel({
   onShowOnMapChange,
   onFocusSegment,
   ingestId,
-  reports,
+  reports: reportsFromPage,
+  projectId = null,
+  projectName = null,
   saveRequest = patchReport,
+  createReportRequest = postReport,
 }: Props) {
+  // A report created from this panel is kept here, so the plan can be saved
+  // to it at once, before the page's own report list is read again.
+  const [createdReport, setCreatedReport] = useState<HighInjuryNetworkReportTarget | null>(null);
+  const reports = createdReport && !reportsFromPage.some((report) => report.id === createdReport.id)
+    ? [...reportsFromPage, createdReport]
+    : reportsFromPage;
   const [reportId, setReportId] = useState(reports[0]?.id ?? "");
   const [selections, setSelections] = useState<Record<string, string[]>>(() =>
     initialSelections(reports, reports[0]?.id ?? "", ingestId),
@@ -138,6 +173,25 @@ export function HighInjuryNetworkPanel({
         : [...current, countermeasureId];
       return { ...previous, [segmentId]: next };
     });
+  };
+
+  const createReport = async () => {
+    if (!ingestId || !projectId) return;
+    const title = safetyActionPlanReportTitle(projectName);
+    setSaveState({ kind: "saving" });
+    const result = await createReportRequest({
+      projectId,
+      reportType: "project_status",
+      title,
+      safetyIngestSelections: [{ ingestId }],
+    });
+    if (!result.ok || !result.reportId) {
+      setSaveState({ kind: "failed", message: result.error ?? "The report could not be created." });
+      return;
+    }
+    setCreatedReport({ id: result.reportId, title, supportsSafetyComparison: true, safetyActionPlan: null });
+    setReportId(result.reportId);
+    setSaveState({ kind: "idle", message: `Created ${title}.` });
   };
 
   const save = async () => {
@@ -192,7 +246,7 @@ export function HighInjuryNetworkPanel({
       ) : null}
       {comparisonReport && ingestId ? <Link className="text-xs underline" href={`/reports/${comparisonReport.id}?safetyComparison=1&safetyIngestId=${encodeURIComponent(ingestId)}`}>
         Review No Build, alternatives and applicability in this report
-      </Link> : <Link className="text-xs underline" href="/reports">Choose or create a project-status report for Safety comparison</Link>}
+      </Link> : reports.length > 0 || !projectId ? <Link className="text-xs underline" href={withPlanningContext("/reports", projectId)}>Choose or create a project-status report for Safety comparison</Link> : null}
 
       {segments.length === 0 ? (
         <p className="text-xs text-muted-foreground" data-testid="safety-hin-empty">
@@ -357,9 +411,26 @@ export function HighInjuryNetworkPanel({
               </p>
             )}
           </div>
+        ) : ingestId && projectId ? (
+          <div className="flex flex-col gap-1 text-xs" data-testid="safety-hin-create-report">
+            <p className="text-muted-foreground">Countermeasures are saved in a report.</p>
+            <button
+              type="button"
+              onClick={createReport}
+              disabled={saveState.kind === "saving"}
+              className="self-start rounded-md border border-primary/30 px-3 py-1 font-semibold text-primary"
+            >
+              {saveState.kind === "saving" ? "Creating" : "Create safety action plan report"}
+            </button>
+            {saveState.message && (
+              <p role="status" className={saveState.kind === "failed" ? "text-destructive" : "text-muted-foreground"}>
+                {saveState.message}
+              </p>
+            )}
+          </div>
         ) : (
           <p className="text-xs text-muted-foreground" data-testid="safety-hin-save-unavailable">
-            To save countermeasures, open Safety from a project that has a report.
+            To save countermeasures, open Safety from a project.
           </p>
         )}
     </section>

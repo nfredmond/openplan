@@ -2226,7 +2226,7 @@ describe("ProjectDetailPage", () => {
   });
 
   it.each([
-    [null, "No separate declaration. Jurisdiction assessment may show labelled legacy study-place context."],
+    [null, "Jurisdiction not declared."],
     [{ version: 1, state: "unresolved", entries: [], recordedBy: "22222222-2222-4222-8222-222222222222", recordedAt: "2026-10-15T00:00:00.000Z" }, "Jurisdiction explicitly unresolved. Study-place fallback is disabled."],
     [{ version: 2 }, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
     [undefined, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],

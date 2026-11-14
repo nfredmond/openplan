@@ -1422,6 +1422,8 @@ export function SafetyWorkspace({
           // moment a planner changes it, naming the OLD area would be labelling
           // a boundary that is no longer on screen.
           externalLabel={inheritedAreaIsCurrent ? studyArea.originLabel : null}
+          // Engine advice is for model runs, not crash retrieval.
+          showRunEngineHint={false}
         />
         {inheritedAreaIsCurrent && (
           <p className="mt-2 text-xs text-muted-foreground">
@@ -1757,6 +1759,8 @@ export function SafetyWorkspace({
                   mapStageRef.current?.focus({ preventScroll: true });
                 }}
                 ingestId={ingest.id ?? null}
+                projectId={projectId || null}
+                projectName={projects.find((project) => project.id === projectId)?.name ?? (openedForProject?.id === projectId ? openedForProject.name : null)}
                 reports={projectId
                   ? projectReports.map((report) => ({
                       id: report.id,
