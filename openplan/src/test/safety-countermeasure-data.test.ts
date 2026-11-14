@@ -50,7 +50,9 @@ describe("the countermeasure data file", () => {
   it("shows no crash modification factor without a Clearinghouse entry, and marks the gap", () => {
     for (const entry of SAFETY_COUNTERMEASURES) {
       if (entry.cmf === null) {
-        expect(entry.cmfNote, entry.id).toContain("[VERIFY]");
+        // A read entry names its Clearinghouse entries (KI-2026-11-14-290); an unread one keeps the marker.
+        if (entry.cmfEntries) expect(entry.cmfNote, entry.id).toContain(`entry ${entry.cmfEntries[0].id}`);
+        else expect(entry.cmfNote, entry.id).toContain("[VERIFY]");
       } else {
         expect(entry.cmf.url).toBe(`https://cmfclearinghouse.fhwa.dot.gov/detail.php?facid=${entry.cmf.cmfId}`);
       }
@@ -76,6 +78,8 @@ describe("the countermeasure data file", () => {
 
   it("refuses a missing CMF with no [VERIFY] note", () => {
     const broken = clone(rawFile) as { countermeasures: Array<Record<string, unknown>> };
+    delete broken.countermeasures[0].cmfEntries;
+    delete broken.countermeasures[0].cmfReadOn;
     broken.countermeasures[0].cmfNote = "Not checked.";
     expect(() => parseCountermeasureFile(broken)).toThrow(/VERIFY/);
   });
