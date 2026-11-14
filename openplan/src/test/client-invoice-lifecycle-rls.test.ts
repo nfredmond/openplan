@@ -9,10 +9,14 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
  * Live custody for client invoice status rules (KI-2026-10-12-007).
  *
  * The rules used to live only in the invoice route, while the table policies
- * check membership. These cases write as a workspace member through the
- * authenticated role, the same path the public Data API offers. Harness cases
- * drop the guard triggers or weaken the replacement function inside the same
- * rolled-back transaction, and the refusal must then fail.
+ * check membership. These cases write through the authenticated role, the same
+ * path the public Data API offers. Status rules are exercised as an admin, who
+ * passes the role rule, so the guard triggers are what refuse. The role rule
+ * (20261102120000) is exercised as a member and a viewer, who must be refused
+ * every draft write, and as the owner, an admin and service_role, who must not
+ * be. Harness cases drop the guard triggers or the new policies, or weaken a
+ * function, inside the same rolled-back transaction, and the refusal must then
+ * fail.
  */
 const CORRECTED = readFileSync("supabase/migrations/20261017000005_money_integrity_corrections.sql", "utf8");
 const replaceStart = CORRECTED.indexOf("CREATE FUNCTION public.replace_client_invoice_lines(");
@@ -20,6 +24,14 @@ const replaceFunction = CORRECTED.slice(replaceStart, CORRECTED.indexOf("END $$;
 const STAMP_CHECK = "IF stamped<>cardinality(ids) THEN RAISE EXCEPTION 'One or more time entries are already billed on another invoice' USING ERRCODE='PT409'; END IF;";
 const withoutGuards = `DROP TRIGGER retained_client_invoice_lifecycle ON public.client_invoices;
 DROP TRIGGER retained_client_invoice_line_lifecycle ON public.client_invoice_line_items;`;
+const ROLE_RULE = readFileSync("supabase/migrations/20261102120000_client_invoice_owner_admin_writes.sql", "utf8");
+const roleFunctionStart = ROLE_RULE.indexOf("CREATE FUNCTION public.workspace_member_can_write_invoices(");
+const roleFunction = ROLE_RULE.slice(roleFunctionStart, ROLE_RULE.indexOf("$$;", ROLE_RULE.indexOf("AS $$", roleFunctionStart)) + 3).replace("CREATE FUNCTION", "CREATE OR REPLACE FUNCTION");
+const ROLE_LIST = "AND wm.role IN ('owner', 'admin')";
+const withoutRoleRule = ["insert", "update", "delete"].flatMap((command) => [
+  `DROP POLICY client_invoices_invoice_writer_${command} ON public.client_invoices;`,
+  `DROP POLICY client_invoice_line_items_invoice_writer_${command} ON public.client_invoice_line_items;`,
+]).join(" ");
 
 function exercise(body: string, replacement = "") {
   requireContractVerificationStack(resolveLocalDbContainer());
@@ -29,15 +41,15 @@ function exercise(body: string, replacement = "") {
     stdio: ["pipe", "pipe", "pipe"],
     input: `BEGIN; SET LOCAL lock_timeout='5s';${injected}\n${replacement}
 DO $test$ DECLARE
- owner_id uuid:=gen_random_uuid(); member_id uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); workspace uuid:=gen_random_uuid();
+ owner_id uuid:=gen_random_uuid(); admin_id uuid:=gen_random_uuid(); member_id uuid:=gen_random_uuid(); viewer_id uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); workspace uuid:=gen_random_uuid();
  client uuid:=gen_random_uuid(); engagement uuid:=gen_random_uuid(); project uuid:=gen_random_uuid(); deliverable uuid:=gen_random_uuid(); staff uuid:=gen_random_uuid();
  invoice uuid:=gen_random_uuid(); other_invoice uuid:=gen_random_uuid(); line_one uuid:=gen_random_uuid(); other_line uuid:=gen_random_uuid();
  entry_one uuid:=gen_random_uuid(); entry_two uuid:=gen_random_uuid(); entry_three uuid:=gen_random_uuid();
- lines jsonb; n integer; before jsonb;
+ lines jsonb; n integer; before jsonb; created uuid;
 BEGIN
- INSERT INTO auth.users(id,email) VALUES(owner_id,owner_id||'@example.test'),(member_id,member_id||'@example.test'),(outsider,outsider||'@example.test');
+ INSERT INTO auth.users(id,email) VALUES(owner_id,owner_id||'@example.test'),(admin_id,admin_id||'@example.test'),(member_id,member_id||'@example.test'),(viewer_id,viewer_id||'@example.test'),(outsider,outsider||'@example.test');
  INSERT INTO public.workspaces(id,name,slug) VALUES(workspace,'Synthetic receivables',workspace::text);
- INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES(workspace,owner_id,'owner'),(workspace,member_id,'member');
+ INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES(workspace,owner_id,'owner'),(workspace,admin_id,'admin'),(workspace,member_id,'member'),(workspace,viewer_id,'viewer');
  INSERT INTO public.projects(id,workspace_id,name) VALUES(project,workspace,'Synthetic corridor study');
  INSERT INTO public.project_deliverables(id,project_id,title) VALUES(deliverable,project,'Synthetic draft report');
  INSERT INTO public.invoicing_clients(id,workspace_id,name) VALUES(client,workspace,'Synthetic client, not a real agency');
@@ -56,13 +68,15 @@ SELECT 'INVOICE_LIFECYCLE_ASSERTIONS_REACHED'; ROLLBACK;`,
 const reached = (output: string) => expect(output).toContain("INVOICE_LIFECYCLE_ASSERTIONS_REACHED");
 const asMember = `PERFORM set_config('request.jwt.claim.sub',member_id::text,true); EXECUTE 'SET LOCAL ROLE authenticated';`;
 const asOwner = `PERFORM set_config('request.jwt.claim.sub',owner_id::text,true); EXECUTE 'SET LOCAL ROLE authenticated';`;
+const asAdmin = `PERFORM set_config('request.jwt.claim.sub',admin_id::text,true); EXECUTE 'SET LOCAL ROLE authenticated';`;
+const asViewer = `PERFORM set_config('request.jwt.claim.sub',viewer_id::text,true); EXECUTE 'SET LOCAL ROLE authenticated';`;
 const reset = `EXECUTE 'RESET ROLE';`;
 const markPaid = `UPDATE public.client_invoices SET status='sent',sent_date='2026-09-05' WHERE id=invoice;
  UPDATE public.client_invoices SET status='paid',paid_date='2026-09-20' WHERE id=invoice;`;
 const refuse = (statement: string, label: string) =>
   `BEGIN ${statement} RAISE EXCEPTION '${label}'; EXCEPTION WHEN check_violation THEN NULL; END;`;
 
-const paidRefusals = `${markPaid}${asMember}
+const paidRefusals = `${markPaid}${asAdmin}
  ${refuse("UPDATE public.client_invoices SET total_amount=1 WHERE id=invoice;", "Paid invoice repriced through the Data API")}
  ${refuse("UPDATE public.client_invoices SET status='draft' WHERE id=invoice;", "Paid invoice reopened")}
  ${refuse("UPDATE public.client_invoices SET paid_date='2026-09-21' WHERE id=invoice;", "Paid date rewritten")}
@@ -87,10 +101,61 @@ const raceRefused = `${asOwner}${replaceLines}
  IF jsonb_build_object('lines',(SELECT jsonb_agg(to_jsonb(l) ORDER BY l.position) FROM public.client_invoice_line_items l WHERE l.invoice_id=invoice),'stamps',(SELECT jsonb_agg(jsonb_build_array(t.id,t.billed_line_item_id) ORDER BY t.id) FROM public.invoicing_time_entries t WHERE t.workspace_id=workspace),'total',(SELECT total_amount FROM public.client_invoices WHERE id=invoice))<>before THEN RAISE EXCEPTION 'Failed replacement left a partial change'; END IF;
  ${reset}`;
 
-(LIVE_RLS ? describe : describe.skip)("client invoice lifecycle in the database", () => {
-  it("refuses direct member edits to a paid or void invoice and its lines, while paid to void still works", () => reached(exercise(paidRefusals)));
+const draftState = `SELECT jsonb_build_object('invoices',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM public.client_invoices i WHERE i.workspace_id=workspace),'lines',(SELECT jsonb_agg(to_jsonb(l) ORDER BY l.id) FROM public.client_invoice_line_items l JOIN public.client_invoices i ON i.id=l.invoice_id WHERE i.workspace_id=workspace)) INTO before;`;
+const draftUnchanged = (label: string) => `IF (SELECT jsonb_build_object('invoices',(SELECT jsonb_agg(to_jsonb(i) ORDER BY i.id) FROM public.client_invoices i WHERE i.workspace_id=workspace),'lines',(SELECT jsonb_agg(to_jsonb(l) ORDER BY l.id) FROM public.client_invoice_line_items l JOIN public.client_invoices i ON i.id=l.invoice_id WHERE i.workspace_id=workspace)))<>before THEN RAISE EXCEPTION '${label}'; END IF;`;
+const rowCount = (expected: number, label: string) => `GET DIAGNOSTICS n=ROW_COUNT; IF n<>${expected} THEN RAISE EXCEPTION '${label}'; END IF;`;
+const refusedByRole = (statement: string, label: string) =>
+  `BEGIN ${statement} RAISE EXCEPTION '${label}'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;`;
 
-  it("keeps the route's draft and sent rules, and allows cleanup that cascades or clears a deleted reference", () => reached(exercise(`${asMember}
+// A member and a viewer may read invoices but may not write a draft or its lines (role matrix invoices.write).
+// An insert is refused loudly; an update or delete matches no row, so the row count and the stored rows are checked.
+const roleRefusals = (as: string, who: string) => `${as}
+ ${refusedByRole(`INSERT INTO public.client_invoices(workspace_id,client_id,engagement_id,project_id,invoice_number,status) VALUES(workspace,client,engagement,project,'SYNTH-${who}','draft');`, `${who} created a draft invoice`)}
+ UPDATE public.client_invoices SET notes='${who} note',total_amount=1 WHERE id=invoice; ${rowCount(0, `${who} edited a draft invoice`)}
+ UPDATE public.client_invoices SET status='void' WHERE id=invoice; ${rowCount(0, `${who} voided a draft invoice`)}
+ DELETE FROM public.client_invoices WHERE id=other_invoice; ${rowCount(0, `${who} deleted a draft invoice`)}
+ ${refusedByRole(`INSERT INTO public.client_invoice_line_items(invoice_id,position,description,amount) VALUES(invoice,9,'${who} line',1);`, `${who} added a draft line`)}
+ UPDATE public.client_invoice_line_items SET amount=1 WHERE id=line_one; ${rowCount(0, `${who} repriced a draft line`)}
+ DELETE FROM public.client_invoice_line_items WHERE invoice_id=invoice; ${rowCount(0, `${who} deleted a draft line`)}
+ ${refusedByRole("PERFORM public.replace_client_invoice_lines(invoice,lines,300,0,300);", `${who} replaced draft lines`)}
+ IF (SELECT count(*) FROM public.client_invoices WHERE workspace_id=workspace)<>2 THEN RAISE EXCEPTION '${who} cannot read the workspace invoices'; END IF;
+ ${reset}`;
+const memberAndViewerRefusals = `${replaceLines}${draftState}
+ ${roleRefusals(asMember, "Member")}
+ ${roleRefusals(asViewer, "Viewer")}
+ ${draftUnchanged("A refused draft write changed the stored invoice or lines")}`;
+
+// The create route inserts the invoice and its lines with the caller's session after its owner-or-admin
+// check, PATCH updates or voids with that session or replaces lines through the function, and a failed
+// create is rolled back with the service-role client. A member's project delete clears the project from
+// invoices through the foreign key, which runs as the table owner.
+const writersAllowed = `${replaceLines}
+ ${asAdmin}
+ BEGIN
+  INSERT INTO public.client_invoices(workspace_id,client_id,engagement_id,project_id,invoice_number,status,subtotal_amount,total_amount,created_by) VALUES(workspace,client,engagement,project,'SYNTH-ADMIN','draft',40,40,admin_id) RETURNING id INTO created;
+  INSERT INTO public.client_invoice_line_items(invoice_id,position,description,amount) VALUES(created,0,'Admin line',40);
+ EXCEPTION WHEN insufficient_privilege THEN RAISE EXCEPTION 'Admin refused a draft the create route allows'; END;
+ UPDATE public.client_invoices SET notes='Admin draft note',due_date='2026-10-01' WHERE id=invoice; ${rowCount(1, "Admin refused a draft edit")}
+ UPDATE public.client_invoice_line_items SET amount=120 WHERE id=line_one; ${rowCount(1, "Admin refused a draft line edit")}
+ DELETE FROM public.client_invoice_line_items WHERE invoice_id=created; ${rowCount(1, "Admin refused a draft line delete")}
+ BEGIN SELECT count(*) INTO n FROM public.replace_client_invoice_lines(invoice,lines,300,0,300); EXCEPTION WHEN insufficient_privilege THEN RAISE EXCEPTION 'Admin refused a line replacement'; END;
+ IF n<>2 THEN RAISE EXCEPTION 'Admin line replacement incomplete'; END IF;
+ UPDATE public.client_invoices SET status='void' WHERE id=other_invoice; ${rowCount(1, "Admin refused voiding a draft")}
+ ${reset}${asOwner}
+ UPDATE public.client_invoices SET status='sent',sent_date='2026-09-05' WHERE id=invoice; ${rowCount(1, "Owner refused sending a draft")}
+ ${reset}
+ EXECUTE 'SET LOCAL ROLE service_role';
+ DELETE FROM public.client_invoices WHERE id=created; ${rowCount(1, "Service role refused the create route rollback delete")}
+ ${reset}${asMember}
+ DELETE FROM public.projects WHERE id=project; ${rowCount(1, "Member project delete refused")}
+ ${reset}
+ IF EXISTS(SELECT 1 FROM public.client_invoices WHERE workspace_id=workspace AND project_id IS NOT NULL) THEN RAISE EXCEPTION 'Deleted project kept on an invoice'; END IF;
+ IF (SELECT row(status,total_amount) FROM public.client_invoices WHERE id=invoice)<>row('sent'::text,300::numeric) THEN RAISE EXCEPTION 'Allowed writes not stored'; END IF;`;
+
+(LIVE_RLS ? describe : describe.skip)("client invoice lifecycle in the database", () => {
+  it("refuses direct admin edits to a paid or void invoice and its lines, while paid to void still works", () => reached(exercise(paidRefusals)));
+
+  it("keeps the route's draft and sent rules, and allows cleanup that cascades or clears a deleted reference", () => reached(exercise(`${asAdmin}
    UPDATE public.client_invoices SET notes='Synthetic draft note',due_date='2026-10-01' WHERE id=invoice;
    UPDATE public.client_invoice_line_items SET amount=120 WHERE id=line_one;
    ${refuse("UPDATE public.client_invoices SET status='paid',paid_date='2026-09-20' WHERE id=invoice;", "Draft marked paid without being sent")}
@@ -108,8 +173,22 @@ const raceRefused = `${asOwner}${replaceLines}
    IF EXISTS(SELECT 1 FROM public.client_invoices WHERE workspace_id=workspace) THEN RAISE EXCEPTION 'Client deletion did not cascade'; END IF;
   `)));
 
-  it("harness: without the guard triggers a member reprices a paid invoice", () => {
+  it("harness: without the guard triggers an admin reprices a paid invoice", () => {
     expect(() => exercise(paidRefusals, withoutGuards)).toThrow(/Paid invoice repriced through the Data API/);
+  });
+
+  it("refuses a member and a viewer every draft write and leaves the draft unchanged", () => reached(exercise(memberAndViewerRefusals)));
+
+  it("lets the owner, an admin and the route's service-role path write drafts, and keeps owner-run cascades working", () => reached(exercise(writersAllowed)));
+
+  it("harness: without the role policies a member creates and edits a draft, and an equivalent role list still passes", () => {
+    expect(() => exercise(memberAndViewerRefusals, withoutRoleRule)).toThrow(/Member created a draft invoice/);
+    if (!roleFunction.includes(ROLE_LIST)) throw new Error("Role list text not found in the migration");
+    reached(exercise(memberAndViewerRefusals, roleFunction.replace(ROLE_LIST, "AND wm.role = ANY (ARRAY['admin', 'owner'])")));
+  });
+
+  it("harness: an owner-only rule refuses the admin the route allows", () => {
+    expect(() => exercise(writersAllowed, roleFunction.replace(ROLE_LIST, "AND wm.role = 'owner'"))).toThrow(/Admin refused a draft the create route allows/);
   });
 
   it("replaces a draft invoice's lines, time links and totals in one call", () => reached(exercise(`${asOwner}${replaceLines}

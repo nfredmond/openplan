@@ -392,6 +392,47 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     await screen.findByRole("button", { name: /export application packet \(pdf\)/i });
   }
 
+  it("says before export how many unverified items each final section holds and that the PDF will be stamped DRAFT (KI-2026-11-14-061)", async () => {
+    await openWorkspace(applicationPayload({
+      sections: [
+        sectionRow({ status: "final", final_markdown: "Crashes doubled [VERIFY]. Goal adopted [VERIFY: date]." }),
+        budgetSectionRow({ status: "final", final_markdown: "[OPERATOR: Enter the approved cost estimate.]" }),
+      ],
+      attachments: [attachmentRow({ status: "attached", kb_document_id: KB_DOCUMENT_ID })],
+    }));
+    const narrative = await screen.findByTestId("application-section-project-narrative");
+    expect(narrative).toHaveTextContent("2 unverified items");
+    expect(screen.getByTestId("application-section-budget-narrative")).toHaveTextContent("1 unfilled placeholder");
+    expect(screen.getByTestId("export-draft-stamps")).toHaveTextContent(
+      "Will be stamped" + "DRAFT: 2 unverified items, 1 unfilled placeholder remain in 2 sections"
+    );
+  });
+
+  it("shows no count and no stamp notice when final sections hold no unverified items", async () => {
+    await openWorkspace(applicationPayload({
+      sections: [sectionRow({ status: "final", final_markdown: "Staff confirmed every figure." })],
+      attachments: [attachmentRow({ status: "attached", kb_document_id: KB_DOCUMENT_ID })],
+    }));
+    const narrative = await screen.findByTestId("application-section-project-narrative");
+    expect(narrative).not.toHaveTextContent(/unverified|placeholder/);
+    expect(screen.queryByTestId("export-draft-stamps")).toBeNull();
+  });
+
+  it("repeats the stamp reasons the export returned", async () => {
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if ((init?.method ?? "GET") === "GET") return jsonResponse(200, applicationPayload());
+      if (init?.method === "POST" && url.endsWith("/application/export")) {
+        return jsonResponse(201, { export: { id: seedId(501) }, engineDisclosure: null, isDraftStamped: true, outstandingRequiredCount: 0,
+          draftStamps: ["DRAFT: 45 unverified items remain in 6 sections"], sha256: "b".repeat(64) });
+      }
+      throw new Error(`Unexpected fetch: ${init?.method} ${url}`);
+    });
+    render(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} />);
+    fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /export application packet \(pdf\)/i }));
+    expect(await screen.findByText("Stamped DRAFT: 45 unverified items remain in 6 sections")).toBeInTheDocument();
+  });
+
   it("lets the planner choose SS4A evidence appendices, all on by default, and sends the choice", async () => {
     const ss4aSections = SS4A_SECTION_KEYS.map((key, index) => sectionRow({ id: seedId(10 + index), section_key: key, title: key, sort_order: index }));
     await exportWith(applicationPayload({ sections: ss4aSections, attachments: [] }));

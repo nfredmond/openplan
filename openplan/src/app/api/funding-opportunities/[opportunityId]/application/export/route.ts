@@ -17,20 +17,22 @@ import { renderReportPdf } from "@/lib/reports/pdf";
 import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import {
   APPLICATION_ATTACHMENT_SELECT,
+  APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR,
   APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
   APPLICATION_PENDING_SCHEMA_ERROR,
   APPLICATION_SECTION_PROVENANCE_SELECT,
   looksLikePendingAssemblySchema,
+  looksLikePendingExportCustodySchema,
   looksLikePendingFinalizerSchema,
   parseApplicationAttachmentRow,
   parseApplicationSectionRow,
   type ApplicationAttachmentRow,
   type ApplicationSectionRow,
 } from "@/lib/grants/application";
+import { applicationDraftStamps, countOutstandingRequiredAttachments } from "@/lib/grants/application-draft-stamps";
 import {
   applicationExportPacketLabel,
   buildGrantApplicationHtml,
-  countOutstandingRequiredAttachments,
   type GrantApplicationExportSection,
   type GrantApplicationSectionProvenance,
 } from "@/lib/grants/application-html";
@@ -46,7 +48,8 @@ import {
  * Package this opportunity's application into one PDF: cover + every section
  * (final text, or a disclosed outstanding-item block) + attachment checklist +
  * provenance appendix — rendered through the one report PDF pipeline, stored
- * in the grant-application-exports bucket, and registered append-only.
+ * in the grant-application-exports bucket, and registered append-only with the
+ * PDF's SHA-256 and, for SS4A, the evidence appendix manifest.
  *
  * The grounding gate here is DEFENSE IN DEPTH on top of the finalize gate: a
  * section finalized UNEDITED from a stored AI draft whose grounding does not
@@ -55,22 +58,28 @@ import {
  * operator's own work product and is never re-judged by a stored verdict.)
  * Missing required attachments do NOT block — the document is stamped DRAFT
  * prominently instead, because packaging a work in progress is legitimate as
- * long as no reader can mistake it for submittable.
+ * long as no reader can mistake it for submittable. Final section text that
+ * still holds `[VERIFY]` markers or unfilled Safety seed placeholders stamps it
+ * DRAFT the same way, and the response lists every stamp reason.
  *
  * An application seeded from a program that declares evidence appendices
  * (SS4A, California ATP; `evidence-appendix-keys.ts`) also carries appendices
  * drawn from the linked project's saved records. The optional JSON body
  * `{ appendices: [...] }` chooses which; no body means all of them. A
  * deselected or missing appendix is still listed in the document, never
- * dropped. Finalizers print as workspace members' names, and times print on
- * the workspace calendar.
+ * dropped. Finalizers print as workspace roles, never email addresses, and
+ * times print on the workspace calendar.
  */
 
 const EXPORT_BUCKET = "grant-application-exports";
 
 // Not exported: Next.js route files may only export route handlers/config.
 const APPLICATION_EXPORT_SELECT =
-  "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at";
+  "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json";
+
+// The custody columns (migration 20261102110100), probed before anything is
+// rendered or stored.
+const APPLICATION_EXPORT_CUSTODY_PROBE = "id, sha256, appendix_manifest_json";
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -419,7 +428,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     const evidenceAppendices = assembled?.appendices;
 
-    // Finalizers print as this workspace's members, never as user ids. The
+    // Finalizers print as this workspace's roles, never as user ids or emails. The
     // roster is read with the service role behind its own membership check.
     const finalizers = await loadFinalizerNames(
       createServiceRoleClient(),
@@ -462,6 +471,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       evidenceAppendixFrame: assembled?.frame,
       calendar,
     });
+
+    // The register row records the PDF's hash and appendix manifest. Ask for
+    // those columns before rendering or storing anything, so a database behind
+    // the custody migration refuses here, naming it, instead of after the PDF
+    // is uploaded. Any other probe error recurs at the insert below and is
+    // handled there.
+    const custodyProbe = await supabase
+      .from("funding_opportunity_application_exports")
+      .select(APPLICATION_EXPORT_CUSTODY_PROBE)
+      .eq("opportunity_id", opportunity.id)
+      .limit(1);
+    if (looksLikePendingExportCustodySchema(custodyProbe.error?.message)) {
+      return NextResponse.json({ error: APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR }, { status: 503 });
+    }
 
     const pdf = await renderReportPdf(html, {
       title: `${opportunityTitle}: ${packetLabel}`,
@@ -520,6 +543,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         pdf_engine: pdf.engine,
         page_count: pdf.pageCount,
         generated_by: user.id,
+        sha256,
+        appendix_manifest_json: appendixSummary,
       })
       .select(APPLICATION_EXPORT_SELECT)
       .single();
@@ -538,6 +563,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const outstandingRequiredCount = countOutstandingRequiredAttachments(attachments);
+    const draftStamps = applicationDraftStamps(sections, attachments);
 
     audit.info("application_exported", {
       opportunityId: opportunity.id,
@@ -550,6 +576,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       byteLength: pdfBytes.byteLength,
       appendices: appendixSummary,
       outstandingRequiredCount,
+      draftStamps,
       durationMs: Date.now() - startedAt,
     });
 
@@ -562,7 +589,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // to the caller exactly as it is disclosed inside the document.
         engineDisclosure: pdf.disclosure,
         outstandingRequiredCount,
-        isDraftStamped: outstandingRequiredCount > 0,
+        isDraftStamped: draftStamps.length > 0,
+        draftStamps,
         sha256,
         byteLength: pdfBytes.byteLength,
         appendices: appendixSummary,
@@ -621,6 +649,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (exportsError) {
       if (looksLikePendingAssemblySchema(exportsError.message)) {
         return NextResponse.json({ error: APPLICATION_PENDING_SCHEMA_ERROR }, { status: 503 });
+      }
+      if (looksLikePendingExportCustodySchema(exportsError.message)) {
+        return NextResponse.json({ error: APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR }, { status: 503 });
       }
       audit.error("application_exports_list_failed", {
         opportunityId: access.opportunity.id,

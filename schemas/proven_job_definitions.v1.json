@@ -29,7 +29,16 @@
         "engagement-summary": "pdftotext"
       },
       "screens": { "widths": [1440, 390], "modes": ["light", "dark"] },
-      "crossWorkspaceTargets": ["safety-action-plan", "ss4a-application"],
+      "crossWorkspace": {
+        "note": "Lead decision 2026-11-14 (KI-2026-11-14-060). A data check (an API route or a file download) counts only with 403 or 404. A page check also counts with 200 when the journey read the rendered page and found the not-found screen and none of the first account's identifying strings. Each target needs its download refused as a data check; a page check alone never satisfies the rule.",
+        "targets": ["safety-action-plan", "ss4a-application"],
+        "requiredDataRequests": {
+          "safety-action-plan": "report-pdf-download",
+          "ss4a-application": "application-pdf-download"
+        },
+        "minSearchedStrings": 3,
+        "pageAnsweredOkLimit": "report-page-answers-200-with-not-found-screen"
+      },
       "requiredLimits": [
         "no-pdf-ua-check",
         "no-keyboard-or-screen-reader-pass",

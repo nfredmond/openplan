@@ -499,8 +499,15 @@ export function BcaWorkbench({
       <aside aria-label="Project place and retained analysis place" className="space-y-3 rounded border p-4 text-sm">
         <h2 className="text-lg font-semibold">Project place</h2>
         <p>Analysis place status: {bcaPlaceReviewLabel(placeReview.status)}.</p>
+        {/* Unbound with the project place readable: an analysis saved before
+            places were recorded. Unbound without it: an analysis that could
+            not record the place, such as a new one on a tribal area, whose
+            kind the saved-analysis rule does not admit yet. The alert below
+            says why. */}
         {placeReview.retained ? <PlaceLines heading="In this analysis" snapshot={placeReview.retained} />
-          : <p>Unbound legacy analysis. The affected-area text stays as written. Review the project place to make a new version.</p>}
+          : currentPlace.status === "available"
+            ? <p>Unbound legacy analysis. The affected-area text stays as written. Review the project place to make a new version.</p>
+            : <p>This analysis has no place.</p>}
         {currentPlace.status === "available" ? <PlaceLines heading="On the project now" snapshot={currentPlace.snapshot} />
           : <p role="alert">Current project place {currentPlace.status}: {currentPlace.message}</p>}
         <p>{BCA_PLACE_PLAIN_LIMIT}</p>

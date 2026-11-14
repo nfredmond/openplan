@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -63,7 +64,7 @@ vi.mock("@/lib/grants/pursuit", async () => {
   };
 });
 
-import { POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
+import { GET as listExports, POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
 import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportunityId]/application/export/[exportId]/download/route";
 
@@ -216,6 +217,8 @@ type ServiceCall = { table: string; method: string; args: unknown[] };
  */
 function rosterService(options: {
   members: string[];
+  /** Each member's workspace role; "member" when not given. */
+  roles?: Record<string, string>;
   emails: Record<string, string>;
   rosterError?: { message: string };
 }) {
@@ -242,7 +245,7 @@ function rosterService(options: {
     chain.limit = async () =>
       options.rosterError
         ? { data: null, error: options.rosterError }
-        : { data: columns === "user_id, role" ? options.members.map((id) => ({ user_id: id, role: "member" })) : [], error: null };
+        : { data: columns === "user_id, role" ? options.members.map((id) => ({ user_id: id, role: options.roles?.[id] ?? "member" })) : [], error: null };
     return chain;
   };
   return {
@@ -435,6 +438,27 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const body = await response.json();
     expect(body.isDraftStamped).toBe(true);
     expect(body.outstandingRequiredCount).toBe(1);
+    expect(body.draftStamps).toEqual(["DRAFT: 1 required attachment(s) outstanding"]);
+  });
+
+  it("stamps the document DRAFT when a final section still holds [VERIFY] markers, and says why (KI-2026-11-14-061)", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ ...finalOperatorSection, final_markdown: "Crashes doubled [VERIFY]. [OPERATOR: Enter the budget.]" }], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    const stamp = "DRAFT: 1 unverified item, 1 unfilled placeholder remain in 1 section";
+    expect(html).toContain(`<div class="draft-stamp">${stamp}</div>`);
+    const body = await response.json();
+    expect(body.isDraftStamped).toBe(true);
+    expect(body.outstandingRequiredCount).toBe(0);
+    expect(body.draftStamps).toEqual([stamp]);
   });
 
   it("stores the PDF under the opportunity's own prefix and registers the export row", async () => {
@@ -469,6 +493,11 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(inserted.id).toBe((storagePath as string).split("/")[2].replace(".pdf", ""));
 
     const body = await response.json();
+    // The register row carries the stored bytes' hash; no appendix manifest
+    // outside SS4A.
+    expect(inserted.sha256).toBe(createHash("sha256").update(bytes as Buffer).digest("hex"));
+    expect(inserted.sha256).toBe(body.sha256);
+    expect(inserted.appendix_manifest_json).toBeNull();
     expect(body.export).toMatchObject({ id: EXPORT_ID, pdf_engine: "builtin" });
     expect(body.engineDisclosure).toContain("built-in PDF writer");
 
@@ -608,6 +637,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const REORDERING_TEAMMATE_ID = "77777777-7777-4777-8777-777777777777";
     const roster = rosterService({
       members: [USER_ID, REORDERING_TEAMMATE_ID],
+      roles: { [USER_ID]: "admin" },
       emails: { [USER_ID]: "finalizer@example.gov", [REORDERING_TEAMMATE_ID]: "teammate@example.gov" },
     });
     createServiceRoleClientMock.mockReturnValue(roster.service);
@@ -635,13 +665,15 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(response.status).toBe(201);
 
     const html = renderReportPdfMock.mock.calls[0][0] as string;
-    // A person, not an id (KI-2026-11-02-044).
-    expect(html).toContain("<td>finalizer@example.gov</td>");
+    // The finalizer's workspace role, not an id (KI-2026-11-02-044) and not an
+    // email address (KI-2026-11-14-100): the PDF goes to a funder.
+    expect(html).toContain("<td>Workspace admin</td>");
     expect(html).not.toContain(USER_ID);
+    expect(html).not.toContain("finalizer@example.gov");
     expect(html).not.toContain("teammate@example.gov");
     expect(html).not.toContain(REORDERING_TEAMMATE_ID);
-    // Only the finalizer's auth record is read, and only after the roster read.
-    expect(roster.getUserById.mock.calls).toEqual([[USER_ID]]);
+    // No auth record is read; the roster's role is enough.
+    expect(roster.getUserById).not.toHaveBeenCalled();
     expect(roster.calls.filter((call) => call.method === "select").map((call) => call.args)).toEqual([["user_id"], ["user_id, role"]]);
     expect(roster.calls.filter((call) => call.method === "eq").map((call) => call.args)).toEqual([
       ["workspace_id", WORKSPACE_ID],
@@ -753,6 +785,34 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(response.status).toBe(503);
     expect((await response.json()).error).toContain("20260727000016_application_section_finalizer");
     expect(renderReportPdfMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/funding-opportunities/[opportunityId]/application/export", () => {
+  const listContext = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+  const listRequest = () =>
+    new NextRequest(`http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application/export`, { method: "GET" });
+
+  it("lists each export with its stored hash and appendix manifest", async () => {
+    const row = { ...exportRowResult, sha256: "a".repeat(64), appendix_manifest_json: null };
+    const listChain = makeQuery({ data: [row], error: null });
+    installTables({ funding_opportunity_application_exports: () => listChain });
+    const response = await listExports(listRequest(), listContext);
+    expect(response.status).toBe(200);
+    expect((await response.json()).exports[0].sha256).toBe("a".repeat(64));
+    expect(listChain.select).toHaveBeenCalledWith(
+      "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json"
+    );
+  });
+
+  it("answers 503 naming the custody migration when the columns are missing", async () => {
+    installTables({
+      funding_opportunity_application_exports: () =>
+        makeQuery({ data: null, error: { message: "column funding_opportunity_application_exports.sha256 does not exist", code: "42703" } }),
+    });
+    const response = await listExports(listRequest(), listContext);
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20261102110100_application_export_custody");
   });
 });
 

@@ -164,13 +164,19 @@ BEGIN
    PERFORM pg_temp.bca_fixture_insert(project_id,actor_id,pg_temp.bca_fixture_document(project_id));
    RESET ROLE;
  END LOOP;
- -- All valid place states; the final five entries are the existing resolver's
- -- kind vocabulary. The opaque source remains independent of that adapter.
- FOREACH mode IN ARRAY ARRAY['missing','drawn','uploaded_file','opaque','county','city','cdp','metro','micro'] LOOP
+ -- All valid place states; the entries after 'opaque' are the resolver's kind
+ -- vocabulary, each with a GEOID in its own kind's format, plus a tribal area
+ -- reference the reader would trim and uppercase. The opaque source remains
+ -- independent of that adapter.
+ FOREACH mode IN ARRAY ARRAY['missing','drawn','uploaded_file','opaque','county','city','cdp','metro','micro',
+   'aiannh','cousub','aiannh-raw'] LOOP
    UPDATE public.projects SET place_source=CASE WHEN mode='missing' THEN NULL WHEN mode='opaque' THEN 'fixture-resolver'
        WHEN mode IN ('drawn','uploaded_file') THEN mode ELSE 'tigerweb' END,
-     place_kind=CASE WHEN mode IN ('missing','drawn','uploaded_file') THEN NULL WHEN mode='opaque' THEN 'opaque-area' ELSE mode END,
-     place_ref=CASE WHEN mode IN ('missing','drawn','uploaded_file') THEN NULL WHEN mode='opaque' THEN 'opaque:area-1' ELSE '12345' END,
+     place_kind=CASE WHEN mode IN ('missing','drawn','uploaded_file') THEN NULL WHEN mode='opaque' THEN 'opaque-area'
+       WHEN mode='aiannh-raw' THEN 'aiannh' ELSE mode END,
+     place_ref=CASE WHEN mode IN ('missing','drawn','uploaded_file') THEN NULL WHEN mode='opaque' THEN 'opaque:area-1'
+       WHEN mode IN ('city','cdp') THEN '1234567' WHEN mode='cousub' THEN '1234567890'
+       WHEN mode='aiannh' THEN '1234R' WHEN mode='aiannh-raw' THEN ' 1234t ' ELSE '12345' END,
      place_label=CASE WHEN mode='missing' THEN NULL ELSE 'Synthetic area' END,
      place_country_code=NULL,place_subdivision_code=NULL,
      place_min_lon=CASE WHEN mode='missing' THEN NULL ELSE 170 END,place_max_lon=CASE WHEN mode='missing' THEN NULL ELSE -170 END,
@@ -184,7 +190,7 @@ BEGIN
    RESET ROLE;
    state_count := state_count+1;
  END LOOP;
- IF state_count<>9 THEN RAISE EXCEPTION 'Valid state loop did not run completely'; END IF;
+ IF state_count<>12 THEN RAISE EXCEPTION 'Valid state loop did not run completely'; END IF;
  context := jsonb_build_object('version',1,'state','declared','recordedBy',owner_id,
    'recordedAt','2026-10-19T01:02:03.654321+00:00','entries',jsonb_build_array(
      jsonb_build_object('label','Synthetic sovereign body','kind','authority','countryCode',NULL,
@@ -206,6 +212,16 @@ BEGIN
  SET LOCAL ROLE authenticated;
  PERFORM pg_temp.bca_fixture_insert(project_id,owner_id,bad);
  RESET ROLE;
+ -- A tribal area and a town resolve and bind like a county.
+ FOREACH mode IN ARRAY ARRAY['aiannh:1234R','aiannh:1234T','cousub:1234567890'] LOOP
+   UPDATE public.projects SET jurisdiction_context=jsonb_set(context,'{entries}',jsonb_build_array(
+     jsonb_build_object('label','Synthetic resolved body','kind','tigerweb:'||split_part(mode,':',1),'countryCode',NULL,
+       'subdivisionCode',NULL,'reference','tigerweb:'||mode,'scope','administrative','identity','server_resolved'))) WHERE id=project_id;
+   bad := pg_temp.bca_fixture_document(project_id);
+   SET LOCAL ROLE authenticated;
+   PERFORM pg_temp.bca_fixture_insert(project_id,owner_id,bad);
+   RESET ROLE;
+ END LOOP;
  UPDATE public.projects SET jurisdiction_context=context WHERE id=project_id;
  doc := pg_temp.bca_fixture_document(project_id);
  SET LOCAL ROLE authenticated;
@@ -285,6 +301,17 @@ BEGIN
  SET LOCAL ROLE authenticated;
  PERFORM pg_temp.bca_fixture_refuse(project_id,owner_id,bad,'23514','invalid-current-resolved-context');
  RESET ROLE;
+ -- Each kind's GEOID is checked by its own format, exactly as stored.
+ FOREACH mode IN ARRAY ARRAY['aiannh:12345','aiannh:1234X','aiannh:1234r','cousub:123456789',
+   'cousub:12345678901','city:12345','county:1234567'] LOOP
+   UPDATE public.projects SET jurisdiction_context=jsonb_set(context,'{entries}',jsonb_build_array(
+     jsonb_build_object('label','Synthetic malformed resolved body','kind','tigerweb:'||split_part(mode,':',1),'countryCode',NULL,
+       'subdivisionCode',NULL,'reference','tigerweb:'||mode,'scope','administrative','identity','server_resolved'))) WHERE id=project_id;
+   bad := pg_temp.bca_fixture_document(project_id);
+   SET LOCAL ROLE authenticated;
+   PERFORM pg_temp.bca_fixture_refuse(project_id,owner_id,bad,'23514','malformed-resolved-'||mode);
+   RESET ROLE;
+ END LOOP;
  UPDATE public.projects SET jurisdiction_context=context WHERE id=project_id;
  FOREACH mode IN ARRAY ARRAY['orphan','drawn','uploaded_file','opaque','bad-adapter'] LOOP
    UPDATE public.projects SET place_source=CASE mode WHEN 'orphan' THEN NULL WHEN 'opaque' THEN 'fixture-resolver'
@@ -299,6 +326,17 @@ BEGIN
    bad := pg_temp.bca_fixture_document(project_id);
    SET LOCAL ROLE authenticated;
    PERFORM pg_temp.bca_fixture_refuse(project_id,owner_id,bad,'23514','invalid-current-'||mode);
+   RESET ROLE;
+ END LOOP;
+ -- A recorded place with a GEOID outside its kind's format is refused by name.
+ FOREACH mode IN ARRAY ARRAY['aiannh:12345','aiannh:1234X','cousub:123456789','city:12345','cdp:123456','county:1234567'] LOOP
+   UPDATE public.projects SET jurisdiction_context=context,place_source='tigerweb',place_kind=split_part(mode,':',1),
+     place_ref=split_part(mode,':',2),place_label='Synthetic malformed place',place_country_code=NULL,place_subdivision_code=NULL,
+     place_min_lon=170,place_max_lon=-170,place_min_lat=-20,place_max_lat=20,
+     place_set_at='2026-10-19T01:02:03.123456+00:00' WHERE id=project_id;
+   bad := pg_temp.bca_fixture_document(project_id);
+   SET LOCAL ROLE authenticated;
+   PERFORM pg_temp.bca_fixture_refuse_domain(project_id,owner_id,bad,'Recorded project place reference is invalid','malformed-place-'||mode);
    RESET ROLE;
  END LOOP;
  UPDATE public.projects SET jurisdiction_context=context,place_source='tigerweb',place_kind='micro',place_ref='12345',

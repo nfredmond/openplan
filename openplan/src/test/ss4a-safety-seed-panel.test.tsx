@@ -19,11 +19,13 @@ const response = (data: unknown, status = 200) => ({ ok: status < 400, status, j
 
 describe("explicit Safety artifact preview and apply UI", () => {
   // KI-2026-11-14-114: the picker printed "2026-11-03T05:42:49.644+00:00".
-  it("names each report's generation time as a plain date and time", async () => {
+  // KI-2026-11-14-116: it then printed the reader's local time with no zone,
+  // for the artifact Appendix B dates in UTC. Both now print the same words.
+  it("names each report's generation time as a plain date and time, in UTC as the appendix does", async () => {
     sourcesMock.mockResolvedValue(response({ artifacts: [{ ...artifacts[0], generatedAt: "2026-11-03T17:42:49.644+00:00" }], nextCursor: null, requiresProject: false }));
     render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
     const option = await screen.findByRole("option", { name: /Example Safety report/ });
-    expect(option.textContent).toMatch(/ · Nov 3, 2026, \d{1,2}:42 (AM|PM) · /);
+    expect(option.textContent).toContain(" · Nov 3, 2026, 17:42 UTC · ");
     expect(option.textContent).not.toContain("2026-11-03T");
   });
   it("shows v2 as a recognized input comparison and displays the missing-notice refusal without an apply action", async () => {
@@ -109,7 +111,9 @@ describe("explicit Safety artifact preview and apply UI", () => {
       freshness: { status: "newer", seededGeneratedAt: "2026-11-03T17:42:49+00:00", newestGeneratedAt: "2026-11-13T18:21:00+00:00", newestArtifactId: rows.report.id } }));
     render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
     const line = await screen.findByTestId("safety-seed-newer-report");
-    expect(line.textContent).toMatch(/^Seeded from the report generated Nov 3, 2026, \d{1,2}:42 (AM|PM)\. A newer one was generated Nov 13, 2026, \d{1,2}:21 (AM|PM)\. Select it above to re-seed\.$/);
+    // Both dates print in UTC, as the picker and the export appendix do
+    // (KI-2026-11-14-116), so the line reads the same in every host zone.
+    expect(line.textContent).toBe("Seeded from the report generated Nov 3, 2026, 17:42 UTC. A newer one was generated Nov 13, 2026, 18:21 UTC. Select it above to re-seed.");
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("says the check failed rather than that no newer report exists, and is silent when current", async () => {

@@ -1,8 +1,9 @@
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { joinLetterSpacing, pdfTextHasPhrase } from "../lib/pdf-text-match.mjs";
+import { assertPopplerTool, popplerPdfPages } from "../lib/poppler-text.mjs";
 
 /**
  * The one origin whose pages count as proof of a hosted job. A local,
@@ -19,9 +20,10 @@ const PROVEN_JOB_ENTRY_FIELDS = new Set(["jobId", "places", "commit", "reviewedA
 
 /**
  * The statuses that show the app refused a signed-in second account another
- * workspace's record. The report page answers 404 through notFound(); the
- * report download and the application export answer 404 for a record they
- * cannot find and 403 for "Workspace access denied". A 401 means the second
+ * workspace's record. The report download and the application export answer
+ * 404 for a record they cannot find and 403 for "Workspace access denied".
+ * The report page calls notFound() after its loading screen has streamed, so
+ * it answers 200 with the not-found screen (checkCrossWorkspace). A 401 means the second
  * account was not signed in, a 5xx means the handler failed before it decided,
  * and a 400 or 422 either never reached the workspace check or came after it
  * passed, so none of them is evidence of isolation.
@@ -142,21 +144,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkScreens(journey, job, label);
   }
 
-  for (const target of job.crossWorkspaceTargets) {
-    const checks = record.crossWorkspace.checks.filter((check) => check.target === target);
-    if (checks.length === 0) refuse(`cross-workspace check for ${target} is missing`);
-    for (const check of checks) {
-      if (check.contentReturned || check.status < 400) {
-        refuse(`cross-workspace request for another workspace's ${target} returned content (status ${check.status})`);
-      }
-      if (!CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status)) {
-        refuse(
-          `cross-workspace request for another workspace's ${target} answered status ${check.status}, which is inconclusive; ` +
-            "only 403 (workspace access denied) or 404 (not found) shows the app refused it",
-        );
-      }
-    }
-  }
+  const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace);
 
   const { sourceCheck } = record;
   if (sourceCheck.status === "differs") refuse("the crash source check found different counts; that is a finding, not a pass");
@@ -166,9 +154,61 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
   const limitIds = new Set(record.limits.map((limit) => limit.id));
   const requiredLimits = [...job.requiredLimits];
   if (sourceCheck.status !== "matched") requiredLimits.push(job.unconfirmedCrashCountLimit);
+  if (pageAnsweredOk) requiredLimits.push(job.crossWorkspace.pageAnsweredOkLimit);
   for (const id of requiredLimits) {
     if (!limitIds.has(id)) refuse(`record does not state the ${id} limit`);
   }
+}
+
+/**
+ * The cross-workspace rule (KI-2026-11-14-060, the lead's decision of
+ * November 14). A `data` check (an API route or a file download) counts only
+ * with 403 or 404. A `page` check counts with 403 or 404, or with 200 when
+ * the record carries notFoundRendered true, recordTextFound false and the
+ * hashes of at least `minSearchedStrings` distinct identifying strings: the
+ * report page streams, so it can answer 200 while it renders the not-found
+ * screen. Each target needs its download refused as a data check, so a page
+ * check alone never satisfies the rule. Returns whether a page check was
+ * accepted on 200, which the record must then state as a limit.
+ *
+ * Blind category: the checker trusts the journey's reading of the rendered
+ * page. It cannot see the page, so it cannot tell whether the strings
+ * searched were the right ones, only that enough distinct ones were.
+ */
+function checkCrossWorkspace(checks, rule) {
+  let pageAnsweredOk = false;
+  for (const check of checks) {
+    const label = `cross-workspace ${check.kind} request ${check.request} for another workspace's ${check.target}`;
+    if (check.contentReturned) refuse(`${label} returned content (status ${check.status})`);
+    if (CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status)) continue;
+    if (check.kind === "page" && check.status === 200) {
+      const hashes = check.searchedStringSha256 ?? [];
+      if (check.notFoundRendered !== true) refuse(`${label} answered 200 without the journey reading the not-found screen on it`);
+      if (check.recordTextFound !== false) refuse(`${label} answered 200 and the journey found the first account's text on it, or did not look`);
+      if (hashes.length !== check.searchedStringCount || new Set(hashes).size !== hashes.length) {
+        refuse(`${label} must list one distinct hash per identifying string searched`);
+      }
+      if (hashes.length < rule.minSearchedStrings) {
+        refuse(`${label} searched ${hashes.length} identifying strings; at least ${rule.minSearchedStrings} required`);
+      }
+      pageAnsweredOk = true;
+      continue;
+    }
+    refuse(
+      `${label} answered status ${check.status}, which is inconclusive; only 403 (workspace access denied) or 404 (not found) ` +
+        "shows the app refused it, or for a page, 200 with the not-found screen and none of the first account's text",
+    );
+  }
+  for (const target of rule.targets) {
+    const forTarget = checks.filter((check) => check.target === target);
+    if (forTarget.length === 0) refuse(`cross-workspace check for ${target} is missing`);
+    const download = rule.requiredDataRequests[target];
+    const refused = forTarget.some(
+      (check) => check.kind === "data" && check.request === download && CROSS_WORKSPACE_REFUSAL_STATUSES.has(check.status),
+    );
+    if (!refused) refuse(`cross-workspace checks for ${target} need its ${download} refused as a data check with 403 or 404`);
+  }
+  return pageAnsweredOk;
 }
 
 function checkPlace(place, rule, label) {
@@ -201,7 +241,8 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
     const pages = readPdfPages(source);
     if (pages.length !== pdf.pages) refuse(`${pdfLabel} has ${pages.length} pages, record says ${pdf.pages}`);
     pages.forEach((text, index) => {
-      if (/\bDRAFT\b/.test(text)) refuse(`${pdfLabel} page ${index + 1} carries a DRAFT stamp`);
+      // A stamp set with letter spacing can read back as "D R A F T".
+      if (/\bDRAFT\b/.test(joinLetterSpacing(text))) refuse(`${pdfLabel} page ${index + 1} carries a DRAFT stamp`);
       const found = secretIn(text);
       if (found) refuse(`${pdfLabel} page ${index + 1} contains ${found}`);
     });
@@ -214,7 +255,10 @@ function checkPdfs(journey, job, label, root, readPdfPages, pdfPaths) {
       if (entry.page > pages.length) refuse(`${pdfLabel} ${item} names page ${entry.page} of ${pages.length}`);
       if (method === "pdftotext") {
         if (!entry.text || entry.imageSha256) refuse(`${pdfLabel} ${item} needs the text pdftotext found, and no image hash`);
-        if (!squash(pages[entry.page - 1]).includes(squash(entry.text))) {
+        // The shared matcher the export test and the journey use: case,
+        // wrapped lines and letter spacing aside, the text must be whole on
+        // that page (scripts/lib/pdf-text-match.mjs).
+        if (!pdfTextHasPhrase(pages[entry.page - 1], entry.text)) {
           refuse(`${pdfLabel} ${item} text is not on page ${entry.page}`);
         }
       } else if (!entry.imageSha256 || entry.text) {
@@ -248,22 +292,24 @@ function checkScreens(journey, job, label) {
   }
 }
 
-/** Read every page's text with Poppler's pdftotext; pages are split on form feeds. */
-export function pdftotextPages(absolutePath) {
-  let output;
+/**
+ * Read every page's text with Poppler's pdftotext, the reader the journey
+ * script uses (scripts/lib/poppler-text.mjs). A pdftotext that is not
+ * Poppler's refuses the record before any page is read.
+ * @param {string} absolutePath
+ * @param {{spawn?: Function, execFile?: Function}} [options] stand-ins for tests
+ */
+export function pdftotextPages(absolutePath, options = {}) {
   try {
-    output = execFileSync("pdftotext", ["-layout", "-enc", "UTF-8", absolutePath, "-"], {
-      encoding: "utf8",
-      maxBuffer: 256 * 1024 * 1024,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
+    assertPopplerTool("pdftotext", options);
   } catch (error) {
-    const reason = error?.code === "ENOENT" ? "pdftotext (Poppler) is not installed" : "pdftotext could not read it";
-    throw new Error(`proven job record refused: ${reason}: ${absolutePath}`);
+    throw new Error(`proven job record refused: ${error.message}`);
   }
-  const pages = output.split("\f");
-  if (pages.length > 1 && pages[pages.length - 1].trim() === "") pages.pop();
-  return pages;
+  try {
+    return popplerPdfPages(absolutePath, options);
+  } catch {
+    throw new Error(`proven job record refused: pdftotext could not read it: ${absolutePath}`);
+  }
 }
 
 const SECRET_PATTERNS = [
@@ -367,10 +413,6 @@ function checkSchema(value, schema, path, root) {
 
 function refuse(reason) {
   throw new Error(`proven job record refused: ${reason}`);
-}
-
-function squash(text) {
-  return text.replace(/\s+/g, " ").trim();
 }
 
 function parsedSchema(bytes) {

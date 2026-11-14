@@ -5,7 +5,7 @@
  * client and embed `projects(...)`. Filtering the link row on the cycle's
  * workspace keeps a link forged against this cycle off the page, but the embed
  * still returns whatever project the row names, in any workspace. Until the
- * database refuses such a row (KI-2026-11-02-053; migration in PR #440),
+ * database refuses such a row (KI-2026-11-02-053, migration 20261102140000),
  * a page that publishes link rows drops every row whose embedded project
  * belongs to another workspace, or whose workspace was not read at all.
  *

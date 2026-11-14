@@ -341,8 +341,25 @@
   ],
   "crossWorkspace": {
     "checks": [
-      { "target": "safety-action-plan", "status": 404, "contentReturned": false },
-      { "target": "ss4a-application", "status": 404, "contentReturned": false }
+      {
+        "target": "safety-action-plan",
+        "request": "report-page",
+        "kind": "page",
+        "status": 200,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "d361e53ecfd04e73eb2c41b0802a2184d8b57b427d4c40193053d4776ec4ded4",
+          "8dfeeeb9e6cd1c8c344b6009e6ef026badbe705af64004392abe7514a6168766",
+          "fb1fb707b06d4a0ab2f0131ca1a4e0b5bf6d85430d0d77319b1656e0d796bcf2",
+          "90b3a87d2664b7ecd3d55efbf571cac76d017e01b474431e6ee442a4b6c40882"
+        ],
+        "searchedStringCount": 4
+      },
+      { "target": "safety-action-plan", "request": "report-pdf-download", "kind": "data", "status": 404, "contentReturned": false },
+      { "target": "ss4a-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false },
+      { "target": "ss4a-application", "request": "application-pdf-download", "kind": "data", "status": 404, "contentReturned": false }
     ]
   },
   "sourceCheck": { "status": "not-run", "checkedOn": null, "url": null, "note": "Synthetic example; no source was queried." },
@@ -352,6 +369,7 @@
     { "id": "no-keyboard-or-screen-reader-pass", "text": "No keyboard-only or screen-reader pass was made." },
     { "id": "no-human-usefulness-review", "text": "No planner reviewed whether the PDFs are useful." },
     { "id": "fars-is-fatal-only", "text": "FARS records fatal crashes only, so Nevada and tribal counts omit serious injuries." },
-    { "id": "crash-counts-not-independently-confirmed", "text": "Crash counts were not compared with the source's own query tool." }
+    { "id": "crash-counts-not-independently-confirmed", "text": "Crash counts were not compared with the source's own query tool." },
+    { "id": "report-page-answers-200-with-not-found-screen", "text": "Another workspace's report page answers HTTP 200 with the not-found screen, because the page streams; the journey read the screen and found none of the first account's text. The downloads answer 404." }
   ]
 }

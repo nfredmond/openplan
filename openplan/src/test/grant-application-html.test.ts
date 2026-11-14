@@ -5,10 +5,10 @@ import {
   APPLICATION_EXPORT_STANDING_CAVEATS,
   applicableStandingCaveats,
   buildGrantApplicationHtml,
-  countOutstandingRequiredAttachments,
   type GrantApplicationExportData,
   type GrantApplicationExportSection,
 } from "@/lib/grants/application-html";
+import { countOutstandingRequiredAttachments } from "@/lib/grants/application-draft-stamps";
 import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
@@ -54,7 +54,7 @@ function exportSection(
       model: null,
       groundedSentenceCount: null,
       totalSentenceCount: null,
-      finalizedBy: "planner@example.gov",
+      finalizedBy: "Workspace admin",
       finalizedAt: "2026-07-27T02:00:00.000Z",
       ...provenance,
     },
@@ -119,8 +119,8 @@ describe("buildGrantApplicationHtml", () => {
     expect(html).toContain("Letters of support");
     expect(html).toContain("Provenance appendix");
     expect(html).toContain("Operator-authored");
-    // The finalizer prints as the name the route resolved, never the stored user id.
-    expect(html).toContain("planner@example.gov");
+    // The finalizer prints as the role the route resolved, never the stored user id.
+    expect(html).toContain("<td>Workspace admin</td>");
     expect(html).not.toContain("22222222-2222-4222-8222-222222222222");
     // No external assets — a strict offline document.
     expect(html).not.toMatch(/src="http/);
