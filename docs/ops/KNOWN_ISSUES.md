@@ -93,6 +93,18 @@ records the exact path and pending correction design. The creation-provider
 assumption also remains open. The October 12 findings above remain the historical
 baseline; KI-025 and M1 are not closed.
 
+## Proven job record checker, November 14, 2026
+
+The direction check now reads proven job records (registry schema version 3,
+`docs/product/capability-evidence/README.md`). No job is proven. These rows
+name what will stop the first record. Paths are under `openplan/`.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-14-100 | High, blocks the first proven job | The SS4A application PDF names each section's finalizer by email address (the KI-2026-11-02-044 fix). The proven job checker refuses any PDF page that holds an email address, so an application with a finalized section cannot serve as proof. | Open. The export needs a finalizer name that is not an email address, or the journey must finalize no section; the checker will not be loosened to admit email addresses. | `src/lib/grants/application-finalizers.ts`; `scripts/ops/capability-evidence.mjs` (`SECRET_PATTERNS`) |
+| KI-2026-11-14-101 | Medium, check unavailable in CI | The checker reads PDF text with Poppler's `pdftotext`. The CI workflow does not install Poppler, and whether the runner image includes it was not checked. Where it is missing, the direction check refuses any listed record as unreadable, and the real-PDF reader test skips. | Open. Install `poppler-utils` in the CI job that runs the direction check, or confirm the image has it, before the first entry is added. Today the list is empty and no PDF is read. | `.github/workflows/ci.yml`; `src/test/capability-evidence.test.ts` |
+| KI-2026-11-14-102 | Low, stated blind category | The checker confirms required parts are present and bound to one commit. It cannot judge whether a PDF is useful to a planner, whether the map image shows the right network, or whether a place label names the place its Census id identifies. It records console errors and page-level horizontal scroll but does not refuse on them. | Open by design; a fresh-context reviewer reads each record. | `docs/product/capability-evidence/README.md` |
+
 ## RTP project links across workspaces, November 2, 2026
 
 Found by the service-role guard lane (PR 438) and re-verified on `main` at

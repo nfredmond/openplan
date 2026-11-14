@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Proven job records (KI-2026-11-14-100 to -102):** the capability registry is now schema version 3 and has an empty `provenJobs` list. The direction check refuses a listed job unless its record (`docs/product/capability-evidence/README.md`) shows three hosted journeys in a California county, a Nevada county and a tribal area on one commit, with committed PDFs whose hashes match, all required items, no DRAFT stamp, stored Nevada FARS crashes, zero serious or critical accessibility violations at 1440 and 390 pixels, and no email address or secret in the record or its PDFs. No job is proven and no cell status changed. No migration.
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the

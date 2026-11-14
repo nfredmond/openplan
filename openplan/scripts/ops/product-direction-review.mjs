@@ -463,8 +463,11 @@ function runCheck() {
   assertContainsAll(list(matrixBlock, "statuses"), REQUIRED_STATUSES, "statuses");
 
   const registry = JSON.parse(readFileSync(CAPABILITY_REGISTRY_PATH, "utf8"));
-  if (registry.schemaVersion !== 2) {
-    fail(`capability registry schemaVersion must be 2, found ${registry.schemaVersion ?? "missing"}`);
+  if (registry.schemaVersion !== 3) {
+    fail(`capability registry schemaVersion must be 3, found ${registry.schemaVersion ?? "missing"}`);
+  }
+  if (!Array.isArray(registry.provenJobs)) {
+    fail("capability registry has no provenJobs list");
   }
   if (registry.currentRelease !== release) {
     fail(`capability registry release does not match package release ${release}`);

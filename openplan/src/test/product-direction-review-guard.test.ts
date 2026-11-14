@@ -43,7 +43,9 @@ describe("the recurring product-direction review", () => {
       expect.arrayContaining(["planner", "organization", "state", "capability", "artifact", "accessibility", "operations"]),
     );
     expect(registry.dimensions.state).toHaveLength(56);
-    expect(registry.schemaVersion).toBe(2);
+    expect(registry.schemaVersion).toBe(3);
+    // No job is proven yet; the direction check passes with the empty list.
+    expect(registry.provenJobs).toEqual([]);
     expect(registry.readinessRegistry).toMatchObject({
       schema: "openplan.jurisdiction-readiness.v1",
       path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
@@ -111,6 +113,33 @@ describe("the recurring product-direction review", () => {
     try {
       if (accepted) expect(check()).toContain("Product direction records checked");
       else expect(check).toThrow(/latest review claims future release/);
+    } finally {
+      rmSync(directory, { recursive: true });
+    }
+  });
+
+  // Version 3 is the first registry with a provenJobs list. A version 2
+  // registry, or one without the list, is refused rather than read as having
+  // no proven jobs.
+  it.each([
+    ["a version 2 registry", "registry.schemaVersion = 2;", /schemaVersion must be 3, found 2/],
+    ["a registry without a provenJobs list", "delete registry.provenJobs;", /capability registry has no provenJobs list/],
+  ])("refuses %s", (_name, edit, rejection) => {
+    const directory = mkdtempSync(resolve(tmpdir(), "openplan-review-registry-version-"));
+    const preload = resolve(directory, "registry.cjs");
+    writeFileSync(preload, `const fs = require('node:fs'); const sep = require('node:path').sep; const read = fs.readFileSync;
+      fs.readFileSync = function(file, ...args) {
+        const value = read.call(this, file, ...args);
+        if (String(file).split(sep).join('/').endsWith('/US_PLANNING_CAPABILITY_REGISTRY.json')) {
+          const registry = JSON.parse(String(value)); ${edit}
+          return JSON.stringify(registry);
+        }
+        return value;
+      }; require('node:module').syncBuiltinESMExports();`);
+    try {
+      expect(() => execFileSync(process.execPath, ["--require", preload, SCRIPT, "--check"], {
+        cwd: APP_ROOT, encoding: "utf8", stdio: "pipe",
+      })).toThrow(rejection);
     } finally {
       rmSync(directory, { recursive: true });
     }
