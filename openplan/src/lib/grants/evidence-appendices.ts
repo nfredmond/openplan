@@ -57,6 +57,14 @@ export type EvidenceAppendix<K extends string = string> = {
   facts: Array<{ label: string; value: string }>;
   table: { headers: string[]; rows: string[][] } | null;
   figureSvg: string | null;
+  /**
+   * A caveat a reader must meet before the figure, facts and table, printed
+   * right under the source line. Notes print after the table, and a table can
+   * run for pages: on the hosted site, whose one font is wider, the SS4A
+   * countermeasure table pushed its "proposed by staff" caveat two pages past
+   * the heading (KI-2026-11-14-302).
+   */
+  lead?: string | null;
   notes: string[];
 };
 
@@ -433,6 +441,7 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
   return `<article id="appendix-${esc(appendix.key)}" class="appendix">${heading}
       ${appendix.source ? sourceMarkup(appendix.source) : ""}
       ${appendix.statusNote ? `<div class="outstanding">${esc(appendix.statusNote)}</div>` : ""}
+      ${appendix.lead ? `<p class="appendix-lead">${esc(appendix.lead)}</p>` : ""}
       ${figure}${facts}${table}
       ${appendix.notes.length > 0 ? `<ul>${appendix.notes.map((note) => `<li>${esc(note)}</li>`).join("")}</ul>` : ""}
     </article>`;

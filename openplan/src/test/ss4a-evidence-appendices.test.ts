@@ -54,7 +54,21 @@ describe("SS4A evidence appendices", () => {
 
     const countermeasures = byKey(appendices, "countermeasures");
     expect(countermeasures.table!.rows).toHaveLength(1);
-    expect(countermeasures.notes[0]).toContain("not an engineering finding");
+    // The caveat leads the appendix: it prints before the table, never after
+    // it, so a table that runs for pages cannot push it out of sight
+    // (KI-2026-11-14-302).
+    expect(countermeasures.lead).toContain("Proposed by staff for review");
+    expect(countermeasures.lead).toContain("not an engineering finding");
+    expect(countermeasures.notes.join(" ")).not.toContain("not an engineering finding");
+    const packet = buildGrantApplicationHtml({
+      opportunity: { id: EVIDENCE_IDS.opportunity, title: "SS4A application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-01T00:00:00.000Z", evidenceAppendices: appendices,
+    });
+    const appendixC = packet.slice(packet.indexOf('id="appendix-countermeasures"'));
+    const caveatAt = appendixC.indexOf("Proposed by staff for review");
+    expect(caveatAt).toBeGreaterThan(0);
+    expect(caveatAt).toBeLessThan(appendixC.indexOf("<table"));
+    expect(appendixC.indexOf("Appendix C. Countermeasures")).toBeLessThan(caveatAt);
 
     const bca = byKey(appendices, "bca");
     expect(bca.source).toMatchObject({ id: EVIDENCE_IDS.bcaVersion, hashLabel: "Input SHA-256" });

@@ -344,7 +344,8 @@ function countermeasureAppendix(index: number, records: Ss4aEvidenceRecords): Ss
       ),
     },
     figureSvg: null,
-    notes: [COUNTERMEASURE_CANDIDATE_NOTE, draft.countermeasureSourceLine],
+    lead: COUNTERMEASURE_CANDIDATE_NOTE,
+    notes: [draft.countermeasureSourceLine],
   };
 }
 
