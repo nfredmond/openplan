@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 /**
  * Document narrative drafts — the storage/typing layer for AI-drafted,
  * operator-ACCEPTED narrative blocks (document_narrative_drafts, migration
@@ -18,7 +19,7 @@ import { createHash } from "node:crypto";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import { countyRunStageLabelFor } from "@/lib/models/county-onramp";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
-import { formatDateTime, titleize } from "@/lib/reports/catalog";
+import { formatFactDateTime, titleize } from "@/lib/reports/catalog";
 import {
   compactModelRunKpiLine,
   type ReportCitedCountyRun,
@@ -177,26 +178,27 @@ export type ReportSectionFactsInput = {
   projectFundingSnapshot: ProjectFundingSnapshot | null;
 };
 
-function formatAmount(value: number): string {
-  return formatMoney(Number.isFinite(value) ? value : 0, { precision: "whole" });
+function formatAmount(value: number | null): string {
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function fundingSnapshotClaims(snapshot: ProjectFundingSnapshot, projectName: string): string[] {
+  if (snapshot.comparableFunding) return [`${projectName}: ${comparableFundingDisclosure(snapshot.comparableFunding)}`];
   return [
     `${projectName} funding posture at this moment: ${snapshot.label} — ${snapshot.reason}`,
     `${projectName} funding pipeline posture: ${snapshot.pipelineLabel} — ${snapshot.pipelineReason}`,
     `${projectName} reimbursement posture: ${snapshot.reimbursementLabel} — ${snapshot.reimbursementReason}`,
     `${projectName} committed award dollars: ${formatAmount(snapshot.committedFundingAmount)} across ${snapshot.awardCount} award record(s).`,
-    snapshot.fundingNeedAmount > 0
+    snapshot.fundingNeedAmount !== null && snapshot.fundingNeedAmount > 0
       ? `${projectName} recorded funding need: ${formatAmount(snapshot.fundingNeedAmount)}.`
       : null,
-    snapshot.unfundedAfterLikelyAmount > 0
+    snapshot.unfundedAfterLikelyAmount !== null && snapshot.unfundedAfterLikelyAmount > 0
       ? `${projectName} remaining gap after committed and pursued dollars: ${formatAmount(snapshot.unfundedAfterLikelyAmount)}.`
-      : snapshot.remainingFundingGap > 0
+      : snapshot.remainingFundingGap !== null && snapshot.remainingFundingGap > 0
         ? `${projectName} current committed funding gap: ${formatAmount(snapshot.remainingFundingGap)}.`
         : null,
     snapshot.latestSourceUpdatedAt
-      ? `Funding source records are current through ${formatDateTime(snapshot.latestSourceUpdatedAt)}.`
+      ? `Funding source records are current through ${formatFactDateTime(snapshot.latestSourceUpdatedAt)}.`
       : null,
   ].filter((claim): claim is string => claim !== null);
 }
@@ -214,7 +216,7 @@ function legacyRunClaims(runs: ReportSectionFactsRun[]): string[] {
       ? ` Saved run summary: ${run.summary_text.trim()}`
       : " No run summary is saved.";
     return `Analysis run "${run.title ?? "Untitled run"}"${
-      run.created_at ? ` (created ${formatDateTime(run.created_at)})` : ""
+      run.created_at ? ` (created ${formatFactDateTime(run.created_at)})` : ""
     } has overall score ${score} and confidence ${confidence}.${summary}`;
   });
 }
@@ -276,7 +278,7 @@ export function buildReportSectionFacts(
       data.project.summary?.trim() ? `Project summary on record: ${data.project.summary.trim()}` : null,
       data.report.summary?.trim() ? `Report summary on record: ${data.report.summary.trim()}` : null,
       data.project.updated_at
-        ? `The project record was last updated ${formatDateTime(data.project.updated_at)}.`
+        ? `The project record was last updated ${formatFactDateTime(data.project.updated_at)}.`
         : null,
       `${data.runs.length} analysis run(s), ${data.citedModelRuns.length} cited worker model run(s), and ${data.citedCountyRuns.length} cited county validation run(s) are attached to this report.`,
       ...(data.projectFundingSnapshot

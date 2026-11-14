@@ -60,7 +60,7 @@ export default async function MyWorkPage({
       <WorkspaceMembershipRequired
         moduleLabel="My work"
         title="My work needs a workspace"
-        description="This page lists the deliverables, milestones, submittals and deadlines of a workspace's projects. You are signed in, but this account is not in a workspace yet — a workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one."
+        description="This page lists the deliverables, milestones, submittals and deadlines of a workspace's projects. You are signed in, but this account is not in a workspace yet. A workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one."
         primaryHref="/dashboard"
         primaryLabel="Go to your workspace"
       />

@@ -6,6 +6,10 @@ import { loadLandUsePlanAccess } from "@/lib/land-use-plans/api";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { readEveryPageAsResult } from "@/lib/supabase/paged-read";
+
+/** The moderation states a frozen review outcome counts, in snapshot order. */
+const REVIEW_COMMENT_STATUSES = ["approved", "rejected", "pending", "flagged"] as const;
 
 const paramsSchema = z.object({ planId: z.string().uuid() });
 const payloadSchema = z.discriminatedUnion("operation", [
@@ -116,21 +120,33 @@ export async function POST(request: NextRequest, context: Context) {
   if (release.status !== "open") return NextResponse.json({ error: "Only an open review release can be closed" }, { status: 409 });
   let outcomeSnapshot: Record<string, unknown>;
   if (release.review_method === "engagement_campaign" && release.engagement_campaign_id) {
-    const [campaignResult, itemsResult, closeLoopResult] = await Promise.all([
-      access.supabase.from("engagement_campaigns").select("id, status").eq("id", release.engagement_campaign_id).eq("workspace_id", access.plan.workspace_id).maybeSingle(),
-      access.supabase.from("engagement_items").select("id, status, source_type").eq("campaign_id", release.engagement_campaign_id),
-      access.supabase.from("engagement_closeloop_entries").select("id, theme_title, you_said, we_did, source_item_ids, published_at").eq("campaign_id", release.engagement_campaign_id).eq("status", "published").order("sort_order"),
+    const campaignId = release.engagement_campaign_id;
+    // The frozen outcome is a public record, so its comment counts are COUNTED
+    // by the database rather than tallied from rows: a row read stops at
+    // PostgREST's 1,000-row cap with no error. The published responses are
+    // hashed one by one, so they are paged in a total order instead.
+    const countItems = (status: string | null) => {
+      const query = access.supabase.from("engagement_items").select("id", { count: "exact", head: true }).eq("campaign_id", campaignId);
+      return status ? query.eq("status", status) : query;
+    };
+    const [campaignResult, totalResult, ...statusResults] = await Promise.all([
+      access.supabase.from("engagement_campaigns").select("id, status").eq("id", campaignId).eq("workspace_id", access.plan.workspace_id).maybeSingle(),
+      countItems(null),
+      ...REVIEW_COMMENT_STATUSES.map((status) => countItems(status)),
     ]);
-    if (campaignResult.error || itemsResult.error || closeLoopResult.error) return NextResponse.json({ error: "Failed to verify Engagement closure" }, { status: 500 });
+    const closeLoopResult = await readEveryPageAsResult<Record<string, unknown> & { id: string }>((from, to) =>
+      access.supabase.from("engagement_closeloop_entries").select("id, theme_title, you_said, we_did, source_item_ids, published_at").eq("campaign_id", campaignId).eq("status", "published").order("sort_order").order("id").range(from, to),
+      "the published responses could not be read in full");
+    const counts = [totalResult, ...statusResults];
+    if (campaignResult.error || closeLoopResult.error || counts.some((result) => result.error || typeof result.count !== "number")) return NextResponse.json({ error: "Failed to verify Engagement closure" }, { status: 500 });
     if (campaignResult.data?.status !== "closed") return NextResponse.json({ error: "Close the linked Engagement campaign before closing this review" }, { status: 409 });
-    const items = itemsResult.data ?? [];
-    const pending = items.filter((item) => item.status === "pending" || item.status === "flagged");
-    if (pending.length) return NextResponse.json({ error: "The Engagement moderation queue must be empty", pendingCount: pending.length }, { status: 409 });
-    const statusCounts = Object.fromEntries(["approved", "rejected", "pending", "flagged"].map((status) => [status, items.filter((item) => item.status === status).length]));
+    const statusCounts = Object.fromEntries(REVIEW_COMMENT_STATUSES.map((status, index) => [status, statusResults[index].count as number]));
+    const pendingCount = statusCounts.pending + statusCounts.flagged;
+    if (pendingCount) return NextResponse.json({ error: "The Engagement moderation queue must be empty", pendingCount }, { status: 409 });
     outcomeSnapshot = {
       method: "engagement_campaign",
-      campaignId: release.engagement_campaign_id,
-      commentCounts: { total: items.length, byStatus: statusCounts },
+      campaignId,
+      commentCounts: { total: totalResult.count as number, byStatus: statusCounts },
       publishedCloseLoopEntries: (closeLoopResult.data ?? []).map((entry) => ({ id: entry.id, hash: hashFrozenRecord(entry) })),
     };
   } else {

@@ -405,7 +405,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               "Two periods of one plan may not claim the same year. Each period escalates its money to its " +
               "own expenditure year, so an overlapping year would carry two different escalations depending " +
               "only on which period a figure was filed under. Adjust the years so the periods meet without " +
-              "sharing a year — a period ending 2035 and one starting 2036.",
+              "sharing a year (a period ending 2035 and one starting 2036).",
           },
           { status: 409 }
         );
@@ -555,7 +555,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
               "Two periods of one plan may not claim the same year. Each period escalates its money to its " +
               "own expenditure year, so an overlapping year would carry two different escalations depending " +
               "only on which period a figure was filed under. Adjust the years so the periods meet without " +
-              "sharing a year — a period ending 2035 and one starting 2036.",
+              "sharing a year (a period ending 2035 and one starting 2036).",
           },
           { status: 409 }
         );

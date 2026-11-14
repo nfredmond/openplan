@@ -137,6 +137,7 @@ describe("Safety crash map", () => {
     expect(map.layerIds()).toEqual([
       "safety-high-injury-network-fill",
       "safety-high-injury-network-line",
+      "safety-high-injury-network-marker",
       "safety-crash-halo",
       "safety-crash-core",
     ]);

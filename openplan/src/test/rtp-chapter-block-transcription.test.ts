@@ -232,7 +232,7 @@ describe("what a staged block looks like", () => {
   it("keeps the attribution INSIDE the quote so a copy cannot leave it behind", () => {
     const markdown = renderTranscribedChapterBlock(block, SOURCE);
     const attribution = markdown.split("\n").at(-1) ?? "";
-    expect(attribution.startsWith("> — ")).toBe(true);
+    expect(attribution.startsWith("> (")).toBe(true);
   });
 
   it("writes the citation in public-audience words, not operator words", () => {

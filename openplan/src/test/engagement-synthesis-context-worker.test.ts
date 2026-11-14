@@ -8,7 +8,8 @@ import { synthesisContextExecutionWorkerFixture } from "./fixtures/engagement/sy
 const fixtures: Awaited<ReturnType<typeof synthesisContextExecutionWorkerFixture>>[] = [];
 afterEach(async () => { for (const f of fixtures.splice(0)) await f.close(); vi.unstubAllEnvs(); });
 async function fixture(priorCount = 0) { const f = await synthesisContextExecutionWorkerFixture(priorCount); fixtures.push(f); return f; }
-describe("context worker shared durable execution", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("context worker shared durable execution", () => {
   it.each([0, 2])("dispatches frame %i using reconstructed context and keeps exact response bytes", async priorCount => {
     const f = await fixture(priorCount), result = await runSynthesisContextWorkerAttempt(f.args), pending = await f.journal();
     expect(result).toEqual({ state: "delivered", attemptId: pending.attemptId, captureSha256: pending.captureSha256 });

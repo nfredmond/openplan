@@ -247,7 +247,7 @@ export default async function AssistantActivityPage() {
                         </p>
                         <p className="text-label text-muted-foreground">
                           {describeRowAuthorship(execution) ??
-                            "Authorship not recorded — this row predates the agent-principal columns, so it cannot say whether a person or the Planner Agent composed it."}
+                            "Authorship not recorded. This row predates the agent-principal columns, so it cannot say whether a person or the Planner Agent composed it."}
                         </p>
                         {execution.outcome === "failed" && execution.error_message ? (
                           <p className="text-label text-destructive">Failed with: {execution.error_message}</p>

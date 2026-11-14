@@ -3,17 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import type { HotspotFeatureCollection } from "@/lib/engagement/hotspots";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+/** Mapbox with a public key, else MapLibre with the operator's open style. */
+const MAP_ENGINE = deploymentMapEngine();
 
 // First-paint zoom before the load handler fits to the full extent.
 const SEEDED_ZOOM = 10.5;
@@ -113,6 +113,8 @@ export function ParticipationHeatmapMap({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  // The browser could not start the map library (no WebGL), or MapLibre never arrived.
+  const [cannotStart, setCannotStart] = useState(false);
   const [mode, setMode] = useState<HeatMode>("participation");
   const modeRef = useRef<HeatMode>(mode);
 
@@ -138,10 +140,8 @@ export function ParticipationHeatmapMap({
 
   useEffect(() => {
     const container = mapContainerRef.current;
-    if (!container || !MAPBOX_ACCESS_TOKEN) return;
+    if (!container || MAP_ENGINE.kind === "none") return;
     if (points.length === 0 && hotspots.features.length === 0) return;
-
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
     // The load handler fits to points + hotspots, so this only frames the
     // first paint. Seed it from whatever real coordinate the caller already
@@ -149,100 +149,114 @@ export function ParticipationHeatmapMap({
     const seed: [number, number] | null =
       points.length > 0 ? [points[0].lng, points[0].lat] : firstHotspotPosition(hotspots);
 
-    const map = new mapboxgl.Map({
-      container,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: seed ?? CONTINENTAL_US_CENTER,
-      zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
-      attributionControl: false,
-    });
-
-    // The campaign console renders this two levels inside its Analysis tab
-    // (page → SpatialHotspotTuner → here), and Analysis is never the landing
-    // tab, so the map is always built against a `display: none`, 0x0 box.
-    const stopSizing = keepMapSizedToContainer(map, container);
-
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    // Mapbox and OpenStreetMap require visible attribution on every map.
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
-
-    map.on("load", () => {
-      setMapReady(true);
-      map.addSource("engagement-heat-src", { type: "geojson", data: pointsFeatureCollection(points) });
-      map.addLayer({
-        id: "engagement-heat",
-        type: "heatmap",
-        source: "engagement-heat-src",
-        paint: {
-          "heatmap-weight": modeRef.current === "concern" ? CONCERN_WEIGHT : DENSITY_WEIGHT,
-          "heatmap-intensity": 1,
-          "heatmap-radius": 34,
-          "heatmap-opacity": 0.75,
-          "heatmap-color": HEATMAP_COLOR,
-        },
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/dark-v11") as string,
+        center: seed ?? CONTINENTAL_US_CENTER,
+        zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
+        attributionControl: false,
       });
 
-      if (hotspots.features.length > 0) {
-        map.addSource("engagement-hotspots-src", { type: "geojson", data: hotspots });
+      // The campaign console renders this two levels inside its Analysis tab
+      // (page → SpatialHotspotTuner → here), and Analysis is never the landing
+      // tab, so the map is always built against a `display: none`, 0x0 box.
+      const stopSizing = keepMapSizedToContainer(map, container);
+
+      map.addControl(new gl.NavigationControl({ showCompass: false }), "top-right");
+      // Mapbox, OpenStreetMap and any open style's sources require visible attribution.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+
+      // Bound at construction, so it cannot miss the event.
+      map.on("load", () => {
+        setMapReady(true);
+        map.addSource("engagement-heat-src", { type: "geojson", data: pointsFeatureCollection(points) });
         map.addLayer({
-          id: "engagement-hotspots-fill",
-          type: "fill",
-          source: "engagement-hotspots-src",
-          paint: { "fill-color": HOTSPOT_FILL, "fill-opacity": HOTSPOT_FILL_OPACITY },
-        });
-        map.addLayer({
-          id: "engagement-hotspots-outline",
-          type: "line",
-          source: "engagement-hotspots-src",
-          paint: { "line-color": HOTSPOT_LINE, "line-width": 1.5, "line-dasharray": [2, 1] },
+          id: "engagement-heat",
+          type: "heatmap",
+          source: "engagement-heat-src",
+          paint: {
+            "heatmap-weight": modeRef.current === "concern" ? CONCERN_WEIGHT : DENSITY_WEIGHT,
+            "heatmap-intensity": 1,
+            "heatmap-radius": 34,
+            "heatmap-opacity": 0.75,
+            "heatmap-color": HEATMAP_COLOR,
+          },
         });
 
-        map.on("click", "engagement-hotspots-fill", (event) => {
-          const feature = event.features?.[0];
-          if (!feature) return;
-          new mapboxgl.Popup({ offset: 8, maxWidth: "260px" })
-            .setLngLat(event.lngLat)
-            .setDOMContent(buildHotspotPopup(feature.properties ?? {}))
-            .addTo(map);
-        });
-        map.on("mouseenter", "engagement-hotspots-fill", () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-        map.on("mouseleave", "engagement-hotspots-fill", () => {
-          map.getCanvas().style.cursor = "";
-        });
-      }
+        if (hotspots.features.length > 0) {
+          map.addSource("engagement-hotspots-src", { type: "geojson", data: hotspots });
+          map.addLayer({
+            id: "engagement-hotspots-fill",
+            type: "fill",
+            source: "engagement-hotspots-src",
+            paint: { "fill-color": HOTSPOT_FILL, "fill-opacity": HOTSPOT_FILL_OPACITY },
+          });
+          map.addLayer({
+            id: "engagement-hotspots-outline",
+            type: "line",
+            source: "engagement-hotspots-src",
+            paint: { "line-color": HOTSPOT_LINE, "line-width": 1.5, "line-dasharray": [2, 1] },
+          });
 
-      // Fit to all points + hotspot vertices.
-      const bounds = new mapboxgl.LngLatBounds();
-      points.forEach((p) => bounds.extend([p.lng, p.lat]));
-      for (const feature of hotspots.features) {
-        const geom = feature.geometry;
-        const rings = geom.type === "Polygon" ? geom.coordinates : geom.coordinates.flat();
-        for (const ring of rings) for (const position of ring) bounds.extend(position as [number, number]);
-      }
-      if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 48, maxZoom: 14 });
-    });
+          map.on("click", "engagement-hotspots-fill", (event) => {
+            const feature = event.features?.[0];
+            if (!feature) return;
+            new gl.Popup({ offset: 8, maxWidth: "260px" })
+              .setLngLat(event.lngLat)
+              .setDOMContent(buildHotspotPopup(feature.properties ?? {}))
+              .addTo(map);
+          });
+          map.on("mouseenter", "engagement-hotspots-fill", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+          map.on("mouseleave", "engagement-hotspots-fill", () => {
+            map.getCanvas().style.cursor = "";
+          });
+        }
 
-    mapRef.current = map;
-    return () => {
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-      setMapReady(false);
-    };
+        // Fit to all points + hotspot vertices.
+        const bounds = new gl.LngLatBounds();
+        points.forEach((p) => bounds.extend([p.lng, p.lat]));
+        for (const feature of hotspots.features) {
+          const geom = feature.geometry;
+          const rings = geom.type === "Polygon" ? geom.coordinates : geom.coordinates.flat();
+          for (const ring of rings) for (const position of ring) bounds.extend(position as [number, number]);
+        }
+        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 48, maxZoom: 14 });
+      });
+
+      mapRef.current = map;
+      return () => {
+        stopSizing();
+        map.remove();
+        mapRef.current = null;
+        setMapReady(false);
+      };
+    }, () => setCannotStart(true));
   }, [dataSig]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mode toggle: swap the heatmap weight expression without a rebuild.
+  // Mode toggle: swap the heatmap weight expression without a rebuild. It
+  // waits for the style rather than asking `isStyleLoaded()` once, which
+  // answers false while tiles stream and dropped a toggle made in that window.
+  // Before `load` there is no layer, and the load handler reads `modeRef`.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded() || !map.getLayer("engagement-heat")) return;
-    map.setPaintProperty("engagement-heat", "heatmap-weight", mode === "concern" ? CONCERN_WEIGHT : DENSITY_WEIGHT);
-  }, [mode]);
+    if (!map || !mapReady) return;
+    return whenStyleAccepts(map, () => {
+      if (!map.getLayer("engagement-heat")) return;
+      map.setPaintProperty("engagement-heat", "heatmap-weight", mode === "concern" ? CONCERN_WEIGHT : DENSITY_WEIGHT);
+    });
+  }, [mode, mapReady]);
 
-  if (!MAPBOX_ACCESS_TOKEN) {
+  if (MAP_ENGINE.kind === "none" || cannotStart) {
     return (
-      <MapUnavailableNotice title="The participation heatmap can't be drawn here" className="text-xs" />
+      <MapUnavailableNotice
+        title="The participation heatmap can't be drawn here"
+        cause={cannotStart ? "cannot_start" : "not_set_up"}
+        unusableToken={MAP_ENGINE.kind === "none" && MAP_ENGINE.unusableToken}
+        className="text-xs"
+      />
     );
   }
   if (points.length === 0 && hotspots.features.length === 0) {

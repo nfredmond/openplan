@@ -3,6 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { gzipSync, gunzipSync } from "node:zlib";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { toPosixPath } from "./helpers/posix-path";
 
 vi.mock("server-only", () => ({}));
 const { readFile, open } = vi.hoisted(() => ({ readFile: vi.fn(), open: vi.fn() }));
@@ -52,7 +53,8 @@ function fixture(change?: (audit: Json, comparison: Json) => void) {
   const manifest = { study_id: studyId, registry: descriptor, schema: "openplan.distributed-work-loading-study-result.v1", scientific_outcome: "inconclusive", method_aggregation: "separate", method_records: 14, defaults_changed: false, holdout_accessed: false, candidate_advanced: false, counties };
   const saveManifest = () => files.set(`${directory}/study-result.json`, Buffer.from(JSON.stringify(manifest)));
   saveManifest();
-  readFile.mockImplementation(async (filename: string, encoding?: string) => {
+  readFile.mockImplementation(async (platformName: string, encoding?: string) => {
+    const filename = toPosixPath(platformName);
     const relative = filename.slice(filename.indexOf(directory));
     const bytes = files.get(relative);
     if (!bytes) throw new Error("Missing fixture artifact");
@@ -226,7 +228,7 @@ describe("fixed registry disclosure custody", () => {
     expect(result.recordedConfiguration).toMatchObject({ arbitraryPointCap: null, arbitraryGatewayCap: null, aggregateOnlySameRoutableNode: true, preserveMethodWorkTotals: true, nonWorkUnchanged: true, acceptanceHoldoutOpened: false, sourceRelease: "LODES 8.4", sourceYear: 2023 });
     expect(open).toHaveBeenCalledTimes(1);
     expect(open.mock.calls[0][0]).toBe(path.resolve(process.cwd(), "..", registryPath));
-    expect(readFile.mock.calls.every(([filename]) => String(filename).includes(directory))).toBe(true);
+    expect(readFile.mock.calls.every(([filename]) => toPosixPath(String(filename)).includes(directory))).toBe(true);
   });
 
   it.each(["path", "stored_path"])("refuses registry descriptor %s redirection before opening", async (key) => {

@@ -91,7 +91,7 @@ export default async function PlansPage({
       <WorkspaceMembershipRequired
         moduleLabel="Plans"
         title="Plans need a workspace"
-        description="Plans only appear inside a workspace. You are signed in, but this account is not in a workspace yet — that is why nothing is listed here. It does not mean a plan is missing."
+        description="Plans only appear inside a workspace. You are signed in, but this account is not in a workspace yet. That is why nothing is listed here. It does not mean a plan is missing."
       />
     );
   }
@@ -280,7 +280,7 @@ export default async function PlansPage({
             <p className="module-summary-value">{plansUnreadable ? "—" : typedPlans.length}</p>
             <p className="module-summary-detail">
               {plansUnreadable
-                ? "Your plans could not be read, so this number is unknown — it is not zero."
+                ? "Your plans could not be read, so this number is unknown. It is not zero."
                 : "The planning documents this account tracks."}
             </p>
           </div>
@@ -298,7 +298,7 @@ export default async function PlansPage({
             <p className="module-summary-value">{plansUnreadable || rowBasisUnreadable ? "—" : readyFoundationCount}</p>
             <p className="module-summary-detail">
               {plansUnreadable || rowBasisUnreadable
-                ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
+                ? "This is worked out from linked projects and reports this page could not read, so it is unknown. It is not zero."
                 : "Plans with the core information in place, ready to review."}
             </p>
           </div>
@@ -372,7 +372,7 @@ title="Your plans could not be read"
           <div className="mt-5">
             <EmptyState
               title="No plans yet"
-              description="Plans is the list of your agency's planning documents — general plans, corridor plans, active transportation plans — with what each one covers and where it stands, in one place. Add your first plan to connect it to the projects that carry it out."
+              description="Plans is the list of your agency's planning documents (general plans, corridor plans, active transportation plans) with what each one covers and where it stands, in one place. Add your first plan to connect it to the projects that carry it out."
               action={
                 <a href="#create-plan" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
                   Add a plan
@@ -439,7 +439,7 @@ title="Your plans could not be read"
                   // not about this plan, and it is exactly the sentence that
                   // sends a planner off to re-link work already linked.
                   <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">
-                    Readiness withheld — the linked records it is computed from could not be read.
+                    Readiness withheld: the linked records it is computed from could not be read.
                   </p>
                 ) : plan.readiness.missingCheckLabels.length > 0 ? (
                   <p className="mt-2.5 border-t border-border/50 pt-2.5 text-label text-muted-foreground">

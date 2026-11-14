@@ -1,5 +1,14 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { persistSafetyPlanGeneration } from "@/lib/reports/safety-plan-persistence";
-import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { buildSafetyPlanSnapshot, readSafetyPlanEvidenceFence, type SafetyPlanFenceClient, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import {
+  buildSafetyPlanNetworkMap,
+  buildSafetyPlanSupport,
+  loadSafetyPlanSupportReads,
+  safetyPlanEngagementInput,
+  type SafetyPlanSupport,
+} from "@/lib/reports/safety-plan-support";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
@@ -85,6 +94,7 @@ import {
   extractEngagementCampaignId,
   type ReportEngagementItemRecord,
 } from "@/lib/reports/engagement";
+import { loadReportEngagementTrace } from "@/lib/reports/engagement-trace";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   buildCampaignReportHtml,
@@ -273,7 +283,7 @@ async function readEveryReportEngagementItem(
       supabase
         .from("engagement_items")
         .select(
-          "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+          "id, campaign_id, category_id, title, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
         )
         .eq("campaign_id", campaignId)
         .order("updated_at", { ascending: false })
@@ -1136,10 +1146,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         collectionEnabled: campaignRow.demographics_enabled,
       });
 
+      // The comment-to-decision trace (KI-2026-11-02-010), read with the
+      // generating staff member's client. A failed read is disclosed in the
+      // packet as unknown; it does not block generation.
+      const campaignTrace = await loadReportEngagementTrace(
+        supabase,
+        { campaignId: campaignRow.id, workspaceId: report.workspace_id },
+        campaignItemsResult.data ?? []
+      );
+
       const engagement = buildReportEngagementSummary({
         campaign: campaignRow,
         categories: campaignCategoriesResult.data ?? [],
         items: campaignItemsResult.data ?? [],
+        trace: campaignTrace,
         hotspots: campaignHotspots,
         // Cached E5b screening only (never recomputed in the report path).
         representativeness: campaignRow.representativeness_json ?? null,
@@ -1604,17 +1624,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .maybeSingle(),
       supabase
         .from("funding_awards")
-        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false }),
       supabase
         .from("funding_opportunities")
-        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false }),
       supabase
         .from("billing_invoice_records")
-        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
         .eq("project_id", report.project_id)
         .order("created_at", { ascending: false }),
     ]);
@@ -1763,6 +1783,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json(fundingReadFailure.body, { status: fundingReadFailure.status });
     }
 
+    assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
+
     if (loadErrors.length > 0 || !projectResultForPacket.data) {
       const firstError = loadErrors[0];
       audit.error("report_generation_load_failed", {
@@ -1905,10 +1927,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         })
       : ({ state: "not_loaded" } as const);
 
+    // The comment-to-decision trace for the linked campaign (KI-2026-11-02-010).
+    const engagementTrace = linkedCampaign
+      ? await loadReportEngagementTrace(
+          supabase,
+          { campaignId: linkedCampaign.id, workspaceId: report.workspace_id },
+          engagementItemsResult.data ?? []
+        )
+      : ({ state: "not_loaded" } as const);
+
     const engagement = buildReportEngagementSummary({
       campaign: engagementCampaignResult.data,
       categories: engagementCategoriesResult.data ?? [],
       items: engagementItemsResult.data ?? [],
+      trace: engagementTrace,
       hotspots: engagementHotspots,
       // Read the cached E5b screening (never recompute in the report path).
       representativeness:
@@ -2074,8 +2106,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const aerialSelections = readReportAerialOrthoSelections(report.metadata_json);
     // Freezing the selected aerial preview copies its PNG into this
     // workspace's report-artifacts folder before the packet itself is stored.
-    // Its size is not known here, so refuse only a workspace already at its
-    // limit; the packet's own check below counts the frozen copy.
+    // A workspace already at its limit is refused here, before the preview is
+    // read; the freeze then checks the PNG's actual byte count before copying
+    // it, and the packet's own check below counts the frozen copy.
     if (aerialSelections.length === 1) {
       const refusal = await refuseWhenReportStorageFull({
         serviceSupabase,
@@ -2096,8 +2129,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
           artifactId,
           custodyId: aerialSelections[0].custodyId,
           frozenAt: generatedAt,
+          storageRoom: (incomingBytes) => checkWorkspaceStorageRoom(serviceSupabase, report.workspace_id, incomingBytes),
         })
       : null;
+    if (frozenAerial?.status === "storage_refused") {
+      const room = frozenAerial.room;
+      audit.warn("report_artifact_storage_refused", {
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        stage: "aerial_preview",
+        status: room.status,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
     if (frozenAerial && frozenAerial.status !== "verified") {
       return NextResponse.json(
         { error: `Selected aerial evidence could not be frozen: ${frozenAerial.reason}` },
@@ -2510,6 +2555,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const savedSafetyActionPlan = readReportSafetyActionPlan(report.metadata_json);
     let safetyPlanSnapshotV1: SafetyPlanSnapshot | null = null;
     let safetyActionPlan: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null = null;
+    let safetyActionPlanSupport: SafetyPlanSupport | null = null;
     if (savedSafetyActionPlan) {
       if (!selectedSafetyIngestIds.includes(savedSafetyActionPlan.ingestId)) {
         safetyActionPlan = { kind: "stale_acquisition" };
@@ -2532,17 +2578,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
               }
             )
           : { status: "unavailable" as const, reason: "crash_read_failed" as const, basis: null };
+        // The project's engagement and benefit-cost records, printed beside
+        // the plan and read the same way the SS4A appendices read them.
+        const supportReads = await loadSafetyPlanSupportReads(supabase, {
+          projectId: projectRow.id,
+          workspaceId: report.workspace_id,
+        });
         safetyActionPlan = buildSafetyActionPlanSection({
           plan: savedSafetyActionPlan,
           evidence: planEvidence,
           network,
+          engagement: safetyPlanEngagementInput(supportReads.engagement),
+        });
+        const planStudyArea = corridorGeojsonSchema.safeParse(
+          projectGeographyReadState === "ok" ? placeOfRecordFromProject(projectRow).geometry : null
+        );
+        safetyActionPlanSupport = buildSafetyPlanSupport({
+          reads: supportReads,
+          projectId: projectRow.id,
+          projectName: typeof projectRow.name === "string" && projectRow.name.trim() ? projectRow.name : null,
+          networkMap: buildSafetyPlanNetworkMap({
+            network,
+            roads: safetyRoadContext,
+            projectGeometry: planStudyArea.success ? planStudyArea.data : null,
+          }),
         });
         if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
+          const evidenceFence = await readSafetyPlanEvidenceFence(supabase as unknown as SafetyPlanFenceClient, {
+            workspaceId: report.workspace_id, projectId: projectRow.id, ingestId: savedSafetyActionPlan.ingestId,
+            project: projectRow as unknown as Record<string, unknown>,
+          });
           safetyPlanSnapshotV1 = buildSafetyPlanSnapshot({
             artifactId, reportId: report.id, workspaceId: report.workspace_id,
             projectId: projectRow.id, generatedAt, reportUpdatedAt: report.updated_at,
             projectUpdatedAt: projectRow.updated_at,
             acquisition: planIngestRow as Record<string, unknown>, selection: savedSafetyActionPlan, draft: safetyActionPlan,
+            evidenceFence: evidenceFence ?? undefined,
           });
         }
       }
@@ -2569,6 +2640,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       safetyKsiEquityTracts,
       safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
       safetyActionPlan,
+      safetyActionPlanSupport,
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,
@@ -2660,6 +2732,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let artifactStoragePath: string | null = null;
     let pdfEngine: ReportPdfEngine | null = null;
+    // The frozen preview belongs to this packet alone. When the packet is not
+    // stored (storage limit, upload error, changed comparison), remove the copy
+    // so the refusal leaves nothing in the workspace's storage.
+    const frozenAerialReportId = report.id;
+    async function discardFrozenAerial(response: NextResponse): Promise<NextResponse> {
+      if (frozenAerial?.status !== "verified") return response;
+      try {
+        const removed = await serviceSupabase.storage.from(REPORT_ARTIFACT_BUCKET).remove([frozenAerial.snapshot.storagePath]);
+        if (removed.error) throw new Error(removed.error.message);
+      } catch (error) {
+        audit.error("report_aerial_preview_cleanup_failed", {
+          reportId: frozenAerialReportId,
+          storagePath: frozenAerial.snapshot.storagePath,
+          message: error instanceof Error ? error.message : "remove failed",
+        });
+      }
+      return response;
+    }
     const authorizedReportForGuidedRecheck = report;
     async function recheckGuidedBeforeStorage(): Promise<NextResponse | null> {
       if (!guidedComparison) return null;
@@ -2691,7 +2781,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const pdfBuffer = Buffer.from(rendered.bytes);
       const guidedRefusal = await recheckGuidedBeforeStorage();
-      if (guidedRefusal) return guidedRefusal;
+      if (guidedRefusal) return discardFrozenAerial(guidedRefusal);
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
       const notStored = await storeReportArtifactFile({
         serviceSupabase,
@@ -2702,12 +2792,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         bytes: pdfBuffer,
         contentType: "application/pdf",
       });
-      if (notStored) return notStored;
+      if (notStored) return discardFrozenAerial(notStored);
       artifactStoragePath = storagePath;
     } else {
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
       const guidedRefusal = await recheckGuidedBeforeStorage();
-      if (guidedRefusal) return guidedRefusal;
+      if (guidedRefusal) return discardFrozenAerial(guidedRefusal);
       // Storage bucket allowlists compare the media type literally. Charset
       // belongs on the download response, not in the stored object's type.
       const notStored = await storeReportArtifactFile({
@@ -2719,7 +2809,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         bytes: Buffer.from(exportHtml, "utf8"),
         contentType: "text/html",
       });
-      if (notStored) return notStored;
+      if (notStored) return discardFrozenAerial(notStored);
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {

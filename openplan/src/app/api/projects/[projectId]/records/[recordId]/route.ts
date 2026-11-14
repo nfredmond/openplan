@@ -1,3 +1,4 @@
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -39,12 +40,14 @@ const paramsSchema = z.object({
 const updateRecordSchema = z.discriminatedUnion("recordType", [
   z.object({
     recordType: z.literal("milestone"),
+    actualDate:z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
     status: z.enum(["not_started", "scheduled", "in_progress", "blocked", "complete"]).optional(),
     note: z.string().trim().max(2000).optional(),
     assigneeUserId: z.string().uuid().nullable().optional(),
   }),
   z.object({
     recordType: z.literal("submittal"),
+    submittedAt:z.string().datetime({offset:true}).nullable().optional(),
     status: z.enum(["draft", "internal_review", "submitted", "accepted", "revise_and_resubmit"]).optional(),
     note: z.string().trim().max(4000).optional(),
     assigneeUserId: z.string().uuid().nullable().optional(),
@@ -76,6 +79,8 @@ const updateRecordSchema = z.discriminatedUnion("recordType", [
   // would answer 200 having changed nothing but `updated_at`. Say so instead.
   const writes =
     value.status !== undefined ||
+    ("submittedAt" in value && value.submittedAt !== undefined) ||
+    ("actualDate" in value && value.actualDate !== undefined) ||
     ("assigneeUserId" in value && value.assigneeUserId !== undefined) ||
     ("note" in value && value.note !== undefined) ||
     ("budgetAmount" in value && value.budgetAmount !== undefined) ||
@@ -147,6 +152,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, project.workspace_id);
     if (!writeAccess.ok) return writeAccess.response;
 
+    const manual = readAssistantExecutionSource(request) === "manual";
+    if (parsed.data.recordType === "milestone" || parsed.data.recordType === "submittal") {
+      const table = parsed.data.recordType === "milestone" ? "project_milestones" : "project_submittals";
+      const origin = await supabase.from(table).select("id, project_id, funding_award_id, handoff_origin_revision_id").eq("id",parsedParams.data.recordId).eq("project_id",project.id).maybeSingle();
+      if (origin.error) return NextResponse.json({error:"Record origin unavailable"},{status:503});
+      if (!origin.data) return NextResponse.json({error:"Record not found"},{status:404});
+      if (!manual && origin.data.handoff_origin_revision_id) return NextResponse.json({error:"Managed award outcomes require manual entry. No approved action covers this mutation."},{status:403});
+    }
+
     // Reassignment carries the same membership rule as first assignment, and
     // for the same reason it is enforced here rather than by a CHECK: the
     // question spans projects, workspace_members and the record itself.
@@ -201,9 +215,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         : {};
 
     if (parsed.data.recordType === "milestone") {
-      const { data, error } = await supabase
+      const mutation = supabase
         .from("project_milestones")
         .update({
+          ...(parsed.data.actualDate !== undefined ? {actual_date:parsed.data.actualDate}:{}),
           ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
           ...(parsed.data.note !== undefined ? { notes: parsed.data.note.trim() || null } : {}),
           ...assigneeUpdate,
@@ -211,8 +226,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         })
         .eq("id", parsedParams.data.recordId)
         .eq("project_id", project.id)
-        .select("id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at, updated_at")
-        .maybeSingle();
+        .select("id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at, updated_at");
+      if (!manual) mutation.is("handoff_origin_revision_id",null);
+      const { data, error } = await mutation.maybeSingle();
 
       if (error && isWriteFailure(error)) {
         audit.error("project_record_update_failed", {
@@ -379,9 +395,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ recordType: "issue", record: data });
     }
 
-    const { data, error } = await supabase
+    const mutation = supabase
       .from("project_submittals")
       .update({
+        ...(parsed.data.submittedAt !== undefined ? {submitted_at:parsed.data.submittedAt}:{}),
         ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
         ...(parsed.data.note !== undefined ? { notes: parsed.data.note.trim() || null } : {}),
         ...assigneeUpdate,
@@ -389,8 +406,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       })
       .eq("id", parsedParams.data.recordId)
       .eq("project_id", project.id)
-      .select("id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at")
-      .maybeSingle();
+      .select("id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at");
+    if (!manual) mutation.is("handoff_origin_revision_id",null);
+    const { data, error } = await mutation.maybeSingle();
 
     if (error && isWriteFailure(error)) {
       audit.error("project_record_update_failed", {

@@ -269,7 +269,7 @@ export function WorkspaceGeographyPanel({
 
             {corridorText && !pendingPlace ? (
               <p className="text-xs text-amber-800 dark:text-amber-200">
-                A drawn area can&apos;t be a workspace geography — it has no official boundary to
+                A drawn area can&apos;t be a workspace geography. It has no official boundary to
                 re-resolve. Search for the county, city, CDP, or metro area instead.
               </p>
             ) : null}

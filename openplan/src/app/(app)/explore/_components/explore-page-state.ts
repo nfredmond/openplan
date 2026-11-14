@@ -75,7 +75,7 @@ export function describeRunAnalysisBlock({
   // Both missing is the opening state, and naming both is what stops a planner
   // fixing one and being refused again for the other.
   if (needsArea && needsQuestion) {
-    return "Set the study area — search a place or draw one — and write the question this run should answer.";
+    return "Set the study area (search a place or draw one) and write the question this run should answer.";
   }
   if (needsArea) {
     return "Set the study area first: search a place, draw one on the map, or upload a boundary file.";

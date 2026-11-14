@@ -49,9 +49,9 @@ describe("JurisdictionReadinessPanel", () => {
     );
   });
 
-  it("shows an unassessed place without source evidence or inherited rules", () => {
+  it("shows an unregistered place without source evidence or inherited rules", () => {
     const payload = buildJurisdictionReadinessPayload(
-      { countryCode: "US", subdivisionCode: "NV", label: "A Nevada county" },
+      { countryCode: "CA", subdivisionCode: "BC", label: "A British Columbia regional district" },
       "b".repeat(64),
     );
 
@@ -64,6 +64,47 @@ describe("JurisdictionReadinessPanel", () => {
 
     expect(screen.getByText("Not assessed here")).toBeInTheDocument();
     expect(screen.getByText(/no evidence-backed claim is registered/i)).toBeInTheDocument();
+    expect(screen.queryByText(/California/)).not.toBeInTheDocument();
+  });
+
+  it("shows a newly registered state's own entry for each job", () => {
+    const payload = buildJurisdictionReadinessPayload(
+      { countryCode: "US", subdivisionCode: "NV", label: "A Nevada county" },
+      "c".repeat(64),
+    );
+
+    render(
+      <JurisdictionReadinessPanel
+        reports={payload.reports}
+        downloadHref="/api/workspaces/jurisdiction-readiness?download=1"
+      />,
+    );
+
+    // The default job is explicitly not assessed, and it names what was examined.
+    expect(screen.getByText("Not assessed here")).toBeInTheDocument();
+    expect(screen.getByText(/no Nevada journey is retained as evidence/)).toBeInTheDocument();
+    expect(screen.queryByText(/no evidence-backed claim is registered/i)).not.toBeInTheDocument();
+    const handoff = payload.reports.find((report) => report.job.id === "project-evidence-handoff")!;
+    expect(screen.getByText(`sha256:${handoff.sources[0].sha256}`)).toBeInTheDocument();
+    expect(screen.queryByText(/California/)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Planning job" }), {
+      target: { value: "safety-analysis" },
+    });
+    expect(screen.getByText("Partly supported")).toBeInTheDocument();
+    expect(screen.getByText(/FARS supplies Nevada fatal crash records/)).toBeInTheDocument();
+    expect(screen.getByText(/rated Nevada not usable/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Fatality Analysis Reporting System" })).toHaveAttribute(
+      "href",
+      "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system",
+    );
+    expect(screen.queryByText(/California/)).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole("combobox", { name: "Planning job" }), {
+      target: { value: "land-use-plan" },
+    });
+    expect(screen.getByText("Unavailable here")).toBeInTheDocument();
+    expect(screen.getByText(/no configured Nevada statutory plan bundle/)).toBeInTheDocument();
     expect(screen.queryByText(/California/)).not.toBeInTheDocument();
   });
 

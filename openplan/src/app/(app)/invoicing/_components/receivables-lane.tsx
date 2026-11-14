@@ -326,7 +326,7 @@ export async function ReceivablesLane({
 
         {clients.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">
-            No clients recorded yet. A client is whoever receives this workspace&apos;s invoices — a city, county, agency, prime, tribe, nonprofit, or private party.
+            No clients recorded yet. A client is whoever receives this workspace&apos;s invoices: a city, county, agency, prime, tribe, nonprofit, or private party.
           </p>
         ) : (
           <ul className="mt-4 space-y-4">

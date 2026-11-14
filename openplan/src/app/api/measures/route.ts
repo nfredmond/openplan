@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
           error:
             sunsetPosture === "dated"
               ? "A measure that sunsets on a date needs that date."
-              : "Clear the sunset date, or say the ordinance sets one — an empty date cannot mean 'never expires'.",
+              : "Clear the sunset date, or say the ordinance sets one. An empty date cannot mean 'never expires'.",
         },
         { status: 400 }
       );

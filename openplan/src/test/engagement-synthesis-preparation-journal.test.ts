@@ -49,7 +49,8 @@ async function fixture() {
   return { directory, journal, save, lease, native, response, rpc, prepare, controller, args, run, outcome };
 }
 
-describe("durable preparation attempts", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("durable preparation attempts", () => {
   it("syncs token before claim and exact outcome before finish, then retains a historical receipt", async () => {
     const f = await fixture(); const result = await f.run();
     expect(result).toMatchObject({ state: "acknowledged", requestId, outcome: { sealSha256 } });

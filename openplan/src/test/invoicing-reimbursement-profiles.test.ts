@@ -133,7 +133,7 @@ describe("the built-in California profile", () => {
       "Federal-aid candidate",
     ]);
     expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.defaultPostureId).toBe("deferred_exact_forms");
-    expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.submittedToHint).toBe("Caltrans D3 Local Assistance");
+    expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.submittedToHint).toBe("Caltrans District Local Assistance");
     expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.formPackStatus).toBe("deferred_exact_forms");
     // California workspaces reach this profile by subdivision match; the
     // nationwide generic profile now carries the interim default.
@@ -192,7 +192,7 @@ describe("resolveReimbursementProfile — selection provenance", () => {
         profileId: "us_ca_lapm_reimbursement_v1",
         selection: "explicitly_requested",
         interimDefaultReason: null,
-        submittedToHint: "Caltrans D3 Local Assistance",
+        submittedToHint: "Caltrans District Local Assistance",
         formPackStatus: "deferred_exact_forms",
       },
     });

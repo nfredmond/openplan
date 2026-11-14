@@ -753,7 +753,7 @@ export async function runAerialCustodyPass(input: {
       const held = rows.filter((row) => row.state === "held").length;
       const reason =
         `Artifact custody could not be recorded: writing the custody rows for this processing job failed (${writeError.message ?? "unknown database error"}). ` +
-        `${held} of ${rows.length} ${rows.length === 1 ? "artifact was" : "artifacts were"} fetched during this pass, but OpenPlan has no record of what it holds or where, so whether these deliverables survive the processing worker's links is UNESTABLISHED — it is not "no artifacts". ` +
+        `${held} of ${rows.length} ${rows.length === 1 ? "artifact was" : "artifacts were"} fetched during this pass, but OpenPlan has no record of what it holds or where, so whether these deliverables survive the processing worker's links is UNESTABLISHED. It is not "no artifacts". ` +
         `Retry through POST /api/aerial/processing-callback/custody once the database accepts writes again, while the worker's links are still valid.`;
       return {
         posture: {

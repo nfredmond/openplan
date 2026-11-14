@@ -16,6 +16,10 @@ export type InterpretationFallbackReason =
   | "generation_error"
   | "empty_output"
   | "all_ungrounded"
+  /** The workspace's AI allowance for this window is used up. No call was made. */
+  | "rate_limited"
+  /** AI usage could not be metered while the deployment's key pays. No call was made. */
+  | "usage_meter_unavailable"
   | null;
 
 export interface InterpretationResult {
@@ -107,12 +111,26 @@ export function buildInterpretationFacts(metrics: Record<string, unknown>, summa
   return facts;
 }
 
+/**
+ * `reserveUsage` counts this call against the workspace's AI allowance before
+ * it is made (`reserveAiUsage` in ai-rate-limit.ts). A refusal, or a meter
+ * that throws because the deployment's shared key would pay unmetered, ships
+ * the deterministic summary and makes no call.
+ */
 export async function generateGrantInterpretation(
   metrics: Record<string, unknown>,
-  summaryText: string
+  summaryText: string,
+  options: { reserveUsage: () => Promise<{ allowed: boolean }> }
 ): Promise<InterpretationResult> {
   if (!hasAnthropicAccess()) {
     return fallback(summaryText, "missing_api_key");
+  }
+
+  try {
+    const reserved = await options.reserveUsage();
+    if (!reserved.allowed) return fallback(summaryText, "rate_limited");
+  } catch {
+    return fallback(summaryText, "usage_meter_unavailable");
   }
 
   const facts = buildInterpretationFacts(metrics, summaryText);
@@ -125,7 +143,7 @@ export async function generateGrantInterpretation(
       maxOutputTokens: 600,
       system:
         "You are a transportation planning analyst writing grant-ready corridor narratives for U.S. public funding applications. Every factual sentence you write MUST end with one or more [fact:<id>] citations drawn only from the numbered fact list. Never state a number that does not appear in a fact you cite. " +
-        "EQUITY CLAIMS: never assert that a corridor is a currently federally designated Justice40 / disadvantaged community or that a project 'qualifies' for a specific federal program — the federal Justice40 Initiative and CEJST were rescinded in 2025. If a fact reports a CEJST designation, describe it only as a frozen historical CEJST v1.0 (2022) snapshot of a discontinued program, not a current eligibility. Describe any income/burden 'proxy' flag as a screening proxy, never as a federal designation.",
+        "EQUITY CLAIMS: never assert that a corridor is a currently federally designated Justice40 / disadvantaged community or that a project 'qualifies' for a specific federal program. The federal Justice40 Initiative and CEJST were rescinded in 2025. If a fact reports a CEJST designation, describe it only as a frozen historical CEJST v1.0 (2022) snapshot of a discontinued program, not a current eligibility. Describe any income/burden 'proxy' flag as a screening proxy, never as a federal designation.",
       prompt: [
         "Write 2-3 concise paragraphs interpreting corridor need and opportunity for a grant application.",
         "Every sentence must end with one or more [fact:<id>] citations for the facts it relies on. Cite only ids from the list below.",

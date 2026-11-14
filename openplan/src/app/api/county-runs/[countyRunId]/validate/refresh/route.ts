@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { isAbsolute, join, resolve } from "node:path";
+import { join } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -18,6 +18,11 @@ import {
 } from "@/lib/models/county-onramp";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
+import {
+  countyRunFilesUnavailableResponse,
+  isCountyRunFileUnreachable,
+  resolveCountyRunStoredPath,
+} from "@/lib/api/county-onramp-run-files";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -42,10 +47,6 @@ type CountyRunRow = {
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
 };
-
-function resolveStoredPath(pathValue: string): string {
-  return isAbsolute(pathValue) ? pathValue : resolve(process.cwd(), "..", pathValue);
-}
 
 function hasErrnoCode(error: unknown, code: string): boolean {
   return typeof error === "object" && error !== null && "code" in error && error.code === code;
@@ -111,12 +112,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const manifest = parsedManifest.data;
-    const validationSummaryPath = resolveStoredPath(
+    const validationSummaryPath = resolveCountyRunStoredPath(
       manifest.artifacts.validation_summary_json ?? join(manifest.run_dir, "validation", "validation_summary.json")
     );
-    const parsedValidationSummary = countyOnrampValidationSummarySchema.parse(
-      JSON.parse(await readFile(validationSummaryPath, "utf8"))
-    );
+    let validationSummaryText: string;
+    try {
+      validationSummaryText = await readFile(validationSummaryPath, "utf8");
+    } catch (readError) {
+      // Read before any write, so a file this copy cannot reach leaves the
+      // run's stage, summary and artifacts exactly as they were.
+      if (await isCountyRunFileUnreachable(readError, validationSummaryPath, manifest.run_dir)) {
+        audit.warn("county_run_validation_files_unreachable", {
+          countyRunId: existingRow.id,
+          durationMs: Date.now() - startedAt,
+        });
+        return countyRunFilesUnavailableResponse("bring-in-validation");
+      }
+      throw readError;
+    }
+    const parsedValidationSummary = countyOnrampValidationSummarySchema.parse(JSON.parse(validationSummaryText));
     const bundleValidation = deriveCountyBundleValidationSummary(
       parsedValidationSummary as Record<string, unknown>
     );

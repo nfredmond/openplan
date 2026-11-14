@@ -340,6 +340,33 @@ describe("the map-first participant surface, with NO map key", () => {
     await screen.findByTestId("portal-sidebar-received");
   });
 
+  it("moves focus to the confirmation after Send, so a screen reader hears it arrived", async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ success: true, submissionId: "22222222-2222-4222-8222-222222222222" }) }) as unknown as Response);
+    vi.stubGlobal("fetch", fetchMock);
+    const PublicMapShell = await importShell();
+    render(<PublicMapShell {...shellProps()} />);
+    fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    fireEvent.change(document.querySelector("#portal-body") as HTMLTextAreaElement, { target: { value: "Please add a crosswalk." } });
+    while (!screen.queryByTestId("portal-step-send")) fireEvent.click(screen.getByRole("button", { name: "Next" }));
+    const send = screen.getByRole("button", { name: /Send what I wrote/i });
+    send.focus();
+    fireEvent.click(send);
+    const heading = await screen.findByRole("heading", { name: "Thank you. We have your comment." });
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+  });
+
+  it("leaves focus alone when a receipt is only restored on reload", async () => {
+    localStorage.setItem("openplan-engagement-draft:share-token-12345:new", JSON.stringify({
+      version: 1, requestId: "33333333-3333-4333-8333-333333333333", body: "Sent earlier.",
+      receipt: { submissionId: "44444444-4444-4444-8444-444444444444", receivedAt: "2026-11-01T10:00:00.000Z" },
+    }));
+    const PublicMapShell = await importShell();
+    render(<PublicMapShell {...shellProps()} />);
+    await screen.findByTestId("portal-sidebar-received");
+    expect(document.activeElement).toBe(document.body);
+    localStorage.removeItem("openplan-engagement-draft:share-token-12345:new");
+  });
+
   it("does not describe a map that is not there", async () => {
     const framed = resolvePortalMapFraming({
       campaignPlace: { state: "set", label: "Jefferson Street", bbox: { minLon: -121.1, minLat: 39.1, maxLon: -121.0, maxLat: 39.3 } },

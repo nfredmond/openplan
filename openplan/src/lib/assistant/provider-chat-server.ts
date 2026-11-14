@@ -1,3 +1,4 @@
+import { chatText } from "@/lib/assistant/chat-text-length";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { parseChatRpcResult } from "./provider-chat-rpc";
@@ -34,7 +35,7 @@ export async function loadChatOptions(session: ChatSession, workspaceId: string)
   });
 }
 export const chatPrepareSchema = z.object({ prepareRequestId: z.string().uuid(), acceptanceRequestId: z.string().uuid(), turnRequestId: z.string().uuid(),
-  scope: chatScopeSchema, question: z.string().min(1).max(2000), capabilityRecordId: z.string().uuid() }).strict();
+  scope: chatScopeSchema, question: chatText(1, 2000), capabilityRecordId: z.string().uuid() }).strict();
 export async function prepareChatGrant(session: ChatSession, userId: string, origin: string, raw: unknown) {
   const input = chatPrepareSchema.parse(raw), scope = { ...input.scope, selectedProjectIds: [...input.scope.selectedProjectIds].sort() };
   const existing = released(await chatSessionRpc(session, "lookup_prepare", null, { prepareRequestId: input.prepareRequestId }));

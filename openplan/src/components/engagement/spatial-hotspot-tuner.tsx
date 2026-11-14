@@ -153,7 +153,7 @@ export function SpatialHotspotTuner({
 
         <p className="mt-2 text-xs leading-5 text-muted-foreground">
           Showing clusters of at least {appliedMinPoints} comments within {appliedEps} m of one another.
-          The right radius depends on how spread out your study area is — a downtown block and a rural
+          The right radius depends on how spread out your study area is: a downtown block and a rural
           county are not the same question. Changing it changes where the test looks, not how strict it
           is.
         </p>

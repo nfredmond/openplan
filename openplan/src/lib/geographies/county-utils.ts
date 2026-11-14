@@ -91,18 +91,6 @@ export function buildCountySuggestedRunName(label: string, fips?: string | null)
   return `${buildCountySlug(label, fips)}-runtime`;
 }
 
-export function abbreviateCountyLabel(name: string): string {
-  const normalized = normalizeWhitespace(name);
-  const commaIndex = normalized.lastIndexOf(",");
-  if (commaIndex === -1) return normalized;
-
-  const countyName = normalized.slice(0, commaIndex).trim();
-  const stateName = normalized.slice(commaIndex + 1).trim();
-  const stateAbbreviation = STATE_ABBREVIATIONS[stateName];
-
-  return stateAbbreviation ? `${countyName}, ${stateAbbreviation}` : normalized;
-}
-
 export function normalizeCountySearchText(value: string): string {
   return normalizeWhitespace(value).toLowerCase();
 }

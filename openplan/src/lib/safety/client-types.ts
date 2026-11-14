@@ -4,6 +4,7 @@
  * adapter implementations.
  */
 
+import type { CrashStudyAreaCoverage } from "./crash-study-area";
 import type { CrashSeverity } from "./sources/types";
 
 export type SafetyCrashProperties = {
@@ -147,6 +148,12 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
 /** The latest ingest for a workspace, as rendered by the coverage banner. */
 export type SafetyIngestSummary = {
   id: string;
+  /**
+   * The adapter id. With `severityCompleteness` it gives the serious-injury
+   * statement (`seriousInjuryAvailabilityForRecord`), so the banner says what
+   * the corridor analysis and the reports say about the same crashes.
+   */
+  sourceId?: string | null;
   sourceLabel: string | null;
   attribution: string | null;
   coverageState: string;
@@ -188,6 +195,8 @@ export type SafetyIngestSummary = {
   /** Exact source-published cutoff, not inferred from requested or returned years. */
   publishedThrough?: string | null;
   publishedThroughProvenance?: Record<string, unknown> | null;
+  /** Place boundary or bounding rectangle, read from the acquisition's coverage. */
+  studyArea?: CrashStudyAreaCoverage;
 };
 
 /**
@@ -203,6 +212,8 @@ export type SafetyIngestSummary = {
  * existing one.
  */
 export type SafetyLiveCrashRead = {
+  /** The adapter id, for the serious-injury statement. */
+  sourceId?: string | null;
   sourceLabel: string;
   attribution: string | null;
   coverageState: string;
@@ -227,6 +238,8 @@ export type SafetyLiveCrashRead = {
    * fatality census cannot answer and present the empty result as a finding.
    */
   dimensionCoverage?: unknown;
+  /** Place boundary or bounding rectangle, for the counts above. */
+  studyArea?: CrashStudyAreaCoverage;
 };
 
 /** A workspace project offered on the ingest launcher's attach selector. */
@@ -298,7 +311,7 @@ export const SEVERITY_LABELS: Record<CrashSeverity, string> = {
    * as property-damage-only, because a missing count parsed to zero. The label
    * has to say that the classification is missing, not that the outcome was mild.
    */
-  unknown: "Not classified — no casualty count reported",
+  unknown: "Not classified: no casualty count reported",
 };
 
 /**
@@ -307,11 +320,13 @@ export const SEVERITY_LABELS: Record<CrashSeverity, string> = {
  */
 export const COVERAGE_STATE_COPY: Record<string, string> = {
   ccrs_ca_statewide:
-    "California Crash Reporting System (CCRS) — statewide California, reported collisions from 2016 onward.",
+    "California Crash Reporting System (CCRS): statewide California, reported collisions from 2016 onward.",
   fars_fatal_only:
-    "NHTSA FARS — fatal crashes only. Injury and property-damage collisions are not included.",
+    "NHTSA FARS: fatal crashes only. Injury and property-damage collisions are not included.",
+  state_injury_file:
+    "State crash file with injury severity, from the state's published crash layer. Only crashes the state located are included.",
   switrs_legacy_local:
-    "Legacy SWITRS extract — a discontinued system frozen at 2025-01-08. Historical use only.",
+    "Legacy SWITRS extract: a discontinued system frozen at 2025-01-08. Historical use only.",
   /**
    * WORDED FOR WHAT THE STATE ACTUALLY MEANS, which is narrower than it used to
    * claim. This sentence read "No registered crash source covers this study

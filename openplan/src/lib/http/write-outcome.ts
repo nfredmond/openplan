@@ -138,8 +138,8 @@ export function noRowsMatchedBody(options: NoRowsMatchedOptions): {
       details:
         `The database matched no rows for this ${options.subject}, so nothing was saved. ` +
         "This request passed every check the application makes, so the write was refused " +
-        "below the application — most often a row-level security policy that grants no " +
-        "permissive write — or the row was deleted while this request was in flight.",
+        "below the application (most often a row-level security policy that grants no " +
+        "permissive write) or the row was deleted while this request was in flight.",
     };
   }
 

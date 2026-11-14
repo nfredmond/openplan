@@ -201,7 +201,7 @@ export function describeClaimTierForDetermination(
     return "not established on this surface. The run's recorded claim tier is not read here, so how strongly this determination may be claimed is unknown.";
   }
   if (claimTier.claimStatusSource === "recorded_claim_decision") {
-    return `${modelingClaimStatusLabel(claimTier.claimStatus)} — recorded for this run.`;
+    return `${modelingClaimStatusLabel(claimTier.claimStatus)}, recorded for this run.`;
   }
   return "not recorded for this run. No modeling claim decision exists, so OpenPlan will not assume a tier for it.";
 }
@@ -241,7 +241,7 @@ export function summarizeVmtDetermination(input: VmtDeterminationSummaryInput): 
 
   return [
     determinationLabel(input.determination),
-    `— ${input.frameworkName} (${input.jurisdictionLabel})`,
+    `· ${input.frameworkName} (${input.jurisdictionLabel})`,
     `· ${tier}`,
     `· ${inputBasisLabel(input.inputBasis)}`,
   ].join(" ");

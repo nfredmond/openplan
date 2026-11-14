@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { pagingFake } from "./helpers/paging-fake";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -68,8 +69,13 @@ const engagementSelectMock = vi.fn((columns: string) => {
 const reportArtifactsInMock = vi.fn();
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+// Paged, through a fake that slices like PostgREST and holds its 1,000-row cap.
 const engagementItemsInMock = vi.fn();
-const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsInMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 const mockAudit = {
   info: vi.fn(),
@@ -158,6 +164,7 @@ function jsonRequest(payload: unknown) {
 describe("/api/programs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    engagementItemsPaging.reset();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -310,6 +317,63 @@ describe("/api/programs", () => {
         byType: { rtip: 1 },
       },
     });
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The linked
+    campaign's comments were read in one request, so the workflow note counted
+    1,234 approved comments as 1,000 and the 7 pending ones, which sort last,
+    as none.
+  */
+  it("GET counts every comment on a linked campaign past the 1,000-row cap", async () => {
+    programLinksInMock.mockResolvedValue({
+      data: [
+        { id: "link-1", program_id: PROGRAM_ID, link_type: "plan", linked_id: "plan-1", label: "Linked plan" },
+        { id: "link-2", program_id: PROGRAM_ID, link_type: "report", linked_id: "report-1", label: "Linked report" },
+        {
+          id: "link-3",
+          program_id: PROGRAM_ID,
+          link_type: "engagement_campaign",
+          linked_id: "campaign-9",
+          label: "Linked campaign",
+        },
+      ],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValue({
+      data: [
+        ...Array.from({ length: 1234 }, () => ({ campaign_id: "campaign-9", status: "approved" })),
+        ...Array.from({ length: 7 }, () => ({ campaign_id: "campaign-9", status: "pending" })),
+      ],
+      error: null,
+    });
+
+    const response = await getPrograms(new NextRequest("http://localhost/api/programs"));
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.programs[0].workflow.reviewNotes).toContain("1234 approved engagement items and 7 pending.");
+    expect(engagementItemsPaging.calls[0]).toEqual(["select", "campaign_id, status"]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", ["campaign-9"]]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
+  });
+
+  it("GET refuses the summary when a comment page fails part way", async () => {
+    programLinksInMock.mockResolvedValue({
+      data: [{ id: "link-3", program_id: PROGRAM_ID, link_type: "engagement_campaign", linked_id: "campaign-9", label: null }],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValue({
+      data: Array.from({ length: 1234 }, () => ({ campaign_id: "campaign-9", status: "approved" })),
+      error: null,
+    });
+    engagementItemsPaging.failPage(2, { message: "statement timeout", code: "57014" });
+
+    const response = await getPrograms(new NextRequest("http://localhost/api/programs"));
+
+    expect(response.status).toBe(500);
   });
 
   it("POST creates a program record", async () => {

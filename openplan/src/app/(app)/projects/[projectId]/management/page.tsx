@@ -1,5 +1,6 @@
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { classifyCronFreshness, readCronHeartbeatAt, CRON_JOB_SWEEP_DEADLINES } from "@/lib/notifications/cron-heartbeat";
 import { isEmailTransportConfigured } from "@/lib/notifications/email";
@@ -7,10 +8,13 @@ import { ForecastTable } from "@/components/invoicing/contracts/delivery-managem
 import { ContractScheduleTimeline } from "@/components/invoicing/contracts/schedule-timeline";
 import { reconcileContract } from "@/lib/invoicing/contracts/reconciliation";
 import type { ContractState } from "@/lib/invoicing/contracts/schema";
+import { isUuid } from "@/lib/uuid";
 export const dynamic="force-dynamic";
 export const metadata={title:"Weekly assignment management"};
 export default async function WeeklyManagement({params}:{params:Promise<{projectId:string}>}){
- const {projectId}=await params,client=await createClient(),{data:{user}}=await client.auth.getUser();
+ const {projectId}=await params;
+ if(!isUuid(projectId))notFound();
+ const client=await createClient(),{data:{user}}=await client.auth.getUser();
  if(!user)return <div className="p-8">Sign in to review your assignments.</div>;
  const project=await client.from("projects").select("id,name,workspace_id").eq("id",projectId).maybeSingle();
  if(project.error||!project.data)return <div className="p-8">Project unavailable.</div>;

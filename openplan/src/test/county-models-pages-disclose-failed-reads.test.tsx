@@ -68,6 +68,9 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
     throw new Error("redirect");
   }),
+  notFound: vi.fn(() => {
+    throw new Error("NEXT_HTTP_ERROR_FALLBACK;404");
+  }),
   // ModelCreator is rendered for real below, and it calls useRouter on mount.
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
 }));
@@ -121,7 +124,9 @@ vi.mock("@/components/cartographic/cartographic-selection-link", () => ({
 // The detail client owns its own loading and error states over a separate API
 // call; this file is about the SERVER page's reads, so it is stubbed out.
 vi.mock("@/components/county-runs/county-run-detail-client", () => ({
-  CountyRunDetailClient: () => <div data-testid="county-run-detail-client" />,
+  CountyRunDetailClient: ({ countyOnrampWorkerConfigured }: { countyOnrampWorkerConfigured?: boolean | null }) => (
+    <div data-testid="county-run-detail-client" data-worker-configured={String(countyOnrampWorkerConfigured)} />
+  ),
 }));
 
 vi.mock("@/app/(app)/county-runs/[countyRunId]/_components/county-run-behavioral-kpis", () => ({
@@ -361,19 +366,80 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
     expect(screen.getByTestId("county-run-read-failures")).toHaveTextContent(
       /permission denied for table county_runs/
     );
-    expect(screen.getByTestId("ceqa-vmt-run-name-read-error")).toHaveTextContent(
-      /has not been shown to be unnamed/i
-    );
+    // An unread row has no county, so the page cannot say CEQA applies.
+    expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
   });
 
-  it("says nothing about a read failure when the row simply is not there", async () => {
+  it("answers not found, not a read failure, when the row simply is not there", async () => {
+    // KI-2026-11-14-280: an absent run used to render the page under HTTP 200.
     setTable("county_runs", { data: null, error: null });
 
-    await renderCountyRun();
-
+    await expect(renderCountyRun()).rejects.toThrow("NEXT_HTTP_ERROR_FALLBACK;404");
     expect(screen.queryByTestId("county-run-read-failures")).toBeNull();
-    expect(screen.queryByTestId("ceqa-vmt-run-name-read-error")).toBeNull();
-    expect(screen.getByTestId("ceqa-vmt-screen")).toBeInTheDocument();
+  });
+});
+
+/*
+ * THE PAGE TELLS THE CLIENT WHETHER THIS COPY HAS A COUNTY WORKER, so the
+ * counts and validation sections can say so before the planner clicks. Varied
+ * both ways: a hard-coded value would pass one of these and fail the other.
+ */
+describe("/county-runs/[countyRunId] passes whether this copy has a county worker", () => {
+  async function renderWithWorkerUrl(workerUrl: string) {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_WORKER_URL", workerUrl);
+    setTable("county_runs", {
+      data: { id: COUNTY_RUN_ID, run_name: null, geography_type: null, geography_id: null } as never,
+      error: null,
+    });
+    render(
+      await CountyRunDetailPage({
+        params: Promise.resolve({ countyRunId: COUNTY_RUN_ID }),
+        searchParams: Promise.resolve({}),
+      })
+    );
+    return screen.getByTestId("county-run-detail-client").getAttribute("data-worker-configured");
+  }
+
+  it("passes false on a copy with no county worker", async () => {
+    expect(await renderWithWorkerUrl("")).toBe("false");
+  });
+
+  it("passes true on a copy with a county worker", async () => {
+    expect(await renderWithWorkerUrl("https://worker.example.test/jobs")).toBe("true");
+  });
+});
+
+/*
+ * CEQA IS CALIFORNIA LAW. The §15064.3 screen used to render on every county
+ * run. It now follows the run's own county FIPS code, and the projection must
+ * carry that code or every run would read as "jurisdiction unknown".
+ */
+describe("/county-runs/[countyRunId] shows the CEQA screen only for a California county", () => {
+  async function renderRunIn(geographyId: string) {
+    setTable("county_runs", {
+      data: { id: COUNTY_RUN_ID, run_name: "run", geography_type: "county_fips", geography_id: geographyId } as never,
+      error: null,
+    });
+    render(
+      await CountyRunDetailPage({
+        params: Promise.resolve({ countyRunId: COUNTY_RUN_ID }),
+        searchParams: Promise.resolve({}),
+      })
+    );
+  }
+
+  it("renders the §15064.3 screen for a California county run", async () => {
+    await renderRunIn("06057");
+    expect(screen.getByTestId("ceqa-vmt-screen")).toHaveTextContent("§15064.3");
+    const select = queries.find((entry) => entry.table === "county_runs" && entry.method === "select");
+    expect(String(select?.args[0])).toMatch(/geography_type/);
+    expect(String(select?.args[0])).toMatch(/geography_id/);
+  });
+
+  it("renders nothing CEQA-specific for a Nevada county run", async () => {
+    await renderRunIn("32031");
+    expect(screen.queryByTestId("ceqa-vmt-screen")).toBeNull();
+    expect(document.body.textContent ?? "").not.toMatch(/CEQA|15064/);
   });
 });
 

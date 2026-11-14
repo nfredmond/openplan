@@ -1,3 +1,6 @@
+import { createAiUsageMeterFake, reserveThroughFakeMeter } from "./helpers/ai-usage-meter-fake";
+import { exactCountResult } from "./helpers/exact-count-result";
+import { pagingFake } from "./helpers/paging-fake";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
@@ -10,8 +13,9 @@ const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
+const keySourceMock = vi.fn();
+const meter = createAiUsageMeterFake();
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -51,11 +55,26 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
+}));
+
+// Who pays for the call, as the AI limiter sees it (the shared key unless a
+// test says otherwise). Everything else in the module is real.
+vi.mock("@/lib/integrations/anthropic-access", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/integrations/anthropic-access")>()),
+  anthropicKeySource: () => keySourceMock(),
 }));
 
 import { POST as postNarrativeDraft } from "@/app/api/funding-opportunities/[opportunityId]/narrative-draft/route";
+
+/**
+ * An RPC answering no rows. The crash-proximity read pages its result, so the
+ * answer also takes `.order` and `.range`, as the real builder does; a bare
+ * promise made that read throw and the route refuse to draft.
+ */
+function emptyRpc() {
+  return pagingFake(() => ({ data: [], error: null }), { serverCap: 1000 }).chain;
+}
 
 function jsonRequest(payload: unknown = {}) {
   return new NextRequest(`http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/narrative-draft`, {
@@ -94,14 +113,16 @@ const baseOpportunity = {
 };
 
 describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    keySourceMock.mockReturnValue("env");
+    meter.count.mockResolvedValue({ count: 0, error: null });
+    meter.insert.mockResolvedValue({ error: null });
+    reserveAiUsageMock.mockImplementation(await reserveThroughFakeMeter(meter));
     authGetUserMock.mockResolvedValue({
       data: { user: { id: USER_ID } },
     });
@@ -136,7 +157,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
       // A real client always has `rpc`; omitting it made this fake answer a
       // TypeError where the database would answer rows, which is not a state
       // production can reach.
-      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      rpc: vi.fn(emptyRpc),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") {
           return { insert: draftInsertMock };
@@ -164,6 +185,62 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ["funding_awards", "the project's funding awards"],
+    ["funding_opportunities", "the project's other funding opportunities"],
+    ["billing_invoice_records", "the project's grant invoices"],
+  ])("refuses a failed %s evidence read before narrative generation, metering or storage", async (failedTable, subject) => {
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      opportunity: { ...baseOpportunity, project_id: projectId },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    const evidenceTables = [
+      "funding_awards", "funding_opportunities", "billing_invoice_records", "reports",
+      "project_bca_screenings", "engagement_campaigns", "project_rtp_cycle_links",
+    ];
+    createClientMock.mockResolvedValue({
+      auth: { getUser: authGetUserMock },
+      rpc: vi.fn(emptyRpc),
+      from: vi.fn((table: string) => {
+        if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
+        let columns = "";
+        const answer = () => {
+          if (table === "funding_opportunities" && columns.includes("pursuit_kind")) {
+            return { data: { id: OPPORTUNITY_ID, pursuit_kind: "grant" }, error: null };
+          }
+          if (table === "projects") return { data: { id: projectId, name: "Main St Bridge" }, error: null };
+          if (table === "project_funding_profiles") return { data: null, error: null };
+          if (table === "workspaces") return { data: { time_zone: "UTC", home_country_code: null }, error: null };
+          if (!evidenceTables.includes(table)) throw new Error(`Unexpected table: ${table}`);
+          return table === failedTable
+            ? { data: null, error: { message: `could not read ${table}` } }
+            : { data: [], error: null, count: 0 };
+        };
+        const chain: Record<string, unknown> = {
+          select: (projection: string) => { columns = projection; return chain; },
+          maybeSingle: async () => answer(),
+          then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => Promise.resolve(answer()).then(resolve, reject),
+        };
+        for (const method of ["eq", "neq", "not", "in", "order", "limit"]) chain[method] = () => chain;
+        return chain;
+      }),
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    const body = await response.json();
+    expect(response.status).toBe(500);
+    expect(body.failedReads).toEqual([subject]);
+    expect(mockAudit.error).toHaveBeenCalledWith("narrative_evidence_read_failed", expect.objectContaining({
+      failedReads: [{ subject, message: `could not read ${failedTable}` }],
+    }));
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
   });
 
   it("returns 401 when the user is not authenticated", async () => {
@@ -217,14 +294,57 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
   });
 
   it("returns 429 without a model call when the workspace AI allowance is exhausted", async () => {
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    meter.count.mockResolvedValue({ count: 20, error: null });
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
 
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("300");
     expect(generateTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(meter.insert).not.toHaveBeenCalled();
+  });
+
+  it("counts the call before making it, with this route's bucket and event keys", async () => {
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith({
+      workspaceId: WORKSPACE_ID,
+      bucketKey: "grant_narrative_draft",
+      eventKey: "grant_narrative_draft",
+      sourceRoute: "/api/funding-opportunities/[opportunityId]/narrative-draft",
+      metadataJson: { model: "claude-opus-5-5" },
+    });
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(meter.insert.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it.each([
+    ["the usage lookup", () => meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } })],
+    ["the usage record", () => meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } })],
+  ])("makes no call when %s fails and the deployment's shared key pays", async (_label, breakMeter) => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    breakMeter();
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(JSON.stringify(await response.json())).not.toContain("SYNTHETIC");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still calls the model on the workspace's own key when the usage meter fails", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    keySourceMock.mockReturnValue("workspace");
+    meter.count.mockResolvedValue({ count: null, error: { message: "SYNTHETIC count failure" } });
+    meter.insert.mockResolvedValue({ error: { message: "SYNTHETIC insert failure" } });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns a typed 503 ai_offline error when ANTHROPIC_API_KEY is empty", async () => {
@@ -263,8 +383,8 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     });
 
     // The successful generation is metered against the workspace's AI allowance.
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+    expect(meter.insert).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         bucketKey: "grant_narrative_draft",
@@ -428,7 +548,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     );
   });
 
-  it("returns 502 without persisting a fake draft when generation fails", async () => {
+  it("returns 502 without persisting a fake draft when generation fails, keeping the reservation", async () => {
     generateTextMock.mockRejectedValue(new Error("model unavailable"));
 
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
@@ -436,8 +556,9 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     expect(response.status).toBe(502);
     expect(await response.json()).toEqual({ error: "narrative_generation_failed" });
     expect(draftInsertMock).not.toHaveBeenCalled();
-    // A failed model call is never metered, so a retry can't double-count.
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    // The call was counted before it was made, and a failed call keeps
+    // its reservation (ai-rate-limit.ts, reserveAiUsage).
+    expect(meter.insert).toHaveBeenCalledTimes(1);
   });
 
   it("returns 502 without persisting when generation produces empty text", async () => {
@@ -467,7 +588,8 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
     // Generic awaitable query chain: every builder method returns the chain,
     // awaiting it (or calling maybeSingle) yields the canned result.
-    function chainable(result: { data: unknown; error: null }) {
+    function chainable(fixture: { data: unknown; error: null }) {
+      const result = exactCountResult(fixture);
       const chain: Record<string, unknown> = {
         maybeSingle: vi.fn(async () => result),
         then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
@@ -501,7 +623,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
       // A real client always has `rpc`; omitting it made this fake answer a
       // TypeError where the database would answer rows, which is not a state
       // production can reach.
-      rpc: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      rpc: vi.fn(emptyRpc),
       from: vi.fn((table: string) => {
         if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
         if (table === "projects") {

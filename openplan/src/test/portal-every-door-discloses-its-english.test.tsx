@@ -16,9 +16,11 @@
  * rather than the agency's choice. Under Title VI that is a claim about what the
  * agency published.
  *
- * Spanish is the locale this can be seen in AT ALL, and that is the subtle part:
- * Spanish is a COMPLETE catalog, so `translator.hasFallbacks` is false and the
- * page-wide `PortalLanguageNotice` is correctly silent. On Korean, where every
+ * A complete catalog is the only place this can be seen AT ALL, and that is the
+ * subtle part: `translator.hasFallbacks` is false there, so the page-wide
+ * `PortalLanguageNotice` is correctly silent. Spanish was that catalog until
+ * 2026-11-01, when two entries made from older English stopped being shown;
+ * these cases now use French, whose catalog is complete. On Korean, where every
  * key falls back, the page-wide notice speaks and hides the hole. A test written
  * at any other locale would have passed on the broken code.
  *
@@ -45,13 +47,13 @@ vi.mock("mapbox-gl", async () => {
 });
 vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
 
-const ES_LOCALE = resolvePortalLocale({ requested: "es", acceptLanguage: null });
-const ES = buildPortalMessageBundle(ES_LOCALE);
+const COMPLETE_LOCALE = resolvePortalLocale({ requested: "fr", acceptLanguage: null });
+const COMPLETE = buildPortalMessageBundle(COMPLETE_LOCALE);
 const EN_LOCALE = resolvePortalLocale({ requested: "en", acceptLanguage: null });
 const EN = buildPortalMessageBundle(EN_LOCALE);
 
 const operatorText = (text: string) =>
-  resolveOperatorText(emptyPortalTranslationIndex("es"), { entity: "campaign", id: "c1", field: "title" }, text);
+  resolveOperatorText(emptyPortalTranslationIndex("fr"), { entity: "campaign", id: "c1", field: "title" }, text);
 
 /** The token has to exist before the map modules are imported. See the other portal suites. */
 let PublicMapShell: typeof import("@/components/engagement/public-map-shell").PublicMapShell;
@@ -68,7 +70,7 @@ beforeAll(async () => {
 afterEach(cleanup);
 afterAll(() => vi.unstubAllEnvs());
 
-function renderShell(messages = ES, demographicsEnabled = true) {
+function renderShell(messages = COMPLETE, demographicsEnabled = true) {
   return render(
     <PublicMapShell
       shareToken="share-token-12345"
@@ -88,7 +90,7 @@ function renderShell(messages = ES, demographicsEnabled = true) {
   );
 }
 
-function renderPortal(messages = ES, locale = ES_LOCALE) {
+function renderPortal(messages = COMPLETE, locale = COMPLETE_LOCALE) {
   return render(
     <PublicEngagementPortal
       shareToken="share-token-12345"
@@ -110,6 +112,10 @@ describe("every public door discloses the English it is still showing", () => {
    * CONDITION, so a version that always returned null would pass a "the English
    * page says nothing" assertion and fail nothing else.
    */
+  it("uses a locale whose catalog is complete, or the branch under test is unreachable", () => {
+    expect(COMPLETE.fallbackKeys).toEqual([]);
+  });
+
   it("says nothing on an English page, which has nothing to disclose", () => {
     renderShell(EN);
     expect(screen.queryByTestId("portal-pending-copy-notice")).toBeNull();
@@ -120,16 +126,16 @@ describe("every public door discloses the English it is still showing", () => {
 
     const notice = screen.getByTestId("portal-pending-copy-notice");
     expect(notice).toHaveTextContent(
-      ES.messages["language.partialNotice"].replace("{language}", ES.nativeName)
+      COMPLETE.messages["language.partialNotice"].replace("{language}", COMPLETE.nativeName)
     );
-    // The sentence is the Spanish it claims to be — this key is one the complete
+    // The sentence is the French it claims to be. This key is one the complete
     // catalog carries, which is why this branch is reachable at all.
-    expect(notice.getAttribute("lang")).toBe("es");
+    expect(notice.getAttribute("lang")).toBe("fr");
   });
 
   it("discloses it on the context page and the embeddable widget", () => {
     renderPortal();
-    expect(screen.getByTestId("portal-pending-copy-notice").getAttribute("lang")).toBe("es");
+    expect(screen.getByTestId("portal-pending-copy-notice").getAttribute("lang")).toBe("fr");
   });
 
   /**

@@ -182,7 +182,7 @@ const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
 
 // RPC transport fixture preserves independently failed source lanes. SQL/RLS
 // and projections are checked separately, never inferred from these fake rows.
-const budgetRpcMock = vi.fn(async (_name: string, args: { p_project_id: string }) => {
+const budgetRpcMock = vi.fn<(_name: string, args: { p_project_id: string }) => Promise<BudgetAnswer>>(async (_name, args) => {
   const deliverables = await deliverablesLimitMock() as BudgetAnswer;
   if (Array.isArray(deliverables.data)) {
     deliverables.data = deliverables.data.map((row: Record<string, unknown>) => ({ assignee_user_id: null, ...row }));
@@ -215,6 +215,17 @@ const meetingsOrderMock = vi.fn(() => ({ limit: meetingsLimitMock }));
 const meetingsEqMock = vi.fn(() => ({ order: meetingsOrderMock }));
 const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqMock }));
 
+type FundingReadResult = { data: unknown[] | null; error: unknown; count?: unknown };
+type FundingSelectOptions = { count?: string };
+
+/** Return counts only when requested; retain explicit incomplete/error fixtures. */
+async function countedFundingRead(read: Promise<FundingReadResult>, options?: FundingSelectOptions): Promise<FundingReadResult> {
+  const result = await read;
+  if (options?.count !== "exact") return { ...result, count: null };
+  if ("count" in result) return result;
+  return { ...result, count: !result.error && Array.isArray(result.data) ? result.data.length : null };
+}
+
 const invoicesLimitMock = vi.fn();
 const invoicesOrderMock = vi.fn(() => ({ limit: invoicesLimitMock }));
 const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
@@ -224,9 +235,15 @@ const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
 // claimed-to-date. It only runs when the project HAS awards, which is why the
 // harness needed this branch the moment an award was seeded.
 const awardInvoicesLimitMock = vi.fn(async () => ({ data: [], error: null }));
-const awardInvoicesOrderMock = vi.fn(() => ({ limit: awardInvoicesLimitMock }));
-const awardInvoicesInMock = vi.fn(() => ({ order: awardInvoicesOrderMock }));
-const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqMock, in: awardInvoicesInMock }));
+const awardInvoicesOrderMock = vi.fn((..._args: unknown[]) => awardInvoicesLimitMock());
+const awardInvoicesInMock = vi.fn((..._args: unknown[]) => ({ order: awardInvoicesOrderMock }));
+const invoicesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: invoicesEqMock,
+  in: (...args: unknown[]) => {
+    const query = awardInvoicesInMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+}));
 
 const datasetLinksOrderMock = vi.fn();
 const datasetLinksEqMock = vi.fn(() => ({ order: datasetLinksOrderMock }));
@@ -247,17 +264,27 @@ const projectFundingProfileEqMock = vi.fn(() => ({ maybeSingle: projectFundingPr
 const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock }));
 
 const fundingAwardsLimitMock = vi.fn();
-const fundingAwardsOrderMock = vi.fn(() => ({ limit: fundingAwardsLimitMock }));
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsOrderMock = vi.fn((..._args: unknown[]) => fundingAwardsLimitMock());
+const fundingAwardsEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingAwardsOrderMock }));
 // The column list is a recorded argument, not a detail: a Supabase select string
 // is never checked against the schema, so a column this page stops asking for
 // simply arrives as `undefined` with nothing failing anywhere.
-const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock }));
+const fundingAwardsSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingAwardsEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+}));
 
 const fundingOpportunitiesLimitMock = vi.fn();
-const fundingOpportunitiesOrderMock = vi.fn(() => ({ limit: fundingOpportunitiesLimitMock }));
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock }));
+const fundingOpportunitiesOrderMock = vi.fn((..._args: unknown[]) => fundingOpportunitiesLimitMock());
+const fundingOpportunitiesEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingOpportunitiesEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+}));
 
 const datasetsInMock = vi.fn();
 const datasetsSelectMock = vi.fn(() => ({ in: datasetsInMock }));
@@ -541,7 +568,10 @@ vi.mock("@/components/workspaces/workspace-membership-required", () => ({
 }));
 
 vi.mock("@/components/projects/project-record-composer", () => ({
-  ProjectRecordComposer: () => <div data-testid="project-record-composer" />,
+  // Observe the actual page's offered types without duplicating composer buttons.
+  ProjectRecordComposer: ({ recordTypes }: { recordTypes?: readonly string[] }) => (
+    <div data-testid="project-record-composer" data-record-types={recordTypes?.join(",")} />
+  ),
 }));
 
 vi.mock("@/components/projects/project-rtp-linker", () => ({
@@ -656,7 +686,7 @@ const PROJECT_TABS: readonly ProjectTab[] = ["overview", "delivery", "funding", 
 async function renderPage(tab?: ProjectTab) {
   render(
     await ProjectDetailPage({
-      params: Promise.resolve({ projectId: "project-1" }),
+      params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }),
       searchParams: Promise.resolve(tab ? { tab } : {}),
     })
   );
@@ -690,7 +720,7 @@ function expectLinkByHref(name: RegExp, href: string) {
 
 // Comparable inputs do not establish adopting authority or legal applicability.
 const REPORT_JURISDICTION_INPUT = {
-  id: "project-1",
+  id: "70000000-0000-4000-8000-000000000001",
   jurisdiction_context: {
     version: 1, state: "unresolved", entries: [],
     recordedBy: "99999999-9999-4999-8999-999999999999",
@@ -745,7 +775,7 @@ describe("ProjectDetailPage", () => {
     projectSingleMock.mockResolvedValue({
       data: {
         jurisdiction_context: null,
-        id: "project-1",
+        id: "70000000-0000-4000-8000-000000000001",
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
         summary: "Planning effort focused on corridor safety and access.",
@@ -1037,28 +1067,83 @@ describe("ProjectDetailPage", () => {
   });
 
 
+  describe("deliverable availability across the real page composition", () => {
+    it.each([
+      ["pending snapshot", { data: null, error: { code: "PGRST202", message: "Could not find the function public.project_budget_inputs_v1(p_project_id) in the schema cache" } }, "pending"],
+      ["denied snapshot", { data: null, error: { code: "42501", message: "permission denied for function public.project_budget_inputs_v1" } }, "unreadable"],
+      ["malformed snapshot", { data: {}, error: null }, "unreadable"],
+      ["pending deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42P01", message: 'relation "public.project_deliverables" does not exist' } } }, undefined, "70000000-0000-4000-8000-000000000001"), error: null }, "pending"],
+      ["denied deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42501", message: "permission denied for table project_deliverables" } } }, undefined, "70000000-0000-4000-8000-000000000001"), error: null }, "unreadable"],
+    ] as const)("withholds false counts and empty actions for %s", async (_label, answer, state) => {
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await renderPage("overview");
+      const card = screen.getByText("Deliverables", { selector: ".module-summary-label" }).closest(".module-summary-card") as HTMLElement;
+      expect(within(card).getByText("Unavailable")).toBeInTheDocument();
+      expect(within(card).queryByText("0")).toBeNull();
+      expect(within(card).getByText(state === "pending" ? /setup is pending/ : /source could not be read/)).toBeInTheDocument();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).queryByText(/No deliverables yet/)).toBeNull();
+      expect(within(board).queryByRole("link", { name: "Add a deliverable" })).toBeNull();
+      expect(within(board).queryByLabelText("Percent complete")).toBeNull();
+      expect(within(board).queryByLabelText("Budget (not to exceed)")).toBeNull();
+      expect(within(board).getByText(state === "pending" ? /Apply the pending project input migration/ : /Deliverables could not be read/)).toBeInTheDocument();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("record");
+      expect(screen.getByText(/This feed may be incomplete/)).toBeInTheDocument();
+      expect(screen.queryByText("No project activity yet.")).toBeNull();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("funding");
+      const budget = document.getElementById("project-budget-pace") as HTMLElement;
+      expect(within(budget).queryByText(/No deliverables recorded yet/)).toBeNull();
+      expect(within(budget).queryByRole("combobox")).toBeNull();
+      expect(within(budget).queryByText("$0")).toBeNull();
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "70000000-0000-4000-8000-000000000001" });
+      expect(deliverablesSelectMock).not.toHaveBeenCalled();
+    });
+
+    it("preserves a genuinely empty deliverable count and Add workflow", async () => {
+      await renderPage("overview");
+      const card = screen.getByText("Deliverables", { selector: ".module-summary-label" }).closest(".module-summary-card") as HTMLElement;
+      expect(within(card).getByText("0")).toBeInTheDocument();
+      await rerenderOnTab("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText(/No deliverables yet/)).toBeInTheDocument();
+      expect(within(board).getByRole("link", { name: "Add a deliverable" })).toHaveAttribute("href", "#deliverable-add");
+      expect(screen.queryByText(/Deliverables could not be read/)).toBeNull();
+    });
+  });
+
   it("threads the saved estimate source through the page and real documents loader", async () => {
     const sourceId = "22222222-2222-4222-8222-222222222222";
     projectSingleMock.mockResolvedValueOnce({ data: {
-      id: "project-1", workspace_id: "workspace-1", name: "Estimate source case", status: "active",
+      id: "70000000-0000-4000-8000-000000000001", workspace_id: "workspace-1", name: "Estimate source case", status: "active",
       jurisdiction_context: null, plan_type: "corridor_plan", delivery_phase: "analysis",
       created_at: "2026-10-18", updated_at: "2026-10-18",
       estimated_cost_amount: "4200000", estimated_cost_currency: "USD",
       estimated_cost_basis_year: null, estimated_cost_source_document_id: sourceId,
     }, error: null });
     kbLibraryLimitMock.mockResolvedValueOnce({ data: Array.from({ length: 20 }, (_, index) => ({
-      id: `recent-${index}`, project_id: "project-1", title: `Recent ${index}`, status: "ready",
+      id: `recent-${index}`, project_id: "70000000-0000-4000-8000-000000000001", title: `Recent ${index}`, status: "ready",
     })), error: null });
     kbEstimateSingleMock.mockResolvedValueOnce({ data: {
-      id: sourceId, project_id: "project-1", title: "Saved supporting estimate.csv", status: "ready",
+      id: sourceId, project_id: "70000000-0000-4000-8000-000000000001", title: "Saved supporting estimate.csv", status: "ready",
       storage_ref: `storage://kb-documents/workspace-1/${sourceId}/estimate.csv`,
     }, error: null });
 
-    const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+    const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) });
     const props = pagePropsFor(page, ProjectEstimatedCostEditor);
     expect(props.estimateSource, "saved estimate source reaches editor through actual page and loader").toMatchObject({
       status: "readable", entry: {
-        id: sourceId, projectId: "project-1", title: "Saved supporting estimate.csv",
+        id: sourceId, projectId: "70000000-0000-4000-8000-000000000001", title: "Saved supporting estimate.csv",
         downloadHref: `/api/knowledge-base/documents/${sourceId}/download`,
       },
     });
@@ -1066,7 +1151,7 @@ describe("ProjectDetailPage", () => {
     expect(props.documents).not.toContainEqual(expect.objectContaining({ id: sourceId }));
     expect(kbEstimateIdEqMock).toHaveBeenCalledExactlyOnceWith("id", sourceId);
     expect(kbEstimateWorkspaceEqMock).toHaveBeenCalledExactlyOnceWith("workspace_id", "workspace-1");
-    expect(kbEstimateProjectEqMock).toHaveBeenCalledExactlyOnceWith("project_id", "project-1");
+    expect(kbEstimateProjectEqMock).toHaveBeenCalledExactlyOnceWith("project_id", "70000000-0000-4000-8000-000000000001");
   });
 
   describe("project workspace permission props", () => {
@@ -1089,7 +1174,7 @@ describe("ProjectDetailPage", () => {
         error: readError ? { message: "membership read unavailable" } : null,
       });
 
-      const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+      const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) });
       const overview = pagePropsFor(page, ProjectOverviewTab);
       const posture = overview.postureHeader as { canWriteProjects: boolean };
       expect({
@@ -1127,14 +1212,14 @@ describe("ProjectDetailPage", () => {
     // the projects_read RLS policy — here, the project select returning a row),
     // not equality with whichever workspace resolved as "current" newest-first.
     // The old equality gate stranded every project a member could read but that
-    // was not their current workspace. project-1 lives in workspace-1; the
+    // was not their current workspace. The project lives in workspace-1; the
     // caller's current workspace is a different one they also belong to.
     loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
       membership: { workspace_id: "workspace-other", role: "member" },
       workspace: { id: "workspace-other", name: "Other workspace", plan: "pilot" },
     });
 
-    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
     // It renders (no notFound), and the page scopes to the PROJECT's workspace.
     expect(notFoundMock).not.toHaveBeenCalled();
@@ -1158,7 +1243,7 @@ describe("ProjectDetailPage", () => {
       ],
       error: null,
     });
-    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
     // The mocked client returns the fixture whatever columns are asked for,
     // and `!row.geometry_ref` passes on undefined — so dropping the column
@@ -1225,7 +1310,7 @@ describe("ProjectDetailPage", () => {
       ],
     });
 
-    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
     // Projection first: the picker renders created_at, and the mocked client
     // returns the fixture whatever columns are asked for — so the .select()
@@ -1252,7 +1337,7 @@ describe("ProjectDetailPage", () => {
     await renderPage();
 
     expect(
-      screen.getByText(/Interim default gates — not your jurisdiction's/)
+      screen.getByText(/Interim default gates, not your jurisdiction's/)
     ).toBeInTheDocument();
     expect(screen.getByText(/has not stated where it works/)).toBeInTheDocument();
     expect(screen.getByText(/not authoritative for this agency/)).toBeInTheDocument();
@@ -1284,13 +1369,50 @@ describe("ProjectDetailPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("names the workspace's home geography when the project has no study area", async () => {
+    workspaceSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        slug: "openplan-qa",
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        created_at: "2026-03-28T18:00:00.000Z",
+        home_geography_source: "tigerweb",
+        home_geography_kind: "place",
+        home_geography_ref: "0601640",
+        home_geography_label: "Alturas",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+        home_min_lon: -120.576,
+        home_min_lat: 41.469,
+        home_max_lon: -120.525,
+        home_max_lat: 41.506,
+      },
+      error: null,
+    });
+
+    await renderPage();
+
+    // The mocked client returns the fixture whatever columns are asked for, so
+    // the projection is the artifact under test: without the label the page
+    // said the workspace had no home geography at all.
+    const workspaceSelectCalls = workspaceSelectMock.mock.calls as unknown as Array<[string]>;
+    const workspaceColumns = String(workspaceSelectCalls[0]?.[0] ?? "");
+    expect(workspaceColumns).toContain("home_geography_label");
+    expect(workspaceColumns).toContain("home_min_lon");
+    expect(workspaceColumns).not.toContain("home_geometry_geojson");
+    expect(screen.getAllByText(/falls back to the workspace's home geography, Alturas/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/workspace has no home geography either/)).toBeNull();
+  });
+
   it("notFounds when the project is not readable (RLS blocks a non-member)", async () => {
     // A caller who is not a member of the project's workspace gets no row back
     // from the RLS-scoped select, which is the only access gate that remains.
     projectSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     await expect(
-      ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+      ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) })
     ).rejects.toThrow("notFound");
 
     expect(notFoundMock).toHaveBeenCalled();
@@ -1301,7 +1423,7 @@ describe("ProjectDetailPage", () => {
     loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({ membership: null, workspace: null });
 
     render(
-      await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+      await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) })
     );
 
     expect(screen.getByTestId("workspace-membership-required")).toBeInTheDocument();
@@ -1409,11 +1531,11 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText("Continue this pilot story")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
       "href",
-      "/projects/project-1"
+      "/projects/70000000-0000-4000-8000-000000000001"
     );
     expect(screen.getByRole("link", { name: /Engagement signal/i })).toHaveAttribute(
       "href",
-      "/engagement?projectId=project-1"
+      "/engagement?projectId=70000000-0000-4000-8000-000000000001"
     );
     expectLinkByHref(/Build the report packet/i, "/reports");
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
@@ -1430,7 +1552,7 @@ describe("ProjectDetailPage", () => {
     );
     expect(screen.getAllByRole("link", { name: /Open Grants/i })[0]).toHaveAttribute(
       "href",
-      "/grants?focusProjectId=project-1"
+      "/grants?focusProjectId=70000000-0000-4000-8000-000000000001"
     );
     expect(screen.getAllByRole("link", { name: /^Open report$/i })[0]).toHaveAttribute(
       "href",
@@ -1738,7 +1860,7 @@ describe("ProjectDetailPage", () => {
       data: [
         {
           id: "award-1",
-          project_id: "project-1",
+          project_id: "70000000-0000-4000-8000-000000000001",
           program_id: null,
           funding_opportunity_id: null,
           title: "Legacy ATP construction award",
@@ -1764,10 +1886,25 @@ describe("ProjectDetailPage", () => {
 
     await renderPage("funding");
 
-    const [awardColumns] = fundingAwardsSelectMock.mock.calls[0];
+    const [awardColumns, awardOptions] = fundingAwardsSelectMock.mock.calls[0];
     for (const column of ["closure_basis", "closed_at", "closure_note", "reopened_at"]) {
       expect(awardColumns, `the funding_awards select must name ${column}`).toContain(column);
     }
+    expect(awardOptions).toEqual({ count: "exact" });
+    for (const column of ["latest_handoff_revision_id", "current_handoff_revision_id", "currency_code", "has_source_backed_issuance"]) {
+      expect(awardColumns.split(", ")).toContain(column);
+    }
+    expect(fundingAwardsEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
+    expect(fundingOpportunitiesSelectMock).toHaveBeenCalledWith(
+      expect.stringContaining("has_source_backed_issuance"),
+      { count: "exact" },
+    );
+    expect(fundingOpportunitiesEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
+    expect(invoicesSelectMock).toHaveBeenCalledWith(
+      expect.stringContaining("award_handoff_revision_id, currency_code, handoff_applicable_revision_id"),
+      { count: "exact" },
+    );
+    expect(awardInvoicesInMock).toHaveBeenCalledWith("funding_award_id", ["award-1"]);
 
     // The same vocabulary the /grants close-out control uses — one language for
     // one fact, sourced from the programs catalog by both surfaces.
@@ -1791,7 +1928,7 @@ describe("ProjectDetailPage", () => {
       data: [
         {
           id: "award-2",
-          project_id: "project-1",
+          project_id: "70000000-0000-4000-8000-000000000001",
           program_id: null,
           funding_opportunity_id: null,
           title: "Award read without its provenance columns",
@@ -1864,7 +2001,7 @@ describe("ProjectDetailPage", () => {
         error: { code: "42703", message: 'column projects.place_set_at does not exist' },
       });
 
-      render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+      render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) }));
 
       expect(notFoundMock).not.toHaveBeenCalled();
       expect(screen.getByText(/This project could not be read/i)).toBeInTheDocument();
@@ -1883,10 +2020,24 @@ describe("ProjectDetailPage", () => {
       });
 
       await expect(
-        ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+        ProjectDetailPage({ params: Promise.resolve({ projectId: "70000000-0000-4000-8000-000000000001" }) })
       ).rejects.toThrow("notFound");
       expect(notFoundMock).toHaveBeenCalled();
     });
+
+    // `/projects/new` used to reach `.eq("id", "new")`, Postgres refused the
+    // cast with 22P02, and the page above quoted it as "could not be read". A
+    // string that is not a uuid names no project: notFound(), with no query.
+    it.each(["new", "project-1", "70000000-0000-4000-8000-00000000000"])(
+      "answers notFound() for the malformed id %j without querying",
+      async (projectId) => {
+        await expect(ProjectDetailPage({ params: Promise.resolve({ projectId }) })).rejects.toThrow("notFound");
+        expect(notFoundMock).toHaveBeenCalledOnce();
+        expect(createClientMock).not.toHaveBeenCalled();
+        expect(projectEqMock).not.toHaveBeenCalled();
+        expect(projectSingleMock).not.toHaveBeenCalled();
+      }
+    );
 
     it("says the risk register could not be read instead of 'No risks recorded yet.'", async () => {
       const failRisksRead = () =>
@@ -2075,7 +2226,7 @@ describe("ProjectDetailPage", () => {
   });
 
   it.each([
-    [null, "No separate declaration. Jurisdiction assessment may show labelled legacy study-place context."],
+    [null, "Jurisdiction not declared."],
     [{ version: 1, state: "unresolved", entries: [], recordedBy: "22222222-2222-4222-8222-222222222222", recordedAt: "2026-10-15T00:00:00.000Z" }, "Jurisdiction explicitly unresolved. Study-place fallback is disabled."],
     [{ version: 2 }, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
     [undefined, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
@@ -2157,7 +2308,7 @@ describe("ProjectDetailPage", () => {
       expect(within(row).getByText("Could not be read")).toBeInTheDocument();
       expect(within(row).queryByText("No campaign or report evidence")).toBeNull();
       expect(campaignProjectsSelectMock).toHaveBeenCalledWith("campaign_id");
-      expect(campaignProjectsEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(campaignProjectsEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
     });
 
     it("keeps failed campaign coverage unknown on the evidence board", async () => {
@@ -2385,6 +2536,7 @@ describe("ProjectDetailPage", () => {
       }], error: null });
       spendEntriesLimitMock.mockResolvedValue(answer);
       await renderPage("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Budgeted deliverable")).toBeInTheDocument();
       expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1000);
@@ -2404,6 +2556,7 @@ describe("ProjectDetailPage", () => {
       }], error: null });
       projectBudgetMaybeSingleMock.mockResolvedValue(answer);
       await renderPage("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Retained delivery work")).toBeInTheDocument();
       expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
@@ -2471,9 +2624,9 @@ describe("ProjectDetailPage", () => {
       // The head-count and the library read both bind the fixture's own ids —
       // the binding is asserted, not just the render, so a loader hardcoding a
       // project id cannot pass.
-      expect(kbHeadCountEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(kbHeadCountEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
       expect(kbLibraryWorkspaceEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
-      expect(kbLibraryProjectEqMock).toHaveBeenCalledWith("project_id", "project-1");
+      expect(kbLibraryProjectEqMock).toHaveBeenCalledWith("project_id", "70000000-0000-4000-8000-000000000001");
 
       const kbCard = screen
         .getByText("Knowledge Base", { selector: ".module-summary-label" })
@@ -2494,7 +2647,7 @@ describe("ProjectDetailPage", () => {
         data: [
           {
             id: "kb-1",
-            project_id: "project-1",
+            project_id: "70000000-0000-4000-8000-000000000001",
             title: "Corridor letter scan",
             doc_kind: "other",
             source_kind: "uploaded_image",
@@ -2546,7 +2699,7 @@ describe("ProjectDetailPage", () => {
 
       const panel = document.getElementById("project-documents") as HTMLElement;
       expect(
-        within(panel).getByText(/does not carry knowledge base documents yet — apply the pending/)
+        within(panel).getByText(/does not carry knowledge base documents yet\. Apply the pending/)
       ).toBeInTheDocument();
       expect(within(panel).queryByText(/knowledge base documents could not be read/)).toBeNull();
     });
@@ -2594,7 +2747,7 @@ describe("ProjectDetailPage", () => {
       // as unassigned with every assertion below still green. The projection
       // string itself is the only thing that can be checked here.
       await renderPage();
-      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "70000000-0000-4000-8000-000000000001" });
 
       for (const [name, mock] of [
         ["milestones", milestonesSelectMock],
@@ -2672,10 +2825,10 @@ describe("ProjectDetailPage", () => {
       await renderPage("delivery");
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
-      expect(within(milestones).getByText("Unassigned — previously a member")).toBeInTheDocument();
+      expect(within(milestones).getByText("Unassigned, previously a member")).toBeInTheDocument();
       await rerenderOnTab("record");
       const issues = document.getElementById("project-issues") as HTMLElement;
-      expect(within(issues).getByText("Unassigned — previously a member")).toBeInTheDocument();
+      expect(within(issues).getByText("Unassigned, previously a member")).toBeInTheDocument();
     });
 
     it("says the roster could not be read instead of reporting the whole team departed", async () => {
@@ -2691,9 +2844,9 @@ describe("ProjectDetailPage", () => {
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(
-        within(milestones).getByText("Assignee unavailable — the team roster could not be read")
+        within(milestones).getByText("Assignee unavailable: the team roster could not be read")
       ).toBeInTheDocument();
-      expect(within(milestones).queryByText("Unassigned — previously a member")).toBeNull();
+      expect(within(milestones).queryByText("Unassigned, previously a member")).toBeNull();
       expect(within(milestones).queryByText("priya@example.gov")).toBeNull();
       // And the page's own banner names the failed read for an operator.
       expect(screen.getByText(/could not read this workspace's team roster/i)).toBeInTheDocument();
@@ -2711,9 +2864,9 @@ describe("ProjectDetailPage", () => {
 
       const milestones = document.getElementById("project-milestones") as HTMLElement;
       expect(within(milestones).queryByText("priya@example.gov")).toBeNull();
-      expect(within(milestones).queryByText("Unassigned — previously a member")).toBeNull();
+      expect(within(milestones).queryByText("Unassigned, previously a member")).toBeNull();
       expect(
-        within(milestones).queryByText("Assignee unavailable — the team roster could not be read")
+        within(milestones).queryByText("Assignee unavailable: the team roster could not be read")
       ).toBeNull();
       // The record itself still renders — silence is about the assignee only.
       expect(within(milestones).getByText("LAPM authorization packet ready")).toBeInTheDocument();

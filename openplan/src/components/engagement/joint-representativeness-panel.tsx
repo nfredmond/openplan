@@ -77,7 +77,7 @@ export function JointRepresentativenessPanel({
       <div className="grid gap-3 sm:grid-cols-2">
         <SignalCard
           title="Area baseline (ACS)"
-          subtitle="Residents of color in the study area — everyone not White alone, non-Hispanic."
+          subtitle="Residents of color in the study area: everyone not White alone, non-Hispanic."
         >
           {ecological && ecological.areaBaselinePct !== null ? (
             <>
@@ -106,7 +106,7 @@ export function JointRepresentativenessPanel({
 
         <SignalCard
           title="Self-reported floor"
-          subtitle="A lower bound over respondents who chose to share demographics — never a share."
+          subtitle="A lower bound over respondents who chose to share demographics, never a share."
         >
           {selfReported ? (
             <>

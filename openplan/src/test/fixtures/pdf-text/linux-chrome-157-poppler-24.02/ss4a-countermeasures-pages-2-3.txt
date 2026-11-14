@@ -1,0 +1,256 @@
+APPENDIX
+
+STATUS
+
+SOURCE RECORD
+
+DATE
+
+HASH
+
+C. Countermeasures
+
+Included
+
+Safety report artifact 00
+000000-0000-4000-800
+0-000000000005
+
+Oct 18,
+2026, 12:00
+UTC
+
+adcaa4587a8e7474b4fdc
+1724224946b2ba0c3715
+5ce1664723db33f346f51
+14
+
+D. Benefit-cost
+summary
+
+Not
+selected
+
+Not selected for this
+export.
+
+Not
+recorded
+
+None stored
+
+E. Engagement
+summary
+
+Not
+selected
+
+Not selected for this
+export.
+
+Not
+recorded
+
+None stored
+
+Appendix A. High-injury network map
+Not selected. Not selected for this export.
+
+Appendix B. Crash summary
+Not selected. Not selected for this export.
+
+Appendix C. Countermeasures
+Source: Safety report artifact 00000000-0000-4000-8000-000000000005. /reports/00000000-0000-4000-8000000000000004#artifact-00000000-0000-4000-8000-000000000005 Generated: Oct 18, 2026, 12:00 UTC. Snapshot
+SHA-256: adcaa4587a8e7474b4fdc1724224946b2ba0c37155ce1664723db33f346f5114. Report 00000000-0000-40008000-000000000004. Crash acquisition 00000000-0000-4000-8000-000000000006, retrieved Oct 18, 2026, 12:00
+UTC.
+Location
+
+Network
+rank
+
+Countermeasure
+
+Addresses
+
+Crash
+types
+
+Crash
+modification
+factor
+
+Source
+
+Test Road
+A
+
+1
+
+Enhanced Delineation
+for Horizontal Curves
+
+Roadway
+departure
+crashes at
+horizontal
+curves.
+
+Roadway
+departure,
+Nighttime
+
+[VERIFY] No
+CMF
+Clearinghouse
+entry read; no
+value given.
+
+https://high
+ways.dot.go
+v/safety/pro
+ven-safetycountermea
+sures/enhan
+ced-delinea
+tion-horizo
+ntal-curves
+
+Test Road
+A
+
+1
+
+Medians and Pedestrian
+Refuge Islands in
+Urban and Suburban
+Areas
+
+Pedestrian
+crashes where
+people cross
+multilane urban
+and suburban
+roads.
+
+Pedestrian
+
+[VERIFY] No
+CMF
+Clearinghouse
+entry read; no
+value given.
+
+https://high
+ways.dot.go
+v/safety/pro
+ven-safetycountermea
+sures/media
+ns-and-ped
+estrian-refu
+ge-islandsss4a-countermeasures · Page 2 of 4
+
+Location
+
+Network
+rank
+
+Countermeasure
+
+Addresses
+
+Crash
+types
+
+Crash
+modification
+factor
+
+Source
+
+urban-and-s
+uburban-are
+as
+Test Road
+A
+
+1
+
+Crosswalk Visibility
+Enhancements
+
+Pedestrian
+crashes at
+crosswalks
+where drivers
+cannot see
+people
+crossing.
+
+Pedestrian,
+Nighttime
+
+[VERIFY] No
+CMF
+Clearinghouse
+entry read; no
+value given.
+
+https://high
+ways.dot.go
+v/safety/pro
+ven-safetycountermea
+sures/cross
+walk-visibil
+ity-enhance
+ments
+
+Test Road
+A
+
+1
+
+Lighting
+
+Nighttime
+crashes at
+intersections
+and along
+roads,
+including
+pedestrian
+crashes.
+
+Nighttime,
+Pedestrian
+
+[VERIFY] No
+CMF
+Clearinghouse
+entry read; no
+value given.
+
+https://high
+ways.dot.go
+v/safety/pro
+ven-safetycountermea
+sures/lighti
+ng
+
+Proposed by staff for review. Attaching a countermeasure is not an engineering finding,
+and no crash reduction is estimated here.
+Source: Federal Highway Administration, U.S. Department of Transportation, Proven
+Safety Countermeasures, https://highways.dot.gov/safety/proven-safety-countermeasures.
+Retrieved 2026-10-13; list version 2026-10-13.
+
+Appendix D. Benefit-cost summary
+Not selected. Not selected for this export.
+
+Appendix E. Engagement summary
+Not selected. Not selected for this export.
+
+Provenance appendix
+How each section's text came to be, disclosed per section. AI drafts are writing support grounded
+in workspace evidence; the operator who finalized a section is the authority for it.
+
+ss4a-countermeasures · Page 3 of 4
+
+

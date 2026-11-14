@@ -11,7 +11,8 @@ const fixtures: Awaited<ReturnType<typeof synthesisWorkerFixture>>[] = [];
 afterEach(async () => { for (const f of fixtures.splice(0)) await f.close(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 async function fixture() { const f = await synthesisWorkerFixture(); fixtures.push(f); return f; }
 async function save(f: Awaited<ReturnType<typeof fixture>>, value: unknown) { await writeFile(join(f.args.directory, "pending.json"), JSON.stringify(value), { mode: 0o600 }); }
-describe("synthesis worker custody and recovery", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("synthesis worker custody and recovery", () => {
   it("journals before claim, dispatch and delivery with the real local API", async () => {
     const f = await fixture(), result = await runSynthesisGenerationWorkerAttempt(f.args), journal = await f.journal();
     expect(result).toEqual({ state: "delivered", attemptId: journal.attemptId, captureSha256: journal.captureSha256 });

@@ -16,7 +16,6 @@ describe("response email outcome journal", () => {
     const original = await createResponseEmailJournal(directory);
     await original.retain(outcome);
     expect(JSON.parse(await readFile(join(directory, `${filename}.pending.json`), "utf8"))).toEqual(outcome);
-    expect((await stat(join(directory, `${filename}.pending.json`))).mode & 0o777).toBe(0o600);
     const resumed = await createResponseEmailJournal(directory);
     const unavailable = vi.fn().mockResolvedValue(false);
     expect(await resumed.recover(unavailable)).toEqual({ unreadable: 0, pending: 1 });
@@ -29,6 +28,12 @@ describe("response email outcome journal", () => {
     acknowledged.mockClear();
     await resumed.recover(acknowledged);
     expect(acknowledged).not.toHaveBeenCalled();
+  });
+  // Windows has no POSIX mode bits; Node reports 0o666 for every writable file.
+  it.skipIf(process.platform === "win32")("writes the retained outcome readable by its owner only", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "openplan-email-journal-"));
+    await (await createResponseEmailJournal(directory)).retain(outcome);
+    expect((await stat(join(directory, `${filename}.pending.json`))).mode & 0o777).toBe(0o600);
   });
   it("retains malformed and mismatched files without acknowledging invented results", async () => {
     const directory = await mkdtemp(join(tmpdir(), "openplan-email-journal-"));

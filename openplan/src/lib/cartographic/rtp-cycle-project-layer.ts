@@ -31,10 +31,13 @@ import { parseOptionalAmount } from "@/lib/money/optional-amount";
  * that migration's own comment calls display-only and "not a spatial-query
  * index". An anchor is one dot for a whole plan; it cannot answer "where is the
  * money going?".
+ *
+ * `projects.workspace_id` lets the public plan page, which reads through the
+ * service role, drop a project from another workspace (KI-2026-11-02-053).
  */
 export const RTP_CYCLE_PROJECT_MAP_COLUMNS =
   "id, project_id, portfolio_role, horizon_band_id, estimated_cost, cost_basis_year, " +
-  "projects(id, name, status, latitude, longitude)";
+  "projects(id, workspace_id, name, status, latitude, longitude)";
 
 export type RtpCycleProjectFeature = {
   type: "Feature";
@@ -77,6 +80,15 @@ export type RtpCycleProjectFeatureCollection = MapLayerFeatureCollection<RtpCycl
   withoutReadableProject: number;
 };
 
+type RtpCycleProjectEmbed = {
+  id: string;
+  workspace_id?: string | null;
+  name: string | null;
+  status: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
+};
+
 /** A row as `RTP_CYCLE_PROJECT_MAP_COLUMNS` returns it, before any coercion. */
 export type RtpCycleProjectLinkRow = {
   id: string;
@@ -85,10 +97,7 @@ export type RtpCycleProjectLinkRow = {
   horizon_band_id: string | null;
   estimated_cost: number | string | null;
   cost_basis_year: number | null;
-  projects:
-    | { id: string; name: string | null; status: string | null; latitude: number | string | null; longitude: number | string | null }
-    | Array<{ id: string; name: string | null; status: string | null; latitude: number | string | null; longitude: number | string | null }>
-    | null;
+  projects: RtpCycleProjectEmbed | RtpCycleProjectEmbed[] | null;
 };
 
 /**

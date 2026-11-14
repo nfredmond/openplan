@@ -576,7 +576,7 @@ function evidenceForHigherTier(
   }
   if (notes.length === 0) {
     notes.push(
-      "The stored decision names no specific blocker. A higher tier needs a new validation pass whose required checks all pass — the agent cannot supply that evidence, only a run can."
+      "The stored decision names no specific blocker. A higher tier needs a new validation pass whose required checks all pass. The agent cannot supply that evidence, only a run can."
     );
   }
   return notes;
@@ -765,7 +765,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 
   const getModelRunResults = tool({
     description:
-      `Read one model run's recorded results: status, stored KPIs (max ${ASSISTANT_CHAT_TOOL_KPI_LIMIT} rows, values and units verbatim with their stored caveats), the zone-resolution diagnostic when recorded, validation checks, and the run's recorded claim tier. Nothing is recomputed — absent records are reported as absent.`,
+      `Read one model run's recorded results: status, stored KPIs (max ${ASSISTANT_CHAT_TOOL_KPI_LIMIT} rows, values and units verbatim with their stored caveats), the zone-resolution diagnostic when recorded, validation checks, and the run's recorded claim tier. Nothing is recomputed: absent records are reported as absent.`,
     inputSchema: z.object({
       modelRunId: z.string().uuid().describe("The model run id (find it with list_workspace_records kind=model_runs)."),
     }),
@@ -857,7 +857,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           zoneResolution = {
             status: "not_recorded",
             message:
-              "No zone-resolution diagnostic is recorded for this run — it may predate the diagnostic or have produced no trips. Do not treat that as a finding that the zone system is fine.",
+              "No zone-resolution diagnostic is recorded for this run. It may predate the diagnostic or have produced no trips. Do not treat that as a finding that the zone system is fine.",
           };
         }
 
@@ -963,7 +963,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
                     errorMessage,
                     note: errorMessage
                       ? "Quote the recorded failure message verbatim."
-                      : "This run failed and no failure cause was recorded. Say exactly that — do not invent a cause.",
+                      : "This run failed and no failure cause was recorded. Say exactly that. Do not invent a cause.",
                   }
                 : null,
           },
@@ -1091,7 +1091,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
             : {
                 tier: null,
                 label: modelingClaimStatusLabel(null),
-                message: "No claim decision is recorded for this run — a known absence, not an unknown.",
+                message: "No claim decision is recorded for this run: a known absence, not an unknown.",
               },
         };
       },
@@ -1100,7 +1100,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 
   const explainModelClaim = tool({
     description:
-      "Explain a run's modeling claim tier: the recorded tier, its stored reasons verbatim, the tier ladder, and what recorded evidence would support a higher tier. Pass exactly one of modelRunId (a model run) or countyRunId (a county onramp run). Explanation only — this tool changes nothing, and evidence decides tiers, never the agent.",
+      "Explain a run's modeling claim tier: the recorded tier, its stored reasons verbatim, the tier ladder, and what recorded evidence would support a higher tier. Pass exactly one of modelRunId (a model run) or countyRunId (a county onramp run). Explanation only: this tool changes nothing, and evidence decides tiers, never the agent.",
     inputSchema: z.object({
       modelRunId: z.string().uuid().nullable().optional(),
       countyRunId: z.string().uuid().nullable().optional(),
@@ -1191,7 +1191,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
             subject: { kind: "model_run", id: runRow.id, title: runRow.run_title ?? null },
             decisions,
             tierLadder: claimTierLadder(),
-            note: "Quote the stored reasons verbatim. The agent may explain a tier but never change one — evidence decides.",
+            note: "Quote the stored reasons verbatim. The agent may explain a tier but never change one. Evidence decides.",
           };
         }
 
@@ -1288,7 +1288,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 
   const searchGrantsGov = tool({
     description:
-      `Search live federal funding opportunities on grants.gov (Search2 API, transportation category, max ${ASSISTANT_CHAT_TOOL_GRANTS_GOV_ROWS} rows, results cached server-side for 30 minutes). Returns synopsis-level results with the standing caveat — the NOFO on grants.gov is the record.`,
+      `Search live federal funding opportunities on grants.gov (Search2 API, transportation category, max ${ASSISTANT_CHAT_TOOL_GRANTS_GOV_ROWS} rows, results cached server-side for 30 minutes). Returns synopsis-level results with the standing caveat: the NOFO on grants.gov is the record.`,
     inputSchema: z.object({
       keyword: z.string().trim().max(120).optional().describe("Keywords, e.g. 'safe streets' or 'transit'."),
       agencies: z
@@ -1333,7 +1333,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 
         const unavailable = (why: string): ChatToolPayload => ({
           status: "unavailable",
-          message: `grants.gov could not be searched (${why}). An unreachable API is not evidence that no opportunities exist — try again later or check grants.gov directly.`,
+          message: `grants.gov could not be searched (${why}). An unreachable API is not evidence that no opportunities exist. Try again later or check grants.gov directly.`,
         });
 
         let payload: unknown;
@@ -1576,7 +1576,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
           excerptCount: excerpts.length,
           note:
             excerpts.length === 0
-              ? "No uploaded-document excerpts matched. That means the Knowledge Base has no matching text — not that the answer is no."
+              ? "No uploaded-document excerpts matched. That means the Knowledge Base has no matching text, not that the answer is no."
               : "Excerpts come from uploaded documents OpenPlan has not independently verified. Attribute each to its document title and page.",
           excerpts: excerpts.map((excerpt) => ({
             documentTitle: excerpt.documentTitle,
@@ -1829,7 +1829,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
       // The registered bundles name themselves rather than being spelled out
       // here, so a new jurisdiction's programs are described accurately the
       // moment it is registered instead of the day someone remembers this string.
-      `Read OpenPlan's static reference catalog of transportation funding programs. Registered bundles: ${GRANT_PROGRAM_BUNDLES.map((bundle) => bundle.label).join("; ")}. Each program carries the jurisdiction it is open in — a jurisdiction-scoped program is NOT available to an agency outside it, so always check the program's jurisdiction against where the workspace actually works before recommending it. This is orientation guidance, not a live opportunity feed — every entry says where to verify the current cycle.`,
+      `Read OpenPlan's static reference catalog of transportation funding programs. Registered bundles: ${GRANT_PROGRAM_BUNDLES.map((bundle) => bundle.label).join("; ")}. Each program carries the jurisdiction it is open in. A jurisdiction-scoped program is NOT available to an agency outside it, so always check the program's jurisdiction against where the workspace actually works before recommending it. This is orientation guidance, not a live opportunity feed. Every entry says where to verify the current cycle.`,
     inputSchema: z.object({
       level: z.enum(["federal", "state"]).optional().describe("Optionally narrow to federal or state programs."),
     }),
@@ -1844,7 +1844,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
         return {
           status: "ok",
           programCount: entries.length,
-          note: "Static reference data. Cycle timing shifts — always tell the planner to verify against the official program page. The catalog is not filtered to this workspace's geography: name each program's jurisdiction when you cite it, and say plainly when a program is scoped somewhere the workspace does not work.",
+          note: "Static reference data. Cycle timing shifts. Always tell the planner to verify against the official program page. The catalog is not filtered to this workspace's geography: name each program's jurisdiction when you cite it, and say plainly when a program is scoped somewhere the workspace does not work.",
           stateAdministrationNote:
             "A federal program's stateAdministration entries apply only to a workspace in that state. Elsewhere, the federal text applies.",
           programs: entries.map(({ program, bundle }) => ({

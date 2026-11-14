@@ -3,8 +3,8 @@
 The Railway service `offsite-backup` copies the hosted database and every
 private Storage object once a day, encrypts the bundle, and stores it in the
 Railway bucket `openplan-offsite-backups` in US East (`iad`). The database runs
-at Supabase in US West, the workers in Railway US West, and the private key on
-Nathaniel's workstation, so no single one of those failing loses every copy.
+at Supabase in US West and the workers in Railway US West. The private key is
+on one workstation only; see "Limits".
 
 ## What one run does
 
@@ -13,8 +13,8 @@ Nathaniel's workstation, so no single one of those failing loses every copy.
 2. Every object in every Storage bucket is copied through the authenticated
    Storage API, with its byte count and SHA-256.
 3. The archive, the objects and a manifest are encrypted to the OpenPGP public
-   key `A4221F59406B5F299D2DD3FE7213CBBB858160CA`. The private key never
-   reaches Railway.
+   key named by `BACKUP_GPG_FINGERPRINT` (the current fingerprint is under
+   "Limits"). The private key never reaches Railway.
 4. The ciphertext is uploaded, downloaded again and compared by SHA-256. Only
    then is `summary.json` written beside it. A capture without a summary is
    incomplete.
@@ -33,10 +33,28 @@ set on the service instance. A failed run exits 1 and logs
   schedules cover the volumes and have not been restore-tested.
 - **Same Railway account as the workers.** Encryption protects the contents if
   that account is compromised. It does not protect against deletion.
-- **The private key exists in one place until Nathaniel escrows it.** It is in
-  `$HOME/.local/state/openplan/offsite-backup-key/` with its passphrase. If
-  this workstation is lost before a second copy exists, the offsite captures
-  cannot be decrypted.
+- **Key custody.** The private key for offsite captures (fingerprint
+  `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`) exists only on the
+  operator's Windows workstation:
+  `%USERPROFILE%\.local\state\openplan\offsite-capture-key-<date>\` and a copy
+  on that machine's second internal disk, `D:\openplan-key-escrow\`. Neither
+  disk is encrypted, and the passphrase is stored with the key. If this
+  workstation is lost, stolen, wiped or replaced without copying that folder,
+  no offsite capture can be decrypted. Supabase's seven daily physical backups
+  remain a database-only last resort (no Storage objects, in-place restore).
+  The folder belongs on any machine-move checklist. A copy outside this
+  machine, made by the account owner (password manager or offline media),
+  would close this gap and is recorded as an open item, not a dependency.
+- **Captures before the November 2026 rotation cannot be decrypted.** Every
+  capture made before `20261114T072635Z` (November 14, 2026, 07:26 UTC) is encrypted to
+  `A4221F59406B5F299D2DD3FE7213CBBB858160CA`, whose private key was lost when
+  the old Linux workstation was wiped in October 2026. No copy is known. Those
+  captures age out of the bucket within 30 days of the rotation, so a copy of
+  the old key found later would help only before then.
+- **Credentials and Docker.** The install kit passes credentials to its
+  containers on stdin, not with `docker run -e`, because a value passed with
+  `-e` stays on Docker's disk after `--rm`. The Railway, Supabase and Vercel
+  CLI tokens stored on the same unencrypted disk remain a larger risk.
 
 ## Variables
 
@@ -68,23 +86,37 @@ cd "$stage" && railway link -p 9d7fbdc3-c370-41b5-8471-34dc128e718e -e productio
 railway up --service offsite-backup --ci
 ```
 
-`railway up` starts one run immediately. Confirm its log line, then confirm
-the instance still reports `cronSchedule` and `nextCronRunAt` through
-`railway api`.
+`railway up` may or may not start a run. On November 14, 2026 it did not, so
+trigger one with `railway cron run --service offsite-backup --environment
+production --yes`. Confirm the run's `offsite_capture_complete` log line names
+the expected fingerprint, then confirm `railway cron list` still shows the
+schedule `17 10 * * *` and a next run.
+
+A changed variable does not reach a scheduled run until a new deployment
+exists. On November 14 a run started after both key variables were set with
+`--skip-deploys` still encrypted to the old key, and `railway redeploy`
+refused this service ("cannot be redeployed"). `railway up` with the
+unchanged files made the deployment that picked the new values up.
 
 ## Verify a capture
 
-On a machine that holds the private key, with the bucket variables exported:
+Use the hosted install kit on the machine that holds the private key. It runs
+`verify_capture.py` in an image built from this worker's own base, with the
+bucket credentials on stdin and the key in a keyring that disappears with the
+container:
 
 ```bash
-GNUPGHOME=$HOME/.local/state/openplan/offsite-backup-key/gnupg \
-BACKUP_GPG_PASSPHRASE_FILE=$HOME/.local/state/openplan/offsite-backup-key/passphrase.txt \
-python3 workers/hosted-backup/verify_capture.py /path/to/new/private/dir
+export KIT_IMAGE=$(bash scripts/ops/hosted-install/image/build.sh)
+export KIT_ENV_CMD="railway run -s offsite-backup -e production --"
+bash scripts/ops/hosted-install/kit.sh verify <private window folder> <capture stamp> <key folder>
 ```
 
-It checks the ciphertext against its summary, decrypts, and checks the archive
-hash and every object's size and SHA-256. With PostgreSQL 17 `pg_restore` on
-the path it also checks the index count. It restores nothing.
+It checks the ciphertext against its summary, decrypts, refuses any archive
+member that is not a plain file or folder inside the capture's own folder, and
+checks the archive hash, the index count and every object's size and SHA-256.
+It restores nothing; `scripts/ops/hosted-install/README.md` gives the restore
+and its pass criteria. The image's Python (Debian bookworm, 3.11.2) has no
+`tarfile` extraction filter, so the member check is the verifier's own.
 `python3 -m unittest test_backup` covers retention, path refusal, paging,
-encryption to the right key and the read-back refusal. It does not reach a
-real database, Storage or bucket.
+encryption to the right key, the read-back refusal and the member check. It
+does not reach a real database, Storage or bucket.

@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error: "The Knowledge Base search could not be run",
-          hint: "This is a read failure, not an empty result — your documents were not searched.",
+          hint: "This is a read failure, not an empty result. Your documents were not searched.",
         },
         { status: 500 }
       );
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error: "The Knowledge Base search could not be run",
-          hint: "This is a read failure, not an empty result — your documents were not searched.",
+          hint: "This is a read failure, not an empty result. Your documents were not searched.",
         },
         { status: 500 }
       );
@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         {
           error: "The Knowledge Base search could not be run",
-          hint: "This is a read failure, not an empty result — your documents were not searched.",
+          hint: "This is a read failure, not an empty result. Your documents were not searched.",
         },
         { status: 500 }
       );

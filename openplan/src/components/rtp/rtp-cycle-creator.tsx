@@ -150,7 +150,7 @@ export function RtpCycleCreator() {
               <p className="text-compact font-semibold">
                 Find the plan area
                 <span className="ml-1.5 text-label font-normal text-muted-foreground">
-                  optional — fills the label and pin below
+                  optional, fills the label and pin below
                 </span>
               </p>
               <StudyAreaPicker

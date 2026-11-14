@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -84,13 +85,15 @@ import {
 import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { PageTabNav } from "@/components/ui/page-tab-nav";
 import { PageTabPanel } from "@/components/ui/page-tab-panel";
 import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
 import { buildRtpCycleTabs } from "./_tabs";
 import { RtpCycleOverviewSummary } from "./_components/rtp-cycle-overview-summary";
 import { RecordHubHeader } from "@/components/ui/record-hub-header";
+import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
+import { isUuid } from "@/lib/uuid";
+import { loadRtpCycleRecordForRequest } from "./_components/rtp-cycle-record-for-request";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
@@ -128,19 +131,19 @@ function toOptionalNumber(value: number | string | null | undefined): number | n
 
 export default async function RtpCycleDetailPage({ params, searchParams }: RouteContext) {
   const { rtpCycleId } = await params;
+  if (!isUuid(rtpCycleId)) notFound();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The user, the workspace membership and the cycle row come from one
+  // request-cached read shared with `layout.tsx`, which answers 404 for an
+  // absent cycle before `loading.tsx` starts the stream.
+  const { user, membership, workspace, cycleResult } = await loadRtpCycleRecordForRequest(rtpCycleId);
 
   if (!user) {
     redirect("/sign-in");
   }
 
-  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
-
-  if (!membership || !workspace) {
+  if (!membership || !workspace || !cycleResult) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
@@ -149,15 +152,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
       />
     );
   }
-
-  const cycleResult = await supabase
-    .from("rtp_cycles")
-    .select(
-      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, anchor_latitude, anchor_longitude, public_share_token, public_share_enabled, created_at, updated_at"
-    )
-    .eq("id", rtpCycleId)
-    .eq("workspace_id", membership.workspace_id)
-    .maybeSingle();
 
   // A FAILED READ IS NOT A MISSING CYCLE. The error and the empty row were one
   // branch, so any database failure on `rtp_cycles` rendered the 404 page — this
@@ -173,7 +167,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             title="This RTP cycle could not be read"
             description={`The query for this cycle did not complete: ${
               cycleResult.error.message ?? "no reason was returned"
-            }. That is not the same as the cycle not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle is gone.`}
+            }. That is not the same as the cycle not existing. OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle is gone.`}
           />
           <div className="mt-4">
             <Link href="/rtp" className="module-inline-action w-fit">
@@ -344,19 +338,19 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
     linkedProjectIds.length
       ? supabase
           .from("funding_awards")
-          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
     linkedProjectIds.length
       ? supabase
           .from("funding_opportunities")
-          .select("project_id, decision_state, opportunity_status, expected_award_amount")
+          .select("project_id, decision_state, opportunity_status, expected_award_amount, has_source_backed_issuance",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
     linkedProjectIds.length
       ? supabase
           .from("billing_invoice_records")
-          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
+          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
@@ -370,10 +364,17 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
     classifyRead(reads, "pursued funding for the linked projects", fundingOpportunitiesResult),
     classifyRead(reads, "reimbursement invoices for the linked projects", billingInvoicesResult),
   ];
-  const fundingReadFailed = fundingStates.includes("failed");
+  const fundingSchemaPending = fundingStates.includes("pending_schema");
+  const fundingReadFailed = fundingStates.some((state) => state !== "ok");
   const fundingProfiles = fundingProfilesResult.error
     ? []
     : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
+  // Failed reads keep their disclosure; successful reads still require complete source sets.
+  if (linkedProjectIds.length) {
+    assertCompleteFundingRead(
+      ...[fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult].filter((result) => !result.error)
+    );
+  }
   const fundingAwards = fundingAwardsResult.error
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
@@ -412,12 +413,12 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         project: Array.isArray(campaign.projects) ? (campaign.projects[0] ?? null) : campaign.projects,
       }));
   const engagementCampaignIds = engagementCampaigns.map((campaign) => campaign.id);
-  const engagementItemsResult = engagementCampaignIds.length
-    ? await supabase
-        .from("engagement_items")
-        .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
-        .in("campaign_id", engagementCampaignIds)
-    : { data: [], error: null };
+  // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+  const engagementItemsResult = await readEveryCampaignItem<EngagementItemSummaryRow>(
+    supabase,
+    engagementCampaignIds,
+    CAMPAIGN_ITEM_SUMMARY_COLUMNS
+  );
   const engagementItemsState = classifyRead(reads, "public comments on this cycle", engagementItemsResult);
   const engagementItems = engagementItemsResult.error
     ? []
@@ -658,6 +659,14 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         />
       ) : null}
 
+      {fundingSchemaPending ? (
+        <StateBlock
+          tone="warning"
+          title="Funding records are not available yet"
+          description="Part of the linked-project funding record is pending a database update. Funding posture is unavailable. Empty lists and zero totals below are not findings about this cycle."
+        />
+      ) : null}
+
       <PageTabNav tabs={cycleTabs} activeKey={activeTab} basePath={`/rtp/${cycle.id}`} searchParams={resolvedSearchParams} ariaLabel="RTP cycle sections" />
 
       <PageTabPanel tabKey="overview" active={activeTab === "overview"} className="mt-6 space-y-4">
@@ -797,6 +806,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
               : null,
             priority: link.priority,
             funding: {
+              comparableFunding: link.fundingStack.comparableFunding,
               pipelineLabel: link.fundingStack.pipelineLabel,
               pipelineStatus: link.fundingStack.pipelineStatus,
               committedFundingAmount: link.fundingStack.committedFundingAmount,
@@ -805,6 +815,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
           }))}
           bands={financialElement.bands}
           readFailed={projectLinksState === "failed"}
+          fundingReadFailed={fundingReadFailed}
         />
 
         <article className="module-section-surface">
@@ -825,7 +836,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <StateBlock
               tone="danger"
               title="Linked projects could not be read"
-              description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio — do not re-attach projects on the strength of this page."
+              description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio. Do not re-attach projects on the strength of this page."
             />
           ) : projectLinks.length === 0 ? (
             <EmptyState
@@ -842,51 +853,61 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
                   <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
                 </div>
               ) : null}
-              <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Funded</p>
-                  <p className="module-metric-value text-sm">{fundedProjectCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Likely covered</p>
-                  <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Still unfunded</p>
-                  <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Paid reimbursements</p>
-                  <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Outstanding requests</p>
-                  <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Uninvoiced awards</p>
-                  <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
-                </div>
-              </div>
+              {fundingReadFailed ? (
+                <StateBlock
+                  tone="warning"
+                  title="Project funding summary is unavailable"
+                  description="Funding counts and reimbursement totals are unavailable because part of the linked-project funding record could not be read."
+                />
+              ) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Funded</p>
+                      <p className="module-metric-value text-sm">{fundedProjectCount}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Likely covered</p>
+                      <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Still unfunded</p>
+                      <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Paid reimbursements</p>
+                      <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Outstanding requests</p>
+                      <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Uninvoiced awards</p>
+                      <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
+                    </div>
+                  </div>
 
-              {/*
-                THE RECONCILIATION DISCLOSURE. The three reimbursement cards
-                above restate the SAME `billing_invoice_records` the invoicing
-                register renders to the cent. Rounding them to the dollar is
-                the right call for a plan summary — but a planner reconciling a
-                draw against the plan and finding two different numbers for one
-                fact has no way to tell which is the rounding. So the surface
-                says that it rounds, once, beside the figures, and names where
-                the exact figure lives. Do not delete this line while those
-                cards round.
-              */}
-              <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
+                  {/*
+                    THE RECONCILIATION DISCLOSURE. The three reimbursement cards
+                    above restate the SAME `billing_invoice_records` the invoicing
+                    register renders to the cent. Rounding them to the dollar is
+                    the right call for a plan summary, but a planner reconciling a
+                    draw against the plan and finding two different numbers for one
+                    fact has no way to tell which is the rounding. So the surface
+                    says that it rounds, once, beside the figures, and names where
+                    the exact figure lives. Do not delete this line while those
+                    cards round.
+                  */}
+                  <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
+                </>
+              )}
 
               <p className="text-xs text-muted-foreground">
                 {/*
@@ -986,7 +1007,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <StateBlock
               tone="danger"
               title="Chapter sections could not be read"
-              description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters — nothing here should be read as evidence that the shell is missing or that work was lost."
+              description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters. Nothing here should be read as evidence that the shell is missing or that work was lost."
             />
           ) : chapters.length === 0 ? (
             <EmptyState
@@ -1115,7 +1136,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             {publicReviewInputsUnavailable ? (
               <p className="rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 This public-review posture, and the recommendations below it, are computed from records that could
-                not be read. Do not act on a recommendation to create a campaign or a packet from this page — it may
+                not be read. Do not act on a recommendation to create a campaign or a packet from this page. It may
                 already exist and this page cannot currently see it.
               </p>
             ) : null}
@@ -1141,7 +1162,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {packetRecordsUnavailable
-                    ? "The packet records could not be read, so this is not a count of zero — a packet may already be generated."
+                    ? "The packet records could not be read, so this is not a count of zero. A packet may already be generated."
                     : "Current rendered packet artifacts available for review and export."}
                 </p>
               </div>
@@ -1253,7 +1274,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
             <StateBlock
               tone="danger"
               title="Engagement campaigns could not be read"
-              description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists — creating a second one from this page would duplicate it."
+              description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists. Creating a second one from this page would duplicate it."
             />
           ) : cycleLevelCampaigns.length === 0 ? (
             <EmptyState

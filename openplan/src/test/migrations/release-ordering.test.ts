@@ -522,6 +522,24 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
   },
 ];
 
+/**
+ * Files that sort below a shipped mark because the hosted installation already
+ * applied them under that version. Renaming would orphan the hosted history row,
+ * so the file keeps its version and each listed release's count gains one.
+ * Deployments already on a listed release must apply it with
+ * `supabase migration up --include-all`; the Unreleased section must say so.
+ * Name exact tags. A future release row counts the file from its own tag tree.
+ * The upgrade-path workflow reads the same file, so CI passes --include-all only
+ * for these files and these tags.
+ */
+const INSERTED_BELOW_SHIPPED_MARK: ReadonlyArray<{ file: string; belowTags: readonly string[]; reason: string }> = JSON.parse(
+  readFileSync(path.join(process.cwd(), "supabase", "inserted-below-shipped-mark.json"), "utf8"),
+);
+
+function insertedBelow(tag: string): string[] {
+  return INSERTED_BELOW_SHIPPED_MARK.filter((entry) => entry.belowTags.includes(tag)).map((entry) => entry.file);
+}
+
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
 
 function version(name: string): string {
@@ -564,7 +582,24 @@ describe("released migration ordering", () => {
         { tag: release.tag, migrationsAtOrBelowMark: atOrBelow.length },
         `migrations at or below the ${release.tag} mark must equal the count recorded at release — ` +
           `an inserted file there is silently skipped by every deployment already on ${release.tag}`
-      ).toEqual({ tag: release.tag, migrationsAtOrBelowMark: release.migrationsAtRelease });
+      ).toEqual({
+        tag: release.tag,
+        migrationsAtOrBelowMark: release.migrationsAtRelease + insertedBelow(release.tag).length,
+      });
+    }
+  });
+
+  it("each deliberate insertion below a shipped mark exists and sorts below every tag it names", () => {
+    const onDisk = new Set(files);
+    const tags = new Map(RELEASES.map((release) => [release.tag, release]));
+    for (const entry of INSERTED_BELOW_SHIPPED_MARK) {
+      expect(onDisk.has(entry.file), `${entry.file} must exist`).toBe(true);
+      expect(entry.belowTags.length).toBeGreaterThan(0);
+      for (const tag of entry.belowTags) {
+        const release = tags.get(tag);
+        expect(release, `${entry.file} names unknown release ${tag}`).toBeDefined();
+        expect(version(entry.file) <= version(release!.lastMigration), `${entry.file} must sort below the ${tag} mark`).toBe(true);
+      }
     }
   });
 
@@ -576,7 +611,7 @@ describe("released migration ordering", () => {
     const versions = files.map(version);
     expect(new Set(versions).size).toBe(versions.length);
     // Sanity: the split accounts for every file.
-    expect(newFiles.length + latest.migrationsAtRelease).toBe(files.length);
+    expect(newFiles.length + latest.migrationsAtRelease + insertedBelow(latest.tag).length).toBe(files.length);
   });
 
   it("the CHANGELOG's Unreleased section names every migration landed since the newest tag", () => {
@@ -610,6 +645,20 @@ describe("released migration ordering", () => {
     const section = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 2);
 
     const sinceRelease = files.filter((file) => version(file) > version(latest.lastMigration));
+
+    // A deliberate insertion below the newest mark is invisible to a plain
+    // `migration up` on that release. Unreleased must name it and the flag.
+    const belowLatest = insertedBelow(latest.tag);
+    expect(
+      belowLatest.filter((file) => !sectionNamesMigration(section, file)),
+      `Unreleased must name each file inserted below the ${latest.tag} mark`
+    ).toEqual([]);
+    if (belowLatest.length) {
+      expect(
+        /supabase migration up --include-all/.test(section),
+        `Unreleased must tell deployments on ${latest.tag} to run \`supabase migration up --include-all\``
+      ).toBe(true);
+    }
 
     if (sinceRelease.length === 0) {
       // Nothing has landed, so the section may say so — but it must not claim

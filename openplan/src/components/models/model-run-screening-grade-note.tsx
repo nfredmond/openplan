@@ -210,12 +210,12 @@ export function ModelRunScreeningGradeNote({
                 never touched a road in the model.{" "}
                 {state.zones.supportsLinkLevelValidation
                   ? "Comparing this run's road-by-road volumes against traffic counts can establish something."
-                  : "Comparing this run's road-by-road volumes against traffic counts cannot establish anything at this resolution — a gap there is the zone system, not the demand."}
+                  : "Comparing this run's road-by-road volumes against traffic counts cannot establish anything at this resolution. A gap there is the zone system, not the demand."}
                 {state.zones.interpretation ? ` ${state.zones.interpretation}` : ""}
               </p>
             ) : (
               <p>
-                This run recorded no zone-resolution figure — it predates the diagnostic, or it
+                This run recorded no zone-resolution figure: it predates the diagnostic, or it
                 produced no trips to measure.
               </p>
             )}

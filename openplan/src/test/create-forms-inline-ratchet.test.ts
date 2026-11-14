@@ -157,7 +157,7 @@ const NOT_A_GUIDED_FLOW: Record<string, string> = {
   "src/components/projects/project-spend-entry-form.tsx":
     "R1 — list-coupled. Spend is entered against the award's running total on the same screen.",
   "src/components/projects/project-estimated-cost-editor.tsx":
-    "R2 — edits the project record this page already is. The POST in this file stores a source CSV before the existing-project PATCH; it does not turn the cost editor into a create flow.",
+    "R2 — edits the project record this page already is. Its write besides the existing-project PATCH is `uploadKnowledgeBaseFile`, which stores a source CSV first; it does not turn the cost editor into a create flow.",
   "src/components/projects/project-rtp-linker.tsx":
     "R1 — list-coupled. It links a project into plan periods listed beside it.",
   "src/components/projects/stage-gate-decision-recorder.tsx":
@@ -264,7 +264,9 @@ function scan(): Scanned[] {
       something wide like `/fetch\(/`: a wide detector sweeps in every read and
       makes the accounting list unusable, and the list is the whole point.
     */
-    const SHARED_WRITE_HELPERS = ["submitPortalInput"];
+    // The staged-upload helpers (2026-11-01) POST a start and a complete
+    // request for every file a component hands them.
+    const SHARED_WRITE_HELPERS = ["submitPortalInput", "uploadKnowledgeBaseFile", "sendFileThroughStorage"];
     const posts =
       /["']POST["']/.test(code) || SHARED_WRITE_HELPERS.some((helper) => code.includes(helper));
     return {

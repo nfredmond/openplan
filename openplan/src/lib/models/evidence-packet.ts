@@ -929,14 +929,14 @@ export function describeEmploymentProvenance(employment: Record<string, unknown>
     .filter((value): value is string => Boolean(value));
 
   if (lodesTracts > 0) {
-    const base = `LEHD LODES8 WAC S000/JT00${year ? ` ${year}` : ""} — ${lodesTracts} tract${
+    const base = `LEHD LODES8 WAC S000/JT00${year ? ` ${year}` : ""}: ${lodesTracts} tract${
       lodesTracts === 1 ? "" : "s"
     }${states.length > 0 ? ` (states ${states.join(", ")})` : ""}`;
     return synthTracts > 0
       ? `${base}; ${synthTracts} tract${synthTracts === 1 ? "" : "s"} from the population-share fallback`
       : base;
   }
-  return "Synthetic employment (population-share fallback) — LODES was unavailable for this run";
+  return "Synthetic employment (population-share fallback): LODES was unavailable for this run";
 }
 
 /** True when any tract's jobs came from the synthetic fallback (or no LODES at all). */

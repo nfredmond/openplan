@@ -1,3 +1,5 @@
+import { ManagedInvoiceFacts } from "@/components/grants/managed-invoice-facts";
+import { InvoiceRegisterAmounts } from "@/components/invoicing/invoice-register-amounts";
 import Link from "next/link";
 import { FileSpreadsheet } from "lucide-react";
 import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-link-copy";
@@ -119,14 +121,14 @@ export async function ReimbursementLane({
 
   const fundingAwardsResult = await supabase
     .from("funding_awards")
-    .select("id, project_id, title")
+    .select("id, project_id, title, current_handoff_revision_id, latest_handoff_revision_id, currency_code")
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
 
   // caltrans_posture stays selected as the legacy read fallback for rows that
   // predate the reimbursement-profile backfill (20260727000009).
   const invoiceRegisterSelectLegacy =
-    "id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
+    "id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
   const invoiceRegisterSelect = invoiceRegisterSelectLegacy.replace(
     "caltrans_posture,",
     "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection,"
@@ -135,26 +137,25 @@ export async function ReimbursementLane({
   // Cast to one loose shape: the two select strings would otherwise infer
   // different structural types, and this codebase's Supabase reads are cast
   // deliberately (clients are untyped by convention).
-  type InvoiceRegisterQueryResult = { data: unknown[] | null; error: { message?: string } | null };
+  type InvoiceRegisterQueryResult = { count:number|null; data: unknown[] | null; error: { message?: string } | null };
 
   let invoiceRecordsResult = (await supabase
     .from("billing_invoice_records")
-    .select(invoiceRegisterSelect)
+    .select(invoiceRegisterSelect,{count:"exact"})
     .eq("workspace_id", workspaceId)
-    .order("created_at", { ascending: false })
-    .limit(20)) as InvoiceRegisterQueryResult;
+    .order("created_at", { ascending: false })) as InvoiceRegisterQueryResult;
 
   if (invoiceRecordsResult.error && looksLikePendingSchema(invoiceRecordsResult.error.message)) {
     // A database that has the register but not the profile columns yet still
     // gets its register; rows from this path simply carry no profile fields.
     invoiceRecordsResult = (await supabase
       .from("billing_invoice_records")
-      .select(invoiceRegisterSelectLegacy)
+      .select(invoiceRegisterSelectLegacy,{count:"exact"})
       .eq("workspace_id", workspaceId)
-      .order("created_at", { ascending: false })
-      .limit(20)) as InvoiceRegisterQueryResult;
+      .order("created_at", { ascending: false })) as InvoiceRegisterQueryResult;
   }
 
+  if(!invoiceRecordsResult.error && invoiceRecordsResult.count!==invoiceRecordsResult.data?.length) invoiceRecordsResult.error={message:"Complete invoice register unavailable; no partial totals are presented."};
   const invoiceRegisterPending = looksLikePendingSchema(invoiceRecordsResult.error?.message);
   const fundingAwardsPending = looksLikePendingSchema(fundingAwardsResult.error?.message);
   // Classified first, collected second: whatever is left after the pending-schema
@@ -215,9 +216,18 @@ export async function ReimbursementLane({
   }
   const awardSubstantiationAvailable =
     !awardSubstantiationPending && !awardMilestonesResult.error && !awardSubmittalsResult.error;
+  const fulfillmentRead=await supabase.from("funding_award_handoff_fulfillment").select("award_id, revision_id, submittal_status, submitted_at, fulfillment_evidence, milestone_status, actual_date",{count:"exact"}).in("award_id",substantiationAwardIds);
+  const fulfillment = {
+    ...fulfillmentRead,
+    error: fulfillmentRead.error ?? (fulfillmentRead.count !== fulfillmentRead.data?.length
+      ? { message: "Complete managed fulfillment set unavailable. Fulfillment is unassessed, not absent." }
+      : null),
+  };
+  reads.check("managed award fulfillment",fulfillment);
   const awardSubstantiation = awardSubstantiationAvailable
     ? summarizeAwardSubstantiation({
         awards: workspaceFundingAwards,
+        managedOccurrences:!fulfillment.error && fulfillment.count===fulfillment.data?.length ? fulfillment.data : undefined,
         milestones: (awardMilestonesResult.data ?? []) as FundingAwardSubstantiationMilestoneLike[],
         submittals: (awardSubmittalsResult.data ?? []) as FundingAwardSubstantiationSubmittalLike[],
       })
@@ -382,7 +392,7 @@ export async function ReimbursementLane({
         <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
           <p className="font-semibold text-foreground">Current scope</p>
           <p className="mt-1.5">
-            You can keep the invoice register here — amounts, retention, backup documents, and your own notes. OpenPlan does <strong>not yet</strong> fill out a funder&apos;s exact exhibit packets, claim forms, or certified pay applications for you.
+            You can keep the invoice register here: amounts, retention, backup documents, and your own notes. OpenPlan does <strong>not yet</strong> fill out a funder&apos;s exact exhibit packets, claim forms, or certified pay applications for you.
           </p>
         </div>
       </div>
@@ -390,7 +400,7 @@ export async function ReimbursementLane({
       {reimbursementProfile?.selection === "interim_unconfigured_default" ? (
         <article className={noticeClass("info")}>
           The reimbursement stages shown here come from the {reimbursementProfile.profileName} profile, used as an
-          interim default — {INTERIM_DEFAULT_RATIONALE}
+          interim default: {INTERIM_DEFAULT_RATIONALE}
         </article>
       ) : null}
 
@@ -436,13 +446,14 @@ export async function ReimbursementLane({
             </div>
           ) : invoiceRegisterUnreadable ? (
             <div className="mt-4 border-l-2 border-rose-300/80 bg-rose-50/80 px-4 py-3 text-sm text-rose-950 dark:border-rose-700/60 dark:bg-rose-950/25 dark:text-rose-100">
-              The reimbursement invoice register could not be read, so no register total is shown. Nothing here says this workspace has claimed nothing or is owed nothing — the totals are unknown until the read succeeds.
+              The reimbursement invoice register could not be read, so no register total is shown. Nothing here says this workspace has claimed nothing or is owed nothing. The totals are unknown until the read succeeds.
             </div>
           ) : (
             <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-3">
               <div className="bg-background/70 px-4 py-4">
                 <p className="text-xs font-semibold text-muted-foreground">Records</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{invoiceSummary.totalCount}</p>
+                {invoiceSummary.managed?<ManagedInvoiceFacts facts={invoiceSummary.managed}/>:null}
                 <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.draftCount} draft, {invoiceSummary.submittedCount} in review or payment flow.</p>
               </div>
               <div className="bg-background/70 px-4 py-4">
@@ -708,7 +719,7 @@ export async function ReimbursementLane({
                 ? "No award-linked invoice records are visible in this workspace yet."
                 : linkageFilter === "unlinked"
                   ? "No unlinked invoice records are visible in this workspace right now."
-                  : "This register holds the invoices your agency sends — reimbursement claims to your funders, and bills to your own clients if you consult. Record your first invoice to start tracking what you are owed."}
+                  : "This register holds the invoices your agency sends: reimbursement claims to your funders, and bills to your own clients if you consult. Record your first invoice to start tracking what you are owed."}
             {overdueFilter !== "overdue" && linkageFilter === "all" ? (
               <>
                 {" "}
@@ -790,11 +801,7 @@ export async function ReimbursementLane({
                       </p>
                     </div>
                     <div className="text-left md:text-right">
-                      <p className="text-sm font-semibold text-foreground">{formatCurrency(Number(invoice.net_amount ?? 0))}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Gross {formatCurrency(Number(invoice.amount ?? 0))}
-                        {Number(invoice.retention_amount ?? 0) > 0 ? ` · Retention ${formatCurrency(Number(invoice.retention_amount ?? 0))}` : ""}
-                      </p>
+                      <InvoiceRegisterAmounts invoice={invoice} award={workspaceFundingAwards.find((award) => award.id === invoice.funding_award_id)} />
                     </div>
                   </div>
 

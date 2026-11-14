@@ -167,7 +167,7 @@ export default async function ProgramsPage({
       <WorkspaceMembershipRequired
         moduleLabel="Programs"
         title="Programs need a workspace"
-        description="Programming cycles belong to a workspace. You are signed in, but this account is not in a workspace yet — showing an empty list here would look like you have no cycles, which is not what this means."
+        description="Programming cycles belong to a workspace. You are signed in, but this account is not in a workspace yet. Showing an empty list here would look like you have no cycles, which is not what this means."
       />
     );
   }
@@ -843,7 +843,7 @@ export default async function ProgramsPage({
                       <p className="module-record-summary line-clamp-2">
                         {program.summary ||
                           (rowBasisUnreadable
-                            ? "No summary on file. No verdict is shown here, because the linked projects and reports it is worked out from could not be read — that is missing information, not a bad result."
+                            ? "No summary on file. No verdict is shown here, because the linked projects and reports it is worked out from could not be read. That is missing information, not a bad result."
                             : program.workflow.reason)}
                       </p>
                     </div>

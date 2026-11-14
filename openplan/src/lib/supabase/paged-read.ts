@@ -117,3 +117,26 @@ export async function readEveryPage<Row, Err = { message: string }>(
   // The ceiling was reached with rows still coming.
   return { rows, complete: false, error: null };
 }
+
+/** The error an unfinished read reports when no page failed: the page ceiling stopped it. */
+export type IncompletePagedRead = { message: string; code?: null };
+
+/**
+ * `readEveryPage`, reported in the `{ data, error }` shape a single supabase-js
+ * read returns.
+ *
+ * Most call sites replaced one unpaged read and already handle `{ data, error }`
+ * with a read-failure check. This keeps that handling unchanged: a complete read
+ * returns every row with `error: null`, and an unfinished one returns
+ * `data: null` with the server's error, or with `incompleteMessage` when the
+ * page ceiling stopped it. A prefix never comes back as `data`.
+ */
+export async function readEveryPageAsResult<Row, Err extends { message: string } = { message: string }>(
+  fetchPage: (from: number, toInclusive: number) => PromiseLike<PagedReadPage<Row, Err>>,
+  incompleteMessage: string,
+  options: { pageSize?: number; maxPages?: number } = {}
+): Promise<{ data: Row[] | null; error: Err | IncompletePagedRead | null }> {
+  const read = await readEveryPage<Row, Err>(fetchPage, options);
+  if (read.complete) return { data: read.rows, error: null };
+  return { data: null, error: read.error ?? { message: incompleteMessage } };
+}

@@ -6,6 +6,7 @@ import json
 import re
 from model_predecessor_inputs import select
 from model_receipt_values import same_json_value
+from supabase_service_headers import service_key_headers
 
 STAGE_PROJECTION = 'id,run_id,stage_name,sort_order,status,attempt_managed,active_attempt_id'
 ARTIFACT_PROJECTION = 'id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)'
@@ -203,7 +204,7 @@ def _classify_population_outputs(base_url, service_key, run_id, workspace_id, se
     if diagnostic is not None:
         diagnostic.update(phase='classification', endpoint='read_model_attempt_outputs')
     with closing(post(base_url.rstrip('/') + '/rest/v1/rpc/read_model_attempt_outputs',
-            headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+            headers=service_key_headers(service_key),
             json={'p_run_id': run_id, 'p_workspace_id': workspace_id},
             timeout=(5, 30), allow_redirects=False)) as response:
         result = response.json() if response.status_code == 200 else None
@@ -223,7 +224,7 @@ def _classify_population_outputs(base_url, service_key, run_id, workspace_id, se
     if diagnostic is not None:
         diagnostic.update(phase='lineage', endpoint='read_model_population_lineage')
     with closing(post(base_url.rstrip('/') + '/rest/v1/rpc/read_model_population_lineage',
-            headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+            headers=service_key_headers(service_key),
             json={'p_workspace_id': workspace_id, 'p_run_id': run_id}, timeout=(5, 30), allow_redirects=False)) as response:
         if response.status_code != 200:
             raise ValueError('Population lineage access is unconfirmed')
@@ -247,7 +248,7 @@ def read_screening_artifacts(writer, run_id):
     if get is None:
         import requests
         get = requests.get
-    headers = {'apikey': writer.service_key, 'Authorization': 'Bearer ' + writer.service_key}
+    headers = service_key_headers(writer.service_key)
     with ExitStack() as stack:
         def read(table, projection):
             response = stack.enter_context(closing(get(writer.base_url.rstrip('/') + '/rest/v1/' + table,
@@ -283,7 +284,7 @@ def _read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, 
     for value in (run_id, stage_id):
         if not isinstance(value, str) or str(uuid.UUID(value)) != value:
             raise ValueError('Canonical behavioral run and stage required')
-    headers = {'apikey': service_key, 'Authorization': 'Bearer ' + service_key}
+    headers = service_key_headers(service_key)
 
     snapshot_phase = 'snapshot_before'
 

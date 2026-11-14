@@ -42,6 +42,7 @@ import {
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
 import { ScenarioLinkedReportsSection } from "./_components/scenario-linked-reports-section";
+import { isUuid } from "@/lib/uuid";
 
 type ScenarioSetRow = {
   id: string;
@@ -145,6 +146,7 @@ export default async function ScenarioSetDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { scenarioSetId } = await params;
+  if (!isUuid(scenarioSetId)) notFound();
   const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
@@ -691,7 +693,7 @@ export default async function ScenarioSetDetailPage({
         <div className="space-y-6">
           <p className="text-label text-muted-foreground">
             {entriesUnreadable
-              ? "Alternative readiness is unavailable — this set's entries could not be read."
+              ? "Alternative readiness is unavailable: this set's entries could not be read."
               : `${comparisonSummary.readyAlternatives}/${comparisonSummary.totalAlternatives} alternatives ready`}
           </p>
           <div className="module-summary-grid cols-4">
@@ -804,7 +806,7 @@ export default async function ScenarioSetDetailPage({
                 </div>
                 {linkedReportsUnreadable ? (
                   <p className="text-sm text-muted-foreground">
-                    Report linkage counts are unavailable for this render — the reports or their run links could not be
+                    Report linkage counts are unavailable for this render: the reports or their run links could not be
                     read.
                   </p>
                 ) : (
@@ -839,8 +841,8 @@ export default async function ScenarioSetDetailPage({
                 </div>
               </div>
               <p className="module-operator-copy">
-                Comparison readiness stays lightweight, but it is now explicit about what is attached, what assumptions are
-                recorded, and why a baseline-versus-alternative comparison is or is not ready.
+                What is attached, what assumptions are recorded, and why a baseline-versus-alternative comparison is or
+                is not ready.
               </p>
               <div className="module-operator-list">
                 <div className="module-operator-item">Baseline and alternative entries show distinct run-attachment blockers.</div>
@@ -1039,7 +1041,7 @@ export default async function ScenarioSetDetailPage({
                 <h2 className="module-section-title">Assumptions, data, and measured indicators</h2>
                 <p className="module-section-description">
                   What this scenario set assumes, where those numbers came from, and what was measured
-                  against them. A comparison that cannot name these is a number without a defence — and
+                  against them. A comparison that cannot name these is a number without a defence, and
                   until now OpenPlan had the records but offered no way to write or read them.
                 </p>
               </div>

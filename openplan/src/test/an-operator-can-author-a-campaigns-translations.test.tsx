@@ -630,7 +630,7 @@ describe("the operator panel", () => {
       />
     );
 
-    expect(screen.getByText(/Machine translation — participants are told/)).toBeInTheDocument();
+    expect(screen.getByText(/Machine translation: participants are told/)).toBeInTheDocument();
     // The SENTENCE, in Spanish, produced by the same resolver the portal calls —
     // not a paraphrase an operator has to trust.
     const caveat = screen.getByText(/Traducido automáticamente por conveniencia/);
@@ -781,7 +781,7 @@ describe("the operator panel", () => {
     expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
     expect(screen.getByText(/That is not the same as none/)).toBeInTheDocument();
     expect(screen.queryByText("Not translated")).not.toBeInTheDocument();
-    expect(screen.getAllByText(/Unknown — could not be read/).length).toBe(fields.length);
+    expect(screen.getAllByText(/Unknown: could not be read/).length).toBe(fields.length);
   });
 
   it("writes a read failure as one sentence rather than two possessives", () => {
@@ -830,7 +830,7 @@ describe("the operator panel", () => {
     );
 
     expect(screen.getByText(/report a language as complete while the strings that failed to load/)).toBeInTheDocument();
-    expect(screen.queryByText(/Complete — your wording/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Complete: your wording/)).not.toBeInTheDocument();
     expect(screen.queryByText(/strings translated/)).not.toBeInTheDocument();
     // And no write control, because the route refuses in this state anyway.
     expect(screen.queryByRole("button", { name: /save as our wording/i })).not.toBeInTheDocument();

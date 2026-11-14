@@ -282,7 +282,7 @@ export async function POST(
             error: "No allocation rule was in force at the start of this period",
             details:
               `This measure has no recorded reading of its ordinance effective on or before ` +
-              `${period.period_start}. Record the rule version that governed then — applying a later one ` +
+              `${period.period_start}. Record the rule version that governed then. Applying a later one ` +
               "would attribute this money under terms nobody had adopted yet.",
           },
           { status: 409 }

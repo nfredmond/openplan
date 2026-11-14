@@ -23,6 +23,7 @@ export async function GET(request:NextRequest,context:{params:Promise<{campaignI
  const audit=createApiAuditLogger("engagement.review_files", request);
  audit.info("request_received");
  const {campaignId}=await context.params;
+ if(!z.string().uuid().safeParse(campaignId).success) return NextResponse.json({error:'Invalid campaign'},{status:400});
  const client=await createClient();const {data:{user}}=await client.auth.getUser();if(!user)return NextResponse.json({error:'Unauthorized'},{status:401});
  const access=await loadCampaignAccess(client,campaignId,user.id,'engagement.read');if(access.error||!access.allowed)return NextResponse.json({error:'Campaign access unavailable'},{status:403});
  const reportId=new URL(request.url).searchParams.get('reportId');

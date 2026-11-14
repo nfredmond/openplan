@@ -20,6 +20,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -113,11 +114,25 @@ def dump_database(target: pathlib.Path) -> dict:
             "tocEntries": len(entries), "serverVersion": server}
 
 
+# Three base64url segments, the first an encoded JSON object ("{" -> "eyJ").
+_LEGACY_JWT = re.compile(r"eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+")
+
+
+def service_key_headers(key: str) -> dict[str, str]:
+    """A legacy service_role JWT keeps both headers in their original order.
+
+    A Supabase secret key (sb_secret_...) is not a JWT and goes only on apikey.
+    This image ships backup.py alone, so the workers' shared helper is not here.
+    """
+    if _LEGACY_JWT.fullmatch(key):
+        return {"Authorization": "Bearer " + key, "apikey": key}
+    return {"apikey": key}
+
+
 class StorageClient:
     def __init__(self, settings: Settings, opener: Callable = urllib.request.urlopen):
         self._base = settings.supabase_url + "/storage/v1"
-        self._headers = {"Authorization": "Bearer " + settings.service_role_key,
-                         "apikey": settings.service_role_key}
+        self._headers = service_key_headers(settings.service_role_key)
         self._open = opener
 
     def _request(self, path: str, body: dict | None = None):

@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { blankComments } from "./migrations/read-migrations";
 import { describe, expect, it } from "vitest";
 import {
   assessProjectDelete,
@@ -94,6 +95,24 @@ describe("project delete preconditions", () => {
     expect(assessment.headline).toContain("retained Safety evidence");
     expect(assessment.alternative).toContain("status to complete");
     expect(assessment.alternative).toContain("immutable Safety generation custody stay intact");
+    expect(assessment.alternative).not.toContain("remove the attached records");
+  });
+
+  it("preserves immutable award handoff revisions under the direct NO ACTION project FK", () => {
+    const sql = blankComments(readFileSync(path.join(MIGRATIONS_DIR, "20261018000003_award_condition_handoff.sql"), "utf8"));
+    const revisions = sql.match(/CREATE TABLE public\.funding_award_handoff_revisions\s*\(([\s\S]*?)\n\);/)?.[1];
+    expect(revisions).toMatch(/project_id uuid NOT NULL REFERENCES public\.projects\(id\),/);
+    const assessment = assessProjectDelete({ funding_award_handoff_revisions: 2 }, { projectId: "p1" });
+    expect(assessment.deletable).toBe(false);
+    expect(assessment.hasCommitments).toBe(true);
+    expect(assessment.blockers).toHaveLength(1);
+    expect(assessment.blockers[0]).toMatchObject({
+      table: "funding_award_handoff_revisions", column: "project_id", count: 2,
+      severity: "blocking", behavior: "restrict", href: "/grants",
+    });
+    expect(assessment.blockers[0].reason).toContain("immutable history preserves reviewed award terms and receipts");
+    expect(assessment.alternative).toContain("status to complete");
+    expect(assessment.alternative).toContain("immutable award handoff history stays intact and attributable");
     expect(assessment.alternative).not.toContain("remove the attached records");
   });
 

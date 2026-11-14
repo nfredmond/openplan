@@ -400,8 +400,8 @@ export default async function ModelsPage({
   // what it can stand behind: that a filter is in effect.
   const filteredEmptyDescription =
     activeFilterLabels.length > 0
-      ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every model you have — an empty filtered list is not a statement that none exist.`
-      : "This list is filtered by the link it was opened with. Clear the filters to see every model you have — an empty filtered list is not a statement that none exist.";
+      ? `This list is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every model you have. An empty filtered list is not a statement that none exist.`
+      : "This list is filtered by the link it was opened with. Clear the filters to see every model you have. An empty filtered list is not a statement that none exist.";
 
   // The order of the analysis work, said the same way on every page in the
   // group. This page is where a model gets described — step four of seven.
@@ -639,7 +639,7 @@ export default async function ModelsPage({
               description={
                 hasActiveFilters
                   ? filteredEmptyDescription
-                  : "Models keeps track of the travel models your agency relies on — which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model to give your runs a home."
+                  : "Models keeps track of the travel models your agency relies on: which version is current, what each one can honestly support, and how it connects to scenarios and reports. Create your first model to give your runs a home."
               }
               action={
                 hasActiveFilters ? undefined : (

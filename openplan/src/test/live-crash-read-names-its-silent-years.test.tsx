@@ -236,7 +236,7 @@ describe("the live-read banner and the years it asked for", () => {
 
     // The live read did render — the disclosure is absent because there is
     // nothing to disclose, not because the branch never ran.
-    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Live read \(not saved\)/i)).toBeInTheDocument());
     expect(screen.queryByText(/The source returned nothing for/i)).not.toBeInTheDocument();
   });
 

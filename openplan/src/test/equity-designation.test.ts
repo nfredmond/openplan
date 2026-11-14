@@ -261,7 +261,7 @@ describe("screenEquity separates the proxy from the federal determination", () =
     const det = {
       status: "disadvantaged" as const,
       source: "cejst-national",
-      datasetLabel: "CEJST v1.0 (2022-11-22) — discontinued-program snapshot",
+      datasetLabel: "CEJST v1.0 (2022-11-22), discontinued-program snapshot",
       version: "1.0",
       vintage: "2010",
       retrievedAt: null,

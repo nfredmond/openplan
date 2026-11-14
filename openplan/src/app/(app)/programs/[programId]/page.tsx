@@ -54,6 +54,9 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { formatMoney } from "@/lib/money/format";
+import { CAMPAIGN_ITEM_STATUS_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
+import { isUuid } from "@/lib/uuid";
+import { loadProgramRowForRequest } from "./_components/program-row-for-request";
 
 function formatCurrency(value: number | string | null | undefined) {
   return formatMoney(Number(value ?? 0), { precision: "whole" });
@@ -131,6 +134,7 @@ function modelSupportBasisLabel(value: "project" | "plan" | "both"): string {
 }
 
 type FundingOpportunityDetailRow = {
+  has_source_backed_issuance?:boolean;
   id: string;
   workspace_id: string;
   program_id: string | null;
@@ -178,7 +182,7 @@ function SectionReadFailure({ title, noun, compact = true }: { title: string; no
     <StateBlock
       tone="danger"
       title={title}
-      description={`The ${noun} for this program could not be read, so this section cannot say whether any are linked. It is not a statement that none exist — retry, and tell your operator if it persists.`}
+      description={`The ${noun} for this program could not be read, so this section cannot say whether any are linked. It is not a statement that none exist. Retry, and tell your operator if it persists.`}
       compact={compact}
     />
   );
@@ -197,6 +201,7 @@ export default async function ProgramDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { programId } = await params;
+  if (!isUuid(programId)) notFound();
   const resolvedSearchParams = (await searchParams) ?? {};
   const supabase = await createClient();
   const {
@@ -213,13 +218,8 @@ export default async function ProgramDetailPage({
   // empty table — stated the failure as a fact about the planner's package.
   const reads = new ReadFailureLog();
 
-  const programResult = await supabase
-    .from("programs")
-    .select(
-      "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
-    )
-    .eq("id", programId)
-    .maybeSingle();
+  // Shared with `layout.tsx`, which answers 404 for an absent program first.
+  const programResult = await loadProgramRowForRequest(programId);
 
   // The one load-bearing read on this page, and the one place where "could not
   // read it" and "it is not there" must not be merged: `notFound()` tells the
@@ -296,7 +296,7 @@ export default async function ProgramDetailPage({
       supabase
         .from("funding_opportunities")
         .select(
-          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name)"
+          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name), has_source_backed_issuance"
         )
         .eq("program_id", program.id)
         .order("updated_at", { ascending: false }),
@@ -388,9 +388,12 @@ export default async function ProgramDetailPage({
   );
 
   const [engagementItemsResult, reportArtifactsResult] = await Promise.all([
-    campaignIds.length
-      ? supabase.from("engagement_items").select("campaign_id, status").in("campaign_id", campaignIds)
-      : Promise.resolve({ data: [], error: null }),
+    // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+    readEveryCampaignItem<{ campaign_id: string; status: string | null }>(
+      supabase,
+      campaignIds,
+      CAMPAIGN_ITEM_STATUS_COLUMNS
+    ),
     reportIds.length
       ? supabase
           .from("report_artifacts")
@@ -667,7 +670,7 @@ export default async function ProgramDetailPage({
     project: Array.isArray(item.projects) ? (item.projects[0] ?? null) : item.projects ?? null,
   }));
   const likelyOpportunityAmount = fundingOpportunities.reduce((sum, opportunity) => {
-    if (opportunity.decision_state !== "pursue" || opportunity.opportunity_status === "awarded" || opportunity.opportunity_status === "archived") {
+    if (opportunity.has_source_backed_issuance || opportunity.decision_state !== "pursue" || opportunity.opportunity_status === "awarded" || opportunity.opportunity_status === "archived") {
       return sum;
     }
     return sum + Number(opportunity.expected_award_amount ?? 0);
@@ -919,7 +922,7 @@ export default async function ProgramDetailPage({
                 </p>
                 <p className="module-summary-detail">
                   {fundingOpportunitiesUnreadable
-                    ? "A dollar total cannot be shown when the opportunities behind it could not be read — a $0 here would read as a finding."
+                    ? "A dollar total cannot be shown when the opportunities behind it could not be read. A $0 here would read as a finding."
                     : "Expected dollars attached to pursue decisions within this cycle."}
                 </p>
               </div>
@@ -960,6 +963,8 @@ export default async function ProgramDetailPage({
                           <div className="space-y-1.5">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <h3 className="module-record-title text-[1.02rem]">{opportunity.title}</h3>
+                              <Link className="text-sm underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Save award conditions</Link>
+                              {opportunity.has_source_backed_issuance?<p className="text-sm">Source-backed issuance is documented, independent of pursuit status.</p>:null}
                               <p className="module-record-stamp">Updated {formatProgramDateTime(opportunity.updated_at)}</p>
                             </div>
                             <p className="module-record-summary line-clamp-2">
@@ -1120,7 +1125,7 @@ export default async function ProgramDetailPage({
                                 </p>
                                 <MetaList>
                                   {supportingModelLinksUnreadable ? (
-                                    <MetaItem>Readiness and linkage counts unavailable — link set unreadable</MetaItem>
+                                    <MetaItem>Readiness and linkage counts unavailable: link set unreadable</MetaItem>
                                   ) : (
                                     <MetaItem>{model.readiness.label}</MetaItem>
                                   )}
@@ -1202,7 +1207,7 @@ export default async function ProgramDetailPage({
                               <MetaList>
                                 <MetaItem>
                                   {reportArtifactsUnreadable
-                                    ? "Artifact count unavailable — the stored artifacts could not be read"
+                                    ? "Artifact count unavailable: the stored artifacts could not be read"
                                     : `${report.artifactCount} artifacts`}
                                 </MetaItem>
                                 <MetaItem>
@@ -1249,7 +1254,7 @@ export default async function ProgramDetailPage({
                               </p>
                               <MetaList>
                                 {engagementItemsUnreadable ? (
-                                  <MetaItem>Item counts unavailable — the engagement items could not be read</MetaItem>
+                                  <MetaItem>Item counts unavailable: the engagement items could not be read</MetaItem>
                                 ) : (
                                   <>
                                     <MetaItem>{campaign.approvedItemCount} approved items</MetaItem>

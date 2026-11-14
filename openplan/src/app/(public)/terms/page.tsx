@@ -23,7 +23,7 @@ const accessBoundaries = [
   {
     title: "Internal prototype posture",
     description:
-      "Several modules — notably the behavioral modeling runtime — are labeled internal prototype only. Outputs are shared with caveats rather than as planning-grade conclusions.",
+      "Several modules (notably the behavioral modeling runtime) are labeled internal prototype only. Outputs are shared with caveats rather than as planning-grade conclusions.",
   },
   {
     title: "Traceable planning work",

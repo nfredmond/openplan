@@ -38,7 +38,7 @@ export function ProgramReadinessCard({
           <h2 className="module-section-title">Package basis and timing</h2>
           <p className="module-section-description">
             {basisUnreadable
-              ? "Package posture is withheld on this page load — see the disclosure at the top of the page."
+              ? "Package posture is withheld on this page load. See the disclosure at the top of the page."
               : workflow.packageDetail}
           </p>
         </div>
@@ -53,7 +53,7 @@ export function ProgramReadinessCard({
           <StateBlock
             tone="danger"
             title="Readiness cannot be assessed right now"
-            description="Part of this program's linked basis could not be read, and every check below is derived from those links. They are withheld rather than shown as gaps you would then go and try to fill — a missing check here would be a fact about the failed read, not about the package."
+            description="Part of this program's linked basis could not be read, and every check below is derived from those links. They are withheld rather than shown as gaps you would then go and try to fill. A missing check here would be a fact about the failed read, not about the package."
             compact
           />
         </div>

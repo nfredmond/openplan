@@ -4,7 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { deploymentMapEngine, startMap, styleForEngine, type MapLibrary } from "@/lib/maps/map-engine";
 import {
   AGREEMENT_VERIFICATION_HEADERS,
   parseDemandAgreementArtifact,
@@ -15,10 +16,8 @@ import {
 } from "@/lib/models/demand-agreement-artifact";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
-const MAPBOX_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+/** Mapbox with a public key, else MapLibre with the operator's open style. */
+const MAP_ENGINE = deploymentMapEngine();
 
 type Position = [number, number];
 
@@ -41,7 +40,7 @@ function firstGeometryPosition(
   return [position[0], position[1]];
 }
 
-function artifactBounds(artifact: RenderableDemandAgreementArtifact): mapboxgl.LngLatBounds {
+function artifactBounds(artifact: RenderableDemandAgreementArtifact, gl: MapLibrary): mapboxgl.LngLatBounds {
   let minimumLongitude = Number.POSITIVE_INFINITY;
   let maximumLongitude = Number.NEGATIVE_INFINITY;
   let minimumShiftedLongitude = Number.POSITIVE_INFINITY;
@@ -74,7 +73,8 @@ function artifactBounds(artifact: RenderableDemandAgreementArtifact): mapboxgl.L
       east -= 360;
     }
   }
-  const bounds = new mapboxgl.LngLatBounds();
+  // Built by the library that draws the map: MapLibre does not read Mapbox's bounds object.
+  const bounds = new gl.LngLatBounds();
   bounds.extend([west, minimumLatitude]);
   bounds.extend([east, maximumLatitude]);
   return bounds;
@@ -275,186 +275,186 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
       currentLoadState.status !== "loaded" ||
       currentLoadState.decision.status !== "render_links" ||
       !container ||
-      !MAPBOX_TOKEN
+      MAP_ENGINE.kind === "none"
     ) {
       return;
     }
 
     const { artifact, methods } = currentLoadState.decision;
-    let disposed = false;
-    let mapLoaded = false;
-    let map: mapboxgl.Map;
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-    try {
-      map = new mapboxgl.Map({
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      let disposed = false;
+      let mapLoaded = false;
+      const map = new gl.Map({
         container,
-        style: "mapbox://styles/mapbox/dark-v11",
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/dark-v11") as string,
         center: CONTINENTAL_US_CENTER,
         zoom: 3.4,
         attributionControl: false,
       });
-    } catch (caught) {
+
+      // This map can be built inside a closed tab, where its container has no
+      // size. Re-measure when the tab opens.
+      const stopSizing = keepMapSizedToContainer(map, container);
+
+      const failMap = (message: string) => {
+        if (!disposed) setLoadState({ status: "failed", geojsonUrl, message });
+      };
+      try {
+        map.on("error", (event) => {
+          const detail = mapErrorDetail(event);
+          if (!mapLoaded) {
+            failMap(
+              detail
+                ? `Agreement map failed to load: ${detail}`
+                : "Agreement map failed to load.",
+            );
+          } else if (!disposed) {
+            setMapWarning(
+              detail
+                ? `Part of the agreement map failed after it opened: ${detail}`
+                : "Part of the agreement map failed after it opened.",
+            );
+          }
+        });
+        map.addControl(new gl.NavigationControl(), "top-right");
+        // The style's own sources are credited: Mapbox and OpenStreetMap on a key,
+        // whatever the operator's style declares on MapLibre.
+        map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+      } catch (caught) {
+        stopSizing();
+        map.remove();
+        failMap(
+          caught instanceof Error ? caught.message : "Failed to set up agreement map controls",
+        );
+        return () => undefined;
+      }
+
+      const drawMap = () => {
+        try {
+          map.addSource("demand-agreement", { type: "geojson", data: artifact });
+          const bounds = artifactBounds(artifact, gl);
+          if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40, duration: 0 });
+
+          map.addLayer({
+            id: "demand-agreement-lines",
+            type: "line",
+            source: "demand-agreement",
+            paint: {
+              // Okabe-Ito sky blue, orange and vermillion: distinguishable with
+              // the common forms of colour blindness, and no green, because
+              // agreement between the two methods is not evidence that either is
+              // correct. The dash patterns below carry the classes as well.
+              "line-color": [
+                "match",
+                ["get", "agreement"],
+                "agree",
+                "#56b4e9",
+                "marginal",
+                "#e69f00",
+                "diverge",
+                "#d55e00",
+                "#64748b",
+              ],
+              "line-dasharray": [
+                "match",
+                ["get", "agreement"],
+                "agree",
+                ["literal", [1, 0]],
+                "marginal",
+                ["literal", [3, 1.5]],
+                "diverge",
+                ["literal", [0.75, 1.5]],
+                ["literal", [1, 0]],
+              ],
+              "line-width": [
+                "interpolate",
+                ["linear"],
+                ["max", ["get", "first_volume"], ["get", "second_volume"]],
+                0,
+                1,
+                10_000,
+                4,
+                50_000,
+                8,
+              ],
+              "line-opacity": ["case", ["get", "carries_meaningful_traffic"], 0.9, 0.22],
+            },
+            layout: { "line-cap": "round", "line-join": "round" },
+          });
+
+          const hoverPopup = new gl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            maxWidth: "320px",
+          });
+          const selectedPopup = new gl.Popup({
+            closeButton: true,
+            closeOnClick: false,
+            maxWidth: "320px",
+          });
+          const showFeature = (
+            properties: DemandAgreementFeatureProperties,
+            longitudeLatitude: mapboxgl.LngLatLike,
+            popup: mapboxgl.Popup,
+          ) => {
+            popup.setLngLat(longitudeLatitude).setDOMContent(popupContent(properties, methods)).addTo(map);
+            popup.getElement()?.style.setProperty("z-index", "20");
+            setActiveDetail(accessibleDetail(properties, methods));
+          };
+
+          map.on("mouseenter", "demand-agreement-lines", () => {
+            map.getCanvas().style.cursor = "pointer";
+          });
+          map.on("mouseleave", "demand-agreement-lines", () => {
+            map.getCanvas().style.cursor = "";
+            hoverPopup.remove();
+          });
+          map.on("mousemove", "demand-agreement-lines", (event) => {
+            const properties = eventProperties(event.features?.[0]?.properties);
+            if (properties) showFeature(properties, event.lngLat, hoverPopup);
+          });
+          map.on("click", "demand-agreement-lines", (event) => {
+            const properties = eventProperties(event.features?.[0]?.properties);
+            if (properties) showFeature(properties, event.lngLat, selectedPopup);
+          });
+
+          let keyboardIndex = -1;
+          cycleFeatureRef.current = (direction) => {
+            if (keyboardIndex < 0) {
+              keyboardIndex = direction === 1 ? 0 : artifact.features.length - 1;
+            } else {
+              keyboardIndex =
+                (keyboardIndex + direction + artifact.features.length) % artifact.features.length;
+            }
+            const feature = artifact.features[keyboardIndex];
+            const position = firstGeometryPosition(feature.geometry);
+            showFeature(feature.properties, position, selectedPopup);
+          };
+          mapLoaded = true;
+        } catch (caught) {
+          failMap(caught instanceof Error ? caught.message : "Failed to draw agreement map");
+        }
+      };
+      try {
+        // Bound at construction, so it cannot miss the event.
+        map.once("load", drawMap);
+      } catch (caught) {
+        failMap(caught instanceof Error ? caught.message : "Failed to register agreement map load");
+        return () => undefined;
+      }
+      return () => {
+        disposed = true;
+        cycleFeatureRef.current = null;
+        stopSizing();
+        map.remove();
+      };
+    }, (caught) => {
       setLoadState({
         status: "failed",
         geojsonUrl,
         message: caught instanceof Error ? caught.message : "Failed to construct agreement map",
       });
-      return;
-    }
-
-    // This map can be built inside a closed tab, where its container has no
-    // size. Re-measure when the tab opens.
-    const stopSizing = keepMapSizedToContainer(map, container);
-
-    const failMap = (message: string) => {
-      if (!disposed) setLoadState({ status: "failed", geojsonUrl, message });
-    };
-    try {
-      map.on("error", (event) => {
-        const detail = mapErrorDetail(event);
-        if (!mapLoaded) {
-          failMap(
-            detail
-              ? `Agreement map failed to load: ${detail}`
-              : "Agreement map failed to load.",
-          );
-        } else if (!disposed) {
-          setMapWarning(
-            detail
-              ? `Part of the agreement map failed after it opened: ${detail}`
-              : "Part of the agreement map failed after it opened.",
-          );
-        }
-      });
-      map.addControl(new mapboxgl.NavigationControl(), "top-right");
-      map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
-    } catch (caught) {
-      stopSizing();
-      map.remove();
-      failMap(
-        caught instanceof Error ? caught.message : "Failed to set up agreement map controls",
-      );
-      return;
-    }
-
-    const drawMap = () => {
-      try {
-        map.addSource("demand-agreement", { type: "geojson", data: artifact });
-        const bounds = artifactBounds(artifact);
-        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40, duration: 0 });
-
-        map.addLayer({
-          id: "demand-agreement-lines",
-          type: "line",
-          source: "demand-agreement",
-          paint: {
-            // Okabe-Ito sky blue, orange and vermillion: distinguishable with
-            // the common forms of colour blindness, and no green, because
-            // agreement between the two methods is not evidence that either is
-            // correct. The dash patterns below carry the classes as well.
-            "line-color": [
-              "match",
-              ["get", "agreement"],
-              "agree",
-              "#56b4e9",
-              "marginal",
-              "#e69f00",
-              "diverge",
-              "#d55e00",
-              "#64748b",
-            ],
-            "line-dasharray": [
-              "match",
-              ["get", "agreement"],
-              "agree",
-              ["literal", [1, 0]],
-              "marginal",
-              ["literal", [3, 1.5]],
-              "diverge",
-              ["literal", [0.75, 1.5]],
-              ["literal", [1, 0]],
-            ],
-            "line-width": [
-              "interpolate",
-              ["linear"],
-              ["max", ["get", "first_volume"], ["get", "second_volume"]],
-              0,
-              1,
-              10_000,
-              4,
-              50_000,
-              8,
-            ],
-            "line-opacity": ["case", ["get", "carries_meaningful_traffic"], 0.9, 0.22],
-          },
-          layout: { "line-cap": "round", "line-join": "round" },
-        });
-
-        const hoverPopup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          maxWidth: "320px",
-        });
-        const selectedPopup = new mapboxgl.Popup({
-          closeButton: true,
-          closeOnClick: false,
-          maxWidth: "320px",
-        });
-        const showFeature = (
-          properties: DemandAgreementFeatureProperties,
-          longitudeLatitude: mapboxgl.LngLatLike,
-          popup: mapboxgl.Popup,
-        ) => {
-          popup.setLngLat(longitudeLatitude).setDOMContent(popupContent(properties, methods)).addTo(map);
-          popup.getElement()?.style.setProperty("z-index", "20");
-          setActiveDetail(accessibleDetail(properties, methods));
-        };
-
-        map.on("mouseenter", "demand-agreement-lines", () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-        map.on("mouseleave", "demand-agreement-lines", () => {
-          map.getCanvas().style.cursor = "";
-          hoverPopup.remove();
-        });
-        map.on("mousemove", "demand-agreement-lines", (event) => {
-          const properties = eventProperties(event.features?.[0]?.properties);
-          if (properties) showFeature(properties, event.lngLat, hoverPopup);
-        });
-        map.on("click", "demand-agreement-lines", (event) => {
-          const properties = eventProperties(event.features?.[0]?.properties);
-          if (properties) showFeature(properties, event.lngLat, selectedPopup);
-        });
-
-        let keyboardIndex = -1;
-        cycleFeatureRef.current = (direction) => {
-          if (keyboardIndex < 0) {
-            keyboardIndex = direction === 1 ? 0 : artifact.features.length - 1;
-          } else {
-            keyboardIndex =
-              (keyboardIndex + direction + artifact.features.length) % artifact.features.length;
-          }
-          const feature = artifact.features[keyboardIndex];
-          const position = firstGeometryPosition(feature.geometry);
-          showFeature(feature.properties, position, selectedPopup);
-        };
-        mapLoaded = true;
-      } catch (caught) {
-        failMap(caught instanceof Error ? caught.message : "Failed to draw agreement map");
-      }
-    };
-    try {
-      map.once("load", drawMap);
-    } catch (caught) {
-      failMap(caught instanceof Error ? caught.message : "Failed to register agreement map load");
-      return;
-    }
-    return () => {
-      disposed = true;
-      cycleFeatureRef.current = null;
-      stopSizing();
-      map.remove();
-    };
+    });
   }, [currentLoadState, geojsonUrl]);
 
   const handleMapKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -489,7 +489,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
         </p>
       </section>
     );
-  } else if (!MAPBOX_TOKEN) {
+  } else if (MAP_ENGINE.kind === "none") {
     content = (
       <div className="flex min-h-40 items-center justify-center p-6 text-sm text-zinc-300" role="status">
         This OpenPlan installation does not have a public map key configured, so the agreement map cannot be displayed.

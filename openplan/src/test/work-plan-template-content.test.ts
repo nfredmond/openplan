@@ -169,7 +169,7 @@ describe.each(ON_DISK.map(({ file, document }) => [file, document] as const))("%
   it("declares itself a starting point in its own words", () => {
     // Not paraphrased and not left to the UI: the artifact carries the honesty
     // text, so a template rendered anywhere carries it too.
-    expect(document.scope_notes.join(" ")).toContain("standard-practice starting point — edit to your scope");
+    expect(document.scope_notes.join(" ")).toContain("standard-practice starting point. Edit to your scope");
     expect(document.scope_notes.join(" ").toLowerCase()).toContain("nobody is assigned");
   });
 

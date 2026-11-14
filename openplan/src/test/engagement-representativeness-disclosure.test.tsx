@@ -137,7 +137,7 @@ describe("JointRepresentativenessPanel", () => {
       />
     );
 
-    expect(screen.getByText(/Self-reported only — no area baseline/)).toBeInTheDocument();
+    expect(screen.getByText(/Self-reported only: no area baseline/)).toBeInTheDocument();
     expect(container.textContent).toContain("does not establish that the campaign reached the community");
     // The campaign has no map-located comments, so the spatial screening panel is
     // not on the page — and this panel must not tell the planner to run it.

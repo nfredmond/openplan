@@ -99,7 +99,14 @@ function FacetControl({
       <div className="flex flex-wrap gap-1.5">
         {facetValues(facet).map((value) => {
           const active = chosen.includes(value);
-          const count = counts?.[value];
+          // A value switched off by this facet's own filter is excluded from the
+          // map by construction, so its on-map count is always 0. Printing that
+          // "(0)" beside property-damage-only, which is off by default, read as
+          // "no such crashes" when the source held them. No count is shown.
+          // Likewise a facet the source does not record: every crash lacks the
+          // value, so "(0)" beside each option would be a count of nothing.
+          const filteredOut = chosen.length > 0 && !active;
+          const count = filteredOut || availability.state === "not_supplied" ? undefined : counts?.[value];
           const notCovered = facet.id === "severity" && (
             (severityCompleteness === "fatal_only" && ["severe_injury", "injury", "pdo"].includes(value))
             || (severityCompleteness === "fatal_injury_only" && ["severe_injury", "pdo"].includes(value))

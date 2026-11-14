@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const { buildBrowserContextOptions, getOpenplanBaseUrl, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
@@ -39,8 +40,7 @@ async function main() {
   const createUserResult = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...serviceKeyHeaders(serviceRoleKey),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

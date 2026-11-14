@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { bcaProjectPlaceSchema } from "./project-place";
 
 const text = z.string().trim().max(4000);
 const year = z.number().int().min(1900).max(2200);
@@ -86,7 +87,7 @@ export const flowSchema = z
       .max(101),
   })
   .strict();
-export const bcaDocumentSchema = z
+export const bcaLegacyDocumentSchema = z
   .object({
     schemaVersion: z.literal(1),
     title: z.string().trim().min(1).max(200),
@@ -121,8 +122,17 @@ export const bcaDocumentSchema = z
       })
       .strict(),
   })
-  .strict()
+  .strict();
+export const bcaBoundDocumentSchema = bcaLegacyDocumentSchema.extend({
+  schemaVersion: z.literal(2),
+  projectPlace: bcaProjectPlaceSchema,
+}).strict();
+export const bcaDocumentSchema = z.discriminatedUnion("schemaVersion", [
+  bcaLegacyDocumentSchema, bcaBoundDocumentSchema,
+])
   .superRefine((doc, ctx) => {
+    if (doc.schemaVersion === 2 && doc.projectPlace.projectId !== doc.projectId)
+      ctx.addIssue({ code: "custom", message: "The place snapshot belongs to a different project.", path: ["projectPlace", "projectId"] });
     if (
       doc.endYear < doc.startYear ||
       doc.endYear - doc.startYear > 100 ||

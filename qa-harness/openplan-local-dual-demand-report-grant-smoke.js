@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const {
   buildBrowserContextOptions,
@@ -43,7 +44,7 @@ async function main() {
     supabaseUrl,
     scriptName: 'local dual-demand report-to-grant smoke',
   });
-  const headers = { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` };
+  const headers = serviceKeyHeaders(serviceRoleKey);
 
   async function select(table, params) {
     const url = new URL(`${supabaseUrl}/rest/v1/${table}`);

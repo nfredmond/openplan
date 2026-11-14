@@ -49,7 +49,9 @@ function collectSourceFiles(relativeRoot: string): string[] {
     return [];
   }
   return entries.flatMap((entry) => {
-    const relative = path.join(relativeRoot, entry);
+    // Forward slashes on every host: the filters below match "src/test" and
+    // "src/app/api/" prefixes, which a Windows backslash path never starts with.
+    const relative = path.posix.join(relativeRoot, entry);
     if (statSync(path.join(REPO_ROOT, relative)).isDirectory()) return collectSourceFiles(relative);
     return /\.tsx?$/.test(entry) ? [relative] : [];
   });

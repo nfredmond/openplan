@@ -83,7 +83,7 @@ export const DEFAULT_CO2_DISCOUNT_RATE_PCT = 3;
 export const DEFAULT_ANALYSIS_HORIZON_YEARS = 20;
 
 export const BCA_SCREENING_CAVEAT =
-  "Screening-level benefit-cost estimate for internal prioritization and grant-readiness review — not a benefit-cost analysis of record. Confirm monetization values against the current USDOT Benefit-Cost Analysis Guidance before including results in an application.";
+  "Screening-level benefit-cost estimate for internal prioritization and grant-readiness review, not a benefit-cost analysis of record. Confirm monetization values against the current USDOT Benefit-Cost Analysis Guidance before including results in an application.";
 
 /**
  * Single-sentence caveat for the AI grant-narrative path. The full two-sentence

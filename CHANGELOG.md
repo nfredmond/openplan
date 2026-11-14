@@ -20,17 +20,574 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**The campaign review PDF names the study area the campaign's map used (KI-2026-11-14-323):** a campaign with no area of its own printed "Study area: Not supplied." although its map opened on the project's place. The PDF now names the project's place, or the workspace's home area, as recorded with the campaign's saved settings, and says the campaign has no area of its own. A project place set after the campaign was last saved is still not shown. No migration.
+**The campaign review PDF states its counts as sentences (KI-2026-11-14-324):** the counts table is replaced by lines such as "Approved 3 contributions.", "Withheld 1 contribution." and "Answered 2 contributions with a published staff response.", with how many staff responses are published. A public copy says it leaves out withheld, pending and flagged contributions instead of printing a zero for them, and a copy filtered to one review state says the same of the others. The state words are the ones the review file picker uses: Approved, Withheld, Pending, Flagged for review. The review workbook's Summary sheet holds the same counts in labeled cells after its earlier rows, and the Contributions sheet gains a Review state column in the same words; the status column keeps its stored value. The ZIP manifest carries the same counts, and the public page's Comments count now includes approved replies, as the review files do (KI-2026-11-14-360): all four take their numbers from one function. Saved files do not change; a new export carries the sentences and cells. No migration.
+**A staff theme in the campaign review PDF says how many comments it holds (KI-2026-11-14-321):** each staff group now prints its contribution count and a note that a count of comments is records, not people, and does not measure public opinion.
+**A keyboard resident keeps their place between portal steps (KI-2026-11-14-320):** after Next, Back or a numbered step, focus moves to the new step's heading. Before, focus stayed on the button, and the step that turns Next into Send dropped focus to the page.
+**Every record page answers 404 for a record you cannot see (KI-2026-11-14-280):** plans, programs, projects, RTP cycles, benefit-cost analyses, county runs, contracts, land use plans and the public engagement portal now return HTTP 404 with the not-found screen for a record that does not exist, a malformed link or another workspace's record, instead of HTTP 200. A closed engagement campaign still shows that its comment period has ended, and a read that fails still says the record could not be read. A record in another workspace you belong to still opens without switching, except an RTP cycle, which needs its workspace to be current (KI-2026-11-14-330).
+**OpenPlan has its first proven job (KI-2026-11-14-303):** on November 14, 2026 an agent took a safety action plan and an SS4A application from sign-up to two exported PDFs on the hosted site, three times on one commit, in three places: a rural county in California (Sierra County), a rural county in Nevada (Lincoln County) and a tribal area (the Pyramid Lake Paiute Reservation). The record and the six PDFs are in `docs/product/capability-evidence/`, and the direction check reads them again on every run. It shows that the job can be finished on the hosted site in those three places. It does not show that a planner finds the documents useful: no person reviewed them, the section text is a labeled demonstration that speaks for no county or tribe, and the benefit-cost ratio in it is not a finding about any project.
+**The SS4A packet says what its countermeasure table is before the table (KI-2026-11-14-302):** Appendix C now opens with the sentence that the countermeasures are proposed by staff for review and are not an engineering finding. It used to follow the table, which can run for two pages. No migration.
+**PDFs from the hosted site now come from the browser engine (KI-2026-11-14-301):** until now every PDF the hosted site made was a plain text version with no map, no table rules and no layout, because the bundled browser could not start on the hosted site's Node.js 24 runtime and the failure was silent. The bundle is updated to the release that supports that runtime, and a failed browser start is now written to the log with its reason. Reports and applications exported on the hosted site before this change can be exported again to get the full version. Self-hosted installations with Chrome installed were not affected. No migration.
+**The hosted database is up to date with the code again (KI-2026-11-14-300):** on November 14, 2026 seven waiting migrations were installed on the hosted site in one transaction, after a fresh backup was restored and compared and the same change was rehearsed on that copy. The tables involved were locked for about three quarters of a second. Planners now get what those migrations carry: a benefit-cost analysis can be saved for a tribal area or a town, crash records can be stored for Oregon, Iowa, Ohio and the District of Columbia, large crash pulls no longer time out, application exports record a hash of the file, only an owner or an administrator can write client invoices, and a project can be linked only to an RTP cycle in its own workspace. Saved report packets ask to be regenerated once more.
+**November migration window, seven files (history 448 to 455):** install `20261102100000` through `20261102140000` in one transaction before deploying this code; the inputs for the hosted install kit, with each file's locks and rollback, are in `docs/ops/hosted-install-windows/20261114-seven-migrations/`. The Oregon, Iowa, Ohio and DC crash adapters and the crash source registry now say their state's crashes are stored, so their pinned hashes and the readiness registry hash changed after the November 14 re-pin: saved report packets say their registry inputs changed and ask to be regenerated once more. An award handoff preview left open during the install is refused once at apply ("Sources, outcomes or terms pointers changed; review again") because the two new export columns change the grant's application fingerprint; previewing again fixes it, and stored handoffs do not change.
+**The hosted site has a usable offsite backup again (KI-2026-11-14-160, -161, -118):** on November 14, 2026 the daily capture was moved to a new encryption key (fingerprint `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`), and capture `20261114T072635Z` was decrypted and restored into an empty database with no network, where every table's row count, the migration history and every Storage object matched the live site. Captures made before that time were encrypted to a key whose private half was lost with a wiped workstation; they cannot be read and age out within 30 days. The private key exists only on the operator's workstation, on two disks, so losing that machine loses the backups again; the operations page says so. The same day a deployment-wide AI key that should never have been set on the hosted project was removed from its Production and Preview settings; the app had not been using it. No migration.
+**A report from another workspace answers 404 (KI-2026-11-14-060):** opening a report page for a report that does not exist, or one in a workspace the reader does not belong to, now returns HTTP 404 with the not-found screen instead of the same screen under HTTP 200. The report page reads the report once per request, as before.
+**Place search finds a place by the name the search shows (KI-2026-11-14-230):** search now matches the start of the full Census name as well as the base name, so "Pyramid Lake Paiute Reservation, NV", "Navajo Nation Reservation, AZ-NM-UT", "Washington township, Shelby County, OH" and "Columbus, GA-AL Metro Area" each find their place, and names with accents, slashes or parentheses work. A match on the base name still ranks first.
+**The first-job journey and the proven job checker read PDFs and cross-workspace answers the same way (KI-2026-11-14-060, -061, -190):** both read PDF text only with Poppler's `pdftotext` and refuse another one, such as the xpdf copy Git Bash finds first, with a message that says how to fix PATH. The journey finds each PDF item with the checker's own matcher and records the heading it searched. Each cross-workspace check now says whether it asked for a page or for data: data must answer 403 or 404, and a page may answer 200 only when the journey read the not-found screen on it and none of the first account's names; a record with such a page states that limit. The journey types each SS4A section's final text from an inputs file on screen instead of finalizing the seed unedited, and a proof run refuses the labeled rehearsal inputs.
+**The hosted site has a usable offsite backup again (KI-2026-11-14-160, -161, -118):** on November 14, 2026 the daily capture was moved to a new encryption key (fingerprint `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`), and capture `20261114T072635Z` was decrypted and restored into an empty database with no network, where every table's row count, the migration history and every Storage object matched the live site. Captures made before that time were encrypted to a key whose private half was lost with a wiped workstation; they cannot be read and age out within 30 days. The private key exists only on the operator's workstation, on two disks, so losing that machine loses the backups again; the operations page says so. The same day a deployment-wide AI key that should never have been set on the hosted project was removed from its Production and Preview settings; the app had not been using it. No migration.
+**Safety says when a save replaces a plan the list no longer shows (KI-2026-11-14-210):** the high-injury network save button counts only listed rows. When the report's saved plan treats places the current list does not show, such as half-mile squares saved before the place ranked road segments, one line says how many and that saving replaces it, and replacing it with an empty plan asks first.
+**SS4A applications say when a newer Safety report exists (KI-2026-11-14-211):** the "Seed from Safety plan" panel names the date of the report the application was seeded from and the date of a newer generated Safety report for the project, and points to the picker to re-seed. It never re-seeds on its own, and a failed check says so.
+**Safety wording and export layout (KI-2026-11-14-212):** the high-injury network coverage sentence agrees in number ("1 is not on this list"). In the report PDF, an item FHWA removed shows its list status as a small grey line under its name instead of large bold type, and Internet Archive URLs wrap inside the card in the report and the SS4A application. Safety snapshots saved earlier keep their wording.
+**SS4A seed text prints plain dates, and the SS4A PDF ends on its last page (KI-2026-11-14-116):** a new Safety seed writes its acquisition and artifact dates as "Nov 14, 2026, 05:52 UTC" instead of ISO stamps; sections seeded earlier keep the stamps they were written with. The SS4A and ATP crash appendices no longer print the stored severity code (such as `kabco_full`) beside the plain severity coverage sentence. The SS4A PDF no longer adds a blank last page. The seed report picker dates each report in UTC, as the appendix does. A new benefit-cost analysis on a tribal area or town says "This analysis has no place." instead of calling itself legacy. The Safety "Save to report" select stays inside its panel on a phone.
+**The SS4A application export prints no email address and says when it is a draft (KI-2026-11-14-200 to -202):** the provenance table names each section's finalizer by workspace role instead of email address. A packet whose final sections still hold `[VERIFY]` markers or unfilled Safety seed placeholders is stamped DRAFT with the count, and the application workspace shows each section's count and the stamp before export. The "Safety study" campaign template's survey asks about "this area" instead of "this corridor".
+**Fatal-only places rank named roads (KI-2026-11-14-050 to -052):** when a project has no stored road lines, Safety now reads named U.S. Census TIGER/Line roads near every ranked crash and stores them, so a FARS county or tribal area ranks road segments instead of half-mile squares named by coordinates. A failed road read keeps the squares, which now name the nearest known road or say the name is unavailable. An all-tied list says so in one line on Safety, in the report and in SS4A Appendix A. The save button counts squares as squares, and the map marks each ranked segment at county zoom and lists the network in its legend. A plan saved against grid squares shows as unresolved on the benefit-cost Evidence tab once road lines are stored; save it again from Safety. No migration.
+**Roadway-departure countermeasures for rural places (KI-2026-11-14-070, -071):** the Safety countermeasure list now carries all six items FHWA groups under Roadway Departure (adding longitudinal rumble strips and stripes, median barriers, roadside design improvements at curves, SafetyEdge℠ and wider edge lines) and Pavement Friction Management, read from FHWA's pages on November 13, 2026. No crash modification factor is filled in. FHWA's current list no longer shows road diets, bicycle lanes, appropriate speed limits or speed safety cameras; those entries stay for saved plans and are marked for checking.
+**Four countermeasures say they are no longer on FHWA's list (KI-2026-11-14-071):** FHWA removed road diets (roadway reconfiguration), bicycle lanes, appropriate speed limits for all road users and speed safety cameras from its Proven Safety Countermeasures list between June 30 and July 10, 2026. OpenPlan keeps all four so saved plans keep them, and now prints "Not on FHWA's Proven Safety Countermeasures list since July 2026." beside each on Safety, in the report, in SS4A Appendix C and the seeded application text, and on the benefit-cost Evidence tab. Each links an Internet Archive copy of its former FHWA page instead of a dead link. Reports and SS4A seeds made before this release keep their old text until the report is generated again. No migration.
+**Countermeasure notes name CMF Clearinghouse entries (KI-2026-11-14-290):** each of the 20 countermeasures now names one to three CMF Clearinghouse entries read on November 14, 2026, with the factor, star rating, crashes and roads each covers and what it does not cover, instead of a `[VERIFY]` marker. The safety action plan report, SS4A Appendix C and seed text and the benefit-cost Evidence tab print the new notes, and the Safety page's countermeasure list links each entry in place of the marker. No factor is applied by itself; the planner chooses. A report or Safety snapshot generated earlier keeps its old notes and is not marked stale: generate the report again to print the new ones. No migration.
+**Report narrative facts print times in UTC on every host (KI-2026-11-02-055):** the times inside the facts an AI report narrative cites (project last updated, funding records current through, analysis run created) are now always formatted in UTC. The hosted site already runs in UTC, so its text and stored fact hashes do not change and no accepted narrative there is flagged. On a self-hosted copy whose server ran in another time zone, this is a one-time change: accepted narratives that cite one of these times show "Underlying data changed since acceptance". Nothing in the data changed and no action is needed. The notice stays on that narrative until the section is drafted again and the new draft accepted. Times shown on screens are unchanged. No migration.
+**Report and SS4A PDFs read back as words on Linux (KI-2026-11-14-117, KI-2026-11-14-101):** labels in the safety action plan report and the grant application PDF use lighter letter spacing, so a search or a screen reader finds "Comments approved" instead of single letters; table rows no longer split across pages, so a long source URL prints whole on one page; and report tables are top-aligned with padded cells. Only styling changed, not wording. The proven job checker and the export test find PDF text with one shared matcher, and CI installs Poppler again so the PDF checks run there.
+**Saved report packets show "changed" once after this release (KI-2026-11-14-015, KI-2026-11-14-023):** the CCRS and FARS attributions printed in exports and the federal grant catalog text (SS4A, BUILD, INFRA, PROTECT and transit programs) no longer use em dashes. Those three source files are pinned by hash in the jurisdiction readiness registry, and that hash is part of the readiness fingerprint stored with every saved v4 report packet, so each saved packet's jurisdiction check reads "changed" once and asks to be regenerated. Only wording changed: no stored crash record, count, source year or grant rule changed. Regenerating a packet records the new fingerprint, and it then reads current. The kept FARS annual files in this release already changed the FARS adapter's pin, so these wording fixes ride on that one regeneration rather than adding another.
+**Benefit-cost analysis opens the saved version, and Safety finds the saved plan (KI-2026-11-14-112 to -114):** in a new browser tab the benefit-cost workbench opens the project's latest saved version and names it by date, instead of a blank analysis that could replace it in the report and the SS4A appendix. A draft in the tab still opens first and says so. Saving a blank analysis over saved work now takes an explicit "Start a blank analysis". On Safety, "Save to report" opens the report that holds this crash pull's plan and points to it from any other report. A refused comment approval no longer leaves the status reading "Approved", the SS4A seed picker prints plain dates, and SS4A appendix tables no longer split words. No migration.
+**Hosted capture and install kit (KI-2026-11-14-160):** the procedure and
+tools for proving an offsite capture and installing hosted migrations now live
+in `scripts/ops/hosted-install/`, replacing the private kit lost with the
+wiped workstation. Capture checks run in the backup worker's own image; a
+restore passes only on exact counts, key hashes, Storage reconciliation and
+access probes; migrations install in one transaction after a rollback-only
+dry run, with timeouts and no retry. Hosted operations no longer use
+`supabase migration up --linked`. No migration.
+**The install kit holds no lock across a network round trip (KI-2026-11-14-240):** `scripts/ops/hosted-install/run_sql.py` now sends each transaction as one message instead of one statement per round trip. A new `rtt` step measures the round trip before the hosted dry run; the dry run and install print a lock-time estimate and refuse to start above 2 seconds; and the dry run's too-slow check reads the lock time measured on the server. In the local seven-file rehearsal at a 25 ms round trip, the dry run's lock time fell from 4.6 s to 0.26 s. No migration.
+**The install kit reads a lost connection as unknown and pins the session pooler (KI-2026-11-14-260):** after a hosted install, `install-failed` now means only a database error on a live connection; a lost connection, a killed psql or a missing result reads `install-unknown`, because the server can commit the one-message install after the client is gone, and step 19 says to read `catalog` after anything but `installed`. The dry run and install wait at most 1 s for any lock (was 3 s); every statement check also refuses a transaction that reached the server in more than one message; `PGPORT` must be 5432; and the lexer keeps characters above U+FFFF inside an identifier, as PostgreSQL does. No migration.
+**Human feedback never gates OpenPlan, permanently:** on November 13, 2026 Nathaniel
+made the October 17 acceptance policy permanent; direction reviews do not reopen it.
+Agent-run planner, operator and public-participant checks are the acceptance evidence
+for milestones, merges, releases and v1, and each record names the executor. The
+milestones, roadmap, contract, capability matrix, requirements ledger, handoff and
+release policy no longer require real planners, practitioner review, human observation
+or comparative human trials; each such line now names the agent-run task, and a
+screen-reader check is an agent-driven NVDA or VoiceOver run. Agency adoption,
+spending and publication decisions, exact-payload approvals, legal determinations and
+staff moderation stay with people. Under his second November 13 direction, agents make
+product, engineering, scientific and sequencing decisions themselves with a recorded
+reason and a fresh-context review, and do not ask him for decisions or check-ins; the
+fixed limits (no paid services or spending, no shared hosted AI keys, no printed or
+committed credentials, a fresh capture before any hosted migration) are written into
+`AGENTS.md`. A new test (`human-feedback-never-gates.test.ts`) fails if a gate or a
+request for his decision returns to the active guidance. No statuses change; no
+migration.
+
+**Small text is easier to read (KI-2026-11-14-110, KI-2026-11-14-111):** secondary text is slightly darker in the Cartographic, Slate, Harbor, Meadow and Plum light palettes, so labels on tinted and secondary surfaces meet the 4.5:1 contrast standard. Inactive tab labels, the "Return to project" link, the public portal's "map cannot be shown" notice and several chips whose text matched their background are now readable. Dark mode, Signal, the accent colours and the status colours are unchanged. No migration.
+**Safety to report, and single-comment review (KI-2026-11-14-020 to -022):** approving or rejecting one comment now asks for a "Review reason", the name the refusal message uses. A new report saves the crash data chosen in the new-report dialog, so it no longer needs a second save. From Safety, a project with no report gets "Create safety action plan report", which makes the report with this crash pull chosen and stays on Safety. Smaller wording fixes on Safety, the project page, the dashboard, a campaign template and the SS4A seed preview. No migration.
+**Benefit-cost analysis offers Safety crashes (KI-2026-11-14-030, -032):** the Evidence tab lists each saved safety plan and the recorded fatal and serious-injury crashes on its treated segments by year, with source and coverage. A planner adds a safety stream with a crash modification factor and its CMF Clearinghouse ID; nothing is added without that step. The Safety page and grant application card link to the analysis, and the Project place panel shows plain dates. No migration.
+**Safety action plan report and SS4A application carry engagement, the benefit-cost analysis and the network map (KI-2026-11-14-010 to -016):** the report's safety action plan section now prints the project's engagement summary and saved benefit-cost analysis, marks engagement partly covered when comments or a staff review are approved, and draws the ranked high-injury network. The SS4A engagement appendix states a finding from an approved staff review when no AI synthesis is saved, so a workspace with no AI key can cite community input. The countermeasure table stays on the page, the network map draws the study area without a stray line, and file update dates print as dates. No migration.
+**Development dependency advisories cleared (November 13):** `hono` moves to 4.13.16 and `@hono/node-server` to 2.1.6 through lockfile overrides, for seven advisories published against earlier versions. Both come in only through the development tool `shadcn`; nothing served to planners uses them. The dependency audit in the QA gate passes again. No migration.
+**Proven job records (KI-2026-11-14-100 to -102):** the capability registry is now schema version 3 and has an empty `provenJobs` list. The direction check refuses a listed job unless its record (`docs/product/capability-evidence/README.md`) shows three hosted journeys in a California county, a Nevada county and a tribal area on one commit, with committed PDFs whose hashes match, all required items, no DRAFT stamp, stored Nevada FARS crashes, zero serious or critical accessibility violations at 1440 and 390 pixels, and no email address or secret in the record or its PDFs. No job is proven and no cell status changed. No migration.
+**FARS crash acquisitions keep a checked copy of NHTSA's annual files (KI-2026-11-14-040):** a Safety acquisition outside California downloaded three 33 to 35 MB national files every time, which could pass the hosted 60-second limit. OpenPlan now reads the years at once, refuses a short or wrong-year file, and keeps a reduced, hash-checked copy in private Storage (`network-packages` bucket, under `public-sources/fars/`), so a later acquisition takes about 2 seconds. The first acquisition of each year still downloads it, and a kept copy is read again when NHTSA replaces the file. Each file's URL, SHA-256 and read date are recorded on the acquisition. Because the FARS source file's pinned hash changed, saved report packets say their registry inputs changed and ask to be regenerated. No migration.
+**First-job journey script (KI-2026-11-14-060 to -064):** `qa-harness/first-job-journey.js` drives the first proven job on screen in one place, from sign-up to both PDFs and a second-account check, and writes one journey file in the proven job record shape. `--mode rehearsal` runs only on a local origin; `--mode proof` runs only on the hosted proof origin and needs sourced inputs, a budget document and the expected commit. The confirmation link is read from a file and only its token hash is kept. Each key screen is checked at 1440 and 390 px in light and dark with axe-core 4.11.1, loaded from `openplan/node_modules` (not yet a declared dependency). App code is unchanged. No migration.
+**Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
+a Save click that landed just after the form updated from the server could run
+with the form's previous state. In the invoice form, that could save after the
+award terms changed and the review box was cleared, without a new review. Save
+now uses the current state. No migration.
+**County run files that this copy cannot reach (KI-2026-11-02-048):** opening or saving observed counts and bringing in validation results now say plainly that this copy of OpenPlan cannot reach the run's files, and change nothing about the run, instead of "file was not found" or an unexplained error. A copy with no county worker says so beside those steps. County validation still needs a county worker that shares files with the app. No migration.
+**No em dashes in planner and public text:** screens, API messages, exports, report text, work-plan and stage-gate templates and the public portal now end the sentence or use a comma, colon or parentheses instead. A table cell with no value still shows a lone dash. Text that saved work is checked against (report narrative facts, grant cover caveats and the byte-pinned grant program and crash source files) keeps its wording, so nothing saved shows as changed. Nothing to do on upgrade; no migration.
+
+**A malformed record ID is not found:** a URL such as `/projects/new`, whose ID
+is not a UUID, now shows the not-found page instead of "could not be read" with
+the database's `invalid input syntax for type uuid` message. 22 record pages and
+the API routes that reached the database with such an ID now refuse it before
+querying (each route family keeps its own 400 or 404). Valid IDs behave as
+before, and a read that really fails still says so. No migration.
+**Public plan pages publish only their own workspace's projects (KI-2026-11-02-053):**
+the plan document page now reads project links only from the plan's own workspace,
+and both public plan pages drop a link whose project belongs to another workspace
+from the project lists, the financial summary and the map. No migration.
+**Safety page: ranking retry, project warning and labeled totals (KI-2026-09-05-027, KI-2026-08-31-015, KI-2026-08-31-014):** when the crash-location ranking fails while the totals load, "Try the ranking again" asks for the ranking alone (`/api/safety/crashes?part=ksi_concentrations`) for the same acquisition, and the failure sentence stays until a ranking arrives. Retrieving with no project chosen now says first that the crashes cannot go into a report, and New report offers the chosen project's crash acquisitions as evidence. The fatal-or-serious headline and the high-injury network total each name their area and filters, with one line reconciling them. Nothing to do on upgrade; no migration.
+**Safety starts beside the navigation rail (KI-2026-11-02-024):** on a desktop the
+Safety page no longer runs under the 60px rail, so the active-project banner and
+the map's left edge are fully visible.
+
+**RTP project links stay inside one workspace (KI-2026-11-02-053):** both public
+plan pages now publish only links, and linked projects, from the plan's own workspace.
+Migration `20261102140000_project_rtp_cycle_link_workspace_scope.sql` refuses a link
+whose project, cycle, horizon band or evidence run is in another workspace; the page
+change does not depend on it.
+
+**"Can OpenPlan do this here?" answers for every state, DC and territory:**
+the jurisdiction support panel now has an entry for all 50 states, DC,
+American Samoa, Guam, the Northern Mariana Islands, Puerto Rico and the U.S.
+Virgin Islands, reviewed November 2, 2026 (registry 2026-11-02.3, review by
+December 2). Each job shows what the code does there: the crash sources the
+safety registry serves (FARS fatal-only in most states; Iowa, Ohio and DC
+state layers read live and not stored; no source in the four territories
+without FARS), the state grant bundle where one exists (Washington, Colorado,
+Texas and Ohio added), no configured land-use bundle outside California, and no
+model validation outside California. Project handoff reads "Not assessed here"
+in the 53 newly listed places, because no journey there is retained as
+evidence. California's land-use entry now says specific plans use their own
+checklist, which has been true since October 7. The direction check fails if
+any of the 56 entries is missing.
+
+**One serious-injury statement for the same crashes (KI-2026-11-02-046):** the
+Safety page, the corridor analysis, report caveats, the SS4A appendices, the RTP
+safety line and the high-injury network now take serious-injury availability
+from one function of the source's declared severity and whether its serious-injury
+join ran. A California corridor run now joins the CCRS injured-person table like
+a Safety acquisition does, so it reports the same serious-injury count instead
+of saying serious injury is not separable; the injury total and the safety score
+do not change. When the join cannot run, every surface says the injured-person
+records were not joined, not that CCRS cannot separate serious injury. The join
+now counts as not run when data.ca.gov does not answer or a requested year has
+no injured-person table; before, an outage during an acquisition recorded zero
+serious injuries as a finding. Nothing to do on upgrade; no migration.
+
+**County search without a Census key:** county search and county boundaries
+now come from the Census TIGERweb Counties layer, the same keyless service
+cities, CDPs, towns, tribal areas and metro areas already used. An install
+without `CENSUS_API_KEY` can search and pick counties and county equivalents:
+Louisiana parishes, Alaska boroughs and census areas, Virginia independent
+cities, Puerto Rico municipios, DC, Connecticut planning regions and the Island
+Areas. Same-named counties are ordered by 2020 Census population, also from
+TIGERweb; a Connecticut planning region has no 2020 count and ranks after
+counties that have one. A picked county's saved label now keeps its full name
+("Falls Church city, VA", not "Falls Church, VA"). The place search no longer
+looks up the workspace's Integration keys, since nothing it reads needs one.
+Census tract demographics, ACS corridor demographics and model zone attributes
+still need a Census key.
+
+**Every map draws without a Mapbox key (KI-2026-10-12-026):** with
+`NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` set and no Mapbox key, MapLibre now also
+draws the Aerial index map, the aerial mission map, the mission area editor,
+the flight plan editor, the traffic volume and model agreement maps, the
+participation heat map and the extent preview in GIS layer import. A Mapbox key
+still selects Mapbox and its styles. Without a key the mission map has no
+satellite background and says so, and the Aerial index map uses your one style
+in light and dark mode. Rebuild after setting the variable.
+
+**Project packets trace comments to decisions (KI-2026-11-02-010):** a
+packet's engagement section now lists each published staff response for the
+linked campaign, the contributions it answers, its staff review theme and the
+project decision it is linked to, with the link record ID and saved actions.
+Its contribution, response and decision-link counts match the internal
+engagement review files. A response or decision-link read that fails prints as
+unknown with its cause. Withheld comments, names, review notes and
+demographics stay out of the packet. Regenerate a packet to pick this up. No
+migration.
+
+**Engagement case fixes (KI-2026-11-02-011 to -016):** a rejected comment with
+no category no longer holds a campaign's handoff readiness or tells staff to
+categorize it, and new handoff packets no longer call reporting incomplete
+because of it. On the public page, sending a comment moves focus to the
+confirmation so screen readers announce it, the view buttons report which view
+is open, and a comment repeats its original topic only when the topic has since
+changed. Engagement review PDFs name each response's sources by register number
+and title and say whether the response is published. Six build notes were
+removed from staff pages. No migration.
+
+**One IPv6 network is one connection for public limits (M9a):** every
+per-connection limit on public input (comments, supports, photos, survey
+responses and saved drafts, update sign-ups) now counts an IPv6 address by its
+/64 network, so a phone or script that picks a new address inside its /64 no
+longer gets fresh limits. IPv4 is counted exactly as before, and an IPv4-mapped
+IPv6 address counts as its IPv4 address. Counts already stored against single
+IPv6 addresses no longer match, so IPv6 connections start their limits again
+once, on deploy. The sign-up email cap is a Supabase Auth setting, not app
+code; [self hosting](openplan/docs/SELF_HOSTING.md#limits-on-public-signup-and-public-input)
+describes it. No migration.
+
+**Link a project to a tracked grant (KI-2026-11-02-043):** a funding opportunity
+tracked from the Grants catalog without a project can now be linked from its
+card on the Grants page, and the ATP panel's "Link a project" goes there. The
+project must be in the opportunity's workspace, and viewers cannot change it.
+Once an application section is final, a draft, export, Safety seed, map package
+or award exists, the link no longer changes; track a new opportunity for the
+other project. The database does not yet enforce these rules on its own.
+
+**ATP application PDF carries its evidence (KI-2026-11-02-044, 045, 047):** an
+application set up from the ATP template now exports with evidence appendices
+drawn from the linked project's saved records: the ATP screening packet
+(program facts marked `[VERIFY]` with the CTC's ATP page, and OpenPlan screening
+scores or "Not recorded"), the latest crash acquisition, the planning-level
+estimate, engagement, disadvantaged-community and equity inputs, and the
+benefit-cost summary. A record the project lacks is listed as missing. The
+export panel offers the same choice of appendices it offers for SS4A. Every
+application PDF now names the person who finalized each section by their
+workspace email, or says the person is not on record, instead of printing a
+user id; lists only the standing caveats for evidence it includes; and prints
+times in the workspace time zone. No migration.
+
+**ATP report states what it knows (KI-2026-11-02-040 to 042):** the ATP report
+downloaded from an ATP application now cites SB 535 to Health and Safety Code
+§39711, calls its numbers OpenPlan screening scores rather than CTC scoring
+areas, makes no disadvantaged-community eligibility claim, marks each
+cycle-dependent program fact `[VERIFY]` with the CTC's ATP page, and names no
+internal files. It prints the project's recorded summary and planning-level
+estimate instead of "to be provided", and names the crash source, years and
+retrieval date behind the safety score. The ATP panel no longer runs past its
+border on a phone.
+
+**My Work lists stale evidence:** the "Waiting on a person" section now lists
+report packets the Reports page would ask you to refresh, and packets a newer
+model run flagged, each linked to the report's change review. It also lists SS4A
+applications whose seeded Safety evidence changed after the seed (new crash
+records, a changed project place, or a different linked project), linked to the
+application, and seeds that cannot be checked, such as seeds made before
+November 2. Seeding again keeps final sections, so an application stays listed
+while any final section still comes from an earlier seed whose evidence changed,
+and the item names those sections. Archived reports and awarded or archived
+applications are left out. A failed read is named on the page instead of shown
+as an empty list. No migration is needed.
+
+**My Work shows stopped jobs and one closed-award rule (KI-2026-10-12-015):**
+the "Waiting on a person" section now lists model runs that were interrupted
+or stopped reporting for more than 45 minutes, failed county runs, and aerial
+processing jobs whose latest attempt failed or went silent past the mission
+page's reporting window. Each item links to the page where the job is re-run.
+A funding award recorded closed before its obligation date no longer appears
+in My Work or the daily digest. A closed award recorded closed on or after
+that date, or with no closure date, stays listed for review and is marked past
+due once the date passes. No migration is needed.
+
+**Crashes counted inside the place boundary (KI-2026-11-02-021):** a Safety
+acquisition now keeps only crashes whose point lies inside the study area's
+polygon (the project's stored place, a picked place, or a drawn area), not every
+crash in the rectangle around it. In Alturas, California, that removes 9 of the
+11 CCRS crashes from 2022 to 2025, including the only injury crash. The number
+left out is recorded with the acquisition and shown beside the counts on the
+Safety page, in the report and in the SS4A appendices. Acquisitions stored
+before this change, and areas with only a rectangle, are labeled "Bounding
+rectangle, not the place boundary"; retrieve crashes again to count by the
+boundary. When retrieval stops at its record cap, the counts are the retrieved
+crashes inside the boundary, labeled a lower bound, and the source's total for
+the rectangle is shown beside them. The corridor scorecard also counts inside
+the corridor polygon and divides crash density by the polygon's area. No
+migration.
+
+**Large crash acquisitions store again (KI-2026-11-02-020):** an acquisition
+above about 100 crashes failed with "Failed to persist crashes: canceling
+statement due to statement timeout". Each stored crash or person row updated its
+acquisition and its project, so one 500-row write updated the project about
+1,000 times. Migration `20261102130000_safety_crash_statement_revision.sql`
+keeps the per-row locks and refusals and moves those updates to one per
+acquisition and one per project for each write. Locally, 500 crashes on a
+project with a 1.4 MB study polygon now store in about 0.15 s; before, 50 took
+5 s. The acquisition's `evidence_revision` now advances once per write instead
+of once per row; it is compared only for equality. Apply the migration before or
+after deploying this code; the code does not depend on it.
+
+**First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
+fatal or serious-injury crash in the window can now save its safety action plan
+from the high-injury network ("Save plan with no ranked segments"), so the
+report gets its action plan section and the SS4A application can be seeded from
+it. The action plan section no longer claims attached countermeasures when there
+are none. Tracking a catalog program from Grants opened for a project links the
+new opportunity to that project. Crash filter chips no longer print "(0)" beside
+a severity that is switched off or a facet the source does not record. The
+project page names the workspace's home geography when the project has no study
+area. Workspace health now reports `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` as a
+partial map configuration (most maps draw; the backdrop, aerial and model maps
+need a Mapbox token) and offers it when neither is set. No migration (the crash
+store fix in this list has its own).
+
+**SS4A seed after logging the opportunity (KI-2026-11-02-022):** logging or
+exporting the SS4A funding opportunity no longer makes the Safety report look
+stale to "Seed from Safety plan". New Safety reports record the crash
+acquisition's evidence revision and the project's place when they are
+generated, and the seed compares those instead of the project's last-updated
+time. A new crash, party or acquisition write, or a change to the project's
+place, still refuses the seed until the report is regenerated. Safety reports
+generated before this change keep the old check: regenerate one once to use the
+new one. The benefit-cost analysis place review still treats any project write
+as a change (needs a migration). No migration.
+
+**Client invoice writes (KI-2026-10-12-007):** apply
+`20261102120000_client_invoice_owner_admin_writes.sql` before or with this
+code. The database now holds the invoice route's rule for every client,
+including the Data API: only a workspace owner or admin can create, edit, void
+or delete a client invoice or change its lines. Members and viewers can still
+read invoices. No existing invoice or line is changed, including drafts a
+member created earlier. Contract exports (the management snapshot tables and
+the closeout accounting handoff) no longer list the billing source of a voided
+draft invoice, so work billed again on a later invoice appears once. The source
+row stays in the database as history, and a closeout package issued earlier
+also leaves it out when downloaded again.
+
+**Abandoned staged uploads (KI-2026-10-12-017):** a new cron route,
+`/api/cron/sweep-staged-uploads`, runs daily at 11:47 UTC from `vercel.json`.
+It removes a staged aerial, Knowledge Base or transit upload whose complete step
+never ran (a closed tab or a failed upload) once its newest Storage timestamp is
+24 hours old, so the file stops counting against the workspace's storage. It
+removes only objects whose path matches the staged path the complete routes
+check, at most 1,000 per bucket per run, and logs its counts as
+`cron_sweep_staged_uploads_completed` or `_failed`; a failed bucket answers 500
+with the counts of what finished. Operators: it uses the existing `CRON_SECRET`.
+A self-hosted installation without Vercel Cron must add this endpoint to its
+own scheduler. No migration.
+
+**Dependency audit:** qs 6.16.1, follow-redirects 1.16.2 and @hono/node-server
+2.1.3 fix advisories published October 27-30 (all development or build
+tooling). The audit step now reads `openplan/audit-exceptions.json`: it still
+fails on any advisory at any severity, unless the advisory is listed there with
+a reason and a review date and every installed copy is development-only. Two
+are listed until December 1: minimatch (no fixed release eslint 9 can use) and
+deepmerge (no fixed release). Nothing to do on upgrade.
+
+**Portal translations and scripts:** a participant page shows a catalog
+translation only while it was made from the current English. Each entry records
+a fingerprint of its English source; a mismatch shows English with the existing
+partial-translation notice, and a test fails until the translation is refreshed
+or listed as stale. Two Spanish entries ("Open for comments", "Closed for
+comments") were translated from older English and now show in English, so
+Spanish pages carry the partial-translation notice until a Spanish reader
+refreshes them. Traditional Chinese (`zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`,
+Cantonese) and Shahmukhi Punjabi (`pa-Arab`, `pa-PK`, `pnb`) requests no longer
+receive the Simplified or Gurmukhi pages; they fall through to the next
+language the reader accepts, or English. The picker names Chinese as 简体中文
+and marks it `zh-Hans`. No migration.
+
+**Storage limit and AI metering gaps (KI-2026-10-12-014):** a transit feed
+fetched from an address is now checked against the workspace's remaining
+storage at its downloaded size before it is stored; a feed that does not fit is
+refused with the same 413 storage-limit message as uploads, and its version
+closes as failed with code `workspace_storage_limit` and no stored archive. An
+aerial preview copied into a report is checked at its own size before the copy;
+when the packet itself is then refused or not stored, the copied preview is
+removed. Planner Agent API tasks paid by the deployment key now record their
+AI usage before the provider call and make no call when that record fails.
+Corridor analysis interpretations now count against the workspace's staff AI
+allowance (`grant_narrative_draft`) before the call; a used-up allowance or an
+unavailable meter ships the deterministic summary. No migration. Operators of a
+deployment with public signup must set `OPENPLAN_MONTHLY_RUN_CAP` and
+`OPENPLAN_MODELING_QUEUE_DEPTH`; both stay unlimited when unset.
+
+**AI drafts counted before the call (KI-2026-10-12-014):** grant narrative
+and section drafts, report and RTP chapter narrative drafts, RTP document
+reads, engagement close-loop drafts and moderation scans now count against
+the workspace's AI allowance before the model call. When the deployment's
+shared key pays and usage cannot be counted or recorded, the call is not
+made. A failed model call still counts. An RTP document read that the
+current five-minute allowance cannot finish is refused before it starts,
+and a read stopped by the allowance answers 429 and keeps nothing.
+Engagement scans and drafts that use the free fallback are no longer
+counted. No migration.
+
+**Atomic AI usage reservation and export hashes (KI-2026-10-12-014):** apply
+`20261102110000_reserve_ai_usage.sql` and
+`20261102110100_application_export_custody.sql` before deploying this change.
+The first adds `reserve_ai_usage`, which counts a workspace's AI usage and
+records the call in one transaction under the workspace lock the SQL
+dispatchers already take, so requests sent at the same time can no longer pass
+the 20-call window together. Only the service role can call it. If the function
+is missing, a call paid by the deployment's shared key is refused and the error
+names the migration; a workspace's own key keeps the earlier unlocked count.
+The second adds nullable `sha256` and `appendix_manifest_json` columns to
+`funding_opportunity_application_exports`. Application exports now store the
+PDF's SHA-256 and, for SS4A, the appendix manifest; the export list and the
+document library show the hash. Older exports show none. Until the second
+migration is applied, application export and the export list answer 503 naming
+it, and the document library reports grant application exports as waiting on a
+migration.
+
+**Engagement counts above 1,000 comments:** the database API returns at most
+1,000 rows per request and reports no error when it stops. Several screens and
+records read a campaign's comments in one request, so a campaign above 1,000
+comments showed 1,000. These now read every comment, or ask the database to
+count: plan, program and report pages and their APIs, the RTP cycle page, the
+land use plan review closing record, the representativeness screen, the
+dashboard comment chart, nearby crashes for comments, near-duplicate pairs and a
+model run's corridor comments. A read that cannot finish shows as unreadable,
+not as a lower number. Closing a land use plan review now refuses while any
+comment is pending, including one past the first 1,000. No migration.
+
+**Tribal areas and towns or townships as places:** the place search now finds
+American Indian, Alaska Native and Native Hawaiian areas (reservations, trust
+lands, Hawaiian home lands and tribal statistical areas) and county
+subdivisions (New England towns, townships, boroughs). Either can be a
+workspace home geography, a project or campaign area, a plan area or a
+resolved project jurisdiction. A tribal area records no state, because many
+cross state lines and state rules on tribal land are not a map fact; its states
+appear in its name. A town records its state. A benefit-cost analysis can
+record a project whose area or jurisdiction is either kind once
+`20261102100100_bca_tribal_and_town_place_kinds.sql` is applied (see "Stored
+state injury crashes and BCA place kinds" below).
+
+**Crash sources follow the study area's state:** Safety now chooses a crash source
+from the state of the linked project's place or the picked county, city or CDP,
+not from a bounding-box rectangle. Study areas in Nevada and in border counties of
+Arizona, Idaho, Oregon and Utah used to query California's CCRS and store no
+crashes; they now get NHTSA FARS, labeled fatal-only. California places still get
+CCRS. A drawn area, a metro area or an unconfirmed place gets FARS only, never
+CCRS; pick a county or city to get a state crash file. Puerto Rico has its own
+FARS file; see the next entry. Acquisitions saved before this change keep the
+source they recorded; re-run an affected study area to replace an empty CCRS
+pull.
+
+**Puerto Rico fatal crashes:** Safety and the corridor scorecard now read NHTSA's
+separate Puerto Rico FARS file, so a Puerto Rico study area gets fatal crashes
+again, labeled fatal-only, for 2020 through 2024. NHTSA's Puerto Rico files for
+2010 through 2019 have no crash locations, so those years show as not answered,
+not as zero. The readiness panel now marks Puerto Rico safety analysis partial.
+No action is needed to deploy.
+
+**Corridor crash figures follow the state too:** the Explore corridor scorecard now
+chooses its crash source by the same state rule as Safety. A corridor picked as a
+county, city or CDP, or one that matches its project's place, gets that state's
+source. A Nevada corridor now shows FARS, labeled fatal-only, instead of CCRS. A
+drawn, uploaded or metro corridor, or a run launched from a model, gets FARS only,
+and the safety line says the state was not confirmed. If CCRS cannot be reached
+for a California corridor, the run uses FARS and names CCRS as unavailable. The
+shared crash map layer also checks coverage by the workspace's stated state.
+
+**Oregon injury crashes:** an Oregon live crash read and an Oregon corridor run now
+read ODOT's published crash layer (Oregon Transportation Safety Data Explorer),
+which carries ODOT's own KABCO severity, so they report serious-injury and injury
+crashes instead of fatal-only FARS. Crashes ODOT could not locate are left out,
+because the layer places them at a default point. A Safety acquisition in Oregon
+stores these crashes once `20261102100000_persist_state_injury_crashes.sql` is
+applied (see below). ODOT names no open license; the attribution says so. A research
+note, `docs/research/STATE_INJURY_CRASH_SOURCES_2026-11-01.md`, records which
+states publish open injury-crash data (California, DC, Iowa, Ohio and Oregon
+qualify; 27 states publish with limits). No action is needed to deploy.
+
+**Iowa, Ohio and DC injury crashes:** a live crash read and a corridor run in
+Iowa, Ohio or the District of Columbia now read the state's published crash
+layer (Iowa DOT Crash Data, ODOT TIMS crash locations, DDOT Crashes in DC), so
+they report serious-injury and injury crashes instead of fatal-only FARS. Like
+Oregon, a Safety acquisition stores them once
+`20261102100000_persist_state_injury_crashes.sql` is applied (see below). Ohio's
+layer has no casualty counts or crash day; DC's years are the years crashes were
+reported; Iowa's newest year is partial.
+
+**Stored state injury crashes and BCA place kinds (KI-2026-11-02-001,
+KI-2026-11-01-001):** two migrations. Operators must apply both before
+deploying this code, in this order:
+
+- `20261102100000_persist_state_injury_crashes.sql` widens
+  `safety_crashes.source_id` to admit `odot-or`, `iowadot-ia`, `odot-oh` and
+  `ddot-dc`, and `safety_crash_ingests.coverage_state` to admit
+  `state_injury_file`. A Safety acquisition in Oregon, Iowa, Ohio or DC now
+  stores the state's crashes with KABCO severity (`kabco_full`) instead of
+  fatal-only FARS. Ohio's stored crashes keep their missing casualty counts as
+  blank, not zero. Person rows stay CCRS-only. Acquisitions saved before this
+  change keep FARS; re-run a study area to store the state file.
+- `20261102100100_bca_tribal_and_town_place_kinds.sql` lets a benefit-cost
+  analysis record a project whose place or resolved jurisdiction is a tribal
+  area or a town or township. Each GEOID is checked by its own kind's format;
+  a city or CDP reference must now be 7 digits, as the reader already
+  required.
+
+Code deployed without them fails: an acquisition in those four places fails at
+its first write, and a BCA save for those place kinds returns 409.
+
+**CEQA screen on county runs:** the §15064.3 screening panel now appears only on
+county runs whose county is in California.
+
+**Neutral starter text:** the California LAPM profile's "submitted to" hint and the
+project record placeholder no longer name Caltrans District 3. The complete streets
+and countywide wayfinding engagement templates no longer tell residents the
+campaign is a demonstration.
+
+**Large aerial photos and documents upload on hosted installs:** mission photos
+and Knowledge Base files (the library, work-program sources, estimated-cost CSVs
+and portfolio imports) now go from the browser straight to private Storage
+through a signed URL, as GTFS feeds already did. Vercel refuses a function
+request body above about 4.5 MB, so RTPs, agency PDFs and drone frames larger
+than that could not be added before. The per-file ceilings
+(`OPENPLAN_AERIAL_IMAGE_MAX_BYTES`, `OPENPLAN_KB_DOCUMENT_MAX_BYTES`) and the
+workspace storage limit still apply, checked once on the declared size and again
+on the stored file. No migration. The body routes still work for API clients.
+Staged files whose upload never finished stay in Storage under
+`<workspace>/staged/` until removed by hand; nothing sweeps them yet.
+
+**SS4A application evidence appendices:** the application packet export for an
+SS4A application now adds evidence appendices from the linked project's saved
+records: the high-injury network map and ranked list, the crash summary with its
+source, years and severity coverage as stored, the countermeasure table, the
+latest benefit-cost analysis with its limits, and the engagement summary. Each
+names its source record, date and stored hash. Missing, unreadable and
+deselected appendices are listed, never dropped. Planners choose appendices
+before export; all are on by default. The map is drawn only when the stored
+crash records and cached road lines reproduce the frozen ranking exactly. The
+export response and audit log carry the PDF's SHA-256. The appendices need no
+migration; storing the hash on the export record does (see "Atomic AI usage
+reservation and export hashes").
+
+**Award-condition handoff:** the existing Grants workspace retains source-backed
+award terms, staff review and project handoff revisions. Managed invoices keep
+their original currency, exact amounts and reviewed term revision. Incomplete
+reads leave coverage unassessed. These records do not establish legal compliance
+or replace a responsible person's review. Apply
+`20261018000003_award_condition_handoff.sql`, then
+`20261024200000_award_handoff_terms_variable.sql` and
+`20261024200100_award_handoff_command_aliases.sql` before deploying this capability.
+The additive corrections separate PL/pgSQL variables from query aliases. Twelve
+isolated transaction and parent-DELETE contention cases pass. The visible workflow
+remains pending.
+
+**Managed award reopen correction:** apply
+`20261024200200_managed_award_reopen_status.sql` after the three award migrations
+above, and refresh the API schema cache before deploying the new caller. It
+retains the selected not-started, active or delayed destination in the award,
+receipt and response. Existing five-argument callers keep the active default.
+Earlier native cases do not cover this new overload. RTP pages retain loaded
+cycle data when funding reads fail. The cycle detail withholds dependent funding
+figures; the registry identifies partial totals. Successful incomplete funding
+reads still refuse.
+
+**Award history privileges:** apply
+`20261024200300_award_handoff_relation_privileges.sql` to remove residual
+service_role creation grants. It restores only SELECT/INSERT on
+`funding_award_handoff_revisions`, `funding_award_handoff_sources`,
+`funding_award_handoff_occurrences` and `funding_award_closure_receipts`, and only
+SELECT on `current_award_handoff_records`, `active_project_submittals`,
+`active_project_milestones`, `legacy_calendar_funding_awards`,
+`funding_award_handoff_fulfillment` and `funding_opportunity_issuance`.
+Authenticated SELECT and object definitions remain unchanged. Source review
+does not establish installed privileges.
+
+**Safety seed entry order:** apply
+`20261024200400_award_handoff_safety_seed_entry_lock.sql` after the award
+corrections. `20261023190100_safety_comparison_inputs.sql` replaced
+`apply_ss4a_safety_seed` after the award migration had added its entry lock, so
+installations that applied them in version order lost that first statement.
+This migration restores it without restating the function body. Installations
+that already carry the lock are unchanged.
+
+**Award migration versions.** The hosted installation already holds
+`20261018000003_award_condition_handoff.sql` under that version, byte for byte
+as it appears here, so the file keeps its version. It sorts below the 0.70.0,
+0.71.0 and 0.72.0 marks. A deployment already on one of those releases, or on
+a later main, must run `supabase migration up --include-all` once. Without the
+flag the CLI refuses the whole run and names this file; with it, the CLI applies
+this file and then the corrections. The four corrections moved from
+20261019 versions to 20261024200000 through 20261024200300, with unchanged
+bodies, so they sort after installed history. An installation that applied a
+pre-release copy of this branch under the old 20261019 versions must compare its
+migration history before running either command.
+
 **Security dependency update.** Zod moves from 4.4.3 to 4.6.7 for
 GHSA-mrhx-c7xc-m3w5, a memory-exhaustion advisory in validating oversized
 constrained collections; OpenPlan validates request bodies with Zod.
 puppeteer-core moves from 25.6.0 to 25.16.0, which brings a `chromium-bidi`
 build on fixed Zod. The development-only shadcn CLI moves from 3.8.5 to 4.22.1
-for the same reason. `npm audit` reports no advisories afterward.
+for the same reason. The development-only `body-parser`, through Express, moves
+from 2.3.0 to 2.4.0 for GHSA-27r3-jxmh-p828, a denial of service through
+trailing bytes after a compressed request body. `undici` moves to 6.29.1
+(used by the AI SDK at runtime) and 7.30.1 (development), and the
+development-only `fast-uri` to 3.1.9, for advisories published the same day,
+including GHSA-w74x-v6f9-j3xg, GHSA-xhq7-xmqj-769h and GHSA-wjr9-j795-jxcr.
+`npm audit` reports no advisories afterward.
 
-This tree contains 439 source migrations, nine more than v0.72.0. Self-hosted
-installations apply the seven Models and Reports migrations, the estimate
-migration and the Safety migration below, in version order, before deploying
-this code. The managed database received all seven on
+**Vercel builds skip Next's duplicate type check.** Next's type check needs
+more than 5 GB of heap on its own, and on October 23, 2026 it pushed Vercel's
+standard 8 GB builder out of memory. Builds with `VERCEL=1` now skip it. Every
+other build keeps it, including the CI QA gate's `npm run build`, which
+Vercel waits for before promoting. Self-hosted builds are unchanged.
+
+This tree contains 442 source migrations, twelve more than v0.72.0. Self-hosted
+installations apply the seven Models and Reports migrations, the estimate,
+Safety, BCA and two land-use migrations below, in version order, before
+deploying this code. The managed database received all seven on
 October 23, 2026, in one transaction after a fresh capture and a rollback-only
 dry run; its history now holds 438 rows, including the separate Award record.
 The catalogue after installation equals the catalogue before plus exactly the
@@ -112,6 +669,33 @@ correction. It validates future amounts as positive values of at most
 retained estimates or recover precision lost in older source values. The
 migration first carried an earlier October 19 version; it moved after the v0.72.0
 release mark because released installations would skip an earlier version.
+
+**BCA project place:** Apply
+`20261023190200_bca_project_place_snapshot.sql` before deploying the BCA update.
+The migration accepts new analysis versions with a retained project place and
+checks that place against the current project when saving. Existing saved
+analyses remain unchanged. It first carried an earlier October 19 version and
+moved after the v0.72.0 release mark.
+
+**PR332 review follow-up:** Project deliverable counts, delivery and activity
+views distinguish pending or failed inputs from an empty project. Current
+land-use publication refuses competing decisions, including a later repeal,
+and checks the decision against the retained packet in one read snapshot.
+Historical report decisions remain dated history. Operators must apply additive
+`20261023190300_land_use_publication_decision_boundary.sql` after
+`20261017030608_land_use_plan_publication_transaction.sql` and before deploying
+the dependent public reader. This source patch does not establish migration,
+concurrency, RLS or browser acceptance.
+
+**Land-use review release cascades:** Apply additive
+`20261023190400_land_use_review_release_cascade_guards.sql` to correct workspace
+deletion when restored foreign keys reach review releases before their plan.
+The guard continues to refuse direct release deletion while its owning plan
+and workspace exist. Insert, frozen identity, close and withdrawal rules remain
+unchanged. Both migrations first carried October 20 and 21 versions and moved
+after the v0.72.0 release mark. The cascade fixture now fixes trigger order
+explicitly, because foreign-key trigger names embed OIDs that differ between a
+fresh migration chain and a restored archive.
 
 ## 0.72.0 (2026-10-22)
 

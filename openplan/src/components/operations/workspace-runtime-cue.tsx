@@ -18,7 +18,7 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
 
   if (command.key === "advance-project-reimbursement-invoicing") {
     return {
-      message: `Next across this workspace: reimbursement is already underway in ${command.targetProjectName ?? "the linked project"} — invoice follow-through is now the priority.`,
+      message: `Next across this workspace: reimbursement is already underway in ${command.targetProjectName ?? "the linked project"}. Invoice follow-through is now the priority.`,
       href,
       ctaLabel: "Open reimbursement triage",
     };
@@ -28,8 +28,8 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
     return {
       message:
         command.moduleKey === "grants"
-          ? `Next across this workspace: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} grant follow-through from linked projects — finish that in Grants before treating ${summary.counts.rtpFundingReviewPackets === 1 ? "it" : "them"} as settled.`
-          : `Next across this workspace: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects — release review should confirm funding status before treating ${summary.counts.rtpFundingReviewPackets === 1 ? "it" : "them"} as settled.`,
+          ? `Next across this workspace: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} grant follow-through from linked projects. Finish that in Grants before treating ${summary.counts.rtpFundingReviewPackets === 1 ? "it" : "them"} as settled.`
+          : `Next across this workspace: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects. Release review should confirm funding status before treating ${summary.counts.rtpFundingReviewPackets === 1 ? "it" : "them"} as settled.`,
       href,
       ctaLabel: command.moduleKey === "grants" ? "Open Grants follow-through" : "Open RTP funding review",
     };

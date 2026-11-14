@@ -51,12 +51,12 @@ export type CorridorLosGrade = (typeof CORRIDOR_LOS_GRADES)[number];
  * Forcing a grade would mean inventing one.
  */
 export const CORRIDOR_LOS_GRADE_LABELS: Record<CorridorLosGrade, string> = {
-  A: "A — free flow",
-  B: "B — reasonably free flow",
-  C: "C — stable flow",
-  D: "D — approaching unstable",
-  E: "E — at capacity",
-  F: "F — breakdown",
+  A: "A: free flow",
+  B: "B: reasonably free flow",
+  C: "C: stable flow",
+  D: "D: approaching unstable",
+  E: "E: at capacity",
+  F: "F: breakdown",
 };
 
 /**

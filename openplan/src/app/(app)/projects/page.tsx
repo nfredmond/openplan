@@ -137,7 +137,7 @@ function getProjectPacketCommandPriority(project: {
 
 /** What a card says when the reports read failed, in place of a count of zero. */
 const REPORTS_UNREADABLE_DETAIL =
-  "The reports linked to this project could not be read, so this is unavailable rather than empty — it is not a finding that the project has no reports.";
+  "The reports linked to this project could not be read, so this is unavailable rather than empty. It is not a finding that the project has no reports.";
 
 function describeProjectPacketCommand(
   project: {
@@ -162,7 +162,7 @@ function describeProjectPacketCommand(
   // reports the database refused to hand over is a false instruction.
   if (reportsReadFailed && !report) {
     return {
-      label: "First action: unavailable — the linked reports could not be read",
+      label: "First action: unavailable (the linked reports could not be read)",
       detail: REPORTS_UNREADABLE_DETAIL,
     };
   }
@@ -229,7 +229,7 @@ export default async function ProjectsPage({
       <WorkspaceMembershipRequired
         moduleLabel="Projects"
         title="Projects need a workspace"
-        description="Projects belong to a workspace. You are signed in, but this account is not in a workspace yet — a workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one."
+        description="Projects belong to a workspace. You are signed in, but this account is not in a workspace yet. A workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one."
       />
     );
   }
@@ -690,8 +690,8 @@ export default async function ProjectsPage({
           </div>
         ) : projects.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">
-            Projects gives each piece of work your agency delivers — a corridor study, an intersection
-            fix, a trail segment — one place that plans, funding, models, and reports all connect to.
+            Projects gives each piece of work your agency delivers (a corridor study, an intersection
+            fix, a trail segment) one place that plans, funding, models, and reports all connect to.
             Create your first project to start tracking its milestones and money in one place.
             <div className="mt-3">
               <a href="#create-project" className="inline-flex items-center rounded border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/40">
@@ -730,7 +730,7 @@ export default async function ProjectsPage({
                 })}
                 emptyLabel={
                   reportsReadFailed
-                    ? "This is unavailable — the linked reports could not be read, so it is not a finding that nothing needs doing."
+                    ? "This is unavailable: the linked reports could not be read, so it is not a finding that nothing needs doing."
                     : "No report work is waiting anywhere in your portfolio."
                 }
               />
