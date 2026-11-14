@@ -1407,7 +1407,7 @@ export function safetyActionPlanMarkup(
     : `<h3>Countermeasures</h3>
       <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
       <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
-        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? ` <strong>${esc(item.listStatus)}</strong>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
+        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? `<span class="list-status">${esc(item.listStatus)}</span>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a class="source-url" href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
       </li>`).join("")}</ul>
       <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
 
@@ -2151,6 +2151,8 @@ const REPORT_DOCUMENT_STYLES = `
       .safety-network-map figcaption { margin-top: 8px; font-size: 13px; line-height: 1.5; color: #3b4952; }
       table.wrap-cells { width: 100%; table-layout: fixed; }
       table.wrap-cells th, table.wrap-cells td { overflow-wrap: anywhere; }
+      .list-status { display: block; margin: 2px 0; font-size: 14px; color: #3b4952; }
+      .source-url, .source-line { overflow-wrap: anywhere; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {

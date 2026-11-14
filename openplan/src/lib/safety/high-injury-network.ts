@@ -669,16 +669,22 @@ export function describeHighInjuryNetworkCoverage(network: Extract<HighInjuryNet
     return `No ${crashWord} are recorded here for these years. That is not a finding that the roads are safe.${periodCaveat}`;
   }
   const notPlaced = network.crashesConsidered - network.crashesPlaced;
+  // The verb agrees with the leading count: "1 is", "2 are".
+  const be = (n: number) => (n === 1 ? "is" : "are");
   const placedSentence = network.method === "road_segments"
-    ? `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} are within ${network.parameters.snapMeters} m of a stored road line (${(network.roadMilesReviewed ?? 0).toFixed(1)} road miles stored).`
-    : `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} are placed in a grid square.`;
+    ? `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} ${be(network.crashesPlaced)} within ${network.parameters.snapMeters} m of a stored road line (${(network.roadMilesReviewed ?? 0).toFixed(1)} road miles stored).`
+    : `${network.crashesPlaced.toLocaleString("en-US")} of ${network.crashesConsidered.toLocaleString("en-US")} ${crashWord} ${be(network.crashesPlaced)} placed in a grid square.`;
   const notPlacedSentence = notPlaced <= 0
     ? ""
     : network.method === "road_segments"
-      ? ` ${notPlaced.toLocaleString("en-US")} are not on this list because no stored road line is near them.`
-      : ` ${notPlaced.toLocaleString("en-US")} are not on this list because their coordinates could not be used.`;
-  const listedSentence = network.segments.length > 0
-    ? ` The ${network.segments.length} listed ${network.method === "road_segments" ? "pieces" : "squares"} hold ${network.listedCrashes.toLocaleString("en-US")} of them${network.listedMiles === null ? "" : ` on ${network.listedMiles.toFixed(1)} miles`}.`
+      ? ` ${notPlaced.toLocaleString("en-US")} ${be(notPlaced)} not on this list because no stored road line is near ${notPlaced === 1 ? "it" : "them"}.`
+      : ` ${notPlaced.toLocaleString("en-US")} ${be(notPlaced)} not on this list because ${notPlaced === 1 ? "its coordinates" : "their coordinates"} could not be used.`;
+  const listed = network.segments.length;
+  const listedNoun = network.method === "road_segments"
+    ? (listed === 1 ? "piece holds" : "pieces hold")
+    : (listed === 1 ? "square holds" : "squares hold");
+  const listedSentence = listed > 0
+    ? ` The ${listed} listed ${listedNoun} ${network.listedCrashes.toLocaleString("en-US")} of them${network.listedMiles === null ? "" : ` on ${network.listedMiles.toFixed(1)} miles`}.`
     : "";
   return placedSentence + notPlacedSentence + listedSentence + periodCaveat;
 }

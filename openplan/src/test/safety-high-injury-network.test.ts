@@ -160,7 +160,35 @@ describe("ranking by crashes per mile", () => {
     expect(network.crashesPlaced).toBe(1);
     expect(network.listedCrashes).toBe(1);
     expect(describeHighInjuryNetworkCoverage(network)).toMatch(/1 of 2 fatal or serious-injury crashes/);
-    expect(describeHighInjuryNetworkCoverage(network)).toMatch(/1 are not on this list/);
+    // KI-2026-11-14-212: the sentence read "1 are not on this list".
+    expect(describeHighInjuryNetworkCoverage(network)).toContain(
+      "1 of 2 fatal or serious-injury crashes is within 50 m of a stored road line (0.5 road miles stored). 1 is not on this list because no stored road line is near it. The 1 listed piece holds 1 of them on 0.5 miles.",
+    );
+  });
+
+  // KI-2026-11-14-212: each count agrees with its verb, for 1 and for many.
+  it("makes the coverage sentence agree in number for 1 and for many", () => {
+    const many = computed(computeHighInjuryNetwork({
+      crashes: [crashAt(0, 0.1), crashAt(0, 0.2), crashAt(0, 0.6),
+        { id: "far1", longitude: 0.2 * DEGREES_PER_MILE, latitude: 0.01, severity: "fatal" },
+        { id: "far2", longitude: 0.3 * DEGREES_PER_MILE, latitude: 0.01, severity: "fatal" }],
+      crashesConsidered: 5,
+      basis: "ksi",
+      roads: [road("a", "A Street", 0, 0, 1)],
+      years: [2024],
+    }));
+    const one = computed(computeHighInjuryNetwork({
+      crashes: [crashAt(0, 0.2), { id: "far", longitude: 0.2 * DEGREES_PER_MILE, latitude: 0.01, severity: "fatal" }],
+      crashesConsidered: 2,
+      basis: "ksi",
+      roads: [road("a", "A Street", 0, 0, 0.5)],
+      years: [2024],
+    }));
+    expect(describeHighInjuryNetworkCoverage(one)).toMatch(/^1 of 2 fatal or serious-injury crashes is within 50 m.* 1 is not on this list because no stored road line is near it\. The 1 listed piece holds 1 of them /);
+    const text = describeHighInjuryNetworkCoverage(many);
+    expect(text).toMatch(/^3 of 5 fatal or serious-injury crashes are within 50 m/);
+    expect(text).toContain(" 2 are not on this list because no stored road line is near them.");
+    expect(text).toMatch(/ The 2 listed pieces hold 3 of them on /);
   });
 
   it("keys a road piece by the line, not by the row that stores it", () => {
