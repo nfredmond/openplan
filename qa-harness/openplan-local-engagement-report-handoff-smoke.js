@@ -294,7 +294,9 @@ async function main() {
     await itemRow.waitFor({ timeout: 20000 });
     await itemRow.getByText(/Pending/i).first().waitFor({ timeout: 20000 });
     const moderationReason = 'Synthetic smoke review: public planning feedback checked for inclusion; no actual agency approval.';
-    await itemRow.getByLabel('Moderation notes', { exact: true }).fill(moderationReason);
+    // The field is labeled "Review reason" since the November 14 moderation changes;
+    // the nightly run failed here on the old label, "Moderation notes".
+    await itemRow.getByLabel('Review reason', { exact: true }).fill(moderationReason);
     const [moderationResponse] = await Promise.all([
       page.waitForResponse(
         (response) =>
