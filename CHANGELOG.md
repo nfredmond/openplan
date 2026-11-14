@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**The hosted site has a usable offsite backup again (KI-2026-11-14-160, -161, -118):** on November 14, 2026 the daily capture was moved to a new encryption key (fingerprint `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`), and capture `20261114T072635Z` was decrypted and restored into an empty database with no network, where every table's row count, the migration history and every Storage object matched the live site. Captures made before that time were encrypted to a key whose private half was lost with a wiped workstation; they cannot be read and age out within 30 days. The private key exists only on the operator's workstation, on two disks, so losing that machine loses the backups again; the operations page says so. The same day a deployment-wide AI key that should never have been set on the hosted project was removed from its Production and Preview settings; the app had not been using it. No migration.
 **Hosted capture and install kit (KI-2026-11-14-160):** the procedure and
 tools for proving an offsite capture and installing hosted migrations now live
 in `scripts/ops/hosted-install/`, replacing the private kit lost with the

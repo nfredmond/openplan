@@ -82,7 +82,7 @@ works, then revoke the old value. Set Railway values with
 |---|---|
 | `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Legacy JWT keys rotate together: a new JWT secret replaces both keys and signs every user out. Update Vercel and every Railway service, then redeploy all of them in one window. Supabase's newer per-key secret keys are not yet tested with OpenPlan. |
 | `NEXT_PUBLIC_MAPBOX_TOKEN`, `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN`, `MAPBOX_ACCESS_TOKEN`, `MAPBOX_TOKEN` | Create a new public token in the Mapbox account, restricted to the site's URL. Set all four names in Vercel and redeploy, because public values are built into the bundle. Then delete the old token. |
-| `ANTHROPIC_API_KEY` | Create a key in the Anthropic Console, set it in Vercel, redeploy, revoke the old key. Workspace-owned keys are separate and belong to each workspace. |
+| `ANTHROPIC_API_KEY` | Not set on the hosted project's Production or Preview environments, and must not be: with public sign-up a deployment-wide key would bill every workspace. It was found set on both on November 14, 2026 (created about October 10) and removed that day; the app had been withholding it because `OPENPLAN_SHARED_AI_KEY` is not set. Workspace-owned keys are separate and belong to each workspace. A single-agency installation that wants a deployment key follows [self-hosting](../SELF_HOSTING.md). |
 | `RESEND_API_KEY` | Create a sending key in Resend; set it in Vercel and the Railway application workers; restart; revoke the old key. Supabase Auth's SMTP uses its own key, set in the Supabase dashboard. |
 | `CRON_SECRET` | Set a new random value in Vercel and redeploy. Vercel's scheduler sends it automatically. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET`, `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` | Follow the staged [integration secret rotation procedure](../SELF_HOSTING.md#rotate-the-integration-encryption-secret). Prepare both secrets on Vercel and every credential-reading worker before changing the primary. Preserve both with database and journal backups. Reads do not re-encrypt retained records; no hosted rotation has been performed by this change. |
@@ -99,7 +99,7 @@ Names only. "Vercel" means the `openplan` project's Production environment.
 
 - **Vercel, read by the app:** `NEXT_PUBLIC_SUPABASE_URL`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
-  `NEXT_PUBLIC_SITE_URL`, the four Mapbox names above, `ANTHROPIC_API_KEY`,
+  `NEXT_PUBLIC_SITE_URL`, the four Mapbox names above,
   `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CRON_SECRET`,
   `OPENPLAN_INTEGRATION_KEY_SECRET`, optional `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET`, `CENSUS_API_KEY`,
   `OPENPLAN_MODELING_WORKER`, `OPENPLAN_HOSTED_ARTIFACT_MIRROR`,
