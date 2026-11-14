@@ -201,7 +201,9 @@ or DNS to change OpenPlan. Public signup requires confirmation email.
   private Storage. It belongs to the Pro organization and uses Micro compute.
   The Nat Ford website uses a different project, `bymadqabjvtwrfbkcded`; keep them
   separate. The dated catch-up recorded 405 migrations on October 11; main
-  expected 448 on November 1. Git deploys do not apply
+  expected 448 on November 1 and 455 after the November 14 window, which
+  installed seven files in one transaction with the kit in
+  `scripts/ops/hosted-install/`. Git deploys do not apply
   migrations. The agent that owns a schema change coordinates its rollout with
   the other agents through the coordination file below; no separate approval
   from Nathaniel is needed. Record the planned migration there first, then work

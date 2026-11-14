@@ -478,6 +478,9 @@ async function pdf(name: string, html: string) {
   if (keep) {
     mkdirSync(keep, { recursive: true });
     writeFileSync(path.join(keep, `${name}.pdf`), bytes);
+    // The HTML too, so the same document can be printed by another engine
+    // (for example the serverless browser bundle in a Lambda container).
+    writeFileSync(path.join(keep, `${name}.html`), html);
   }
   const pages = Number(/Pages:\s+(\d+)/.exec(execFileSync(tool("pdfinfo"), [file]).toString())![1]);
   const pageText = Array.from({ length: pages }, (_, index) =>
