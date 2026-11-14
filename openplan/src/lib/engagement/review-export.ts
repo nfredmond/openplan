@@ -367,6 +367,22 @@ export async function verifyCampaignReviewZip(bytes: Buffer, snapshotChecksum: s
   }
 }
 
+/** The manifest's review counts, from the same reading as the PDF and the workbook. */
+function manifestReviewCounts(snapshot: EngagementReviewSnapshot): Record<string, number> {
+  const review = reviewFileCounts(snapshot);
+  return {
+    ...(review.received === null ? {} : { received: review.received }),
+    ...Object.fromEntries(review.states.map(({ manifestKey, count }) => [manifestKey, count])),
+    publishedResponses: review.counts.publishedResponses,
+    answered: review.counts.answered,
+  };
+}
+
+function manifestCountsLeftOut(snapshot: EngagementReviewSnapshot): { countsLeftOut?: string } {
+  const { leftOut } = reviewFileCounts(snapshot);
+  return leftOut ? { countsLeftOut: leftOut } : {};
+}
+
 export async function renderCampaignReviewFiles(snapshotText:string,checksum:string,photos:Map<string,Buffer> = new Map()):Promise<EngagementReviewFile[]> {
   const snapshot=await parseReviewSnapshot(snapshotText,checksum);
   const html=buildCampaignReviewHtml(snapshot,checksum,photos);
@@ -396,7 +412,7 @@ export async function renderCampaignReviewFiles(snapshotText:string,checksum:str
   const manifestFiles = await Promise.all(Object.values(zip.files).filter(file=>!file.dir).map(async file=>{
     const bytes=await file.async('nodebuffer');return {name:file.name,checksum:createHash('sha256').update(bytes).digest('hex'),byteLength:bytes.length};
   }));
-  addText('manifest.json',JSON.stringify({schema:1,snapshotSha256:checksum,scope:snapshot.scope,counts:{contributions:snapshot.items.length,sessions:snapshot.sessions.length,answers:snapshot.answers.length,responses:snapshot.responses.length},files:manifestFiles},null,2));
+  addText('manifest.json',JSON.stringify({schema:1,snapshotSha256:checksum,scope:snapshot.scope,counts:{contributions:snapshot.items.length,sessions:snapshot.sessions.length,answers:snapshot.answers.length,responses:snapshot.responses.length,...manifestReviewCounts(snapshot)},...manifestCountsLeftOut(snapshot),files:manifestFiles},null,2));
   const portable = await zip.generateAsync({type:'nodebuffer',compression:'DEFLATE'});
   await verifyCampaignReviewZip(portable,checksum);
   add('zip','application/zip',portable);
