@@ -216,7 +216,7 @@ export function CountyRunObservedCounts({
 
           {showRaw ? (
             <pre
-              className="max-h-64 overflow-auto rounded bg-muted p-3 text-label"
+              className="max-h-64 overflow-auto rounded bg-secondary p-3 text-label"
               data-testid="observed-counts-raw"
             >
               {serializeCountyValidationScaffoldCsv(table)}

@@ -571,7 +571,7 @@ export function GeometryPickerMap({
       <div
         data-testid="geometry-picker-map-unavailable"
         lang={lang}
-        className="flex h-[200px] w-full flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 text-sm text-muted-foreground p-4 text-center"
+        className="flex h-[200px] w-full flex-col items-center justify-center rounded-xl border border-dashed border-border bg-secondary text-sm text-foreground p-4 text-center"
       >
         {words.mapUnavailable}
       </div>

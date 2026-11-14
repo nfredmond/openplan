@@ -113,7 +113,8 @@
   --map-park: #cfd9b9;
   --ink: #1a1a1a;
   --ink-2: #4a4a4a;
-  --muted: #716b63;
+  /* Was #716b63: 4.12:1 on --secondary and 4.31:1 on the 6% --primary tint of the active-project strip. */
+  --muted: #68625a;
   --line: rgba(0, 0, 0, 0.1);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -343,7 +344,7 @@
   --map-park: #d8dde0;
   --ink: #16191c;
   --ink-2: #43484d;
-  --muted: #686d74;
+  --muted: #61666d;
   --line: rgba(0, 0, 0, 0.1);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -382,7 +383,7 @@
   --map-park: #c6d7cf;
   --ink: #101a24;
   --ink-2: #3b4b5a;
-  --muted: #5e6e7d;
+  --muted: #576674;
   --line: rgba(12, 32, 52, 0.12);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -421,7 +422,7 @@
   --map-park: #cbdcbb;
   --ink: #141a12;
   --ink-2: #414c3c;
-  --muted: #64705e;
+  --muted: #5e6958;
   --line: rgba(20, 40, 20, 0.12);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;
@@ -460,7 +461,7 @@
   --map-park: #cdd4c4;
   --ink: #190f1d;
   --ink-2: #4a3d51;
-  --muted: #73687a;
+  --muted: #6a6071;
   --line: rgba(40, 20, 50, 0.12);
   --panel: rgba(255, 255, 255, 0.94);
   --panel-solid: #ffffff;

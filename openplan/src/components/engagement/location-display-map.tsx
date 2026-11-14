@@ -415,7 +415,7 @@ export function LocationDisplayMap({
   if (MAP_ENGINE.kind === "none" || cannotStart) {
     return (
       <div
-        className="mb-4 rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground"
+        className="mb-4 rounded-[0.5rem] border border-dashed border-border bg-secondary px-4 py-4 text-sm text-foreground"
         id="engagement-map-unavailable"
         data-testid="engagement-map-unavailable"
       >
