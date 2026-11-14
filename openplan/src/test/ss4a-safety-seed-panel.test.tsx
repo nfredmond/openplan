@@ -111,7 +111,9 @@ describe("explicit Safety artifact preview and apply UI", () => {
       freshness: { status: "newer", seededGeneratedAt: "2026-11-03T17:42:49+00:00", newestGeneratedAt: "2026-11-13T18:21:00+00:00", newestArtifactId: rows.report.id } }));
     render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
     const line = await screen.findByTestId("safety-seed-newer-report");
-    expect(line.textContent).toMatch(/^Seeded from the report generated Nov 3, 2026, \d{1,2}:42 (AM|PM)\. A newer one was generated Nov 13, 2026, \d{1,2}:21 (AM|PM)\. Select it above to re-seed\.$/);
+    // Both dates print in UTC, as the picker and the export appendix do
+    // (KI-2026-11-14-116), so the line reads the same in every host zone.
+    expect(line.textContent).toBe("Seeded from the report generated Nov 3, 2026, 17:42 UTC. A newer one was generated Nov 13, 2026, 18:21 UTC. Select it above to re-seed.");
     expect(fetchMock).not.toHaveBeenCalled();
   });
   it("says the check failed rather than that no newer report exists, and is silent when current", async () => {
