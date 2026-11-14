@@ -123,7 +123,8 @@ describe("the draft section", () => {
       ["Main Street", 1],
       ["Old Road", null],
     ]);
-    expect(draft.treatments[0].countermeasures[0].cmfNote).toContain("[VERIFY]");
+    // The catalog note names the CMF Clearinghouse entries read for the item (KI-2026-11-14-290).
+    expect(draft.treatments[0].countermeasures[0].cmfNote).toMatch(/^CMF Clearinghouse, read November 14, 2026: entry \d+/);
   });
 
   it("lists the components it does not cover and marks none as covered", () => {
