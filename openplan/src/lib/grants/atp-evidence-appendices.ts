@@ -234,7 +234,6 @@ function crashAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix 
       { label: "Source", value: evidence.sourceLabel ?? "Not recorded" },
       { label: "Years requested", value: evidence.years.length > 0 ? evidence.years.join(", ") : "Not recorded" },
       { label: "Severity coverage", value: describeSeverityCoverage(evidence.seriousInjury) },
-      { label: "Recorded severity coverage", value: evidence.severityCompleteness || "Not recorded" },
       { label: "Crash area", value: crashAreaBasisLabel(studyArea) },
       ...(studyArea.outsideBoundaryCount !== null
         ? [{ label: "Crashes outside the boundary, left out", value: count(studyArea.outsideBoundaryCount) }]

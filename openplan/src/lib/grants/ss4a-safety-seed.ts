@@ -7,6 +7,7 @@ import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
 import { readReportSafetyActionPlan } from "@/lib/reports/safety-action-plan";
 import { readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
 import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-origin";
+import { formatEvidenceTimestamp } from "./evidence-timestamp";
 
 export const SS4A_SEED_MIGRATION = "20261018000002_ss4a_safety_seed";
 export const SS4A_SECTION_KEYS = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "ss4a")!.applicationSections!.map((section) => section.key);
@@ -112,7 +113,9 @@ export function buildSs4aSafetyDrafts(snapshot: SafetyPlanSnapshot, projectName:
     `Source report: /reports/${snapshot.reportId}#artifact-${snapshot.artifactId}`,
     `Source artifact: /api/reports/${snapshot.reportId}/artifacts/${snapshot.artifactId}/download`,
     `Acquisition: /safety?projectId=${snapshot.projectId}&ingestId=${snapshot.acquisition.id}`,
-    `Acquisition ID: ${snapshot.acquisition.id}. Retrieved: ${snapshot.acquisition.created_at}. Artifact generated: ${snapshot.generatedAt}. Snapshot SHA-256: ${snapshot.hash}.`,
+    // Written once into section text when the seed is applied. Sections
+    // seeded before plain dates keep the ISO stamps they were written with.
+    `Acquisition ID: ${snapshot.acquisition.id}. Retrieved: ${formatEvidenceTimestamp(typeof snapshot.acquisition.created_at === "string" ? snapshot.acquisition.created_at : null)}. Artifact generated: ${formatEvidenceTimestamp(snapshot.generatedAt)}. Snapshot SHA-256: ${snapshot.hash}.`,
   ].join("\n\n");
   const bodies: Record<string, string> = {
     "project-overview": `The selected Safety draft describes evidence for ${projectName}.\n\n${draft.crashSummary.kind === "present" ? `${draft.crashSummary.sourceLabel}; years ${draft.crashSummary.years}.` : draft.crashSummary.reason}\n\n[OPERATOR: Confirm applicant, project limits, award type and proposed scope. These are not established by this Safety snapshot.]`,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
-import { formatEvidenceTimestamp } from "@/lib/grants/evidence-appendices";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import { SS4A_APPENDIX_KEYS } from "@/lib/grants/ss4a-appendix-keys";
 import {
   buildSs4aEvidenceAppendices,
@@ -78,7 +78,8 @@ describe("SS4A evidence appendices", () => {
     const appendices = buildSs4aEvidenceAppendices(completeEvidenceRecords(), ALL);
     const crash = byKey(appendices, "crash_summary");
     expect(factValue(crash, "Severity coverage")).toMatch(/^Fatal crashes only\./);
-    expect(factValue(crash, "Recorded severity coverage")).toBe("fatal_only");
+    // The coverage is stated once, in words; the stored code is not printed.
+    expect(crash.facts.map((f) => f.label)).not.toContain("Recorded severity coverage");
     expect(factValue(crash, "Years requested")).toBe("2023, 2024");
     expect(byKey(appendices, "hin_map").table!.rows[0][4]).toBe("Not in source (fatal crashes only)");
     expect(packetText(appendices)).toContain("Fatal crashes only. This source is a fatality census: it records only crashes in which someone was killed");

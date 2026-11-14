@@ -46,7 +46,6 @@ import {
   acquisitionSeriousInjury,
   describeSeverityCoverage,
   engagementEvidenceAppendix,
-  formatEvidenceTimestamp,
   NO_PROJECT_REASON,
   type EvidenceAppendix,
   type EvidenceAppendixFrame,
@@ -55,6 +54,7 @@ import {
   type ProjectBcaRead,
   type ProjectEngagementRead,
 } from "@/lib/grants/evidence-appendices";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import {
   renderSafetyStreetContextSvg,
   SAFETY_STREET_CONTEXT_PROJECTION_NOTE,
@@ -290,7 +290,6 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
     facts: [
       { label: "Source", value: summary.sourceLabel },
       { label: "Severity coverage", value: describeSeverityCoverage(acquisitionSeriousInjury(acquisition)) },
-      { label: "Recorded severity coverage", value: typeof acquisition.severity_completeness === "string" && acquisition.severity_completeness ? acquisition.severity_completeness : "Not recorded" },
       { label: "Years requested", value: yearsRequested },
       { label: "Crash area", value: crashAreaBasisLabel(studyArea) },
       ...(studyArea.outsideBoundaryCount !== null
