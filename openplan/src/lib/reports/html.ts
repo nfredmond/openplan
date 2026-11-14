@@ -2202,6 +2202,7 @@ const REPORT_DOCUMENT_STYLES = `
       table.wrap-cells th, table.wrap-cells td { overflow-wrap: anywhere; }
       .list-status { display: block; margin: 2px 0; font-size: 14px; color: #3b4952; }
       .source-url, .source-line { overflow-wrap: anywhere; }
+      .records-appendix { break-before: page; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {
@@ -2234,6 +2235,51 @@ export function buildReportHtml(data: ReportGenerationData): string {
     safetyAcquisitionCount: data.safetyEvidence?.length ?? 0,
   });
 
+  /**
+   * A report that carries a saved safety action plan is read as a safety
+   * action plan: its safety content comes first, then the project's own
+   * sections, and the OpenPlan records behind it (evidence chain, readiness
+   * registry, stage-gate and project-record snapshots, scenario basis) move
+   * to an appendix at the back under a heading that says what they are. The
+   * first proven job's plans opened with about eight pages of that material
+   * (KI-2026-11-14-340). Nothing is dropped. Every other report keeps the
+   * order it had: for a project status packet the records are the subject.
+   */
+  const safetyPlanFirst = Boolean(data.safetyActionPlan);
+  const projectGeography = projectGeographyMarkup(
+    data,
+    data.sections.some((section) => section.section_key === PROJECT_GEOGRAPHY_SECTION_KEY)
+  );
+  const recordsMaterial = [
+    evidenceChainMarkup(evidenceChainSummary),
+    jurisdictionReadinessMarkup(data.jurisdictionReadiness),
+    ...(safetyPlanFirst ? [] : [
+      guidedComparisonReportMarkup(data.guidedComparison),
+      modelingEvidenceMarkup(data.modelingEvidence),
+      reportEvidenceDescriptorMarkup(data),
+      dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? []),
+      aerialOrthoMarkup(data.aerialOrthoPreview),
+    ]),
+    stageGateProvenanceMarkup(data),
+    projectRecordsProvenanceMarkup(data),
+    scenarioBasisMarkup(data),
+  ];
+  const sectionsMarkup = enabledSections
+    .map(
+      (section) => `<section id="${esc(section.section_key)}">
+            <h2 class="section-title">${esc(section.title)}</h2>
+            ${sectionMarkup(section.section_key, data)}
+            ${acceptedNarrativeBySection.get(section.section_key) ?? ""}
+          </section>`
+    )
+    .join("");
+  // In the safety plan order the project's analysis evidence follows the plan
+  // with its own sections; in the other order it keeps its place between the
+  // readiness records and the governance snapshot.
+  const projectContent = safetyPlanFirst
+    ? `${guidedComparisonReportMarkup(data.guidedComparison)}${projectGeography}${modelingEvidenceMarkup(data.modelingEvidence)}${reportEvidenceDescriptorMarkup(data)}${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}${aerialOrthoMarkup(data.aerialOrthoPreview)}${sectionsMarkup}`
+    : `${recordsMaterial.slice(2).join("")}${sectionsMarkup}${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}`;
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -2257,33 +2303,20 @@ export function buildReportHtml(data: ReportGenerationData): string {
         </div>
         ${estimatedProjectCostMarkup(data.project)}
       </header>
-      ${projectGeographyMarkup(
-        data,
-        data.sections.some((section) => section.section_key === PROJECT_GEOGRAPHY_SECTION_KEY)
-      )}
-      ${evidenceChainMarkup(evidenceChainSummary)}
-      ${jurisdictionReadinessMarkup(data.jurisdictionReadiness)}
-      ${guidedComparisonReportMarkup(data.guidedComparison)}
-      ${modelingEvidenceMarkup(data.modelingEvidence)}
-      ${reportEvidenceDescriptorMarkup(data)}
-      ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}
-      ${aerialOrthoMarkup(data.aerialOrthoPreview)}
-      ${stageGateProvenanceMarkup(data)}
-      ${projectRecordsProvenanceMarkup(data)}
-      ${scenarioBasisMarkup(data)}
-      ${enabledSections
-        .map(
-          (section) => `<section id="${esc(section.section_key)}">
-            <h2 class="section-title">${esc(section.title)}</h2>
-            ${sectionMarkup(section.section_key, data)}
-            ${acceptedNarrativeBySection.get(section.section_key) ?? ""}
-          </section>`
-        )
-        .join("")}
-      ${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}
+      ${safetyPlanFirst ? `${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}${projectContent}${recordsAppendixMarkup(recordsMaterial)}` : `${projectGeography}${recordsMaterial.slice(0, 2).join("")}${projectContent}`}
     </main>
   </body>
 </html>`;
+}
+
+/** The back appendix of a safety action plan report: a heading that says what follows, then the records. */
+function recordsAppendixMarkup(blocks: readonly string[]): string {
+  const body = blocks.join("");
+  if (!body.trim()) return "";
+  return `<section id="records-appendix" class="records-appendix">
+    <h2 class="section-title">Appendix: OpenPlan records behind this report</h2>
+    <p>The evidence chain, what OpenPlan's readiness registry says for this place, and the stage-gate, project-record and scenario snapshots, as recorded when this report was generated. They describe the product and the project record, not the safety findings above.</p>
+  </section>${body}`;
 }
 
 /**
