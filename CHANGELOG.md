@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety action plan report and SS4A application carry engagement, the benefit-cost analysis and the network map (KI-2026-11-14-010 to -016):** the report's safety action plan section now prints the project's engagement summary and saved benefit-cost analysis, marks engagement partly covered when comments or a staff review are approved, and draws the ranked high-injury network. The SS4A engagement appendix states a finding from an approved staff review when no AI synthesis is saved, so a workspace with no AI key can cite community input. The countermeasure table stays on the page, the network map draws the study area without a stray line, and file update dates print as dates. No migration.
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the

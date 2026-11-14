@@ -109,7 +109,7 @@ export type ActionPlanComponentCoverage = {
 
 /**
  * What this draft does and does not cover. No component is marked covered:
- * the two partial ones are partial on purpose, and saying more would overstate
+ * the partial ones are partial on purpose, and saying more would overstate
  * the draft.
  */
 export const SAFETY_ACTION_PLAN_COMPONENT_COVERAGE: readonly ActionPlanComponentCoverage[] = [
@@ -162,14 +162,31 @@ export const SAFETY_ACTION_PLAN_COMPONENT_COVERAGE: readonly ActionPlanComponent
  * network and attached countermeasures. A plan with no attachments (common
  * where no fatal or serious-injury crash fell in the window) must not claim it
  * "has countermeasures attached", and a plan whose crash summary and network
- * both failed to read must not claim it "has the crash summary".
+ * both failed to read must not claim it "has the crash summary". Engagement
+ * is partly covered only when the project's lead campaign has approved
+ * comments or an approved staff review; it is never covered.
  */
 function safetyActionPlanComponentCoverage(input: {
   hasCrashSummary: boolean;
   hasNetwork: boolean;
   hasTreatments: boolean;
+  engagement: SafetyActionPlanEngagementInput | null;
 }): ActionPlanComponentCoverage[] {
   return SAFETY_ACTION_PLAN_COMPONENT_COVERAGE.map((entry) => {
+    if (entry.component === "Engagement and collaboration" && input.engagement) {
+      const { campaignTitle, approvedComments, approvedStaffReview } = input.engagement;
+      const received = [
+        ...(approvedComments !== null && approvedComments > 0 ? [`${approvedComments.toLocaleString("en-US")} approved public comment(s)`] : []),
+        ...(approvedStaffReview ? ["an approved staff review of public input"] : []),
+      ];
+      if (received.length > 0) {
+        return {
+          component: entry.component,
+          status: "partial",
+          gap: `Has ${received.join(" and ")} from "${campaignTitle}". Lacks partner and agency collaboration records and a documented engagement process.`,
+        };
+      }
+    }
     if (entry.component === "Strategy and project selections" && !input.hasTreatments) {
       return {
         component: entry.component,
@@ -187,6 +204,14 @@ function safetyActionPlanComponentCoverage(input: {
     return { ...entry };
   });
 }
+
+/** What the project's lead campaign holds, for the engagement component only. */
+export type SafetyActionPlanEngagementInput = {
+  campaignTitle: string;
+  /** Null when the count could not be read. */
+  approvedComments: number | null;
+  approvedStaffReview: boolean;
+};
 
 export type SafetyActionPlanNetworkRow = {
   rank: number;
@@ -247,6 +272,8 @@ export function buildSafetyActionPlanSection(input: {
   plan: ReportSafetyActionPlan;
   evidence: SafetyCrashEvidence | null;
   network: HighInjuryNetwork | undefined;
+  /** The lead campaign's approved input. Absent or null leaves engagement not covered. */
+  engagement?: SafetyActionPlanEngagementInput | null;
 }): SafetyActionPlanSectionDraft {
   const { plan, evidence, network } = input;
   const sourceLabel = evidence?.sourceLabel ?? "Crash source not recorded";
@@ -334,6 +361,7 @@ export function buildSafetyActionPlanSection(input: {
       hasCrashSummary: crashSummary.kind === "present",
       hasNetwork: networkSection.kind === "computed",
       hasTreatments: treatments.some((treatment) => treatment.countermeasures.length > 0),
+      engagement: input.engagement ?? null,
     }),
     componentSourceLine: `Source: ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.label}, ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.url}. Retrieved ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.retrievedOn}. ${SS4A_ACTION_PLAN_COMPONENT_SOURCE.note}`,
     draftNotice: "This is a draft section for staff review. It is not an adopted safety action plan, and several required components are missing below.",

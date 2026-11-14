@@ -72,9 +72,9 @@ export function renderSafetyStreetContextSvg(input: {
       startLon = normalizeLon(next);
     }
   }
-  const unwrapLon = (lon: number) => {
+  const fittedLon = (lon: number) => {
     const normalized = normalizeLon(lon);
-return normalized < startLon ? normalized + 360 : normalized;
+    return normalized < startLon ? normalized + 360 : normalized;
   };
   let minLat = 90;
   let maxLat = -90;
@@ -82,8 +82,16 @@ return normalized < startLon ? normalized + 360 : normalized;
   for (const [lon, lat] of positions) {
     minLat = Math.min(minLat, lat);
     maxLat = Math.max(maxLat, lat);
-    maxLon = Math.max(maxLon, unwrapLon(lon));
+    maxLon = Math.max(maxLon, fittedLon(lon));
   }
+  // Context roads are drawn but not fitted, so a vertex can sit just west of
+  // the frame. Placing it a full turn east drew a straight line across the
+  // figure (rehearsal D18). Use whichever copy of the longitude is nearer.
+  const unwrapLon = (lon: number) => {
+    const fitted = fittedLon(lon);
+    if (fitted <= maxLon) return fitted;
+    return fitted - maxLon <= startLon - (fitted - 360) ? fitted : fitted - 360;
+  };
   const radians = Math.PI / 180;
   const centerCos = Math.cos(((minLat + maxLat) / 2) * radians);
 const longitudeMeters = 111_320 * Math.max(centerCos, 0.0001);

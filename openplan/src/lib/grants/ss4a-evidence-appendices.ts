@@ -24,6 +24,7 @@
  * Pure: no I/O. The loader beside it reads the records.
  */
 
+import type { CorridorGeojson } from "@/lib/models/run-launch";
 import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
@@ -87,6 +88,12 @@ export type Ss4aHinRecomputeRead =
   | { status: "unreadable"; reason: string }
   | { status: "computed"; network: Extract<HighInjuryNetwork, { status: "computed" }>; roads: SafetyRoadContextFeature[] };
 
+/** The project's current study-area outline, drawn on the network map. */
+type Ss4aStudyAreaRead =
+  | { status: "ready"; geometry: CorridorGeojson }
+  | { status: "none" }
+  | { status: "unreadable" };
+
 export type Ss4aEvidenceRecords = {
   projectId: string | null;
   projectName: string | null;
@@ -94,6 +101,7 @@ export type Ss4aEvidenceRecords = {
   hinRecompute: Ss4aHinRecomputeRead;
   bca: ProjectBcaRead;
   engagement: ProjectEngagementRead;
+  studyArea: Ss4aStudyAreaRead;
 };
 
 const NO_SEED_REASON =
@@ -215,7 +223,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     figureSvg = renderSafetyStreetContextSvg({
       roads: recompute.roads,
       crashLocations: [],
-      projectGeometry: null,
+      projectGeometry: records.studyArea.status === "ready" ? records.studyArea.geometry : null,
       highlights: recompute.network.segments.map((segment) => ({ rank: segment.rank, geometry: segment.geometry })),
       ariaLabel: "Ranked high-injury network segments, numbered by rank",
     });
@@ -238,10 +246,16 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     table,
     figureSvg,
     notes: [
-      ...(figureSvg ? [HIN_MAP_DRAWN_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE, "Numbered marks are the ranks in the table."] : []),
+      ...(figureSvg ? [HIN_MAP_DRAWN_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE, "Numbered marks are the ranks in the table.", studyAreaNote(records.studyArea)] : []),
       network.sourceLine,
     ],
   };
+}
+
+function studyAreaNote(studyArea: Ss4aStudyAreaRead): string {
+  if (studyArea.status === "ready") return "The dashed green line is the project's current study-area boundary.";
+  if (studyArea.status === "unreadable") return "The project's study-area boundary could not be read, so it is not drawn.";
+  return "The project has no saved study-area boundary, so none is drawn.";
 }
 
 function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix {
