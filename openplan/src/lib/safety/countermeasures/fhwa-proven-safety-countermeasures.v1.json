@@ -1,15 +1,15 @@
 {
   "schema": "openplan.safety_countermeasures.v1",
-  "version": "2026-10-13",
+  "version": "2026-11-13",
   "source": {
     "title": "Proven Safety Countermeasures",
     "publisher": "Federal Highway Administration, U.S. Department of Transportation",
     "url": "https://highways.dot.gov/safety/proven-safety-countermeasures",
     "terms": "U.S. federal government work (17 U.S.C. 105). Free to use.",
-    "retrievedOn": "2026-10-13",
-    "retrievalNote": "The FHWA site refused automated download on 2026-10-13 (HTTP 403), as did the CMF Clearinghouse (certificate error). Each name and URL below was confirmed from web search results that returned that FHWA page; crash types summarize those results. [VERIFY] each entry against the live FHWA page before a plan is published."
+    "retrievedOn": "2026-11-13",
+    "retrievalNote": "The FHWA site refused direct automated download on 2026-10-13 and again on 2026-11-13 (HTTP 403). On 2026-11-13 the list page, the six Roadway Departure pages and the Pavement Friction Management page were read in full as text through a reader service (r.jina.ai) that fetched the live FHWA pages; the six entries added that day summarize what their pages say. The ten earlier entries still on the list match names on the list page, and nine match its URLs; Roundabouts still points to an older FHWA roundabouts page, while the list now links its own countermeasure page. Their crash types and descriptions come from 2026-10-13 web search results and were not re-read. [VERIFY] each earlier entry against its FHWA page before a plan is published."
   },
-  "listNote": "FHWA groups its list into speed management, pedestrian and bicyclist, roadway departure, intersections, and crosscutting items. This file carries 14 of them. [VERIFY] the current FHWA count and any items added since the 2021 update.",
+  "listNote": "FHWA's list page, read 2026-11-13, names 23 countermeasures in four groups: Pedestrian (6), Roadway Departure (6), Intersections (7) and Crosscutting (4). This file carries 16 of those 23, including all six Roadway Departure items. It does not carry Backplates with Retroreflective Borders, Corridor Access Management, Reduced Left-Turn Conflict Intersections, Systemic Application of Multiple Low-Cost Countermeasures at Stop-Controlled Intersections, Yellow Change Intervals, Local Road Safety Plans or Road Safety Audit. It keeps four entries that the 2026-11-13 list page does not show (Road Diets (Roadway Configuration), Bicycle Lanes, Appropriate Speed Limits for All Road Users, Speed Safety Cameras) because saved plans cite them; FHWA's own countermeasure pages for road diets and appropriate speed limits returned 404 that day. [VERIFY] whether FHWA withdrew those four items.",
   "cmfPolicy": "A crash modification factor is shown only with its CMF Clearinghouse ID, after that entry has been read. No entry was read for this version, so every value is left out and marked [VERIFY].",
   "countermeasures": [
     {
@@ -103,6 +103,16 @@
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
     },
     {
+      "id": "pavement-friction-management",
+      "name": "Pavement Friction Management",
+      "focusArea": "crosscutting",
+      "crashTypes": ["roadway_departure", "rear_end", "pedestrian"],
+      "addresses": "Roadway departure, intersection and pedestrian crashes where friction demand is high, such as horizontal curves, ramps, intersection approaches and places with wet-weather or rear-end crash history.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/pavement-friction-management",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 10342, 10333 and 2259, but none was read here; no value given."
+    },
+    {
       "id": "enhanced-delineation-horizontal-curves",
       "name": "Enhanced Delineation for Horizontal Curves",
       "focusArea": "roadway_departure",
@@ -111,6 +121,56 @@
       "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/enhanced-delineation-horizontal-curves",
       "cmf": null,
       "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "longitudinal-rumble-strips-and-stripes",
+      "name": "Longitudinal Rumble Strips and Stripes on Two-Lane Roads",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Roadway departure crashes when distracted, drowsy or inattentive drivers drift from their lane, at the shoulder, edge line or center line.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/longitudinal-rumble-strips-and-stripes-two-lane-roads",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 3358, 3356, 3425 and 3648, but none was read here; no value given."
+    },
+    {
+      "id": "median-barriers",
+      "name": "Median Barriers",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Cross-median crashes on divided highways, where a vehicle crosses the median into opposing traffic.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/median-barriers",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse ID 7040, but it was not read here; no value given."
+    },
+    {
+      "id": "roadside-design-improvements-curves",
+      "name": "Roadside Design Improvements at Curves",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Roadway departure crashes on the outside of horizontal curves, including vehicles that roll over or strike a fixed object after leaving the road.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/roadside-design-improvements-curves",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 4627, 4632, 35 and 36, but none was read here; no value given."
+    },
+    {
+      "id": "safetyedge",
+      "name": "SafetyEdge℠",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure"],
+      "addresses": "Crashes where a vehicle leaves the pavement and a vertical pavement edge drop-off keeps it from returning safely.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/safetyedgesm",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse IDs 9205, 9211 and 9217, but none was read here; no value given."
+    },
+    {
+      "id": "wider-edge-lines",
+      "name": "Wider Edge Lines",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure", "nighttime"],
+      "addresses": "Roadway departure crashes where drivers cannot clearly see the edge of the travel lane, with the most effect on single-vehicle crashes on rural two-lane highways.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/wider-edge-lines",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse ID 4737, but it was not read here; no value given."
     },
     {
       "id": "dedicated-turn-lanes",
