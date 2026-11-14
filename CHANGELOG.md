@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Hosted capture and install kit (KI-2026-11-14-160):** the procedure and
+tools for proving an offsite capture and installing hosted migrations now live
+in `scripts/ops/hosted-install/`, replacing the private kit lost with the
+wiped workstation. Capture checks run in the backup worker's own image; a
+restore passes only on exact counts, key hashes, Storage reconciliation and
+access probes; migrations install in one transaction after a rollback-only
+dry run, with timeouts and no retry. Hosted operations no longer use
+`supabase migration up --linked`. No migration.
+
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the

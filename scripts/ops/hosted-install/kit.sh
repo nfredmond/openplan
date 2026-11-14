@@ -8,6 +8,8 @@
 #   hosted WINDOW_DIR MODE [run_sql.py args]   read, catalog, dryrun, install or probe on hosted.
 #                                               WINDOW_DIR is /work in the container; kit files are /kit.
 #   verify WINDOW_DIR STAMP KEY_DIR             download, decrypt and check one capture into WINDOW_DIR/decrypted.
+#   keycheck KEY_DIR                            encrypt to the key's public half and decrypt with its secret half
+#                                               in the image; no network, no credentials (KIT_ENV_CMD unused).
 #
 # Credentials (review 15, N1): KIT_ENV_CMD runs env_to_stdin.py on this host,
 # which writes the named variables as one JSON line into the container's stdin.
@@ -18,12 +20,14 @@
 set -euo pipefail
 kit_dir=$(cd "$(dirname "$0")" && pwd)
 image=${KIT_IMAGE:?set KIT_IMAGE to the tag image/build.sh printed}
-env_cmd=${KIT_ENV_CMD:?set KIT_ENV_CMD, for example "railway run -s offsite-backup -e production --"}
 label=openplan-hosted-install
-command=${1:?usage: kit.sh hosted|verify WINDOW_DIR ...}
-window=${2:?usage: kit.sh $command WINDOW_DIR ...}
+command=${1:?usage: kit.sh hosted|verify|keycheck DIR ...}
+window=${2:?usage: kit.sh $command DIR ...}
 shift 2
-mkdir -p "$window/evidence"
+if [ "$command" = hosted ] || [ "$command" = verify ]; then
+  env_cmd=${KIT_ENV_CMD:?set KIT_ENV_CMD, for example "railway run -s offsite-backup -e production --"}
+  mkdir -p "$window/evidence"
+fi
 window_abs=$(cd "$window" && pwd -W 2>/dev/null || pwd)
 python_=$(command -v python || command -v python3)
 
@@ -70,6 +74,29 @@ case "$command" in
             python3 /app/verify_capture.py "/out/$1"' sh "$stamp" \
       > "$window/evidence/verify-$stamp.json" || status=$?
     cat "$window/evidence/verify-$stamp.json"
+    leftover_check
+    exit "$status"
+    ;;
+  keycheck)
+    # Step 6: prove a key folder (for example the D: copy) decrypts in the
+    # image that step 11 uses. No network and no credentials.
+    key_abs=$(cd "$window" && pwd -W 2>/dev/null || pwd)
+    status=0
+    MSYS_NO_PATHCONV=1 docker run --rm --network none --label "$label" \
+      --tmpfs /gnupg:uid=999,gid=999,mode=0700 \
+      -v "$key_abs/secret.asc:/run/key/secret.asc:ro" -v "$key_abs/passphrase.txt:/run/key/passphrase:ro" \
+      -v "$key_abs/public.asc:/run/key/public.asc:ro" -v "$key_abs/FINGERPRINT:/run/key/FINGERPRINT:ro" \
+      "$image" sh -c '
+        set -e
+        export GNUPGHOME=/gnupg
+        fpr=$(cat /run/key/FINGERPRINT)
+        mkdir -m 700 /tmp/pub
+        printf "openplan key check\n" > /tmp/plain
+        gpg --homedir /tmp/pub --batch --quiet --import /run/key/public.asc 2>/dev/null
+        gpg --homedir /tmp/pub --batch --quiet --trust-model always --recipient "$fpr" --output /tmp/cipher --encrypt /tmp/plain
+        gpg --batch --quiet --pinentry-mode loopback --passphrase-file /run/key/passphrase --import /run/key/secret.asc 2>/dev/null
+        gpg --batch --quiet --pinentry-mode loopback --passphrase-file /run/key/passphrase --output /tmp/back --decrypt /tmp/cipher 2>/dev/null
+        cmp -s /tmp/plain /tmp/back && echo "key check passed in the kit image for $fpr"' || status=$?
     leftover_check
     exit "$status"
     ;;
