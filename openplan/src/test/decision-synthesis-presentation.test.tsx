@@ -89,7 +89,7 @@ describe("retained decision synthesis presentation", () => {
       expect(document.getElementById(anchor.hash.slice(1))).not.toBeNull();
       expect(anchor.hash.length).toBeLessThanOrEqual(100);
     }
-    expect(html).toContain("Response-link action 1: link"); expect(html).toContain("Response-link action 3: withdraw");
+    expect(html).toContain("Response-link action 1: Link"); expect(html).toContain("Response-link action 3: Withdrawal");
     expect(html).toContain("SYNTHETIC retained staff interpretation of the issue"); expect(html).toContain("SYNTHETIC retained review notes and unresolved concern");
     expect(html).toContain("SYNTHETIC corrected response"); expect(html).toContain("FINAL SOURCE TAIL");
     expect(html).toContain("SYNTHETIC distinct survey concern"); expect(html).toContain(decisionSynthesisAuthorityNotice);

@@ -106,7 +106,7 @@ describe('campaign review records',()=>{
  });
  it('labels every long narrative continuation without losing its contents',()=>{
   const body='Japanese 日本語 and Farsi فارسی\n'.repeat(70),html=buildCampaignReviewHtml({...snapshot,items:[{id:'long-id',status:'pending',body}]},'checksum');
-  expect(html).toContain('Record long-id · part 1 of 4');expect(html).toContain('Record long-id · part 4 of 4');
+  expect(html).toContain('Contribution 1 · part 1 of 4');expect(html).toContain('Contribution 1 · part 4 of 4');
   expect(html.match(/Japanese 日本語 and Farsi فارسی/g)).toHaveLength(70);
  });
 
