@@ -1,14 +1,18 @@
 """Stand-in for `railway run` in the Phase A rehearsal: run a command with the
 variables the offsite-backup service holds, pointed at a local Supabase stack.
 
+    KIT_DOCKER_NETWORK=supabase_network_<project_id> \
     KIT_ENV_CMD="python scripts/ops/hosted-install/rehearsal/local_env.py STACK_DIR WORK_DIR --" \
         scripts/ops/hosted-install/kit.sh hosted WINDOW_DIR read ...
 
 STACK_DIR holds the scratch stack's supabase/config.toml. WORK_DIR holds
 tls/ca.crt (enable_local_tls.sh) and key/public.asc and key/FINGERPRINT
 (keys/new_capture_key.sh). Values come from `supabase status` of that local
-stack: local development keys, never a hosted credential. Containers reach
-the stack at host.docker.internal, over TLS verify-full like hosted.
+stack: local development keys, never a hosted credential. The database is
+the stack's container, supabase_db_<project_id>, on its own port 5432 (the
+only port HostedTarget accepts, review 31, N5), so kit.sh runs on the
+stack's network (KIT_DOCKER_NETWORK). The API stays at host.docker.internal.
+Both use TLS verify-full like hosted.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ import os
 import pathlib
 import subprocess
 import sys
+import tomllib
 import urllib.parse
 
 
@@ -28,8 +33,9 @@ def local_environment(stack_dir: pathlib.Path, work_dir: pathlib.Path) -> dict[s
     db = urllib.parse.urlparse(data["DB_URL"])
     api = urllib.parse.urlparse(data["API_URL"])
     host = "host.docker.internal"
+    project = tomllib.loads((stack_dir / "supabase" / "config.toml").read_text(encoding="utf-8"))["project_id"]
     return {
-        "PGHOST": host, "PGPORT": str(db.port), "PGUSER": db.username, "PGPASSWORD": db.password,
+        "PGHOST": f"supabase_db_{project}", "PGPORT": "5432", "PGUSER": db.username, "PGPASSWORD": db.password,
         "PGDATABASE": db.path.lstrip("/"), "PGSSLMODE": "verify-full",
         "BACKUP_PG_CA_PEM": (work_dir / "tls" / "ca.crt").read_text(),
         "SUPABASE_URL": f"http://{host}:{api.port}",

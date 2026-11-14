@@ -113,6 +113,13 @@ class HostedTarget(Target):
         missing = [n for n in ("PGHOST", "PGUSER", "PGPASSWORD", "PGDATABASE") if not env.get(n, "").strip()]
         if missing:
             raise kc.KitError("missing connection settings: " + ", ".join(missing))
+        # Review 15 (L8) read the session pooler on 5432. Transaction mode
+        # (6543) hands the connection back after each transaction, and rtt's
+        # 22 messages in one transaction were never tried there, so any other
+        # port is refused before anything is sent (review 31, N5). The message
+        # names no value it was given.
+        if env.get("PGPORT", "").strip() != "5432":
+            raise kc.KitError("PGPORT must be 5432, the Supabase session pooler; the kit refuses any other port")
         if env.get("PGSSLMODE") != "verify-full":
             raise kc.KitError("PGSSLMODE must be verify-full")
         self._env = dict(env)

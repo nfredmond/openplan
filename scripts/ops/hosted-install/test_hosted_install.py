@@ -600,7 +600,8 @@ class RunnerTest(unittest.TestCase):
         self.assertEqual(self.sent, [])
 
     def test_hosted_target_requires_verified_tls_and_keeps_the_ca_out_of_output(self):
-        env = {"PGHOST": "h", "PGUSER": "u", "PGPASSWORD": "synthetic-password", "PGDATABASE": "postgres"}
+        env = {"PGHOST": "h", "PGUSER": "u", "PGPASSWORD": "synthetic-password", "PGDATABASE": "postgres",
+               "PGPORT": "5432"}
         with self.assertRaisesRegex(kc.KitError, "verify-full"):
             run_sql.HostedTarget({**env, "PGSSLMODE": "require", "BACKUP_PG_CA_PEM": "x"})
         with self.assertRaisesRegex(kc.KitError, "CA"):
@@ -610,6 +611,26 @@ class RunnerTest(unittest.TestCase):
             self.assertNotIn("BACKUP_PG_CA_PEM", target.environment())
             self.assertEqual(pathlib.Path(target.environment()["PGSSLROOTCERT"]).read_text(), "synthetic-ca-pem")
             self.assertEqual(target.command(), ["psql"])
+        finally:
+            target.cleanup()
+
+    def test_hosted_target_runs_only_through_the_session_pooler_port(self):
+        # Review 31, N5. The refusal comes before psql runs and names no value.
+        env = {"PGHOST": "synthetic-host", "PGUSER": "synthetic-user", "PGPASSWORD": "synthetic-password",
+               "PGDATABASE": "postgres", "PGSSLMODE": "verify-full", "BACKUP_PG_CA_PEM": "synthetic-ca-pem"}
+        with mock.patch.object(subprocess, "run") as never:
+            for port in ("6543", "5433", "", None):
+                case = dict(env) if port is None else {**env, "PGPORT": port}
+                with self.subTest(port=port):
+                    with self.assertRaisesRegex(kc.KitError, "PGPORT must be 5432, the Supabase session pooler") as caught:
+                        run_sql.HostedTarget(case)
+                    message = str(caught.exception)
+                    for value in ("synthetic", "6543", "5433"):
+                        self.assertNotIn(value, message)
+            never.assert_not_called()
+        target = run_sql.HostedTarget({**env, "PGPORT": "5432"})
+        try:
+            self.assertEqual(target.environment()["PGPORT"], "5432")
         finally:
             target.cleanup()
 
