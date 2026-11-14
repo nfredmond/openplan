@@ -1,4 +1,5 @@
 import type { CorridorGeojson } from "@/lib/models/run-launch";
+import { highInjuryNetworkSegmentAnchor } from "@/lib/safety/high-injury-network";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 
 type Position = [number, number];
@@ -17,9 +18,13 @@ function pleasantDistance(meters: number): number {
   return (normalized >= 5 ? 5 : normalized >= 2 ? 2 : 1) * magnitude;
 }
 
-/** A ranked high-injury segment drawn over the street context. */
+/**
+ * A listed high-injury segment drawn over the street context. `number` is the
+ * row's number in the printed table (1 to n, never shared), not its rank:
+ * tied rows share a rank, so a rank cannot tell their marks apart.
+ */
 export type SafetyStreetContextHighlight = {
-  rank: number;
+  number: number;
   geometry: { type: "LineString"; coordinates: Position[] } | { type: "Polygon"; coordinates: Position[][] };
 };
 
@@ -127,16 +132,17 @@ const scalePixels = scaleMeters * pixelsPerMeter;
       return unwrapped >= startLon - marginLon && unwrapped <= maxLon + marginLon
         && lat >= minLat - marginLat && lat <= maxLat + marginLat;
     }));
-  // Shapes first, then the rank markers, so no marker sits under a later
+  // Shapes first, then the numbered markers, so no marker sits under a later
   // segment. At a county's scale a half-mile piece is smaller than its marker,
-  // so the marker carries the highlight red, and the best rank is drawn last:
-  // where markers overlap, rank 1 is the one a reader sees.
+  // so the marker carries the highlight red, and row 1 is drawn last: where
+  // markers overlap, the best-ranked row is the one a reader sees. Each marker
+  // sits at the segment's anchor, the point its printed location names.
   const highlightShapes = highlights.map((highlight) => highlight.geometry.type === "LineString"
     ? `<polyline points="${points(highlight.geometry.coordinates)}" fill="none" stroke="#b42318" stroke-width="5" stroke-linecap="round"/>`
     : highlight.geometry.coordinates.map((ring) => `<polygon points="${points(ring)}" fill="rgba(180,35,24,0.22)" stroke="#b42318" stroke-width="2"/>`).join("")).join("");
-  const highlightMarkers = [...highlights].sort((a, b) => b.rank - a.rank).map((highlight) => {
-    const label = highlightPositions(highlight)[0];
-    return `<g transform="translate(${x(label[0]).toFixed(2)} ${y(label[1]).toFixed(2)})"><circle r="9" fill="#b42318" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${Math.trunc(highlight.rank)}</text></g>`;
+  const highlightMarkers = [...highlights].sort((a, b) => b.number - a.number).map((highlight) => {
+    const label = highInjuryNetworkSegmentAnchor(highlight.geometry) ?? highlightPositions(highlight)[0];
+    return `<g transform="translate(${x(label[0]).toFixed(2)} ${y(label[1]).toFixed(2)})"><circle r="9" fill="#b42318" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${Math.trunc(highlight.number)}</text></g>`;
   }).join("");
   const highlightMarkup = `${highlightShapes}${highlightMarkers}`;
 

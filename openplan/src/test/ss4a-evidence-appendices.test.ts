@@ -45,12 +45,13 @@ describe("SS4A evidence appendices", () => {
     const hin = byKey(appendices, "hin_map");
     expect(hin.figureSvg).toContain("<svg");
     expect(hin.figureSvg).toContain("Ranked high-injury network segments");
-    // Both ranked segments are drawn over the context roads, numbered by rank.
+    // Both ranked segments are drawn over the context roads, numbered by table row.
     expect(hin.figureSvg!.match(/stroke="#b42318" stroke-width="5"/g)).toHaveLength(2);
     expect(hin.figureSvg).toContain('fill="#fff">2</text>');
     expect(hin.statusNote).toBeNull();
     expect(hin.source).toMatchObject({ id: EVIDENCE_IDS.artifact, hash: snapshot!.hash, date: snapshot!.generatedAt });
-    expect(hin.table!.rows[0][1]).toBe(fixtureNetwork().segments[0].label);
+    // Columns: No., Rank, Location (name, then where), Miles, Fatal, Serious injury, Per mile.
+    expect(hin.table!.rows[0][2].startsWith(`${fixtureNetwork().segments[0].label}, near `)).toBe(true);
 
     const countermeasures = byKey(appendices, "countermeasures");
     expect(countermeasures.table!.rows).toHaveLength(1);
@@ -95,7 +96,7 @@ describe("SS4A evidence appendices", () => {
     // The coverage is stated once, in words; the stored code is not printed.
     expect(crash.facts.map((f) => f.label)).not.toContain("Recorded severity coverage");
     expect(factValue(crash, "Years requested")).toBe("2023, 2024");
-    expect(byKey(appendices, "hin_map").table!.rows[0][4]).toBe("Not in source (fatal crashes only)");
+    expect(byKey(appendices, "hin_map").table!.rows[0][5]).toBe("Not in source (fatal crashes only)");
     expect(packetText(appendices)).toContain("Fatal crashes only. This source is a fatality census: it records only crashes in which someone was killed");
   });
 
@@ -174,7 +175,7 @@ describe("SS4A evidence appendices", () => {
       records.safety = { status: "ready", snapshot: evidenceSnapshot({ source_id: sourceId, severity_completeness: completeness }), otherSeededArtifactCount: 0 };
       const appendices = buildSs4aEvidenceAppendices(records, ALL);
       const hin = byKey(appendices, "hin_map");
-      expect(hin.table!.rows.map((row) => row[4])).toEqual([cell, cell]);
+      expect(hin.table!.rows.map((row) => row[5])).toEqual([cell, cell]);
       expect(factValue(hin, "Source severity coverage")).toMatch(coverage);
       expect(factValue(hin, "Source severity coverage")).toBe(factValue(byKey(appendices, "crash_summary"), "Severity coverage"));
     }

@@ -1380,16 +1380,19 @@ export function safetyActionPlanMarkup(
     : `<h3>Crash summary</h3><p>${esc(draft.crashSummary.reason)}</p>`;
 
   const network = draft.network;
+  const locations = support?.segmentLocations ?? {};
+  const rowNumbers = new Map(network.kind === "computed" ? network.rows.map((row, index) => [row.segmentId, index + 1]) : []);
   const networkMarkup = network.kind === "unavailable"
     ? `<h3>High-injury network</h3><p>${esc(network.reason)}</p>`
     : `<h3>High-injury network</h3>
       <p><strong>${esc(network.measureLabel)}</strong>, ${esc(network.years)}.</p>
       ${describeHighInjuryNetworkTie(network.rows) ? `<p>${esc(describeHighInjuryNetworkTie(network.rows) ?? "")}</p>` : ""}
       ${network.rows.length > 0 ? `<table>
-        <thead><tr><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
-        <tbody>${network.rows.map((row) => `<tr>
+        <thead><tr><th>No.</th><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
+        <tbody>${network.rows.map((row, index) => `<tr>
+          <td>${index + 1}</td>
           <td>${esc(row.tied ? `${row.rank} (tie)` : String(row.rank))}</td>
-          <td>${esc(row.label)}</td>
+          <td>${esc(row.label)}${locations[row.segmentId] ? `<br><span class="meta">${esc(locations[row.segmentId])}</span>` : ""}</td>
           <td>${row.lengthMiles === null ? "Not a road piece" : esc(row.lengthMiles.toFixed(2))}</td>
           <td>${esc(row.fatalCrashCount.toLocaleString("en-US"))}</td>
           <td>${row.seriousInjuryCrashCount === null ? "Not in source (fatal crashes only)" : esc(row.seriousInjuryCrashCount.toLocaleString("en-US"))}</td>
@@ -1406,7 +1409,7 @@ export function safetyActionPlanMarkup(
     ? `<h3>Countermeasures</h3><p>No countermeasure is attached to a segment yet.</p>`
     : `<h3>Countermeasures</h3>
       <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
-      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
+      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `${rowNumbers.has(treatment.segmentId) ? `No. ${rowNumbers.get(treatment.segmentId)}, ` : ""}rank ${treatment.rank}`}${locations[treatment.segmentId] ? `, ${esc(locations[treatment.segmentId])}` : ""}):
         <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? `<span class="list-status">${esc(item.listStatus)}</span>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a class="source-url" href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
       </li>`).join("")}</ul>
       <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
@@ -1429,7 +1432,7 @@ export function safetyActionPlanMarkup(
 function networkMapMarkup(map: SafetyPlanSupport["networkMap"], rowCount: number): string {
   if (!map) return "";
   if (map.kind === "not_drawn") return `<p><strong>Map not drawn.</strong> ${esc(map.reason)}</p>`;
-  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red and numbered by rank${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}. The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
+  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red, each marked with its number from the table's No. column${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}. The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {

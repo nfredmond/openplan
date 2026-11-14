@@ -4,7 +4,8 @@
  * The Safety page prints one line when every listed row shares a rank. The
  * report's safety action plan section and SS4A Appendix A print the same
  * line, from the same helper, beside the numbered map. No tie-breaker is
- * invented: the map still numbers each tied square with the shared rank.
+ * invented: each tied row keeps the shared rank in the table, and the map
+ * marks each one with its row number, which is not a rank (KI-2026-11-14-340).
  *
  * The last block renders both documents to PDF with Chrome and reads them
  * back with poppler. Blind category: the hosted Chrome bundle, and how the
@@ -86,15 +87,17 @@ describe("the tie line in both exports", () => {
     const { draft, support } = planSection();
     const html = safetyActionPlanMarkup(draft, support);
     expect(text(html)).toContain(TIE_LINE);
-    // The map still numbers each tied square with the shared rank.
+    // Each tied square keeps rank 1 in the table; the map marks it with its row number.
     expect(support.networkMap).toMatchObject({ kind: "drawn", segmentCount: 3 });
-    expect(html.match(/<text [^>]*>1<\/text>/g)).toHaveLength(3);
+    expect(html.match(/<td>1 \(tie\)<\/td>/g)).toHaveLength(3);
+    expect([...html.matchAll(/<text [^>]*>(\d+)<\/text>/g)].map((match) => match[1]).sort()).toEqual(["1", "2", "3"]);
   });
 
   it("states it as a fact on SS4A Appendix A", () => {
     const hin = buildSs4aEvidenceAppendices(ss4aRecords(), new Set(SS4A_APPENDIX_KEYS))[0];
     expect(hin.facts).toContainEqual({ label: "Ties", value: TIE_LINE });
-    expect(hin.figureSvg?.match(/<text [^>]*>1<\/text>/g)).toHaveLength(3);
+    expect(hin.table!.rows.map((row) => row[1])).toEqual(["1 (tie)", "1 (tie)", "1 (tie)"]);
+    expect([...hin.figureSvg!.matchAll(/<text [^>]*>(\d+)<\/text>/g)].map((match) => match[1]).sort()).toEqual(["1", "2", "3"]);
   });
 });
 

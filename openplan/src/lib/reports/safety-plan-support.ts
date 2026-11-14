@@ -21,7 +21,7 @@ import {
   type ProjectEngagementRead,
 } from "@/lib/grants/evidence-appendices";
 import { loadProjectBcaRead, loadProjectEngagementRead, type EvidenceQueryClient } from "@/lib/grants/evidence-appendix-reads";
-import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
+import { describeHighInjuryNetworkLocation, type HighInjuryNetwork } from "@/lib/safety/high-injury-network";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { renderSafetyStreetContextSvg } from "@/lib/safety/street-context-svg";
 import type { SafetyActionPlanEngagementInput } from "./safety-action-plan";
@@ -36,7 +36,23 @@ export type SafetyPlanSupport = {
   engagement: EvidenceAppendix<"engagement">;
   bca: EvidenceAppendix<"bca">;
   networkMap: SafetyPlanNetworkMap | null;
+  /**
+   * Each listed segment's printed location ("near 39.4989, -121.0184"), by
+   * segment id, from the network this report was generated with. Rendered
+   * only, like the rest of this object: the frozen snapshot's rows carry no
+   * geometry and their schema is not changed.
+   */
+  segmentLocations: Readonly<Record<string, string>>;
 };
+
+/** The printed location of every listed segment that has a usable position. */
+export function safetyPlanSegmentLocations(network: HighInjuryNetwork | undefined): Record<string, string> {
+  if (!network || network.status !== "computed") return {};
+  return Object.fromEntries(network.segments.flatMap((segment) => {
+    const location = describeHighInjuryNetworkLocation(segment.geometry);
+    return location ? [[segment.id, location]] : [];
+  }));
+}
 
 const TITLES = { engagement: "Engagement summary", bca: "Benefit-cost summary" } as const;
 
@@ -68,8 +84,9 @@ export function safetyPlanEngagementInput(read: ProjectEngagementRead): SafetyAc
 }
 
 /**
- * The ranked network as a figure, numbered by rank. Every ranked segment is
- * drawn, so the figure, the table and the stated count agree.
+ * The ranked network as a figure. Each mark carries its row's number in the
+ * table (1 to n), not its rank, because tied rows share a rank. Every listed
+ * segment is drawn, so the figure, the table and the stated count agree.
  */
 export function buildSafetyPlanNetworkMap(input: {
   network: HighInjuryNetwork | undefined;
@@ -83,8 +100,8 @@ export function buildSafetyPlanNetworkMap(input: {
     roads: input.roads ?? [],
     crashLocations: [],
     projectGeometry: input.projectGeometry,
-    highlights: network.segments.map((segment) => ({ rank: segment.rank, geometry: segment.geometry })),
-    ariaLabel: "Ranked high-injury network segments, numbered by rank",
+    highlights: network.segments.map((segment, index) => ({ number: index + 1, geometry: segment.geometry })),
+    ariaLabel: "Ranked high-injury network segments, numbered by table row",
   });
   return svg
     ? { kind: "drawn", svg, segmentCount: network.segments.length }
@@ -96,10 +113,13 @@ export function buildSafetyPlanSupport(input: {
   projectId: string;
   projectName: string | null;
   networkMap: SafetyPlanNetworkMap | null;
+  /** From `safetyPlanSegmentLocations`. Absent prints no location. */
+  segmentLocations?: Readonly<Record<string, string>>;
 }): SafetyPlanSupport {
   return {
     engagement: engagementEvidenceAppendix({ key: "engagement", letter: "", title: TITLES.engagement }, input.reads.engagement, input.projectName),
     bca: bcaEvidenceAppendix({ key: "bca", letter: "", title: TITLES.bca }, input.reads.bca, input.projectId),
     networkMap: input.networkMap,
+    segmentLocations: input.segmentLocations ?? {},
   };
 }

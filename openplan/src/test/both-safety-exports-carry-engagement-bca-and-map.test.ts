@@ -380,7 +380,7 @@ describe("the report's safety action plan carries engagement, BCA and the map (D
     expect(support.networkMap).toMatchObject({ kind: "drawn", segmentCount: rows });
     expect(html.match(HIGHLIGHT)).toHaveLength(rows);
     expect(html.match(/<tbody>[\s\S]*?<\/tbody>/)![0].match(/<tr>/g)).toHaveLength(rows);
-    expect(text(html)).toContain(`High-injury network map. All ${rows} ranked segments in the table are drawn in red and numbered by rank.`);
+    expect(text(html)).toContain(`High-injury network map. All ${rows} ranked segments in the table are drawn in red, each marked with its number from the table's No. column.`);
     // The study area is drawn as the dashed outline.
     expect(html).toContain('stroke-dasharray="8 5"');
   });

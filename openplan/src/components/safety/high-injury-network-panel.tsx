@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   describeHighInjuryNetworkCoverage,
+  describeHighInjuryNetworkLocation,
   describeHighInjuryNetworkMethod,
   describeHighInjuryNetworkTie,
   describeHighInjuryNetworkUnavailable,
@@ -337,7 +338,8 @@ export function HighInjuryNetworkPanel({
         <table className="w-full text-xs" data-testid="safety-hin-table">
           <thead className="text-left text-muted-foreground">
             <tr>
-              <th scope="col" className="py-1 pr-1 font-medium">#</th>
+              <th scope="col" className="py-1 pr-1 font-medium">No.</th>
+              <th scope="col" className="py-1 pr-1 font-medium">Rank</th>
               <th scope="col" className="py-1 pr-1 font-medium">{network.method === "road_segments" ? "Road" : "Area"}</th>
               <th scope="col" className="py-1 pr-1 text-right font-medium">Miles</th>
               <th scope="col" className="py-1 pr-1 text-right font-medium">{crashHeader}</th>
@@ -345,10 +347,12 @@ export function HighInjuryNetworkPanel({
             </tr>
           </thead>
           <tbody>
-            {segments.map((segment) => {
+            {segments.map((segment, index) => {
               const chosen = selections[segment.id] ?? [];
+              const location = describeHighInjuryNetworkLocation(segment.geometry);
               return (
                 <tr key={segment.id} className="border-t border-border/60 align-top" data-testid="safety-hin-row">
+                  <td className="py-1 pr-1 tabular-nums">{index + 1}</td>
                   <td className="py-1 pr-1">{segment.tied ? `${segment.rank}=` : segment.rank}</td>
                   <td className="py-1 pr-1">
                     <button
@@ -359,6 +363,9 @@ export function HighInjuryNetworkPanel({
                     >
                       {segment.label}
                     </button>
+                    {location ? (
+                      <span className="block text-muted-foreground tabular-nums" data-testid="safety-hin-location">{location}</span>
+                    ) : null}
                     <details className="mt-1" data-testid="safety-hin-treatments">
                       <summary className="cursor-pointer text-muted-foreground">
                         Countermeasures ({chosen.length})
