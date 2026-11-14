@@ -516,7 +516,7 @@ describe("the network markers (D7)", () => {
   });
 
   it("puts a road piece's marker on the line itself, halfway along it", () => {
-    // Halfway along the piece: the point its printed location names (KI-2026-11-14-340).
+    // Halfway along the piece: the point its printed location names (KI-2026-11-14-304).
     const markers = highInjuryNetworkMarkerCollection(highInjuryNetworkFeatureCollection(network()));
     const points = markers.features.map((feature) => feature.geometry.coordinates);
     expect(points).toHaveLength(2);

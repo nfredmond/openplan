@@ -3795,7 +3795,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
 
     expect(generatedHtml).toContain("Evidence chain summary");
-    // Names, not stored ids (KI-2026-11-14-340): the template, the gate and the missing artifact.
+    // Names, not stored ids (KI-2026-11-14-304): the template, the gate and the missing artifact.
     expect(generatedHtml).toContain("California Stage-Gate Scaffold");
     expect(generatedHtml).not.toContain("ca_stage_gates_v0_1");
     expect(generatedHtml).toContain("1 pass");

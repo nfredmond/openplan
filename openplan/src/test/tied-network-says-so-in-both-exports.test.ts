@@ -5,7 +5,7 @@
  * report's safety action plan section and SS4A Appendix A print the same
  * line, from the same helper, beside the numbered map. No tie-breaker is
  * invented: each tied row keeps the shared rank in the table, and the map
- * marks each one with its row number, which is not a rank (KI-2026-11-14-340).
+ * marks each one with its row number, which is not a rank (KI-2026-11-14-304).
  *
  * The last block renders both documents to PDF with Chrome and reads them
  * back with poppler. Blind category: the hosted Chrome bundle, and how the

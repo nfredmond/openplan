@@ -21,7 +21,7 @@ import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
  * Every date and time a report prints: "Nov 14, 2026, 17:33 UTC", or the date
  * alone for a stored date. The cover used to print "11/14/2026, 5:33:55 PM"
  * in the server's zone with no zone named, which on the hosted site was UTC
- * and read as local time (KI-2026-11-14-340). The SS4A packet's appendices
+ * and read as local time (KI-2026-11-14-304). The SS4A packet's appendices
  * print through the same formatter.
  */
 const formatDateTime = formatEvidenceTimestamp;
@@ -2243,7 +2243,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
    * registry, stage-gate and project-record snapshots, scenario basis) move
    * to an appendix at the back under a heading that says what they are. The
    * first proven job's plans opened with about eight pages of that material
-   * (KI-2026-11-14-340). Nothing is dropped. Every other report keeps the
+   * (KI-2026-11-14-304). Nothing is dropped. Every other report keeps the
    * order it had: for a project status packet the records are the subject.
    */
   const safetyPlanFirst = Boolean(data.safetyActionPlan);
