@@ -49,13 +49,23 @@ the checker refuses a record unless:
 7. Every screen was checked at 1440 and 390 pixels, in light and dark mode,
    and every check reports zero serious and zero critical axe violations.
 8. A second account's requests for the first account's safety action plan and
-   SS4A application returned no content and answered 403 (workspace access
-   denied) or 404 (not found). Any other status, including a 401, a 5xx or a
+   SS4A application returned no content. Each check names its request and
+   kind. A `data` check (an API route or a file download) counts only with
+   403 (workspace access denied) or 404 (not found). A `page` check counts
+   with 403 or 404, or with 200 when the journey read the rendered page and
+   recorded `notFoundRendered: true`, `recordTextFound: false` and the
+   SHA-256 of at least three distinct identifying strings it searched (report
+   title, project name, workspace name, campaign title), never the text. The
+   report page streams, so it answers 200 while it shows the not-found screen
+   (KI-2026-11-14-060). Each target needs its download refused as a data check
+   (`report-pdf-download`, `application-pdf-download`); a page check alone
+   never satisfies the rule. Any other status, including a 401, a 5xx or a
    redirect, is inconclusive and refuses the record: a failed handler does not
    show that the workspace check refused the request.
 9. The record states its limits: no PDF/UA check, no keyboard or screen-reader
-   pass, no human usefulness review, FARS is fatal-only, and, unless a source
-   check matched, crash counts not independently confirmed. A source check
+   pass, no human usefulness review, FARS is fatal-only, unless a source check
+   matched, crash counts not independently confirmed, and, when a page check
+   answered 200, `report-page-answers-200-with-not-found-screen`. A source check
    that found different counts refuses the record.
 10. No text field and no PDF page holds an email address, a plus-address, a
     JWT, a provider token (including any `sk-` key), a sign-in link, a cookie

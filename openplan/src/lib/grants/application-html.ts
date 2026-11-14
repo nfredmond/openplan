@@ -12,6 +12,10 @@ import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-ori
  *  - Missing required attachments stamp the document DRAFT prominently; they
  *    do not block assembly, because an operator legitimately packages a work
  *    in progress — but the reader must never mistake it for submittable.
+ *    Final section text that still holds `[VERIFY]` markers or the Safety
+ *    seed's unfilled placeholders stamps it DRAFT too, with the count
+ *    (`application-draft-stamps.ts`). Both reasons print when both apply.
+ *  - No email address prints: finalizers are named by workspace role.
  *  - The standing evidence caveats travel on the cover verbatim, for the
  *    evidence the document actually carries (`applicableStandingCaveats`), and
  *    every section's provenance (origin, model, grounding verdict, who
@@ -33,6 +37,7 @@ import {
   type EvidenceAppendixFrame,
 } from "@/lib/grants/evidence-appendices";
 import { SS4A_APPENDIX_FRAME } from "@/lib/grants/ss4a-evidence-appendices";
+import { applicationDraftStamps } from "@/lib/grants/application-draft-stamps";
 import {
   formatRecordedMoment,
   timeZoneInputLabel,
@@ -69,8 +74,9 @@ export type GrantApplicationSectionProvenance = {
   totalSentenceCount: number | null;
   /**
    * Who finalized the section, as the document prints it: the workspace
-   * member's name from `loadFinalizerNames`, or that module's sentence when
-   * the person is not on record. Never a user id. Sourced from the section's
+   * member's role from `loadFinalizerNames`, or that module's sentence when
+   * the person is not on record. Never a user id or an email address.
+   * Sourced from the section's
    * finalized_by EVENT column (never updated_by, which any later touch
    * overwrites). For sections finalized before finalizer tracking existed,
    * this carries the disclosure "finalized before finalizer tracking; not
@@ -174,25 +180,26 @@ function formatAmount(value: number | string | null | undefined): string {
   return formatMoney(numeric, { precision: "whole" });
 }
 
-/** Required checklist items with nothing behind them: neither attached nor N/A. */
-export function countOutstandingRequiredAttachments(
-  attachments: readonly ApplicationAttachmentRow[]
-): number {
-  return attachments.filter(
-    (attachment) =>
-      attachment.required &&
-      attachment.status !== "attached" &&
-      attachment.status !== "not_applicable"
-  ).length;
-}
-
+/**
+ * The application stylesheet.
+ *
+ * Letter spacing stays under 0.1em: Poppler and most PDF readers start a new
+ * word at a gap wider than a tenth of the font size, so wider tracking makes a
+ * label read back as single letters and a search for it fails
+ * (KI-2026-11-14-117). Table rows do not split across pages, so a long URL in
+ * a cell prints, and copies, whole on one page.
+ *
+ * Print drops the spacing under the last text. When the text ended near a
+ * page end, that empty spacing spilled onto a blank last page
+ * (KI-2026-11-14-116).
+ */
 const DOCUMENT_STYLES = `
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
       body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, "Times New Roman", serif; }
       main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
       .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); }
-      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }
+      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #965c2a; }
       h1, h2, h3 { margin: 0; }
       h1 { margin-top: 12px; font-size: 38px; line-height: 1.08; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
@@ -200,15 +207,16 @@ const DOCUMENT_STYLES = `
       .section-title { margin-bottom: 14px; font-size: 22px; }
       .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
       .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
-      dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }
+      dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       dd { margin: 6px 0 0; font-size: 17px; }
       .draft-stamp { margin-top: 20px; border: 2px solid #9a3412; border-radius: 18px; padding: 16px 18px; background: #fde2d2; color: #9a3412; font: 700 18px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; }
       .warning-box { margin-top: 18px; border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
       .warning-box ul { margin: 8px 0 0; padding-left: 20px; }
       .outstanding { border: 1px dashed rgba(150, 92, 42, 0.5); border-radius: 18px; padding: 14px 16px; background: #fff8ec; color: #6d7479; font-style: italic; }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      tr { break-inside: avoid; }
       th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(19, 34, 43, 0.12); vertical-align: top; }
-      th { font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #6d7479; }
+      th { font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       .empty { color: #6d7479; font-style: italic; }
       .section-body p { line-height: 1.65; }
       .appendix { margin-top: 20px; border-top: 1px solid rgba(19, 34, 43, 0.12); padding-top: 16px; }
@@ -224,7 +232,8 @@ const DOCUMENT_STYLES = `
       .appendix-facts dd { font-size: 15px; line-height: 1.5; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
       .table-scroll { overflow-x: auto; }
-      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }`;
+      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }
+      @media print { main, main > :last-child { padding-bottom: 0; } main > :last-child :last-child { margin-bottom: 0; } }`;
 
 /**
  * The standing caveats whose evidence this document carries, in cover order.
@@ -257,7 +266,7 @@ export function applicableStandingCaveats(data: GrantApplicationExportData): str
   return APPLICATION_EXPORT_STANDING_CAVEATS.filter((caveat) => applies[caveat]);
 }
 
-function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount: number): string {
+function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly string[]): string {
   const { opportunity } = data;
   const calendar = data.calendar ?? UTC_CALENDAR;
   const caveats = applicableStandingCaveats(data);
@@ -290,11 +299,7 @@ function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount:
     )}</p>
     <div class="facts" style="margin-top: 18px;">${coverFacts}
     </div>
-    ${
-      outstandingRequiredCount > 0
-        ? `<div class="draft-stamp">DRAFT: ${outstandingRequiredCount} required attachment(s) outstanding</div>`
-        : ""
-    }
+    ${draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")}
     ${
       caveats.length > 0
         ? `<div class="warning-box">
@@ -405,7 +410,10 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
   const orderedSections = [...data.sections].sort(
     (left, right) => left.section.sort_order - right.section.sort_order
   );
-  const outstandingRequiredCount = countOutstandingRequiredAttachments(data.attachments);
+  const draftStamps = applicationDraftStamps(
+    orderedSections.map((entry) => entry.section),
+    data.attachments
+  );
 
   return `<!doctype html>
 <html lang="en">
@@ -418,7 +426,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
   </head>
   <body>
     <main>
-      ${coverMarkup({ ...data, sections: orderedSections }, outstandingRequiredCount)}
+      ${coverMarkup({ ...data, sections: orderedSections }, draftStamps)}
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
       ${attachmentsMarkup(data.attachments)}
       ${evidenceAppendicesMarkup(data.evidenceAppendices, data.evidenceAppendixFrame ?? SS4A_APPENDIX_FRAME)}

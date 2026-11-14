@@ -33,8 +33,10 @@ import { stripSourceComments } from "@/test/helpers/source-text";
  * BLIND CATEGORY: it recognizes only the spellings in `directChecks`,
  * `schemaChecks` and `DELEGATES`; it does not follow a param through any other
  * helper; and for routes it does not prove the check runs before the first
- * query (pages are held to that order). Layouts are out of scope: today they
- * only build metadata from the param and never query with it.
+ * query (pages are held to that order). Layouts are out of scope. Most only
+ * build a tab title from the param; `reports/[reportId]/layout.tsx` also reads
+ * the report and checks `isUuid` first, which
+ * `report-record-layout-not-found.test.tsx` holds, not this guard.
  */
 
 const APP_DIR = path.join(process.cwd(), "src", "app");

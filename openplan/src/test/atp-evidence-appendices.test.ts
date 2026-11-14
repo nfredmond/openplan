@@ -121,7 +121,8 @@ describe("ATP evidence appendices", () => {
     expect(crash.source).toMatchObject({ record: "Crash acquisition", id: ATP_IDS.ingest, date: "2026-11-02T15:00:00+00:00" });
     expect(fact(crash, "Source")).toBe("California Crash Reporting System (CCRS)");
     expect(fact(crash, "Years requested")).toBe("2022, 2023, 2024, 2025");
-    expect(fact(crash, "Recorded severity coverage")).toBe("kabco_full");
+    expect(fact(crash, "Severity coverage")).toMatch(/^Serious-injury crashes are counted from the source's injured-person records/);
+    expect(crash.facts.map((f) => f.label)).not.toContain("Recorded severity coverage");
     expect(fact(crash, "Crash area")).toBe("Place boundary");
     expect(fact(crash, "Crashes outside the boundary, left out")).toBe("261");
     expect(fact(crash, "Fatal crashes")).toBe("2");

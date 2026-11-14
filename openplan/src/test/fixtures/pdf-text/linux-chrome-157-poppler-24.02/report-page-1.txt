@@ -1,0 +1,77 @@
+OPENPLAN REPORTS
+
+Safety action plan report
+Structured report packet with explicit provenance and source transparency.
+PROJECT
+
+R E P O RT T Y P E
+
+C R E AT E D
+
+Example safety
+project
+
+Project Status Packet
+
+11/3/2026, 12:00:00
+AM
+
+LINKED RUNS
+
+0
+Planning-level estimated project cost: Not recorded.
+
+Evidence chain summary
+This packet summarizes the current planning evidence chain captured at generation time so
+reviewers can quickly see what source surfaces support the artifact.
+LINKED RUNS
+
+SCENARIO SETS
+
+0
+
+0
+
+S C E N A R I O D ATA
+PA C K A G E S
+
+I N D I C AT O R
+SNAPSHOTS
+
+PROJECT RECORD
+GROUPS
+
+0
+
+0
+
+0
+
+PROJECT RECORDS
+
+ENGAGEMENT
+POSTURE
+
+H A N D O F F- R E A DY
+INPUT
+
+Not linked
+
+0/0
+
+G OV E R N A N C E C O U N T S
+
+MODELING EVIDENCE
+
+0
+
+S TA G E - G AT E P O S T U R E
+
+SCENARIO
+A SS U M P T I O N S
+
+0
+
+safety-action-plan-report · Page 1 of 7
+
+

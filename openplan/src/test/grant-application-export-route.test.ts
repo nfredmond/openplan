@@ -217,6 +217,8 @@ type ServiceCall = { table: string; method: string; args: unknown[] };
  */
 function rosterService(options: {
   members: string[];
+  /** Each member's workspace role; "member" when not given. */
+  roles?: Record<string, string>;
   emails: Record<string, string>;
   rosterError?: { message: string };
 }) {
@@ -243,7 +245,7 @@ function rosterService(options: {
     chain.limit = async () =>
       options.rosterError
         ? { data: null, error: options.rosterError }
-        : { data: columns === "user_id, role" ? options.members.map((id) => ({ user_id: id, role: "member" })) : [], error: null };
+        : { data: columns === "user_id, role" ? options.members.map((id) => ({ user_id: id, role: options.roles?.[id] ?? "member" })) : [], error: null };
     return chain;
   };
   return {
@@ -436,6 +438,27 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const body = await response.json();
     expect(body.isDraftStamped).toBe(true);
     expect(body.outstandingRequiredCount).toBe(1);
+    expect(body.draftStamps).toEqual(["DRAFT: 1 required attachment(s) outstanding"]);
+  });
+
+  it("stamps the document DRAFT when a final section still holds [VERIFY] markers, and says why (KI-2026-11-14-061)", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ ...finalOperatorSection, final_markdown: "Crashes doubled [VERIFY]. [OPERATOR: Enter the budget.]" }], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    const stamp = "DRAFT: 1 unverified item, 1 unfilled placeholder remain in 1 section";
+    expect(html).toContain(`<div class="draft-stamp">${stamp}</div>`);
+    const body = await response.json();
+    expect(body.isDraftStamped).toBe(true);
+    expect(body.outstandingRequiredCount).toBe(0);
+    expect(body.draftStamps).toEqual([stamp]);
   });
 
   it("stores the PDF under the opportunity's own prefix and registers the export row", async () => {
@@ -614,6 +637,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const REORDERING_TEAMMATE_ID = "77777777-7777-4777-8777-777777777777";
     const roster = rosterService({
       members: [USER_ID, REORDERING_TEAMMATE_ID],
+      roles: { [USER_ID]: "admin" },
       emails: { [USER_ID]: "finalizer@example.gov", [REORDERING_TEAMMATE_ID]: "teammate@example.gov" },
     });
     createServiceRoleClientMock.mockReturnValue(roster.service);
@@ -641,13 +665,15 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(response.status).toBe(201);
 
     const html = renderReportPdfMock.mock.calls[0][0] as string;
-    // A person, not an id (KI-2026-11-02-044).
-    expect(html).toContain("<td>finalizer@example.gov</td>");
+    // The finalizer's workspace role, not an id (KI-2026-11-02-044) and not an
+    // email address (KI-2026-11-14-100): the PDF goes to a funder.
+    expect(html).toContain("<td>Workspace admin</td>");
     expect(html).not.toContain(USER_ID);
+    expect(html).not.toContain("finalizer@example.gov");
     expect(html).not.toContain("teammate@example.gov");
     expect(html).not.toContain(REORDERING_TEAMMATE_ID);
-    // Only the finalizer's auth record is read, and only after the roster read.
-    expect(roster.getUserById.mock.calls).toEqual([[USER_ID]]);
+    // No auth record is read; the roster's role is enough.
+    expect(roster.getUserById).not.toHaveBeenCalled();
     expect(roster.calls.filter((call) => call.method === "select").map((call) => call.args)).toEqual([["user_id"], ["user_id, role"]]);
     expect(roster.calls.filter((call) => call.method === "eq").map((call) => call.args)).toEqual([
       ["workspace_id", WORKSPACE_ID],

@@ -178,7 +178,7 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
     questions: [
       {
         questionType: "map_point",
-        prompt: "Where along this corridor do you feel unsafe or uncomfortable?",
+        prompt: "Where in this area do you feel unsafe or uncomfortable?",
         helpText:
           "Drop a point on each location you want the project team to look at. You can add a note describing what happens there.",
         sortOrder: 10,
@@ -186,7 +186,7 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
       },
       {
         questionType: "single_choice",
-        prompt: "How do you most often travel along this corridor?",
+        prompt: "How do you most often travel in this area?",
         sortOrder: 20,
         config: { allow_other: true },
         options: [
@@ -198,14 +198,14 @@ export const CAMPAIGN_TEMPLATES: readonly CampaignTemplate[] = [
       },
       {
         questionType: "likert",
-        prompt: "How safe do you feel traveling along this corridor today?",
+        prompt: "How safe do you feel traveling in this area today?",
         helpText: "1 means very unsafe, 5 means very safe.",
         sortOrder: 30,
         config: { scale: 5 },
       },
       {
         questionType: "free_text",
-        prompt: "What single change would most improve safety along this corridor?",
+        prompt: "What single change would most improve safety in this area?",
         sortOrder: 40,
         config: { max_length: 2000 },
       },

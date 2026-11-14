@@ -465,7 +465,7 @@ export function HighInjuryNetworkPanel({
                 id="safety-hin-report"
                 value={reportId}
                 onChange={(event) => selectReport(event.target.value)}
-                className="rounded-md border border-border bg-background px-2 py-1"
+                className="min-w-0 max-w-full rounded-md border border-border bg-background px-2 py-1"
               >
                 {reports.map((report) => (
                   <option key={report.id} value={report.id}>{report.title}</option>

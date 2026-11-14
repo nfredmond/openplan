@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
 import { findGrantProgramCatalogEntry } from "@/lib/grants/application";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import type { ReportArtifactAttachOption } from "./funding-opportunity-application-workspace";
 
 type Preview = { artifactId: string; previewHash: string; snapshotHash: string; sections: { section_key: string; draft_markdown: string }[] };
@@ -23,12 +24,10 @@ const SS4A_SECTION_TITLES = new Map(
   (findGrantProgramCatalogEntry("ss4a")?.applicationSections ?? []).map((section) => [section.key, section.title]),
 );
 
-/** "Nov 3, 2026, 5:42 AM" in the reader's time zone; the stamp itself if it is not a date. */
+/** "Nov 3, 2026, 05:42 UTC", as the application's appendices date the same artifact; the stamp itself if it is not a date. */
 function formatGeneratedAt(value: string | null): string {
   if (!value) return "Date not recorded";
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
+  return formatEvidenceTimestamp(value);
 }
 
 /** Selection and apply are explicit; a preview never writes application content. */

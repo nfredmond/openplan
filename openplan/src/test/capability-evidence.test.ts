@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,6 +14,7 @@ import {
   validateCapabilityEvidence,
   validateProvenJobRecord,
 } from "../../scripts/ops/capability-evidence.mjs";
+import { pdfToolVersion } from "../../scripts/lib/poppler-text.mjs";
 
 const root = mkdtempSync(join(tmpdir(), "openplan-capability-evidence-"));
 mkdirSync(join(root, "docs"));
@@ -145,6 +146,13 @@ describe("the proven job record checker", () => {
     expect(() => check(proven())).not.toThrow();
   });
 
+  it("accepts a report page that answers 404, without the 200 limit", () => {
+    const record = proven();
+    record.crossWorkspace.checks[0] = { target: "safety-action-plan", request: "report-page", kind: "page", status: 404, contentReturned: false };
+    record.limits = record.limits.filter((limit: Json) => limit.id !== "report-page-answers-200-with-not-found-screen");
+    expect(() => check(record)).not.toThrow();
+  });
+
   it.each<[string, (record: Json) => void, RegExp]>([
     ["a preview origin", (r) => { r.baseUrl = "https://openplan-git-work-natford.vercel.app"; }, /not the hosted origin/],
     ["a local origin", (r) => { r.baseUrl = "https://localhost:3450"; }, /not the hosted origin/],
@@ -175,10 +183,24 @@ describe("the proven job record checker", () => {
     ["an unknown journey field", (r) => { journey(r, "california-county").confirmationLink = "kept out"; }, /has unknown field confirmationLink/],
     ["an unknown top-level field", (r) => { r.cookies = []; }, /record has unknown field cookies/],
     ["an unsaved benefit-cost analysis", (r) => { journey(r, "california-county").bcaSaved = false; }, /did not save a benefit-cost analysis/],
-    ["another workspace's report served", (r) => { r.crossWorkspace.checks[0] = { target: "safety-action-plan", status: 200, contentReturned: true }; }, /returned content \(status 200\)/],
-    ["a missing cross-workspace check", (r) => { r.crossWorkspace.checks.pop(); }, /cross-workspace check for ss4a-application is missing/],
+    ["another workspace's report served", (r) => { r.crossWorkspace.checks[1] = { target: "safety-action-plan", request: "report-pdf-download", kind: "data", status: 200, contentReturned: true }; }, /returned content \(status 200\)/],
+    ["a missing cross-workspace check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.target !== "ss4a-application"); }, /cross-workspace check for ss4a-application is missing/],
     ["a server error counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 500; }, /safety-action-plan answered status 500, which is inconclusive/],
-    ["an unavailable service counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[1].status = 503; }, /ss4a-application answered status 503, which is inconclusive/],
+    ["an unavailable service counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[3].status = 503; }, /ss4a-application answered status 503, which is inconclusive/],
+    // KI-2026-11-14-060, the lead's decision: page and data checks differ.
+    ["a page answering 200 without the not-found screen", (r) => { r.crossWorkspace.checks[0].notFoundRendered = false; }, /report-page for another workspace's safety-action-plan answered 200 without the journey reading the not-found screen/],
+    ["a page answering 200 that carries the first account's text", (r) => { r.crossWorkspace.checks[0].recordTextFound = true; }, /answered 200 and the journey found the first account's text on it/],
+    ["a page answering 200 whose text was not searched", (r) => { delete r.crossWorkspace.checks[0].recordTextFound; }, /answered 200 and the journey found the first account's text on it, or did not look/],
+    ["a page answering 200 with two strings searched", (r) => { const page = r.crossWorkspace.checks[0]; page.searchedStringSha256 = page.searchedStringSha256.slice(0, 2); page.searchedStringCount = 2; }, /searched 2 identifying strings; at least 3 required/],
+    ["a page answering 200 with one string hashed twice", (r) => { const page = r.crossWorkspace.checks[0]; page.searchedStringSha256[3] = page.searchedStringSha256[0]; }, /one distinct hash per identifying string/],
+    ["a page answering 200 whose hash list disagrees with its count", (r) => { r.crossWorkspace.checks[0].searchedStringCount = 5; }, /one distinct hash per identifying string/],
+    ["a data request answering 200 with no content", (r) => { r.crossWorkspace.checks[3].status = 200; }, /data request application-pdf-download for another workspace's ss4a-application answered status 200, which is inconclusive/],
+    ["a data request answering 200 that claims the not-found screen", (r) => { Object.assign(r.crossWorkspace.checks[1], { status: 200, notFoundRendered: true, recordTextFound: false, searchedStringSha256: r.crossWorkspace.checks[0].searchedStringSha256, searchedStringCount: 4 }); }, /data request report-pdf-download .* answered status 200, which is inconclusive/],
+    ["a target held only by a page check", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.target !== "safety-action-plan" || c.kind === "page"); }, /checks for safety-action-plan need its report-pdf-download refused as a data check/],
+    ["an application held only by its read, not its download", (r) => { r.crossWorkspace.checks = r.crossWorkspace.checks.filter((c: Json) => c.request !== "application-pdf-download"); }, /checks for ss4a-application need its application-pdf-download refused as a data check/],
+    ["a download recorded as a page check", (r) => { r.crossWorkspace.checks[1].kind = "page"; }, /need its report-pdf-download refused as a data check/],
+    ["a page answering 200 without its stated limit", (r) => { r.limits = r.limits.filter((limit: Json) => limit.id !== "report-page-answers-200-with-not-found-screen"); }, /does not state the report-page-answers-200-with-not-found-screen limit/],
+    ["a check without a kind", (r) => { delete r.crossWorkspace.checks[2].kind; }, /record\.crossWorkspace\.checks\[2\] is missing kind/],
     ["a signed-out second account counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[0].status = 401; }, /answered status 401, which is inconclusive/],
     ["a rejected export payload counted as a cross-workspace refusal", (r) => { r.crossWorkspace.checks[1].status = 422; }, /answered status 422, which is inconclusive/],
     ["a source check that found different counts", (r) => { r.sourceCheck = { status: "differs", checkedOn: "2026-11-21", url: "https://example.gov/query", note: "Counts differ." }; }, /finding, not a pass/],
@@ -228,6 +250,37 @@ describe("the proven job record checker", () => {
         expect(accepted, `${kind} ${sample}`).toBe(normalizePlaceGeoid(kind, sample) === sample);
       }
     }
+  });
+
+  // KI-2026-11-14-117: the hosted site renders PDFs on Linux, where a label set
+  // with letter spacing read back as single letters. The checker finds item
+  // text with the shared matcher (scripts/lib/pdf-text-match.mjs), which
+  // finds such a label and refuses what a whitespace-squashing search took:
+  // part of a longer word, and two cells read across a column gap.
+  const withPage3 = (role: string, kind: string, page3: string) =>
+    syntheticPdf(role, kind).replace(/[^\f]*$/, page3);
+
+  it("finds an item heading that reads back letter-spaced", () => {
+    const record = proven();
+    rewritePdf(record, "tribal-area", "ss4a-application", withPage3("tribal-area", "ss4a-application",
+      "C O U N T E R M E A S U R E S\nB E N E F I T- C O S T A N A LY S I S\nE N G A G E M E N T S U M M A RY"));
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it.each([
+    ["part of a longer word", "Countermeasures\nBenefit-cost analysis\nEngagement summaryless"],
+    ["two cells across a column gap", "Countermeasures\nBenefit-cost analysis\nEngagement      summary"],
+    ["a phrase split by a blank line", "Countermeasures\nBenefit-cost analysis\nEngagement\n\nsummary"],
+  ])("refuses item text found only as %s", (_name, page3) => {
+    const record = proven();
+    rewritePdf(record, "tribal-area", "ss4a-application", withPage3("tribal-area", "ss4a-application", page3));
+    expect(() => check(record)).toThrow(/tribal-area journey ss4a-application PDF engagement-summary text is not on page 3/);
+  });
+
+  it("refuses a DRAFT stamp that reads back letter-spaced", () => {
+    const record = proven();
+    rewritePdf(record, "california-county", "ss4a-application", syntheticPdf("california-county", "ss4a-application", "\nD R A F T: 2 required attachment(s) outstanding"));
+    expect(() => check(record)).toThrow(/ss4a-application PDF page 3 carries a DRAFT stamp/);
   });
 
   it("refuses a PDF page holding an email address", () => {
@@ -352,16 +405,43 @@ function makePdf(pages: string[]): Buffer {
   return Buffer.from(out, "latin1");
 }
 
-// Poppler's `pdftotext -v` prints its version and exits 99, so only a missing
-// program counts as absent.
-const hasPdftotext = (() => {
-  try {
-    execFileSync("pdftotext", ["-v"], { stdio: "ignore" });
-    return true;
-  } catch (error) {
-    return (error as NodeJS.ErrnoException).code !== "ENOENT";
-  }
-})();
+// Only Poppler's pdftotext counts: Git Bash on Windows finds xpdf's first,
+// and the reader refuses it (KI-2026-11-14-190).
+const hasPdftotext = pdfToolVersion("pdftotext").poppler;
+
+/** A stand-in for spawnSync that answers `-v` the way a given program does. */
+function versionStub(stderr: string) {
+  return (() => ({ status: 99, stdout: "", stderr })) as unknown as typeof spawnSync;
+}
+
+describe("the default PDF reader refuses a pdftotext that is not Poppler's", () => {
+  const neverRun = (() => {
+    throw new Error("read a page with the wrong program");
+  }) as unknown as typeof execFileSync;
+
+  it("refuses xpdf before reading a page, and says how to fix PATH", () => {
+    const xpdf = versionStub("pdftotext version 4.06 [www.xpdfreader.com]\nCopyright 1996-2025 Glyph & Cog, LLC\n");
+    expect(() => pdftotextPages("record.pdf", { spawn: xpdf, execFile: neverRun })).toThrow(
+      /proven job record refused: the pdftotext on PATH is not Poppler's: it reports "pdftotext version 4\.06 \[www\.xpdfreader\.com\]".*ahead of every other folder on PATH/,
+    );
+  });
+
+  it("refuses a missing pdftotext with the same advice", () => {
+    const missing = (() => ({ error: Object.assign(new Error("spawn pdftotext ENOENT"), { code: "ENOENT" }) })) as unknown as typeof spawnSync;
+    expect(() => pdftotextPages("record.pdf", { spawn: missing, execFile: neverRun })).toThrow(/pdftotext is not on PATH.*poppler-utils/);
+  });
+
+  it("reads with Poppler and splits pages on form feeds", () => {
+    const poppler = versionStub("pdftotext version 24.02.0\nCopyright 2005-2024 The Poppler Developers - http://poppler.freedesktop.org\n");
+    const calls: string[][] = [];
+    const execFile = ((tool: string, args: string[]) => {
+      calls.push([tool, ...args]);
+      return "Crash summary\fFinalized by Workspace owner\f";
+    }) as unknown as typeof execFileSync;
+    expect(pdftotextPages("record.pdf", { spawn: poppler, execFile })).toEqual(["Crash summary", "Finalized by Workspace owner"]);
+    expect(calls).toEqual([["pdftotext", "-layout", "-enc", "UTF-8", "record.pdf", "-"]]);
+  });
+});
 
 describe.skipIf(!hasPdftotext)("the default PDF reader (needs Poppler's pdftotext)", () => {
   it("returns one text per page, without a trailing empty page", () => {

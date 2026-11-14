@@ -68,10 +68,10 @@ import {
   formatCompactDateTime,
   loadAiNarrativeDraftPanelInputs,
   loadProjectFundingSourceRows,
-  loadReportDetailRow,
   maxTimestamp,
   summarizeProjectRecordDrift,
 } from "./_components/_helpers";
+import { loadReportDetailRowForRequest } from "./_components/report-row-for-request";
 import type {
   CurrentProjectRecordEntry,
   DriftItem,
@@ -111,7 +111,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     redirect("/sign-in");
   }
 
-  const reportResult = await loadReportDetailRow(supabase, reportId);
+  const reportResult = await loadReportDetailRowForRequest(reportId); // one read, shared with layout.tsx
 
   // A 404 on a FAILED read is the same defect wearing a different face: it tells
   // a planner "this report does not exist" when the truth is "this report could
