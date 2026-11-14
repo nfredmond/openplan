@@ -336,7 +336,7 @@ function countermeasureAppendix(index: number, records: Ss4aEvidenceRecords): Ss
         treatment.countermeasures.map((item) => [
           treatment.segmentLabel,
           treatment.rank === null ? "Not in the frozen ranked list" : String(treatment.rank),
-          item.name,
+          item.listStatus ? `${item.name}. ${item.listStatus}` : item.name,
           item.addresses,
           item.crashTypes.join(", "),
           item.cmfNote,

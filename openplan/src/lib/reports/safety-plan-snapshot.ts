@@ -23,7 +23,8 @@ export const safetyPlanDraftSchema = z.object({
     z.object({ kind: z.literal("unavailable"), reason: text }).strict(),
   ]),
   treatments: z.array(z.object({ segmentId: text, segmentLabel: text, rank: count.positive().nullable(),
-    countermeasures: z.array(z.object({ name: text, addresses: text, crashTypes: z.array(text), sourceUrl: z.string().url(), cmfNote: text }).strict()).max(10),
+    // listStatus is optional so snapshots frozen before it existed stay valid.
+    countermeasures: z.array(z.object({ name: text, addresses: text, crashTypes: z.array(text), sourceUrl: z.string().url(), cmfNote: text, listStatus: text.optional() }).strict()).max(10),
   }).strict()).max(50),
   countermeasureSourceLine: text,
   components: z.array(z.object({ component: text, status: z.enum(["not_covered", "partial"]), gap: text }).strict()).min(1).max(30),

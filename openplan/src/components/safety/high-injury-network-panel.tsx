@@ -15,6 +15,7 @@ import {
 } from "@/lib/safety/high-injury-network";
 import {
   COUNTERMEASURE_CRASH_TYPE_LABELS,
+  countermeasureListStatus,
   describeCountermeasureSource,
   SAFETY_COUNTERMEASURE_FILE,
   SAFETY_COUNTERMEASURES,
@@ -119,6 +120,17 @@ function holdsPlanFor(report: HighInjuryNetworkReportTarget, ingestId: string | 
  */
 function defaultReportId(reports: readonly HighInjuryNetworkReportTarget[], ingestId: string | null): string {
   return (reports.find((report) => holdsPlanFor(report, ingestId)) ?? reports[0])?.id ?? "";
+}
+
+/** The item's FHWA list status on its own line, only for an item FHWA removed. */
+function ListStatus({ countermeasure }: { countermeasure: (typeof SAFETY_COUNTERMEASURES)[number] }) {
+  const status = countermeasureListStatus(countermeasure);
+  if (!status) return null;
+  return (
+    <span className="block text-muted-foreground" data-testid="safety-countermeasure-list-status">
+      {status}
+    </span>
+  );
 }
 
 /**
@@ -325,7 +337,10 @@ export function HighInjuryNetworkPanel({
                                 checked={chosen.includes(countermeasure.id)}
                                 onChange={() => toggle(segment.id, countermeasure.id)}
                               />
-                              <span>{countermeasure.name}</span>
+                              <span>
+                                {countermeasure.name}
+                                <ListStatus countermeasure={countermeasure} />
+                              </span>
                             </label>
                           </li>
                         ))}
@@ -367,7 +382,7 @@ export function HighInjuryNetworkPanel({
 
       <details className="text-xs" data-testid="safety-countermeasure-list">
         <summary className="cursor-pointer font-medium">
-          Countermeasure list ({SAFETY_COUNTERMEASURES.length}, {SAFETY_COUNTERMEASURE_FILE.source.title})
+          Countermeasure list ({SAFETY_COUNTERMEASURES.length})
         </summary>
         <table className="mt-1 w-full">
           <thead className="text-left text-muted-foreground">
@@ -384,6 +399,7 @@ export function HighInjuryNetworkPanel({
                   <a href={countermeasure.sourceUrl} target="_blank" rel="noreferrer" className="underline underline-offset-2">
                     {countermeasure.name}
                   </a>
+                  <ListStatus countermeasure={countermeasure} />
                 </td>
                 <td className="py-1 pr-1">
                   {countermeasure.crashTypes.map((type) => COUNTERMEASURE_CRASH_TYPE_LABELS[type]).join(", ")}

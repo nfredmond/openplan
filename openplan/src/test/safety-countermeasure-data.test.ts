@@ -3,14 +3,19 @@
  * modification factor can only enter it with its CMF Clearinghouse entry.
  *
  * Blind category: this checks the file's shape and citation rules. It cannot
- * check that the FHWA pages still say what the file summarizes; the file's own
- * retrieval note marks that [VERIFY].
+ * check that the FHWA pages still say what the file summarizes, or that FHWA's
+ * live list still matches the newest Internet Archive capture; the file's own
+ * retrieval note marks both [VERIFY].
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import rawFile from "@/lib/safety/countermeasures/fhwa-proven-safety-countermeasures.v1.json";
 import {
+  COUNTERMEASURE_FUNDING_CHECK,
+  countermeasureLabel,
+  countermeasureListStatus,
+  countermeasureListStatusDetail,
   describeCountermeasureSource,
   parseCountermeasureFile,
   SAFETY_COUNTERMEASURE_FILE,
@@ -30,9 +35,13 @@ describe("the countermeasure data file", () => {
     expect(SAFETY_COUNTERMEASURES.length).toBeGreaterThanOrEqual(10);
   });
 
-  it("cites a federal source page for every countermeasure", () => {
+  it("cites a federal source page for every countermeasure, archived for an item FHWA removed", () => {
     for (const entry of SAFETY_COUNTERMEASURES) {
-      expect(entry.sourceUrl, entry.id).toMatch(/^https:\/\/highways\.dot\.gov\//);
+      expect(entry.sourceUrl, entry.id).toMatch(
+        entry.fhwaList.status === "on_list"
+          ? /^https:\/\/highways\.dot\.gov\//
+          : /^https:\/\/web\.archive\.org\/web\/\d{8}\/https:\/\/highways\.dot\.gov\/safety\/proven-safety-countermeasures\//,
+      );
       expect(entry.crashTypes.length, entry.id).toBeGreaterThan(0);
       expect(entry.addresses.trim(), entry.id).not.toBe("");
     }
@@ -115,6 +124,121 @@ describe("the countermeasure data file", () => {
     expect(line).toContain(SAFETY_COUNTERMEASURE_FILE.source.url);
     expect(line).toContain(`Retrieved ${SAFETY_COUNTERMEASURE_FILE.source.retrievedOn}`);
     expect(line).toContain(`list version ${SAFETY_COUNTERMEASURE_FILE.version}`);
+  });
+});
+
+/**
+ * KI-2026-11-14-071: Internet Archive captures of FHWA's list page show these
+ * four items on it on 2026-06-30 and absent from 2026-07-10 through the newest
+ * capture read, 2026-11-04. Their former FHWA pages return 404 in the newest
+ * captures, so each cites the capture of its former page instead. Source: the
+ * lead's FHWA list finding (research task 19), read 2026-11-13.
+ */
+const REMOVED_FROM_FHWA_LIST: Record<string, { slug: string; capturedOn: string }> = {
+  "road-diets": { slug: "road-diets-roadway-reconfiguration", capturedOn: "2026-05-06" },
+  "bicycle-lanes": { slug: "bicycle-lanes", capturedOn: "2026-06-09" },
+  "appropriate-speed-limits": { slug: "appropriate-speed-limits-all-road-users", capturedOn: "2026-06-11" },
+  "speed-safety-cameras": { slug: "speed-safety-cameras", capturedOn: "2026-06-03" },
+};
+const LIST_CAPTURE = "https://web.archive.org/web/20261104165113/https://highways.dot.gov/safety/proven-safety-countermeasures";
+
+describe("items FHWA removed from its list say so (KI-2026-11-14-071)", () => {
+  it("marks exactly the four removed items, each with its captures and archived former page", () => {
+    const removed = SAFETY_COUNTERMEASURES.filter((entry) => entry.fhwaList.status === "removed");
+    expect(removed.map((entry) => entry.id).sort()).toEqual(Object.keys(REMOVED_FROM_FHWA_LIST).sort());
+    for (const entry of removed) {
+      const expected = REMOVED_FROM_FHWA_LIST[entry.id];
+      expect(entry.fhwaList, entry.id).toEqual({
+        status: "removed",
+        lastSeenOnList: "2026-06-30",
+        firstMissingFromList: "2026-07-10",
+        stillMissingOn: "2026-11-04",
+        listCaptureUrl: LIST_CAPTURE,
+        formerPageCapturedOn: expected.capturedOn,
+        readOn: "2026-11-13",
+      });
+      expect(entry.sourceUrl, entry.id).toBe(
+        `https://web.archive.org/web/${expected.capturedOn.replace(/-/g, "")}/https://highways.dot.gov/safety/proven-safety-countermeasures/${expected.slug}`,
+      );
+    }
+  });
+
+  it("gives every removed item a status line and every other item none", () => {
+    for (const entry of SAFETY_COUNTERMEASURES) {
+      const line = countermeasureListStatus(entry);
+      if (entry.id in REMOVED_FROM_FHWA_LIST) {
+        expect(line, entry.id).toBe("Not on FHWA's Proven Safety Countermeasures list since July 2026.");
+        expect(countermeasureLabel(entry), entry.id).toBe(`${entry.name} (not on FHWA's Proven Safety Countermeasures list since July 2026)`);
+        expect(countermeasureListStatusDetail(entry), entry.id).toContain(
+          "show it on June 30, 2026 and not on July 10, 2026 or November 4, 2026",
+        );
+      } else {
+        expect(line, entry.id).toBeNull();
+        expect(countermeasureListStatusDetail(entry), entry.id).toBeNull();
+        expect(countermeasureLabel(entry), entry.id).toBe(entry.name);
+      }
+    }
+  });
+
+  it("refuses a removed item cited by a live FHWA URL, and a listed item cited by a capture", () => {
+    const live = clone(rawFile) as { countermeasures: Array<Record<string, unknown>> };
+    live.countermeasures.find((entry) => entry.id === "bicycle-lanes")!.sourceUrl =
+      "https://highways.dot.gov/safety/proven-safety-countermeasures/bicycle-lanes";
+    expect(() => parseCountermeasureFile(live)).toThrow(/removed item cites the capture/);
+
+    const relabeled = clone(rawFile) as { countermeasures: Array<Record<string, unknown>> };
+    relabeled.countermeasures.find((entry) => entry.id === "bicycle-lanes")!.fhwaList = { status: "on_list" };
+    expect(() => parseCountermeasureFile(relabeled)).toThrow(/item on FHWA's list cites its FHWA page/);
+
+    const both = clone(rawFile) as { countermeasures: Array<Record<string, unknown>> };
+    const roadDiet = both.countermeasures.find((entry) => entry.id === "road-diets")!;
+    roadDiet.fhwaList = { ...(roadDiet.fhwaList as Record<string, unknown>), onList: true };
+    expect(() => parseCountermeasureFile(both)).toThrow();
+
+    const unlabeled = clone(rawFile) as { countermeasures: Array<Record<string, unknown>> };
+    delete unlabeled.countermeasures.find((entry) => entry.id === "walkways")!.fhwaList;
+    expect(() => parseCountermeasureFile(unlabeled)).toThrow();
+  });
+
+  it("refuses removal dates out of order", () => {
+    const broken = clone(rawFile) as { countermeasures: Array<Record<string, unknown>> };
+    const entry = broken.countermeasures.find((item) => item.id === "speed-safety-cameras")!;
+    entry.fhwaList = { ...(entry.fhwaList as Record<string, unknown>), firstMissingFromList: "2026-06-01" };
+    expect(() => parseCountermeasureFile(broken)).toThrow(/date order/);
+  });
+
+  it("uses FHWA's former road diet name in sentence case and no dead or redirecting FHWA link", () => {
+    const roadDiet = SAFETY_COUNTERMEASURES.find((entry) => entry.id === "road-diets")!;
+    expect(roadDiet.name).toBe("Road diets (roadway reconfiguration)");
+    for (const entry of SAFETY_COUNTERMEASURES) {
+      expect(entry.sourceUrl, entry.id).not.toContain("road-diets-roadway-configuration");
+      expect(entry.sourceUrl, entry.id).not.toContain("speed-safety-cameras-frequently-asked-questions");
+      if (entry.fhwaList.status === "removed") expect(entry.cmfNote ?? "", entry.id).not.toMatch(/proven countermeasure/i);
+    }
+  });
+
+  it("describes FHWA's list as the captures show it", () => {
+    const file = SAFETY_COUNTERMEASURE_FILE;
+    expect(file.source.newestCaptureOn).toBe("2026-11-04");
+    expect(file.source.newestCaptureUrl).toBe(LIST_CAPTURE);
+    expect(file.listNote).toContain("names 23 countermeasures in four groups: Pedestrian (6), Roadway Departure (6), Intersections (7) and Crosscutting (4)");
+    expect(file.listNote).toContain("Internet Archive captures (newest 2026-11-04)");
+    expect(file.source.retrievalNote).toContain("HTTP 403");
+    expect(file.source.retrievalNote).toContain("[VERIFY]");
+    expect(file.listNote).not.toMatch(/\[VERIFY\] whether FHWA withdrew/);
+  });
+
+  it("adds the removal note and the funding check to the source line only when a removed item is in scope", () => {
+    const whole = describeCountermeasureSource();
+    expect(whole).toContain("read from Internet Archive captures, newest 2026-11-04");
+    expect(whole).toContain("cites the Internet Archive capture of its former FHWA page");
+    expect(whole).toContain(COUNTERMEASURE_FUNDING_CHECK);
+
+    const current = describeCountermeasureSource({ ids: ["walkways", "lighting"] });
+    expect(current).not.toContain("former FHWA page");
+    expect(current).not.toContain(COUNTERMEASURE_FUNDING_CHECK);
+
+    expect(describeCountermeasureSource({ ids: ["walkways", "road-diets"] })).toContain(COUNTERMEASURE_FUNDING_CHECK);
   });
 });
 

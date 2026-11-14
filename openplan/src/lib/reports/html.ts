@@ -1407,7 +1407,7 @@ export function safetyActionPlanMarkup(
     : `<h3>Countermeasures</h3>
       <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
       <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
-        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}. Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
+        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? ` <strong>${esc(item.listStatus)}</strong>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
       </li>`).join("")}</ul>
       <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
 
