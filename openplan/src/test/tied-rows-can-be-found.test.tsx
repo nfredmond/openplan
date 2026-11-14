@@ -118,11 +118,15 @@ function text(html: string) {
   return html.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").replace(/&#39;/g, "'").replace(/\s+/g, " ").trim();
 }
 
-/** Each drawn mark's number and its x position, from the SVG. */
+/**
+ * Each drawn mark's number and the x position of its segment, from the SVG. A
+ * mark moved aside so its number can be read names its segment's place in
+ * `data-anchor`; the agreement rule is about that place.
+ */
 function marks(svg: string): Map<number, number> {
   const found = new Map<number, number>();
-  for (const match of svg.matchAll(/<g transform="translate\((-?[\d.]+) (-?[\d.]+)\)"><circle r="9"[^>]*\/><text [^>]*>(\d+)<\/text><\/g>/g)) {
-    found.set(Number(match[3]), Number(match[1]));
+  for (const match of svg.matchAll(/<g transform="translate\((-?[\d.]+) (-?[\d.]+)\)"(?: data-anchor="(-?[\d.]+) (-?[\d.]+)")?><circle r="9"[^>]*\/><text [^>]*>(\d+)<\/text><\/g>/g)) {
+    found.set(Number(match[5]), Number(match[3] ?? match[1]));
   }
   return found;
 }

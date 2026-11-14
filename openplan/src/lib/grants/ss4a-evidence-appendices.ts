@@ -62,6 +62,7 @@ import {
 import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import {
   renderSafetyStreetContextSvg,
+  SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE,
   SAFETY_STREET_CONTEXT_PROJECTION_NOTE,
 } from "@/lib/safety/street-context-svg";
 
@@ -256,7 +257,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     table,
     figureSvg,
     notes: [
-      ...(figureSvg ? [HIN_MAP_DRAWN_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE, "Each numbered mark is a row of the table, by its No. column. Tied rows share a rank but never a number.", studyAreaNote(records.studyArea)] : []),
+      ...(figureSvg ? [HIN_MAP_DRAWN_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE, "Each numbered mark is a row of the table, by its No. column. Tied rows share a rank but never a number.", ...(figureSvg.includes('data-anchor="') ? [SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE] : []), studyAreaNote(records.studyArea)] : []),
       network.sourceLine,
     ],
   };

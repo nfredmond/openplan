@@ -7,6 +7,46 @@ type Position = [number, number];
 export const SAFETY_STREET_CONTEXT_PROJECTION_NOTE =
   "Local latitude-adjusted drawing; distances are approximate, not survey-grade. The scale bar is omitted for point-only or broad extents that cannot support a single local scale.";
 
+/** Printed under a numbered map, so a reader knows why a mark sits beside its segment. */
+export const SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE =
+  "Where numbered marks would cover each other, a mark is moved aside and joined by a thin red line to the small dot at its segment.";
+
+const MARK_RADIUS = 9;
+/** Two mark centers this far apart do not touch: both radii, both white edges, and a hair of paper. */
+const MARK_CLEARANCE = MARK_RADIUS * 2 + 3;
+
+/**
+ * Where each numbered mark is drawn. Marks are placed in number order, so the
+ * best-ranked row of a stack keeps its true place and the later ones move to
+ * the nearest free spot around their own anchor: rings of growing radius, up
+ * first and then clockwise. Deterministic, so the same records draw the same
+ * map. A mark with no free spot inside the frame stays on its anchor.
+ */
+export function placeSafetyMapMarks(
+  anchors: ReadonlyArray<{ number: number; x: number; y: number }>,
+  frame: { width: number; height: number },
+): Array<{ number: number; anchorX: number; anchorY: number; x: number; y: number; moved: boolean }> {
+  const edge = MARK_RADIUS + 2;
+  const inFrame = (x: number, y: number) => x >= edge && x <= frame.width - edge && y >= edge && y <= frame.height - edge;
+  const placed: Array<{ number: number; anchorX: number; anchorY: number; x: number; y: number; moved: boolean }> = [];
+  const free = (x: number, y: number) => placed.every((mark) => Math.hypot(mark.x - x, mark.y - y) >= MARK_CLEARANCE);
+  for (const anchor of [...anchors].sort((a, b) => a.number - b.number)) {
+    let spot: { x: number; y: number } | null = free(anchor.x, anchor.y) ? { x: anchor.x, y: anchor.y } : null;
+    for (let ring = 1; !spot && ring <= 8; ring += 1) {
+      const steps = ring * 8;
+      for (let step = 0; step < steps; step += 1) {
+        const angle = -Math.PI / 2 + (step / steps) * Math.PI * 2;
+        const x = anchor.x + Math.cos(angle) * MARK_CLEARANCE * ring;
+        const y = anchor.y + Math.sin(angle) * MARK_CLEARANCE * ring;
+        if (inFrame(x, y) && free(x, y)) { spot = { x, y }; break; }
+      }
+    }
+    const moved = spot !== null && (spot.x !== anchor.x || spot.y !== anchor.y);
+    placed.push({ number: anchor.number, anchorX: anchor.x, anchorY: anchor.y, x: spot?.x ?? anchor.x, y: spot?.y ?? anchor.y, moved });
+  }
+  return placed;
+}
+
 function projectRings(geometry: CorridorGeojson | null): Position[][] {
   if (!geometry) return [];
   return geometry.type === "Polygon" ? geometry.coordinates : geometry.coordinates.flat();
@@ -134,16 +174,22 @@ const scalePixels = scaleMeters * pixelsPerMeter;
     }));
   // Shapes first, then the numbered markers, so no marker sits under a later
   // segment. At a county's scale a half-mile piece is smaller than its marker,
-  // so the marker carries the highlight red, and row 1 is drawn last: where
-  // markers overlap, the best-ranked row is the one a reader sees. Each marker
-  // sits at the segment's anchor, the point its printed location names.
+  // so the marker carries the highlight red. Each marker sits at the segment's
+  // anchor, the point its printed location names, unless another marker is
+  // already there: then it moves aside and a thin line joins it to a dot at
+  // the anchor, so every number can be read (verification 48 counted 17
+  // readable numbers for 20 rows). Lines and dots go under every marker.
   const highlightShapes = highlights.map((highlight) => highlight.geometry.type === "LineString"
     ? `<polyline points="${points(highlight.geometry.coordinates)}" fill="none" stroke="#b42318" stroke-width="5" stroke-linecap="round"/>`
     : highlight.geometry.coordinates.map((ring) => `<polygon points="${points(ring)}" fill="rgba(180,35,24,0.22)" stroke="#b42318" stroke-width="2"/>`).join("")).join("");
-  const highlightMarkers = [...highlights].sort((a, b) => b.number - a.number).map((highlight) => {
+  const marks = placeSafetyMapMarks(highlights.map((highlight) => {
     const label = highInjuryNetworkSegmentAnchor(highlight.geometry) ?? highlightPositions(highlight)[0];
-    return `<g transform="translate(${x(label[0]).toFixed(2)} ${y(label[1]).toFixed(2)})"><circle r="9" fill="#b42318" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${Math.trunc(highlight.number)}</text></g>`;
-  }).join("");
+    return { number: Math.trunc(highlight.number), x: x(label[0]), y: y(label[1]) };
+  }), { width, height });
+  const markLeaders = marks.filter((mark) => mark.moved).map((mark) =>
+    `<g transform="translate(${mark.anchorX.toFixed(2)} ${mark.anchorY.toFixed(2)})"><line x1="0" y1="0" x2="${(mark.x - mark.anchorX).toFixed(2)}" y2="${(mark.y - mark.anchorY).toFixed(2)}" stroke="#b42318" stroke-width="1.2"/><circle r="2.5" fill="#b42318" stroke="#fff" stroke-width="0.8"/></g>`).join("");
+  const highlightMarkers = `${markLeaders}${[...marks].reverse().map((mark) =>
+    `<g transform="translate(${mark.x.toFixed(2)} ${mark.y.toFixed(2)})"${mark.moved ? ` data-anchor="${mark.anchorX.toFixed(2)} ${mark.anchorY.toFixed(2)}"` : ""}><circle r="${MARK_RADIUS}" fill="#b42318" stroke="#fff" stroke-width="1.5"/><text y="4" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${mark.number}</text></g>`).join("")}`;
   const highlightMarkup = `${highlightShapes}${highlightMarkers}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${input.ariaLabel ? input.ariaLabel.replace(/[&<>"']/g, "") : "Local street context"}" style="display:block;width:100%;height:auto;background:#fffdf8;border:1px solid #d5d7da${highlights.length > 0 ? ";overflow:hidden" : ""}">

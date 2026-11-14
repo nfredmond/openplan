@@ -53,7 +53,7 @@ import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { describeHighInjuryNetworkTie } from "@/lib/safety/high-injury-network";
 import { roadDisplayName } from "@/lib/safety/road-context";
-import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
+import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import {
   SAFETY_ACTION_PLAN_SECTION_TITLE,
   type SafetyActionPlanSectionDraft,
@@ -1445,7 +1445,7 @@ export function safetyActionPlanMarkup(
 function networkMapMarkup(map: SafetyPlanSupport["networkMap"], rowCount: number): string {
   if (!map) return "";
   if (map.kind === "not_drawn") return `<p><strong>Map not drawn.</strong> ${esc(map.reason)}</p>`;
-  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red, each marked with its number from the table's No. column${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}. The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
+  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red, each marked with its number from the table's No. column${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}.${map.svg.includes('data-anchor="') ? ` ${esc(SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE)}` : ""} The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
