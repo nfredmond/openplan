@@ -59,6 +59,39 @@ retries. A lock timeout (3 s) rolls the whole window back to 448 and ends it.
 - PRs 410, 415 and 440: the code does not depend on its migration; each
   defect stays open on hosted.
 
+## Probes
+
+Run after the install. Each ends in ROLLBACK, so nothing is kept. The kit's
+envelope reads `probe-complete` only when the probe reached its end; every
+other outcome reads `probe-failed`, and the first line of `stderrTail` says
+which:
+
+| `stderrTail` starts with | Meaning | Action |
+|---|---|---|
+| (envelope `probe-complete`) | The migration behaves as intended | Continue |
+| `PROBE SETUP FAILED, probe N` | The probe could not build its synthetic rows or switch role. Says nothing about the migration | **Not a reason to roll back.** Record it; the post-checks inside the install already passed |
+| `PROBE BLOCKED, probe N` | Live traffic held a lock past the 3 s lock timeout | Not a reason to roll back. Run the probe again later |
+| `PROBE CHECK FAILED, probe N` | A refusal, allowed write, revision step or timing differs | Stop and review. Hosted at 455 with the old code is a safe hold; rollback is a separate decision |
+
+Probes 415 and 440 write nothing to `auth.users`: they insert their
+synthetic workspaces directly. Probe 410 still inserts four synthetic users,
+because the invoice policies ask whether `auth.uid()` holds a role in
+`workspace_members`, and `workspace_members.user_id` references
+`auth.users`. Whether hosted lets `postgres` insert there is not known; if it
+does not, probe 410 reads `PROBE SETUP FAILED`.
+
+Lane 29 rehearsal, November 14, 2026, through the kit's own probe wrapper as
+the non-superuser `postgres` role:
+
+| Probe | At 448 | At 455 | At 455, INSERT on `auth.users` revoked from `postgres` |
+|---|---|---|---|
+| 410 | `PROBE CHECK FAILED`: Member created a draft invoice | `probe-complete` | `PROBE SETUP FAILED`: permission denied for table users |
+| 415 | `PROBE CHECK FAILED`: canceling statement due to statement timeout (60 s) | `probe-complete`, 0.17 s per statement, revision 1 to 4 | `probe-complete` |
+| 440 | `PROBE CHECK FAILED`: link to another workspace's project accepted | `probe-complete` | `probe-complete` |
+
+Before this change all three probes read `permission denied for table users`
+with no label in that last case.
+
 ## Rollback, per file, newest first
 
 Each is a separate decision after the window (review 15, N11). Delete a
