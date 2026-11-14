@@ -109,7 +109,12 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-vi.mock("@/lib/safety/us-road-context-adapter", () => ({ loadUsTigerRoadContext: (...args: unknown[]) => state.loadRoads(...args) }));
+vi.mock("@/lib/safety/us-road-context-adapter", () => ({
+  loadUsTigerRoadContext: (...args: unknown[]) => state.loadRoads(...args),
+  // The crash-location road lookup has its own route test; here it declines,
+  // so these cases keep exercising the concentration lookup it falls back to.
+  loadUsTigerRoadLinesNearCrashes: async () => ({ status: "too_many_locations", locations: 41 }),
+}));
 import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
 import * as sourceRegistry from "@/lib/safety/sources/registry";
 import { ccrsAdapter } from "@/lib/safety/sources/ccrs";

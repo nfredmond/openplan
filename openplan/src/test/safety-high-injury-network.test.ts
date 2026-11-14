@@ -257,7 +257,7 @@ describe("empty, unavailable and zero stay different", () => {
     expect(network.segments[0].crashCount).toBe(2);
     expect(network.segments[0].crashesPerMile).toBeNull();
     expect(network.segments[0].lengthMiles).toBeNull();
-    expect(network.segments[0].label).toMatch(/^Half-mile square at /);
+    expect(network.segments[0].label).toMatch(/^Half-mile square, road name unavailable \(-?\d+\.\d{5}, -?\d+\.\d{5}\)$/);
     expect(highInjuryNetworkMeasureLabel("ksi", network.method)).toMatch(/per half-mile square/);
   });
 
