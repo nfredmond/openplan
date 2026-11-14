@@ -230,6 +230,37 @@ describe("the proven job record checker", () => {
     }
   });
 
+  // KI-2026-11-14-117: the hosted site renders PDFs on Linux, where a label set
+  // with letter spacing read back as single letters. The checker finds item
+  // text with the shared matcher (scripts/lib/pdf-text-match.mjs), which
+  // finds such a label and refuses what a whitespace-squashing search took:
+  // part of a longer word, and two cells read across a column gap.
+  const withPage3 = (role: string, kind: string, page3: string) =>
+    syntheticPdf(role, kind).replace(/[^\f]*$/, page3);
+
+  it("finds an item heading that reads back letter-spaced", () => {
+    const record = proven();
+    rewritePdf(record, "tribal-area", "ss4a-application", withPage3("tribal-area", "ss4a-application",
+      "C O U N T E R M E A S U R E S\nB E N E F I T- C O S T A N A LY S I S\nE N G A G E M E N T S U M M A RY"));
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it.each([
+    ["part of a longer word", "Countermeasures\nBenefit-cost analysis\nEngagement summaryless"],
+    ["two cells across a column gap", "Countermeasures\nBenefit-cost analysis\nEngagement      summary"],
+    ["a phrase split by a blank line", "Countermeasures\nBenefit-cost analysis\nEngagement\n\nsummary"],
+  ])("refuses item text found only as %s", (_name, page3) => {
+    const record = proven();
+    rewritePdf(record, "tribal-area", "ss4a-application", withPage3("tribal-area", "ss4a-application", page3));
+    expect(() => check(record)).toThrow(/tribal-area journey ss4a-application PDF engagement-summary text is not on page 3/);
+  });
+
+  it("refuses a DRAFT stamp that reads back letter-spaced", () => {
+    const record = proven();
+    rewritePdf(record, "california-county", "ss4a-application", syntheticPdf("california-county", "ss4a-application", "\nD R A F T: 2 required attachment(s) outstanding"));
+    expect(() => check(record)).toThrow(/ss4a-application PDF page 3 carries a DRAFT stamp/);
+  });
+
   it("refuses a PDF page holding an email address", () => {
     const record = proven();
     rewritePdf(record, "tribal-area", "ss4a-application", syntheticPdf("tribal-area", "ss4a-application", "\nFinalized by planner@example.org"));

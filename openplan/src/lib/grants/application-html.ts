@@ -186,13 +186,22 @@ export function countOutstandingRequiredAttachments(
   ).length;
 }
 
+/**
+ * The application stylesheet.
+ *
+ * Letter spacing stays under 0.1em: Poppler and most PDF readers start a new
+ * word at a gap wider than a tenth of the font size, so wider tracking makes a
+ * label read back as single letters and a search for it fails
+ * (KI-2026-11-14-117). Table rows do not split across pages, so a long URL in
+ * a cell prints, and copies, whole on one page.
+ */
 const DOCUMENT_STYLES = `
       :root { color-scheme: light; }
       * { box-sizing: border-box; }
       body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, "Times New Roman", serif; }
       main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
       .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); }
-      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }
+      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #965c2a; }
       h1, h2, h3 { margin: 0; }
       h1 { margin-top: 12px; font-size: 38px; line-height: 1.08; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
@@ -200,15 +209,16 @@ const DOCUMENT_STYLES = `
       .section-title { margin-bottom: 14px; font-size: 22px; }
       .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
       .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
-      dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }
+      dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       dd { margin: 6px 0 0; font-size: 17px; }
       .draft-stamp { margin-top: 20px; border: 2px solid #9a3412; border-radius: 18px; padding: 16px 18px; background: #fde2d2; color: #9a3412; font: 700 18px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; }
       .warning-box { margin-top: 18px; border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
       .warning-box ul { margin: 8px 0 0; padding-left: 20px; }
       .outstanding { border: 1px dashed rgba(150, 92, 42, 0.5); border-radius: 18px; padding: 14px 16px; background: #fff8ec; color: #6d7479; font-style: italic; }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      tr { break-inside: avoid; }
       th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(19, 34, 43, 0.12); vertical-align: top; }
-      th { font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.1em; text-transform: uppercase; color: #6d7479; }
+      th { font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       .empty { color: #6d7479; font-style: italic; }
       .section-body p { line-height: 1.65; }
       .appendix { margin-top: 20px; border-top: 1px solid rgba(19, 34, 43, 0.12); padding-top: 16px; }
