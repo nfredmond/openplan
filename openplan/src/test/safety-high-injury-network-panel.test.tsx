@@ -192,6 +192,7 @@ describe("the ranked table", () => {
 describe("attaching countermeasures", () => {
   it("saves the chosen countermeasures and the acquisition into the chosen report", async () => {
     const props = renderPanel();
+    fireEvent.change(screen.getByLabelText("Save to report"), { target: { value: "report-a" } });
     const row = screen.getAllByTestId("safety-hin-row")[0];
     fireEvent.click(within(row).getByRole("checkbox", { name: "Lighting" }));
     expect(within(row).getByText("Countermeasures (1)")).toBeTruthy();
@@ -208,6 +209,26 @@ describe("attaching countermeasures", () => {
       },
     });
     expect(screen.getByRole("status").textContent).toBe("Saved to Plan A.");
+  });
+
+  // KI-2026-11-14-113: REPORTS lists the newer, empty Plan A first, as the
+  // Safety page does. The plan for this crash pull lives in Plan B.
+  it("opens the report holding this crash pull's plan, not the newest empty one", () => {
+    renderPanel();
+    expect((screen.getByLabelText("Save to report") as HTMLSelectElement).value).toBe("report-b");
+    expect(within(screen.getAllByTestId("safety-hin-row")[1]).getByText("Countermeasures (1)")).toBeTruthy();
+    expect(screen.queryByTestId("safety-hin-plan-elsewhere")).toBeNull();
+    fireEvent.change(screen.getByLabelText("Save to report"), { target: { value: "report-a" } });
+    expect(screen.getByTestId("safety-hin-plan-elsewhere").textContent).toBe("The saved plan is in Plan B. Switch");
+    fireEvent.click(within(screen.getByTestId("safety-hin-plan-elsewhere")).getByRole("button", { name: "Switch" }));
+    expect((screen.getByLabelText("Save to report") as HTMLSelectElement).value).toBe("report-b");
+    expect(within(screen.getAllByTestId("safety-hin-row")[1]).getByText("Countermeasures (1)")).toBeTruthy();
+  });
+
+  it("keeps the newest report when no report holds a plan for this crash pull", () => {
+    renderPanel({ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" });
+    expect((screen.getByLabelText("Save to report") as HTMLSelectElement).value).toBe("report-a");
+    expect(screen.queryByTestId("safety-hin-plan-elsewhere")).toBeNull();
   });
 
   it("starts from the plan already saved in a report for the same acquisition", () => {
@@ -227,6 +248,7 @@ describe("attaching countermeasures", () => {
 
   it("shows the failure the report route gave", async () => {
     renderPanel({ saveRequest: vi.fn().mockResolvedValue({ ok: false, error: "Workspace access denied" }) });
+    fireEvent.change(screen.getByLabelText("Save to report"), { target: { value: "report-a" } });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Save 0 segments" }));
     });
@@ -237,6 +259,7 @@ describe("attaching countermeasures", () => {
     const empty = network();
     if (empty.status !== "computed") throw new Error("fixture");
     const props = renderPanel({ network: { ...empty, segments: [], crashesConsidered: 0, crashesPlaced: 0, listedCrashes: 0, listedMiles: 0 } });
+    fireEvent.change(screen.getByLabelText("Save to report"), { target: { value: "report-a" } });
     await act(async () => {
       fireEvent.click(screen.getByRole("button", { name: "Save plan with no ranked segments" }));
     });

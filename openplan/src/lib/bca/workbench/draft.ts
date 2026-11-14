@@ -27,12 +27,25 @@ export const bcaRetainedSaveSchema = z.object({
 }).strict();
 export type BcaRetainedSave = z.infer<typeof bcaRetainedSaveSchema>;
 
+/**
+ * What the open analysis started from. "blank" is a blank analysis nobody chose
+ * on a project that may hold saved versions; saving it needs an explicit choice.
+ */
+const bcaDraftBasisSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("saved"), id: z.string().uuid(), savedAt: z.string() }).strict(),
+  z.object({ kind: z.literal("blank") }).strict(),
+  z.object({ kind: z.literal("other") }).strict(),
+]);
+export type BcaDraftBasis = z.infer<typeof bcaDraftBasisSchema>;
+
 /** Recover draft and pending request independently; callers preserve any unreadable original. */
 export function readBcaDraft(raw: string, projectId: string) {
-  const stored = z.object({document: z.unknown(), pending: z.unknown().optional()}).strict().parse(JSON.parse(raw));
+  const stored = z.object({document: z.unknown(), pending: z.unknown().optional(), basis: z.unknown().optional()}).strict().parse(JSON.parse(raw));
   const draft = bcaDraftSchema.safeParse(stored.document);
   const save = stored.pending == null ? null : bcaRetainedSaveSchema.safeParse(stored.pending);
   const document = draft.success && draft.data.projectId === projectId ? draft.data : null;
   const pending = save?.success && save.data.document.projectId === projectId ? save.data : null;
-  return { document, pending, unreadable: !document || (stored.pending != null && !pending) };
+  // A draft from before the basis was recorded, or a damaged basis, reads as "other".
+  const basis: BcaDraftBasis = bcaDraftBasisSchema.safeParse(stored.basis).data ?? { kind: "other" };
+  return { document, pending, basis, unreadable: !document || (stored.pending != null && !pending) };
 }

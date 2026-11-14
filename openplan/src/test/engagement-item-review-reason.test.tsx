@@ -86,4 +86,12 @@ describe("single contribution review reason", () => {
     expect((await screen.findByRole("alert")).textContent).toBe("Record a review reason before changing the public copy or moderation state.");
     expect(updateCalls).toHaveLength(0);
   });
+
+  // KI-2026-11-14-114: the status control read "Approved" after the refusal.
+  it("puts the status control back to the saved status when the approval is refused", async () => {
+    render(<EngagementItemRegistry items={[item]} categories={[]} counts={counts} />);
+    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
+    await screen.findByRole("alert");
+    expect((document.getElementById(`engagement-item-status-${ITEM_ID}`) as HTMLSelectElement).value).toBe("pending");
+  });
 });

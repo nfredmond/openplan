@@ -15,7 +15,8 @@ import { authorizeBcaProject } from "@/lib/bca/workbench/access";
 import BcaPage from "@/app/(app)/grants/bca/[projectId]/page";
 
 function query(result: { data: unknown; error: unknown }) {
-  return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue(result),
+  return { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), order: vi.fn().mockReturnThis(), limit: vi.fn().mockReturnThis(),
+    maybeSingle: vi.fn().mockResolvedValue(result),
     then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve) };
 }
 beforeEach(() => {
@@ -52,4 +53,25 @@ it("passes the actual project snapshot from the server page with the same full p
   expect(page.props.projectId).toBe(bcaProjectId);
   expect(page.props.projectPlace).toMatchObject({ status: "available", snapshot: { projectId: bcaProjectId,
     projectUpdatedAt: bcaProjectRow().updated_at, status: "missing" } });
+});
+it("hands the workbench the project's own latest saved version, and a failed read as failed", async () => {
+  const { exampleBcaDocument, reviewBcaProjectPlace } = await import("@/lib/bca/workbench/document");
+  const { bcaProjectPlace } = await import("./fixtures/bca/project-place");
+  const document = reviewBcaProjectPlace(exampleBcaDocument(bcaProjectId), bcaProjectPlace());
+  const render = async (result: { data: unknown; error: unknown }) => {
+    const versions = query(result);
+    const project = query({ data: bcaProjectRow(), error: null });
+    const membership = query({ data: { role: "member" }, error: null });
+    const sets = query({ data: [], error: null });
+    mocks.from.mockImplementation(table => table === "projects" ? project : table === "workspace_members" ? membership
+      : table === "project_bca_versions" ? versions : sets);
+    const page = await BcaPage({ params: Promise.resolve({ projectId: bcaProjectId }) }) as ReactElement<{ latestSaved: unknown }>;
+    return { page, versions };
+  };
+  for (const id of ["cccccccc-cccc-4ccc-8ccc-cccccccccccc", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"]) {
+    const { page, versions } = await render({ data: [{ id, project_id: bcaProjectId, created_at: "2026-11-13T12:00:00Z", document_json: document }], error: null });
+    expect(versions.eq).toHaveBeenCalledWith("project_id", bcaProjectId);
+    expect(page.props.latestSaved).toEqual({ status: "found", id, createdAt: "2026-11-13T12:00:00Z", document });
+  }
+  expect((await render({ data: null, error: { message: "timeout" } })).page.props.latestSaved).toEqual({ status: "failed" });
 });

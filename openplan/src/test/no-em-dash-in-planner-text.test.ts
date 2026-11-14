@@ -87,17 +87,16 @@ const ALLOWED: ReadonlyArray<{ file: string; contains: string; count?: number; r
   // the registry hash goes into the readiness payload hash stored with every
   // v4 report packet, and jurisdiction-freshness.ts calls the packet "changed"
   // when it differs. Any edit to these files, dash or not, has that effect.
+  // us-federal.ts, ccrs.ts and fars.ts lost their allowances in the one
+  // deliberate re-pin of November 2026; a dash back in any of them fails.
   ...(
     [
       ["src/lib/grants/programs/us-ca.ts", 20],
       ["src/lib/grants/programs/us-co.ts", 10],
-      ["src/lib/grants/programs/us-federal.ts", 21],
       ["src/lib/grants/programs/us-oh.ts", 18],
       ["src/lib/grants/programs/us-or.ts", 23],
       ["src/lib/grants/programs/us-tx.ts", 11],
       ["src/lib/grants/programs/us-wa.ts", 21],
-      ["src/lib/safety/sources/ccrs.ts", 1],
-      ["src/lib/safety/sources/fars.ts", 1],
     ] as const
   ).map(([file, count]) => ({
     file,

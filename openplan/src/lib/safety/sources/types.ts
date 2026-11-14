@@ -232,7 +232,52 @@ export type CrashPublishedCutoff = {
     sourceUrl: string;
     label: string;
     retrievedAt: string;
+    /**
+     * One receipt per source file this read asked for, read or failed. Kept
+     * with the acquisition so a stored count can be traced to the exact bytes
+     * it came from, and so a year that failed is recorded as failed rather
+     * than left to look like a year with no crashes.
+     */
+    sourceFiles?: CrashSourceFileReceipt[];
   };
+};
+
+/** What one read of one published source file found. */
+export type CrashSourceFileReceipt = {
+  year: number;
+  sourceUrl: string;
+  status: "read" | "failed";
+  /** SHA-256 of the file as the source published it. Null when it was not read. */
+  sha256: string | null;
+  bytes: number | null;
+  /** When OpenPlan downloaded the file from the source. A kept copy keeps its first read date. */
+  readAt: string | null;
+  retrieval: "source_download" | "kept_copy" | null;
+  /**
+   * When a kept copy was compared with the live file and still matched. Null
+   * when the source could not be reached for that check; the kept copy is then
+   * used as it was first read.
+   */
+  sourceCheckedAt?: string | null;
+  /**
+   * After a download, whether a reduced copy was kept for later reads. False
+   * when Storage refused it or the upload ran past its own time limit; the
+   * read itself still counts. Absent when no kept-file store was offered.
+   */
+  copyKept?: boolean;
+  /** Why the file was not read. Present only when `status` is "failed". */
+  failure?: string;
+};
+
+/**
+ * Private server storage where an adapter may keep a reduced copy of a large
+ * public source file between acquisitions. Both calls fail soft: a read that
+ * cannot answer returns null, a write that cannot complete returns false, and
+ * the adapter then reads the source itself.
+ */
+export type KeptSourceFileStore = {
+  read: (path: string) => Promise<Uint8Array | null>;
+  write: (path: string, bytes: Uint8Array, contentType: string) => Promise<boolean>;
 };
 
 export type CrashFetchParams = {
@@ -253,6 +298,11 @@ export type CrashFetchParams = {
    */
   maxRecords?: number;
   signal?: AbortSignal;
+  /**
+   * Where a reduced copy of a large published file may be kept between
+   * acquisitions. Optional: without it the adapter reads the source each time.
+   */
+  keptFiles?: KeptSourceFileStore;
 };
 
 export type CrashSourceAdapter = {

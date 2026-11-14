@@ -91,13 +91,14 @@ function ItemRow({
   const storedGeometry = readStoredEngagementGeometry(item.geometry ?? null);
   const votesCount = typeof item.votes_count === "number" ? item.votes_count : 0;
 
-  async function submitItem(nextStatus?: string) {
+  /** True when the server saved the change. */
+  async function submitItem(nextStatus?: string): Promise<boolean> {
     const nextLatitude = parseCoordinateInput(latitude);
     const nextLongitude = parseCoordinateInput(longitude);
 
     if (Number.isNaN(nextLatitude) || Number.isNaN(nextLongitude)) {
       setError("Latitude and longitude must be valid numbers when provided.");
-      return;
+      return false;
     }
 
     setIsSubmitting(true);
@@ -128,8 +129,10 @@ function ItemRow({
       }
 
       router.refresh();
+      return true;
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to update engagement item");
+      return false;
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +146,8 @@ function ItemRow({
   async function handleQuickStatus(nextStatus: string) {
     setError(null);
     setStatus(nextStatus);
-    await submitItem(nextStatus);
+    // A refused change leaves the saved status on screen, not the one refused.
+    if (!(await submitItem(nextStatus))) setStatus(item.status);
   }
 
   return (

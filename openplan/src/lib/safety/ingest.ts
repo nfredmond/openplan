@@ -35,6 +35,7 @@ import {
 import type { SafetyCrashCollection, SafetyCrashFeature } from "./client-types";
 import { readCrashesForStudyArea, type CrashSourceIdentity } from "./read-only-lane";
 import { enrichSeriousInjuries, seriousInjuryInputsForAdapter } from "./sources/serious-injury";
+import { keptSourceFileStore } from "./sources/kept-source-files";
 import {
   seriousInjuryAvailability,
   seriousInjuryInputsForRecord,
@@ -714,6 +715,9 @@ export async function ingestCrashesForStudyArea(
       countyCode: params.countyCode,
       maxRecords: params.maxRecords,
       signal: params.signal,
+      // A source with large published files may keep a checked copy between
+      // acquisitions. It is the source's public data, not this workspace's.
+      keptFiles: keptSourceFileStore(params.service),
     });
 
     // Boundary first: every later step (the KSI join, the person rows, the

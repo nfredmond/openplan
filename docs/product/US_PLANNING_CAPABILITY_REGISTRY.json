@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "currentRelease": "v0.72.0",
   "reviewedAt": "2026-09-06",
   "reviewBy": "2026-10-05",
@@ -8,8 +8,9 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "f7e64a464a35b47798ac59c3104c6a30c0900579b7aab795d4971c9cdbdbb169"
+    "sha256": "e9c5aed6b2925668c9075abad16acd73b3c7e3879c3c104b22ffd6ba31a820cc"
   },
+  "provenJobs": [],
   "dimensions": {
     "planner": [
       { "id": "transportation-planner", "status": "partial" },

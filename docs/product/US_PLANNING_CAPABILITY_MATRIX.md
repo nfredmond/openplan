@@ -139,6 +139,8 @@ For each real job, record the planner and organization, governing authorities, e
 
 Required proof includes visible entry through completion, planning usefulness shown in agent-run tasks, artifact reuse, exact approvals and role/public boundaries, source uncertainty, keyboard/screen-reader/mobile/print/public accessibility, imports/exports, interruption/restore/upgrade, and a government-eligible free operating route. Missing, skipped, expired, failed or wrong-candidate evidence leaves the relevant cell open. The final outcome and maintenance records retain their own exact candidate identities; neither establishes the complete v1 contract.
 
+A proven job entry (`provenJobs` in the registry, schema version 3) records that one named job ran to completion on one hosted commit in named places. Each entry points to a checked record, described in [capability-evidence/README.md](capability-evidence/README.md); the direction check refuses a record that lacks a required place, PDF item, health readback or accessibility result. An entry does not by itself change any dimension's status. A reviewer reads the record against this section and records any cell change separately, with its own evidence.
+
 The active roadmap alone owns sequencing. This ledger supplies gaps and evidence requirements; it does not authorize new product implementation.
 
 ## Source register

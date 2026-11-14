@@ -460,7 +460,7 @@
     {
       "id": "fars-source-adapter",
       "path": "openplan/src/lib/safety/sources/fars.ts",
-      "sha256": "2dbadc5bb24cd39dfabfcd72f7ce76d8035584530cd28726f10ab8f6ae9a6894"
+      "sha256": "419193e0fd0821b1dda7e655eeaf2eeee4e63a1f1dd0e031967bdd7359466196"
     },
     {
       "id": "odot-or-source-adapter",
@@ -475,7 +475,7 @@
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "e85d3b079952c44abf3b94882d17a41f609ba2409f37e4ca50d481b05f151c62"
+      "sha256": "f599e3e140d76822f68f73acd8bf9f14dba118d27e29260ace27a3834668a7fd"
     },
     {
       "id": "grant-program-registry",
@@ -490,7 +490,7 @@
     {
       "id": "federal-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-federal.ts",
-      "sha256": "232ab428804b141ec462d7d2bfb3f11b8406f1e3b1c3c7d790ed868958fc0a3f"
+      "sha256": "675568c54db9132f1a762180ce9d14908a8e30901eff99c9662b75351220227f"
     },
     {
       "id": "california-grant-adapter",
