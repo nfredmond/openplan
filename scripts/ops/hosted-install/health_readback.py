@@ -31,8 +31,14 @@ def applied_history(catalog_envelope: dict) -> tuple[int, str]:
 
 
 def check(health: dict, commit: str, applied: tuple[int, str]) -> dict:
-    served = str(health.get("commit") or "")
-    migrations = health.get("migrations") or {}
+    # The route nests both facts under "deployment":
+    # {"status": "ok", "deployment": {"commit": "...", "migrations": {"expected": n, "latest": "..."}}}.
+    # A response without that object is refused, never read as a mismatch or a pass.
+    deployment = health.get("deployment")
+    if health.get("status") != "ok" or not isinstance(deployment, dict):
+        raise kc.KitError("/api/health did not return status ok with a deployment object")
+    served = str(deployment.get("commit") or "")
+    migrations = deployment.get("migrations") or {}
     commit_ok = len(served) >= 7 and len(commit) >= 7 and (commit.startswith(served) or served.startswith(commit))
     count_ok = migrations.get("expected") == applied[0]
     latest_ok = migrations.get("latest") == applied[1]

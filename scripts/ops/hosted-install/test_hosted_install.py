@@ -521,11 +521,30 @@ class HealthReadbackTest(unittest.TestCase):
 
     def test_commit_count_and_newest_must_all_match(self):
         applied = health_readback.applied_history(self.catalog(["20261024200400", "20261102140000"]))
-        health = {"commit": "abcdef123456", "migrations": {"expected": 2, "latest": "20261102140000"}}
-        self.assertTrue(health_readback.check(health, "abcdef1234567890", applied)["pass"])
-        self.assertFalse(health_readback.check({**health, "commit": "0123456789ab"}, "abcdef1234567890", applied)["pass"])
-        self.assertFalse(health_readback.check({**health, "migrations": {"expected": 3, "latest": "20261102140000"}},
-                                               "abcdef1234567890", applied)["pass"])
+        # The shape of the real route, copied from a hosted read on 2026-11-14:
+        # commit and migrations sit inside "deployment", not at the top level.
+        def health(commit="abcdef123456", expected=2, latest="20261102140000"):
+            return {"status": "ok", "service": "openplan", "checkedAt": "2026-11-14T05:31:16.069Z",
+                    "deployment": {"commit": commit, "version": "0.72.0",
+                                   "migrations": {"expected": expected, "latest": latest}},
+                    "checks": {"app": "ok", "database": "not_checked"}}
+        self.assertTrue(health_readback.check(health(), "abcdef1234567890", applied)["pass"])
+        self.assertFalse(health_readback.check(health(commit="0123456789ab"), "abcdef1234567890", applied)["pass"])
+        self.assertFalse(health_readback.check(health(expected=3), "abcdef1234567890", applied)["pass"])
+        self.assertFalse(health_readback.check(health(latest="20261024200400"), "abcdef1234567890", applied)["pass"])
+
+    def test_a_response_without_the_deployment_object_is_refused(self):
+        applied = health_readback.applied_history(self.catalog(["20261024200400", "20261102140000"]))
+        flat = {"status": "ok", "commit": "abcdef123456", "migrations": {"expected": 2, "latest": "20261102140000"}}
+        with self.assertRaises(kc.KitError):
+            health_readback.check(flat, "abcdef1234567890", applied)
+        with self.assertRaises(kc.KitError):
+            health_readback.check({"status": "error", "deployment": {}}, "abcdef1234567890", applied)
+
+    def test_the_live_route_shape_is_what_the_check_reads(self):
+        # Ties the kit to the app: the route source must still nest these fields.
+        route = (pathlib.Path(__file__).resolve().parents[3] / "openplan/src/app/api/health/route.ts").read_text(encoding="utf-8")
+        self.assertRegex(route, r"deployment:\s*\{[\s\S]*?commit[\s\S]*?migrations:")
 
 
 # ------------------------------------------------------- credentials (N1)
