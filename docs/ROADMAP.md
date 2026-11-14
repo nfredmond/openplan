@@ -100,16 +100,20 @@ release count or model runtime narrows it.
 
 ## Status by milestone
 
-Statuses follow the two-month review's
-[documentation audit](reviews/2026-10-12-two-month-review/reports/docs-audit.md)
-and [plan](reviews/2026-10-12-two-month-review/PLAN.md). "Next" means Stage A
-or B; "later" means Stage C or D. "Partial" and "mostly done" are the audit's
-engineering verdicts. No milestone is currently marked done. Nathaniel's October
-17, 2026 direction permits agent-run workflow checks to close milestones and v1;
-human feedback is post-v1. Existing statuses still need their required evidence
-and do not change automatically. "Audit" means the audit is the latest
-record. "PR" means a pull request open on October 12. KI-001 means
-[known issue](ops/KNOWN_ISSUES.md) KI-2026-10-12-001.
+Statuses follow the two-month review's [documentation
+audit](reviews/2026-10-12-two-month-review/reports/docs-audit.md) and
+[plan](reviews/2026-10-12-two-month-review/PLAN.md). "Next" means Stage A or B;
+"later" means Stage C or D. "Partial" and "mostly done" are the audit's
+engineering verdicts. No milestone is currently marked done. Human feedback
+never gates OpenPlan development, milestones, merges, releases or v1. Agent-run
+planner, operator and public-participant checks are the acceptance evidence: an
+agent performs the named role's task on permitted records or labeled fixtures,
+and the record names the executor. Nathaniel made this permanent on November 13,
+2026. It settles his October 17, 2026 direction, and direction reviews do not
+reopen it. Human feedback after v1 stays optional research. Existing statuses
+still need their required evidence and do not change automatically. "Audit"
+means the audit is the latest record. "PR" means a pull request open on October
+12. KI-001 means [known issue](ops/KNOWN_ISSUES.md) KI-2026-10-12-001.
 
 | ID | Plain name | Status | Last evidence | Next action |
 |---|---|---|---|---|
@@ -121,7 +125,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M2c | Dashboard, My Work and appearance | In progress, partial | [PR 187](https://github.com/nfredmond/openplan/pull/187); [PR 243, merged Oct 12](https://github.com/nfredmond/openplan/pull/243); November 2 lanes (`work/my-work-stalled-jobs-20261102`, `work/shared-freshness-loader-20261102`) | November 2: My Work and the digest share one closed-award rule (closed before the obligation date is not work; closed on or after it, or with no closure date, stays listed for review and is past due once the date passes). My Work lists interrupted and stalled model runs, failed county runs, and failed or silent aerial processing. It also lists report packets the Reports page would ask to refresh (or that a newer model run flagged) and SS4A applications whose seeded Safety evidence changed or cannot be checked, read through one shared freshness module (`packet-freshness-loader.ts`, `packet-freshness-rules.ts`) that both report pages now use. The Reports and Project pages still judge freshness by different rules (KI-2026-09-05-074); both are kept. Next: decide one packet-freshness rule, move both pages' reads onto the loader, Planner Agent turn failures, synthesis approvals (service-role only today; a caller-readable view needs a migration), and the notification decision journal (T9, needs a journal table). No browser journey or live PostgREST filter check yet. |
 | M2d | Work program (OWP/UPWP) administration | In progress, mostly done | [Sep 9](reviews/2026-09-09-owp-full-recovery/VERIFICATION.md); [PR 252, merged Oct 13](https://github.com/nfredmond/openplan/pull/252) | Close the two limits PR 252 recorded: a member can still edit a draft client invoice through the Data API, and contract exports still list billing sources of voided drafts. Then produce M2d.1 to M2d.4 completion evidence, starting with the EDCTC predecessor and amendment reconstruction. |
 | M3 | Free, private, recoverable operation | In progress, partial | [Oct 15 second-secret candidate](reviews/2026-10-15-integration-secret-rotation/STATUS.md); [Oct 14 callback recovery](reviews/2026-10-14-aerial-callback-retry/STATUS.md); [roster recovery](reviews/2026-10-14-aerial-custody-recovery/STATUS.md); [retained access candidate](reviews/2026-10-14-artifact-access/STATUS.md); [terminal journal candidate](reviews/2026-10-14-terminal-delivery/STATUS.md); [explicit artifact HTTP candidate](reviews/2026-10-14-artifact-http/STATUS.md); [original coordinator candidate](reviews/2026-10-14-worker-coordination/STATUS.md); [original input/commit candidate](reviews/2026-10-14-original-pipeline/STATUS.md); [running progress candidate](reviews/2026-10-14-running-progress/STATUS.md); [original outcome repair candidate](reviews/2026-10-14-outcome-recovery/STATUS.md); [original scheduling candidate](reviews/2026-10-14-recovery-execution/STATUS.md); [explicit operator configuration candidate](reviews/2026-10-14-runtime-binding/STATUS.md); [explicit assembly candidate](reviews/2026-10-14-runtime-assembly/STATUS.md); [retained archive storage check](reviews/2026-10-14-gtfs-storage-room/STATUS.md); [owned HTTP candidate](reviews/2026-10-14-owned-worker-service/STATUS.md); [explicit worker command candidate](reviews/2026-10-14-owned-worker-cli/STATUS.md); [Node process observation candidate](reviews/2026-10-14-node-queue-observation/STATUS.md); [PR 258, merged Oct 12](https://github.com/nfredmond/openplan/pull/258) | Stage lease holder columns (rest of KI-018 after PR 258); installation-wide inventory and alignment; all-worker recovery; independent-host recovery; clean install |
-| M3a | Desktop Control and demo recovery | Later, partial | [Sep 9](reviews/2026-09-09-control-main/VERIFICATION.md) | Observed acceptance |
+| M3a | Desktop Control and demo recovery | Later, partial | [Sep 9](reviews/2026-09-09-control-main/VERIFICATION.md) | Agent-run acceptance |
 | M4 | Confidentiality and records | Later | Audit | Records-request design |
 | M5 | Data, GIS and analysis reuse | Later, partial | Audit | Format coverage matrix |
 | M5a | Agency file formats | Next (B1a, C9) | Audit; [PR 255, merged Oct 12](https://github.com/nfredmond/openplan/pull/255) | Aerial photos and Knowledge Base documents now upload through Storage too, and a daily sweep removes staged objects a day after an upload that never completed (Nov 1). Run one hosted upload above 4.5 MB through each of the three staged doors, which no PR has done, confirm the first hosted sweep run in the logs, and move public engagement photos (5 MiB body) under the platform limit. |
@@ -136,22 +140,22 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M8b | Civil rights program year | Later | Audit | Not started |
 | M9a | Public map input | In progress, mostly done | [PR 196](https://github.com/nfredmond/openplan/pull/196); [PR 253, merged Oct 13](https://github.com/nfredmond/openplan/pull/253) | Add the signup bot check, which needs an operator CAPTCHA key (rest of KI-013). Close the last limit PR 253 recorded: photos uploaded before PR 253 are never swept. IPv6 connections count by /64 since PR 423; the sign-up email cap is a Supabase Auth setting, documented in SELF_HOSTING, and the hosted value is unconfirmed. |
 | M9b | Moderate, interpret and respond | In progress, mostly done | [Oct 7](reviews/2026-10-07-synthesis-execution-queue/STAFF_RESPONSE_ACCEPTANCE.md); [PR 242, merged Oct 12](https://github.com/nfredmond/openplan/pull/242); [PR 300, merged Oct 14](https://github.com/nfredmond/openplan/pull/300); [PR 392](https://github.com/nfredmond/openplan/pull/392) | PR 392 pages or counts the remaining engagement comment reads (KI-008). Show the campaign total beside the 300-comment AI close-loop sample. November 2: a local agent-run journey traced one resident contribution to its staff theme, published response and project decision in the internal review PDF, XLSX and ZIP ([evidence](reviews/2026-11-02-engagement-case/README.md)). The project status packet now carries each published response, the contributions it answers, its staff review theme and its decision link, with counts that match the review files (KI-2026-11-02-010, code and tests). Next: repeat the journey on the hosted site, including the packet. |
-| M9c | Beat Social Pinpoint, shown with people | Later | Audit | Comparative trial |
+| M9c | Beat Social Pinpoint, shown in comparative tasks | Later | Audit | Comparative trial |
 | M9d | Statutory hearing record | Later | Audit | Not started |
 | M10 | Capital projects (M10a–d, a.1–d.2) | Later (C3) | Audit | California bridge case |
-| M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [current full configured types](reviews/2026-10-16-publication-reviewed-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, human usefulness and reminder delivery remain open. |
+| M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [current full configured types](reviews/2026-10-16-publication-reviewed-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, an agent-run usefulness check and reminder delivery remain open. |
 | M12 | RTP update from the adopted plan | Later (C1) | Audit | Prior-RTP intake without a paid key |
 | M13 | Local tax and grant administration | Next (B5) | Audit | Recipient city role |
 | M13e | Grant discovery and applications | In progress, partial (B4) | [PR 341 catalog search, merged Oct 18](https://github.com/nfredmond/openplan/pull/341) | Verify the ATP packet. Verify catalog search on the hosted site; PR 341 has only a local desktop/390px journey. Complete SS4A seeding, retained deadline-change alerts and award-condition handoff. November 1: the SS4A packet export embeds Safety, BCA and engagement evidence appendices from saved records (route and render tests only); an identified-build desktop/390px export journey and a stored export checksum remain open. November 2: programs declare their appendices, and the ATP packet export carries the ATP screening packet, crash summary, cost estimate, engagement, equity inputs and BCA from saved records, names finalizers instead of user ids and prints times in the workspace time zone (route and render tests only; KI-2026-11-02-044, 045, 047). An ATP export journey at desktop and 390px remains open. |
 | M13f | Agency audits | Later | Audit | Not started |
 | M14 | Procurement, both sides | Later (C4) | Audit | Agency RFP issue and receipt |
 | M15a | Hosted production recipe | In progress, mostly done | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md); [PR 254, merged Oct 12](https://github.com/nfredmond/openplan/pull/254); [PR 326, merged Oct 15](https://github.com/nfredmond/openplan/pull/326) | Turn on PR 326's migration-drift check: the Production Health workflow needs a Supabase access token and project reference, and neither is set in the repository on October 24. Then verify deep health, migration drift and error reports on the hosted site, and add cron failure alerts (KI-033). |
-| M15b | Remote demonstration and trials | In progress, partial | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md) | Invite teams after Stage A |
+| M15b | Remote demonstration and trials | In progress, partial | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md) | Two agent-run trial teams after Stage A |
 | M15c | Customer-owned installation | Later | Audit | Not started |
 | S1 | Comparable model custody | In progress, partial | [Oct 8](reviews/2026-10-08-model-custody-metadata/DISPLAY_VERIFICATION.md); [Oct 23 county appendix correction](reviews/2026-10-23-s1-county-tier-custody/STATUS.md) | Review and verify the remaining KI-001 appendix correction after merged PR 244. Complete native custody ingestion and exact UI/report/assistant observation accounting. |
 | S2 | Model structure experiments | Later, partial | Audit | Experiments after S1 |
 | S2a | TimesFM forecasting research | Later | [Sep 5](reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md) | Confirm license permits research |
-| S3 | Untouched nationwide validation | Next (November 1 review) | Audit; [PR 374 draft](https://github.com/nfredmond/openplan/pull/374) | Freeze the successor preregistration on continuous-count stations with one untouched state holdout; needs Nathaniel's decisions on partitions, sample size and thresholds |
+| S3 | Untouched nationwide validation | Next (November 1 review) | Audit; [PR 374 draft](https://github.com/nfredmond/openplan/pull/374) | Freeze the successor preregistration on continuous-count stations with one untouched state holdout; agents set partitions, sample size and thresholds from primary evidence, record the reasons and have a fresh-context reviewer check them |
 | G1 | Every state and organization type | Later, partial | [Readiness registry 2026-11-02.3](../openplan/src/lib/jurisdiction-readiness/registry.v1.json) | All 56 jurisdictions now have a readiness entry derived from the code (November 2; review by December 2). Project handoff is not assessed outside CA, OR and PR. Confirm state order (decision 6) and add journey evidence per state. |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
 | A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Bespoke catalogue captures are deferred under the October 17 delivery instruction. Keep tested CLI versions, honest usage limits and the proven project task usable through ordinary CI and relevant UI checks. Generic Codex resets remain unknown without a reviewed causal binding. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
@@ -160,7 +164,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | A1c | Agent jobs across modules | Later | Audit | Waits on A1b |
 | A1d | Sustained use and outside clients | Later | Audit | MCP server (ADR-004) |
 | V1 | Independent whole-product proof | Later (D) | Audit | Not started |
-| W1 | Nat Ford website presents OpenPlan | On hold | [Website PR 20](https://github.com/nfredmond/nat-ford-website/pull/20) | Ask Nathaniel first |
+| W1 | Nat Ford website presents OpenPlan | On hold | [Website PR 20](https://github.com/nfredmond/nat-ford-website/pull/20) | Website changes are Nathaniel's outreach, not agent work |
 
 The Maps module (PR 189, "M17" in the cutover record) and the UI overhaul
 (PRs 186 to 188 and 193) have no milestone ID. [VERIFY: assign IDs at the next
@@ -186,8 +190,9 @@ alongside them.
    to application and worker code.
 3. **Freeze the successor validation preregistration (S3).** Continuous-count
    stations as the decisive corpus and one untouched state holdout, from the PR
-   374 draft. Needs Nathaniel's decisions on partitions, sample size and
-   thresholds. Both engines stay separate.
+   374 draft. Agents set partitions, sample size and thresholds from primary
+   evidence, record the reasons and have a fresh-context reviewer check them.
+   Both engines stay separate.
 
 ## Next three, October 15, 2026 (superseded November 1)
 
@@ -224,7 +229,7 @@ does not reassess current hosted configuration or renew the direction reviews.
    versions backed by replayed protocol frames, and show a usage limit as
    limited until a reported reset, not as a failure (MILESTONES T1, T15). It
    runs beside items 1 and 2 without displacing them. Recording fixtures uses
-   the recording account's allowance; ask Nathaniel before using his.
+   the recording account's allowance, never Nathaniel's personal account.
 
 Refill this list when an item closes. Update a row when its status, evidence or
 next action changes, with a dated source. A next-action change does not promote

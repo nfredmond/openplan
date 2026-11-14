@@ -22,6 +22,24 @@ stable enough to promise smooth upgrades indefinitely.
 
 **Saved report packets show "changed" once after this release (KI-2026-11-14-015, KI-2026-11-14-023):** the CCRS and FARS attributions printed in exports and the federal grant catalog text (SS4A, BUILD, INFRA, PROTECT and transit programs) no longer use em dashes. Those three source files are pinned by hash in the jurisdiction readiness registry, and that hash is part of the readiness fingerprint stored with every saved v4 report packet, so each saved packet's jurisdiction check reads "changed" once and asks to be regenerated. Only wording changed: no stored crash record, count, source year or grant rule changed. Regenerating a packet records the new fingerprint, and it then reads current. The kept FARS annual files in this release already changed the FARS adapter's pin, so these wording fixes ride on that one regeneration rather than adding another.
 **Benefit-cost analysis opens the saved version, and Safety finds the saved plan (KI-2026-11-14-112 to -114):** in a new browser tab the benefit-cost workbench opens the project's latest saved version and names it by date, instead of a blank analysis that could replace it in the report and the SS4A appendix. A draft in the tab still opens first and says so. Saving a blank analysis over saved work now takes an explicit "Start a blank analysis". On Safety, "Save to report" opens the report that holds this crash pull's plan and points to it from any other report. A refused comment approval no longer leaves the status reading "Approved", the SS4A seed picker prints plain dates, and SS4A appendix tables no longer split words. No migration.
+**Human feedback never gates OpenPlan, permanently:** on November 13, 2026 Nathaniel
+made the October 17 acceptance policy permanent; direction reviews do not reopen it.
+Agent-run planner, operator and public-participant checks are the acceptance evidence
+for milestones, merges, releases and v1, and each record names the executor. The
+milestones, roadmap, contract, capability matrix, requirements ledger, handoff and
+release policy no longer require real planners, practitioner review, human observation
+or comparative human trials; each such line now names the agent-run task, and a
+screen-reader check is an agent-driven NVDA or VoiceOver run. Agency adoption,
+spending and publication decisions, exact-payload approvals, legal determinations and
+staff moderation stay with people. Under his second November 13 direction, agents make
+product, engineering, scientific and sequencing decisions themselves with a recorded
+reason and a fresh-context review, and do not ask him for decisions or check-ins; the
+fixed limits (no paid services or spending, no shared hosted AI keys, no printed or
+committed credentials, a fresh capture before any hosted migration) are written into
+`AGENTS.md`. A new test (`human-feedback-never-gates.test.ts`) fails if a gate or a
+request for his decision returns to the active guidance. No statuses change; no
+migration.
+
 **Small text is easier to read (KI-2026-11-14-110, KI-2026-11-14-111):** secondary text is slightly darker in the Cartographic, Slate, Harbor, Meadow and Plum light palettes, so labels on tinted and secondary surfaces meet the 4.5:1 contrast standard. Inactive tab labels, the "Return to project" link, the public portal's "map cannot be shown" notice and several chips whose text matched their background are now readable. Dark mode, Signal, the accent colours and the status colours are unchanged. No migration.
 **Safety to report, and single-comment review (KI-2026-11-14-020 to -022):** approving or rejecting one comment now asks for a "Review reason", the name the refusal message uses. A new report saves the crash data chosen in the new-report dialog, so it no longer needs a second save. From Safety, a project with no report gets "Create safety action plan report", which makes the report with this crash pull chosen and stays on Safety. Smaller wording fixes on Safety, the project page, the dashboard, a campaign template and the SS4A seed preview. No migration.
 **Benefit-cost analysis offers Safety crashes (KI-2026-11-14-030, -032):** the Evidence tab lists each saved safety plan and the recorded fatal and serious-injury crashes on its treated segments by year, with source and coverage. A planner adds a safety stream with a crash modification factor and its CMF Clearinghouse ID; nothing is added without that step. The Safety page and grant application card link to the analysis, and the Project place panel shows plain dates. No migration.
