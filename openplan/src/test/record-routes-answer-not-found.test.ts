@@ -7,8 +7,8 @@
  * (Next.js 16.4.2, node_modules/next/dist/docs/01-app/03-api-reference/
  * 03-file-conventions/loading.md, "Status codes"). A page's `notFound()` under
  * such a boundary renders the not-found screen with HTTP 200. So this guard
- * walks every dynamic route folder under `(app)` and `(portal)` and holds each
- * one to one of two shapes:
+ * walks every dynamic route folder under `src/app` except `api` (route
+ * handlers set their own status) and holds each one to one of two shapes:
  *
  *   1. A loading boundary covers its pages, and a layout at or below the
  *      record folder, and at or above every such `loading.tsx`, makes the
@@ -30,7 +30,14 @@ import { describe, expect, it } from "vitest";
 import { stripSourceComments } from "@/test/helpers/source-text";
 
 const APP_DIR = path.join(process.cwd(), "src", "app");
-const ROUTE_GROUPS = ["(app)", "(portal)"];
+/**
+ * Every top-level folder that can hold pages: the route groups `(app)`,
+ * `(portal)`, `(published)`, `(embed)`, `(auth)` and `(public)`, plus `auth`.
+ * Read from disk, so a new group is walked without an edit here.
+ */
+const ROUTE_GROUPS = readdirSync(APP_DIR).filter(
+  (name) => name !== "api" && statSync(path.join(APP_DIR, name)).isDirectory()
+);
 
 /**
  * Record routes whose pages no loading boundary covers, so each page's own
@@ -47,14 +54,21 @@ const PAGES_ANSWER_THEMSELVES: Record<string, string> = {
   "(app)/maps/[packageId]": "The page reads the map package and calls notFound() for no row.",
   "(app)/models/[modelId]": "The page reads the model and calls notFound() for no row.",
   "(app)/scenarios/[scenarioSetId]": "The page reads the scenario set and calls notFound() for no row.",
+  "(embed)/embed/[shareToken]": "The page reads the embeddable bundle for the token and calls notFound() for no bundle.",
+  "(published)/measure/[shareToken]": "The page refuses a short token and reads the published fund, calling notFound() for either.",
+  "(published)/plan/[shareToken]": "The plan and document pages refuse a short token and read the shared cycle, calling notFound() for no row.",
+  "(published)/published-plans/[planId]": "The page refuses a malformed id and calls notFound() when the published packet read says not_found.",
+  "(published)/review/land-use-plans/[shareToken]": "The page calls notFound() when the review packet read says not_found.",
 };
 
 /**
- * Dynamic folders that are not records. None today: every dynamic segment
- * under these groups names a record or a public share address. A future entry
- * needs a reason, such as a folder whose value is a filter rather than an id.
+ * Dynamic folders held to neither shape, each with the reason. A future entry
+ * needs one too, such as a folder whose value is a filter rather than an id.
  */
-const NOT_RECORD_ROUTES: Record<string, string> = {};
+const NOT_RECORD_ROUTES: Record<string, string> = {
+  "(auth)/invitations/[token]":
+    "An emailed invitation link, not a record page. The token is matched by hash, so an unknown token and a used one cannot be told apart, and the page answers every state with a refusal that tells the invitee what to do (no longer open, expired, sent to another address). It has no loading boundary.",
+};
 
 function isDir(target: string): boolean {
   return existsSync(target) && statSync(target).isDirectory();
