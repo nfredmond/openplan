@@ -11,7 +11,12 @@ import { roadLineKey } from "@/lib/safety/high-injury-network";
 import { readCachedUsRoadContext } from "@/lib/safety/road-context";
 import { SAFETY_COUNTERMEASURES } from "@/lib/safety/countermeasures";
 import { addBcaSafetyStream } from "@/lib/bca/workbench/safety-evidence";
-import { summarizeBcaTreatedSegments, type BcaSegmentCrash } from "@/lib/safety/bca-evidence";
+import {
+  summarizeBcaTreatedSegments,
+  type BcaCountedSegment,
+  type BcaSegmentCrash,
+  type BcaTreatedSegment,
+} from "@/lib/safety/bca-evidence";
 import { newBcaDocument } from "@/lib/bca/workbench/document";
 
 const WS = "11111111-1111-4111-8111-111111111111";
@@ -72,6 +77,7 @@ function fakeClient(tables: Record<string, Array<Record<string, unknown>>>, fail
           const call: Call = { table, columns, options, filters: [] };
           calls.push(call);
           let rows = [...(tables[table] ?? [])];
+          const orders: Array<[string, boolean]> = [];
           let range: [number, number] | null = null;
           let limit: number | null = null;
           const builder = {
@@ -79,11 +85,18 @@ function fakeClient(tables: Record<string, Array<Record<string, unknown>>>, fail
             in(c: string, vs: readonly unknown[]) { call.filters.push(["in", c, vs]); rows = rows.filter((r) => vs.includes(r[c])); return builder; },
             gte(c: string, v: unknown) { call.filters.push(["gte", c, v]); rows = rows.filter((r) => (r[c] as number) >= (v as number)); return builder; },
             lte(c: string, v: unknown) { call.filters.push(["lte", c, v]); rows = rows.filter((r) => (r[c] as number) <= (v as number)); return builder; },
-            order(c: string, o: { ascending: boolean }) { call.filters.push(["order", c, o]); rows.sort((a, b) => String(a[c]) < String(b[c]) ? -1 : 1); return builder; },
+            order(c: string, o: { ascending: boolean }) { call.filters.push(["order", c, o]); orders.push([c, o.ascending]); return builder; },
             range(from: number, to: number) { range = [from, to]; return builder; },
             limit(count: number) { limit = count; return builder; },
             then(resolve: (value: { data: unknown; error: unknown; count?: number | null }) => unknown) {
               const count = rows.length;
+              rows.sort((a, b) => {
+                for (const [c, ascending] of orders) {
+                  if (String(a[c]) === String(b[c])) continue;
+                  return (String(a[c]) < String(b[c]) ? -1 : 1) * (ascending ? 1 : -1);
+                }
+                return 0;
+              });
               let out = range ? rows.slice(range[0], range[1] + 1) : rows;
               if (limit !== null) out = out.slice(0, limit);
               out = out.slice(0, ROW_CAP);
@@ -103,7 +116,7 @@ function fakeClient(tables: Record<string, Array<Record<string, unknown>>>, fail
 
 function tablesFor(crashes: Crash[], severityCompleteness: string, sourceId: string) {
   return {
-    reports: [{ id: REPORT, title: "Local Road Safety Plan", workspace_id: WS, project_id: PROJECT,
+    reports: [{ id: REPORT, title: "Local Road Safety Plan", workspace_id: WS, project_id: PROJECT, updated_at: "2026-01-01T00:00:00Z",
       metadata_json: { safetyActionPlan: { ingestId: INGEST, attachments: [
         { segmentId: segmentA, segmentLabel: "Treated Road", countermeasureIds: [SAFETY_COUNTERMEASURES[0].id] },
       ] } } }],
@@ -125,16 +138,22 @@ async function load(crashes: Crash[], severityCompleteness: string, sourceId: st
   return { plan, calls: fake.calls };
 }
 
+/** The segment's counts, or a failure if no count was offered. */
+function counted(segment: BcaTreatedSegment): BcaCountedSegment {
+  if (segment.status !== "counted") throw new Error(`segment not counted: ${segment.reason}`);
+  return segment;
+}
+
 describe("crashes offered on a saved safety plan's treated segments", () => {
   it("equal the stored counts by severity and year for a CCRS acquisition read past the row cap", async () => {
     const { plan, calls } = await load(ccrsCrashes(), "kabco_full", "ccrs");
     // The fixture holds two distinct road segments; only the treated one is offered.
     expect(segmentB).not.toBe(segmentA);
     expect(plan.segments.map((s) => s.segmentId)).toEqual([segmentA]);
-    expect(plan.seriousInjuryInSource).toBe(true);
+    expect(plan.seriousInjury).toBe("counted");
     expect(plan.years).toEqual([2021, 2022, 2023]);
     expect(plan.sourceId).toBe("ccrs");
-    const [a] = plan.segments;
+    const a = counted(plan.segments[0]);
     expect(a.years).toEqual([
       { year: 2021, fatalCrashes: 2, seriousInjuryCrashes: 1 },
       { year: 2022, fatalCrashes: 0, seriousInjuryCrashes: 3 },
@@ -160,8 +179,8 @@ describe("crashes offered on a saved safety plan's treated segments", () => {
 
   it("keeps injury crashes unavailable, not zero, for a fatal-only FARS acquisition", async () => {
     const { plan } = await load(farsCrashes(), "fatal_only", "fars");
-    expect(plan.seriousInjuryInSource).toBe(false);
-    const [a] = plan.segments;
+    expect(plan.seriousInjury).toBe("not_in_source");
+    const a = counted(plan.segments[0]);
     expect(a.years).toEqual([
       { year: 2021, fatalCrashes: 1, seriousInjuryCrashes: null },
       { year: 2022, fatalCrashes: 2, seriousInjuryCrashes: null },
@@ -179,6 +198,70 @@ describe("crashes offered on a saved safety plan's treated segments", () => {
     const read = await loadBcaSafetyPlanOffers(fake.client, { workspaceId: WS, projectId: PROJECT });
     expect(read).toMatchObject({ status: "read", plans: [{ status: "unavailable" }] });
   });
+
+  // An acquisition that records injury crashes without separating the serious
+  // ones ranks on fatal crashes too. That is not a fatal-only source.
+  it("says serious injuries are not separated, not absent, for a fatal-and-injury acquisition", async () => {
+    const { plan } = await load(farsCrashes(), "fatal_injury_only", "ccrs");
+    expect(plan.seriousInjury).toBe("not_separated");
+    const a = counted(plan.segments[0]);
+    expect(a.seriousInjuryCrashes).toBeNull();
+    expect(() => addBcaSafetyStream(newBcaDocument(PROJECT), plan, a, { outcome: "serious-injury", persons: 2, cmf: 0.8, cmfId: 123 }))
+      .toThrow("does not separate the serious ones");
+  });
+
+  // A plan saved against grid squares, or against road lines that were stored
+  // again, names a segment the current road lines do not produce.
+  it("offers no count for a treated segment the stored road lines no longer produce", async () => {
+    const tables = tablesFor(ccrsCrashes(), "kabco_full", "ccrs");
+    const attachments = (tables.reports[0].metadata_json.safetyActionPlan.attachments as Array<Record<string, unknown>>);
+    attachments.push({ segmentId: "grid:-14972:6143", segmentLabel: "Half-mile square near Treated Road", countermeasureIds: [SAFETY_COUNTERMEASURES[0].id] });
+    const fake = fakeClient(tables);
+    const read = await loadBcaSafetyPlanOffers(fake.client, { workspaceId: WS, projectId: PROJECT });
+    if (read.status !== "read" || read.plans[0].status !== "ready") throw new Error("plan not ready");
+    const [resolved, unresolved] = read.plans[0].segments;
+    expect(counted(resolved).fatalCrashes).toBe(3);
+    expect(unresolved.status).toBe("unresolved");
+    expect(unresolved).not.toHaveProperty("fatalCrashes");
+    expect(unresolved).not.toHaveProperty("years");
+    expect(unresolved).toMatchObject({ reason: expect.stringContaining("not zero crashes") });
+    expect(() => addBcaSafetyStream(newBcaDocument(PROJECT), read.plans[0] as never, unresolved as never, { outcome: "fatality", persons: 1, cmf: 0.8, cmfId: 123 }))
+      .toThrow("not counted");
+  });
+
+  // Twenty-five newer reports carry no safety plan. The plan must still be found.
+  it("finds a saved plan behind more than twenty newer reports that have none", async () => {
+    const tables = tablesFor(ccrsCrashes(), "kabco_full", "ccrs");
+    for (let i = 0; i < 25; i += 1) {
+      tables.reports.push({ id: `99999999-9999-4999-8999-${String(i).padStart(12, "0")}`, title: `Status report ${i}`,
+        workspace_id: WS, project_id: PROJECT, updated_at: `2026-06-${String(i + 1).padStart(2, "0")}T00:00:00Z`, metadata_json: {} as never });
+    }
+    const fake = fakeClient(tables);
+    const read = await loadBcaSafetyPlanOffers(fake.client, { workspaceId: WS, projectId: PROJECT });
+    expect(read).toMatchObject({ status: "read", plansNotShown: 0, plans: [{ status: "ready", reportId: REPORT }] });
+    const reportReads = fake.calls.filter((c) => c.table === "reports");
+    for (const call of reportReads) {
+      expect(call.filters).toContainEqual(["order", "updated_at", { ascending: false }]);
+      expect(call.filters).toContainEqual(["order", "id", { ascending: true }]);
+    }
+  });
+
+  it("says how many older plans it leaves out", async () => {
+    const tables = tablesFor(farsCrashes(), "fatal_only", "fars");
+    const first = tables.reports[0];
+    for (let i = 0; i < 22; i += 1) {
+      tables.reports.push({ ...first, id: `88888888-8888-4888-8888-${String(i).padStart(12, "0")}`, title: `Plan ${i}`,
+        updated_at: `2026-07-${String(i + 1).padStart(2, "0")}T00:00:00Z` });
+    }
+    const fake = fakeClient(tables);
+    const read = await loadBcaSafetyPlanOffers(fake.client, { workspaceId: WS, projectId: PROJECT });
+    if (read.status !== "read") throw new Error("read failed");
+    expect(read.plans).toHaveLength(20);
+    expect(read.plansNotShown).toBe(3);
+    // Newest first: the original, oldest plan is one of the three left out.
+    expect(read.plans.map((plan) => plan.reportId)).not.toContain(REPORT);
+    expect(read.plans[0].reportTitle).toBe("Plan 21");
+  });
 });
 
 describe("treated-segment counting", () => {
@@ -188,10 +271,11 @@ describe("treated-segment counting", () => {
     const crashes = [row("f1", "fatal", 2021), row("s1", "severe_injury", 2021), row("i1", "injury", 2021),
       row("p1", "pdo", 2021), row("u1", "unknown", 2021), row("f2", "fatal", 2019), row("f3", "fatal", null), row("fb", "fatal", 2021)];
     const placements = new Map(crashes.map((c) => [c.id, c.id === "fb" ? "road:other:0" : "road:treated:0"]));
-    const [segment] = summarizeBcaTreatedSegments({
+    const [first] = summarizeBcaTreatedSegments({
       attachments: [{ segmentId: "road:treated:0", segmentLabel: "Treated", countermeasureIds: [] }],
-      crashes, placements, seriousInjuryInSource: true, years: [2021],
+      crashes, placements, seriousInjuryCounted: true, years: [2021],
     });
+    const segment = counted(first);
     expect(segment.years).toEqual([{ year: 2021, fatalCrashes: 1, seriousInjuryCrashes: 1 }]);
     expect(segment.fatalities).toBe(1);
   });
@@ -200,7 +284,7 @@ describe("treated-segment counting", () => {
 describe("a safety stream enters the analysis only when the planner adds it", () => {
   it("adds recorded fatalities with the planner's CMF and refuses a blank factor or ID", async () => {
     const { plan } = await load(ccrsCrashes(), "kabco_full", "ccrs");
-    const [a] = plan.segments;
+    const a = counted(plan.segments[0]);
     const doc = newBcaDocument(PROJECT);
     expect(() => addBcaSafetyStream(doc, plan, a, { outcome: "fatality", persons: null, cmf: null, cmfId: 123 })).toThrow("blank is not zero");
     expect(() => addBcaSafetyStream(doc, plan, a, { outcome: "fatality", persons: null, cmf: 0.75, cmfId: null })).toThrow("CMF Clearinghouse ID");

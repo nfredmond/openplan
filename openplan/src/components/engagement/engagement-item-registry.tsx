@@ -541,7 +541,7 @@ export function EngagementItemRegistry({
         <p className="text-sm text-muted-foreground">The map shows located contributions on this page. Select a map marker or a list entry to review it.</p>
         <LocationDisplayMap items={mapItems} onSelectItem={setSelectedId}/>
         <div className="grid gap-4 lg:grid-cols-[minmax(12rem,1fr)_minmax(0,3fr)]">
-          <nav aria-label="Contributions on this page" className="space-y-2">{pageItems.map((item) => <button type="button" key={item.id} onClick={() => setSelectedId(item.id)} aria-current={selected?.id === item.id ? "true" : undefined} className={`block w-full rounded border p-3 text-left text-sm ${selected?.id === item.id ? "border-primary bg-muted" : ""}`}>
+          <nav aria-label="Contributions on this page" className="space-y-2">{pageItems.map((item) => <button type="button" key={item.id} onClick={() => setSelectedId(item.id)} aria-current={selected?.id === item.id ? "true" : undefined} className={`block w-full rounded border p-3 text-left text-sm ${selected?.id === item.id ? "border-primary bg-secondary" : ""}`}>
             <span className="block font-medium">{item.title || item.body.slice(0,90)}</span><span>{titleizeEngagementValue(item.status)} · {item.parent_item_id ? "Reply" : "Contribution"}</span>
           </button>)}</nav>
           {selected ? <div className="min-w-0 space-y-3">

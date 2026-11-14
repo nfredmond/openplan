@@ -1,20 +1,32 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { BcaDocument } from "@/lib/bca/workbench/schema";
-import type { BcaSafetyEvidenceRead, BcaSafetyPlanOffer, BcaTreatedSegment } from "@/lib/safety/bca-evidence";
+import type { BcaCountedSegment, BcaSafetyEvidenceRead, BcaSafetyPlanOffer, BcaUnresolvedSegment } from "@/lib/safety/bca-evidence";
 import {
-  BCA_FATAL_ONLY_SOURCE_NOTE,
   BCA_PERSONS_NOTE,
   BCA_RECORDED_COUNTS_NOTE,
   addBcaSafetyStream,
+  bcaSeriousInjuryCell,
+  bcaSeriousInjuryNote,
   type BcaSafetyOutcome,
 } from "@/lib/bca/workbench/safety-evidence";
 import { Field, NumberField, buttonClass, selectClass } from "./fields";
 
 type ReadyPlan = Extract<BcaSafetyPlanOffer, { status: "ready" }>;
 
+/** A treated segment with no count to offer. It says why and offers no stream. */
+function UnresolvedSegment({ segment }: { segment: BcaUnresolvedSegment }) {
+  return (
+    <div className="min-w-0 space-y-2 border-t pt-3">
+      <p className="font-medium">{segment.segmentLabel}</p>
+      <p className="text-xs text-muted-foreground">Segment {segment.segmentId}</p>
+      <p role="alert" className="text-sm">{segment.reason}</p>
+    </div>
+  );
+}
+
 function SegmentStream({ plan, segment, doc, onChange, onNotice }: {
-  plan: ReadyPlan; segment: BcaTreatedSegment; doc: BcaDocument;
+  plan: ReadyPlan; segment: BcaCountedSegment; doc: BcaDocument;
   onChange: (doc: BcaDocument) => void; onNotice: (text: string) => void;
 }) {
   const [outcome, setOutcome] = useState<BcaSafetyOutcome>("fatality");
@@ -40,13 +52,13 @@ function SegmentStream({ plan, segment, doc, onChange, onNotice }: {
               <tr key={row.year}>
                 <th scope="row" className="text-left font-normal">{row.year}</th>
                 <td className="text-right">{row.fatalCrashes}</td>
-                <td className="text-right">{row.seriousInjuryCrashes ?? "Not in source"}</td>
+                <td className="text-right">{row.seriousInjuryCrashes ?? bcaSeriousInjuryCell(plan.seriousInjury)}</td>
               </tr>
             ))}
             <tr className="border-t font-medium">
               <th scope="row" className="text-left">Total</th>
               <td className="text-right">{segment.fatalCrashes}</td>
-              <td className="text-right">{segment.seriousInjuryCrashes ?? "Not in source"}</td>
+              <td className="text-right">{segment.seriousInjuryCrashes ?? bcaSeriousInjuryCell(plan.seriousInjury)}</td>
             </tr>
           </tbody>
         </table>
@@ -58,7 +70,7 @@ function SegmentStream({ plan, segment, doc, onChange, onNotice }: {
         <Field label="Outcome to count">
           <select className={selectClass} value={outcome} onChange={(e) => setOutcome(e.target.value as BcaSafetyOutcome)}>
             <option value="fatality">Fatalities, persons</option>
-            <option value="serious-injury" disabled={!plan.seriousInjuryInSource}>Serious injuries, persons</option>
+            <option value="serious-injury" disabled={plan.seriousInjury !== "counted"}>Serious injuries, persons</option>
           </select>
         </Field>
         {recordedFatalities === null && (
@@ -102,7 +114,13 @@ export function BcaSafetyEvidencePanel({ safety, projectId, doc, onChange, onNot
           <Link className="underline" href={`/safety?projectId=${encodeURIComponent(projectId)}`}>Safety</Link>.
         </p>
       ) : (
-        safety.plans.map((plan) => (
+        <>
+        {safety.plansNotShown > 0 && (
+          <p className="text-sm">
+            Showing the {safety.plans.length} most recently updated safety plans. {safety.plansNotShown} older {safety.plansNotShown === 1 ? "plan is" : "plans are"} not shown.
+          </p>
+        )}
+        {safety.plans.map((plan) => (
           <div key={`${plan.reportId}-${plan.ingestId}`} className="space-y-2 border-t pt-3">
             <h4 className="font-medium">{plan.reportTitle}</h4>
             {plan.status === "unavailable" ? (
@@ -112,15 +130,16 @@ export function BcaSafetyEvidencePanel({ safety, projectId, doc, onChange, onNot
                 <p className="text-sm">
                   {plan.sourceLabel} ({plan.sourceId ?? "source id not recorded"}). Years {plan.years.join(", ")}. {plan.coverage}
                 </p>
-                {!plan.seriousInjuryInSource && <p className="text-sm font-medium">{BCA_FATAL_ONLY_SOURCE_NOTE}</p>}
+                {bcaSeriousInjuryNote(plan.seriousInjury) && <p className="text-sm font-medium">{bcaSeriousInjuryNote(plan.seriousInjury)}</p>}
                 {plan.caveats.map((caveat) => <p key={caveat} className="text-sm">{caveat}</p>)}
-                {plan.segments.map((segment) => (
-                  <SegmentStream key={segment.segmentId} plan={plan} segment={segment} doc={doc} onChange={onChange} onNotice={onNotice} />
-                ))}
+                {plan.segments.map((segment) => segment.status === "counted"
+                  ? <SegmentStream key={segment.segmentId} plan={plan} segment={segment} doc={doc} onChange={onChange} onNotice={onNotice} />
+                  : <UnresolvedSegment key={segment.segmentId} segment={segment} />)}
               </>
             )}
           </div>
-        ))
+        ))}
+        </>
       )}
     </section>
   );

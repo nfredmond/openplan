@@ -7,11 +7,11 @@ import { bcaProjectPlace } from "./fixtures/bca/project-place";
 const project = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const user = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 const key = `openplan:bca:${user}:${project}`;
-const safety: BcaSafetyEvidenceRead = { status: "read", plans: [{
+const safety: BcaSafetyEvidenceRead = { status: "read", plansNotShown: 0, plans: [{
   status: "ready", reportId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", reportTitle: "Local Road Safety Plan",
   ingestId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", sourceId: "fars", sourceLabel: "FARS test extract",
-  coverage: "Fatal crashes only.", years: [2021, 2022], seriousInjuryInSource: false, caveats: [],
-  segments: [{ segmentId: "road:abcdef12:0", segmentLabel: "Main Street", countermeasures: [],
+  coverage: "Fatal crashes only.", years: [2021, 2022], seriousInjury: "not_in_source", caveats: [],
+  segments: [{ status: "counted", segmentId: "road:abcdef12:0", segmentLabel: "Main Street", countermeasures: [],
     years: [{ year: 2021, fatalCrashes: 1, seriousInjuryCrashes: null }, { year: 2022, fatalCrashes: 2, seriousInjuryCrashes: null }],
     fatalCrashes: 3, seriousInjuryCrashes: null, fatalities: 4, fatalCrashesWithoutPersonCount: 0 }],
 }] };
@@ -42,6 +42,27 @@ it("offers stored crashes on the Evidence tab and adds nothing until the planner
   fireEvent.click(within(panel).getByRole("button", { name: "Add safety stream for this segment" }));
   await waitFor(() => expect(stored().flows).toHaveLength(1));
   expect(stored().flows[0]).toMatchObject({ unit: "fatality", noBuild: 2, build: 1, unitValue: null });
+});
+
+it("offers no count and no stream for a segment that could not be matched, and names an unseparated source", () => {
+  if (safety.status !== "read" || safety.plans[0].status !== "ready") throw new Error("fixture");
+  const plan = safety.plans[0];
+  const unmatched: BcaSafetyEvidenceRead = { status: "read", plansNotShown: 2, plans: [{
+    ...plan, seriousInjury: "not_separated",
+    segments: [...plan.segments, { status: "unresolved", segmentId: "grid:-14972:6143", segmentLabel: "Half-mile square", countermeasures: [],
+      reason: "This segment no longer matches the road lines stored for the project. That is not zero crashes." }],
+  }] };
+  render(<BcaWorkbench {...props} safety={unmatched} />);
+  fireEvent.click(screen.getByRole("button", { name: "Evidence" }));
+  const panel = screen.getByRole("region", { name: "Crashes on treated segments" });
+  expect(within(panel).getByText(/That is not zero crashes/)).toBeVisible();
+  // One counted segment, so one table and one Add button. The unmatched one has neither.
+  expect(within(panel).getAllByRole("table")).toHaveLength(1);
+  expect(within(panel).getAllByRole("button", { name: "Add safety stream for this segment" })).toHaveLength(1);
+  expect(within(panel).getByText(/does not separate the serious ones/)).toBeVisible();
+  expect(within(panel).getAllByText("Not separated").length).toBe(3);
+  expect(within(panel).queryByText("Not in source")).toBeNull();
+  expect(within(panel).getByText(/2 older plans are not shown/)).toBeVisible();
 });
 
 it("prints the project place as plain dates and planner words", () => {

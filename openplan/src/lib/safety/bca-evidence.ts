@@ -158,10 +158,15 @@ type BcaTreatedSegmentYear = {
   seriousInjuryCrashes: number | null;
 };
 
-export type BcaTreatedSegment = {
+type BcaTreatedSegmentBase = {
   segmentId: string;
   segmentLabel: string;
   countermeasures: Array<{ id: string; name: string; cmfNote: string }>;
+};
+
+/** A treated segment whose crashes were placed and counted. */
+export type BcaCountedSegment = BcaTreatedSegmentBase & {
+  status: "counted";
   years: BcaTreatedSegmentYear[];
   fatalCrashes: number;
   seriousInjuryCrashes: number | null;
@@ -170,6 +175,27 @@ export type BcaTreatedSegment = {
   /** Fatal crashes whose source gave no count of people killed. */
   fatalCrashesWithoutPersonCount: number;
 };
+
+/**
+ * A treated segment that no stored crash lands on under the current road lines.
+ * A segment enters a plan from the ranking, so it held at least one counted
+ * crash when it was saved. None now means the segments were cut differently
+ * (grid squares before road lines were stored, or road lines stored again),
+ * not that the road had no crashes. No count is offered.
+ */
+export type BcaUnresolvedSegment = BcaTreatedSegmentBase & { status: "unresolved"; reason: string };
+
+export type BcaTreatedSegment = BcaCountedSegment | BcaUnresolvedSegment;
+
+export const BCA_UNRESOLVED_SEGMENT_REASON =
+  "This segment no longer matches the road lines stored for the project, so its crashes cannot be counted here. That is not zero crashes. Open Safety and save the countermeasures again.";
+
+/**
+ * What the source says about serious injuries. `not_in_source`: it records
+ * fatal crashes only. `not_separated`: it records injury crashes but does not
+ * separate the serious ones. Neither is zero.
+ */
+export type BcaSeriousInjuryCoverage = "counted" | "not_in_source" | "not_separated";
 
 export type BcaSafetyPlanOffer =
   | {
@@ -183,53 +209,36 @@ export type BcaSafetyPlanOffer =
       coverage: string;
       /** Requested years the counts cover, ascending. */
       years: number[];
-      seriousInjuryInSource: boolean;
+      seriousInjury: BcaSeriousInjuryCoverage;
       caveats: string[];
       segments: BcaTreatedSegment[];
     }
   | { status: "unavailable"; reportId: string; reportTitle: string; ingestId: string; reason: string };
 
 export type BcaSafetyEvidenceRead =
-  | { status: "read"; plans: BcaSafetyPlanOffer[] }
+  /** `plansNotShown`: saved plans beyond the newest ones listed. */
+  | { status: "read"; plans: BcaSafetyPlanOffer[]; plansNotShown: number }
   | { status: "failed" };
 
 /**
  * Count the crashes placed on each treated segment by severity and year.
  * `placements` maps crash id to segment id, from `placeHighInjuryNetworkCrashes`.
  * Only the treated segments are counted; crashes on other segments and crashes
- * outside the requested years are left out.
+ * outside the requested years are left out. A treated segment that no crash is
+ * placed on is returned unresolved, never as zero.
  */
 export function summarizeBcaTreatedSegments(input: {
   attachments: ReadonlyArray<{ segmentId: string; segmentLabel: string; countermeasureIds: readonly string[] }>;
   crashes: readonly BcaSegmentCrash[];
   placements: ReadonlyMap<string, string>;
-  seriousInjuryInSource: boolean;
+  seriousInjuryCounted: boolean;
   years: readonly number[];
 }): BcaTreatedSegment[] {
   const years = Array.from(new Set(input.years)).sort((a, b) => a - b);
   const requested = new Set(years);
-  return input.attachments.map((attachment) => {
-    const byYear = new Map(years.map((year) => [year, { fatal: 0, serious: 0 }]));
-    let fatalities = 0;
-    let withoutCount = 0;
-    for (const crash of input.crashes) {
-      if (input.placements.get(crash.id) !== attachment.segmentId) continue;
-      if (crash.collisionYear === null || !requested.has(crash.collisionYear)) continue;
-      const tally = byYear.get(crash.collisionYear)!;
-      if (crash.severity === "fatal") {
-        tally.fatal += 1;
-        if (crash.killedCount === null) withoutCount += 1;
-        else fatalities += crash.killedCount;
-      } else if (crash.severity === "severe_injury" && input.seriousInjuryInSource) {
-        tally.serious += 1;
-      }
-    }
-    const rows = years.map((year) => ({
-      year,
-      fatalCrashes: byYear.get(year)!.fatal,
-      seriousInjuryCrashes: input.seriousInjuryInSource ? byYear.get(year)!.serious : null,
-    }));
-    return {
+  const segmentsWithCrashes = new Set(input.placements.values());
+  return input.attachments.map((attachment): BcaTreatedSegment => {
+    const base = {
       segmentId: attachment.segmentId,
       segmentLabel: attachment.segmentLabel,
       countermeasures: attachment.countermeasureIds.flatMap((id) => {
@@ -243,9 +252,36 @@ export function summarizeBcaTreatedSegments(input: {
             : entry.cmfNote ?? "[VERIFY] No crash modification factor cited.",
         }];
       }),
+    };
+    if (!segmentsWithCrashes.has(attachment.segmentId)) {
+      return { ...base, status: "unresolved", reason: BCA_UNRESOLVED_SEGMENT_REASON };
+    }
+    const byYear = new Map(years.map((year) => [year, { fatal: 0, serious: 0 }]));
+    let fatalities = 0;
+    let withoutCount = 0;
+    for (const crash of input.crashes) {
+      if (input.placements.get(crash.id) !== attachment.segmentId) continue;
+      if (crash.collisionYear === null || !requested.has(crash.collisionYear)) continue;
+      const tally = byYear.get(crash.collisionYear)!;
+      if (crash.severity === "fatal") {
+        tally.fatal += 1;
+        if (crash.killedCount === null) withoutCount += 1;
+        else fatalities += crash.killedCount;
+      } else if (crash.severity === "severe_injury" && input.seriousInjuryCounted) {
+        tally.serious += 1;
+      }
+    }
+    const rows = years.map((year) => ({
+      year,
+      fatalCrashes: byYear.get(year)!.fatal,
+      seriousInjuryCrashes: input.seriousInjuryCounted ? byYear.get(year)!.serious : null,
+    }));
+    return {
+      ...base,
+      status: "counted",
       years: rows,
       fatalCrashes: rows.reduce((sum, row) => sum + row.fatalCrashes, 0),
-      seriousInjuryCrashes: input.seriousInjuryInSource
+      seriousInjuryCrashes: input.seriousInjuryCounted
         ? rows.reduce((sum, row) => sum + (row.seriousInjuryCrashes ?? 0), 0)
         : null,
       fatalities: withoutCount > 0 ? null : fatalities,

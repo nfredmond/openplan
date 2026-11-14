@@ -71,7 +71,7 @@ export function BcaWorkbench({
   models,
   modelReadFailed,
   projectPlace,
-  safety = { status: "read", plans: [] },
+  safety = { status: "read", plans: [], plansNotShown: 0 },
 }: {
   models: BcaModelEvidence[];
   /** Saved safety plans on this project, offered on the Evidence tab. */

@@ -38,8 +38,8 @@ import {
 export const BCA_SAFETY_REPORT_PROJECTION = "id, title, metadata_json";
 export const BCA_SAFETY_ROAD_PROJECTION = "id, road_name, geometry_geojson, source_id, source_vintage";
 export const BCA_SEGMENT_CRASH_PROJECTION = "id, longitude, latitude, severity, collision_year, killed_count";
-/** Newest saved plans considered. */
-const BCA_SAFETY_REPORT_LIMIT = 20;
+/** Newest saved plans offered. Every report is read first, so a report with no plan cannot push a plan out. */
+export const BCA_SAFETY_PLAN_LIMIT = 20;
 /** Same cap as the report packet's road read, so the same lines are cut into the same segments. */
 const ROAD_LIMIT = 2000;
 
@@ -111,19 +111,25 @@ export async function loadBcaSafetyPlanOffers(
   input: { workspaceId: string; projectId: string },
 ): Promise<BcaSafetyEvidenceRead> {
   try {
-    const reports = await supabase.from("reports").select(BCA_SAFETY_REPORT_PROJECTION)
-      .eq("workspace_id", input.workspaceId)
-      .eq("project_id", input.projectId)
-      .order("updated_at", { ascending: false })
-      .limit(BCA_SAFETY_REPORT_LIMIT);
-    if (reports.error || !Array.isArray(reports.data)) return { status: "failed" };
-    const saved = reports.data.flatMap((row) => {
+    const reports = await readEveryPage<unknown, unknown>(
+      (from, to) => supabase.from("reports").select(BCA_SAFETY_REPORT_PROJECTION)
+        .eq("workspace_id", input.workspaceId)
+        .eq("project_id", input.projectId)
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, to) as PromiseLike<{ data: unknown[] | null; error: unknown }>,
+      { pageSize: 1000 },
+    );
+    if (!reports.complete) return { status: "failed" };
+    const everySaved = reports.rows.flatMap((row) => {
       const r = record(row);
       const plan = readReportSafetyActionPlan(r?.metadata_json);
       if (!r || typeof r.id !== "string" || !plan || plan.attachments.length === 0) return [];
       return [{ reportId: r.id, reportTitle: typeof r.title === "string" && r.title.trim() ? r.title : "Untitled report", plan }];
     });
-    if (saved.length === 0) return { status: "read", plans: [] };
+    if (everySaved.length === 0) return { status: "read", plans: [], plansNotShown: 0 };
+    const saved = everySaved.slice(0, BCA_SAFETY_PLAN_LIMIT);
+    const plansNotShown = everySaved.length - saved.length;
 
     const ingestIds = Array.from(new Set(saved.map((item) => item.plan.ingestId)));
     const [ingests, roadsRead] = await Promise.all([
@@ -184,14 +190,17 @@ export async function loadBcaSafetyPlanOffers(
         sourceLabel: ingest.sourceLabel ?? "Crash source not recorded",
         coverage: availability.statement,
         years,
-        seriousInjuryInSource: basis === "ksi",
+        // The ranking falls back to fatal crashes both when the source holds
+        // no injury crashes and when it does not separate the serious ones.
+        // Those are different statements about the source.
+        seriousInjury: basis === "ksi" ? "counted" : ingest.severityCompleteness === "fatal_only" ? "not_in_source" : "not_separated",
         caveats,
         segments: summarizeBcaTreatedSegments({
-          attachments: plan.attachments, crashes: read.crashes, placements, seriousInjuryInSource: basis === "ksi", years,
+          attachments: plan.attachments, crashes: read.crashes, placements, seriousInjuryCounted: basis === "ksi", years,
         }),
       });
     }
-    return { status: "read", plans };
+    return { status: "read", plans, plansNotShown };
   } catch {
     return { status: "failed" };
   }

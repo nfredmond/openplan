@@ -280,12 +280,10 @@ describe("a full-strength bg-muted holds no text", () => {
 
   /**
    * Text on a full-strength fill that is still open. An entry leaves this list
-   * when its line is fixed; nothing is added to it.
+   * when its line is fixed; nothing is added to it. Empty since the selected
+   * contribution in the moderation list moved to bg-secondary.
    */
-  const STILL_OPEN = new Set([
-    // The selected contribution in the moderation list. KI-2026-11-14-111.
-    "src/components/engagement/engagement-item-registry.tsx",
-  ]);
+  const STILL_OPEN = new Set<string>([]);
 
   function sourceFiles(dir: string): string[] {
     return readdirSync(dir).flatMap((entry) => {

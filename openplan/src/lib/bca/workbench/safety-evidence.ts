@@ -1,4 +1,4 @@
-import type { BcaSafetyPlanOffer, BcaTreatedSegment } from "@/lib/safety/bca-evidence";
+import type { BcaCountedSegment, BcaSafetyPlanOffer, BcaSeriousInjuryCoverage } from "@/lib/safety/bca-evidence";
 import type { BcaDocument } from "./schema";
 import { newBcaFlow } from "./document";
 import { safetyQuantity } from "./quantities";
@@ -8,6 +8,17 @@ export type BcaSafetyOutcome = "fatality" | "serious-injury";
 
 export const BCA_FATAL_ONLY_SOURCE_NOTE =
   "This source records fatal crashes only. Injury crashes are not in it, so they are unavailable here, not zero.";
+export const BCA_INJURY_NOT_SEPARATED_NOTE =
+  "This source records injury crashes but does not separate the serious ones, so serious-injury crashes are unavailable here, not zero.";
+/** The sentence for a source that does not count serious injuries, or null when it does. */
+export function bcaSeriousInjuryNote(coverage: BcaSeriousInjuryCoverage): string | null {
+  if (coverage === "counted") return null;
+  return coverage === "not_in_source" ? BCA_FATAL_ONLY_SOURCE_NOTE : BCA_INJURY_NOT_SEPARATED_NOTE;
+}
+/** The table cell for a serious-injury count the source does not give. */
+export function bcaSeriousInjuryCell(coverage: BcaSeriousInjuryCoverage): string {
+  return coverage === "not_separated" ? "Not separated" : "Not in source";
+}
 export const BCA_RECORDED_COUNTS_NOTE =
   "Recorded crashes in the requested years. They are not crashes avoided, and a year with no recorded crash does not show a safe road.";
 /** Why the stream counts persons. Keep in step with the USDOT values in profiles.ts. */
@@ -27,10 +38,14 @@ function cmfClearinghouseUrl(cmfId: number): string {
 export function addBcaSafetyStream(
   doc: BcaDocument,
   plan: ReadyPlan,
-  segment: BcaTreatedSegment,
+  segment: BcaCountedSegment,
   input: { outcome: BcaSafetyOutcome; persons: number | null; cmf: number | null; cmfId: number | null },
 ): BcaDocument {
-  if (input.outcome === "serious-injury" && !plan.seriousInjuryInSource) throw new Error(BCA_FATAL_ONLY_SOURCE_NOTE);
+  // A caller outside the type system must not turn an uncounted segment into a stream.
+  if ((segment as { status?: unknown }).status !== "counted")
+    throw new Error("This segment's crashes are not counted, so no stream can be added. That is not zero crashes.");
+  const seriousInjuryNote = bcaSeriousInjuryNote(plan.seriousInjury);
+  if (input.outcome === "serious-injury" && seriousInjuryNote) throw new Error(seriousInjuryNote);
   if (input.cmf === null) throw new Error("Enter the crash modification factor; blank is not zero.");
   if (input.cmfId === null || !Number.isInteger(input.cmfId) || input.cmfId <= 0)
     throw new Error("Enter the CMF Clearinghouse ID for this factor.");
@@ -60,7 +75,7 @@ export function addBcaSafetyStream(
     observedYear: plan.years.at(-1) ?? null,
     status: "documented" as const,
     method: `${plan.sourceLabel}, years ${plan.years.join(", ")}. Crashes by year: ${yearRows}. ${personsBasis}`,
-    limitation: [plan.coverage, BCA_RECORDED_COUNTS_NOTE, ...(plan.seriousInjuryInSource ? [] : [BCA_FATAL_ONLY_SOURCE_NOTE]), ...plan.caveats].join(" "),
+    limitation: [plan.coverage, BCA_RECORDED_COUNTS_NOTE, ...(seriousInjuryNote ? [seriousInjuryNote] : []), ...plan.caveats].join(" "),
     owner: "",
     dueDate: "",
   };
