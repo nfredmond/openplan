@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Benefit-cost analysis offers Safety crashes (KI-2026-11-14-030, -032):** the Evidence tab lists each saved safety plan and the recorded fatal and serious-injury crashes on its treated segments by year, with source and coverage. A planner adds a safety stream with a crash modification factor and its CMF Clearinghouse ID; nothing is added without that step. The Safety page and grant application card link to the analysis, and the Project place panel shows plain dates. No migration.
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the

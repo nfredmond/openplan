@@ -186,3 +186,30 @@ export function bcaPlaceDescription(snapshot: BcaProjectPlace): string {
 }
 
 export const BCA_PLACE_LIMIT = "This records project place identity and context, without boundary geometry. It does not establish jurisdiction, adopting authority or legal applicability. A new save rechecks the exact project row in the database and holds that row through its insert transaction. A concurrent project change can occur afterward. History and export comparisons describe a read and do not lock the project.";
+
+/** Calendar date for the workbench panel, in UTC so the same row reads the same day everywhere. */
+export function formatBcaPlaceDate(timestamp: string): string {
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) return "an unrecorded date";
+  return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+
+const PLACE_KIND_WORDS: Record<string, string> = {
+  state: "state", county: "county", place: "city or town", cousub: "town or township",
+  aiannh: "tribal area", tract: "census tract",
+};
+
+/** One plain sentence about a place snapshot for the workbench panel. Exports keep `bcaPlaceDescription`. */
+export function bcaPlacePlainDescription(snapshot: BcaProjectPlace): string {
+  const place = snapshot.place;
+  if (snapshot.status === "missing") return "No place is set.";
+  const source = snapshot.status === "drawn" ? "drawn on the map"
+    : snapshot.status === "uploaded" ? "uploaded boundary"
+    : place.source === TIGERWEB_GEOGRAPHY_SOURCE ? "Census TIGERweb" : place.source ?? "source not recorded";
+  const kind = place.kind ? PLACE_KIND_WORDS[place.kind] ?? place.kind : null;
+  return `${place.label ?? "Unnamed place"} (${[kind, source].filter(Boolean).join(", ")}).`;
+}
+
+/** The panel's limit sentence. Exports keep `BCA_PLACE_LIMIT`. */
+export const BCA_PLACE_PLAIN_LIMIT =
+  "The place names the project area. It does not decide jurisdiction, the adopting agency or which rules apply. Saving checks the project's place again. Each saved version keeps the place it was saved with.";

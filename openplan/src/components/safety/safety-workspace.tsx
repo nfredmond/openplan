@@ -1794,6 +1794,7 @@ export function SafetyWorkspace({
                       Add to {report.title}
                     </Link>
                   ))}
+                  <Link href={`/grants/bca/${encodeURIComponent(projectId)}`} className="rounded-md border border-primary/30 bg-background px-3 py-2 font-semibold text-primary">Benefit-cost analysis</Link>
                 </div>
               </section>
             ) : null}

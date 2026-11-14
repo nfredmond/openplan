@@ -15,9 +15,11 @@ import {
   reviewBcaProjectPlace,
 } from "@/lib/bca/workbench/document";
 import {
-  BCA_PLACE_LIMIT, bcaPlaceDescription, bcaPlaceReview, bcaPlaceReviewLabel, bcaProjectPlaceSchema,
-  type BcaProjectPlaceRead,
+  BCA_PLACE_PLAIN_LIMIT, bcaPlacePlainDescription, bcaPlaceReview, bcaPlaceReviewLabel, bcaProjectPlaceSchema,
+  formatBcaPlaceDate, type BcaProjectPlace, type BcaProjectPlaceRead,
 } from "@/lib/bca/workbench/project-place";
+import type { BcaSafetyEvidenceRead } from "@/lib/safety/bca-evidence";
+import { BcaSafetyEvidencePanel } from "./safety-evidence-panel";
 import { BCA_PROFILES, getBcaProfile } from "@/lib/bca/workbench/profiles";
 import {
   importBcaModelEvidence,
@@ -53,6 +55,14 @@ function download(content: BlobPart, type: string, name: string) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+function PlaceLines({ heading, snapshot }: { heading: string; snapshot: BcaProjectPlace }) {
+  const entries = snapshot.jurisdiction?.entries ?? [];
+  return <div>
+    <p>{heading}: {bcaPlacePlainDescription(snapshot)}</p>
+    <p>Project last changed {formatBcaPlaceDate(snapshot.projectUpdatedAt)}. Place set {snapshot.placeSetAt ? formatBcaPlaceDate(snapshot.placeSetAt) : "never"}.</p>
+    <p>Jurisdiction: {entries.length ? entries.map(entry => entry.label).join("; ") : "not recorded"}.</p>
+  </div>;
+}
 export function BcaWorkbench({
   projectId,
   projectName,
@@ -61,8 +71,11 @@ export function BcaWorkbench({
   models,
   modelReadFailed,
   projectPlace,
+  safety = { status: "read", plans: [] },
 }: {
   models: BcaModelEvidence[];
+  /** Saved safety plans on this project, offered on the Evidence tab. */
+  safety?: BcaSafetyEvidenceRead;
   modelReadFailed: boolean;
   projectId: string;
   projectName: string;
@@ -414,19 +427,11 @@ export function BcaWorkbench({
       <aside aria-label="Project place and retained analysis place" className="space-y-3 rounded border p-4 text-sm">
         <h2 className="text-lg font-semibold">Project place</h2>
         <p>Analysis place status: {bcaPlaceReviewLabel(placeReview.status)}.</p>
-        {placeReview.retained ? <div>
-          <p>Retained analysis place: {bcaPlaceDescription(placeReview.retained)}</p>
-          <p>Project revision: {placeReview.retained.projectUpdatedAt}; place recorded: {placeReview.retained.placeSetAt ?? "unset"}.</p>
-          <p>Separate jurisdiction declaration: {placeReview.retained.jurisdiction?.state ?? "not recorded"}.
-            {placeReview.retained.jurisdiction?.entries.map(entry => ` ${entry.label} (${entry.scope}; ${entry.identity}; ${entry.reference ?? "no reference"}).`).join("")}</p>
-        </div> : <p>Unbound legacy analysis. The affected-area narrative remains unchanged. Review the project place explicitly to create a new version.</p>}
-        {currentPlace.status === "available" ? <div>
-          <p>Project place at last read: {bcaPlaceDescription(currentPlace.snapshot)}</p>
-          <p>Project revision at last read: {currentPlace.snapshot.projectUpdatedAt}; place recorded: {currentPlace.snapshot.placeSetAt ?? "unset"}.</p>
-          <p>Separate current jurisdiction declaration: {currentPlace.snapshot.jurisdiction?.state ?? "not recorded"}.
-            {currentPlace.snapshot.jurisdiction?.entries.map(entry => ` ${entry.label} (${entry.scope}; ${entry.identity}; ${entry.reference ?? "no reference"}).`).join("")}</p>
-        </div> : <p role="alert">Current project place {currentPlace.status}: {currentPlace.message}</p>}
-        <p>{BCA_PLACE_LIMIT}</p>
+        {placeReview.retained ? <PlaceLines heading="In this analysis" snapshot={placeReview.retained} />
+          : <p>Unbound legacy analysis. The affected-area text stays as written. Review the project place to make a new version.</p>}
+        {currentPlace.status === "available" ? <PlaceLines heading="On the project now" snapshot={currentPlace.snapshot} />
+          : <p role="alert">Current project place {currentPlace.status}: {currentPlace.message}</p>}
+        <p>{BCA_PLACE_PLAIN_LIMIT}</p>
         <p>Describe the affected area and users separately below. Set or correct the place through <Link className="underline" href={`/projects/${projectId}`}>the project page</Link>.</p>
         <button className={buttonClass} disabled={busy} onClick={() => void history()}>Refresh project place and history</button>
         <button className={buttonClass} disabled={!!pending || busy || !!storageProblem || currentPlace.status !== "available" || placeReview.status === "matched-at-read"}
@@ -609,6 +614,7 @@ export function BcaWorkbench({
             <h2 className="text-xl font-semibold">
               Track sources and missing values
             </h2>
+            <BcaSafetyEvidencePanel safety={safety} projectId={projectId} doc={doc} onChange={setDoc} onNotice={setNotice} />
             <section className="space-y-3 rounded border p-4">
               <h3 className="font-semibold">Reuse project model comparisons</h3>
               <p className="text-sm">

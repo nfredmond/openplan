@@ -93,6 +93,16 @@ records the exact path and pending correction design. The creation-provider
 assumption also remains open. The October 12 findings above remain the historical
 baseline; KI-025 and M1 are not closed.
 
+## Benefit-cost analysis reads Safety, November 14, 2026
+
+Found in the November 3 rehearsal (defects D8 and D9). Paths are under `openplan/`.
+
+| ID | Severity | Boundary | Current disposition | Evidence |
+|---|---|---|---|---|
+| KI-2026-11-14-030 | Medium, retyped evidence | The benefit-cost workbench offered only model comparisons and manual sources. A planner retyped the killed-or-seriously-injured crashes on treated segments and the countermeasures saved in the Safety plan, and the page was reachable only by typing its address. | Fixed in code, not yet checked in a browser. The Evidence tab lists each saved safety plan on the project and, for each treated segment, the recorded fatal and serious-injury crashes by year with source id, severity coverage and years. Crashes are placed on segments by the high-injury network's own rule, read in pages past the 1,000-row cap, and a failed or short read is shown as unavailable. A stream enters the analysis only when the planner adds it with a crash modification factor and its CMF Clearinghouse ID; no factor is filled in. A fatal-only source says injury crashes are not in it. The Safety page and the grant application card link to the analysis. Open: counts cover the network's severities only (fatal and serious injury), not injury or property-damage crashes; serious-injury persons are not stored, so the planner enters them. | `src/lib/safety/bca-evidence-loader.ts`; `src/lib/safety/bca-evidence.ts`; `src/lib/bca/workbench/safety-evidence.ts`; `src/components/grants/bca-workbench/safety-evidence-panel.tsx`; `src/test/bca-safety-treated-segments.test.ts`; `src/test/bca-safety-evidence-ui.test.tsx` |
+| KI-2026-11-14-031 | Medium, unconfirmed values | The value picker has USDOT per-person values (fatality, KABCO A, KABCO B) and a property-damage-only per-crash value, but no per-crash value for fatal or injury crashes. The current guidance (December 2025, 2026 update) could not be read from this workstation: transportation.gov returned HTTP 403 to every automated request on November 13, 2026. Search excerpts suggest its Table A-1 lists per-crash values; that is unconfirmed. | Open. No per-crash value was added. Streams from stored crashes count persons and carry a `[VERIFY]` note. A person must read Table A-1 of the 2026 guidance and confirm or add per-crash values with page citations. | `src/lib/bca/workbench/profiles.ts` (`USDOT_PARAMETERS`); `src/lib/bca/workbench/safety-evidence.ts` (`BCA_PERSONS_NOTE`) |
+| KI-2026-11-14-032 | Low, copy | The workbench's Project place panel printed raw ISO timestamps and database wording ("holds that row through its insert transaction"). | Fixed in code: the panel shows plain dates (UTC calendar day), the place name with its kind and source, and a plain limit sentence. The analysis package export keeps its existing wording. | `src/components/grants/bca-workbench/workbench.tsx`; `src/lib/bca/workbench/project-place.ts` |
+
 ## RTP project links across workspaces, November 2, 2026
 
 Found by the service-role guard lane (PR 438) and re-verified on `main` at

@@ -428,6 +428,7 @@ function roadCandidates(
 
   const index = buildSegmentIndex(pieces, parameters.snapMeters);
   const tallies = new Map<number, Tally>();
+  const placements = new Map<string, string>();
   let placed = 0;
   for (const crash of crashes) {
     const point: [number, number] = [crash.longitude, crash.latitude];
@@ -448,6 +449,7 @@ function roadCandidates(
     }
     if (!best) continue;
     placed += 1;
+    placements.set(crash.id, pieces[best.pieceIndex].id);
     const tally = tallies.get(best.pieceIndex) ?? emptyTally();
     addToTally(tally, crash.severity);
     tallies.set(best.pieceIndex, tally);
@@ -475,6 +477,7 @@ function roadCandidates(
   return {
     candidates,
     placed,
+    placements,
     roadMilesReviewed: pieces.reduce((sum, piece) => sum + piece.lengthMeters, 0) / METERS_PER_MILE,
     roadSources: Array.from(new Set(pieces.map((piece) => piece.roadSource))).sort(),
   };
@@ -487,6 +490,7 @@ function gridCandidates(
 ) {
   const latStep = (parameters.gridSizeMiles * METERS_PER_MILE) / METERS_PER_DEGREE_LATITUDE;
   const cells = new Map<string, { column: number; row: number; lonStep: number; tally: Tally }>();
+  const placements = new Map<string, string>();
   for (const crash of crashes) {
     const row = Math.floor(crash.latitude / latStep);
     const rowCenter = (row + 0.5) * latStep;
@@ -496,6 +500,7 @@ function gridCandidates(
     const cell = cells.get(key) ?? { column, row, lonStep, tally: emptyTally() };
     addToTally(cell.tally, crash.severity);
     cells.set(key, cell);
+    placements.set(crash.id, key);
   }
 
   const candidates: Candidate[] = [...cells.entries()].map(([id, cell]) => {
@@ -522,7 +527,7 @@ function gridCandidates(
     };
   });
 
-  return { candidates, placed: crashes.length };
+  return { candidates, placed: crashes.length, placements };
 }
 
 /**
@@ -588,6 +593,26 @@ export function computeHighInjuryNetwork(input: {
     roadSources: built.roadSources,
     parameters,
   };
+}
+
+/**
+ * Which segment each crash lands on, by the same rule the ranking uses: nearest
+ * road piece within the snap distance, or the half-mile grid square when no
+ * road lines are stored. A crash missing from the map was not placed. Null
+ * when the road read failed, as in `computeHighInjuryNetwork`.
+ */
+export function placeHighInjuryNetworkCrashes(input: {
+  crashes: readonly HighInjuryNetworkCrash[];
+  basis: HighInjuryNetworkBasis;
+  roads: readonly SafetyRoadContextFeature[] | null;
+  parameters?: HighInjuryNetworkParameters;
+}): Map<string, string> | null {
+  if (input.roads === null) return null;
+  const parameters = input.parameters ?? HIGH_INJURY_NETWORK_PARAMETERS;
+  const crashes = input.crashes.filter((crash) => usableCrash(crash, highInjuryNetworkSeverities(input.basis)));
+  return input.roads.length > 0
+    ? roadCandidates(crashes, input.roads, input.basis, parameters).placements
+    : gridCandidates(crashes, input.basis, parameters).placements;
 }
 
 /** What the network counts, in the words its figures are printed with. */
