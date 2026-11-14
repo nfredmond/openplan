@@ -138,6 +138,40 @@ function assertLocalTargetUrl(value, label = 'Target URL') {
   return parsed;
 }
 
+/**
+ * The proof path, beside the local one. A proof run counts only on the one
+ * hosted origin the evidence checker accepts (`proofOrigin`, passed in by the
+ * caller from capability-evidence.mjs). A local, preview or look-alike origin is
+ * refused here, before any account is created, so a rehearsal can never be
+ * written up as proof.
+ */
+function assertProofTargetUrl(value, proofOrigin, label = 'Proof URL') {
+  const parsed = parseTargetUrl(value, label);
+  const expected = parseTargetUrl(proofOrigin, 'Proof origin');
+
+  if (expected.protocol !== 'https:' || isLocalHostname(expected.hostname)) {
+    throw new Error(`${label}: the configured proof origin ${proofOrigin} is not a hosted https origin.`);
+  }
+
+  if (isLocalHostname(parsed.hostname)) {
+    throw new Error(`${label} refuses local URLs for a proof run. Received ${value}.`);
+  }
+
+  if (parsed.protocol !== 'https:') {
+    throw new Error(`${label} must use https for a proof run. Received ${value}.`);
+  }
+
+  if (parsed.origin !== expected.origin) {
+    throw new Error(`${label} must be the hosted origin ${expected.origin} for a proof run. Received ${value}.`);
+  }
+
+  if (parsed.pathname !== '/' || parsed.search || parsed.hash) {
+    throw new Error(`${label} must be the bare origin ${expected.origin}, with no path or query. Received ${value}.`);
+  }
+
+  return parsed;
+}
+
 function guardLocalMutationTargets({ appUrl, supabaseUrl, scriptName = 'Local smoke harness' }) {
   const guardedTargets = [];
 
@@ -212,6 +246,7 @@ function buildBrowserContextOptions(baseOptions = {}) {
 
 module.exports = {
   assertLocalTargetUrl,
+  assertProofTargetUrl,
   appRoot,
   buildBrowserContextOptions,
   getOpenplanBaseUrl,
