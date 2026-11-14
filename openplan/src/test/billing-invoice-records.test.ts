@@ -118,7 +118,7 @@ describe("billing invoice record helpers", () => {
    *
    * The project funding panel prints "$X still not yet invoiced" from
    * `uninvoicedCommittedAwardAmount` and "$Y not yet claimed" from the award's
-   * own `AwardDrawdownLedger.remainingAuthorized`. The first subtracted NET and
+   * own `AwardDrawdownLedger.remainingAgainstCeiling`. The first subtracted NET and
    * the second subtracts GROSS, so on a $500,000 award with one paid $200,000
    * invoice at 10% retention they read $320,000 and $300,000 on the same
    * screen.
@@ -150,9 +150,9 @@ describe("billing invoice record helpers", () => {
     if (!ledger.ok) return;
 
     expect(uninvoiced).toBe(300000);
-    expect(ledger.ledger.remainingAuthorized).toBe(300000);
+    expect(ledger.ledger.remainingAgainstCeiling).toBe(300000);
     // The invariant, not the number: one authorization, one answer.
-    expect(uninvoiced).toBe(ledger.ledger.remainingAuthorized);
+    expect(uninvoiced).toBe(ledger.ledger.remainingAgainstCeiling);
   });
 
   it("counts approved-for-payment as claimed but not as paid", () => {

@@ -532,7 +532,7 @@ describe("flattenSurveyAnswerForExport — the edges the route test's fixtures d
       },
       labels
     );
-    expect(flat.text).toBe("12.34567,-5.67891 — Here");
+    expect(flat.text).toBe("12.34567,-5.67891 (Here)");
     expect(flat.value).toEqual({ longitude: 12.34567, latitude: -5.67891, note: "Here" });
   });
 

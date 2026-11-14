@@ -389,7 +389,7 @@ export const BUILT_IN_STAGE_GATE_TEMPLATE_REGISTRATIONS: readonly StageGateTempl
   },
   {
     artifact: usFederalAidStageGatesTemplate,
-    jurisdiction: { country: "US", label: "United States — federal-aid floor" },
+    jurisdiction: { country: "US", label: "United States: federal-aid floor" },
     // The nationwide floor carries the interim default: a workspace that has
     // stated no jurisdiction is shown the gates that are true anywhere in the
     // United States, not one state's manual. Workspaces born under the PREVIOUS

@@ -25,6 +25,8 @@
  * around a deliberately meaningless origin — see SYNTHETIC_ORIGIN.
  */
 
+const { serviceKeyHeaders } = require('../supabase-service-headers');
+
 const SYNTHETIC_GEOMETRY_STEP_DEG = 0.01;
 
 /**
@@ -153,8 +155,7 @@ async function createQaAuthUser({ supabaseUrl, serviceRoleKey, email, password, 
   const result = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...serviceKeyHeaders(serviceRoleKey),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -186,10 +187,7 @@ async function createQaAuthUser({ supabaseUrl, serviceRoleKey, email, password, 
  * hand-written fixture — the exact failure mode this file exists to end.
  */
 function createRestClient({ supabaseUrl, serviceRoleKey }) {
-  const restHeaders = {
-    apikey: serviceRoleKey,
-    Authorization: `Bearer ${serviceRoleKey}`,
-  };
+  const restHeaders = serviceKeyHeaders(serviceRoleKey);
 
   async function restSelect(table, params) {
     const query = new URLSearchParams(params);

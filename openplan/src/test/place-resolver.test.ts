@@ -80,7 +80,9 @@ describe("buildPlaceSearchUrl", () => {
       stateFips: "39",
     });
     const decoded = decodeURIComponent(url).replace(/\+/g, " ");
-    expect(decoded).toContain("UPPER(BASENAME) LIKE UPPER('Columbus%') AND STATE='39'");
+    expect(decoded).toContain(
+      "(UPPER(BASENAME) LIKE UPPER('Columbus%') OR UPPER(NAME) LIKE UPPER('Columbus%')) AND STATE='39'"
+    );
   });
 
   it("never filters a CBSA layer by state — a metro area legitimately spans states", () => {
@@ -181,6 +183,7 @@ describe("parsePlaceSearchResponse", () => {
         description: "City / town",
         stateFips: "06",
         sortKey: "davis",
+        nameKey: "davis city",
         population: null,
       },
     ]);
@@ -346,7 +349,7 @@ describe("searchPlaces", () => {
     searchUsCountiesMock.mockResolvedValue({
       items: [],
       availability: "unavailable",
-      unavailableReason: "County search needs a US Census API key, which this deployment has not configured.",
+      unavailableReason: "The US Census TIGERweb county layer did not respond, so county names could not be searched.",
     });
     // fetchJsonWithRetry answers null for a timeout, a non-OK status, or a body
     // that would not parse — it does not throw, which is how this stayed hidden.
@@ -356,9 +359,11 @@ describe("searchPlaces", () => {
 
     expect(outcome.items).toEqual([]);
     expect(outcome.searchUnavailable).toBe(true);
-    expect(outcome.unavailableKinds).toEqual(expect.arrayContaining(["county", "city", "cdp", "metro", "micro"]));
-    // The knowable, actionable cause wins over a generic outage message.
-    expect(outcome.unavailableReason).toMatch(/Census API key/i);
+    expect(outcome.unavailableKinds).toEqual(
+      expect.arrayContaining(["county", "city", "cdp", "metro", "micro", "cousub", "aiannh"])
+    );
+    // The county cause, which names its layer, wins over the generic message.
+    expect(outcome.unavailableReason).toMatch(/TIGERweb county layer/);
   });
 
   it("treats a 200 that carries no features array as an unanswered layer", async () => {
@@ -369,7 +374,7 @@ describe("searchPlaces", () => {
     const outcome = await searchPlaces("davis");
 
     expect(outcome.searchUnavailable).toBe(false);
-    expect(outcome.unavailableKinds).toEqual(["city", "cdp", "metro", "micro"]);
+    expect(outcome.unavailableKinds).toEqual(["city", "cdp", "metro", "micro", "cousub", "aiannh"]);
     expect(outcome.unavailableReason).not.toBeNull();
     // The county layer still answered, so its result is still returned.
     expect(outcome.items.map((item) => item.label)).toContain("Yolo County, CA");
@@ -379,7 +384,7 @@ describe("searchPlaces", () => {
     searchUsCountiesMock.mockResolvedValue({
       items: [],
       availability: "unavailable",
-      unavailableReason: "The US Census county catalog did not respond, so county names could not be searched.",
+      unavailableReason: "The US Census TIGERweb county layer did not respond, so county names could not be searched.",
     });
     fetchJsonWithRetryMock.mockImplementation((url: string) => {
       const { service, layer } = tigerRoute(url);

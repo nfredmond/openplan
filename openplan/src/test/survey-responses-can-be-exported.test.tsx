@@ -565,7 +565,7 @@ describe("the answer export carries what the community actually said", () => {
     // machine-built "-" but ENDS in resident free text, and it is a display
     // string (never a computable numeric column), so it takes the same
     // defusing as every other text cell. Spreadsheets hide the prefix.
-    expect(body).toContain("q-mp,map_point,What should downtown improve first?,\"'-100.51234,40.25987 — Crosswalk needed here\"");
+    expect(body).toContain("q-mp,map_point,What should downtown improve first?,\"'-100.51234,40.25987 (Crosswalk needed here)\"");
     // file_upload leaves as a count + names — never bytes or storage internals.
     expect(body).toContain("q-fu,file_upload,What should downtown improve first?,2 files: photo.jpg; sketch.pdf");
     expect(body).not.toContain("123456");

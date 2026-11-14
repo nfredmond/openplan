@@ -5,8 +5,49 @@
  * a national adapter the corridor scorecard would report "no crash source" for
  * every study area outside one state, which is not a product. FARS is the one
  * crash census that exists for the whole reporting geography: every crash on a
- * public road that killed someone within 30 days, 50 states + DC + Puerto Rico,
- * published by NHTSA with no key and no licence restriction.
+ * public road that killed someone within 30 days, published by NHTSA with no
+ * key and no licence restriction.
+ *
+ * WHICH FILES THIS ADAPTER READS. NHTSA publishes each FARS year as two
+ * separate annual files, and this adapter reads both:
+ *   - the National file (`{year}/National/`): the 50 states and DC. Checked
+ *     2026-11-01 against the 2023 and 2024 files: the accident table carries 51
+ *     distinct STATE values and no Puerto Rico rows.
+ *   - the Puerto Rico file (`{year}/Puerto Rico/`): Puerto Rico only.
+ * A study area reads the file whose envelope it overlaps, so a Puerto Rico
+ * county never downloads the 30 MB National archive and a study area in any
+ * state never reads Puerto Rico. One adapter, not two, because both files are the same
+ * census under the same NHTSA program, codebook and release, and because
+ * `safety_crashes.source_id` admits only `fars-national`: a sibling adapter
+ * with its own id could not be stored without widening that CHECK.
+ *
+ * THE PUERTO RICO FILE, as verified 2026-11-01 from NHTSA's own sources:
+ *   - Which years exist: the bucket listing
+ *     https://static.nhtsa.gov/?list-type=2&prefix=nhtsa/downloads/FARS/
+ *     shows `FARS{year}PuertoRicoCSV.zip` for every year 2008 through 2024,
+ *     beside each National file, and no 2025 folder.
+ *   - Release: one release note per year covers both files
+ *     (https://static.nhtsa.gov/nhtsa/downloads/FARS/2024/FARS2024%20Release%20Notes.txt,
+ *     first release of 2024 on 04/01/2026; the 2024 Puerto Rico archive has the
+ *     same 2026-04-01 timestamp as the National one).
+ *   - Schema: the 2024 Puerto Rico `accident.csv` header is byte-identical to
+ *     the 2024 National header, and every column this parser reads (STATE,
+ *     ST_CASE, YEAR, MONTH, DAY, LATITUDE, LONGITUD, FATALS, PEDS) is present
+ *     in every Puerto Rico year 2010 through 2024. Some archives put the
+ *     tables at the root and some in a folder; the entry lookup accepts both.
+ *   - State code: FARS codes Puerto Rico as STATE 43, not its FIPS code 72
+ *     ("Fatality Analysis Reporting System Analytical User's Manual,
+ *     1975-2024", DOT HS 813 794, State Number attribute table, p. 30,
+ *     https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813794).
+ *     `toStateFips` maps it; every other FARS state code is the FIPS code.
+ *   - Coordinates: every Puerto Rico row from 2010 through 2019 carries the
+ *     not-available or unknown coordinate codes, so a bbox can match none of
+ *     them, and reading those years would report zero deaths for any Puerto
+ *     Rico study area. Counted 2026-11-01 from the published files: 2020 has
+ *     223 of 229 crashes with coordinates, 2021 has 329 of 330, and 2022
+ *     through 2024 have all of them. The Puerto Rico file therefore answers
+ *     only from 2020 (`FARS_PUERTO_RICO_EARLIEST_YEAR`), and an earlier year
+ *     asked of a Puerto Rico study area is a year not answered, never zero.
  *
  * WHAT IT IS NOT. FARS is FATAL ONLY. It carries no injury crashes, no
  * property-damage crashes, and therefore no KSI denominator. That is why this
@@ -23,9 +64,11 @@
  *
  * FIELD NOTES — read this before "fixing" the tolerant parsing below.
  *   - The CrashAPI location endpoint accepts state and county, not a bounding
- *     box. OpenPlan therefore reads NHTSA's immutable annual national CSV and
- *     applies the requested bbox locally. This is slower on a cold cache, but
- *     it works for arbitrary project geometry without guessing a county.
+ *     box. OpenPlan therefore reads NHTSA's annual CSV files and applies the
+ *     requested bbox locally, which works for arbitrary project geometry
+ *     without guessing a county. A National archive is 33 to 35 MB, so the
+ *     files of every year are read at once under one deadline and a checked,
+ *     reduced copy is kept between acquisitions (`fars-annual-files.ts`).
  *   - Column casing is NOT stable across CrashAPI endpoints (ST_CASE vs
  *     StCase, LONGITUD vs Longitude). Every field is looked up through a
  *     case-insensitive, separator-insensitive key map instead of one guessed
@@ -36,7 +79,9 @@
  *     are rejected — plotted literally they land in the Arctic Ocean.
  *   - Annual files publish roughly two years in arrears, so a requested year
  *     that returns nothing usable is skipped rather than treated as an outage.
- *     Only an ALL-years failure is reported as `source_unavailable`.
+ *     Only an ALL-years failure is reported as `source_unavailable`. Each
+ *     file's receipt (URL, SHA-256, read date, or why it failed) rides in the
+ *     published-cutoff provenance, so a skipped year stays visible as failed.
  *
  * NETWORK NOTE (2026-08): crashviewer.nhtsa.dot.gov answers 403 from this
  * development network. The official static annual files remain reachable and
@@ -45,8 +90,8 @@
  */
 
 import { parse as parseCsv } from "csv-parse/sync";
-import JSZip from "jszip";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import { STATE_FIPS_TO_USPS, stateFipsFromUsps } from "@/lib/geographies/state-fips";
 import { CRASH_LEVEL_ONLY_DIMENSION_SUPPORT } from "@/lib/safety/vocabulary";
 import {
   CrashSourceUnavailableError,
@@ -55,10 +100,17 @@ import {
   type CrashRecord,
   type CrashSourceAdapter,
 } from "./types";
+import { FARS_FILE_TIMING, readFarsAnnualFile, type FarsFileTiming } from "./fars-annual-files";
 
 export const FARS_SOURCE_ID = "fars-national";
 
 const FARS_DOWNLOAD_BASE = "https://static.nhtsa.gov/nhtsa/downloads/FARS";
+
+/**
+ * First year whose Puerto Rico file has crash coordinates a bbox can match.
+ * See "THE PUERTO RICO FILE" in the header for the counts behind it.
+ */
+export const FARS_PUERTO_RICO_EARLIEST_YEAR = 2020;
 
 /**
  * The CrashAPI's documented lower bound for the location query. FARS itself
@@ -79,9 +131,6 @@ export const FARS_PUBLISHED_CUTOFF = {
   },
 } as const;
 
-const REQUEST_TIMEOUT_MS = 20_000;
-const MAX_ARCHIVE_BYTES = 48 * 1024 * 1024;
-const MAX_ACCIDENT_CSV_BYTES = 36 * 1024 * 1024;
 const LATEST_PUBLISHED_YEAR = Number(FARS_PUBLISHED_CUTOFF.publishedThrough.slice(0, 4));
 
 /**
@@ -105,16 +154,42 @@ const FARS_ENVELOPES: readonly StudyAreaBbox[] = [
   { minLon: 172.0, maxLon: 180.0, minLat: 50.5, maxLat: 53.5 },
   // Hawaii
   { minLon: -160.3, maxLon: -154.7, minLat: 18.9, maxLat: 22.3 },
-  // Puerto Rico
-  { minLon: -67.4, maxLon: -65.2, minLat: 17.8, maxLat: 18.6 },
 ];
+
+/**
+ * Puerto Rico, from Mona and Desecheo to Culebra. The Census 2024 cartographic
+ * boundary counties (cb_2024_us_county_500k, STATEFP 72) span lon -67.945 to
+ * -65.221 and lat 17.883 to 18.516. The east edge stops at -65.15 because the
+ * U.S. Virgin Islands begin at -65.085 (STATEFP 78, same file), and this
+ * adapter reads nothing there.
+ */
+const FARS_PUERTO_RICO_ENVELOPES: readonly StudyAreaBbox[] = [
+  { minLon: -68.0, maxLon: -65.15, minLat: 17.85, maxLat: 18.55 },
+];
+
+/**
+ * The state FIPS codes in the National file: the 50 states and DC. Their codes
+ * are exactly the ones at or below 56; territory codes start at 60.
+ */
+const FARS_NATIONAL_FILE_STATE_FIPS: readonly string[] = Object.keys(STATE_FIPS_TO_USPS).filter(
+  (fips) => Number.parseInt(fips, 10) <= 56
+);
+
+const PUERTO_RICO_STATE_FIPS = stateFipsFromUsps("PR");
+
+/** FARS STATE code for Puerto Rico (Analytical User's Manual, p. 30). */
+const FARS_PUERTO_RICO_STATE_CODE = 43;
+
+/** One NHTSA annual file: where it is, what it covers, and which years it can answer. */
+type FarsAnnualFile = {
+  archiveUrl: (year: number) => string;
+  earliestYear: number;
+  envelopes: readonly StudyAreaBbox[];
+  stateFips: readonly string[];
+};
 
 function overlaps(a: StudyAreaBbox, b: StudyAreaBbox): boolean {
   return a.minLon <= b.maxLon && a.maxLon >= b.minLon && a.minLat <= b.maxLat && a.maxLat >= b.minLat;
-}
-
-export function coversFarsGeography(bbox: StudyAreaBbox): boolean {
-  return FARS_ENVELOPES.some((envelope) => overlaps(bbox, envelope));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -166,6 +241,9 @@ export function toStateFips(value: unknown): string | undefined {
         ? Number.parseInt(value.trim(), 10)
         : Number.NaN;
   if (!Number.isFinite(parsed) || parsed < 1 || parsed > 99) return undefined;
+  // FARS codes Puerto Rico 43; its FIPS code is 72. 43 is not a FIPS state
+  // code, so this mapping cannot hide another state.
+  if (Math.trunc(parsed) === FARS_PUERTO_RICO_STATE_CODE) return PUERTO_RICO_STATE_FIPS ?? undefined;
   return String(Math.trunc(parsed)).padStart(2, "0");
 }
 
@@ -220,6 +298,41 @@ function toFarsCollisionDateFromParts(fields: Map<string, unknown>, fallbackYear
 
 export function farsAnnualArchiveUrl(year: number): string {
   return `${FARS_DOWNLOAD_BASE}/${year}/National/FARS${year}NationalCSV.zip`;
+}
+
+export function farsPuertoRicoArchiveUrl(year: number): string {
+  return `${FARS_DOWNLOAD_BASE}/${year}/Puerto%20Rico/FARS${year}PuertoRicoCSV.zip`;
+}
+
+const FARS_NATIONAL_FILE: FarsAnnualFile = {
+  archiveUrl: farsAnnualArchiveUrl,
+  earliestYear: FARS_EARLIEST_YEAR,
+  envelopes: FARS_ENVELOPES,
+  stateFips: FARS_NATIONAL_FILE_STATE_FIPS,
+};
+
+const FARS_PUERTO_RICO_FILE: FarsAnnualFile = {
+  archiveUrl: farsPuertoRicoArchiveUrl,
+  earliestYear: FARS_PUERTO_RICO_EARLIEST_YEAR,
+  envelopes: FARS_PUERTO_RICO_ENVELOPES,
+  stateFips: PUERTO_RICO_STATE_FIPS ? [PUERTO_RICO_STATE_FIPS] : [],
+};
+
+const FARS_ANNUAL_FILES: readonly FarsAnnualFile[] = [FARS_NATIONAL_FILE, FARS_PUERTO_RICO_FILE];
+
+/**
+ * The annual files a study area needs: every file whose envelope it overlaps.
+ * A bbox that overlaps none (reachable only when a known state's place lies
+ * outside the coarse envelopes) reads the National file, as it did before the
+ * Puerto Rico file was added.
+ */
+function farsFilesForBbox(bbox: StudyAreaBbox): FarsAnnualFile[] {
+  const files = FARS_ANNUAL_FILES.filter((file) => file.envelopes.some((envelope) => overlaps(bbox, envelope)));
+  return files.length > 0 ? files : [FARS_NATIONAL_FILE];
+}
+
+export function coversFarsGeography(bbox: StudyAreaBbox): boolean {
+  return FARS_ANNUAL_FILES.some((file) => file.envelopes.some((envelope) => overlaps(bbox, envelope)));
 }
 
 export function toFarsCrashRecord(row: Record<string, unknown>, year: number): CrashRecord | null {
@@ -305,48 +418,10 @@ export function parseFarsAnnualCsv(
   return { matchedTotal: records.length, records };
 }
 
-async function fetchWithTimeout(url: string, signal?: AbortSignal): Promise<Response | null> {
-  const controller = new AbortController();
-  const onAbort = () => controller.abort(signal?.reason);
-  signal?.addEventListener("abort", onAbort, { once: true });
-  const timeout = setTimeout(() => controller.abort("FARS annual archive timed out"), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, { cache: "force-cache", signal: controller.signal });
-    return response.ok ? response : null;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timeout);
-    signal?.removeEventListener("abort", onAbort);
-  }
-}
-
-async function fetchFarsAnnualCsv(year: number, signal?: AbortSignal): Promise<string | null> {
-  const response = await fetchWithTimeout(farsAnnualArchiveUrl(year), signal);
-  if (!response) return null;
-
-  const declaredBytes = Number(response.headers.get("content-length"));
-  if (Number.isFinite(declaredBytes) && declaredBytes > MAX_ARCHIVE_BYTES) return null;
-
-  const archiveBytes = await response.arrayBuffer();
-  if (archiveBytes.byteLength > MAX_ARCHIVE_BYTES) return null;
-
-  try {
-    const archive = await JSZip.loadAsync(archiveBytes);
-    const accidentEntry = Object.values(archive.files).find(
-      (entry) => !entry.dir && /(?:^|\/)accident\.csv$/i.test(entry.name)
-    );
-    if (!accidentEntry) return null;
-
-    const csv = await accidentEntry.async("string");
-    return Buffer.byteLength(csv, "utf8") <= MAX_ACCIDENT_CSV_BYTES ? csv : null;
-  } catch {
-    return null;
-  }
-}
-
-export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashFetchResult> {
+export async function fetchFarsCrashes(
+  params: CrashFetchParams,
+  timing: FarsFileTiming = FARS_FILE_TIMING
+): Promise<CrashFetchResult> {
   const years = Array.from(new Set(params.years))
     .filter(
       (year) => Number.isFinite(year) && year >= FARS_EARLIEST_YEAR && year <= LATEST_PUBLISHED_YEAR
@@ -358,26 +433,65 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
   let matchedTotal = 0;
   let geocodedTotal = 0;
 
-  for (const year of years) {
-    const csv = await fetchFarsAnnualCsv(year, params.signal);
-    if (csv === null) continue;
-    const parsed = parseFarsAnnualCsv(csv, year, params.bbox);
+  const files = farsFilesForBbox(params.bbox);
+
+  // A year counts as answered only when every file the study area needs
+  // answered it, so a partial read is never reported as the study area's full
+  // count. A year one file cannot answer at all (before its first year with
+  // coordinates) is not asked of any file.
+  const answerable = years.filter((year) => files.every((file) => year >= file.earliestYear));
+
+  // Every file of every year starts at once and shares one deadline, so an
+  // acquisition waits for its slowest file, not the sum of all of them. A file
+  // that fails or misses the deadline is a failed year, recorded in its
+  // receipt, never a year with no crashes.
+  const reads = await Promise.all(
+    answerable.map((year) =>
+      Promise.all(
+        files.map((file) =>
+          readFarsAnnualFile({
+            url: file.archiveUrl(year),
+            year,
+            keptFiles: params.keptFiles,
+            signal: params.signal,
+            timing,
+          })
+        )
+      )
+    )
+  );
+  const sourceFiles = reads.flat().map((read) => read.receipt);
+
+  answerable.forEach((year, index) => {
+    const yearReads = reads[index];
+    const parsedFiles: Array<{ matchedTotal: number; records: CrashRecord[] }> = [];
+    for (const read of yearReads) {
+      if (!read.ok) return;
+      parsedFiles.push(parseFarsAnnualCsv(read.csv, year, params.bbox));
+    }
 
     yearsAnswered.push(year);
-    matchedTotal += parsed.matchedTotal;
+    for (const parsed of parsedFiles) {
+      matchedTotal += parsed.matchedTotal;
 
-    for (const record of parsed.records) {
-      geocodedTotal += 1;
-      if (records.length < (params.maxRecords ?? Number.POSITIVE_INFINITY)) {
-        records.push(record);
+      for (const record of parsed.records) {
+        geocodedTotal += 1;
+        if (records.length < (params.maxRecords ?? Number.POSITIVE_INFINITY)) {
+          records.push(record);
+        }
       }
     }
-  }
+  });
 
   if (years.length > 0 && yearsAnswered.length === 0) {
+    const failures = sourceFiles
+      .filter((receipt) => receipt.status === "failed")
+      .map((receipt) => `${receipt.year}: ${receipt.failure}`);
     throw new CrashSourceUnavailableError(
       FARS_SOURCE_ID,
-      "NHTSA annual FARS files returned no usable response for any published requested year"
+      `NHTSA annual FARS files returned no usable response for any published requested year${
+        failures.length > 0 ? ` (${failures.join("; ")})` : ""
+      }`
     );
   }
 
@@ -390,7 +504,10 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
     ).sort((a, b) => a - b),
     yearsQueried: [...yearsAnswered].sort((a, b) => a - b),
     truncated: typeof params.maxRecords === "number" && geocodedTotal > params.maxRecords,
-    publishedCutoff: FARS_PUBLISHED_CUTOFF,
+    publishedCutoff: {
+      ...FARS_PUBLISHED_CUTOFF,
+      provenance: { ...FARS_PUBLISHED_CUTOFF.provenance, sourceFiles },
+    },
   };
 }
 
@@ -398,7 +515,7 @@ export const farsAdapter: CrashSourceAdapter = {
   id: FARS_SOURCE_ID,
   label: "NHTSA Fatality Analysis Reporting System (FARS)",
   attribution:
-    "U.S. Department of Transportation, National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS). Public domain — U.S. Government work.",
+    "U.S. Department of Transportation, National Highway Traffic Safety Administration, Fatality Analysis Reporting System (FARS). Public domain (U.S. Government work).",
   license: "U.S. Government Work (public domain)",
   coverageState: "fars_fatal_only",
   severityCompleteness: "fatal_only",
@@ -413,6 +530,7 @@ export const farsAdapter: CrashSourceAdapter = {
   earliestYear: FARS_EARLIEST_YEAR,
   persistable: true,
   roadContextProvider: "us-census-tiger-line",
+  servesStateFips: FARS_ANNUAL_FILES.flatMap((file) => file.stateFips),
   covers: coversFarsGeography,
   fetch: fetchFarsCrashes,
 };

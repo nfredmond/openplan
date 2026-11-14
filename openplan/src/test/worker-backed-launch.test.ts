@@ -430,10 +430,10 @@ describe("what a run already queued on the worker may be told", () => {
     // outright: it used to name only the condition for SUCCESS, which is the
     // half a planner about to press the button does not need.
     expect(describeWorkerQueueRisk("undeclared", evidence)).toBe(
-      `${evidence} Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look.`
+      `${evidence} Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing, and nothing will notify you. The dashboard will show it as a failed run when you next look.`
     );
     expect(describeWorkerQueueRisk("undeclared", null)).toBe(
-      "Nobody has told OpenPlan whether a modeling worker runs on this installation, and it cannot check for itself. If none is running, this run will sit queued and then be marked failed rather than finishing, and nothing will notify you — the dashboard will show it as a failed run when you next look."
+      "Nobody has told OpenPlan whether a modeling worker runs on this installation, and it cannot check for itself. If none is running, this run will sit queued and then be marked failed rather than finishing, and nothing will notify you. The dashboard will show it as a failed run when you next look."
     );
   });
 });

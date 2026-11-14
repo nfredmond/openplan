@@ -124,7 +124,7 @@ export interface StateQualifiedQuery {
  * appeared to work for counties purely by accident — the county catalog ranks
  * against a label that already ends in ", OH", so the comma survived
  * normalization into an exact-string match. It did NOT work for anything served
- * by TIGERweb: `sanitizeLikeQuery` rewrites the comma to a space, so
+ * by TIGERweb: `sanitizeLikeQuery` then rewrote the comma to a space, so
  * "Columbus, OH" became `LIKE 'COLUMBUS OH%'` and matched nothing at all.
  *
  * Both the abbreviation and the spelled-out name are accepted, because a planner

@@ -106,7 +106,7 @@ export const CHAPTER_BLOCK_REFUSAL_SENTENCES: Record<ChapterBlockRefusalReason, 
   not_a_verbatim_copy:
     "The text and the quoted page do not match word for word, so this is not a copy of the plan's own words. Nothing was staged.",
   quote_not_in_page:
-    "These words are no longer on the page they cite in the document as it is now stored. Nothing was staged — read the document again to copy it as it currently reads.",
+    "These words are no longer on the page they cite in the document as it is now stored. Nothing was staged. Read the document again to copy it as it currently reads.",
 };
 
 /** A staged candidate row, as `rtp_extraction_candidates` holds it. */
@@ -261,7 +261,7 @@ export function renderTranscribedChapterBlock(
     .split("\n")
     .map((line) => `> ${line}`.trimEnd())
     .join("\n");
-  return `${quoted}\n>\n> — ${chapterBlockCitationLine(block, source)}`;
+  return `${quoted}\n>\n> (${chapterBlockCitationLine(block, source)})`;
 }
 
 /**

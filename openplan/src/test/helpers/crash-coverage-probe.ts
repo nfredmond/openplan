@@ -16,10 +16,7 @@
  * which cells mean what.
  */
 
-import {
-  CRASH_SOURCE_ADAPTERS,
-  type MultiCrashSourceResolution,
-} from "@/lib/safety/sources/registry";
+import { CRASH_SOURCE_ADAPTERS } from "@/lib/safety/sources/registry";
 import type { CrashSourceAdapter } from "@/lib/safety/sources/types";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 
@@ -60,11 +57,27 @@ export function findReadOnlyOnlyStudyArea(): { bbox: StudyAreaBbox; adapter: Cra
   return null;
 }
 
-/** A study area a STORABLE adapter covers, so the ingest path is exercised. */
-export function findStorableStudyArea(): { bbox: StudyAreaBbox; adapter: CrashSourceAdapter } | null {
+/**
+ * The state a study area must name for this adapter to answer: the first state
+ * a regional adapter reads, or null for a national adapter, which also answers
+ * when the state is unknown. Taken from the adapter's own declaration.
+ */
+function stateFipsFor(adapter: CrashSourceAdapter): string[] | null {
+  return adapter.coversStateFips?.length ? [adapter.coversStateFips[0]] : null;
+}
+
+/**
+ * A study area a STORABLE adapter covers, so the ingest path is exercised, with
+ * the state the adapter declares (sources are chosen by state, not by bbox).
+ */
+export function findStorableStudyArea(): {
+  bbox: StudyAreaBbox;
+  adapter: CrashSourceAdapter;
+  stateFips: string[] | null;
+} | null {
   for (const bbox of globalProbeGrid()) {
     const covering = coveringAdapters(bbox).filter((adapter) => adapter.persistable);
-    if (covering.length > 0) return { bbox, adapter: covering[0] };
+    if (covering.length > 0) return { bbox, adapter: covering[0], stateFips: stateFipsFor(covering[0]) };
   }
   return null;
 }
@@ -75,12 +88,4 @@ export function findUncoveredStudyArea(): StudyAreaBbox | null {
     if (coveringAdapters(bbox).length === 0) return bbox;
   }
   return null;
-}
-
-/** Narrow a multi-source resolution in a test without repeating the guard. */
-export function resolvedPrimary(resolution: MultiCrashSourceResolution): CrashSourceAdapter {
-  if (resolution.kind !== "resolved") {
-    throw new Error("expected the registry to resolve a covering crash source");
-  }
-  return resolution.primary;
 }

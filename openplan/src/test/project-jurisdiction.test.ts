@@ -34,6 +34,27 @@ describe("independent project jurisdiction", () => {
     expect(assessed.entries[0].assessmentScope).toContain("state-level");
     expect(jurisdictionDraft(value)).toEqual([{ mode: "resolved", kind: "county", geoid: "06045" }]);
   });
+  it("resolves a multi-state tribal area with no state and round-trips its reference", async () => {
+    const navajo = { ...boundary, kind: "aiannh" as const, geoid: "2430R", label: "Navajo Nation Reservation, AZ-NM-UT" };
+    const value = await resolveProjectJurisdiction({ version: 1, state: "declared", entries: [{ mode: "resolved", kind: "aiannh", geoid: "2430R" }] }, actor, vi.fn().mockResolvedValue(navajo));
+    expect(value.entries).toEqual([{ label: "Navajo Nation Reservation, AZ-NM-UT", countryCode: "US", subdivisionCode: null, kind: "tigerweb:aiannh", reference: "tigerweb:aiannh:2430R", scope: "administrative", identity: "server_resolved" }]);
+    expect(readProjectJurisdiction({ jurisdiction_context: value })).toEqual(value);
+    expect(jurisdictionDraft(value)).toEqual([{ mode: "resolved", kind: "aiannh", geoid: "2430R" }]);
+    const assessed = buildProjectJurisdictionReadinessPayload({ jurisdiction_context: value }, hash);
+    expect(assessed.entries[0].assessment.jurisdiction.id).toBeNull();
+    expect(assessed.entries[0].assessment.reports.every(report => report.status === "unassessed")).toBe(true);
+  });
+  it("checks a resolved entry's GEOID against its own kind", () => {
+    for (const [kind, geoid] of [["aiannh", "24300"], ["cousub", "3912581"], ["county", "2430R"], ["city", "2501735215"]]) {
+      expect(projectJurisdictionInputSchema.safeParse({ version: 1, state: "declared", entries: [{ mode: "resolved", kind, geoid }] }).success, `${kind} ${geoid}`).toBe(false);
+    }
+    expect(projectJurisdictionInputSchema.safeParse({ version: 1, state: "declared", entries: [{ mode: "resolved", kind: "cousub", geoid: "2501735215" }] }).success).toBe(true);
+    const stored = (kind: string, reference: string) => ({ jurisdiction_context: { version: 1, state: "declared", recordedBy: actor, recordedAt: revision,
+      entries: [{ label: "Stored", countryCode: "US", subdivisionCode: null, kind, reference, scope: "administrative", identity: "server_resolved" }] } });
+    expect(() => readProjectJurisdiction(stored("tigerweb:county", "tigerweb:county:2430R"))).toThrow("invalid");
+    expect(() => readProjectJurisdiction(stored("tigerweb:aiannh", "tigerweb:aiannh:2430"))).toThrow("invalid");
+    expect(readProjectJurisdiction(stored("tigerweb:cousub", "tigerweb:cousub:2501735215"))?.entries).toHaveLength(1);
+  });
   it("refuses failed or mismatched resolver identities", async () => {
     for (const result of [null, { ...boundary, label: null }, { ...boundary, geoid: "41017" }, { ...boundary, kind: "city" }]) {
       await expect(resolveProjectJurisdiction({ version: 1, state: "declared", entries: [{ mode: "resolved", kind: "county", geoid: "06045" }] }, actor, vi.fn().mockResolvedValue(result))).rejects.toThrow("could not be resolved");

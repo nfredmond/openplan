@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const { buildBrowserContextOptions, getOpenplanBaseUrl, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
@@ -60,8 +61,7 @@ async function main() {
   const createUserResult = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...serviceKeyHeaders(serviceRoleKey),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -149,8 +149,7 @@ async function main() {
     const createProjectResult = await jsonFetch(`${supabaseUrl}/rest/v1/projects?select=id,name`, {
       method: 'POST',
       headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
+        ...serviceKeyHeaders(serviceRoleKey),
         'Content-Type': 'application/json',
         Prefer: 'return=representation',
       },
@@ -178,8 +177,7 @@ async function main() {
     const createAnchorProjectResult = await jsonFetch(`${supabaseUrl}/rest/v1/projects?select=id,name`, {
       method: 'POST',
       headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
+        ...serviceKeyHeaders(serviceRoleKey),
         'Content-Type': 'application/json',
         Prefer: 'return=representation',
       },

@@ -497,7 +497,11 @@ describe("the KSI headline is the study-area total", () => {
     // The drawn slice carries exactly one fatal crash and no serious injuries.
     expect(headline).not.toHaveTextContent(/\b1 fatal or serious-injury crash/);
     expect(headline).toHaveTextContent(/crash records.*not people killed or injured/i);
-    expect(headline.textContent).toMatch(/whole area you picked/i);
+    // The scope is in the figure's own label (KI-2026-08-31-014): the stored
+    // acquisition's area basis and the filters, not a sentence beside it.
+    expect(screen.getByTestId("safety-ksi-headline-label")).toHaveTextContent(
+      `${TRUE_KSI.toLocaleString("en-US")} fatal or serious-injury crashes (bounding rectangle, not the place boundary · all your filters)`
+    );
   });
 
   it("keeps the map's own count beside it, so both numbers are on screen", async () => {

@@ -142,7 +142,7 @@ export const ocrCallbackSchema = z
         code: "custom",
         path: ["pages"],
         message:
-          "pages and pageCount are required when status is 'succeeded' — a success with no pages is a failure that did not say so",
+          "pages and pageCount are required when status is 'succeeded': a success with no pages is a failure that did not say so",
       });
       return;
     }
@@ -162,7 +162,7 @@ export const ocrCallbackSchema = z
         ctx.addIssue({
           code: "custom",
           path: ["pages", index, "page"],
-          message: `page ${value.pages[index].page} arrived where page ${index + 1} was expected — a gap or a duplicate renumbers every page after it, and nothing downstream could detect that`,
+          message: `page ${value.pages[index].page} arrived where page ${index + 1} was expected: a gap or a duplicate renumbers every page after it, and nothing downstream could detect that`,
         });
         return;
       }

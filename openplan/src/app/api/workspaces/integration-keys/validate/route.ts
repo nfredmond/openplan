@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
         ok: false,
         source: "workspace",
         detail:
-          "A stored workspace key exists but can no longer be decrypted — the deployment's OPENPLAN_INTEGRATION_KEY_SECRET has changed since it was saved. Re-enter the key; until then, requests fall back to the deployment environment key.",
+          "A stored workspace key exists but can no longer be decrypted: the deployment's OPENPLAN_INTEGRATION_KEY_SECRET has changed since it was saved. Re-enter the key; until then, requests fall back to the deployment environment key.",
       });
     }
   }
@@ -153,6 +153,6 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     ok: false,
     source: "none",
-    detail: `No ${descriptor.label} key is configured — this workspace has no stored key and the deployment does not set ${descriptor.envVar}.`,
+    detail: `No ${descriptor.label} key is configured: this workspace has no stored key and the deployment does not set ${descriptor.envVar}.`,
   });
 }

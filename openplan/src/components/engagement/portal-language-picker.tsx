@@ -4,6 +4,7 @@ import { TRANSLATION_LANGUAGE_NATIVE_LABELS } from "@/lib/engagement/translation
 import {
   PORTAL_LOCALES,
   PORTAL_LOCALE_DIRECTION,
+  portalLocaleBcp47,
   portalLocaleHref,
   type ResolvedPortalLocale,
 } from "@/lib/engagement/portal-i18n/locales";
@@ -74,7 +75,7 @@ export function PortalLanguagePicker({
         <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-md font-semibold text-foreground [&::-webkit-details-marker]:hidden">
           <Languages className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           <span className="text-muted-foreground">{translator.t("language.pickerLabel")}</span>
-          <span lang={locale.locale} dir={PORTAL_LOCALE_DIRECTION[locale.locale]}>
+          <span lang={locale.bcp47} dir={PORTAL_LOCALE_DIRECTION[locale.locale]}>
             {currentName}
           </span>
           {/*
@@ -85,7 +86,7 @@ export function PortalLanguagePicker({
           {messages.machineTranslated ? (
             <span
               className="rounded-full border border-border/70 px-2 py-0.5 text-xs font-medium text-muted-foreground"
-              lang={locale.locale}
+              lang={locale.bcp47}
               title={translator.t("language.machineNotice")}
               data-testid="portal-language-machine-label"
             >
@@ -112,9 +113,9 @@ export function PortalLanguagePicker({
                   // reader told the page is English will otherwise pronounce
                   // «한국어» as English, which is the one word in the list that
                   // has to be recognisable.
-                  lang={candidate}
+                  lang={portalLocaleBcp47(candidate)}
                   dir={PORTAL_LOCALE_DIRECTION[candidate]}
-                  hrefLang={candidate}
+                  hrefLang={portalLocaleBcp47(candidate)}
                   aria-current={current ? "true" : undefined}
                   // The accessible name says what the link DOES, in the language
                   // the reader is currently being served.

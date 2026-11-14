@@ -84,7 +84,7 @@ describe("stage-gate template registry", () => {
     expect(federal?.descriptor.jurisdictionCode).toBe("US");
     expect(federal?.descriptor.jurisdiction).toEqual({
       country: "US",
-      label: "United States — federal-aid floor",
+      label: "United States: federal-aid floor",
     });
     expect(federal?.document.gate_order).toHaveLength(8);
     // A nationwide template must not declare the status of a California form

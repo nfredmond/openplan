@@ -41,6 +41,7 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { posixRelative } from "./helpers/posix-path";
 import { stripSourceComments } from "./helpers/source-text";
 
 /** Small text needs 4.5:1. Every string in a popup is small text. */
@@ -236,7 +237,7 @@ function sourceFiles(dir: string): string[] {
 describe("every map popup opts into the themed family", () => {
   const root = process.cwd();
   const builders = sourceFiles(path.join(root, "src/components"))
-    .map((file) => ({ file: path.relative(root, file), text: readFileSync(file, "utf8") }))
+    .map((file) => ({ file: posixRelative(root, file), text: readFileSync(file, "utf8") }))
     // The comments are stripped for the SAME reason five guards in this repo
     // learned the hard way: a file that only mentions `mapboxgl.Popup` in a
     // paragraph about popups is not a popup builder, and a file that names

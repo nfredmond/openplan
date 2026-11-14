@@ -589,7 +589,7 @@ export function parseMeasureAllocationRule(input: unknown): MeasureAllocationRul
     }
     if ((item.capAmount === undefined) !== (item.capBasis === undefined)) {
       throw new Error(
-        `Measure allocation rule off-the-top "${item.id}" must declare capAmount and capBasis together — ` +
+        `Measure allocation rule off-the-top "${item.id}" must declare capAmount and capBasis together: ` +
           "a cap with no window is a cap nobody can evaluate"
       );
     }
@@ -616,7 +616,7 @@ export function parseMeasureAllocationRule(input: unknown): MeasureAllocationRul
     const hasFactors = distribution.factors !== undefined;
     if (hasBasisId === hasFactors) {
       throw new Error(
-        `Measure allocation rule category "${category.id}" must declare exactly one of basisId or factors — ` +
+        `Measure allocation rule category "${category.id}" must declare exactly one of basisId or factors: ` +
           "a single apportionment figure, or a weighted list of them"
       );
     }
@@ -669,7 +669,7 @@ export function parseMeasureAllocationRule(input: unknown): MeasureAllocationRul
   );
   if (total !== BIG_HUNDRED * BIG_TEN ** BigInt(PERCENT_SCALE)) {
     throw new Error(
-      `Measure allocation rule category percentages must sum to exactly 100 — they sum to ` +
+      `Measure allocation rule category percentages must sum to exactly 100. They sum to ` +
         `${Number(total) / 10 ** PERCENT_SCALE}`
     );
   }
@@ -1019,7 +1019,7 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
       message:
         "Name which edition of the apportionment figures governs this period before allocating it. " +
         `${vintageDependent.length} ${vintageDependent.length === 1 ? "category" : "categories"} in this ` +
-        `ordinance ${vintageDependent.length === 1 ? "is" : "are"} returned to source — ${named} — and no ` +
+        `ordinance ${vintageDependent.length === 1 ? "is" : "are"} returned to source (${named}), and no ` +
         "recorded figure matches a blank edition, so those categories would be held undistributed and the " +
         "recipients would be allocated nothing. Which edition governs a period is the ordinance's call and " +
         "is recorded per period, so this product will not choose one.",
@@ -1350,7 +1350,7 @@ export function allocateMeasureReceipt(input: MeasureAllocationInput): MeasureAl
                     `least ${centsToAmount(floorCents ?? BIG_ZERO).toFixed(2)} for a period, which comes to ` +
                     `${centsToAmount(floorsRequired).toFixed(2)} for ${activeRecipients.length} active ` +
                     `recipients, and only ${centsToAmount(programmableCents).toFixed(2)} is available to ` +
-                    `divide — short by ${centsToAmount(floorsRequired - programmableCents).toFixed(2)}. ` +
+                    `divide, short by ${centsToAmount(floorsRequired - programmableCents).toFixed(2)}. ` +
                     "Which recipients go without is a decision for the board, not an arithmetic rule, so " +
                     "the money is held and the shares for this period are entered by hand with a rationale.",
         });

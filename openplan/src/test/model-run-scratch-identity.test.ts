@@ -9,7 +9,8 @@ import { loadArtifactBytes, resolveRunWorkDir } from "@/lib/models/artifact-sour
 const runs = ["12345678-1234-4123-8123-123456789abc", "12345678-1234-4567-8567-987654321abc"];
 afterEach(() => vi.unstubAllEnvs());
 
-it("reads only the authorized full run directory with actual filesystem bytes", async () => {
+// Linux only: readPinnedLocalFile pins each directory through /proc/self/fd and refuses other hosts by design.
+it.skipIf(process.platform !== "linux")("reads only the authorized full run directory with actual filesystem bytes", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "openplan-run-identity-"));
   vi.stubEnv("OPENPLAN_WORKER_LOCAL_ROOT", root);
   try {

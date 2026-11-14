@@ -80,7 +80,11 @@ const WRITER_GATE_MIGRATIONS = [
 // if a future migration reintroduces direct access; prove that access is absent.
 const RETAINED_RPC_ONLY_GATES = ["engagement_closeloop_entries"];
 const EXPECTED_GATED_TABLES = 82;
-const EXPECTED_RESTRICTIVE_POLICIES = 251;
+// 251 -> 257 (20261102120000): client_invoices and client_invoice_line_items
+// gain restrictive INSERT, UPDATE and DELETE policies that require owner or
+// admin, the invoice route's rule. Both tables were already gated, so the
+// gated-table counts do not move.
+const EXPECTED_RESTRICTIVE_POLICIES = 257;
 // 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
 // Its INSERT policy is role-AWARE (it calls `workspace_member_can_write`), which
 // is why the gated-table and restrictive-policy counts above did NOT move: a

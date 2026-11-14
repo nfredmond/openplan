@@ -30,12 +30,11 @@ public address does not change the CLI stack's status.
 The free reference path uses an existing Linux computer and
 [Docker Engine](https://docs.docker.com/engine/). Docker Desktop has separate
 terms: [government entities require a paid subscription](https://docs.docker.com/subscription-billing/desktop-license/).
-No paid provider is provisioned by these instructions. The public engagement
-map, the Safety crash map, Corridor Analysis, the engagement drawing and
-response maps, and the published land use designation map can use a configured
-MapLibre style without a Mapbox key. Other map surfaces still use Mapbox. See
-the map configuration below. This does not establish a complete no-egress
-installation.
+No paid provider is provisioned by these instructions. Every OpenPlan map can
+use a configured MapLibre style without a Mapbox key; a few Mapbox-only
+features (place search, the background picker and satellite imagery) are off
+without one. See the map configuration below. This does not establish a
+complete no-egress installation.
 
 OpenPlan's target remains core planning work throughout all 50 states and DC,
 with California the deepest implementation and separately validated AequilibraE
@@ -61,7 +60,7 @@ configuration.
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Point all components at the intended database. Confirm a saved project survives sign-out/sign-in and that a second workspace cannot read it. Local credentials belong only to the selected local instance. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical origin. Match Supabase Auth Site URL and allowed callback/reset redirects. The checked-in local Auth configuration uses `http://127.0.0.1:3000`; use one consistent origin and test actual links. |
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. A secret `sk.` token is refused. The maps listed under "Maps without a Mapbox key" below can instead use a MapLibre style. Check the visible map and browser console, not token shape alone. |
-| `CENSUS_API_KEY` | Demographic/source requests and travel-model inputs. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
+| `CENSUS_API_KEY` | ACS requests: census tract loading for the equity map (a tract is stored only with its ACS demographics), ACS corridor demographics, model zone attributes and the equity overlay on model runs. Place search, including counties, county equivalents and their boundaries, reads keyless TIGERweb and works without it. A workspace can add its own key under Integration keys. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET` | Primary high-entropy secret for stored workspace keys and sealed worker credentials. Generate securely, preserve with recovery configuration, and restrict access. New ciphertext uses this secret. Follow [integration secret rotation](#rotate-the-integration-encryption-secret) before changing it. |
 | `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` | Optional second secret for reading retained ciphertext during rotation. It does not enable storage without a usable primary. Reads preserve the stored bytes. Web and every worker that decrypts credentials need the same two secrets during a rolling transition. |
 | `ANTHROPIC_API_KEY` | Optional cloud AI requests. Inspect the material being sent and the provider cost before enabling. Model overrides are listed in the environment template. |
@@ -70,7 +69,9 @@ configuration.
 | `CHROME_EXECUTABLE_PATH` | Local Chrome/Chromium used for report PDF typesetting. If unavailable, the app uses its disclosed built-in writer tier; inspect the exported document. |
 | `CRON_SECRET` | Shared secret for the authenticated maintenance requests listed below. Configure the scheduler's protected environment as well as the app. |
 | `OPENPLAN_MAX_OWNED_WORKSPACES` | How many workspaces one person may own. Unset means 5, which includes the workspace created at signup. Each workspace has its own AI and run allowance, so this keeps one account from multiplying them on a deployment with public signup. Use a positive whole number; any other value falls back to 5. Requires migration `20261017000010`. This is an operator limit, not a paid tier. |
-| `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES` | Total bytes one workspace may keep in Storage. Unset means 5 GiB (5368709120). Uploads, generated report files, grant application exports, engagement review files, project evidence bundles and work program exports that would pass it are refused before any upload URL is issued or any byte is stored; if current use cannot be read, the file is refused. The total counts every object whose path begins with the workspace id. Public engagement photos have their own allowance and are not counted. Use a positive whole number; any other value falls back to 5 GiB. Requires migration `20261017000010`; migration `20261017000013` stops members from uploading report and grant export files around it. This is an operator limit, not a paid tier. |
+| `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES` | Total bytes one workspace may keep in Storage. Unset means 5 GiB (5368709120). Uploads, transit feeds fetched from an address (checked at their downloaded size), aerial previews copied into reports, generated report files, grant application exports, engagement review files, project evidence bundles and work program exports that would pass it are refused before any upload URL is issued or any byte is stored; if current use cannot be read, the file is refused. The total counts every object whose path begins with the workspace id. Public engagement photos have their own allowance and are not counted. Use a positive whole number; any other value falls back to 5 GiB. Requires migration `20261017000010`; migration `20261017000013` stops members from uploading report and grant export files around it. This is an operator limit, not a paid tier. |
+| `OPENPLAN_MONTHLY_RUN_CAP` | Runs one workspace may start per UTC calendar month. Corridor analyses, report generations, scenario comparisons and network ingests are checked against the analysis runs recorded this month; model-run launches are checked against the model runs recorded this month and need room for 5. Unset, or any value that is not a positive whole number, means unlimited, so a deployment with public signup must set it to bound compute. If the count cannot be read, the run is refused. This is an operator limit, not a paid tier. |
+| `OPENPLAN_MODELING_QUEUE_DEPTH` | Model runs one workspace may have queued or running on the processing worker at once. Unset, or any value that is not a positive whole number, means unlimited, so a deployment with public signup must set it to keep one workspace from filling the worker queue. This is an operator limit, not a paid tier. |
 | `OPENPLAN_HEALTH_TOKEN` | Turns on `GET /api/health/deep`, which answers only `Authorization: Bearer <token>`. Unset means the route answers 404. It reads the database once and Storage once, gives each modeling worker's heartbeat age, and lists every migration version the build expects. Use a long random value and give the same value to your monitor. |
 | `OPENPLAN_SENTRY_DSN` | Optional. A Sentry project DSN (Sentry's free Developer plan works). Unset means error reports stay in this deployment's server log. When set, each browser error an error page catches, and each server request error, is scrubbed and sent to that project from the server. Browsers never contact Sentry, so the content-security policy does not change. |
 
@@ -101,6 +102,42 @@ before admitting traffic. A linked managed project uses
 `npm exec -- supabase migration up --linked` after linking that project; this
 is not the command for an independently self-hosted Supabase deployment.
 The latter's migration/role/extension setup still needs a tested OpenPlan recipe.
+
+### Limits on public signup and public input
+
+OpenPlan limits public input per connection: comments, supports, photos,
+survey responses and saved drafts, and update sign-ups. A connection is the
+leftmost address in the first of `x-forwarded-for`, `x-real-ip` and
+`cf-connecting-ip`. An IPv4 address counts as itself. An IPv6 address counts by
+its /64 network, because one household or phone normally holds a whole /64 and
+picks new addresses inside it. Vercel overwrites `x-forwarded-for` with the
+address it received the request from
+([request headers](https://vercel.com/docs/headers/request-headers), read
+November 2, 2026). Anywhere else, put a proxy in front of the app that replaces
+these headers with the real client address; otherwise each limit takes the
+client's word for who it is.
+
+Signup, confirmation and password-reset email never pass through OpenPlan. The
+sign-up and sign-in pages call Supabase Auth from the browser, so OpenPlan
+cannot cap that email. Supabase Auth limits it instead
+([Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits), read
+November 2, 2026):
+
+- **Emails sent by Supabase Auth.** Counted per project, per hour, across every
+  Auth endpoint that sends email. The built-in email provider allows 2 per hour.
+  With custom SMTP, as on the hosted installation, the operator sets the number
+  in the Supabase dashboard under **Authentication > Rate Limits**, or through
+  the Management API field `rate_limit_email_sent`.
+- **Sign-ups and sign-ins.** Counted per IP address; the default is 30 requests
+  per 5 minutes. Supabase does not say whether it groups IPv6 addresses.
+
+The email limit is hourly, so the most Auth can send in a day is 24 times it.
+Choose a number whose daily total fits the email provider's daily quota after
+the mail OpenPlan sends itself (such as teammate invitations and update sign-up
+confirmations, at most 30 per campaign per day). When the limit is reached,
+Auth sends nothing more that hour, including password resets for existing
+accounts. An independently hosted Supabase Auth has its own setting for this
+limit; this guide has not verified its name.
 
 ## Rotate the integration encryption secret
 
@@ -345,6 +382,7 @@ The schedules in [vercel.json](../vercel.json) are:
 | `/api/cron/reap-gtfs-ingests` | Every 15 minutes |
 | `/api/cron/sweep-deadlines` | Daily at 13:00 UTC |
 | `/api/cron/sweep-engagement-photos` | Daily at 10:30 UTC |
+| `/api/cron/sweep-staged-uploads` | Daily at 11:47 UTC |
 
 On a self-hosted installation, arrange a scheduler that sends
 `Authorization: Bearer <CRON_SECRET>` using a protected environment and records
@@ -428,7 +466,27 @@ With no Mapbox key, these maps are drawn by MapLibre from a style you choose:
 - the drawing map used by comment forms, surveys and study-area pickers, and
   the map of engagement responses;
 - the published land use designation map on published plans, plan reviews and
-  land use reports.
+  land use reports;
+- the RTP cycle project map on staff cycle pages and `/plan/<shareToken>`
+  (source candidate; runtime and browser validation pending);
+- the saved project map on project pages;
+- the shell map on the Aerial index, the aerial mission map, the mission area
+  editor and the flight plan editor;
+- the traffic volume and model agreement maps on model runs;
+- the participation heat map in campaign analysis;
+- the extent preview in GIS layer import, drawn on a small fixed map because
+  MapLibre has no static image service.
+
+October 19 source checks pass 44 focused RTP tests and strict scoped lint.
+The tests use map doubles. Browser behavior, emitted worker/CSS assets, WebGL
+and provider operation remain unverified.
+
+The maps added on November 2 (Aerial, flight plan, traffic volume, model
+agreement, participation heat map and GIS import preview) pass focused tests
+with map doubles. In a development build with no Mapbox key and the OpenFreeMap
+Liberty style, the heat map and the GIS import preview drew with their credits
+at 1440px and 390px. The other maps in that group have not been opened in a
+browser.
 
 Set `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` and rebuild, since `NEXT_PUBLIC_*`
 values are fixed at build time. A Mapbox key, when set, takes precedence. Each
@@ -436,15 +494,22 @@ map credits the sources its style declares, so keep the style's attribution.
 If a browser cannot start MapLibre (it needs WebGL2), the map shows a notice in
 its place and the rest of the page still works.
 
+The RTP map preserves its refusal of an unusable configured Mapbox token when
+neither token variable supplies a public `pk.` token, even if an open style is
+configured. Remove the unusable token and rebuild to choose the open style.
+A public token that fails at runtime does not trigger a provider switch.
+
 What still needs a Mapbox key:
 
 - Place search on the public engagement map, which uses Mapbox's geocoder.
 - The background picker (streets, satellite, terrain), on the public map and on
   Safety. Its backgrounds are Mapbox styles. Without a key there is no picker
   and the map uses your one style.
-- The shell map on the Aerial index, the Aerial mission maps and flight plan
-  editor, the traffic volume and model agreement maps, the participation heat
-  map, the RTP cycle project map, and the static preview in GIS layer import.
+- Satellite imagery under the aerial mission map. Without a key the imagery
+  sits on your style, and the map says it has no satellite background.
+- Separate light and dark backgrounds on the Aerial index shell map. Your style
+  is used in both modes.
+- Transit cluster counts on the shell map, when your style serves no fonts.
 
 On Corridor Analysis your style is used in both light and dark mode; with a key
 the map follows the page's mode. Labels for uploaded workspace layers and land

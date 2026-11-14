@@ -113,7 +113,7 @@ export function TripGenScreenBody({ kpis }: { kpis: TripGenKpiRow[] }) {
       >
         <p>
           This run recorded no trip-generation results, so there is nothing to show here. The
-          worksheet reports only what the model actually produced — where a figure was never
+          worksheet reports only what the model actually produced. Where a figure was never
           calculated, OpenPlan leaves it blank rather than estimating one.
         </p>
       </div>
@@ -190,7 +190,7 @@ export function TripGenScreenBody({ kpis }: { kpis: TripGenKpiRow[] }) {
         {avgTripLengthMiles !== null
           ? ` average vehicle trip length ${formatNumber(avgTripLengthMiles)} miles for the rate-based VMT screen;`
           : " average trip length not recorded;"}{" "}
-        comparison basis —{" "}
+        comparison basis:{" "}
         {comparisonBasis !== null
           ? (COMPARISON_BASIS_LABELS[comparisonBasis] ?? comparisonBasis)
           : "not recorded"}
@@ -256,7 +256,7 @@ export function ModelRunTripGenScreen({ modelId, modelRunId, runTitle }: ModelRu
           <div className="module-section-heading">
             <h2 className="module-section-title">Trip generation screening worksheet</h2>
             <p className="module-section-description">
-              Reads the trip-generation KPIs stored for run &quot;{runTitle}&quot; — daily and
+              Reads the trip-generation KPIs stored for run &quot;{runTitle}&quot;: daily and
               peak-hour vehicle trip ends from published public-agency average rates, plus a
               rate-based VMT screen (net trips × assumed average trip length). Arithmetic over
               stored rows only; nothing is estimated when the KPI set is empty, and no impact
@@ -265,7 +265,7 @@ export function ModelRunTripGenScreen({ modelId, modelRunId, runTitle }: ModelRu
           </div>
         </div>
         <StatusBadge tone="warning" data-testid="trip-gen-screening-badge">
-          Screening worksheet — not a study or determination
+          Screening worksheet: not a study or determination
         </StatusBadge>
       </div>
 

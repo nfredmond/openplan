@@ -102,12 +102,14 @@ export function toneForSubstantiationReadiness(
 }
 
 export function substantiationReadinessLabel(readiness: FundingAwardSubstantiationReadiness): string {
+  if (readiness === "unavailable") return "Fulfillment unavailable";
   if (readiness === "substantiated") return "Substantiated";
   if (readiness === "partial") return "Partially substantiated";
   return "No substantiation on record";
 }
 
 export function describeAwardSubstantiation(summary: FundingAwardSubstantiationSummary): string {
+  if (summary.readiness === "unavailable") return "The complete managed occurrence/fulfillment set could not be read. This does not establish that no work was fulfilled.";
   const obligationPart = summary.obligationMilestoneStatus
     ? `Obligation milestone ${titleCase(summary.obligationMilestoneStatus).toLowerCase()}`
     : "No obligation milestone yet";
@@ -176,13 +178,13 @@ export function billingRowNoticeClass(tone: "info" | "warning" | "danger") {
   return `border-l-2 px-4 py-3 text-sm ${toneMap[tone]}`;
 }
 
-export type FundingAwardListRow = {
+export type FundingAwardListRow = import("@/lib/grants/award-handoff").ComparableAward & {
   id: string;
   project_id: string | null;
   title: string;
 };
 
-export type InvoiceRegisterRow = {
+export type InvoiceRegisterRow = import("@/lib/grants/award-handoff").ManagedInvoice & {
   id: string;
   project_id: string | null;
   funding_award_id: string | null;

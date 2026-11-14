@@ -223,15 +223,15 @@ sentence with both numbers instead of a stalled job.
 7. Anything that fails, fails with a sentence naming the stage and the cause in
    the job's own record — never a silent stall.
 
-**What a restart forgets.** The worker keeps its queue in memory, not on disk.
-If it restarts while a job is queued or running, that job is gone from the
-worker's point of view and no callback will ever arrive for it. In OpenPlan the
-job simply stays `running` — nothing is corrupted, and nothing is lost either:
-the document is untouched and the source file is still in OpenPlan's own
-storage. There is no automatic sweep for this yet, so if you restart the worker
-deliberately, expect any in-flight document to need the button pressed again
-once the old job is cleared. Finished work is never affected: the recognised
-text is already in OpenPlan by then.
+**What a restart keeps.** The worker records each accepted job in a SQLite
+journal (`jobs.sqlite3` in `OCR_WORKER_WORK_DIR`, written by `durable.py`)
+before it acknowledges the request. On startup it reloads every job still
+accepted, running or undelivered and queues it again, so a restart resumes
+in-flight work and retries undelivered results. This holds only when
+`OCR_WORKER_WORK_DIR` is persistent storage; if the directory does not survive
+the restart, the journal goes with it. See [Durable document intake and
+recovery](#durable-document-intake-and-recovery) below. Finished work is never
+affected: the recognised text is already in OpenPlan by then.
 
 **What is never kept.** The downloaded PDF and the recognised copy are deleted
 when the job ends, whether it succeeded or failed. The worker holds nothing.

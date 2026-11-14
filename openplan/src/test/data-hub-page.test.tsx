@@ -225,7 +225,7 @@ describe("DataHubPage — the transit feed card", () => {
     // The claim that became a lie, pinned so it cannot come back.
     expect(screen.queryByText(/does not have a feed upload path yet/i)).toBeNull();
     expect(screen.queryByText(/Schema only — no ingest path yet/i)).toBeNull();
-    expect(screen.getByText(/No feed ingested yet — add one below/i)).toBeInTheDocument();
+    expect(screen.getByText(/No feed ingested yet. Add one below/i)).toBeInTheDocument();
   });
 
   /**

@@ -535,7 +535,7 @@ describe("amending an ordinance that is already in force", () => {
 
     const warning = screen.getByRole("group", { name: "Categories this amendment retires" });
     expect(
-      within(warning).getByText(/"local_streets_and_roads" — 12 recorded allocations and 3 claims are filed against it/)
+      within(warning).getByText(/"local_streets_and_roads": 12 recorded allocations and 3 claims are filed against it/)
     ).toBeInTheDocument();
     // The category still in the rule is not reported as retired.
     expect(within(warning).queryByText(/"bus_operations"/)).toBeNull();

@@ -1,3 +1,4 @@
+import { countyRunCustodyError } from "@/lib/models/county-run-custody";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -53,6 +54,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (!countyRun) {
       return NextResponse.json({ error: "County run not found" }, { status: 404 });
     }
+    const custodyError = countyRunCustodyError(countyRun);
+    if (custodyError) return NextResponse.json({ error: custodyError }, { status: 409 });
 
     const { data: artifacts, error: artifactError } = await supabase
       .from("county_run_artifacts")
@@ -81,6 +84,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         code: evidenceResult.error.code ?? null,
         missingSchema: evidenceResult.error.missingSchema ?? false,
       });
+      return NextResponse.json({ error: "Modeling evidence could not be read. Retry before using this run." }, { status: 503 });
     }
 
     const response = presentCountyRunDetail({

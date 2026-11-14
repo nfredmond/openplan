@@ -90,6 +90,6 @@ describe("work program packet layout", () => {
     const rows = workProgramPacketRows(snapshot, { ...revision, content_json: after });
     expect(rows.every(([label]) => label.length <= 132)).toBe(true);
     expect(rows.filter(([label]) => label.startsWith("Review detail")).map(([, value]) => value).join(""))
-      .toBe(`Changed: Financial preparation / Funding source — ${name} / Amount\nBefore: 100\nAfter: 900`);
+      .toBe(`Changed: Financial preparation / Funding source: ${name} / Amount\nBefore: 100\nAfter: 900`);
   });
 });

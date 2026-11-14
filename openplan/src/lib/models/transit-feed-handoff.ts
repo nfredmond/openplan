@@ -273,7 +273,7 @@ export function transitFeedNotSelectedStamp(): TransitFeedStamp {
     status: "not_selected",
     reason:
       "No transit feed from this workspace was named for this run, so the modeling worker chose one " +
-      "the way it always has — a feed the deployment's operator configured, or one discovered in the " +
+      "the way it always has: a feed the deployment's operator configured, or one discovered in the " +
       "published-feed catalog for this study area, or the feed bundled with the worker.",
   };
 }
@@ -445,7 +445,7 @@ export async function prepareTransitFeedHandoff(
         reason:
           "The transit feed named for this run is not one of this workspace's feeds. It may have been " +
           "deleted, or it may be a feed shared across the deployment rather than one this workspace " +
-          "ingested — the modeling worker can only read a workspace's own feeds.",
+          "ingested. The modeling worker can only read a workspace's own feeds.",
       };
     }
 
@@ -516,8 +516,8 @@ export async function prepareTransitFeedHandoff(
         status: "unavailable",
         reason:
           "The archive behind this feed's current ingest was not kept, so the modeling worker cannot be " +
-          "given the exact bytes OpenPlan read. Bring the feed in again from the Data Hub — a fresh " +
-          "ingest stores them — then relaunch this run.",
+          "given the exact bytes OpenPlan read. Bring the feed in again from the Data Hub (a fresh " +
+          "ingest stores them), then relaunch this run.",
       };
     }
 

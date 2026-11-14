@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
 const outputDate = new Date().toISOString().slice(0, 10);
@@ -71,10 +72,7 @@ async function jsonFetch(url, options = {}) {
 async function restSelect(table, select, extra = '') {
   const url = `${supabaseUrl}/rest/v1/${table}?select=${select}${extra}`;
   return await jsonFetch(url, {
-    headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
-    },
+    headers: serviceKeyHeaders(serviceRoleKey),
   });
 }
 
@@ -83,8 +81,7 @@ async function restDelete(table, filters) {
   return await jsonFetch(url, {
     method: 'DELETE',
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...serviceKeyHeaders(serviceRoleKey),
       Prefer: 'return=representation',
     },
   });
@@ -96,10 +93,7 @@ async function listAdminUsers() {
   const users = [];
   while (true) {
     const result = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users?page=${page}&per_page=${pageSize}`, {
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-      },
+      headers: serviceKeyHeaders(serviceRoleKey),
     });
 
     if (!result.ok) {
@@ -117,10 +111,7 @@ async function listAdminUsers() {
 async function deleteAuthUser(userId) {
   return await jsonFetch(`${supabaseUrl}/auth/v1/admin/users/${userId}`, {
     method: 'DELETE',
-    headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
-    },
+    headers: serviceKeyHeaders(serviceRoleKey),
   });
 }
 

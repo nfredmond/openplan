@@ -42,7 +42,7 @@ export const DEFAULT_CO2E_LBS_PER_VEHICLE_MILE = 0.78;
 export const LBS_PER_METRIC_TON = 2204.62262;
 
 export const TDM_SCREENING_CAVEAT =
-  "Screening-level TDM estimate for early scoping — strategy effectiveness varies with context, baseline mode share, and program design. Confirm measure-level values against the CAPCOA Handbook (2021) or project-specific studies before CEQA or grant use.";
+  "Screening-level TDM estimate for early scoping. Strategy effectiveness varies with context, baseline mode share, and program design. Confirm measure-level values against the CAPCOA Handbook (2021) or project-specific studies before CEQA or grant use.";
 
 /** One selected strategy; UI selection state lives here, never in the catalog. */
 export interface TdmSelection {
@@ -146,7 +146,7 @@ export function applyTdmToAnnualVmt(
   const base = toFiniteNumber(baseAnnualVmt);
   if (base === null || base <= 0) {
     throw new InsufficientDataError(
-      "baseAnnualVmt must be a finite value greater than 0; supply a modeled annual VMT baseline — this library never estimates one."
+      "baseAnnualVmt must be a finite value greater than 0; supply a modeled annual VMT baseline. This library never estimates one."
     );
   }
   const annualVmtReduced = base * (combination.combinedVmtReductionPct / 100);
@@ -189,7 +189,7 @@ export function summarizeTdmCombination(result: TdmCombinationResult): string {
     `(additive sum ${result.additiveSumPct.toFixed(1)}%)`;
   if (result.exceedsReviewThreshold) {
     return (
-      `${head} — exceeds the ${TDM_COMBINED_REVIEW_THRESHOLD_PCT}% combined-program review ` +
+      `${head}, exceeds the ${TDM_COMBINED_REVIEW_THRESHOLD_PCT}% combined-program review ` +
       `threshold; planner review required before relying on this estimate.`
     );
   }

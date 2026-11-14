@@ -94,7 +94,7 @@ describe("describeGrantProgramCoverage", () => {
 
     expect(california?.scope).toBe("other_jurisdiction");
     expect(california?.coversWorkspace).toBe(false);
-    expect(california?.scopeLabel).toBe("California — not this workspace's jurisdiction");
+    expect(california?.scopeLabel).toBe("California (not this workspace's jurisdiction)");
     // Federal programs really are national; the disclosure must not smear them.
     expect(federal?.scope).toBe("nationwide_match");
 
@@ -186,7 +186,7 @@ describe("describeGrantProgramCoverage", () => {
     expect(vermont.programs).toHaveLength(GRANT_PROGRAM_CATALOG.length + 1);
 
     expect(california.bundles.find((bundle) => bundle.key === "us-vt-test")?.scopeLabel).toBe(
-      "Vermont — not this workspace's jurisdiction"
+      "Vermont (not this workspace's jurisdiction)"
     );
     // California is covered, so the catalog owes it no gap disclosure even
     // though it can now see another state's programs — they are labeled.

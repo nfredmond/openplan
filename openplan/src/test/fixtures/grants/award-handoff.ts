@@ -1,0 +1,9 @@
+import type { AwardTerms } from "@/lib/grants/award-handoff";
+export const handoffId=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+export function awardTermsFixture():AwardTerms {
+ return {
+  ceiling:'100.01',match:'0.00',currency:{code:'USD',minorUnits:2,source:'Synthetic notice currency provision'},issued:true,issuanceDisposition:{state:'issued',evidence:'Synthetic issued notice provision',priorRevisionId:null},
+  recipient:'Synthetic recipient',funder:'Synthetic funder',scope:'Source-entered scope',differences:'Source confirms proposal scope',commitments:'Two source-confirmed reports',applicability:'Unresolved, no geographic default',submissionReceipt:'External receipt not recorded',scheduleCoverage:'Two dates only; further reports unresolved',acceptance:'not_recorded',acceptanceEvidence:'Not recorded',acceptanceSourceId:null,authorization:{state:'not_recorded',amount:null,amountCurrencyCode:null,unknownReason:'Authorization amount not recorded',sourceId:null,authority:'Unresolved',scope:'Unresolved',period:'Unresolved',evidence:'Not recorded'},effective:true,effectiveEvidence:'Synthetic actual notice effective provision',noticeSourceId:handoffId(9),sources:[{family:'kb_pdf',id:handoffId(9),version:'Synthetic notice v1',sourceDate:'2026-10-18',citation:'Page 1, conditions'}],invoiceApplicability:[],
+  occurrences:['first','second'].map((key,i)=>({conditionKey:'report',occurrenceKey:key,requirement:'Report actual outputs',responsibleParty:'Recipient reporting officer',citation:`Page 2, report ${i+1}`,kind:'report',clock:{kind:'date_only',date:i?'2027-04-15':'2027-01-15'},disposition:'new',legacyObligationId:null,priorOccurrenceId:null,reason:'New actual requirement',distinctSourceIdentity:`Notice report ${key}`,fulfillmentStillApplies:false})),
+ };
+}

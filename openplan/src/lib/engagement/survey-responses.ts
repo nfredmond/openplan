@@ -679,7 +679,7 @@ export function flattenSurveyAnswerForExport(
       const { longitude, latitude } = computeEngagementGeometryRepresentativePoint(parsed.geometry);
       const coords = `${longitude.toFixed(5)},${latitude.toFixed(5)}`;
       return {
-        text: note ? `${coords} — ${note}` : coords,
+        text: note ? `${coords} (${note})` : coords,
         value: note ? { longitude, latitude, note } : { longitude, latitude },
       };
     }

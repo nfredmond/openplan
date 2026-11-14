@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead, readComparableFunding } from "@/lib/grants/award-handoff";
 import type { ReportNarrativeDraftRow } from "@/components/reports/report-narrative-draft-panel";
 import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { formatDateTime, sectionSupportsAiNarrative } from "@/lib/reports/catalog";
@@ -199,6 +200,7 @@ export function asPortfolioFundingSnapshot(
   }
 
   return {
+    comparableFunding: readComparableFunding(record.comparableFunding),
     capturedAt: asNullableString(record.capturedAt),
     latestSourceUpdatedAt: asNullableString(record.latestSourceUpdatedAt),
     linkedProjectCount: asNullableNumber(record.linkedProjectCount) ?? 0,
@@ -208,18 +210,18 @@ export function asPortfolioFundingSnapshot(
       asNullableNumber(record.likelyCoveredProjectCount) ?? 0,
     gapProjectCount: asNullableNumber(record.gapProjectCount) ?? 0,
     committedFundingAmount:
-      asNullableNumber(record.committedFundingAmount) ?? 0,
-    likelyFundingAmount: asNullableNumber(record.likelyFundingAmount) ?? 0,
+      asNullableNumber(record.committedFundingAmount),
+    likelyFundingAmount: asNullableNumber(record.likelyFundingAmount),
     totalPotentialFundingAmount:
-      asNullableNumber(record.totalPotentialFundingAmount) ?? 0,
+      asNullableNumber(record.totalPotentialFundingAmount),
     unfundedAfterLikelyAmount:
-      asNullableNumber(record.unfundedAfterLikelyAmount) ?? 0,
+      asNullableNumber(record.unfundedAfterLikelyAmount),
     paidReimbursementAmount:
-      asNullableNumber(record.paidReimbursementAmount) ?? 0,
+      asNullableNumber(record.paidReimbursementAmount),
     outstandingReimbursementAmount:
-      asNullableNumber(record.outstandingReimbursementAmount) ?? 0,
+      asNullableNumber(record.outstandingReimbursementAmount),
     uninvoicedAwardAmount:
-      asNullableNumber(record.uninvoicedAwardAmount) ?? 0,
+      asNullableNumber(record.uninvoicedAwardAmount),
     awardRiskCount: asNullableNumber(record.awardRiskCount) ?? 0,
     label: asNullableString(record.label) ?? "Unknown funding posture",
     reason:
@@ -258,14 +260,9 @@ export function formatCompactDateTime(value: string | null | undefined): string 
   return value ? formatDateTime(value) : "Unavailable";
 }
 
-/**
- * Report packets round to the dollar. An absent figure reads as $0 here on
- * purpose — every caller is a snapshot total the packet builder has already
- * defaulted — and the surfaces that use it carry `ROUNDED_MONEY_NOTE`.
- */
+/** Report packets disclose rounding. Unavailable totals remain unassessed. */
 export function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" && Number.isFinite(value) ? value : 0;
-  return formatMoney(numeric, { precision: "whole" });
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 export function asEngagementCampaignSnapshot(
@@ -322,7 +319,7 @@ type ReportDetailQueryResult = {
 
 type ReportDetailClientLike = {
   from: (table: string) => {
-    select: (columns: string) => {
+    select: (columns: string, options?: {count:"exact"}) => {
       eq: (
         column: string,
         value: string
@@ -333,7 +330,7 @@ type ReportDetailClientLike = {
 
 type ProjectFundingQueryClientLike = {
   from: (table: string) => {
-    select: (columns: string) => {
+    select: (columns: string, options?: {count:"exact"}) => {
       eq: (
         column: string,
         value: string
@@ -384,21 +381,23 @@ export async function loadProjectFundingSourceRows(
       .maybeSingle(),
     client
       .from("funding_awards")
-      .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+      .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
       .eq("project_id", projectId)
       .order("updated_at", { ascending: false }),
     client
       .from("funding_opportunities")
-      .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+      .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
       .eq("project_id", projectId)
       .order("updated_at", { ascending: false }),
     client
       .from("billing_invoice_records")
-      .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+      .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
       .eq("project_id", projectId)
       .order("created_at", { ascending: false }),
   ]);
 
+  // Failed reads keep their named disclosure below; successful partial sets still refuse.
+  assertCompleteFundingRead(...[awardsResult, opportunitiesResult, invoicesResult].filter((result) => !result.error));
   return {
     profile: (profileResult.data ?? null) as Awaited<
       ReturnType<typeof loadProjectFundingSourceRows>
@@ -429,7 +428,7 @@ export async function loadProjectFundingSourceRows(
 
 type NarrativeDraftQueryClientLike = {
   from: (table: string) => {
-    select: (columns: string) => {
+    select: (columns: string, options?: {count:"exact"}) => {
       eq: (
         column: string,
         value: string

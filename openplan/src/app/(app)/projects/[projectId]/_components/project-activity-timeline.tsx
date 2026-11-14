@@ -11,7 +11,10 @@ import type { TimelineItem } from "./_types";
  * The feed itself is unchanged: same ordering (the page still builds it with
  * `buildProjectTimelineItems`), same empty sentence, same two-column grid.
  */
-export function ProjectActivityTimeline({ timelineItems }: { timelineItems: TimelineItem[] }) {
+export function ProjectActivityTimeline({ timelineItems, deliverableReadState = "readable" }: {
+  timelineItems: TimelineItem[];
+  deliverableReadState?: "readable" | "pending" | "unreadable";
+}) {
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
@@ -21,13 +24,15 @@ export function ProjectActivityTimeline({ timelineItems }: { timelineItems: Time
           </span>
           <div className="module-section-heading">
             <h2 className="module-section-title">Everything happening in one feed</h2>
-            <p className="module-section-description">
-              The feed is intentionally tighter than the page intro: type first, timestamp second, short read after that.
-            </p>
           </div>
         </div>
       </div>
-      {timelineItems.length === 0 ? (
+      {deliverableReadState !== "readable" ? (
+        <p className="mt-5 text-sm" role="status">{deliverableReadState === "pending"
+          ? "Deliverable activity is unavailable while project input setup is pending."
+          : "Deliverable activity could not be read."} This feed may be incomplete.</p>
+      ) : null}
+      {timelineItems.length === 0 && deliverableReadState !== "readable" ? null : timelineItems.length === 0 ? (
         <div className="module-empty-state mt-5 text-sm">No project activity yet.</div>
       ) : (
         <div className="mt-5 grid gap-3 xl:grid-cols-2">

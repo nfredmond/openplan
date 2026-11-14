@@ -126,7 +126,7 @@ describe("the resolver never defaults", () => {
     version: "0.1",
     practice_area: "transportation",
     anchor: "kickoff",
-    scope_notes: ["A standard-practice starting point — edit to your scope."],
+    scope_notes: ["A standard-practice starting point. Edit to your scope."],
     deliverables: [{ key: "d", title: "D", offset_days: 10 }],
     milestones: [],
   };

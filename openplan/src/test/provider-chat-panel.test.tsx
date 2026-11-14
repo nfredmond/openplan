@@ -17,7 +17,13 @@ async function open(saved: unknown[] = [], progress: unknown = {}) {
  });
  const review = vi.fn(); render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={review} />);
  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
- await screen.findByText(/No saved API\/model has an admitted/); return review;
+ await screen.findByText(/No saved API\/model has an admitted/);
+ // Options and history are separate requests. Under load the history can
+ // resolve after the options, so wait for every saved turn to be selectable.
+ for (const turn of saved as Array<{ id?: string }>) {
+  if (turn.id) await waitFor(() => expect(screen.getByLabelText("Retained chat turns").querySelector(`option[value="${turn.id}"]`)).not.toBeNull());
+ }
+ return review;
 }
 describe("normal saved API chat panel", () => {
  // This checks rendered semantic tokens. jsdom cannot assess computed CSS,

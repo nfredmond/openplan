@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -83,6 +84,9 @@ function awardRow(overrides: Record<string, unknown> = {}) {
     workspace_id: WORKSPACE_ID,
     project_id: PROJECT_ID,
     title: "ATP award",
+    latest_handoff_revision_id: null,
+    current_handoff_revision_id: null,
+    currency_code: null,
     awarded_amount: 1_000_000,
     spending_status: "active",
     closure_basis: null,

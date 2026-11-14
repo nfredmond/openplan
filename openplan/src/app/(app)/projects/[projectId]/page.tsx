@@ -1,6 +1,5 @@
 import { currentModelResultRows } from "@/lib/models/attempt-output-read";
-import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
-import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
+import { evaluateProjectOverviewPacketFreshness, latestArtifactByReport } from "@/lib/reports/packet-freshness-rules";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -10,14 +9,11 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
 import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
 import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
-import {
-  buildGrantDecisionModelingSupport,
-  describeProjectGrantModelingReadiness,
-} from "@/lib/grants/modeling-evidence";
+import { buildGrantDecisionModelingSupport, describeProjectGrantModelingReadiness } from "@/lib/grants/modeling-evidence";
 import { buildAerialProjectPosture, describeAerialProjectPosture } from "@/lib/aerial/public";
 import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib/projects/budget";
-import { loadProjectBudgetInputs, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
+import { loadProjectBudgetInputs, projectDeliverableReadState, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildProjectSpineCrosslinkSummary, geographyLaneInput } from "@/lib/projects/project-spine-crosslinks";
@@ -51,7 +47,6 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
 import { loadRtpHorizonBandsByCycle } from "@/lib/rtp/financial-element-queries";
-import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   loadProjectStageGateBoard,
   type StageGateDecisionQuerySupabaseLike,
@@ -84,7 +79,7 @@ import {
   serializeProjectCorridor,
   type ProjectCorridorRow,
 } from "@/lib/cartographic/project-corridor-record";
-import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+import { deriveHomeMapView, HOME_GEOGRAPHY_VIEW_COLUMNS, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
@@ -102,6 +97,8 @@ import type {
   TimelineItem,
   WorkspaceRow,
 } from "./_components/_types";
+import { isUuid } from "@/lib/uuid";
+import { loadProjectRecordForRequest } from "./_components/project-record-for-request";
 
 // A pending COLUMN is a pending schema too, and looksLikePendingSchema used to
 // recognise only a pending TABLE. PostgREST answers a select naming a column the
@@ -127,21 +124,21 @@ export default async function ProjectDetailPage({
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { projectId } = await params;
+  if (!isUuid(projectId)) notFound();
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const requestedTab = resolvedSearchParams[PAGE_TAB_QUERY_KEY];
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // The user, the workspace membership and the project row come from one
+  // request-cached read shared with `layout.tsx`, which answers 404 for an
+  // absent project before `loading.tsx` starts the stream.
+  const { user, membership, projectResult } = await loadProjectRecordForRequest(projectId);
 
   if (!user) {
     redirect("/sign-in");
   }
 
-  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
-
-  if (!membership) {
+  if (!membership || !projectResult) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Project workbench"
@@ -153,7 +150,8 @@ export default async function ProjectDetailPage({
     );
   }
 
-  // Read through the caller's RLS client: the projects_read policy already
+  // The project row is read through the caller's RLS client (see
+  // `loadProjectRecordForRequest`): the projects_read policy already
   // restricts this SELECT to workspaces the caller is a member of, so a
   // non-member gets no row and falls through to notFound() below. There is no
   // separate "must equal my CURRENT workspace" check — that older gate stranded
@@ -162,13 +160,6 @@ export default async function ProjectDetailPage({
   // the workspace-per-project fork was removed). Access = membership of the
   // project's own workspace, which RLS enforces; the page scopes every
   // subsequent query to project.workspace_id, not the current one.
-  const projectResult = await supabase
-    .from("projects")
-    .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
-    )
-    .eq("id", projectId)
-    .single();
   const projectData = projectResult.data ?? null;
 
   // A 404 IS A CLAIM, AND A FAILED READ MAY NOT MAKE IT. `.single()` reports
@@ -205,12 +196,13 @@ export default async function ProjectDetailPage({
   // apart only by asking where the workspace works. A deployment that predates
   // those columns rejects the extended select, so the read falls back to the
   // original list — the binding then resolves as "jurisdiction unknown", a
-  // disclosed fallback rather than a guess.
+  // disclosed fallback rather than a guess. Label and bbox come too, or an unset
+  // study area claims the workspace has no home geography (and no map view).
   const workspaceCoreColumns = "id, name, slug, stage_gate_template_id, stage_gate_template_version, created_at";
   const workspaceRead = await supabase
     .from("workspaces")
     .select(
-      `${workspaceCoreColumns}, stage_gate_template_selection, home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code`
+      `${workspaceCoreColumns}, stage_gate_template_selection, ${HOME_GEOGRAPHY_VIEW_COLUMNS}`
     )
     .eq("id", project.workspace_id)
     .single();
@@ -508,6 +500,7 @@ export default async function ProjectDetailPage({
   // The board and timeline keep their original six-row recency window; the
   // budget snapshot above deliberately sees the full deliverable list.
   const deliverables = budgetInputs.deliverables.slice(0, 6);
+  const deliverableReadState = projectDeliverableReadState(budgetInputs);
 
   // WHO IS ON THIS TEAM, so an assignee id on a deliverable, milestone,
   // submittal or issue becomes a person. Service role behind the loader's own
@@ -571,7 +564,7 @@ export default async function ProjectDetailPage({
   // caltrans_posture stays selected as the legacy read fallback for rows that
   // predate the reimbursement-profile backfill (20260727000009).
   const projectInvoiceSelectLegacy =
-    "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
+    "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
   const projectInvoiceSelect = projectInvoiceSelectLegacy.replace(
     "caltrans_posture,",
     "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection,"
@@ -610,10 +603,9 @@ export default async function ProjectDetailPage({
   const selectAwardInvoices = async (columns: string, awardIds: string[]) =>
     (await supabase
       .from("billing_invoice_records")
-      .select(columns)
+      .select(columns,{count:"exact"})
       .in("funding_award_id", awardIds)
-      .order("created_at", { ascending: false })
-      .limit(1000)) as { data: unknown[] | null; error: { message?: string } | null };
+      .order("created_at", { ascending: false })) as { count:number|null; data: unknown[] | null; error: { message?: string } | null };
 
   const projectFundingProfileResult = await supabase
     .from("project_funding_profiles")
@@ -640,11 +632,11 @@ export default async function ProjectDetailPage({
   const fundingAwardsResult = await supabase
     .from("funding_awards")
     .select(
-      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
+      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance", {count:"exact"}
     )
     .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(8);
+    .order("updated_at", { ascending: false });
+  if(!fundingAwardsResult.error && fundingAwardsResult.count!==fundingAwardsResult.data?.length)return <p>Complete project funding details are unavailable. Totals remain unassessed.</p>;
   const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]).map((item) => ({
@@ -668,11 +660,11 @@ export default async function ProjectDetailPage({
   const fundingOpportunitiesResult = await supabase
     .from("funding_opportunities")
     .select(
-      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title)"
+      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title), has_source_backed_issuance", {count:"exact"}
     )
     .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
+    .order("updated_at", { ascending: false });
+  if(!fundingOpportunitiesResult.error && fundingOpportunitiesResult.count!==fundingOpportunitiesResult.data?.length)return <p>Complete project funding details are unavailable. Totals remain unassessed.</p>;
   const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]).map((item) => ({
@@ -798,7 +790,7 @@ export default async function ProjectDetailPage({
   const skipFundingCount = fundingOpportunities.filter((item) => item.decision_state === "skip").length;
   const openFundingCount = fundingOpportunities.filter((item) => item.opportunity_status === "open").length;
   const pursuedFundingAmount = fundingOpportunities.reduce((sum, item) => {
-    if (item.decision_state !== "pursue" || item.opportunity_status === "awarded" || item.opportunity_status === "archived") {
+    if (item.has_source_backed_issuance || item.decision_state !== "pursue" || item.opportunity_status === "awarded" || item.opportunity_status === "archived") {
       return sum;
     }
     return sum + Number(item.expected_award_amount ?? 0);
@@ -811,10 +803,11 @@ export default async function ProjectDetailPage({
   const fundingAwardIds = fundingAwards.map((award) => award.id);
   let awardInvoicesResult = fundingAwardIds.length
     ? await selectAwardInvoices(projectInvoiceSelect, fundingAwardIds)
-    : { data: [], error: null };
+    : { data: [], error: null, count:0 };
   if (awardInvoicesResult.error && looksLikePendingSchema(awardInvoicesResult.error.message)) {
     awardInvoicesResult = await selectAwardInvoices(projectInvoiceSelectLegacy, fundingAwardIds);
   }
+  if(fundingAwards.some((a)=>a.latest_handoff_revision_id) && (awardInvoicesResult.error || awardInvoicesResult.count!==awardInvoicesResult.data?.length))return <p>Complete managed award invoice history is unavailable. Claim coverage remains unassessed.</p>;
   // On any residual error, fall back to the display-capped rows rather than
   // rendering an empty claim history for awards that have one.
   const awardInvoiceRows = awardInvoicesResult.error
@@ -864,12 +857,7 @@ export default async function ProjectDetailPage({
         .in("id", linkedReportRunIds)
     : { data: [], error: null };
   const linkedRuns = laneRows(reads, "model runs linked to this project", linkedRunsResult) as Array<{ id: string; created_at: string }>;
-  const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const artifact of reportArtifactLane.rows as ReportArtifactRow[]) {
-    if (!latestArtifactByReportId.has(artifact.report_id)) {
-      latestArtifactByReportId.set(artifact.report_id, artifact);
-    }
-  }
+  const latestArtifactByReportId = latestArtifactByReport(reportArtifactLane.rows as ReportArtifactRow[]);
 
   const projectReports = ((projectReportData ?? []) as ProjectReportRow[])
     .map((report) => {
@@ -888,8 +876,12 @@ export default async function ProjectDetailPage({
 
       return {
         ...report,
-        packetFreshness: resolveReportPacketRowFreshness(report, latestArtifactByReportId.get(report.id),
-          reportJurisdictionState(latestArtifactByReportId.get(report.id)?.metadata_json, project)),
+        // The Project page's freshness rule, shared with the loader module.
+        packetFreshness: evaluateProjectOverviewPacketFreshness({
+          report,
+          latestArtifact: latestArtifactByReportId.get(report.id),
+          project,
+        }),
 
         comparisonAggregate,
         comparisonDigest,
@@ -1262,8 +1254,9 @@ export default async function ProjectDetailPage({
   // decisions and meetings with no way to add one — and its declared
   // `risk-`/`issue-`/`decision-`/`meeting-` anchors, which are that composer's
   // own form-field ids, pointed at elements rendered on another tab. The two
-  // lists must partition all seven; `page-tabs-page-header-and-record-
-  // creation.test.ts` fails if they ever stop doing so.
+  // lists partition all seven when deliverables are readable. Pending or failed
+  // deliverables withhold only their creation type. The page composition and
+  // `page-tabs-page-header-and-record-creation.test.ts` protect both states.
   return (
     <section className="module-page min-w-0 grid-cols-[minmax(0,1fr)]">
       <CartographicSurfaceWide />
@@ -1307,7 +1300,8 @@ export default async function ProjectDetailPage({
             rtpSafetyEvidence,
             rtpPriorityCriteria: resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria,
             canWriteProjects: canAccessWorkspaceAction("plans.write", projectRole),
-            deliverableCount: budgetInputs.deliverables.length,
+            deliverableCount: deliverableReadState === "readable" ? budgetInputs.deliverables.length : null,
+            deliverableReadState,
             openRiskCount,
             openIssueCount,
             kbDocumentCount: documentsLane.kbCount,
@@ -1347,7 +1341,7 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="delivery" active={activeTab === "delivery"}>
-          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={["milestone", "submittal", "deliverable"]} />
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={deliverableReadState === "readable" ? ["milestone", "submittal", "deliverable"] : ["milestone", "submittal"]} />
 
           <ProjectDeliveryBoard
             project={project}
@@ -1368,6 +1362,7 @@ export default async function ProjectDetailPage({
             prioritizedSubmittals={prioritizedSubmittals}
             invoicesReadFailed={projectInvoicesReadFailed}
             deliverables={deliverables}
+            deliverableReadState={deliverableReadState}
             budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
             assigneeRoster={assigneeRoster}
             deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
@@ -1476,7 +1471,7 @@ export default async function ProjectDetailPage({
             assigneeRoster={assigneeRoster}
           />
 
-          <ProjectActivityTimeline timelineItems={timelineItems} />
+          <ProjectActivityTimeline timelineItems={timelineItems} deliverableReadState={deliverableReadState} />
       </PageTabPanel>
     </section>
   );

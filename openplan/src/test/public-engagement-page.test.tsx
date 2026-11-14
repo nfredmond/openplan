@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
+import { buildPortalMessageBundle, portalMessageCoverage } from "@/lib/engagement/portal-i18n/messages";
 import { resolvePortalLocale } from "@/lib/engagement/portal-i18n/locales";
 
 /**
@@ -516,17 +516,23 @@ describe("PublicEngagementPage", () => {
     const { container } = await renderPage({ lang: "es" });
 
     // The chrome, from the catalog — not a machine call at request time.
-    expect(screen.getByText("Comentarios abiertos")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Idioma" })).toBeInTheDocument();
     expect(portalSection(container)?.getAttribute("lang")).toBe("es");
+    // Except a Spanish entry made from English that has since been rewritten:
+    // it shows the current English until someone refreshes it.
+    expect(screen.getByText(EN_MESSAGES["page.submissionsOpen"])).toBeInTheDocument();
   });
 
   /**
    * A COMPLETE CATALOG IS NOT A FULLY TRANSLATED PAGE, and the notice has to
    * track the page rather than the catalog.
    *
-   * Spanish is the one locale whose catalog answers every key OpenPlan has
-   * defined, so `translator.hasFallbacks` is false and the page-wide
-   * `PortalLanguageNotice` is correctly silent. English is still on screen
+   * French's catalog answers every key OpenPlan has defined, so
+   * `translator.hasFallbacks` is false and the page-wide
+   * `PortalLanguageNotice` is correctly silent. (Spanish did too until
+   * 2026-11-01, when two entries made from older English stopped being shown.
+   * A Spanish page now takes the page-wide branch, so it cannot test this one.)
+   * English is still on screen
    * anyway, from two sources the catalog knows nothing about: the campaign's
    * own title and description, which the agency has not translated here, and
    * every `PENDING_PORTAL_TEXT` string that has no catalog key yet. Saying
@@ -537,9 +543,12 @@ describe("PublicEngagementPage", () => {
    * a Title VI product the most.
    */
   it("still says parts are English when the catalog is complete but the page is not", async () => {
-    await renderPage({ lang: "es" });
+    // The premise, checked: otherwise the page-wide notice answers instead.
+    expect(portalMessageCoverage("fr").complete).toBe(true);
+    await renderPage({ lang: "fr" });
 
-    expect(screen.getAllByText(/solo está disponible parcialmente/i)).toHaveLength(1);
+    expect(screen.getAllByText(/n'est que partiellement disponible/i)).toHaveLength(1);
+    expect(screen.getByTestId("portal-pending-copy-notice")).toBeInTheDocument();
   });
 
   it("discloses the gap once, not twice, on a language with no catalog", async () => {
@@ -652,7 +661,7 @@ describe("PublicEngagementPage", () => {
 
     await renderPage();
 
-    expect(screen.getByText("Comentarios abiertos")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Idioma" })).toBeInTheDocument();
   });
 
   it("lets an explicit choice beat the browser's language", async () => {
@@ -679,7 +688,7 @@ describe("PublicEngagementPage", () => {
     // Chinese reads as something the agency chose to write in English.
     await renderPage({ lang: "zh" });
 
-    expect(screen.getByText(/only partly available in 中文/i)).toBeInTheDocument();
+    expect(screen.getByText(/only partly available in 简体中文/i)).toBeInTheDocument();
   });
 
   it("offers every language in its own script, in a link that can be shared", async () => {

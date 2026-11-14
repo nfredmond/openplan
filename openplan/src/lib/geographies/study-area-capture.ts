@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { placeKindSchema, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { bboxOfGeometry, DRAWN_PLACE_SOURCE, UPLOADED_PLACE_SOURCE, type PlaceOfRecord } from "./place-of-record";
@@ -9,7 +9,7 @@ export const studyAreaGeometrySchema = corridorGeojsonSchema.refine(value => val
 
 const label = z.string().trim().min(1).max(240);
 export const studyAreaCaptureSchema = z.discriminatedUnion("mode", [
-  z.object({ mode: z.literal("place"), kind: placeKindSchema, geoid: z.string().trim().min(5).max(7), label }).strict(),
+  z.object({ mode: z.literal("place"), kind: placeKindSchema, geoid: placeGeoidStringSchema, label }).strict().superRefine(refinePlaceReference),
   z.object({ mode: z.literal("drawn"), geometry: studyAreaGeometrySchema, label }).strict(),
   z.object({ mode: z.literal("uploaded"), geometry: studyAreaGeometrySchema, label }).strict(),
 ]);

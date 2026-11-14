@@ -11,11 +11,11 @@
   ],
   "description": "A plan for walking, cycling and rolling: the network that exists, the network people need, and the order in which the gaps get closed.",
   "scope_notes": [
-    "This is a standard-practice starting point — edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
-    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced — they are placeholders for a real schedule, not commitments.",
+    "This is a standard-practice starting point. Edit to your scope. Rename, delete and add records until the list matches the work your agency actually agreed to do.",
+    "Every date is calculated forward from the kickoff date you enter. The offsets are round numbers reflecting how this kind of work is usually sequenced. They are placeholders for a real schedule, not commitments.",
     "It assumes the agency is leading the plan with its own staff or a consultant already on board, so the first offsets are short. A plan that starts with procurement needs those milestones added at the front.",
     "No jurisdiction is assumed. Review periods, required notices, hearings and the body that adopts the work are set where you are; none of them are stated here. Add the records your own process requires.",
-    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline — assign the records yourself once the team is settled."
+    "Nobody is assigned. Applying a template never puts a colleague's name on a deadline. Assign the records yourself once the team is settled."
   ],
   "deliverables": [
     {
@@ -28,7 +28,7 @@
       "key": "network_inventory",
       "title": "Existing network and conditions inventory",
       "offset_days": 90,
-      "summary": "Sidewalks, crossings, bikeways, trails, lighting and the barriers between them — including the gaps, which are the point."
+      "summary": "Sidewalks, crossings, bikeways, trails, lighting and the barriers between them, including the gaps, which are the point."
     },
     {
       "key": "demand_and_priority",

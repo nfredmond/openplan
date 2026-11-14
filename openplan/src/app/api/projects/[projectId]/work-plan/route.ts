@@ -189,7 +189,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json(
         {
           error:
-            "This project's existing records could not be read, so the template was not applied — applying it now could duplicate work that is already there.",
+            "This project's existing records could not be read, so the template was not applied. Applying it now could duplicate work that is already there.",
           details: existingReadError.message,
         },
         { status: 500 }

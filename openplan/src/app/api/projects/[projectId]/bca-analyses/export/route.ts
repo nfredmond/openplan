@@ -6,6 +6,7 @@ import { readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { bcaHtml, exportBcaPackage } from "@/lib/bca/workbench/export";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { bcaPlaceReview, readBcaProjectPlace } from "@/lib/bca/workbench/project-place";
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ projectId: string }> },
@@ -23,7 +24,8 @@ export async function POST(
       { status: 400 },
     );
   try {
-    const pdf = await renderReportPdf(bcaHtml(parsed.data), {
+    const placeReview = bcaPlaceReview(parsed.data, readBcaProjectPlace(projectId, access.project));
+    const pdf = await renderReportPdf(bcaHtml(parsed.data, placeReview), {
       title: parsed.data.title,
       generatedAt: null,
       format: "Letter",
@@ -33,7 +35,7 @@ export async function POST(
       "build-identity.json": JSON.stringify(buildIdentity(), null, 2),
       "report.pdf": pdf.bytes,
       "pdf-rendering.txt": `Renderer: ${pdf.engine}\n${pdf.disclosure ?? "Styled HTML rendering."}\nAccessibility conformance and program acceptance have not been established. TCEP requires remediated accessible PDFs.\n`,
-    });
+    }, placeReview);
     audit.info("package_created", { projectId, bytes: bytes.byteLength, renderer: pdf.engine });
     return new NextResponse(new Uint8Array(bytes), {
       headers: {

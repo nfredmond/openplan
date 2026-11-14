@@ -5,7 +5,7 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { AiUsageLimitReachedError, reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { MODERATION_MAX_ITEMS, moderateEngagementItems, type ModerationInputItem } from "@/lib/engagement/ai-moderation";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
@@ -57,15 +57,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const workspaceId = access.campaign.workspace_id;
     return await withWorkspaceIntegrationContext(workspaceId, async () => {
-      const rateLimit = await checkAiUsageRateLimit(workspaceId);
-      if (!rateLimit.allowed) {
-        audit.warn("engagement_moderation_rate_limited", { workspaceId, recentCount: rateLimit.count });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
-      }
-
       // The moderation queue: items still awaiting a human decision.
       const { data: itemRows, error: itemsError } = await supabase
         .from("engagement_items")
@@ -80,7 +71,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const rows = (itemRows ?? []) as ItemRow[];
       const items: ModerationInputItem[] = rows.map((row) => ({ id: row.id, title: row.title, body: row.body }));
-      const result = await moderateEngagementItems(items);
+      // The moderation engine counts its model call before making it
+      // (reserveAiUsage); the free heuristic fallback is not counted. When the
+      // deployment's key pays, a usage lookup or record that fails throws to
+      // the handler below, so no unmetered call is made. A failed call keeps
+      // its reservation. A refusal returns before any assessment is written.
+      let result: Awaited<ReturnType<typeof moderateEngagementItems>>;
+      try {
+        result = await moderateEngagementItems(items, {
+          reserveUsage: async ({ model }) => {
+            const rateLimit = await reserveAiUsage({
+              workspaceId,
+              bucketKey: "engagement_moderation",
+              eventKey: "engagement_moderation_scan",
+              sourceRoute: "/api/engagement/campaigns/[campaignId]/moderation-scan",
+              metadataJson: { model, itemCount: Math.min(items.length, MODERATION_MAX_ITEMS) },
+            });
+            if (!rateLimit.allowed) throw new AiUsageLimitReachedError(rateLimit);
+          },
+        });
+      } catch (error) {
+        if (!(error instanceof AiUsageLimitReachedError)) throw error;
+        audit.warn("engagement_moderation_rate_limited", { workspaceId, recentCount: error.limit.count });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(error.limit.retryAfterSeconds) } }
+        );
+      }
 
       // Persist the per-item assessment into metadata_json (merged, never
       // overwriting other keys). Does NOT change status — a human still decides.
@@ -112,18 +129,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const failed = writeErrors.filter(Boolean);
       if (failed.length > 0) {
         audit.warn("engagement_moderation_persist_partial", { campaignId, failedCount: failed.length });
-      }
-
-      // Fire-and-forget spend metering: `source === "ai"` means the model call
-      // succeeded (the deterministic heuristic fallback spends nothing).
-      if (result.source === "ai") {
-        void recordAiUsageEvent({
-          workspaceId,
-          bucketKey: "engagement_moderation",
-          eventKey: "engagement_moderation_scan",
-          sourceRoute: "/api/engagement/campaigns/[campaignId]/moderation-scan",
-          metadataJson: { model: result.model, itemCount: result.item_count },
-        });
       }
 
       return NextResponse.json({ moderation: result, scannedAt: assessmentAt });

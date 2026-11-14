@@ -38,7 +38,7 @@ const SENTIMENT_VALUES: readonly EngagementSentiment[] = [
  * location where nothing happened.
  */
 export const ENGAGEMENT_CRASH_PROXIMITY_NARRATIVE_CAVEAT =
-  "Collision counts near mapped comments state proximity only — no comment has been established as describing the collisions near it, and mapped comments outside acquired crash data are reported as unmeasured rather than as locations without collisions.";
+  "Collision counts near mapped comments state proximity only: no comment has been established as describing the collisions near it, and mapped comments outside acquired crash data are reported as unmeasured rather than as locations without collisions.";
 
 export const ENGAGEMENT_NARRATIVE_CAVEAT =
   "Community-input statements summarize submitted public comments only — a screening-grade synthesis of who chose to comment, not a statistically representative survey, a vote, or a legal-sufficiency finding.";
@@ -53,6 +53,8 @@ export interface ProjectEngagementCampaignRowLike {
   ai_synthesized_at: string | null;
   representativeness_json: unknown;
   representativeness_computed_at: string | null;
+  /** How input was collected. Optional: older projections do not select it. */
+  engagement_type?: string | null;
 }
 
 export type EngagementSynthesisEvidence = {
@@ -80,6 +82,8 @@ export type ProjectEngagementEvidence = {
     id: string;
     title: string;
     status: string;
+    /** Null or absent when the projection did not select it. */
+    engagementType?: string | null;
     synthesis: EngagementSynthesisEvidence | null;
     synthesizedAt: string | null;
     representativeness: EngagementRepresentativenessEvidence | null;
@@ -236,6 +240,7 @@ export function buildProjectEngagementEvidenceByProjectId(
         id: lead.row.id,
         title: lead.row.title,
         status: lead.row.status,
+        engagementType: typeof lead.row.engagement_type === "string" ? lead.row.engagement_type : null,
         synthesis: lead.synthesis,
         synthesizedAt: lead.row.ai_synthesized_at,
         representativeness: lead.representativeness,

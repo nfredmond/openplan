@@ -1,0 +1,98 @@
+{
+ "capturedAt": "2026-11-01",
+ "source": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer/36/query?where=GEOID%3D%272430R%27&outFields=GEOID%2CNAME%2CBASENAME%2CAIANNHFP1%2CAIANNHFP2%2CAIANNHFP3&returnGeometry=true&outSR=4326&geometryPrecision=3&maxAllowableOffset=0.2&f=geojson",
+ "trimmed": "Generalized at capture (maxAllowableOffset=0.2 degrees, 3 decimals), then cut to the outer ring of the largest of its 302 polygon parts, to keep the fixture small. The resolver itself asks for full detail. Properties unchanged.",
+ "response": {
+  "type": "FeatureCollection",
+  "features": [
+   {
+    "type": "Feature",
+    "geometry": {
+     "type": "MultiPolygon",
+     "coordinates": [
+      [
+       [
+        [
+         -111.892,
+         36.371
+        ],
+        [
+         -111.747,
+         35.672
+        ],
+        [
+         -111.319,
+         35.757
+        ],
+        [
+         -111.243,
+         35.157
+        ],
+        [
+         -110.502,
+         34.937
+        ],
+        [
+         -109.422,
+         35.257
+        ],
+        [
+         -109.523,
+         34.908
+        ],
+        [
+         -109.046,
+         34.904
+        ],
+        [
+         -109.046,
+         35.661
+        ],
+        [
+         -108.252,
+         35.653
+        ],
+        [
+         -108.252,
+         36.736
+        ],
+        [
+         -109.045,
+         36.999
+        ],
+        [
+         -109.277,
+         37.462
+        ],
+        [
+         -111.405,
+         37.002
+        ],
+        [
+         -111.179,
+         36.851
+        ],
+        [
+         -111.616,
+         36.849
+        ],
+        [
+         -111.892,
+         36.371
+        ]
+       ]
+      ]
+     ]
+    },
+    "properties": {
+     "GEOID": "2430R",
+     "NAME": "Navajo Nation Reservation",
+     "BASENAME": "Navajo Nation",
+     "AIANNHFP1": "04-48845",
+     "AIANNHFP2": "35-51580",
+     "AIANNHFP3": "49-53920"
+    }
+   }
+  ]
+ }
+}

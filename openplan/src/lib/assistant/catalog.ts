@@ -692,7 +692,7 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
     {
       id: "invoicing-receivables",
       label: "Receivables posture",
-      description: "Summarize client invoices — what is drafted, sent, and unpaid.",
+      description: "Summarize client invoices: what is drafted, sent, and unpaid.",
       prompt: "What is outstanding in client receivables right now?",
     },
   ],
@@ -760,7 +760,7 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
     {
       id: "knowledge-base-brief",
       label: "Knowledge base brief",
-      description: "Summarize the document corpus — counts by status and project linkage.",
+      description: "Summarize the document corpus: counts by status and project linkage.",
       prompt: "Give me the knowledge base brief and the next operator move.",
     },
     {
@@ -780,7 +780,7 @@ const ACTIONS_BY_KIND: Record<AssistantTargetKind, AssistantAction[]> = {
     {
       id: "data-hub-feeds",
       label: "Feed states",
-      description: "Explain transit feed and connector states — what is current, degraded, or erroring.",
+      description: "Explain transit feed and connector states: what is current, degraded, or erroring.",
       prompt: "What is the state of our data connectors and transit feeds?",
     },
     {

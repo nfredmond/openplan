@@ -44,6 +44,7 @@ import {
   type TranscribedBlockChapterOption,
 } from "@/components/rtp/transcribed-chapter-block-card";
 import { TranscribedChapterDraftCard } from "@/components/rtp/transcribed-chapter-draft-card";
+import { isUuid } from "@/lib/uuid";
 
 type RouteContext = { params: Promise<{ rtpCycleId: string }> };
 
@@ -94,6 +95,7 @@ const UNTITLED_DOCUMENT = "a document in this plan's library";
 
 export default async function RtpTranscribedChaptersPage({ params }: RouteContext) {
   const { rtpCycleId } = await params;
+  if (!isUuid(rtpCycleId)) notFound();
   const supabase = await createClient();
   const {
     data: { user },
@@ -276,7 +278,7 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
               <h1 className="module-section-title">The plan&apos;s own words</h1>
               <p className="module-section-description">
                 When OpenPlan reads an adopted plan it copies policy, goal and action statements out
-                word for word — never a summary, never a rewrite. Nothing here is in your plan. You
+                word for word, never a summary, never a rewrite. Nothing here is in your plan. You
                 choose which chapter each block belongs in, and the chapter&apos;s text stays whatever
                 you write in the chapter editor.
               </p>
@@ -290,7 +292,7 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
             <StateBlock
               tone="danger"
               title="Part of this page could not be read"
-              description={`${reads.describe()} What is missing below is not a finding — do not treat this page as a complete picture.`}
+              description={`${reads.describe()} What is missing below is not a finding. Do not treat this page as a complete picture.`}
             />
           ) : null}
         </article>
@@ -302,7 +304,7 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
                 {waitingViews.length} block{waitingViews.length === 1 ? "" : "s"} of copied text
               </h2>
               <p className="module-section-description">
-                One decision each. OpenPlan does not guess which chapter a statement belongs in — that
+                One decision each. OpenPlan does not guess which chapter a statement belongs in. That
                 is a judgement about your plan, not about the document.
               </p>
             </div>
@@ -332,7 +334,7 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
             ) : (
               <EmptyState
                 title="No copied text is waiting"
-                description="Read a document for this plan and ask for its policy and goal text — the blocks it copies out will wait here."
+                description="Read a document for this plan and ask for its policy and goal text. The blocks it copies out will wait here."
               />
             )
           ) : (

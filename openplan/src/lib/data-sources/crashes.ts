@@ -34,15 +34,34 @@
  * ability to cite a crash figure at all when there is no crash source.
  */
 
-import { resolveCrashSources } from "@/lib/safety/sources/registry";
+import {
+  crashSourcesForStudyArea,
+  knownStudyAreaStates,
+  type CrashStudyAreaStates,
+} from "@/lib/safety/sources/registry";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import {
+  boundaryAreaSquareMiles,
+  clipCrashRecordsToBoundary,
+  crashCountsForStudyArea,
+  describeCrashStudyArea,
+  type CrashStudyAreaCoverage,
+  type CrashStudyBoundary,
+} from "@/lib/safety/crash-study-area";
 import type {
   CrashFetchResult,
   CrashRecord,
   CrashSeverityCompleteness,
   CrashSourceAdapter,
 } from "@/lib/safety/sources/types";
+import {
+  seriousInjuryAvailability,
+  seriousInjuryAvailabilityForRecord,
+  type SeriousInjuryEnrichment,
+  type SeriousInjuryInputs,
+} from "@/lib/safety/serious-injury-availability";
+import { enrichSeriousInjuries, seriousInjuryInputsForAdapter } from "@/lib/safety/sources/serious-injury";
 
 /**
  * What a crash figure on the scorecard is made of.
@@ -71,13 +90,22 @@ export interface CrashSummary {
   source: string | CrashSummarySourceState;
   sourceLabel: string;
   attribution: string | null;
+  /** What these crashes can express, after any serious-injury join. */
   severityCompleteness: CrashSeverityCompleteness | null;
+  /**
+   * Whether the source's serious-injury join ran for these crashes. With the
+   * source's declared completeness it decides `severeInjuryCrashes` and the
+   * sentence about it, through the same function the Safety page uses.
+   * Null when nothing was observed; undefined on summaries built before this
+   * field existed, which are then read from their source and completeness.
+   */
+  seriousInjuryEnrichment?: SeriousInjuryEnrichment | null;
   totalFatalCrashes: number;
   totalFatalities: number;
   /** Fatal crashes INVOLVING a pedestrian — not the number of pedestrians killed. */
   pedestrianFatalities: number;
   bicyclistFatalities: number;
-  /** null when the source cannot separate KABCO A (suspected serious injury). */
+  /** null when these crashes do not separate KABCO A (suspected serious injury). */
   severeInjuryCrashes: number | null;
   /** null when the source is fatal-only and therefore never saw an injury crash. */
   totalInjuryCrashes: number | null;
@@ -114,20 +142,25 @@ export interface CrashSummary {
   publishedCutoff?: import("@/lib/safety/sources/types").CrashPublishedCutoff;
   resourceUpdates?: import("@/lib/safety/sources/types").CrashResourceUpdates;
   /**
-   * When more than one source contributed (a regional primary plus a national
-   * backstop merged for the out-of-jurisdiction remainder), the sources in
-   * merge order. Present only for a genuine merge; a single-source read leaves
-   * it undefined. Fatal counts then cover the full study area while injury/severe
-   * counts cover only the primary source's jurisdiction — see `describeCrashSafety`.
+   * The state FIPS codes that chose the source, from a place identity the
+   * server confirmed. NULL means the run could not establish its state (a drawn
+   * or uploaded area, a metro area, a place whose boundary did not match), so
+   * only a national source was allowed to answer. Undefined on summaries built
+   * before this field existed.
    */
-  contributingSources?: Array<{ id: string; label: string } & Pick<CrashFetchResult, "publishedCutoff" | "resourceUpdates">>;
+  studyAreaStates?: string[] | null;
   /**
-   * Covering sources that were UNREACHABLE this run while a jurisdiction-limited
-   * primary DID answer. Present so an out-of-jurisdiction study area cannot read
-   * "0 crashes, safe" when the national backstop that would have covered the
-   * remainder simply failed — see `describeCrashSafety`.
+   * Whether the counts are bounded by the study area's polygon or only by its
+   * rectangle, and how many crashes the polygon left out. Undefined on
+   * summaries built before the boundary check, and when no boundary was passed.
    */
-  unavailableBackstops?: Array<{ id: string; label: string }>;
+  studyArea?: CrashStudyAreaCoverage;
+  /**
+   * Richer sources for this study area that could not be reached this run,
+   * when a later source in registry order did answer. The figures then come
+   * from the source that answered, and the narrative says which one failed.
+   */
+  unavailableSources?: Array<{ id: string; label: string }>;
   /**
    * The run's `sourceSnapshots.crashes` entry and the safety line of its
    * narrative, built here rather than at the call site.
@@ -146,6 +179,22 @@ function publicationCutoffNote(crashes: Pick<CrashSummaryCore, "publishedCutoff"
   return publication.resourceUpdateNote ? ` ${publication.resourceUpdateNote}` : publication.publishedThrough
     ? ` Source publication cutoff: ${publication.publishedThrough}; provenance is recorded with this run.`
     : " The source supplied no exact publication cutoff; requested and returned years are not substitutes.";
+}
+
+/**
+ * Says why only a national source was read when the run could not confirm
+ * the study area's state. Empty when the state was confirmed, or when the
+ * summary predates the field.
+ */
+function unconfirmedStateNote(crashes: Pick<CrashSummaryCore, "studyAreaStates">): string {
+  return crashes.studyAreaStates === null
+    ? " The study area's state was not confirmed from a picked place, so only a national crash source was read."
+    : "";
+}
+
+/** Which area the counts describe, when the run recorded it. Empty otherwise. */
+function studyAreaNote(crashes: Pick<CrashSummaryCore, "studyArea" | "truncated">): string {
+  return crashes.studyArea ? ` ${describeCrashStudyArea(crashes.studyArea)}` : "";
 }
 
 /** A summary before its own disclosure is attached. */
@@ -226,8 +275,8 @@ function toPointFeature(record: CrashRecord, sourceId: string): CrashPointFeatur
     geometry: { type: "Point", coordinates: [record.longitude, record.latitude] },
     properties: {
       kind: "crash_point",
-      // Prefer the record's OWN source so a merged backstop point (e.g. a FARS
-      // Nevada fatal) keeps its provenance instead of inheriting the primary.
+      // Prefer the record's OWN source when it carries one, so a point never
+      // inherits a different source's id.
       source: record.sourceId ?? sourceId,
       severityBucket,
       severityLabel: labelForSeverityBucket(severityBucket),
@@ -247,6 +296,7 @@ function emptySummary(
     observed: false,
     attribution: null,
     severityCompleteness: null,
+    seriousInjuryEnrichment: null,
     totalFatalCrashes: 0,
     totalFatalities: 0,
     pedestrianFatalities: 0,
@@ -269,8 +319,19 @@ export function summarizeCrashFetch(
   adapter: CrashSourceAdapter,
   fetched: CrashFetchResult,
   bbox: StudyAreaBbox,
-  requestedYears: number[]
+  requestedYears: number[],
+  boundary?: CrashStudyBoundary | null,
+  /** Whether the serious-injury join ran on `fetched.records`. Defaults to not run. */
+  seriousInjury: SeriousInjuryInputs = seriousInjuryInputsForAdapter(adapter, false)
 ): CrashSummaryCore {
+  // The corridor's own polygon, when it is passed: crashes outside it are left
+  // out of every tally and point, and the density divides by its area rather
+  // than the rectangle's.
+  const clipped = boundary === undefined ? null : clipCrashRecordsToBoundary(fetched.records, bbox, boundary);
+  const records = clipped ? clipped.records : fetched.records;
+  const counts = clipped
+    ? crashCountsForStudyArea(clipped, { ...fetched, retrievedCount: fetched.records.length })
+    : null;
   let totalFatalCrashes = 0;
   let totalFatalities = 0;
   let pedestrianFatalities = 0;
@@ -281,7 +342,7 @@ export function summarizeCrashFetch(
 
   const points: CrashPointFeature[] = [];
 
-  for (const record of fetched.records) {
+  for (const record of records) {
     // Counted, never silently skipped. These are collisions the source reported
     // and did not classify; leaving them out of every tally would make the
     // scorecard's own numbers unaccountable against `reportedTotal`.
@@ -304,14 +365,16 @@ export function summarizeCrashFetch(
     if (point) points.push(point);
   }
 
-  const fatalOnly = adapter.severityCompleteness === "fatal_only";
-  // A source that cannot separate KABCO A must report null, never 0: "0 serious
+  const availability = seriousInjuryAvailability(seriousInjury);
+  const fatalOnly = availability.effective === "fatal_only";
+  // Crashes that do not separate KABCO A must report null, never 0: "0 serious
   // injuries" and "serious injuries are not distinguishable here" are opposite
   // findings, and the second one is the true one.
-  const severeInjury = adapter.severityCompleteness === "kabco_full" ? severeInjuryCrashes : null;
+  const severeInjury = availability.separable ? severeInjuryCrashes : null;
   const totalInjuryCrashes = fatalOnly ? null : injuryCrashes;
 
-  const area = bboxAreaSquareMiles(bbox);
+  const polygonArea = clipped?.studyArea.basis === "place_boundary" ? boundaryAreaSquareMiles(boundary?.geometry) : null;
+  const area = polygonArea ?? bboxAreaSquareMiles(bbox);
   // The years the source answered for, including years with no crash in the
   // study area. Dividing by only the years that returned a crash raised the
   // annual rate whenever a year was empty: one crash in four years read as one
@@ -325,7 +388,8 @@ export function summarizeCrashFetch(
     source: adapter.id,
     sourceLabel: adapter.label,
     attribution: adapter.attribution,
-    severityCompleteness: adapter.severityCompleteness,
+    severityCompleteness: availability.effective,
+    seriousInjuryEnrichment: availability.enrichment,
     totalFatalCrashes,
     totalFatalities,
     pedestrianFatalities,
@@ -336,9 +400,10 @@ export function summarizeCrashFetch(
     crashesPerSquareMile: Math.round((densityCount / annualBasis / area) * 10) / 10,
     crashDensityBasis: fatalOnly ? "fatal_only" : "injury_and_fatal",
     unclassifiedCrashes,
-    reportedTotal: fetched.matchedTotal,
-    mappedTotal: fetched.geocodedTotal,
+    reportedTotal: counts ? counts.reported : fetched.matchedTotal,
+    mappedTotal: counts ? counts.mappable : fetched.geocodedTotal,
     truncated: fetched.truncated,
+    ...(counts ? { studyArea: counts.studyArea } : {}),
     points,
     checkedSources: [adapter.id],
     unavailableReason: null,
@@ -357,177 +422,102 @@ function withDisclosure(core: CrashSummaryCore): CrashSummary {
   };
 }
 
-export async function fetchCrashesForBbox(
-  bbox: StudyAreaBbox,
-  options: { now?: Date; signal?: AbortSignal } = {}
-): Promise<CrashSummary> {
-  // "read_only": the scorecard reports crash figures but never writes crash
-  // rows, so it may use sources the `safety_crashes` CHECK domain has not been
-  // widened for yet. Multi-source so a coarse regional envelope (CCRS = the whole
-  // California rectangle) cannot shadow the national FARS backstop for a study
-  // area that overlaps the rectangle but lies partly or wholly out of state.
-  const resolution = resolveCrashSources(bbox, "read_only");
-
-  if (resolution.kind === "out_of_coverage") {
-    return withDisclosure(
-      emptySummary({
-        source: "out-of-coverage",
-        sourceLabel: "No covering crash source",
-        checkedSources: resolution.checked.map((entry) => entry.id),
-        unavailableReason: null,
-      })
-    );
-  }
-
-  const sources = [resolution.primary, ...resolution.backstops];
-
-  // Fetch every covering source in parallel; each may fail independently.
-  const settled = await Promise.all(
-    sources.map(async (adapter) => {
-      const years = recentCrashYears(options.now).filter((year) => year >= adapter.earliestYear);
-      try {
-        const fetched = await adapter.fetch({
-          bbox,
-          years,
-          maxRecords: ANALYSIS_MAX_RECORDS,
-          signal: options.signal,
-        });
-        return { adapter, years, fetched, error: null as Error | null };
-      } catch (error) {
-        return {
-          adapter,
-          years,
-          fetched: null,
-          error: error instanceof Error ? error : new Error("Unknown crash source failure"),
-        };
-      }
-    })
-  );
-
-  const successes = settled.filter(
-    (entry): entry is typeof entry & { fetched: CrashFetchResult } => entry.fetched !== null
-  );
-
-  if (successes.length === 0) {
-    // Every covering source was down. An outage is a state, not a number.
-    return withDisclosure(
-      emptySummary({
-        source: "source-unavailable",
-        sourceLabel: resolution.primary.label,
-        checkedSources: sources.map((adapter) => adapter.id),
-        unavailableReason: settled[0]?.error?.message ?? "Unknown crash source failure",
-      })
-    );
-  }
-
-  // The richest source that actually answered drives the summary (registry order
-  // is richest-first, so a failed CCRS gracefully promotes FARS to primary).
-  const primary = successes[0];
-  const excludedStates = new Set(primary.adapter.coversStateFips ?? []);
-
-  const mergedRecords: CrashRecord[] = [...primary.fetched.records];
-  let backstopMatched = 0;
-  let backstopGeocoded = 0;
-  const contributing: Array<{ adapter: CrashSourceAdapter; fetched: CrashFetchResult }> = [];
-
-  for (const backstop of successes.slice(1)) {
-    // A national backstop only fills states the regional primary does not cover.
-    // If the primary is itself national (no coversStateFips), it already covers
-    // everything and no backstop can add non-redundant records.
-    if (excludedStates.size === 0) break;
-    const included = backstop.fetched.records.filter(
-      (record) => record.stateFips !== undefined && !excludedStates.has(record.stateFips)
-    );
-    if (included.length === 0) continue;
-    mergedRecords.push(...included);
-    // FARS geocodes every returned record, so matched ≈ geocoded ≈ included here.
-    backstopMatched += included.length;
-    backstopGeocoded += included.length;
-    contributing.push({ adapter: backstop.adapter, fetched: backstop.fetched });
-  }
-
-  // Years/truncated come ONLY from the sources that actually contributed records,
-  // so a backstop whose records were all deduped out cannot leak its years into
-  // the density denominator or a stray truncation flag.
-  const contributingFetches = [primary.fetched, ...contributing.map((entry) => entry.fetched)];
-  const mergedYears = Array.from(
-    new Set(contributingFetches.flatMap((fetched) => fetched.yearsCovered))
-  ).sort((a, b) => a - b);
-
-  const mergedFetch: CrashFetchResult = {
-    // A primary source's annual cutoff cannot describe a multi-source merge.
-    publishedCutoff: contributing.length === 0 ? primary.fetched.publishedCutoff : undefined,
-    resourceUpdates: primary.fetched.resourceUpdates,
-    records: mergedRecords,
-    matchedTotal: primary.fetched.matchedTotal + backstopMatched,
-    geocodedTotal: primary.fetched.geocodedTotal + backstopGeocoded,
-    yearsCovered: mergedYears.length > 0 ? mergedYears : primary.fetched.yearsCovered,
-    yearsQueried: Array.from(
-      new Set(contributingFetches.flatMap((fetched) => fetched.yearsQueried ?? fetched.yearsCovered))
-    ).sort((a, b) => a - b),
-    truncated: contributingFetches.some((fetched) => fetched.truncated),
-  };
-
-  const contributingBackstops = contributing.map((entry) => entry.adapter);
-
-  // A covering source that FAILED while a jurisdiction-limited primary answered
-  // leaves the out-of-jurisdiction remainder uncovered. Surface it so an
-  // out-of-state area can't read "0, safe" just because the national backstop was
-  // down (the exact failure the multi-source read exists to prevent).
-  const primaryIsRegional = (primary.adapter.coversStateFips?.length ?? 0) > 0;
-  const unavailableBackstops = primaryIsRegional
-    ? settled
-        .filter((entry) => entry.fetched === null && entry.adapter.id !== primary.adapter.id)
-        .map((entry) => ({ id: entry.adapter.id, label: entry.adapter.label }))
-    : [];
-
-  const baseCore = summarizeCrashFetch(primary.adapter, mergedFetch, bbox, primary.years);
-  const core: CrashSummaryCore =
-    unavailableBackstops.length > 0 ? { ...baseCore, unavailableBackstops } : baseCore;
-
-  if (contributingBackstops.length === 0) {
-    return withDisclosure(core);
-  }
-  return withDisclosure({
-    ...mergeBackstopDisclosure(core, primary.adapter, contributingBackstops, bbox),
-    contributingSources: [primary, ...contributing].map(({ adapter, fetched }) => ({
-      id: adapter.id, label: adapter.label,
-      publishedCutoff: fetched.publishedCutoff, resourceUpdates: fetched.resourceUpdates,
-    })),
-  });
-}
+/**
+ * The study area a corridor run reads crashes for.
+ *
+ * `stateFips` is REQUIRED, and null is a real answer: the caller must say
+ * whether a confirmed place identity gave it the area's states. The bbox alone
+ * never chooses a state source, because the California rectangle contains most
+ * of Nevada.
+ */
+export type CorridorCrashStudyArea = {
+  bbox: StudyAreaBbox;
+  stateFips: CrashStudyAreaStates;
+  /** The corridor's polygon. Crashes outside it are left out. */
+  boundary?: CrashStudyBoundary | null;
+};
 
 /**
- * Re-frame a summary whose records were merged from a regional primary plus a
- * national backstop. Fatal counts already cover the full study area (fatal is
- * comparable across both sources); injury/severe counts, however, came only from
- * the primary's jurisdiction, so density is switched to the fatal basis (the only
- * one comparable over the whole bbox) and provenance records every source.
+ * Crash figures for a corridor run, from the source its STATE selects.
+ *
+ * The same rule as a Safety acquisition (`crashSourcesForStudyArea`): a known
+ * state gets the richest source that reads every one of its states; an unknown
+ * or multi-state area gets only a national source, labeled fatal-only. Every
+ * candidate the registry returns serves the whole study area, so there is
+ * nothing to merge: the first candidate that answers drives the summary, and
+ * a richer candidate that failed first is named in `unavailableSources`.
  */
-function mergeBackstopDisclosure(
-  core: CrashSummaryCore,
-  primary: CrashSourceAdapter,
-  backstops: CrashSourceAdapter[],
-  bbox: StudyAreaBbox
-): CrashSummaryCore {
-  const sources = [primary, ...backstops];
-  const area = bboxAreaSquareMiles(bbox);
-  const annualBasis = Math.max(1, core.yearsQueried.length);
-  // Fatal is the only measure that covers the full merged area, so density is
-  // reported on the fatal basis regardless of the primary's richer severity.
-  const fatalDensity = Math.round((core.totalFatalCrashes / annualBasis / area) * 10) / 10;
+export async function fetchCrashesForStudyArea(
+  area: CorridorCrashStudyArea,
+  options: { now?: Date; signal?: AbortSignal } = {}
+): Promise<CrashSummary> {
+  const { bbox } = area;
+  const studyAreaStates = knownStudyAreaStates(area.stateFips);
+  // "read_only": the scorecard reports crash figures but never writes crash
+  // rows, so it may use sources the `safety_crashes` CHECK domain has not been
+  // widened for yet.
+  const { candidates, checked } = crashSourcesForStudyArea({ bbox, stateFips: studyAreaStates }, "read_only");
 
-  return {
-    ...core,
-    sourceLabel: sources.map((adapter) => adapter.label).join(" + "),
-    attribution: [core.attribution, ...backstops.map((adapter) => adapter.attribution)]
-      .filter((value): value is string => Boolean(value))
-      .join(" "),
-    crashesPerSquareMile: fatalDensity,
-    crashDensityBasis: "fatal_only",
-    checkedSources: sources.map((adapter) => adapter.id),
-    contributingSources: sources.map((adapter) => ({ id: adapter.id, label: adapter.label })),
-  };
+  if (candidates.length === 0) {
+    return withDisclosure({
+      ...emptySummary({
+        source: "out-of-coverage",
+        sourceLabel: "No covering crash source",
+        checkedSources: checked.map((adapter) => adapter.id),
+        unavailableReason: null,
+      }),
+      studyAreaStates,
+    });
+  }
+
+  // Richest first. A later candidate is read only when every earlier one failed.
+  const failures: Array<{ adapter: CrashSourceAdapter; error: Error }> = [];
+  for (const adapter of candidates) {
+    const years = recentCrashYears(options.now).filter((year) => year >= adapter.earliestYear);
+    try {
+      const fetched = await adapter.fetch({
+        bbox,
+        years,
+        maxRecords: ANALYSIS_MAX_RECORDS,
+        signal: options.signal,
+      });
+      // The same serious-injury join a Safety acquisition runs, over the
+      // crashes inside the corridor. Without it CCRS crashes read "serious
+      // injury not separable" here and "12 serious-injury crashes" on the
+      // Safety page (KI-2026-11-02-046).
+      const inArea =
+        area.boundary === undefined
+          ? fetched.records
+          : clipCrashRecordsToBoundary(fetched.records, bbox, area.boundary).records;
+      const joined = await enrichSeriousInjuries(adapter, inArea, { signal: options.signal });
+      const joinedById = new Map(joined.records.map((record) => [record.externalId, record]));
+      const records = fetched.records.map((record) => joinedById.get(record.externalId) ?? record);
+      const core = summarizeCrashFetch(adapter, { ...fetched, records }, bbox, years, area.boundary, joined.seriousInjury);
+      return withDisclosure({
+        ...core,
+        studyAreaStates,
+        ...(failures.length > 0
+          ? { unavailableSources: failures.map(({ adapter: failed }) => ({ id: failed.id, label: failed.label })) }
+          : {}),
+      });
+    } catch (error) {
+      failures.push({
+        adapter,
+        error: error instanceof Error ? error : new Error("Unknown crash source failure"),
+      });
+    }
+  }
+
+  // Every candidate was down. An outage is a state, not a number.
+  return withDisclosure({
+    ...emptySummary({
+      source: "source-unavailable",
+      sourceLabel: candidates[0].label,
+      checkedSources: candidates.map((adapter) => adapter.id),
+      unavailableReason: failures[0]?.error.message ?? "Unknown crash source failure",
+    }),
+    studyAreaStates,
+  });
 }
 
 /**
@@ -581,11 +571,9 @@ export function buildCrashSourceSnapshot(
   }
 
   const severityNote =
-    crashes.severityCompleteness === "fatal_only"
-      ? " Fatal crashes only — this source records no injury or property-damage crashes, so injury figures are unavailable rather than zero."
-      : crashes.severityCompleteness === "fatal_injury_only"
-        ? " Fatal and injury crashes are separable; suspected serious injury (KABCO A) is not, so no KSI total is reported."
-        : "";
+    (crashes.severityCompleteness === "fatal_only"
+      ? " Fatal crashes only: this source records no injury or property-damage crashes, so injury figures are unavailable rather than zero."
+      : "") + ` ${crashSeriousInjury(crashes).statement}`;
 
   const ungeocoded = Math.max(0, crashes.reportedTotal - crashes.mappedTotal);
   const mappingNote =
@@ -597,40 +585,49 @@ export function buildCrashSourceSnapshot(
   // and a reader fills the gap in with "property damage".
   const unclassifiedNote =
     !crashes.truncated && crashes.unclassifiedCrashes > 0
-      ? ` ${crashes.unclassifiedCrashes.toLocaleString("en-US")} of the mapped crashes carry no casualty count from the source and are not classified by severity — they are counted in the total and in no severity band.`
+      ? ` ${crashes.unclassifiedCrashes.toLocaleString("en-US")} of the mapped crashes carry no casualty count from the source and are not classified by severity. They are counted in the total and in no severity band.`
       : "";
 
   const truncationNote = crashes.truncated
     ? ` The record extract reached OpenPlan's analysis cap. Severity totals and density derived from that partial extract are incomplete and are withheld from the narrative and safety score.`
     : "";
 
-  const merged = crashes.contributingSources ?? [];
-  const mergeNote =
-    merged.length >= 2
-      ? ` Merged sources: ${merged
-          .map((s) => s.label)
-          .join(" + ")}. Fatal crashes cover the full study area; injury/severe figures cover only the ${merged[0].label} portion, and density is reported on the fatal basis.`
-      : "";
-
-  const unavailable = crashes.unavailableBackstops ?? [];
-  const backstopGapNote =
+  const unavailable = crashes.unavailableSources ?? [];
+  const unavailableNote =
     unavailable.length > 0
-      ? ` ${unavailable.map((s) => s.label).join(" and ")} could not be reached this run; crashes outside ${crashes.sourceLabel}'s coverage are not included.`
+      ? ` ${unavailable.map((s) => s.label).join(" and ")} could not be reached this run, so these figures come from ${crashes.sourceLabel}.`
       : "";
+  const stateNote = unconfirmedStateNote(crashes);
+  const areaNote = studyAreaNote(crashes);
 
   return {
     ...shared,
     source: crashes.source,
     severityCompleteness: crashes.severityCompleteness,
+    seriousInjuryEnrichment: crashes.seriousInjuryEnrichment,
     crashDensityBasis: crashes.crashDensityBasis,
     reportedTotal: crashes.reportedTotal,
     mappedTotal: crashes.mappedTotal,
     truncated: crashes.truncated,
-    ...(merged.length >= 2 ? { contributingSources: merged } : {}),
-    ...(unavailable.length > 0 ? { unavailableBackstops: unavailable } : {}),
+    ...(crashes.studyAreaStates !== undefined ? { studyAreaStates: crashes.studyAreaStates } : {}),
+    ...(unavailable.length > 0 ? { unavailableSources: unavailable } : {}),
+    ...(crashes.studyArea ? { studyArea: crashes.studyArea } : {}),
     unclassifiedCrashes: crashes.unclassifiedCrashes,
-    note: `Observed crash records from ${crashes.sourceLabel}.${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${truncationNote}${mergeNote}${backstopGapNote}`,
+    note: `Observed crash records from ${crashes.sourceLabel}.${areaNote}${cutoffNote}${severityNote}${mappingNote}${unclassifiedNote}${truncationNote}${unavailableNote}${stateNote}`,
   };
+}
+
+/**
+ * The serious-injury statement for an observed summary. Read back from the
+ * summary's own fields, so a summary built before `seriousInjuryEnrichment`
+ * existed is described from its source and recorded completeness.
+ */
+function crashSeriousInjury(crashes: CrashSummaryCore) {
+  return seriousInjuryAvailabilityForRecord({
+    sourceId: crashes.source,
+    severityCompleteness: crashes.severityCompleteness,
+    enrichment: crashes.seriousInjuryEnrichment,
+  });
 }
 
 /** The safety line of the deterministic corridor narrative. */
@@ -647,7 +644,8 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
     return (
       `**Safety (${crashes.yearsQueried.length > 0 ? crashes.yearsQueried.join(", ") : "requested years"}, ${crashes.sourceLabel}):** ` +
       `${crashes.reportedTotal.toLocaleString("en-US")} crashes matched the study area, but the record extract reached OpenPlan's analysis cap. ` +
-      "Severity totals, crash density, and the safety score are withheld because the extract is incomplete."
+      "Severity totals, crash density, and the safety score are withheld because the extract is incomplete." +
+      studyAreaNote(crashes)
     );
   }
 
@@ -656,27 +654,14 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
   const densityLabel =
     crashes.crashDensityBasis === "fatal_only" ? "Fatal crash density" : "Reportable crash density";
 
-  // When a national backstop was merged in, fatal counts cover the whole study
-  // area but injury/severe came only from the regional primary — say so, or a
-  // planner reads a mixed-coverage figure as uniform.
-  const merged = crashes.contributingSources ?? [];
-  const mergeNote =
-    merged.length >= 2
-      ? ` Fatal crashes cover the full study area (${merged
-          .map((s) => s.label)
-          .join(" + ")}); injury figures, where shown, cover only the ${merged[0].label} portion.`
-      : "";
-
-  // A backstop that could not be reached means the out-of-jurisdiction remainder
-  // is uncovered — say so, jurisdiction-neutrally, so a low count for an
-  // out-of-state area is not read as "safe".
-  const unavailable = crashes.unavailableBackstops ?? [];
-  const backstopGapNote =
+  // A richer source that failed means these figures come from a thinner one.
+  // Say which, so a fatal-only count is not read as the state's full record.
+  const unavailable = crashes.unavailableSources ?? [];
+  const unavailableNote =
     unavailable.length > 0
-      ? ` ⚠️ ${unavailable
-          .map((s) => s.label)
-          .join(" and ")} could not be reached this run, so any crashes outside the coverage of ${crashes.sourceLabel} are not included — treat a low count with caution if this study area extends beyond that source.`
+      ? ` ${unavailable.map((s) => s.label).join(" and ")} could not be reached this run, so these figures come from ${crashes.sourceLabel}.`
       : "";
+  const stateNote = unconfirmedStateNote(crashes);
 
   // The unclassified share belongs in the deterministic narrative, not only in
   // the snapshot: this line is what the AI narrative and the report read, and a
@@ -696,15 +681,13 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
     crashes.totalInjuryCrashes === null
       ? ""
       : ` ${crashes.totalInjuryCrashes} non-fatal injury crashes` +
-        (crashes.severeInjuryCrashes === null
-          ? " (the source does not separate suspected serious injuries)"
-          : ` (${crashes.severeInjuryCrashes} with a suspected serious injury)`) +
+        (crashes.severeInjuryCrashes === null ? "" : ` (${crashes.severeInjuryCrashes} with a suspected serious injury)`) +
         ` of ${crashes.reportedTotal.toLocaleString("en-US")} crashes reported.`;
 
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
-    `${crashes.bicyclistFatalities} involving a bicyclist).${injuryNote} ${densityLabel}: ` +
-    `${crashes.crashesPerSquareMile}/sq mi/yr.${cutoffNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`
+    `${crashes.bicyclistFatalities} involving a bicyclist).${injuryNote} ${crashSeriousInjury(crashes).statement} ${densityLabel}: ` +
+    `${crashes.crashesPerSquareMile}/sq mi/yr.${studyAreaNote(crashes)}${cutoffNote}${unclassifiedNote}${unavailableNote}${stateNote}`
   );
 }

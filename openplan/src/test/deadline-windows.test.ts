@@ -1,4 +1,6 @@
-import { describe, expect, it } from "vitest";
+// My Work reads report-packet freshness through a server-only module.
+vi.mock("server-only", () => ({}));
+import { describe, expect, it, vi } from "vitest";
 
 import { comingUpFromMyWork } from "@/lib/dashboard/coming-up";
 import { loadWorkspaceDates, type WorkspaceDatesSupabaseLike } from "@/lib/dashboard/workspace-dates";

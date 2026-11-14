@@ -130,6 +130,25 @@ export function parseCorridorText(text: string): CorridorGeojson | null {
 }
 
 /**
+ * The place identity to send with a run, when a candidate place IS the study
+ * area on screen (the same bbox).
+ *
+ * Null for a drawn or uploaded area, and for an area edited after its place was
+ * picked. The receiving route re-resolves the identity and checks the bbox
+ * again; this only keeps the page from sending an identity the area no longer
+ * has. Only kind and GEOID leave the page, never a state.
+ */
+export function placeIdentityForStudyArea(
+  geometry: unknown,
+  candidates: ReadonlyArray<PlaceBoundaryResponse | null | undefined>
+): { kind: PlaceBoundaryResponse["kind"]; geoid: string } | null {
+  if (!geometry) return null;
+  const { bbox } = summarizeCorridorText(JSON.stringify(geometry));
+  const match = candidates.find((place) => place && studyAreaBboxesMatch(place.bbox, bbox));
+  return match ? { kind: match.kind, geoid: match.geoid } : null;
+}
+
+/**
  * A study-area selection reconstructed from something the user already told the
  * app — today, the workspace's home geography.
  *

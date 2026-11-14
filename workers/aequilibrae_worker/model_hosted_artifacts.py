@@ -6,6 +6,7 @@ import tempfile
 from uuid import UUID
 
 import model_handoff_files
+from supabase_service_headers import service_key_headers
 
 
 def configured_upload(object_path, data, content_type):
@@ -14,7 +15,7 @@ def configured_upload(object_path, data, content_type):
     import requests
     base = os.environ["SUPABASE_URL"].rstrip("/")
     key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-    headers = {"apikey": key, "Authorization": "Bearer " + key}
+    headers = service_key_headers(key)
     try:
         requests.post(base + "/storage/v1/object/run-artifacts/" + object_path,
                       headers={**headers, "Content-Type": content_type, "x-upsert": "false"},

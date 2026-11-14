@@ -45,7 +45,8 @@ async function fixture(){
  const calls=()=>respond.mock.calls.map(([name])=>name);
  return {directory,controller,identity,command,claim,snapshot,native,respond,fetcher,service,work,options,run,calls};
 }
-describe("owned GTFS attempt execution",()=>{
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("owned GTFS attempt execution",()=>{
  it("delivers explicit completion with its retained artifact and tract evidence",async()=>{
   const f=await fixture();f.work.mockResolvedValue({operation:"complete",input:{
    archive:{path:`${workspaceId}/${feedId}/${versionId}.zip`,sha256:"a".repeat(64),bytes:100},

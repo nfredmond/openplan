@@ -90,8 +90,8 @@ const ENTRY_KIND_OPTIONS = [
 ];
 
 const COST_BASIS_OPTIONS = [
-  { value: "itemized", label: "Itemized — the sum of the projects in it" },
-  { value: "banded", label: "Banded — one lump figure for the period" },
+  { value: "itemized", label: "Itemized: the sum of the projects in it" },
+  { value: "banded", label: "Banded: one lump figure for the period" },
 ];
 
 /**
@@ -181,7 +181,7 @@ function fieldsForKind(
           label: "Escalation year",
           kind: "number",
           numeric: true,
-          hint: "Leave blank unless the plan names this exact year — OpenPlan discloses that it assumed the period's midpoint, and filling this in deletes that disclosure.",
+          hint: "Leave blank unless the plan names this exact year. OpenPlan discloses that it assumed the period's midpoint, and filling this in deletes that disclosure.",
         },
         { key: "costEstimateBasis", label: "Cost basis", kind: "select", options: COST_BASIS_OPTIONS },
       ];

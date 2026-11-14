@@ -65,7 +65,8 @@ process.once('message',()=>{writeSync(5,'cpu-active',0);while(true){Math.sqrt(Ma
 }
 
 describe("GTFS parsing in an independently supervised process", () => {
-  it("gives the child only the explicit production environment", async () => {
+  // POSIX only: on Windows libuv adds the required system variables (SYSTEMROOT, PATH and others) to every child.
+  it.skipIf(process.platform === "win32")("gives the child only the explicit production environment", async () => {
     const { options, directory, outputPath } = await setup();
     const entrypoint = path.join(directory, "environment.mjs");
     await writeFile(entrypoint, `import {writeSync} from 'node:fs';import {createHash} from 'node:crypto';
@@ -123,7 +124,8 @@ process.send({byteSize:bytes.length,sha256:createHash('sha256').update(bytes).di
     expect((await readFile(outputPath)).length).toBe(0);
   });
 
-  it("renews during a CPU-blocked child and waits for forced termination after ownership loss", async () => {
+  // POSIX only: Windows has no catchable SIGTERM, so kill() ends the child at once and the SIGKILL escalation never happens.
+  it.skipIf(process.platform === "win32")("renews during a CPU-blocked child and waits for forced termination after ownership loss", async () => {
     const { options, directory, outputPath } = await setup();
     await cpuFixture(directory);
     let observedCpu = false;
@@ -137,7 +139,8 @@ process.send({byteSize:bytes.length,sha256:createHash('sha256').update(bytes).di
     expect(() => process.kill(launched.children[0].pid!, 0)).toThrow();
   });
 
-  it("bounds an unresponsive renewal without overlapping requests", async () => {
+  // POSIX only: Windows has no catchable SIGTERM, so kill() ends the child at once and the SIGKILL escalation never happens.
+  it.skipIf(process.platform === "win32")("bounds an unresponsive renewal without overlapping requests", async () => {
     const { options, directory, outputPath } = await setup();
     await cpuFixture(directory);
     let hungRequests = 0, aborted = false;
@@ -184,7 +187,8 @@ process.send({byteSize:2,sha256:${fault === "wrong_digest" ? "'0'.repeat(64)" : 
     expect(launched.children).toHaveLength(0);
   });
 
-  it("enforces a parent deadline even when the child cannot process timers", async () => {
+  // POSIX only: Windows has no catchable SIGTERM, so kill() ends the child at once and the SIGKILL escalation never happens.
+  it.skipIf(process.platform === "win32")("enforces a parent deadline even when the child cannot process timers", async () => {
     const { options, directory, outputPath } = await setup();
     await cpuFixture(directory);
     let observedCpu = false;
@@ -203,7 +207,8 @@ process.send({byteSize:2,sha256:${fault === "wrong_digest" ? "'0'.repeat(64)" : 
     expect(launched.children[0].signalCode).toBe("SIGKILL");
   });
 
-  it("cancels active parsing and retains its partial local output", async () => {
+  // POSIX only: Windows has no catchable SIGTERM, so kill() ends the child at once and the SIGKILL escalation never happens.
+  it.skipIf(process.platform === "win32")("cancels active parsing and retains its partial local output", async () => {
     const { options, directory, outputPath } = await setup();
     await cpuFixture(directory);
     const controller = new AbortController();

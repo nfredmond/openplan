@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { isUuid } from "@/lib/uuid";
 import {
   checkMonthlyRunCap,
   isRunCapExceeded,
@@ -68,6 +69,8 @@ export async function POST(
 ) {
   const audit = createApiAuditLogger("network_package_versions.ingest", req);
   const { packageId, versionId } = await params;
+  if (!isUuid(packageId)) return NextResponse.json({ error: "Network package not found" }, { status: 404 });
+  if (!isUuid(versionId)) return NextResponse.json({ error: "Network package version not found" }, { status: 404 });
 
   const bodyRead = await readJsonWithLimit<Record<string, unknown>>(req, NETWORK_PACKAGE_INGEST_MAX_BODY_BYTES);
   if (!bodyRead.ok) {

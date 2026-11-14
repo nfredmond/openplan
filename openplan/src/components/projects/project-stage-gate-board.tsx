@@ -60,7 +60,7 @@ export function ProjectStageGateBoard({
               This is the project-delivery control layer: where the bound template&apos;s statutory,
               environmental, outreach, and programming checkpoints stop being abstract and start
               becoming an explicit workflow. It counts decisions recorded against this project
-              only — a decision recorded on another project is not evidence about this one.
+              only. A decision recorded on another project is not evidence about this one.
             </p>
           </div>
         </div>
@@ -191,7 +191,7 @@ export function ProjectStageGateBoard({
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
             {decisionsUnreadable
-              ? "The next gate follows from which gates have already passed, and the decision log did not load — so no evidence-pack cue is offered here. Reload once the read succeeds."
+              ? "The next gate follows from which gates have already passed, and the decision log did not load, so no evidence-pack cue is offered here. Reload once the read succeeds."
               : stageGateSummary.nextGate
                 ? `${stageGateSummary.nextGate.requiredEvidenceCount} required evidence item${stageGateSummary.nextGate.requiredEvidenceCount === 1 ? "" : "s"} defined in the active template. ${stageGateSummary.nextGate.operatorControlEvidenceCount > 0 ? `${stageGateSummary.nextGate.operatorControlEvidenceCount} PM/invoicing control profile${stageGateSummary.nextGate.operatorControlEvidenceCount === 1 ? " is" : "s are"} available for this review.` : "Build the evidence pack before expecting a pass decision."}`
                 : "Every stage gate in the active template currently has a recorded PASS decision."}
@@ -301,7 +301,7 @@ export function ProjectStageGateBoard({
 
       <div className="module-note mt-5 text-sm">
         Template alignment is honest here: OpenPlan tracks gate logic, evidence posture, milestones,
-        submittals, and invoicing cues, and now records the pass/hold decisions themselves — but it
+        submittals, and invoicing cues, and now records the pass/hold decisions themselves, but it
         does not yet generate exact exhibit/form packets automatically.
       </div>
     </article>

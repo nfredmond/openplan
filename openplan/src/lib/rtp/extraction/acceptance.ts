@@ -274,7 +274,7 @@ export async function resolveExtractionCandidate(options: {
           error: "That transcription has already been reviewed",
           details:
             "Somebody has already accepted or set aside this passage, so nothing was saved. Reload the " +
-            "document review to see what happened to it — accepting it twice would record the same figure " +
+            "document review to see what happened to it. Accepting it twice would record the same figure " +
             "in this plan twice.",
         },
         { status: 409 },
@@ -328,7 +328,7 @@ export type ExtractionAcceptanceRecord = { recorded: true } | { recorded: false;
 
 const NOT_RECORDED_WARNING =
   "This was saved to the plan and it cites its page in the document. The document review could not be " +
-  "updated to show it as accepted, so it may still be listed there as waiting — accepting it a second time " +
+  "updated to show it as accepted, so it may still be listed there as waiting. Accepting it a second time " +
   "would record the same value in this plan twice.";
 
 /**

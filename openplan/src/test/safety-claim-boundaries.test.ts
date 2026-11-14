@@ -75,7 +75,8 @@ function collectSourceFiles(relativeRoot: string): string[] {
   }
 
   return entries.flatMap((entry) => {
-    const relative = path.join(relativeRoot, entry);
+    // Forward slashes on every host: the roots below are matched as "src/..." prefixes.
+    const relative = path.posix.join(relativeRoot, entry);
     const full = path.join(process.cwd(), relative);
     if (statSync(full).isDirectory()) return collectSourceFiles(relative);
     return /\.(?:ts|tsx)$/.test(entry) ? [relative] : [];

@@ -12,7 +12,7 @@ import type { Justice40Determination } from "./types";
 
 /** The rescission facts, stated once. */
 export const PROGRAM_DISCONTINUED_CAVEAT =
-  "The federal Justice40 Initiative and CEJST were rescinded (Executive Order 14008 revoked 2025-01-20; the tool was taken offline ~2025-01-22) — this is a frozen historical snapshot, NOT a current federal eligibility or funding determination.";
+  "The federal Justice40 Initiative and CEJST were rescinded (Executive Order 14008 revoked 2025-01-20; the tool was taken offline ~2025-01-22). This is a frozen historical snapshot, NOT a current federal eligibility or funding determination.";
 
 /**
  * Why a residual set of tracts still has no record: CEJST keys on 2010 tracts and
@@ -31,11 +31,11 @@ function label(det: Justice40Determination): string {
 export function federalJustice40ShortStatus(det: Justice40Determination): string {
   switch (det.status) {
     case "disadvantaged":
-      return `Disadvantaged (${label(det)} — historical snapshot)`;
+      return `Disadvantaged (${label(det)}, historical snapshot)`;
     case "not_disadvantaged":
       return `Not disadvantaged (${label(det)})`;
     default:
-      return "Not determined — no CEJST record matched";
+      return "Not determined: no CEJST record matched";
   }
 }
 
@@ -76,7 +76,7 @@ export function federalJustice40NarrativeLine(det: Justice40Determination): stri
           : det.notDeterminedCause === "no_matching_record"
             ? `No CEJST record matched the study-area tracts (${c.undeterminedTracts} of ${c.totalTracts} had no record). ${VINTAGE_NOTE}`
             : "No official disadvantaged-community designation source covered this study area.";
-      return `**Federal Justice40 / CEJST determination:** Not determined — ${reason} A proxy screening was computed instead.`;
+      return `**Federal Justice40 / CEJST determination:** Not determined: ${reason} A proxy screening was computed instead.`;
     }
   }
 }

@@ -870,6 +870,26 @@ describe("POST /api/gtfs/feeds/[feedId]/refresh", () => {
     expect(params.provisionalName).toBe("Mountain Area Transit");
   });
 
+  it("answers a refetched archive that does not fit with the shared storage refusal", async () => {
+    const quotaBytes = 5 * 1024 ** 3;
+    const message = "This file would put the workspace over its 5 GiB storage limit (5 GiB used). Delete files you no longer need, or ask whoever runs this OpenPlan site to raise the limit.";
+    runGtfsIngestMock.mockResolvedValue({
+      ok: false,
+      status: 413,
+      code: "workspace_storage_limit",
+      detail: message,
+      feedId: FEED_ID,
+      versionId: CURRENT_VERSION_ID,
+      createdFeed: false,
+      storageRoom: { status: "full", usedBytes: quotaBytes - 10, quotaBytes, message },
+    });
+
+    const response = await REFRESH(refreshRequest(FEED_ID, { workspaceId: WORKSPACE_ID }), routeContext(FEED_ID));
+
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: message, usedBytes: quotaBytes - 10, quotaBytes });
+  });
+
   it("says an uploaded feed has no address to refresh from", async () => {
     const response = await REFRESH(
       refreshRequest(UPLOADED_FEED_ID, { workspaceId: WORKSPACE_ID }),

@@ -94,6 +94,21 @@ describe("campaign template registry", () => {
     expect(seen, "a template may not bake in a place — the campaign's own area frames its maps").toEqual([]);
   });
 
+  it("the Safety study template asks about the study area, so it fits a corridor or a county (KI-2026-11-14-064)", () => {
+    const template = getCampaignTemplate("corridor-safety-study")!;
+    const residentText = [
+      template.suggestedPublicDescription,
+      ...template.questions.flatMap((question) => [question.prompt, question.helpText ?? "", ...(question.options ?? []).map((option) => option.label)]),
+    ];
+    expect(residentText.filter((text) => /corridor/i.test(text))).toEqual([]);
+    expect(template.questions.map((question) => question.prompt)).toEqual([
+      "Where in this area do you feel unsafe or uncomfortable?",
+      "How do you most often travel in this area?",
+      "How safe do you feel traveling in this area today?",
+      "What single change would most improve safety in this area?",
+    ]);
+  });
+
   it("conditions may not appear in template configs — they reference question ids that do not exist yet", () => {
     for (const template of CAMPAIGN_TEMPLATES) {
       for (const question of template.questions) {
@@ -119,6 +134,28 @@ describe("campaign template registry", () => {
       expect(template.questions.length, template.id).toBeGreaterThanOrEqual(2);
       const categoryLabels = template.categories.map((c) => c.label);
       expect(new Set(categoryLabels).size, `${template.id} duplicate category labels`).toBe(categoryLabels.length);
+    }
+  });
+
+  it("puts no demonstration or test wording where residents can read it", () => {
+    // Residents see the public description, questions, options and categories
+    // once a planner publishes. The portal and the public API also fall back to
+    // the summary when the public description is blank, so it counts too.
+    const demoWording = /\b(demo|demonstration|exercise material|test(ing)?|sample|synthetic|lorem|placeholder)\b/i;
+    for (const template of CAMPAIGN_TEMPLATES) {
+      const residentText = [
+        template.suggestedPublicDescription,
+        template.suggestedSummary,
+        ...template.categories.flatMap((category) => [category.label, category.description]),
+        ...template.questions.flatMap((question) => [
+          question.prompt,
+          question.helpText ?? "",
+          ...(question.options ?? []).map((option) => option.label),
+        ]),
+      ];
+      for (const text of residentText) {
+        expect(text, `${template.id}: "${text}"`).not.toMatch(demoWording);
+      }
     }
   });
 });

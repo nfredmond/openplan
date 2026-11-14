@@ -1,6 +1,9 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CountyRunValidationPrep } from "@/components/county-runs/county-run-validation-prep";
+import {
+  CountyRunValidationPrep,
+  VALIDATION_PREP_NO_WORKER_NOTE,
+} from "@/components/county-runs/county-run-validation-prep";
 import type { PrepareCountyRunValidationResponse } from "@/lib/api/county-onramp";
 
 /**
@@ -168,5 +171,20 @@ describe("a county run can say whether it is ready to validate", () => {
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent(/problem reading the run, not a finding about it/i);
     expect(screen.queryByTestId("county-validation-prep")).toBeNull();
+  });
+});
+
+describe("the validation check on a copy with no county worker", () => {
+  it("says so before the planner clicks, and only when the page said there is no worker", () => {
+    vi.stubGlobal("fetch", vi.fn());
+    const { rerender } = render(<CountyRunValidationPrep countyRunId={RUN_ID} workerConfigured={false} />);
+    expect(screen.getByTestId("validation-prep-no-worker").textContent).toBe(VALIDATION_PREP_NO_WORKER_NOTE);
+    expect(fetch).not.toHaveBeenCalled();
+
+    rerender(<CountyRunValidationPrep countyRunId={RUN_ID} workerConfigured />);
+    expect(screen.queryByTestId("validation-prep-no-worker")).toBeNull();
+
+    rerender(<CountyRunValidationPrep countyRunId={RUN_ID} />);
+    expect(screen.queryByTestId("validation-prep-no-worker")).toBeNull();
   });
 });

@@ -260,7 +260,7 @@ describe("the measure annual statement", () => {
 
     const sentence = statementCoverageSentence(coverage(), "FY 2026");
     expect(sentence).toBe(
-      "Covers 2 reporting periods in FY 2026 — FY26 Q1, FY26 Q2 (July 1, 2025 to December 31, 2025). " +
+      "Covers 2 reporting periods in FY 2026: FY26 Q1, FY26 Q2 (July 1, 2025 to December 31, 2025). " +
         "1 further period has been opened for this year with no amount recorded yet (FY26 Q3). The totals " +
         "below are therefore at least what came in, not necessarily all of it. " +
         "The ordinance's reporting cadence for this fund is: quarterly."

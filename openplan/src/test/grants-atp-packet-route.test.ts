@@ -121,7 +121,7 @@ describe("GET /api/funding-opportunities/[id]/application/atp-packet", () => {
       { method: "eq", args: ["opportunity_id", OPPORTUNITY_ID] },
     ]);
     expect(calls.projects).toEqual([
-      { method: "select", args: ["id, name"] },
+      { method: "select", args: ["id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year"] },
       { method: "eq", args: ["id", PROJECT_ID] },
       { method: "eq", args: ["workspace_id", WORKSPACE_ID] },
     ]);
@@ -184,10 +184,72 @@ describe("GET /api/funding-opportunities/[id]/application/atp-packet", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/markdown");
     expect(response.headers.get("content-disposition")).toMatch(/^attachment; filename="atp-scoring-packet-\d{4}-\d{2}-\d{2}\.md"$/);
-    expect(text).toContain("# California ATP Application Packet — run `run-9`");
+    expect(text).toContain("# California ATP screening packet");
+    expect(text).toContain("- Corridor analysis run: `run-9`");
     expect(text).toContain("| Safety | 64.0 |");
     expect(text).toContain("| Climate | Not recorded |");
     expect(text).toContain("- SB 535 DAC: Not recorded");
+  });
+
+  it("prints the project's recorded summary, estimate and crash source instead of placeholders", async () => {
+    install({
+      funding_opportunity_application_sections: { data: ATP_SECTIONS, error: null },
+      projects: {
+        data: {
+          id: PROJECT_ID,
+          name: "Main Street safe routes",
+          summary: "Close sidewalk gaps on Main Street.",
+          estimated_cost_amount: "2850000.00",
+          estimated_cost_currency: "USD",
+          estimated_cost_basis_year: 2026,
+        },
+        error: null,
+      },
+      runs: {
+        data: [
+          {
+            ...RUN,
+            metrics: {
+              ...RUN.metrics,
+              sourceSnapshots: {
+                crashes: {
+                  label: "California Crash Reporting System (CCRS)",
+                  yearsQueried: [2025, 2022, 2024, 2023],
+                  fetchedAt: "2026-11-02T08:40:33.341Z",
+                },
+              },
+            },
+          },
+        ],
+        error: null,
+      },
+    });
+
+    const text = await (await GET(url("?format=markdown"), context)).text();
+
+    expect(text).toContain("**Project description**\n\nClose sidewalk gaps on Main Street.");
+    expect(text).not.toContain("Project description to be provided by lead agency.");
+    expect(text).toContain(
+      "- Estimated cost: **USD 2,850,000.00, 2026 price year. Planning-level estimate recorded on the project, not an engineer's estimate.**"
+    );
+    expect(text).not.toContain("Estimated programmed cost: _to be provided");
+    expect(text).toContain(
+      "- Safety score source: California Crash Reporting System (CCRS), crash years 2022–2025, retrieved 2026-11-02."
+    );
+  });
+
+  it("says the crash source and estimate are not recorded when the records hold none", async () => {
+    install({
+      funding_opportunity_application_sections: { data: ATP_SECTIONS, error: null },
+      projects: { data: { id: PROJECT_ID, name: "Main Street safe routes", summary: "  " }, error: null },
+      runs: { data: [RUN], error: null },
+    });
+
+    const text = await (await GET(url("?format=markdown"), context)).text();
+
+    expect(text).toContain("- Safety score source: not recorded in the analysis run.");
+    expect(text).toContain("Estimated programmed cost: _to be provided by lead agency");
+    expect(text).toContain("Project description to be provided by lead agency.");
   });
 
   it("denies a caller without read access", async () => {

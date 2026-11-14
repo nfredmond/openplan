@@ -267,7 +267,7 @@ function readNumberBox(text: string): NumberBoxReading {
 }
 
 function unreadableNumberMessage(text: string): string {
-  return `"${text}" is not a number this form can read. Write it in digits — 33.5, 33.5% and 1,000 are all fine.`;
+  return `"${text}" is not a number this form can read. Write it in digits: 33.5, 33.5% and 1,000 are all fine.`;
 }
 
 /**
@@ -355,7 +355,7 @@ export const PLAIN_SCHEMA_SENTENCES: ReadonlyArray<{ match: RegExp; plain: strin
   },
   {
     match: /a percentage may carry at most four decimal places/i,
-    plain: "A percentage can be stated to at most four decimal places — 33.3333 is fine, 33.33335 is not.",
+    plain: "A percentage can be stated to at most four decimal places: 33.3333 is fine, 33.33335 is not.",
   },
   { match: /^Too big: expected number to be <=100$/i, plain: "A percentage cannot be more than 100." },
   { match: /^Too small: expected number to be >=0$/i, plain: "This cannot be a negative number." },
@@ -541,7 +541,7 @@ export function composeMeasureRuleDraft(draft: MeasureRuleDraft): MeasureRuleDra
         problems.push({
           field,
           message:
-            "A minimum for each recipient does not apply to a category the agency programs itself — there are " +
+            "A minimum for each recipient does not apply to a category the agency programs itself. There are " +
             "no recipients to guarantee it to. Untick the minimum, or say this share goes back to the cities " +
             "and districts.",
         });
@@ -821,5 +821,5 @@ export function describeFiledReference(row: MeasureFiledCategoryReference): stri
   if (row.claims > 0) parts.push(`${row.claims} ${row.claims === 1 ? "claim" : "claims"}`);
   const total = row.allocations + row.claims;
   const what = parts.length > 0 ? parts.join(" and ") : "recorded history";
-  return `"${row.reference}" — ${what} ${total === 1 ? "is" : "are"} filed against it.`;
+  return `"${row.reference}": ${what} ${total === 1 ? "is" : "are"} filed against it.`;
 }

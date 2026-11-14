@@ -1,6 +1,14 @@
 import { readSafetySeedOrigin, type SafetySeedProvenance } from "@/lib/grants/safety-seed-origin";
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
+import { identifySeededCatalogKey } from "@/lib/grants/atp-packet";
+import { loadFinalizerNames, type FinalizerNames } from "@/lib/grants/application-finalizers";
+import { evidenceAppendixProgramFor, evidenceAppendixSelectionSchema } from "@/lib/grants/evidence-appendix-keys";
+import { summarizeEvidenceAppendices } from "@/lib/grants/evidence-appendices";
+import { assembleEvidenceAppendices, type AssembledEvidenceAppendices } from "@/lib/grants/evidence-appendix-programs";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
@@ -9,20 +17,22 @@ import { renderReportPdf } from "@/lib/reports/pdf";
 import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import {
   APPLICATION_ATTACHMENT_SELECT,
+  APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR,
   APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
   APPLICATION_PENDING_SCHEMA_ERROR,
   APPLICATION_SECTION_PROVENANCE_SELECT,
   looksLikePendingAssemblySchema,
+  looksLikePendingExportCustodySchema,
   looksLikePendingFinalizerSchema,
   parseApplicationAttachmentRow,
   parseApplicationSectionRow,
   type ApplicationAttachmentRow,
   type ApplicationSectionRow,
 } from "@/lib/grants/application";
+import { applicationDraftStamps, countOutstandingRequiredAttachments } from "@/lib/grants/application-draft-stamps";
 import {
   applicationExportPacketLabel,
   buildGrantApplicationHtml,
-  countOutstandingRequiredAttachments,
   type GrantApplicationExportSection,
   type GrantApplicationSectionProvenance,
 } from "@/lib/grants/application-html";
@@ -38,7 +48,8 @@ import {
  * Package this opportunity's application into one PDF: cover + every section
  * (final text, or a disclosed outstanding-item block) + attachment checklist +
  * provenance appendix — rendered through the one report PDF pipeline, stored
- * in the grant-application-exports bucket, and registered append-only.
+ * in the grant-application-exports bucket, and registered append-only with the
+ * PDF's SHA-256 and, for SS4A, the evidence appendix manifest.
  *
  * The grounding gate here is DEFENSE IN DEPTH on top of the finalize gate: a
  * section finalized UNEDITED from a stored AI draft whose grounding does not
@@ -47,14 +58,28 @@ import {
  * operator's own work product and is never re-judged by a stored verdict.)
  * Missing required attachments do NOT block — the document is stamped DRAFT
  * prominently instead, because packaging a work in progress is legitimate as
- * long as no reader can mistake it for submittable.
+ * long as no reader can mistake it for submittable. Final section text that
+ * still holds `[VERIFY]` markers or unfilled Safety seed placeholders stamps it
+ * DRAFT the same way, and the response lists every stamp reason.
+ *
+ * An application seeded from a program that declares evidence appendices
+ * (SS4A, California ATP; `evidence-appendix-keys.ts`) also carries appendices
+ * drawn from the linked project's saved records. The optional JSON body
+ * `{ appendices: [...] }` chooses which; no body means all of them. A
+ * deselected or missing appendix is still listed in the document, never
+ * dropped. Finalizers print as workspace roles, never email addresses, and
+ * times print on the workspace calendar.
  */
 
 const EXPORT_BUCKET = "grant-application-exports";
 
 // Not exported: Next.js route files may only export route handlers/config.
 const APPLICATION_EXPORT_SELECT =
-  "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at";
+  "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at, sha256, appendix_manifest_json";
+
+// The custody columns (migration 20261102110100), probed before anything is
+// rendered or stored.
+const APPLICATION_EXPORT_CUSTODY_PROBE = "id, sha256, appendix_manifest_json";
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -92,12 +117,15 @@ const FINALIZER_NOT_RECORDED_DISCLOSURE =
 
 function resolveSectionProvenance(
   section: ApplicationSectionRow,
-  draft: DraftRowLite | null
+  draft: DraftRowLite | null,
+  finalizers: FinalizerNames
 ): GrantApplicationSectionProvenance {
   const finalizedAt = section.status === "final" ? section.finalized_at : null;
   const finalizedBy =
     section.status === "final"
-      ? section.finalized_by ?? FINALIZER_NOT_RECORDED_DISCLOSURE
+      ? section.finalized_by
+        ? finalizers.nameFor(section.finalized_by)
+        : FINALIZER_NOT_RECORDED_DISCLOSURE
       : null;
 
   if (!section.final_markdown) {
@@ -135,6 +163,7 @@ function resolveSectionProvenance(
     totalSentenceCount: grounding?.total_sentence_count ?? null,
     finalizedBy,
     finalizedAt,
+    sourceDraftText: draft.draft_markdown,
   };
 }
 
@@ -147,6 +176,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const parsedParams = paramsSchema.safeParse(routeParams);
     if (!parsedParams.success) {
       return NextResponse.json({ error: "Invalid funding opportunity id" }, { status: 400 });
+    }
+
+    const body = await readJsonWithLimit(request, BODY_LIMITS.smallJson);
+    if (!body.ok) return body.response;
+    const selection = body.data === null && !body.parseError ? null : evidenceAppendixSelectionSchema.safeParse(body.data);
+    if (selection && !selection.success) {
+      return NextResponse.json({ error: "Invalid export request" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -224,7 +260,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (sections.length === 0 && attachments.length === 0) {
       return NextResponse.json(
-        { error: "No application is initialized for this opportunity — nothing to export." },
+        { error: "No application is initialized for this opportunity. Nothing to export." },
         { status: 422 }
       );
     }
@@ -367,11 +403,49 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (!safetySeedHistory.some((entry) => entry.artifactId === provenance.artifactId && entry.snapshotHash === provenance.snapshotHash)) safetySeedHistory.push(provenance);
     }
 
+    // Every time in the document prints on the workspace calendar; a failed read is UTC, said so.
+    const calendar = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);
+
+    // The evidence appendices of a program that declares them, read from the
+    // linked project's saved records. Other programs keep the packet they had.
+    const catalogKey = pursuit.context.pursuitKind === "grant" ? identifySeededCatalogKey(sections) : null;
+    const appendixProgram = evidenceAppendixProgramFor(catalogKey);
+    let assembled: AssembledEvidenceAppendices | null = null;
+    if (appendixProgram) {
+      const requested = selection ? selection.data.appendices : appendixProgram.keys;
+      // A key another program declares is not this application's appendix.
+      if (requested.some((key) => !appendixProgram.keys.includes(key))) {
+        return NextResponse.json({ error: "Invalid export request" }, { status: 400 });
+      }
+      assembled = await assembleEvidenceAppendices(appendixProgram.catalogKey, supabase, {
+        workspaceId: opportunity.workspace_id,
+        projectId: typeof opportunity.project_id === "string" ? opportunity.project_id : null,
+        seedHistory: safetySeedHistory,
+        selected: new Set(requested),
+        generatedAt,
+        timeZone: calendar.timeZone,
+      });
+    }
+    const evidenceAppendices = assembled?.appendices;
+
+    // Finalizers print as this workspace's roles, never as user ids or emails. The
+    // roster is read with the service role behind its own membership check.
+    const finalizers = await loadFinalizerNames(
+      createServiceRoleClient(),
+      user.id,
+      opportunity.workspace_id,
+      sections.flatMap((section) => (section.status === "final" && section.finalized_by ? [section.finalized_by] : []))
+    );
+    if (!finalizers.rosterRead) {
+      audit.warn("application_export_finalizer_roster_unread", { opportunityId: opportunity.id, userId: user.id });
+    }
+
     const exportSections: GrantApplicationExportSection[] = sections.map((section) => ({
       section,
       provenance: resolveSectionProvenance(
         section,
-        section.finalized_from_draft_id ? draftById.get(section.finalized_from_draft_id) ?? null : null
+        section.finalized_from_draft_id ? draftById.get(section.finalized_from_draft_id) ?? null : null,
+        finalizers
       ),
     }));
 
@@ -393,10 +467,27 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sections: exportSections,
       attachments,
       generatedAt,
+      evidenceAppendices,
+      evidenceAppendixFrame: assembled?.frame,
+      calendar,
     });
 
+    // The register row records the PDF's hash and appendix manifest. Ask for
+    // those columns before rendering or storing anything, so a database behind
+    // the custody migration refuses here, naming it, instead of after the PDF
+    // is uploaded. Any other probe error recurs at the insert below and is
+    // handled there.
+    const custodyProbe = await supabase
+      .from("funding_opportunity_application_exports")
+      .select(APPLICATION_EXPORT_CUSTODY_PROBE)
+      .eq("opportunity_id", opportunity.id)
+      .limit(1);
+    if (looksLikePendingExportCustodySchema(custodyProbe.error?.message)) {
+      return NextResponse.json({ error: APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR }, { status: 503 });
+    }
+
     const pdf = await renderReportPdf(html, {
-      title: `${opportunityTitle} — ${packetLabel}`,
+      title: `${opportunityTitle}: ${packetLabel}`,
       generatedAt,
       footerLabel: opportunityTitle,
     });
@@ -404,6 +495,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const exportId = crypto.randomUUID();
     const storagePath = `${opportunity.workspace_id}/${opportunity.id}/${exportId}.pdf`;
     const pdfBytes = Buffer.from(pdf.bytes);
+    const sha256 = createHash("sha256").update(pdfBytes).digest("hex");
+    const appendixSummary = evidenceAppendices ? summarizeEvidenceAppendices(evidenceAppendices) : null;
 
     // Members have no direct INSERT on this bucket (migration
     // 20261017000013): the export is stored with the service role, after the
@@ -450,6 +543,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         pdf_engine: pdf.engine,
         page_count: pdf.pageCount,
         generated_by: user.id,
+        sha256,
+        appendix_manifest_json: appendixSummary,
       })
       .select(APPLICATION_EXPORT_SELECT)
       .single();
@@ -468,6 +563,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const outstandingRequiredCount = countOutstandingRequiredAttachments(attachments);
+    const draftStamps = applicationDraftStamps(sections, attachments);
 
     audit.info("application_exported", {
       opportunityId: opportunity.id,
@@ -476,7 +572,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       exportId,
       pdfEngine: pdf.engine,
       pageCount: pdf.pageCount,
+      sha256,
+      byteLength: pdfBytes.byteLength,
+      appendices: appendixSummary,
       outstandingRequiredCount,
+      draftStamps,
       durationMs: Date.now() - startedAt,
     });
 
@@ -489,7 +589,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // to the caller exactly as it is disclosed inside the document.
         engineDisclosure: pdf.disclosure,
         outstandingRequiredCount,
-        isDraftStamped: outstandingRequiredCount > 0,
+        isDraftStamped: draftStamps.length > 0,
+        draftStamps,
+        sha256,
+        byteLength: pdfBytes.byteLength,
+        appendices: appendixSummary,
       },
       { status: 201 }
     );
@@ -545,6 +649,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (exportsError) {
       if (looksLikePendingAssemblySchema(exportsError.message)) {
         return NextResponse.json({ error: APPLICATION_PENDING_SCHEMA_ERROR }, { status: 503 });
+      }
+      if (looksLikePendingExportCustodySchema(exportsError.message)) {
+        return NextResponse.json({ error: APPLICATION_EXPORT_CUSTODY_PENDING_SCHEMA_ERROR }, { status: 503 });
       }
       audit.error("application_exports_list_failed", {
         opportunityId: access.opportunity.id,

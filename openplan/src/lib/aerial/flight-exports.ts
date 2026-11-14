@@ -397,7 +397,7 @@ export function buildWpmlTemplate(input: WpmlBuildInput): string {
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:wpml="${WPML_NAMESPACE}">`,
     "<Document>",
-    `  <wpml:author>OpenPlan flight plan — ${escapeXml(input.missionTitle)}</wpml:author>`,
+    `  <wpml:author>OpenPlan flight plan: ${escapeXml(input.missionTitle)}</wpml:author>`,
     `  <wpml:createTime>${created}</wpml:createTime>`,
     `  <wpml:updateTime>${created}</wpml:updateTime>`,
     wpmlMissionConfig(input.snapshot.input.speedMps),
@@ -505,7 +505,7 @@ export function buildGenericKml(input: KmlBuildInput): string {
   const { missionTitle, snapshot } = input;
   const description =
     `Survey flight plan: ${snapshot.lineCount} lines, ${snapshot.photoCount} photo trigger points. ` +
-    `Planned height ${snapshot.altitudeM} m above the takeoff/ground plane (not encoded in the geometry — see the flight plan for vertical assumptions).`;
+    `Planned height ${snapshot.altitudeM} m above the takeoff/ground plane (not encoded in the geometry, see the flight plan for vertical assumptions).`;
   const lines = [...snapshot.lines]
     .sort((a, b) => a.index - b.index)
     .map((line) =>
@@ -532,7 +532,7 @@ export function buildGenericKml(input: KmlBuildInput): string {
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<kml xmlns="http://www.opengis.net/kml/2.2">`,
     "  <Document>",
-    `    <name>${escapeXml(missionTitle)} — flight plan</name>`,
+    `    <name>${escapeXml(missionTitle)}: flight plan</name>`,
     `    <description>${escapeXml(description)}</description>`,
     lines.join("\n"),
     points.join("\n"),

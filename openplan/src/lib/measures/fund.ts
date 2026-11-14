@@ -38,7 +38,7 @@ export const MEASURE_RECEIPT_CADENCES = [
   { value: "quarterly", label: "Quarterly" },
   { value: "semiannual", label: "Twice a year" },
   { value: "annual", label: "Once a year" },
-  { value: "irregular", label: "Irregular — periods are opened by hand" },
+  { value: "irregular", label: "Irregular: periods are opened by hand" },
 ] as const;
 
 export type MeasureReceiptCadence = (typeof MEASURE_RECEIPT_CADENCES)[number]["value"];

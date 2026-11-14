@@ -43,7 +43,8 @@ async function fixture(count = 1) {
   return { directory, target, controller, options, authorize, resolve, edit, run: () => runGtfsSubmissionRecoveryPass(options),
     marker: (n = 1) => readFile(join(directory, id(n), "handoff/pending.json"), "utf8").then(JSON.parse) };
 }
-describe("retained transit submission polling", () => {
+// POSIX only: connector-worker.mjs custody needs process.getuid(), owner-only file modes and directory fsync, which Windows lacks.
+describe.skipIf(process.platform === "win32")("retained transit submission polling", () => {
   it("retains early cancellation and skips its history without resolving or admitting", async () => {
     const f = await fixture(), cancellation = { command: id(40), requestId: id(1), workspaceId: id(10), state: "cancelled" as const, versionId: null, versionCancellation: null, cancelledAt: "2026-10-10T12:00:00Z" };
     vi.mocked(readGtfsRequestCancellation).mockResolvedValue(cancellation);

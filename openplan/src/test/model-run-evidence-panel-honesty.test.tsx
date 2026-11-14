@@ -98,7 +98,7 @@ describe("ModelRunEvidencePanel run-honesty header", () => {
     expect(block).toHaveTextContent("Screening-grade");
     expect(block).toHaveTextContent("Uncalibrated by default");
     // The load-bearing honesty distinction: 0 transit share is a feed gap.
-    expect(block).toHaveTextContent("Transit not modeled — no local GTFS feed");
+    expect(block).toHaveTextContent("Transit not modeled: no local GTFS feed");
     // Reproducibility snapshot.
     expect(block).toHaveTextContent("aeq-1.6.2");
     expect(block).toHaveTextContent("42");
@@ -372,7 +372,7 @@ describe("ModelRunEvidencePanel transit-feed provenance", () => {
     expect(block).toHaveTextContent("Per-study-area feed discovery did not run");
     expect(block).toHaveTextContent("HTTP 503");
     expect(block).toHaveTextContent("may exist and was not looked for");
-    expect(block).toHaveTextContent("fallback — the feed catalog could not be reached");
+    expect(block).toHaveTextContent("fallback: the feed catalog could not be reached");
     // The claim that must NOT be made: that this feed was found for this area.
     expect(block).not.toHaveTextContent("Discovered for this study area");
   });
@@ -428,7 +428,7 @@ describe("ModelRunEvidencePanel transit-feed provenance", () => {
     // nothing is wrong with it — and a planner who reads only the badge would go
     // to their transit agency over a budget their own operator sets.
     const honesty = screen.getByTestId("evidence-run-honesty");
-    expect(honesty).toHaveTextContent("Transit not modeled — time budget exceeded");
+    expect(honesty).toHaveTextContent("Transit not modeled: time budget exceeded");
     expect(honesty).not.toHaveTextContent("feed unavailable");
 
     const block = screen.getByTestId("evidence-transit-provenance");

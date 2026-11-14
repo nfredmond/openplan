@@ -344,7 +344,7 @@ export function RtpCycleRegistryTable({
             description={
               allCyclesCount > 0
                 ? "Try a different status, packet-attention, recent-work, queue-action, or trace-freshness filter to resume triage across the RTP registry."
-                : "Each cycle here is one update of your Regional Transportation Plan (RTP) — its project lists, funding outlook, performance measures, and public review, kept together from kickoff to adoption. Create your first cycle to give the plan update one shared home."
+                : "Each cycle here is one update of your Regional Transportation Plan (RTP): its project lists, funding outlook, performance measures, and public review, kept together from kickoff to adoption. Create your first cycle to give the plan update one shared home."
             }
             action={
               allCyclesCount > 0 ? undefined : (
