@@ -316,6 +316,76 @@ test('an assembled record states the page limit only when a page answered 200', 
   assert.deepEqual(without.limits.map((limit) => limit.id), ['no-pdf-ua-check']);
 });
 
+const rehearsalInputs = () => JSON.parse(fs.readFileSync(lib.REHEARSAL_INPUTS_PATH, 'utf8'));
+
+test('the rehearsal inputs say in every section\'s first line that they are rehearsal text, and a proof refuses them', () => {
+  const inputs = rehearsalInputs();
+  const keys = Object.keys(inputs.sections).sort();
+  assert.deepEqual(keys, ['budget-narrative', 'engagement-and-collaboration', 'equity-and-underserved-communities', 'implementation-and-capacity', 'project-overview', 'safety-problem-and-impact']);
+  for (const key of keys) assert.equal(inputs.sections[key].text.split('\n')[0], lib.REHEARSAL_LABEL, key);
+  assert.equal(lib.loadJourneyInputs('rehearsal', null).file, lib.REHEARSAL_INPUTS_PATH);
+  assert.throws(() => lib.loadJourneyInputs('proof', lib.REHEARSAL_INPUTS_PATH), /labeled "Rehearsal text, not an application\." A proof needs sourced/);
+  assert.throws(() => lib.loadJourneyInputs('proof', null), /A proof run needs --inputs/);
+  // The label anywhere in the file is enough, even with the flag removed.
+  const relabeled = rehearsalInputs();
+  delete relabeled.rehearsal;
+  relabeled.label = 'Sourced inputs.';
+  assert.throws(() => lib.validateJourneyInputs(relabeled, 'proof'), /labeled/);
+});
+
+test('inputs are refused when their text could not finalize honestly or a fact has no source and date', () => {
+  const cases = [
+    ['a [VERIFY] marker', (inputs) => { inputs.sections['project-overview'].text += ' Crashes fell [VERIFY].'; }, /project-overview text holds 1 \[VERIFY\] marker/],
+    ['a [VERIFY: ...] marker', (inputs) => { inputs.sections['budget-narrative'].text += ' [VERIFY: local match]'; }, /budget-narrative text holds 1 \[VERIFY\]/],
+    ['an unfilled placeholder', (inputs) => { inputs.sections['implementation-and-capacity'].text += ' [OPERATOR: name the adopting body]'; }, /1 \[OPERATOR\] placeholder/],
+    ['an email address', (inputs) => { inputs.sections['engagement-and-collaboration'].text += ' Contact planner@example.org.'; }, /holds an email address/],
+    ['the word DRAFT', (inputs) => { inputs.sections['project-overview'].text += ' DRAFT plan.'; }, /holds the word DRAFT/],
+    ['an empty section', (inputs) => { inputs.sections['project-overview'].text = '  '; }, /project-overview has no text/],
+    ['a fact without a source', (inputs) => { inputs.facts[0].source = ''; }, /needs source/],
+    ['a fact read in the future', (inputs) => { inputs.facts[0].readOn = '2026-12-01'; }, /not after 2026-11-14/],
+    ['a fact read on no real date', (inputs) => { inputs.facts[0].readOn = '2026-02-30'; }, /calendar date it was read/],
+    ['no facts', (inputs) => { inputs.facts = []; }, /at least one fact/],
+    ['a missing field', (inputs) => { delete inputs.comments; }, /missing comments/],
+  ];
+  for (const [name, mutate, reason] of cases) {
+    const inputs = rehearsalInputs();
+    mutate(inputs);
+    assert.throws(() => lib.validateJourneyInputs(inputs, 'rehearsal', '2026-11-14'), reason, name);
+  }
+  assert.doesNotThrow(() => lib.validateJourneyInputs(rehearsalInputs(), 'rehearsal', '2026-11-14'));
+  // A proof also refuses a fact sourced as synthetic, label or not.
+  const proof = rehearsalInputs();
+  delete proof.rehearsal;
+  proof.label = 'Sourced inputs.';
+  for (const key of Object.keys(proof.sections)) proof.sections[key].text = 'Sourced text.';
+  assert.throws(() => lib.validateJourneyInputs(proof, 'proof', '2026-11-14'), /sourced as synthetic or rehearsal/);
+  proof.facts[0].source = 'U.S. Census Bureau, 2020 Decennial Census, table P1';
+  assert.doesNotThrow(() => lib.validateJourneyInputs(proof, 'proof', '2026-11-14'));
+});
+
+test('the journey counts markers with the export\'s own patterns', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'openplan', 'src', 'lib', 'grants', 'application-draft-stamps.ts'), 'utf8');
+  assert.ok(source.includes('const VERIFY_MARKER = /\\[VERIFY(?:\\]|:[^\\]\\n]*\\])/g;'));
+  assert.ok(source.includes('const PLACEHOLDER_MARKER = /\\[OPERATOR:[^\\]\\n]*\\]/g;'));
+  assert.deepEqual(lib.countMarkers('a [VERIFY] b [VERIFY: x] c [OPERATOR: y] [verify] [VERIFIED]'), { verify: 2, placeholders: 1 });
+});
+
+test('the section badge is read as the screen shows it, and no badge is zero', () => {
+  assert.deepEqual(lib.parseUnverifiedBadge('Project overview Final 26 unverified items, 1 unfilled placeholder'), { verify: 26, placeholders: 1 });
+  assert.deepEqual(lib.parseUnverifiedBadge('Budget narrative Final 1 unverified item'), { verify: 1, placeholders: 0 });
+  assert.deepEqual(lib.parseUnverifiedBadge('Budget narrative Final 2 unfilled placeholders'), { verify: 0, placeholders: 2 });
+  assert.deepEqual(lib.parseUnverifiedBadge('Budget narrative Final Never AI-drafted'), { verify: 0, placeholders: 0 });
+});
+
+test('the provenance table must name a workspace role in each Finalized by cell and print no email address', () => {
+  const rows = ['Project overview  Final  Typed  None  Not checked  Workspace owner  Nov 14, 2026', 'Budget narrative  Final  Typed  None  Not checked  Workspace', '                                                      owner'];
+  const pages = ['Cover page', `Provenance appendix\n${rows.join('\n')}`, 'Workspace admin  Nov 14, 2026'];
+  assert.deepEqual(lib.finalizerCells(pages), { provenancePages: [2, 3], roleCells: 3, emailLines: [] });
+  const leaked = [...pages.slice(0, 2), 'Finalized by planner@example.org'];
+  assert.deepEqual(lib.finalizerCells(leaked).emailLines, [{ page: 3, line: 1 }]);
+  assert.deepEqual(lib.finalizerCells(['no table here']), { provenancePages: [], roleCells: 0, emailLines: [] });
+});
+
 test('the journey keeps exactly the record fields lane 10 defines', () => {
   const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'proven_job_record.v1.schema.json'), 'utf8'));
   const journey = lib.buildJourney({ role: 'x', extra: 'dropped' });

@@ -378,6 +378,104 @@ function assembleRecord({ journeyFiles, jobId, commit, baseUrl, recordedOn, sour
 }
 
 // ---------------------------------------------------------------------------
+// Inputs: section text typed on screen, and the facts behind it
+// ---------------------------------------------------------------------------
+
+/** The labeled synthetic inputs a rehearsal uses when --inputs is not given. */
+const REHEARSAL_INPUTS_PATH = path.join(__dirname, 'fixtures', 'first-job-rehearsal-inputs.json');
+/** The first line of every rehearsal section text. A proof refuses any inputs file that carries it. */
+const REHEARSAL_LABEL = 'Rehearsal text, not an application.';
+/** The markers the SS4A export counts (openplan/src/lib/grants/application-draft-stamps.ts). */
+const VERIFY_MARKER = /\[VERIFY(?:\]|:[^\]\n]*\])/g;
+const PLACEHOLDER_MARKER = /\[OPERATOR:[^\]\n]*\]/g;
+const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
+const INPUT_FIELDS = ['projectSummary', 'planType', 'countermeasures', 'treatedSegments', 'bca', 'comments', 'reviewReason', 'staffReview', 'budgetTitle', 'facts', 'sections'];
+
+/** `[VERIFY]` markers and `[OPERATOR: ...]` placeholders in a text, counted as the export counts them. */
+function countMarkers(text) {
+  const value = String(text || '');
+  return { verify: (value.match(VERIFY_MARKER) || []).length, placeholders: (value.match(PLACEHOLDER_MARKER) || []).length };
+}
+
+/**
+ * Refuse inputs a journey cannot enter honestly. Every section text must be
+ * free of markers, placeholders, email addresses and the word DRAFT; every
+ * fact needs a statement, a source and the date it was read. A proof refuses
+ * any inputs file labeled as rehearsal text, and any fact sourced as
+ * synthetic, so rehearsal text never enters a proof.
+ */
+function validateJourneyInputs(inputs, mode, today = utcNow().slice(0, 10)) {
+  if (!inputs || typeof inputs !== 'object' || Array.isArray(inputs)) throw new Error('The inputs file is not a JSON object.');
+  const missing = INPUT_FIELDS.filter((key) => !Object.hasOwn(inputs, key));
+  if (missing.length) throw new Error(`The inputs file is missing ${missing.join(', ')}.`);
+  if (mode === 'proof') {
+    const labeled = inputs.rehearsal === true || JSON.stringify(inputs).toLowerCase().includes(REHEARSAL_LABEL.toLowerCase());
+    if (labeled) throw new Error(`The inputs file is labeled "${REHEARSAL_LABEL}" A proof needs sourced section text and facts.`);
+  }
+  if (!Array.isArray(inputs.facts) || inputs.facts.length === 0) throw new Error('The inputs file needs at least one fact with its source and the date it was read.');
+  for (const [index, fact] of inputs.facts.entries()) {
+    const label = `Fact ${fact && fact.id ? fact.id : index + 1}`;
+    for (const key of ['id', 'statement', 'source', 'readOn']) {
+      if (!fact || typeof fact[key] !== 'string' || !fact[key].trim()) throw new Error(`${label} needs ${key}.`);
+    }
+    const read = new Date(`${fact.readOn}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fact.readOn) || Number.isNaN(read.valueOf()) || read.toISOString().slice(0, 10) !== fact.readOn || fact.readOn > today) {
+      throw new Error(`${label} needs readOn as the calendar date it was read, not after ${today}.`);
+    }
+    if (mode === 'proof' && /synthetic|rehearsal/i.test(fact.source)) throw new Error(`${label} is sourced as synthetic or rehearsal; a proof needs a real source.`);
+  }
+  const sections = inputs.sections;
+  if (!sections || typeof sections !== 'object' || Array.isArray(sections) || Object.keys(sections).length === 0) throw new Error('The inputs file needs section texts keyed by section.');
+  for (const [key, entry] of Object.entries(sections)) {
+    const text = entry && typeof entry.text === 'string' ? entry.text : '';
+    if (!text.trim()) throw new Error(`Section ${key} has no text.`);
+    const markers = countMarkers(text);
+    if (markers.verify + markers.placeholders > 0) throw new Error(`Section ${key} text holds ${markers.verify} [VERIFY] marker(s) and ${markers.placeholders} [OPERATOR] placeholder(s).`);
+    if (EMAIL_PATTERN.test(text)) throw new Error(`Section ${key} text holds an email address.`);
+    if (/\bDRAFT\b/.test(text)) throw new Error(`Section ${key} text holds the word DRAFT, which the record checker reads as a stamp.`);
+  }
+  return inputs;
+}
+
+/** Read and check the inputs: --inputs, or the labeled rehearsal file in rehearsal mode. */
+function loadJourneyInputs(mode, inputsFile) {
+  if (!inputsFile && mode === 'proof') throw new Error('A proof run needs --inputs with sourced section text and facts.');
+  const file = inputsFile || REHEARSAL_INPUTS_PATH;
+  const bytes = fs.readFileSync(file);
+  let inputs;
+  try {
+    inputs = JSON.parse(bytes.toString('utf8'));
+  } catch {
+    throw new Error(`The inputs file ${path.basename(file)} is not JSON.`);
+  }
+  return { inputs: validateJourneyInputs(inputs, mode), file, sha256: sha256(bytes) };
+}
+
+/** The counts a section's warning badge shows ("3 unverified items, 1 unfilled placeholder"); none shown is zero. */
+function parseUnverifiedBadge(text) {
+  const value = String(text || '');
+  const verify = Number((value.match(/(\d+) unverified items?/) || [])[1] || 0);
+  const placeholders = Number((value.match(/(\d+) unfilled placeholders?/) || [])[1] || 0);
+  return { verify, placeholders };
+}
+
+/**
+ * The SS4A export's provenance table: the pages from the "Provenance
+ * appendix" heading to the end, how many "Finalized by" cells name a
+ * workspace role, and every email address on those pages (by the email
+ * guard's pattern; the address is not returned).
+ */
+function finalizerCells(pages) {
+  const start = findPdfPhrase(pages, 'Provenance appendix')[0];
+  if (!start) return { provenancePages: [], roleCells: 0, emailLines: [] };
+  const provenancePages = pages.map((_, index) => index + 1).filter((page) => page >= start);
+  const text = provenancePages.map((page) => pages[page - 1]).join('\n');
+  const roleCells = (text.replace(/\s+/g, ' ').match(/\bWorkspace (?:owner|admin|member)\b/g) || []).length;
+  const emailLines = locateEmails(pages).filter((entry) => entry.page >= start).map(({ page, line }) => ({ page, line }));
+  return { provenancePages, roleCells, emailLines };
+}
+
+// ---------------------------------------------------------------------------
 // Cross-workspace page check (KI-2026-11-14-060)
 // ---------------------------------------------------------------------------
 
@@ -438,6 +536,8 @@ module.exports = {
   MODES,
   NOT_FOUND_TITLE,
   PDF_KINDS,
+  REHEARSAL_INPUTS_PATH,
+  REHEARSAL_LABEL,
   SCREEN_MODES,
   SCREEN_WIDTHS,
   analyzePpm,
@@ -446,13 +546,17 @@ module.exports = {
   checkConfirmLinkOrigin,
   checkJourneyOrigin,
   confirmationTokenHash,
+  countMarkers,
   describePdf,
   draftPages,
+  finalizerCells,
   findPdfItems,
   identifyingStrings,
+  loadJourneyInputs,
   loadProofOrigin,
   locateEmails,
   parseJourneyArgs,
+  parseUnverifiedBadge,
   pdfPages,
   readPageForRecord,
   renderPdfPage,
@@ -460,4 +564,5 @@ module.exports = {
   sha256,
   summarizeAxe,
   utcNow,
+  validateJourneyInputs,
 };

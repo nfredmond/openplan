@@ -30,7 +30,7 @@ tests had, and he is not a repeatable instrument.
 sign up, confirm by email, project, study place, crash retrieval, high-injury
 network, safety plan report, countermeasures, a saved BCA from stored crashes,
 a campaign with public comments, moderation, an approved staff review, the
-report PDF, SS4A tracked, seeded, six sections finalized, a budget document
+report PDF, SS4A tracked, seeded, six sections typed and finalized, a budget document
 attached, the SS4A PDF, sign out, then a second account asks for the first
 account's report and application. It uses `puppeteer-core` and axe-core 4.11.1
 from `openplan/node_modules` (axe-core is not a declared dependency). It never
@@ -42,6 +42,15 @@ place of a screen step; it only reads responses the screens request, for ids.
   (`PROOF_ORIGIN` in `openplan/scripts/ops/capability-evidence.mjs`) and also
   needs `--inputs`, `--budget-file` and `--expected-commit`, so rehearsal values
   never enter a proof.
+- Inputs: a JSON file of what a planner types, including the six SS4A section
+  texts and the facts behind them (each with its source and the date read).
+  The script types each text into the section's "Final text" box and saves it
+  as final, refuses text that still holds `[VERIFY]` or `[OPERATOR: ...]`,
+  and records each text's SHA-256 and the screen's unverified count after
+  saving (must be 0), plus the export's DRAFT stamp text if any. Rehearsal
+  without `--inputs` uses `fixtures/first-job-rehearsal-inputs.json`, whose
+  section texts start "Rehearsal text, not an application." Proof mode refuses
+  any inputs file that carries that label.
 - Confirmation: the link is never an argument. When sign-up asks for
   confirmation the script waits for the file named by `--confirm-link-file`
   (and `--second-confirm-link-file` for the second account), opens the link and

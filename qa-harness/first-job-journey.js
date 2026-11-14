@@ -16,6 +16,14 @@
  *   proof      the hosted proof origin only (PROOF_ORIGIN in
  *              openplan/scripts/ops/capability-evidence.mjs).
  *
+ * Inputs: --inputs names a JSON file of the values a planner types, the six
+ * SS4A section texts and the facts behind them, each fact with its source and
+ * the date read. The script types each section's text into its "Final text"
+ * box on screen and saves it as final; it refuses text that still holds a
+ * [VERIFY] marker or an [OPERATOR: ...] placeholder. Rehearsal without
+ * --inputs uses fixtures/first-job-rehearsal-inputs.json, labeled as
+ * rehearsal text; proof mode refuses any file that carries that label.
+ *
  * Email confirmation: the script never takes the confirmation link as an
  * argument. When sign-up asks for confirmation it waits for the file named by
  * --confirm-link-file, reads the link, opens it, and records only a SHA-256 of
@@ -37,37 +45,6 @@ const lib = require('./first-job-journey-lib');
 
 const puppeteer = require(require.resolve('puppeteer-core', { paths: [appRoot] }));
 const AXE_SOURCE = path.join(appRoot, 'node_modules', 'axe-core', 'axe.min.js');
-
-const REHEARSAL_INPUTS = {
-  label: 'Rehearsal inputs. Not sourced. Do not cite.',
-  organization: null,
-  projectName: null,
-  projectSummary: 'Safety action plan and SS4A application. Rehearsal project.',
-  planType: 'safety_plan',
-  countermeasures: ['Enhanced Delineation for Horizontal Curves', 'Lighting'],
-  treatedSegments: 3,
-  bca: {
-    title: 'Safety action plan BCA (rehearsal values)',
-    cmf: '0.8',
-    cmfClearinghouseId: '1',
-    seriousInjuryPersons: null,
-    capitalCost: '1000000',
-    costYear: null,
-  },
-  campaignTitle: null,
-  comments: [
-    'Drivers take the curves too fast and there is no shoulder. Rehearsal comment one.',
-    'The road is dark at night near the bridge and hard to see. Rehearsal comment two.',
-  ],
-  reviewReason: 'Relevant safety comment about a place; no personal information. Rehearsal.',
-  staffReview: {
-    groupLabel: 'Speed, curves and lighting',
-    groupSummary: 'Approved comments ask for slower traffic on curves and better lighting. Rehearsal.',
-    correctionReason: 'Name the group from the comments it holds. Rehearsal.',
-    approvalReason: 'Group label and summary match the approved comments. Rehearsal.',
-  },
-  budgetTitle: 'Project budget',
-};
 
 const STEPS = [
   'health-start', 'sign-up', 'confirm-email', 'create-project', 'set-study-place', 'retrieve-crashes',
@@ -220,7 +197,10 @@ async function main() {
     throw new Error('A proof run needs --inputs, --budget-file and --expected-commit; rehearsal values never enter a proof.');
   }
   if (!fs.existsSync(AXE_SOURCE)) throw new Error(`axe-core not found at ${AXE_SOURCE}. Run npm ci in openplan/.`);
-  const inputs = options.inputsFile ? JSON.parse(fs.readFileSync(options.inputsFile, 'utf8')) : REHEARSAL_INPUTS;
+  // Rehearsal falls back to the labeled synthetic file; a proof refuses it.
+  const loadedInputs = lib.loadJourneyInputs(options.mode, options.inputsFile);
+  const inputs = loadedInputs.inputs;
+  log(`inputs: ${path.basename(loadedInputs.file)} (sha256 ${loadedInputs.sha256.slice(0, 12)})`);
 
   const out = options.outDir;
   for (const dir of ['', 'screens', 'console', 'downloads', 'pdf-pages']) fs.mkdirSync(path.join(out, dir), { recursive: true });
@@ -853,31 +833,48 @@ async function main() {
       await openApplication();
       const sections = ((observed.application && observed.application.sections) || []).map((row) => ({ id: row.id, key: row.section_key }));
       if (sections.length !== 6) throw new Error(`Expected six SS4A sections, the application lists ${sections.length}.`);
-      const finalized = [];
+      const wanted = Object.keys(inputs.sections).sort();
+      const listed = sections.map((section) => section.key).sort();
+      if (JSON.stringify(wanted) !== JSON.stringify(listed)) throw new Error(`The inputs give text for ${wanted.join(', ')}; the application lists ${listed.join(', ')}.`);
+      // Each section's text is typed into the "Final text" box on screen and
+      // saved as final; nothing is written behind the screen. A section whose
+      // box still holds a marker or placeholder after typing is not saved.
+      ids.sectionEntries = [];
       for (const section of sections) {
         const S = `[data-testid="application-section-${section.key}"]`;
+        const text = inputs.sections[section.key].text;
         await page.waitForSelector(S);
         if ((await page.$eval(`${S} button[aria-expanded]`, (b) => b.getAttribute('aria-expanded'))) !== 'true') {
           await page.click(`${S} button[aria-expanded]`);
           await sleep(1000);
         }
-        const status = await page.$eval(S, (el) => el.innerText);
-        if (/\bFinal\b/.test(status.split('\n').slice(0, 3).join(' '))) {
-          finalized.push(section.key);
-          continue;
-        }
+        const title = await page.$eval(`${S} button[aria-expanded]`, (b) => b.innerText.trim());
+        await clickText(page, `${S} button`, 'Finalize edited text', { exact: true });
+        const box = await page.waitForSelector(`${S} textarea[aria-label="Final text for ${title}"]`, { visible: true, timeout: 20000 });
+        await typeInto(box, text);
+        const entered = await box.evaluate((el) => el.value);
+        const inBox = lib.countMarkers(entered);
+        if (inBox.verify + inBox.placeholders > 0) throw new Error(`Section ${section.key} still holds ${inBox.verify} [VERIFY] marker(s) and ${inBox.placeholders} placeholder(s) after typing; not finalizing it.`);
         const patched = page.waitForResponse((r) => r.url().includes(`/api/funding-opportunities/${ids.opportunityId}/sections/${section.id}`) && r.request().method() === 'PATCH', { timeout: 60000 });
-        await clickText(page, `${S} button`, 'Finalize Safety seed unedited');
+        await clickText(page, `${S} button`, 'Save as final', { exact: true });
         const response = await patched;
         if (response.status() !== 200) {
           const refusal = await page.$eval(`${S} [data-testid=finalize-refusal]`, (el) => el.innerText).catch(() => '');
-          throw new Error(`Finalizing ${section.key} returned ${response.status()}: ${refusal.slice(0, 200)}`);
+          throw new Error(`Saving ${section.key} as final returned ${response.status()}: ${refusal.slice(0, 200)}`);
         }
-        finalized.push(section.key);
-        await sleep(800);
+        // The header's status badge reads Final; the warning badge PR 468 added
+        // shows any unverified items left (no badge means none).
+        await page.waitForFunction((sel) => {
+          const header = document.querySelector(sel).firstElementChild;
+          return header && /\bFinal\b/.test(header.innerText);
+        }, { timeout: 30000 }, S);
+        await sleep(500);
+        const header = await page.$eval(S, (el) => el.firstElementChild.innerText.replace(/\s+/g, ' '));
+        const onScreen = lib.parseUnverifiedBadge(header);
+        ids.sectionEntries.push({ sectionKey: section.key, textSha256: lib.sha256(Buffer.from(entered, 'utf8')), characters: entered.length, unverifiedOnScreen: onScreen.verify + onScreen.placeholders });
+        if (onScreen.verify + onScreen.placeholders > 0) throw new Error(`After saving, the screen counts ${onScreen.verify} unverified item(s) and ${onScreen.placeholders} placeholder(s) in ${section.key}.`);
       }
-      findings.push({ id: 'sections-finalized-unedited', text: 'All six SS4A sections were finalized from the Safety seed unedited, with no AI key. Any manual gaps in the seed text remain in the final text.' });
-      return `${finalized.length} of 6 final`;
+      return `${ids.sectionEntries.length} of ${sections.length} final from typed text, 0 unverified on screen`;
     });
 
     await step('attach-budget', async () => {
@@ -938,6 +935,8 @@ async function main() {
     });
 
     await step('export-ss4a-pdf', async () => {
+      // What the export control says it will stamp, before export.
+      ids.ss4aStampBefore = await page.$eval('[data-testid=export-draft-stamps]', (el) => el.innerText.replace(/\s+/g, ' ').trim()).catch(() => null);
       const exported = page.waitForResponse((r) => r.url().includes(`/api/funding-opportunities/${ids.opportunityId}/application/export`) && r.request().method() === 'POST', { timeout: 300000 });
       await clickText(page, '[data-testid=application-export] button', 'Export application packet (PDF)');
       const response = await exported;
@@ -948,7 +947,9 @@ async function main() {
       const refusal = await page.$('[data-testid=export-refusal]');
       if (refusal) throw new Error(`Export refused: ${(await refusal.evaluate((el) => el.innerText)).slice(0, 200)}`);
       const result = await page.$eval('[data-testid=export-result]', (el) => el.innerText);
-      if (/Stamped DRAFT/.test(result)) findings.push({ id: 'ss4a-draft-stamped', text: result.split('\n')[0] });
+      ids.ss4aStampAfter = result.split('\n').map((line) => line.trim()).filter((line) => /DRAFT/.test(line));
+      ids.ss4aDraftStamps = Array.isArray(body.draftStamps) ? body.draftStamps : null;
+      if (ids.ss4aStampAfter.length) findings.push({ id: 'ss4a-draft-stamped', text: ids.ss4aStampAfter.join(' | ') });
       const before = new Set(fs.readdirSync(downloads));
       await clickText(page, '[data-testid=export-result] a', 'Download PDF', { exact: true });
       const file = await waitForDownload(downloads, before);
@@ -1094,6 +1095,14 @@ async function main() {
         if (described.findings.draftPages.length) findings.push({ id: `${kind}-draft-stamp`, text: `${kind} PDF carries DRAFT on pages ${described.findings.draftPages.join(', ')}.` });
       }
       ids.pdfFindings = results;
+      // The SS4A provenance table names each finalizer by workspace role and
+      // never by email address (KI-2026-11-14-200).
+      const cells = lib.finalizerCells(lib.pdfPages(ids.ss4aPdf));
+      ids.finalizerCells = cells;
+      const finalCount = (ids.sectionEntries || []).length;
+      if (!cells.provenancePages.length) throw new Error('The SS4A PDF has no "Provenance appendix".');
+      if (cells.emailLines.length) throw new Error(`The SS4A provenance table prints an email address at ${cells.emailLines.map((entry) => `page ${entry.page} line ${entry.line}`).join(', ')}.`);
+      if (cells.roleCells < finalCount) throw new Error(`The SS4A provenance table names a workspace role in ${cells.roleCells} "Finalized by" cell(s), fewer than the ${finalCount} sections finalized.`);
       return results.map((entry) => `${entry.kind}: ${5 - entry.missingItems.length} of 5 items`).join('; ');
     });
   } catch (error) {
@@ -1111,6 +1120,12 @@ async function main() {
     recordedOn: lib.utcNow().slice(0, 10),
     expectedCommit: options.expectedCommit,
     inputsLabel: inputs.label,
+    inputsSha256: loadedInputs.sha256,
+    inputFacts: inputs.facts.map((fact) => ({ id: fact.id, source: fact.source, readOn: fact.readOn })),
+    sections: ids.sectionEntries || [],
+    ss4aStamp: { beforeExport: ids.ss4aStampBefore ?? null, afterExport: ids.ss4aStampAfter || [], exportResponse: ids.ss4aDraftStamps ?? null },
+    finalizerCells: ids.finalizerCells || null,
+    pdfItemSearches: (ids.pdfFindings || []).map((entry) => ({ kind: entry.kind, searches: entry.itemSearches })),
     confirmationTokenSha256: ids.tokenSha256 || null,
     furthestStep: furthest ? furthest.step : null,
     stoppedAt: failure ? failure.journeyStep || 'setup' : null,

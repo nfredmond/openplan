@@ -1,0 +1,59 @@
+{
+  "label": "Rehearsal text, not an application. Synthetic inputs for a local rehearsal of first-job-journey.js; nothing here was read from a source. A proof run refuses this file.",
+  "rehearsal": true,
+  "organization": null,
+  "projectName": null,
+  "projectSummary": "Safety action plan and SS4A application. Rehearsal project.",
+  "planType": "safety_plan",
+  "countermeasures": ["Enhanced Delineation for Horizontal Curves", "Lighting"],
+  "treatedSegments": 3,
+  "bca": {
+    "title": "Safety action plan BCA (rehearsal values)",
+    "cmf": "0.8",
+    "cmfClearinghouseId": "1",
+    "seriousInjuryPersons": null,
+    "capitalCost": "1000000",
+    "costYear": null
+  },
+  "campaignTitle": null,
+  "comments": [
+    "Drivers take the curves too fast and there is no shoulder. Rehearsal comment one.",
+    "The road is dark at night near the bridge and hard to see. Rehearsal comment two."
+  ],
+  "reviewReason": "Relevant safety comment about a place; no personal information. Rehearsal.",
+  "staffReview": {
+    "groupLabel": "Speed, curves and lighting",
+    "groupSummary": "Approved comments ask for slower traffic on curves and better lighting. Rehearsal.",
+    "correctionReason": "Name the group from the comments it holds. Rehearsal.",
+    "approvalReason": "Group label and summary match the approved comments. Rehearsal."
+  },
+  "budgetTitle": "Project budget",
+  "facts": [
+    {
+      "id": "rehearsal-crash-source",
+      "statement": "The crash summary and high-injury network come from the crash retrieval the journey runs on screen.",
+      "source": "Synthetic rehearsal fact; the journey's own crash retrieval, not an outside source",
+      "readOn": "2026-11-14"
+    }
+  ],
+  "sections": {
+    "project-overview": {
+      "text": "Rehearsal text, not an application.\n\nThis section stands in for a project overview during a local rehearsal of the journey script. The applicant would describe the safety action plan it proposes to develop, the roads it covers and the agency that will adopt it. The appendices that follow carry the crash summary, the high-injury network map, the countermeasures staff proposed for review, the benefit-cost summary and the engagement summary from the linked project."
+    },
+    "safety-problem-and-impact": {
+      "text": "Rehearsal text, not an application.\n\nThis section stands in for the safety problem and expected impact. The applicant would describe the fatal and serious injury crashes on the ranked road segments, using the counts and years printed in Appendix B and the ranked segments shown in Appendix A. It would state what the proposed countermeasures are expected to change, citing the crash modification factors only where a source gives one."
+    },
+    "equity-and-underserved-communities": {
+      "text": "Rehearsal text, not an application.\n\nThis section stands in for the equity discussion. The applicant would name the communities the ranked segments serve, cite the federal or state designation it relies on with the date it was read, and explain how the plan reaches people who walk, bike or ride transit along those roads."
+    },
+    "engagement-and-collaboration": {
+      "text": "Rehearsal text, not an application.\n\nThis section stands in for engagement and collaboration. The applicant would summarize the public comments approved for the record and the staff review of them, both printed in Appendix E, and list the partner agencies that will review the plan before adoption."
+    },
+    "implementation-and-capacity": {
+      "text": "Rehearsal text, not an application.\n\nThis section stands in for the implementation approach. The applicant would name the staff and consultants who will prepare the plan, the schedule from award to adoption, and the agency body that will adopt it."
+    },
+    "budget-narrative": {
+      "text": "Rehearsal text, not an application.\n\nThis section stands in for the budget narrative. The attached budget document is a rehearsal file with no cost estimate in it. The applicant would explain each cost line, the local match and its source, and how the budget follows the schedule."
+    }
+  }
+}
