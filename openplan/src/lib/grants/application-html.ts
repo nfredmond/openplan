@@ -218,6 +218,7 @@ const DOCUMENT_STYLES = `
       .appendix th, .appendix td { padding: 6px 8px; overflow-wrap: normal; word-break: normal; }
       .appendix th { font-size: 12px; letter-spacing: 0; text-transform: none; }
       .appendix-source { font-size: 13px; color: #3c4a52; overflow-wrap: anywhere; }
+      .appendix li, #safety-seed-provenance li { overflow-wrap: anywhere; }
       .appendix-facts { display: grid; grid-template-columns: minmax(130px, 28%) 1fr; gap: 6px 14px; margin: 12px 0; }
       .appendix-facts dt, .appendix-facts dd { margin: 0; }
       .appendix-facts dd { font-size: 15px; line-height: 1.5; }

@@ -1,5 +1,6 @@
+import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
@@ -41,22 +42,11 @@ import {
 const FIXED = "2026-07-20T00:00:00.000Z";
 
 /**
- * Claims print timestamps with formatDateTime(), which uses toLocaleString in
- * the process time zone, so the hash depends on TZ. Other test files set TZ,
- * and so can a host. Pinned to UTC here, as the hashes were captured.
+ * Claims print timestamps with formatFactDateTime(), which always formats in
+ * UTC (KI-2026-11-02-055), so these hashes no longer depend on the time zone
+ * of the process that runs them. The pins were captured with TZ=UTC, which is
+ * also the zone the hosted site runs in.
  */
-const CAPTURE_TIME_ZONE = "UTC";
-let originalTimeZone: string | undefined;
-
-beforeEach(() => {
-  originalTimeZone = process.env.TZ;
-  process.env.TZ = CAPTURE_TIME_ZONE;
-});
-
-afterEach(() => {
-  if (originalTimeZone === undefined) delete process.env.TZ;
-  else process.env.TZ = originalTimeZone;
-});
 
 function fixture(): ReportSectionFactsInput {
   return {
@@ -123,7 +113,68 @@ const HASH_AT_AED8DD948: Record<(typeof SECTIONS)[number], string> = {
   run_summaries: "41643c4ca4a8b7617eb35dc066b43f22f3ca46f72e32f9f8be4015475970c4da",
 };
 
+type ZoneRun = {
+  zone: string;
+  fixedInZone: string;
+  hashes: Record<(typeof SECTIONS)[number], string>;
+};
+
+/**
+ * Builds the fact hashes in a fresh Node process whose host zone is `zone`.
+ * Setting TZ there, not here, keeps the zone out of every other test sharing
+ * this worker. The child reports the zone it actually ran in, because a TZ
+ * value the runtime ignores would otherwise pass silently.
+ */
+function hashesInHostZone(zone: string): Promise<ZoneRun> {
+  const childSource = `
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+let raw = "";
+for await (const chunk of process.stdin) raw += chunk;
+const { buildReportSectionFacts, factsHash } = await import(
+  pathToFileURL(resolve("src/lib/reports/narrative-drafts.ts")).href
+);
+const input = JSON.parse(raw);
+const sections = ${JSON.stringify(SECTIONS)};
+process.stdout.write(JSON.stringify({
+  zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  fixedInZone: new Date(${JSON.stringify(FIXED)}).toLocaleString("en-US"),
+  hashes: Object.fromEntries(sections.map((section) => [section, factsHash(buildReportSectionFacts(input, section))])),
+}));
+`;
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(
+      process.execPath,
+      ["--conditions=react-server", "--import", "tsx", "--input-type=module", "--eval", childSource],
+      { cwd: process.cwd(), env: { ...process.env, TZ: zone }, stdio: ["pipe", "pipe", "pipe"] }
+    );
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => (stdout += chunk));
+    child.stderr.on("data", (chunk) => (stderr += chunk));
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code !== 0) reject(new Error(`fact hash child for ${zone} exited ${code}: ${stderr}`));
+      else resolvePromise(JSON.parse(stdout) as ZoneRun);
+    });
+    child.stdin.end(JSON.stringify(fixture()));
+  });
+}
+
 describe("accepted report narratives outlive copy edits", () => {
+  it("builds the same fact hashes on a host in any time zone", async () => {
+    const zones = ["UTC", "America/Los_Angeles", "Pacific/Kiritimati"];
+    const runs = await Promise.all(zones.map(hashesInHostZone));
+
+    // Each child really ran in its zone, and the fixture's timestamp reads
+    // differently in all three, so equal hashes are not an accident of TZ.
+    expect(runs.map((run) => run.zone)).toEqual(zones);
+    expect(new Set(runs.map((run) => run.fixedInZone)).size).toBe(zones.length);
+
+    const [utc, ...others] = runs;
+    for (const run of others) expect({ zone: run.zone, hashes: run.hashes }).toEqual({ zone: run.zone, hashes: utc.hashes });
+  }, 120_000);
+
   it("rebuilds the same fact hash that main stored before the em dash sweep", () => {
     const current = Object.fromEntries(
       SECTIONS.map((section) => [section, factsHash(buildReportSectionFacts(fixture(), section))])

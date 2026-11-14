@@ -36,7 +36,7 @@ import {
   totalCountedCrashes,
   type SafetyCrashEvidence,
 } from "./crash-evidence";
-import { getSafetyCountermeasure } from "./countermeasures";
+import { countermeasureListStatus, getSafetyCountermeasure } from "./countermeasures";
 import type { CrashSeverity } from "./sources/types";
 
 export type BcaCrashInputSuggestion = {
@@ -161,7 +161,8 @@ type BcaTreatedSegmentYear = {
 type BcaTreatedSegmentBase = {
   segmentId: string;
   segmentLabel: string;
-  countermeasures: Array<{ id: string; name: string; cmfNote: string }>;
+  /** `listStatus` is null for an item on FHWA's list. */
+  countermeasures: Array<{ id: string; name: string; cmfNote: string; listStatus: string | null }>;
 };
 
 /** A treated segment whose crashes were placed and counted. */
@@ -250,6 +251,7 @@ export function summarizeBcaTreatedSegments(input: {
           cmfNote: entry.cmf
             ? `Catalog CMF ${entry.cmf.value} for ${entry.cmf.appliesTo}, CMF Clearinghouse ID ${entry.cmf.cmfId}.`
             : entry.cmfNote ?? "[VERIFY] No crash modification factor cited.",
+          listStatus: countermeasureListStatus(entry),
         }];
       }),
     };

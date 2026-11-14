@@ -40,7 +40,7 @@ function SegmentStream({ plan, segment, doc, onChange, onNotice }: {
       <p className="text-xs text-muted-foreground">Segment {segment.segmentId}</p>
       {segment.countermeasures.length > 0 && (
         <ul className="list-disc space-y-1 pl-5 text-sm">
-          {segment.countermeasures.map((entry) => <li key={entry.id}>{entry.name}. {entry.cmfNote}</li>)}
+          {segment.countermeasures.map((entry) => <li key={entry.id}>{entry.name}. {entry.listStatus ? `${entry.listStatus} ` : ""}{entry.cmfNote}</li>)}
         </ul>
       )}
       <div className="overflow-x-auto">
