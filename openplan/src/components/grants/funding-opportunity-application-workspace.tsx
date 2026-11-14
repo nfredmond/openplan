@@ -35,6 +35,11 @@ import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel"
 import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
 import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
 import { evidenceAppendixProgramFor } from "@/lib/grants/evidence-appendix-keys";
+import {
+  applicationDraftStamps,
+  countUnverifiedItems,
+  unverifiedItemsLabel,
+} from "@/lib/grants/application-draft-stamps";
 
 /**
  * The application workspace for one funding opportunity: initialize from a
@@ -214,10 +219,14 @@ export function FundingOpportunityApplicationWorkspace({
   const [exportResult, setExportResult] = useState<{
     exportId: string;
     engineDisclosure: string | null;
-    isDraftStamped: boolean;
-    outstandingRequiredCount: number;
+    draftStamps: string[];
     sha256: string | null;
   } | null>(null);
+  // The reasons the PDF will carry a DRAFT stamp, from the same rule the export uses.
+  const pendingDraftStamps = useMemo(
+    () => applicationDraftStamps(sections, attachments),
+    [sections, attachments]
+  );
   // Appendices the planner turned off; every declared appendix is on by default.
   const [deselectedAppendices, setDeselectedAppendices] = useState<ReadonlySet<string>>(() => new Set());
 
@@ -534,9 +543,9 @@ export function FundingOpportunityApplicationWorkspace({
         exportId: typeof exportRow?.id === "string" ? exportRow.id : "",
         engineDisclosure:
           typeof payload.engineDisclosure === "string" ? payload.engineDisclosure : null,
-        isDraftStamped: payload.isDraftStamped === true,
-        outstandingRequiredCount:
-          typeof payload.outstandingRequiredCount === "number" ? payload.outstandingRequiredCount : 0,
+        draftStamps: Array.isArray(payload.draftStamps)
+          ? payload.draftStamps.filter((stamp): stamp is string => typeof stamp === "string")
+          : [],
         sha256: typeof payload.sha256 === "string" ? payload.sha256 : null,
       });
     } catch (error) {
@@ -755,10 +764,20 @@ export function FundingOpportunityApplicationWorkspace({
                     {pursuitKind === "proposal" ? "Export proposal packet" : "Export application packet"}
                   </p>
                   <p className="mt-1 text-muted-foreground">
-                    Assembles the cover, every section (final text, or a disclosed outstanding
-                    item), the attachment checklist, and a provenance appendix into one PDF.
-                    Missing required attachments stamp the document DRAFT; they never disappear.
+                    One PDF: the cover, every section, the attachment checklist, and who
+                    finalized each section and from what. Missing required attachments and
+                    unverified items in final sections stamp it DRAFT.
                   </p>
+                  {pendingDraftStamps.length > 0 ? (
+                    <div className="mt-2 text-[color:var(--copper)]" data-testid="export-draft-stamps">
+                      <p className="font-semibold">Will be stamped</p>
+                      <ul className="list-disc pl-5">
+                        {pendingDraftStamps.map((stamp) => (
+                          <li key={stamp}>{stamp}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
                   {appendixProgram ? (
                     <fieldset className="mt-2" data-testid="export-appendices">
                       <legend className="text-xs font-semibold text-foreground/80">Evidence appendices</legend>
@@ -816,12 +835,11 @@ export function FundingOpportunityApplicationWorkspace({
                   ) : null}
                   {exportResult ? (
                     <div className="mt-2 space-y-1" data-testid="export-result">
-                      {exportResult.isDraftStamped ? (
-                        <p className="font-semibold text-[color:var(--copper)]">
-                          Stamped DRAFT: {exportResult.outstandingRequiredCount} required
-                          attachment(s) outstanding.
+                      {exportResult.draftStamps.map((stamp) => (
+                        <p key={stamp} className="font-semibold text-[color:var(--copper)]">
+                          Stamped {stamp}
                         </p>
-                      ) : null}
+                      ))}
                       {exportResult.engineDisclosure ? (
                         <p className="text-muted-foreground">{exportResult.engineDisclosure}</p>
                       ) : null}
@@ -906,6 +924,7 @@ function SectionRowView({
   onDraftStored: (draft: ApplicationSectionDraftView) => void;
   opportunityId: string;
 }) {
+  const unverified = section.status === "final" ? countUnverifiedItems(section.final_markdown) : null;
   return (
     <div
       className="rounded-xl border border-border/70 bg-background/70 px-3 py-2.5"
@@ -925,6 +944,9 @@ function SectionRowView({
           <StatusBadge tone={SECTION_STATUS_TONES[section.status]}>
             {SECTION_STATUS_LABELS[section.status]}
           </StatusBadge>
+          {unverified && unverified.verify + unverified.placeholders > 0 ? (
+            <StatusBadge tone="warning">{unverifiedItemsLabel(unverified)}</StatusBadge>
+          ) : null}
           {section.source === "custom" ? <StatusBadge tone="neutral">Custom</StatusBadge> : null}
           {!section.ai_drafting_enabled ? (
             <StatusBadge tone="warning">Never AI-drafted</StatusBadge>
