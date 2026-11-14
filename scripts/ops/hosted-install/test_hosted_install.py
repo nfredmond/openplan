@@ -122,6 +122,21 @@ class LexerTest(unittest.TestCase):
     def test_a_second_commit_inside_a_wrapped_file_is_refused(self):
         self.refused("BEGIN;\nCREATE TABLE a (x int);\nCOMMIT;\nCREATE TABLE b (x int);\nCOMMIT;\n", wrapped=True)
 
+    def test_a_character_above_u_ffff_stays_inside_its_identifier(self):
+        # Review 31, N1. PostgreSQL reads "k<emoji>$a$" as one identifier, so
+        # COMMIT is a top-level statement here, not the inside of a dollar quote.
+        sql = ("CREATE TABLE public.k\U0001F600$a$ (x int);\nCOMMIT;\n"
+               "CREATE TABLE public.b$a$ (y int);\n")
+        stmts = sqllex.split_statements(sql)
+        self.assertEqual([s.first for s in stmts], ["CREATE", "COMMIT", "CREATE"])
+        self.assertIn("line 2: COMMIT: transaction control", self.refused(sql))
+        with tempfile.TemporaryDirectory() as raw:
+            fixture = Fixture(pathlib.Path(raw), files={"20990101000001_first": MIGRATIONS["20990101000001_add_note"],
+                                                         "20990101000002_astral": sql})
+            with self.assertRaisesRegex(sqllex.SqlRefused, "20990101000002: line 2: COMMIT: transaction control"):
+                fixture.build("dryrun", fixture.write_plan(), fixture.root / "out")
+            self.assertFalse((fixture.root / "out" / "DRYRUN.sql").exists())
+
     def test_unterminated_quotes_are_refused(self):
         for sql in ("SELECT 'x;", "SELECT $a$ x;", "/* x", 'SELECT "x;'):
             with self.subTest(sql=sql):

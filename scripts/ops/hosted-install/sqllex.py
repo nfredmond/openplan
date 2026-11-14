@@ -41,9 +41,14 @@ class Statement:
         return self.words[: len(keywords)] == tuple(keywords)
 
 
-_IDENT_START = re.compile(r"[A-Za-z_\u0080-￿]")
-_IDENT_CHAR = re.compile(r"[A-Za-z0-9_$\u0080-￿]")
-_DOLLAR_TAG = re.compile(r"\$([A-Za-z_\u0080-￿][A-Za-z0-9_\u0080-￿]*)?\$")
+# PostgreSQL's scanner (scan.l) and psql's (psqlscan.l) treat every byte from
+# 0x80 up as an identifier character, so every non-ASCII character, including
+# one above U+FFFF, belongs to the identifier around it. A narrower range let a
+# character above U+FFFF end an identifier early, so "k<emoji>$a$" read as the
+# start of a dollar quote that hid a top-level COMMIT (review 31, N1).
+_IDENT_START = re.compile(r"[A-Za-z_\u0080-\U0010FFFF]")
+_IDENT_CHAR = re.compile(r"[A-Za-z0-9_$\u0080-\U0010FFFF]")
+_DOLLAR_TAG = re.compile(r"\$([A-Za-z_\u0080-\U0010FFFF][A-Za-z0-9_\u0080-\U0010FFFF]*)?\$")
 
 
 @dataclass
