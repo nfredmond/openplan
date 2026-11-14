@@ -156,7 +156,7 @@ const BCA_CALCULATION_STATUS_LABELS: Record<string, string> = {
   "review-required": "Calculated, with checks open for review",
   incomplete: "Incomplete",
 };
-export function bcaCalculationStatusLabel(status: string): string {
+function bcaCalculationStatusLabel(status: string): string {
   return BCA_CALCULATION_STATUS_LABELS[status] ?? status;
 }
 
@@ -165,7 +165,7 @@ const BCA_ENGINE_LABELS: Record<string, string> = {
   [WORKBENCH_ENGINE_VERSION]: "OpenPlan annual ledger, version 1",
   "openplan-bca-ts": "OpenPlan screening calculator",
 };
-export function bcaEngineLabel(version: string): string {
+function bcaEngineLabel(version: string): string {
   return BCA_ENGINE_LABELS[version] ?? version;
 }
 
@@ -181,7 +181,7 @@ export type BcaSegmentRow = { number: number; location: string | null };
  * reviewer can open in Safety. The saved analysis and its input hash are not
  * changed.
  */
-export function bcaLocatorForPrint(locator: string, segmentRows: ReadonlyMap<string, BcaSegmentRow> = new Map()): string {
+function bcaLocatorForPrint(locator: string, segmentRows: ReadonlyMap<string, BcaSegmentRow> = new Map()): string {
   return locator
     .replace(/(^|, )segment ((?:road|grid):[^,\s]+)(?=,|$)/g, (_match, lead: string, segmentId: string) => {
       const row = segmentRows.get(segmentId);

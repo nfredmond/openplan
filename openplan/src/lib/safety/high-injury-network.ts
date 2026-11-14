@@ -744,15 +744,6 @@ export function describeHighInjuryNetworkLocation(geometry: LineGeometry | Polyg
   return `near ${anchor[1].toFixed(4)}, ${anchor[0].toFixed(4)}`;
 }
 
-/**
- * A listed row's number: its place in the list, 1 to n. Unlike the rank, two
- * rows never share it, so the map marks and the printed rows can be matched
- * one to one. It does not break a tie; tied rows keep their shared rank.
- */
-export function highInjuryNetworkRowNumbers(segments: ReadonlyArray<{ id: string }>): Map<string, number> {
-  return new Map(segments.map((segment, index) => [segment.id, index + 1]));
-}
-
 export type HighInjuryNetworkFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{

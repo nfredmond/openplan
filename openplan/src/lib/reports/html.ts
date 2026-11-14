@@ -1480,7 +1480,7 @@ function stageGateTemplateName(templateId: string): string {
 function stageGateEvidenceTitle(templateId: string, evidenceId: string): string {
   return stageGateTemplateRegistry.get(templateId)?.document.gates
     .flatMap((gate) => gate.required_evidence)
-    .find((evidence) => evidence.evidence_id === evidenceId)?.title ?? evidenceId;
+    .find((evidence) => evidence?.evidence_id === evidenceId)?.title ?? evidenceId;
 }
 
 function stageGateProvenanceMarkup(data: ReportGenerationData): string {
