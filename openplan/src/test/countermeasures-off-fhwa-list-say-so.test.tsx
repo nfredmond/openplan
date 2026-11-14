@@ -238,8 +238,12 @@ async function pdfText(name: string, html: string): Promise<string> {
   const file = path.join(workDir, `${name}.pdf`);
   writeFileSync(file, await renderHtmlToPdf(html, { footerLabel: name }));
   const pdftotext = path.join(POPPLER!, `pdftotext${process.platform === "win32" ? ".exe" : ""}`);
+  // A sentence may run from one page to the next, with the page footer printed
+  // between its two halves (seen on Linux, where the text sits a line lower than
+  // on Windows). The footer is not part of the sentence, so it is taken out first.
   // Poppler can drop the hyphen where a wrapped line breaks, so compare without hyphens.
-  return execFileSync(pdftotext, [file, "-"]).toString().replace(/\s+/g, " ").replace(/-/g, "");
+  const footer = new RegExp(`\\s*${name} \\S Page \\d+ of \\d+\\s*`, "g");
+  return execFileSync(pdftotext, [file, "-"]).toString().replace(footer, " ").replace(/\s+/g, " ").replace(/-/g, "");
 }
 
 function reportHtml(countermeasureIds: string[]): string {
