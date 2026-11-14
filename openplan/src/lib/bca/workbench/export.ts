@@ -16,7 +16,9 @@ function placeLines(doc: BcaDocument, review?: BcaPlaceReview): string[] {
   const value = exportPlaceReview(doc, review);
   return [
     `Project-place comparison: ${bcaPlaceReviewLabel(value.status)} (${value.status}).`,
-    value.retained ? `Retained place: ${bcaPlaceDescription(value.retained)}` : "Unbound legacy analysis. The original geography text is retained; no project-place binding is inferred.",
+    value.retained ? `Retained place: ${bcaPlaceDescription(value.retained)}`
+      : value.current.status === "available" ? "Unbound legacy analysis. The original geography text is retained; no project-place binding is inferred."
+        : "This analysis has no place. The original geography text is retained; no project-place binding is inferred.",
     ...(value.retained ? [
       `Retained project revision: ${value.retained.projectUpdatedAt}; place set at: ${value.retained.placeSetAt ?? "unset"}.`,
       `Retained jurisdiction context (separate declaration): ${JSON.stringify(value.retained.jurisdiction)}.`,

@@ -628,7 +628,7 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
     const html = buildReportHtml(reportData(draft, support));
     expect(html).toContain('<span class="list-status">Not on FHWA');
     const report = await pdf("safety-report-off-list", html);
-    expect(report.all).toContain(getSafetyCountermeasure("bicycle-lanes")!.sourceUrl.slice(0, 40));
+    expect(report.pageText.join("").replace(/\s+/g, "")).toContain(getSafetyCountermeasure("bicycle-lanes")!.sourceUrl.slice(0, 40));
     expect(wordsPastCard(report.file)).toEqual([]);
     // The status line runs from after "Bicycle Lanes." to the "Addresses:"
     // that opens the item's body text; it must print smaller than that body.
@@ -650,7 +650,7 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
       safetySeedHistory: [{ kind: "openplan.ss4a-safety-seed.v1", artifactId: EVIDENCE_IDS.ingest, reportId: EVIDENCE_IDS.ingest, acquisitionId: EVIDENCE_IDS.ingest,
         snapshotHash: "a".repeat(64), caveat: SAFETY_SEED_CAVEAT, sourceCaveats: [sourceLine] }],
     }));
-    expect(application.all.replace(/\s+/g, "")).toContain("https://web.archive.org/web/");
+    expect(application.pageText.join("").replace(/\s+/g, "")).toContain("https://web.archive.org/web/");
     expect(wordsPastCard(application.file)).toEqual([]);
   }, 120_000);
 
