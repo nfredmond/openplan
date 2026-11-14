@@ -806,8 +806,8 @@
     {
      "kind": "campaign-review",
      "path": "run3-city/files/city-or-town-internal-campaign-review.pdf",
-     "sha256": "2588fb73f694b0f6b7e87818bfd4c828a484ff824be48cb902eda8797a7a3548",
-     "bytes": 18186,
+     "sha256": "a0b976e1b45f66533741366a9d6f3f54c0353b4355958ea1d5a59abfd11aaf36",
+     "bytes": 17691,
      "pages": 10,
      "draftStamp": false,
      "items": [
@@ -840,8 +840,8 @@
     {
      "kind": "campaign-review-public",
      "path": "run3-city/files/city-or-town-public-campaign-review.pdf",
-     "sha256": "9d9cf6cac3307ad4719d13dff3b4bd57a953afcc444b2c13da6d278ef215bc76",
-     "bytes": 8763,
+     "sha256": "1c14a3b10377b7a6a7f528a233bede90e2642ce8c337d8597ba48ab90e692101",
+     "bytes": 8531,
      "pages": 6,
      "draftStamp": false,
      "items": [
@@ -1473,8 +1473,8 @@
     {
      "kind": "campaign-review",
      "path": "run3-tribal/files/tribal-area-internal-campaign-review.pdf",
-     "sha256": "1dcbae082018b1881e5f2c0948447a5aaae336c1e921758bbc116afc97205da8",
-     "bytes": 18212,
+     "sha256": "82ac9eff046b9c01facaa2ebd8297f2329db48e1d1d06e5d4804af285af2e491",
+     "bytes": 17717,
      "pages": 10,
      "draftStamp": false,
      "items": [
@@ -1507,8 +1507,8 @@
     {
      "kind": "campaign-review-public",
      "path": "run3-tribal/files/tribal-area-public-campaign-review.pdf",
-     "sha256": "38cbbfce9431f2927369a68c5ad06d09412748c2bc73ecd13c0a4f75e73822d3",
-     "bytes": 8781,
+     "sha256": "2749bc97b46a6964814d12ca68cf2879a9675d464ff4678629876fb05aab2536",
+     "bytes": 8549,
      "pages": 6,
      "draftStamp": false,
      "items": [
