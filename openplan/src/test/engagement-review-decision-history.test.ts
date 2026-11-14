@@ -89,7 +89,9 @@ describe("private decision history in engagement exports", () => {
     expect(rows.map(row => row.operation)).toEqual(["link", "withdraw"]);
     const sources = XLSX.utils.sheet_to_json(book.Sheets["Decision sources"]);
     expect(sources).toHaveLength(10);
-    expect(book.Sheets.Summary["!autofilter"]?.ref).toBe("A1:B6");
+    // The filter covers every Summary row, the decision count among them.
+    expect(book.Sheets.Summary["!autofilter"]?.ref).toBe(book.Sheets.Summary["!ref"]);
+    expect(book.Sheets.Summary.A6.v).toBe("Decision history actions");
     expect(book.Sheets.Summary.B6).toMatchObject({ t: "n", v: 2, f: "COUNTA(\'Decision history\'!A2:A3)" });
     const parts = XLSX.utils.sheet_to_json<Record<string, unknown>>(book.Sheets["Long text"]);
     for (const entry of native.withdrawn.entries) {

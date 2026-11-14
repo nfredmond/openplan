@@ -150,7 +150,7 @@ describe("the project packet carries the comment-to-decision trace", () => {
     const reviewState = (label: string) => Number(new RegExp(`${label} (\\d+)`).exec(reviewText)?.[1]);
     expect(trace.counts).toEqual({
       contributions: summary.Contributions,
-      byState: { approved: reviewState("Approved"), rejected: reviewState("Withheld"), pending: reviewState("pending"), flagged: reviewState("flagged") },
+      byState: { approved: reviewState("Approved"), rejected: reviewState("Withheld"), pending: reviewState("Pending"), flagged: reviewState("Flagged for review") },
       publishedResponses: summary["Staff responses"],
       decisionLinkActions: summary["Decision history actions"],
     });
