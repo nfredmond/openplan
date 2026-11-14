@@ -80,11 +80,14 @@ the change-map check.
   the median is the round trip. A hosted `dryrun` or `install` needs `--rtt`
   (a `rtt` envelope to the same target, under 30 minutes old) and
   `--rehearsed` (a completed dry run of the same `DRYRUN.sql`). It prints
-  `estimate = round trips under lock x round trip + rehearsed lock time`,
-  records it in the envelope, and refuses to send anything when the estimate
-  is over 2,000 ms. With one message there are no round trips under lock, so
-  the estimate is the rehearsed lock time; the round trip still decides how
-  long the connection and the large result take, outside the lock.
+  `estimate = rehearsed lock time`, records it in the envelope, and refuses
+  to send anything when the estimate is over 2,000 ms. With one message no
+  round trip happens under lock, so `rtt` does not enter the estimate: it is a
+  recorded condition of the window, not a gate. The kit still refuses a
+  measurement older than 30 minutes, more than 60 s in the future, or taken
+  to another target, so the recorded value describes this connection. The
+  round trip decides how long the connection and the large result take,
+  outside the lock (review 31, N2).
 - **Install (B3.4).** `INSTALL.sql` is the same file pinned to one dry run on
   the same target. Before any change it requires session and current user
   `postgres`, `postgres` not a superuser, a read-write transaction, history

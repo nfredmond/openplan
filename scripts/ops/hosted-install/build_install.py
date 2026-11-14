@@ -202,7 +202,7 @@ def render(plan: dict, files: list[dict], postchecks: list[sqllex.Statement], *,
     lines = [
         f"-- OpenPlan hosted install kit: {'ROLLBACK-ONLY DRY RUN' if kind == 'dryrun' else 'INSTALL'}",
         f"-- window {plan['window']}, capture {plan['capture']}, purpose {plan['purpose']}, plan sha256 {plan_sha}",
-        "-- Run only through run_sql.py (psql -X --single-transaction -v ON_ERROR_STOP=1). Never edit by hand.",
+        "-- Run only through run_sql.py: one message, BEGIN through COMMIT or the dry run's raise, psql -X -v ON_ERROR_STOP=1. Never edit by hand.",
         kc.INSTALL_TIMEOUTS.rstrip("\n"),
         "CREATE TEMP TABLE openplan_install_guard ON COMMIT DROP AS SELECT",
         "  pg_catalog.pg_current_xact_id()::text AS xid,",

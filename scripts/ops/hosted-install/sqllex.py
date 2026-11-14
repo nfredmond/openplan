@@ -7,10 +7,14 @@ semicolon ends a statement only at the top level, outside all of those, as in
 psql. Text inside a function body ($$ ... $$) is never read as a statement,
 so the PL/pgSQL BEGIN and END in every DO block pass.
 
-Why it matters (review 15, B2): psql --single-transaction does not protect
-anything after an inner COMMIT, END or ROLLBACK. Statements after it run in
-autocommit, so one stray transaction-control statement turns the rollback-only
-dry run into a partial install.
+Why it matters (review 15, B2): run_sql.py sends each transaction as one
+message from BEGIN through COMMIT or the dry run's raise, and the lexer
+decides where psql joins the statements. A top-level COMMIT, END or ROLLBACK
+inside that message commits everything before it, and the statements after it
+run in a new implicit block (PostgreSQL 17 protocol 53.2.2.1). One stray
+transaction-control statement would turn the rollback-only dry run into a
+partial install. The transaction guard after each statement is the second
+layer; it stops what follows such a statement, not what came before it.
 """
 
 from __future__ import annotations

@@ -81,8 +81,10 @@ _VAR = re.compile(r"^([a-z_][a-z0-9_]*)=([A-Za-z0-9:.+\-_ ]{0,64})$")
 _TIME = re.compile(r"^Time: ([0-9]+(?:\.[0-9]+)?) ms")
 RTT_PROBES = 20
 # The whole transaction is one message, so the client sends nothing between the
-# first lock and the end of the transaction. The proxy test counts the
-# messages; the estimate keeps the term so the formula is the one in the README.
+# first lock and the end of the transaction; the proxy test counts the
+# messages. The term stays in the envelope as a record; with it at zero the
+# estimate is the rehearsed lock time, and rtt is a recorded condition, not a
+# gate (review 31, N2).
 ROUND_TRIPS_UNDER_LOCK = 0
 # Psql flags for every mode. SHOW_ALL_RESULTS is on by default in psql 17; it
 # is set here because the dry run's result must print before its raise.

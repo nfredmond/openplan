@@ -1377,7 +1377,7 @@ class LatencyTest(LiveBase):
         Since review 31 (N4) a bundle's first guard refuses a second message, so
         the comparison turns that check off to time the old send at all."""
         sql = sql.replace(build_install.SPLIT_MESSAGE, "false")
-        command =target.command() + ["-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "--single-transaction", "-f", "-"]
+        command = target.command() + ["-X", "-q", "-A", "-t", "-v", "ON_ERROR_STOP=1", "--single-transaction", "-f", "-"]
         result = subprocess.run(command, input=sql.encode(), capture_output=True, env=target.environment())
         self.assertEqual(result.returncode, 3, result.stderr.decode(errors="replace"))
         return kc.parse_results(result.stdout.decode(), kc.LOCK_PREFIX)[0]["lockHeldMs"]
