@@ -30,7 +30,10 @@ export async function generateMetadata({
  * Answers a real HTTP 404 for an RTP cycle the reader cannot see, before
  * `loading.tsx` starts the stream (see `requireRecordRow`). The `document`,
  * `extraction` and `extraction/chapters` pages sit under this layout and
- * inherit the answer.
+ * inherit the answer; each adds the layout's three round trips (user,
+ * membership, row) to its own reads. The cycle is read in the current
+ * workspace only, as every RTP page reads it, so a cycle in the reader's other
+ * workspace answers 404 here as the pages already refused it.
  */
 export default async function RtpCycleRecordLayout({
   children,

@@ -29,7 +29,8 @@ export async function generateMetadata({
 /**
  * Answers a real HTTP 404 for a program the reader cannot see, before
  * `loading.tsx` starts the stream (see `requireRecordRow`). The `measure` and
- * `work-program` pages sit under this layout and inherit the answer.
+ * `work-program` pages sit under this layout and inherit the answer; each adds
+ * the layout's one row read to its own.
  */
 export default async function ProgramRecordLayout({
   children,

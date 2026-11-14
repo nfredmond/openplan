@@ -7,7 +7,8 @@ import { createClient } from "@/lib/supabase/server";
  * per-request cache. Row security decides what comes back: a plan in another
  * workspace reads exactly like one that does not exist. The layout needs the
  * answer before `loading.tsx` starts the stream, so a missing plan can answer
- * 404; sharing the read means that check adds no query.
+ * 404; sharing the read means that check adds no query to the page. A link
+ * prefetch runs it too; see `requireRecordRow` for that cost.
  */
 export const loadPlanRowForRequest = cache(async (planId: string) => {
   const supabase = await createClient();

@@ -8,7 +8,9 @@ import { createClient } from "@/lib/supabase/server";
  * another workspace reads exactly like one that does not exist. The layout
  * needs the answer before `loading.tsx` starts the stream, so a missing program
  * can answer 404; sharing the read means that check adds no query to the
- * overview page.
+ * overview page. The `measure` and `work-program` pages make their own reads,
+ * so there it adds this one row read, and a link prefetch runs it too; see
+ * `requireRecordRow`.
  */
 export const loadProgramRowForRequest = cache(async (programId: string) => {
   const supabase = await createClient();

@@ -29,7 +29,8 @@ export async function generateMetadata({
 /**
  * Answers a real HTTP 404 for a project the reader cannot see, before
  * `loading.tsx` starts the stream (see `requireRecordRow`). The `management`
- * page sits under this layout and inherits the answer.
+ * page sits under this layout and inherits the answer; it adds the layout's
+ * three round trips (user, membership, row) to its own reads.
  */
 export default async function ProjectRecordLayout({
   children,
