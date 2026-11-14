@@ -20,6 +20,7 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**FARS crash acquisitions keep a checked copy of NHTSA's annual files (KI-2026-11-14-040):** a Safety acquisition outside California downloaded three 33 to 35 MB national files every time, which could pass the hosted 60-second limit. OpenPlan now reads the years at once, refuses a short or wrong-year file, and keeps a reduced, hash-checked copy in private Storage (`network-packages` bucket, under `public-sources/fars/`), so a later acquisition takes about 2 seconds. The first acquisition of each year still downloads it, and a kept copy is read again when NHTSA replaces the file. Each file's URL, SHA-256 and read date are recorded on the acquisition. Because the FARS source file's pinned hash changed, saved report packets say their registry inputs changed and ask to be regenerated. No migration.
 **Save in a guided form always acts on what the form shows (KI-2026-11-02-054):**
 a Save click that landed just after the form updated from the server could run
 with the form's previous state. In the invoice form, that could save after the
