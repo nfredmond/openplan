@@ -50,7 +50,7 @@ export default async function LandUsePlanReviewPage({ params }: { params: Promis
       <h1 className="mt-3 text-4xl font-semibold tracking-tight">{packet.plan.title}</h1>
       <p className="mt-3 text-lg text-muted-foreground">{packet.plan.authorityLabel} · {packet.plan.geographyLabel}</p>
       <p className="mt-4">Review period: {packet.release.reviewOpenOn} through {packet.release.reviewCloseOn}. Method: {packet.release.reviewMethod.replaceAll("_", " ")}.</p>
-      <p className="mt-4 break-all rounded-lg bg-muted p-3 font-mono text-xs">Reviewed content hash: {packet.version.contentHash}</p>
+      <p className="mt-4 break-all rounded-lg bg-secondary p-3 font-mono text-xs">Reviewed content hash: {packet.version.contentHash}</p>
       <a className="mt-4 inline-block text-sm font-medium underline" href={`/api/public/land-use-plan-reviews/${shareToken}`} download={`openplan-review-v${packet.version.versionNumber}.json`}>Download this exact reviewed plan</a>
     </header>
     <div className="mt-8"><LandUsePlanPublicContext snapshot={packet.content} /></div>

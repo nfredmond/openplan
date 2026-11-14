@@ -40,6 +40,11 @@ describe("explicit Safety artifact preview and apply UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "Preview Safety seed" }));
     await screen.findByRole("button", { name: "Apply six working drafts" });
     expect(screen.getAllByRole("group")).toHaveLength(6);
+    // Rehearsal D19: section titles, not raw keys such as "project-overview".
+    const summaries = Array.from(document.querySelectorAll("summary")).map((summary) => summary.textContent);
+    expect(summaries).toContain("Project overview");
+    expect(summaries).toContain("Safety problem and expected impact");
+    expect(summaries.some((text) => /^[a-z]+(-[a-z]+)+$/.test(text ?? ""))).toBe(false);
     expect(onApplied).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Apply six working drafts" }));
     await waitFor(() => expect(onApplied).toHaveBeenCalledTimes(1));

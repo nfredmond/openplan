@@ -405,7 +405,7 @@ export function EngagementContextLayersPanel({
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         layer.visible_to_participants
                           ? "bg-emerald-500/12 text-emerald-700 dark:text-emerald-300"
-                          : "bg-muted text-muted-foreground"
+                          : "bg-secondary text-muted-foreground"
                       }`}
                     >
                       {layer.visible_to_participants ? "Public" : "Hidden"}

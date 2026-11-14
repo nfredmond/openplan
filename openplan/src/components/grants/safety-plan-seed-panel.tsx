@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
+import { findGrantProgramCatalogEntry } from "@/lib/grants/application";
 import type { ReportArtifactAttachOption } from "./funding-opportunity-application-workspace";
 
 type Preview = { artifactId: string; previewHash: string; snapshotHash: string; sections: { section_key: string; draft_markdown: string }[] };
@@ -11,6 +12,11 @@ const sourcePageSchema = z.object({
   artifacts: z.array(z.object({ id: z.string().uuid(), reportTitle: z.string(), artifactKind: z.enum(["html", "pdf"]), generatedAt: z.string().nullable(), sourceVersion: z.enum(["v1", "v2", "invalid", "absent"]).optional() })).max(50),
   nextCursor: z.string().uuid().nullable(), requiresProject: z.boolean(),
 });
+
+/** The SS4A catalog's own section titles, so the preview shows names, not keys. */
+const SS4A_SECTION_TITLES = new Map(
+  (findGrantProgramCatalogEntry("ss4a")?.applicationSections ?? []).map((section) => [section.key, section.title]),
+);
 
 /** Selection and apply are explicit; a preview never writes application content. */
 export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
@@ -104,7 +110,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
       <p className="break-all text-xs">Report source {preview.artifactId}. Snapshot SHA-256 {preview.snapshotHash}.</p>
       <p className="text-sm">Review all six working drafts. Apply appends history and keeps existing final text.</p>
       {preview.sections.map((section) => <details key={section.section_key} className="rounded border p-2">
-        <summary>{section.section_key}</summary>
+        <summary>{SS4A_SECTION_TITLES.get(section.section_key) ?? section.section_key}</summary>
         <pre className="mt-2 whitespace-pre-wrap break-words text-sm">{section.draft_markdown}</pre>
       </details>)}
       <Button type="button" disabled={busy} onClick={() => void operate("apply")}>Apply six working drafts</Button>

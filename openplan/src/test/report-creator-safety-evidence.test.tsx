@@ -2,12 +2,12 @@
  * KI-2026-08-31-015: report creation can reach a project's Safety evidence.
  *
  * The new-report flow offers the chosen project's ready crash acquisitions and
- * carries the choice to the report's own evidence control, which saves it. A
- * project with none says so and links to Safety for that project.
+ * sends the choice with the create request, so the report is created with it
+ * saved (rehearsal defect D4: the choice used to travel in the URL and had to
+ * be saved a second time). A project with none says so and links to Safety.
  *
- * Blind category: jsdom renders the flow but not the report page it pushes to,
- * so that the report control preselects the id is proved by the report detail
- * control's own tests, not here.
+ * Blind category: the create route is a fake here; the route's own checks of
+ * the acquisition's project are in reports-route.test.ts.
  */
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
@@ -64,7 +64,7 @@ describe("ReportCreator Safety evidence", () => {
     vi.unstubAllGlobals();
   });
 
-  it("offers the project's crash acquisitions and opens the report with the chosen one", async () => {
+  it("offers the project's crash acquisitions and creates the report with the chosen one saved", async () => {
     const fetchMock = created("report-9");
     vi.stubGlobal("fetch", fetchMock);
     render(<ReportCreator projects={PROJECTS} runs={[]} safetyIngestOptionsByProject={OPTIONS} />);
@@ -72,30 +72,29 @@ describe("ReportCreator Safety evidence", () => {
 
     const select = screen.getByLabelText("Crash evidence");
     expect(select).toHaveValue("");
-    // With nothing chosen there is nothing for "opens with ... selected" to name.
-    expect(screen.queryByText(/opens with this crash pull selected/)).not.toBeInTheDocument();
     expect(screen.getByRole("option", { name: /Statewide crash file · 40 reported/ })).toBeInTheDocument();
     fireEvent.change(select, { target: { value: "ingest-1" } });
-    expect(screen.getByText(/opens with this crash pull selected/)).toBeInTheDocument();
+    // No "save it there" instruction: there is nothing left to save.
+    expect(screen.queryByText(/Save it there before generating/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /create report/i }));
 
     await waitFor(() => expect(pushMock).toHaveBeenCalledTimes(1));
-    expect(pushMock).toHaveBeenCalledWith(
-      "/reports/report-9?safetyIngestId=ingest-1&projectId=project-1#report-controls"
-    );
-    // The create request is unchanged: the report's own control saves the choice.
+    expect(pushMock).toHaveBeenCalledWith("/reports/report-9?projectId=project-1");
     const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
-    expect(body).not.toHaveProperty("safetyIngestId");
+    expect(body.safetyIngestSelections).toEqual([{ ingestId: "ingest-1" }]);
     expect(body.projectId).toBe("project-1");
   });
 
   it("opens the report without crash evidence when none is chosen", async () => {
-    vi.stubGlobal("fetch", created("report-10"));
+    const fetchMock = created("report-10");
+    vi.stubGlobal("fetch", fetchMock);
     render(<ReportCreator projects={PROJECTS} runs={[]} safetyIngestOptionsByProject={OPTIONS} />);
     openToEvidence();
     fireEvent.click(screen.getByRole("button", { name: /create report/i }));
 
     await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/reports/report-10?projectId=project-1"));
+    const body = JSON.parse(String((fetchMock.mock.calls[0] as [string, RequestInit])[1].body));
+    expect(body).not.toHaveProperty("safetyIngestSelections");
   });
 
   it("says a project has no crash data and links to Safety for that project", () => {

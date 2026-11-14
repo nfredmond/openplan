@@ -214,6 +214,8 @@ const DOCUMENT_STYLES = `
       .appendix { margin-top: 20px; border-top: 1px solid rgba(19, 34, 43, 0.12); padding-top: 16px; }
       .appendix h3 { font-size: 18px; margin-bottom: 8px; }
       .appendix figure { margin: 12px 0; }
+      .appendix table { table-layout: fixed; }
+      .appendix th, .appendix td { overflow-wrap: anywhere; }
       .appendix-source { font-size: 13px; color: #3c4a52; overflow-wrap: anywhere; }
       .appendix-facts { display: grid; grid-template-columns: minmax(130px, 28%) 1fr; gap: 6px 14px; margin: 12px 0; }
       .appendix-facts dt, .appendix-facts dd { margin: 0; }

@@ -11,6 +11,7 @@ import {
   evidenceSnapshot,
   ROAD_ROWS,
   seedProvenance,
+  STUDY_AREA,
 } from "./fixtures/grants/ss4a-evidence";
 import { seedId } from "./fixtures/grants/safety-seed";
 
@@ -118,7 +119,8 @@ function completeTables(): Tables {
     project_bca_versions: () => ({ data: [BCA_VERSION_ROW()], error: null }),
     project_bca_screenings: () => ({ data: [], error: null }),
     engagement_campaigns: () => ({ data: [CAMPAIGN_ROW], error: null, count: 1 }),
-    projects: () => ({ data: { id: EVIDENCE_IDS.project, name: "Example safety project" }, error: null }),
+    engagement_items: () => ({ data: [{ created_at: "2026-10-19T15:00:00+00:00" }], error: null, count: 4 }),
+    projects: () => ({ data: { id: EVIDENCE_IDS.project, name: "Example safety project", place_geometry_geojson: STUDY_AREA }, error: null }),
     funding_opportunity_application_exports: () => ({ data: { id: seedId(500), storage_path: "path" }, error: null }),
   };
 }
@@ -130,6 +132,12 @@ function install() {
       const handler = tables[table];
       if (!handler) throw new Error(`Unexpected table: ${table}`);
       return chain(table, calls, handler);
+    },
+    // No saved source sets: the staff-review read finds none, and says so.
+    rpc: async (name: string, args: unknown) => {
+      calls.push({ table: `rpc:${name}`, method: "rpc", args: [args] });
+      if (name !== "list_engagement_synthesis_sources") throw new Error(`Unexpected RPC: ${name}`);
+      return { data: { campaignId: EVIDENCE_IDS.campaign, workspaceId: EVIDENCE_IDS.workspace, pageSize: 25, entries: [], nextCursor: null }, error: null };
     },
   });
 }
@@ -198,8 +206,19 @@ describe("SS4A application export with evidence appendices", () => {
     expect(callsFor("safety_crashes", "in")).toEqual([["severity", ["fatal"]], ["collision_year", [2023, 2024]]]);
     expect(callsFor("project_bca_versions", "select")).toEqual([["id, project_id, created_at, document_json, engine_version"]]);
     expect(callsFor("project_bca_versions", "eq")).toEqual([["project_id", EVIDENCE_IDS.project]]);
-    expect(callsFor("engagement_campaigns", "select")).toEqual([["id, project_id, title, status, updated_at, ai_synthesis_json, ai_synthesized_at, representativeness_json, representativeness_computed_at", { count: "exact" }]]);
+    expect(callsFor("engagement_campaigns", "select")).toEqual([["id, project_id, title, status, engagement_type, updated_at, ai_synthesis_json, ai_synthesized_at, representativeness_json, representativeness_computed_at", { count: "exact" }]]);
     expect(callsFor("engagement_campaigns", "eq")).toEqual([["project_id", EVIDENCE_IDS.project]]);
+    // Comment counts by exact count, and the project's outline for Appendix A.
+    expect(callsFor("engagement_items", "select")).toEqual(Array(3).fill(["created_at", { count: "exact" }]));
+    expect(callsFor("engagement_items", "eq")).toEqual([
+      ["campaign_id", EVIDENCE_IDS.campaign], ["campaign_id", EVIDENCE_IDS.campaign], ["campaign_id", EVIDENCE_IDS.campaign], ["status", "approved"],
+    ]);
+    expect(callsFor("projects", "select")).toEqual([["id, name, place_geometry_geojson"]]);
+    expect(callsFor("projects", "eq")).toEqual([["id", EVIDENCE_IDS.project], ["workspace_id", EVIDENCE_IDS.workspace]]);
+    expect(callsFor("rpc:list_engagement_synthesis_sources", "rpc")).toEqual([[{ p_campaign: EVIDENCE_IDS.campaign, p_before: null }]]);
+    expect(html).toContain("<dt>Community-input finding source</dt><dd>Keyword-based synthesis saved Oct 21, 2026</dd>");
+    expect(html).toContain("<dt>Comments received</dt><dd>4, received on Oct 19, 2026</dd>");
+    expect(html).toContain("The dashed green line is the project&#39;s current study-area boundary.");
   });
 
   it("lists missing evidence as missing when the project has none of it", async () => {

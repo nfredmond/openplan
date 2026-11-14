@@ -134,7 +134,7 @@ export async function loadAtpEvidenceRecords(
     needsRun ? loadLatestRun(client, workspaceId, projectId) : Promise.resolve(skipped),
     selected.has("crash_summary") ? loadCrash(client, workspaceId, projectId) : Promise.resolve(skipped),
     selected.has("bca") ? loadProjectBcaRead(client, projectId) : Promise.resolve(skipped),
-    selected.has("engagement") ? loadProjectEngagementRead(client, projectId) : Promise.resolve(skipped),
+    selected.has("engagement") ? loadProjectEngagementRead(client, projectId, workspaceId) : Promise.resolve(skipped),
   ]);
   // The project name words the engagement appendix's claims, so a failed read
   // of it makes that appendix unreadable rather than quietly reworded.

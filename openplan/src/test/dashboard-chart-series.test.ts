@@ -81,7 +81,8 @@ describe("comments coming in", () => {
     expect(empty.blockedKind).toBe("empty");
     expect(failed.blockedKind).toBe("unreadable");
     expect(empty.blockedReason).not.toEqual(failed.blockedReason);
-    expect(empty.blockedReason).toMatch(/No comments have come in/i);
+    // Rehearsal D1: no window-start date, which predates a new workspace.
+    expect(empty.blockedReason).toBe("No comments in the last 12 weeks. Comments from your campaigns show up here week by week.");
   });
 
   it("calls a pending migration what it is, rather than a failure", () => {

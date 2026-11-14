@@ -89,6 +89,11 @@ describe("tracking a catalog program", () => {
     expect(body.projectId).toBe("11111111-1111-4111-8111-111111111111");
   });
 
+  it("confirms the click where it happened", async () => {
+    await trackSs4a(null);
+    expect(screen.getAllByRole("status").map((status) => status.textContent)).toContain("Added to opportunities");
+  });
+
   it("sends no project when Grants was opened for none", async () => {
     const body = await trackSs4a(null);
     expect(body).not.toHaveProperty("projectId");

@@ -52,7 +52,9 @@ describe("exact crash-source publication cutoffs", () => {
     const snapshot = buildCrashSourceSnapshot(summary, "2026-09-05T00:00:00Z");
     expect(snapshot.publishedThrough).toBeUndefined();
     expect(snapshot.sourceResourceUpdates).toEqual(resourceUpdates);
-    expect(snapshot.note).toContain("2022: 2026-09-04T12:00:00Z");
+    // The stored stamp is kept whole; the sentence prints its calendar date (rehearsal D14).
+    expect(snapshot.note).toContain("Source file updates: 2022: 2026-09-04.");
+    expect(snapshot.note).not.toContain("T12:00:00Z");
     expect(snapshot.note).toContain("not a crash-coverage cutoff");
   });
 

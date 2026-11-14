@@ -319,7 +319,7 @@ export function buildSafetyCrashEvidence(
         ? "This source records no person-level detail, so who was involved cannot be counted from it, only whether a collision was flagged as involving a pedestrian, bicyclist or motorcyclist."
         : ingest.partyCompleteness === "retrieved"
           ? "Person-level counts could not be reconciled with this acquisition's stored records. Missing people are not zero."
-        : "Person-level records were not retrieved for this acquisition, so nobody is counted by role here. That is missing information, not an absence of people."
+        : "Party records, which name each driver, pedestrian and bicyclist involved, were not retrieved for this acquisition, so nobody is counted by role here. That is missing information, not an absence of people."
     );
   } else if (ingest.involvementBasis === "crash_flags") {
     caveats.push(
