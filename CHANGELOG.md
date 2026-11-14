@@ -235,6 +235,18 @@ the rectangle is shown beside them. The corridor scorecard also counts inside
 the corridor polygon and divides crash density by the polygon's area. No
 migration.
 
+**Large crash acquisitions store again (KI-2026-11-02-020):** an acquisition
+above about 100 crashes failed with "Failed to persist crashes: canceling
+statement due to statement timeout". Each stored crash or person row updated its
+acquisition and its project, so one 500-row write updated the project about
+1,000 times. Migration `20261102130000_safety_crash_statement_revision.sql`
+keeps the per-row locks and refusals and moves those updates to one per
+acquisition and one per project for each write. Locally, 500 crashes on a
+project with a 1.4 MB study polygon now store in about 0.15 s; before, 50 took
+5 s. The acquisition's `evidence_revision` now advances once per write instead
+of once per row; it is compared only for equality. Apply the migration before or
+after deploying this code; the code does not depend on it.
+
 **First proven cell journey fixes (KI-2026-11-02-020 to 025):** a place with no
 fatal or serious-injury crash in the window can now save its safety action plan
 from the high-injury network ("Save plan with no ranked segments"), so the
@@ -246,9 +258,8 @@ a severity that is switched off or a facet the source does not record. The
 project page names the workspace's home geography when the project has no study
 area. Workspace health now reports `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` as a
 partial map configuration (most maps draw; the backdrop, aerial and model maps
-need a Mapbox token) and offers it when neither is set. Still open: crash
-acquisitions above about 100 crashes fail to store (needs a migration). No
-migration.
+need a Mapbox token) and offers it when neither is set. No migration (the crash
+store fix in this list has its own).
 
 **SS4A seed after logging the opportunity (KI-2026-11-02-022):** logging or
 exporting the SS4A funding opportunity no longer makes the Safety report look
