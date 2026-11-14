@@ -27,9 +27,15 @@ type AssemblyInput = {
 export type AssembledEvidenceAppendices = {
   frame: EvidenceAppendixFrame;
   appendices: EvidenceAppendix[];
+  /**
+   * The linked project's name as the appendix loader read it, so the cover
+   * can name it without a second read. Null when no project is linked or its
+   * name is blank; undefined when the read did not answer.
+   */
+  projectName: string | null | undefined;
 };
 
-type ProgramAssembler = (supabase: unknown, input: AssemblyInput) => Promise<EvidenceAppendix[]>;
+type ProgramAssembler = (supabase: unknown, input: AssemblyInput) => Promise<{ appendices: EvidenceAppendix[]; projectName: string | null | undefined }>;
 
 const ASSEMBLERS: Record<string, { frame: EvidenceAppendixFrame; assemble: ProgramAssembler }> = {
   ss4a: {
@@ -37,14 +43,19 @@ const ASSEMBLERS: Record<string, { frame: EvidenceAppendixFrame; assemble: Progr
     assemble: async (supabase, input) => {
       const selected = input.selected as ReadonlySet<Ss4aAppendixKey>;
       const records = await loadSs4aEvidenceRecords(supabase, { ...input, selected });
-      return buildSs4aEvidenceAppendices(records, selected);
+      // The loader reads the name only for some appendices, and a failed read
+      // leaves it null too: only a name it found is passed on.
+      return { appendices: buildSs4aEvidenceAppendices(records, selected), projectName: records.projectName ?? (input.projectId ? undefined : null) };
     },
   },
   atp: {
     frame: ATP_APPENDIX_FRAME,
     assemble: async (supabase, input) => {
       const records = await loadAtpEvidenceRecords(supabase, input);
-      return buildAtpEvidenceAppendices(records, input.selected);
+      const projectName = records.project.status === "ready"
+        ? (records.project.project.name?.trim() || null)
+        : records.project.status === "no_project" ? null : undefined;
+      return { appendices: buildAtpEvidenceAppendices(records, input.selected), projectName };
     },
   },
 };
@@ -57,5 +68,5 @@ export async function assembleEvidenceAppendices(
 ): Promise<AssembledEvidenceAppendices | null> {
   const program = catalogKey && Object.hasOwn(ASSEMBLERS, catalogKey) ? ASSEMBLERS[catalogKey] : undefined;
   if (!program) return null;
-  return { frame: program.frame, appendices: await program.assemble(supabase, input) };
+  return { frame: program.frame, ...(await program.assemble(supabase, input)) };
 }
