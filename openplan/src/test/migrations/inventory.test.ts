@@ -510,9 +510,13 @@ const EXPECTED = {
   // 20261023190100 adds four public immutable comparison tables, each with
   // one permissive member SELECT policy. No client write policy is added.
   // Main's 790/539/290/302/246 plus the four award custody policies above.
-  policies: 794,
+  // 20261102120000 adds six restrictive owner-or-admin write policies to the
+  // two client invoice tables, which already carry policies: +6 policies and
+  // +6 restrictive. Disposable catalog openplan-restore-target-57521 after all
+  // 449 migrations: 800 policies, 257 restrictive, 250 tables with policies.
+  policies: 800,
   permissive: 543,
-  restrictive: 251,
+  restrictive: 257,
   permissiveWrites: 290,
   expanded: 302,
   tablesWithPolicies: 250,
