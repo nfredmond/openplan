@@ -61,7 +61,7 @@ def run(args) -> dict:
     if hist != plan["history"]["count"]:
         raise kc.KitError(f"history reads {hist} after the dry run, expected {plan['history']['count']}")
     summary.update(digestUnchanged=True, historyAfterDryRun=hist, dryRunMs=dry["elapsedMs"],
-                   changedKeys=len(dry["result"]["delta"]))
+                   dryRunLockMs=dry["lockHeldMs"], changedKeys=len(dry["result"]["delta"]))
 
     pins = out / [p for p in sorted(out.iterdir()) if p.name.startswith("dryrun-") and p.suffix == ".json"][0].name
     installed = build_install.build(argparse.Namespace(mode="install", plan=args.plan, repo=args.repo, out=str(bundle_dir), pins=str(pins)))
@@ -69,7 +69,8 @@ def run(args) -> dict:
     kc.write_new(bundle_dir / "GO.json", json.dumps(go, indent=2) + "\n")
     code, inst = step(args, "install", target, out, bundle=str(bundle_dir))
     if code:
-        raise kc.KitError(f"install on the copy failed: {inst.get('stderrTail', '')[-300:]}")
+        raise kc.KitError(f"install on the copy reads {inst.get('status')}, not installed; read its catalog: "
+                          f"{inst.get('stderrTail', '')[-300:]}")
     code, final = step(args, "catalog", target, out)
     if code:
         raise kc.KitError("catalog read after the install failed")
@@ -78,7 +79,7 @@ def run(args) -> dict:
     if not check["pass"]:
         raise kc.KitError("post-verify on the copy failed; see copy-run/postverify.json")
     versions = sorted(k[5:] for k in final["result"]["map"] if k.startswith("hist:"))
-    summary.update(installSha256=installed["installSha256"], installMs=inst["elapsedMs"],
+    summary.update(installSha256=installed["installSha256"], installMs=inst["elapsedMs"], installLockMs=inst["lockHeldMs"],
                    historyAfterInstall=len(versions), newest=versions[-1],
                    postverifySha256=check["postverifySha256"], afterDigest=final["result"]["digest"])
     kc.write_new(out / "summary.json", json.dumps(summary, indent=2) + "\n")

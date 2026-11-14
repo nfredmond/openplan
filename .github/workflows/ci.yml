@@ -307,11 +307,15 @@ jobs:
 
       # The install kit's refusals (review 15, B2, B3, B5, B7 and N1). The live
       # tests run the generated SQL on PostgreSQL 17 as a non-superuser named
-      # postgres, as on hosted; the step fails if they were skipped.
+      # postgres, as on hosted, and the latency tests (lane 28) send it through
+      # a proxy that delays every client packet; the step fails if any of them
+      # were skipped.
       - name: Hosted install kit
         working-directory: ./scripts/ops/hosted-install
         env:
           OPENPLAN_INSTALL_KIT_PSQL: '["psql", "-h", "localhost", "-U", "postgres"]'
+          # The latency tests put a delaying proxy in front of this address.
+          OPENPLAN_INSTALL_KIT_TCP: localhost:5432
         run: |
           set -euo pipefail
           psql -h localhost -U kit_admin -d postgres -v ON_ERROR_STOP=1 -c "CREATE ROLE postgres LOGIN CREATEDB"

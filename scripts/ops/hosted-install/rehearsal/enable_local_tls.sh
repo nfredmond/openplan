@@ -3,7 +3,8 @@
 # with sslmode=verify-full, as the offsite capture reads hosted.
 #   rehearsal/enable_local_tls.sh DB_CONTAINER WORK_DIR
 # Writes WORK_DIR/tls/ca.crt (a throwaway CA) and a server certificate for
-# host.docker.internal and localhost. Only for a scratch stack.
+# host.docker.internal, localhost and DB_CONTAINER (the name local_env.py uses
+# on the stack's network). Only for a scratch stack.
 set -euo pipefail
 container=${1:?usage: enable_local_tls.sh DB_CONTAINER WORK_DIR}
 work=${2:?usage: enable_local_tls.sh DB_CONTAINER WORK_DIR}
@@ -15,7 +16,7 @@ openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 
   -subj "/CN=openplan-rehearsal-ca" -keyout "$tls/ca.key" -out "$tls/ca.crt" 2>/dev/null
 openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes \
   -subj "/CN=host.docker.internal" -keyout "$tls/server.key" -out "$tls/server.csr" 2>/dev/null
-printf 'subjectAltName=DNS:host.docker.internal,DNS:localhost,IP:127.0.0.1\n' > "$tls/san.ext"
+printf 'subjectAltName=DNS:host.docker.internal,DNS:localhost,DNS:%s,IP:127.0.0.1\n' "$container" > "$tls/san.ext"
 openssl x509 -req -in "$tls/server.csr" -CA "$tls/ca.crt" -CAkey "$tls/ca.key" -CAcreateserial \
   -days 30 -extfile "$tls/san.ext" -out "$tls/server.crt" 2>/dev/null
 docker exec -u root "$container" mkdir -p /var/lib/postgresql/rehearsal-tls

@@ -5,7 +5,7 @@
 #     scripts/ops/hosted-install/kit.sh <command> WINDOW_DIR [args...]
 #
 # Commands:
-#   hosted WINDOW_DIR MODE [run_sql.py args]   read, catalog, dryrun, install or probe on hosted.
+#   hosted WINDOW_DIR MODE [run_sql.py args]   rtt, read, catalog, dryrun, install or probe on hosted.
 #                                               WINDOW_DIR is /work in the container; kit files are /kit.
 #   verify WINDOW_DIR STAMP KEY_DIR             download, decrypt and check one capture into WINDOW_DIR/decrypted.
 #   keycheck KEY_DIR                            encrypt to the key's public half and decrypt with its secret half
@@ -17,6 +17,10 @@
 # appears on a command line, in the container record or in this script's
 # output. Containers run with --rm and the openplan-hosted-install label, and
 # this script fails if any such container is left afterward.
+#
+# KIT_DOCKER_NETWORK (Phase A rehearsal only; unset on window day) runs the
+# hosted container on that Docker network, so the stand-in stack's database is
+# reached on its own port 5432, the only port HostedTarget accepts (review 31, N5).
 set -euo pipefail
 kit_dir=$(cd "$(dirname "$0")" && pwd)
 image=${KIT_IMAGE:?set KIT_IMAGE to the tag image/build.sh printed}
@@ -30,6 +34,10 @@ if [ "$command" = hosted ] || [ "$command" = verify ]; then
 fi
 window_abs=$(cd "$window" && pwd -W 2>/dev/null || pwd)
 python_=$(command -v python || command -v python3)
+network_args=()
+if [ -n "${KIT_DOCKER_NETWORK:-}" ]; then
+  network_args=(--network "$KIT_DOCKER_NETWORK")
+fi
 
 leftover_check() {
   local left
@@ -48,7 +56,7 @@ case "$command" in
     status=0
     # shellcheck disable=SC2086
     $env_cmd "$python_" -I "$kit_dir/env_to_stdin.py" pg \
-      | MSYS_NO_PATHCONV=1 docker run -i --rm --label "$label" -v "$window_abs:/work" "$image" \
+      | MSYS_NO_PATHCONV=1 docker run -i --rm --label "$label" "${network_args[@]}" -v "$window_abs:/work" "$image" \
           python3 /kit/stdin_env.py python3 /kit/run_sql.py "$mode" --target hosted --out /work/evidence "$@" \
       || status=$?
     leftover_check

@@ -34,7 +34,7 @@ set on the service instance. A failed run exits 1 and logs
 - **Same Railway account as the workers.** Encryption protects the contents if
   that account is compromised. It does not protect against deletion.
 - **Key custody.** The private key for offsite captures (fingerprint
-  `<NEW FINGERPRINT, lead fills in at rotation>`) exists only on the
+  `6B42C7901DBC77AA85673DCCD6E12358C7B6C53A`) exists only on the
   operator's Windows workstation:
   `%USERPROFILE%\.local\state\openplan\offsite-capture-key-<date>\` and a copy
   on that machine's second internal disk, `D:\openplan-key-escrow\`. Neither
@@ -46,7 +46,7 @@ set on the service instance. A failed run exits 1 and logs
   machine, made by the account owner (password manager or offline media),
   would close this gap and is recorded as an open item, not a dependency.
 - **Captures before the November 2026 rotation cannot be decrypted.** Every
-  capture made before `<ROTATION STAMP, lead fills in>` is encrypted to
+  capture made before `20261114T072635Z` (November 14, 2026, 07:26 UTC) is encrypted to
   `A4221F59406B5F299D2DD3FE7213CBBB858160CA`, whose private key was lost when
   the old Linux workstation was wiped in October 2026. No copy is known. Those
   captures age out of the bucket within 30 days of the rotation, so a copy of
@@ -86,9 +86,17 @@ cd "$stage" && railway link -p 9d7fbdc3-c370-41b5-8471-34dc128e718e -e productio
 railway up --service offsite-backup --ci
 ```
 
-`railway up` starts one run immediately. Confirm its log line, then confirm
-the instance still reports `cronSchedule` and `nextCronRunAt` through
-`railway api`.
+`railway up` may or may not start a run. On November 14, 2026 it did not, so
+trigger one with `railway cron run --service offsite-backup --environment
+production --yes`. Confirm the run's `offsite_capture_complete` log line names
+the expected fingerprint, then confirm `railway cron list` still shows the
+schedule `17 10 * * *` and a next run.
+
+A changed variable does not reach a scheduled run until a new deployment
+exists. On November 14 a run started after both key variables were set with
+`--skip-deploys` still encrypted to the old key, and `railway redeploy`
+refused this service ("cannot be redeployed"). `railway up` with the
+unchanged files made the deployment that picked the new values up.
 
 ## Verify a capture
 

@@ -11,22 +11,48 @@ import re
 
 KIT_DIR = pathlib.Path(__file__).resolve().parent
 RESULT_PREFIX = "OPENPLAN_RESULT "
+# The dry run's whole "before" map, sent before the first lock is taken so its
+# transfer never happens while a lock is held.
+BEFORE_PREFIX = "OPENPLAN_BEFORE "
+# The server's own lock clock: when the first ACCESS EXCLUSIVE lock on a
+# non-temporary relation was taken, and the time just before the transaction ends.
+LOCK_PREFIX = "OPENPLAN_LOCK "
 DRYRUN_SENTINEL = "openplan dry run complete, rolling back"
 PROBE_SENTINEL = "openplan probe complete, rolling back"
 
-# Review 15, B5: the first statements of every write path.
+# Review 15, B5: the first statements of every transaction the kit sends. Read,
+# catalog, rtt and probe keep the 3 s lock timeout.
 TIMEOUTS = (
     "SET LOCAL lock_timeout = '3s';\n"
     "SET LOCAL statement_timeout = '60s';\n"
     "SET LOCAL idle_in_transaction_session_timeout = '30s';\n"
     "SET LOCAL transaction_timeout = '120s';\n"
 )
+# The dry run and install wait at most 1 s for any one lock (the lead's
+# decision on review 31, N3). The bundle's server time is about 0.3 s; a lock
+# wait keeps every lock already taken, the Safety tables first, and live `anon`
+# requests queued behind them time out at 3 s, so a wait must end well before
+# that. A lock timeout fails safely: the transaction rolls back at 448 and the
+# window needs a new bundle.
+INSTALL_TIMEOUTS = TIMEOUTS.replace("SET LOCAL lock_timeout = '3s';", "SET LOCAL lock_timeout = '1s';")
 
 # The daily capture runs at 10:17 UTC. pg_dump holds a lock on every table for
 # its whole run, and the install takes ACCESS EXCLUSIVE locks, so no hosted
 # write path runs between 10:05 and 10:50 UTC (review 15, B5).
 CAPTURE_QUIET_START = (10, 5)
 CAPTURE_QUIET_END = (10, 50)
+
+# Lock-holding limit (lane 28). Live requests on a locked table wait in the lock
+# queue. Supabase's default statement timeout for the anon role is 3 s and for
+# authenticated 8 s (supabase.com/docs/guides/database/postgres/timeouts, read
+# 2026-11-14). Two seconds leaves a second of margin under the shortest of
+# those. The dry run and install wait at most 1 s for any one lock
+# (INSTALL_TIMEOUTS). A hosted dry run or install
+# refuses to start when its estimate is over this, and a dry run whose measured
+# lock time is over it reads dry-run-too-slow.
+LOCK_LIMIT_MS = 2000
+# A round-trip measurement older than this is not used for an estimate.
+RTT_MAX_AGE_SECONDS = 30 * 60
 
 
 class KitError(Exception):
@@ -84,11 +110,11 @@ def map_digest(mapping: dict[str, str]) -> str:
     return hashlib.md5(body.encode("utf-8")).hexdigest()
 
 
-def parse_results(stdout: str) -> list[dict]:
+def parse_results(stdout: str, prefix: str = RESULT_PREFIX) -> list[dict]:
     out = []
     for line in stdout.splitlines():
-        if line.startswith(RESULT_PREFIX):
-            out.append(json.loads(line[len(RESULT_PREFIX):]))
+        if line.startswith(prefix):
+            out.append(json.loads(line[len(prefix):]))
     return out
 
 

@@ -7,10 +7,14 @@ semicolon ends a statement only at the top level, outside all of those, as in
 psql. Text inside a function body ($$ ... $$) is never read as a statement,
 so the PL/pgSQL BEGIN and END in every DO block pass.
 
-Why it matters (review 15, B2): psql --single-transaction does not protect
-anything after an inner COMMIT, END or ROLLBACK. Statements after it run in
-autocommit, so one stray transaction-control statement turns the rollback-only
-dry run into a partial install.
+Why it matters (review 15, B2): run_sql.py sends each transaction as one
+message from BEGIN through COMMIT or the dry run's raise, and the lexer
+decides where psql joins the statements. A top-level COMMIT, END or ROLLBACK
+inside that message commits everything before it, and the statements after it
+run in a new implicit block (PostgreSQL 17 protocol 53.2.2.1). One stray
+transaction-control statement would turn the rollback-only dry run into a
+partial install. The transaction guard after each statement is the second
+layer; it stops what follows such a statement, not what came before it.
 """
 
 from __future__ import annotations
@@ -41,9 +45,14 @@ class Statement:
         return self.words[: len(keywords)] == tuple(keywords)
 
 
-_IDENT_START = re.compile(r"[A-Za-z_\u0080-￿]")
-_IDENT_CHAR = re.compile(r"[A-Za-z0-9_$\u0080-￿]")
-_DOLLAR_TAG = re.compile(r"\$([A-Za-z_\u0080-￿][A-Za-z0-9_\u0080-￿]*)?\$")
+# PostgreSQL's scanner (scan.l) and psql's (psqlscan.l) treat every byte from
+# 0x80 up as an identifier character, so every non-ASCII character, including
+# one above U+FFFF, belongs to the identifier around it. A narrower range let a
+# character above U+FFFF end an identifier early, so "k<emoji>$a$" read as the
+# start of a dollar quote that hid a top-level COMMIT (review 31, N1).
+_IDENT_START = re.compile(r"[A-Za-z_\u0080-\U0010FFFF]")
+_IDENT_CHAR = re.compile(r"[A-Za-z0-9_$\u0080-\U0010FFFF]")
+_DOLLAR_TAG = re.compile(r"\$([A-Za-z_\u0080-\U0010FFFF][A-Za-z0-9_\u0080-\U0010FFFF]*)?\$")
 
 
 @dataclass
