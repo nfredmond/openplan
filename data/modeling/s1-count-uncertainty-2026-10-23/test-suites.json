@@ -1,0 +1,278 @@
+{
+  "python": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "suites": [
+    {
+      "file": "scripts/modeling/test_count_sources.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.084,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "cf5caca9c27bae3deb498af766bda724fc488845ad9a3d54d83a3341746c75d3",
+      "source_sha256": "5cd3a100ad4af75743901e2074e3050034dea1d9355d70df60802426d8eb0c6b",
+      "summary": "ok  test_caltrans_back_ahead_point_normalizes\nok  test_esri_attributes_xy_form\nok  test_fetch_falls_back_to_esri_json_when_geojson_errors\nok  test_fetch_falls_back_when_geojson_returns_http200_error_envelope\nok  test_fetch_raises_on_http200_error_envelope_from_both_formats\nok  test_fetch_raises_when_both_formats_fail\nok  test_fetch_uses_geojson_when_it_succeeds\nok  test_linestring_segment_reduces_to_centroid\nok  test_missing_geometry_skipped\nok  test_multi_state_registry_shape\nok  test_single_aadt_field_expands_to_back_ahead\nok  test_unknown_region_raises\n\n12 count-source checks passed.\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_hpms_count_source.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.156,
+      "reported_unittest_cases": 20,
+      "reported_skips": 0,
+      "output_sha256": "6f8afb37792466e8ea62b9b94ea2bd420e28c32503b2e97f4cc286ae8b7b186a",
+      "source_sha256": "fb02c5cbee58e3fdc85f377bc41bcc2623ebd7a887cc29f4f0cb6cd7e94b9b99",
+      "summary": "....................\n----------------------------------------------------------------------\nRan 20 tests in 0.003s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_tmas_count_source.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.069,
+      "reported_unittest_cases": 4,
+      "reported_skips": 0,
+      "output_sha256": "e73c3805f810fdcf3d0167ced7085c48306c9482a952ffb710551d230cdb3e51",
+      "source_sha256": "ded2aa4f95a0261a8864d87d8cd83808e83b9d97a1774179e2718b3c7bc23b5a",
+      "summary": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.005s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_auto_counts.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.144,
+      "reported_unittest_cases": 5,
+      "reported_skips": 0,
+      "output_sha256": "f5b0975bbc76eebbbbfbd9ff17140ccc843d8aa8dd46d365fb85c9b5f5446e84",
+      "source_sha256": "9bde1b64f5659880ec5456853ead8e4fac870549e05afa4ca22f46564a846be2",
+      "summary": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.031s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_count_provenance.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.2,
+      "reported_unittest_cases": 17,
+      "reported_skips": 0,
+      "output_sha256": "42e0f8db8968a646d85a7742f25969a30a439788af0b1b66c4cf035b2123532b",
+      "source_sha256": "0824db56095aeaf33825f15753c7fc56a89d5049fc8e4666cffa98094bfcdc48",
+      "summary": ".................\n----------------------------------------------------------------------\nRan 17 tests in 0.002s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_build_expanded_aadt_counts.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.103,
+      "reported_unittest_cases": 3,
+      "reported_skips": 0,
+      "output_sha256": "33060fd73862c5e1af97335504d5b45211fce6d229657f556d8deceeadc52ce4",
+      "source_sha256": "7a5af6d2ce58f78c584e37e981329e2af39cea093336bd0e5a4af24e5993ab5d",
+      "summary": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_count_set_clipping.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.143,
+      "reported_unittest_cases": 7,
+      "reported_skips": 0,
+      "output_sha256": "21c7e48d0b1ec908feef784bbce1fa55f2c9a7acf76382fa7578754a78bd1ed8",
+      "source_sha256": "e894f9dd62abd772dd4ed0537cf8b980114b0683c8dd593436fc024e11cf3db1",
+      "summary": ".......\n----------------------------------------------------------------------\nRan 7 tests in 0.004s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_instrument.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.384,
+      "reported_unittest_cases": 13,
+      "reported_skips": 0,
+      "output_sha256": "eaa2a7752835205e160888baa8431ad212cd8d772357cb1dee5ee8748a8abef7",
+      "source_sha256": "16de7bd9ddcd039f3d4ad630ffb73c202144b4be53bd11826ff998456b22d407",
+      "summary": ".............\n----------------------------------------------------------------------\nRan 13 tests in 0.276s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_instrument_v2.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.172,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "d5513ee18419242abc2ab5a2f4683794b20850788adada4abb48e8ffb954d021",
+      "source_sha256": "fb577cd88759b5e683fb5984872fe41c8919437c9268d0cbabdb0cfed3ba996b",
+      "summary": "validation_instrument_v2: all tests passed\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_readiness_records.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.13,
+      "reported_unittest_cases": 6,
+      "reported_skips": 0,
+      "output_sha256": "3b276704f3e563f93455088f7ce46c6323f4b89f61012ff8ddd99bba729ec60f",
+      "source_sha256": "14aed8256e94ce33df90bef8f86ac4415501d8ceb15a26e7071a74f1c3065b32",
+      "summary": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.013s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_input_custody.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.124,
+      "reported_unittest_cases": 2,
+      "reported_skips": 0,
+      "output_sha256": "cbe4b84d897ac017db0552ccb3a31855ff0fb172bc344c967c4c4c92eb19e624",
+      "source_sha256": "4726b9b6edd8ef1a590394c5ba538a5b36eb6073dfed783de68b64fed749fca3",
+      "summary": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.004s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_output_identity.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.14,
+      "reported_unittest_cases": 4,
+      "reported_skips": 0,
+      "output_sha256": "4a160235c0add54f7a5997815d0e01a072210439de4899c702c94dd3cd814662",
+      "source_sha256": "cb213f2c32115e4647e94b2ce55f63f76959a3b4db5e4f8d30d9088101074443",
+      "summary": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.010s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_output_alias.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "reported_unittest_cases": 1,
+      "reported_skips": 0,
+      "output_sha256": "2299339565fdc7c4fedeb54e99b181ba53b821f77194926422cc7df3301ba0ee",
+      "source_sha256": "74ed7f05e69df7db94d0c65fdee8fdabe89208b9f39821c8efb8a0ae1e91ca36",
+      "summary": ".\n----------------------------------------------------------------------\nRan 1 test in 0.007s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_bundle_identity.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.119,
+      "reported_unittest_cases": 8,
+      "reported_skips": 0,
+      "output_sha256": "274f6bac38cd9c543013527ca3004ec792d15edc09b5a81dc5a505bd86dbbc90",
+      "source_sha256": "95284321c013ce4c32d854345121686b26ce08f4bdccb975875252627ea653b3",
+      "summary": "........\n----------------------------------------------------------------------\nRan 8 tests in 0.015s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_prepared_context.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.137,
+      "reported_unittest_cases": 5,
+      "reported_skips": 0,
+      "output_sha256": "464e0ee629edf74de09ef21e4232fbcedc26588ff7cc23c470f47fe2da88c255",
+      "source_sha256": "5b46ad57e3d905a8981b33a25bc943d0fff3b7d27417b54a37aa76467521eaad",
+      "summary": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.007s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_validation_source_records.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.108,
+      "reported_unittest_cases": 6,
+      "reported_skips": 0,
+      "output_sha256": "1e43b905e11ca028139fe5078016515111aaf7cebf8d6a3e224b7d03b9cb6ac9",
+      "source_sha256": "686b384355bdacca595a86c356fc1eeaaa5540e188caf131441a2638913b714a",
+      "summary": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.006s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_prepare_validation_instrument_study.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.042,
+      "reported_unittest_cases": 2,
+      "reported_skips": 0,
+      "output_sha256": "fe008aab760eb03ccac7578e2b84665b1b50b0d7f855b17a0c7a8d039435b658",
+      "source_sha256": "1285a427fd1d05815a7b326c3dbd8888a8194b04d39dd6529fb87d97cc86779b",
+      "summary": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.001s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_run_development_validation_study.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.606,
+      "reported_unittest_cases": 5,
+      "reported_skips": 0,
+      "output_sha256": "160da6c2cd7d47221b810476b4784dec72ffeed86384a063724245a6e5c6a48f",
+      "source_sha256": "a3a386b813740e7fee7c4692782312cb17113c74deb2774accf28d24d744e1bc",
+      "summary": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.486s\n\nOK\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_model_validation_core.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.03,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "3648adff7cb3102a0a0b98de2aa57987b526dc58877245a2d8735d3606a4e258",
+      "source_sha256": "dded9bf02f10f12fe6f892c77215a9046636588e1c8339e21758dec2873b07fd",
+      "summary": "model_validation_core: all tests passed\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_model_validation_preparation.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.157,
+      "reported_unittest_cases": 6,
+      "reported_skips": 0,
+      "output_sha256": "ba8dd02bb7437942124041e01665b154f224dfbcb0a07cdebc0a6802f7ac9c74",
+      "source_sha256": "3ceee4c34b3e459e22c98df4d4f889bf2dd9ce1c2a942f2ed508e24e24a1e53a",
+      "summary": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.025s\n\nOK\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_count_validation.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.026,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "194acce3f6fe32ce2afbf3512c41344bd0439264bdaddd16b12b39ec8b09913b",
+      "source_sha256": "cd268bad2931124950bb12a38bb5ec39f9bd5c80640e0bdffa27f212120f39cc",
+      "summary": "stance_wraps_across_the_antimeridian\nok  test_every_summary_carries_the_qualification\nok  test_gate_internal_when_too_few_matches\nok  test_match_prefers_exact_name_then_distance_without_looking_at_volume\nok  test_metric_status_for_gate\nok  test_metric_status_warns_rather_than_passing_at_coarse_resolution\nok  test_metrics_parity_with_screening_metrics\nok  test_one_station_per_link_is_untouched\nok  test_peak_hour_geh_reports_factor_and_handles_empty\nok  test_peak_hour_geh_scales_from_avg_hourly\nok  test_the_exclusion_says_why_rather_than_dropping_the_station\nok  test_the_nearest_carriageway_is_the_one_summed\nok  test_the_resolution_travels_in_the_summary\nok  test_the_threshold_boundary\nok  test_two_agreeing_stations_on_one_link_are_compared_once\nok  test_two_carriageways_of_one_highway_are_summed\nok  test_two_disagreeing_stations_grade_nothing\nok  test_unmatched_station_reported\nok  test_validate_emits_both_geh_bases\nok  test_validate_summary_and_gate\n\n36 count-validation checks passed.\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_count_ingest.py",
+      "exit_code": 0,
+      "elapsed_seconds": 1.085,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "32a53428575825d929178dc674e8b7a7b52f04d0127fcc62372b8250512d8c8e",
+      "source_sha256": "e1b4f6a30c0f28fae108ee6192c7c0813f6d3ff2962371c9516dedb1d6debd30",
+      "summary": "ok  test_source_plan_asks_for_every_state_and_national_adapter\nok  test_source_plan_keeps_unresolved_and_unsupported_distinct\nok  test_auto_ingest_is_off_by_default\nok  test_auto_ingest_passes_bbox_as_equals_form\nok  test_resolve_calibration_enabled_snapshot_over_env\nok  test_auto_ingest_runs_for_per_run_calibrate_even_when_deployment_off\nok  test_should_run_calibration_gate\nok  test_immutable_validation_upload_failure_is_not_recorded_as_local_custody\n\n8 count-ingest checks passed.\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_count_coverage.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.023,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "cd74808c33f0f9f423a169b8987b78b39c259b1f0248786287deb660f4970b90",
+      "source_sha256": "829dd67e1eabdb53404cbde36e23f5c5bf77b4c56a425fa76c351eb0c3e9572a",
+      "summary": "ok  test_bboxes_intersect\nok  test_count_set_without_geography_does_not_block_validation\nok  test_missing_count_set_is_a_coverage_statement_not_a_failure\nok  test_out_of_area_run_does_not_guess_a_source_from_bbox\nok  test_out_of_state_run_reports_coverage_not_failure\nok  test_pilot_counts_cover_the_pilot_area\nok  test_station_set_extent_is_none_without_usable_bboxes\nok  test_station_set_extent_unions_declared_bboxes\nok  test_uncovered_summary_carries_no_gate_and_no_metrics\nok  test_unknown_study_area_does_not_block_validation\n\n10 count-coverage checks passed.\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_assignment_count_mapping.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.051,
+      "reported_unittest_cases": 6,
+      "reported_skips": 0,
+      "output_sha256": "a25b5619af971eae96a8c9d37ebc69133b4c28e990455e210be0507206df182c",
+      "source_sha256": "194b8f4083fc8ef0090e53e445366a111b6a0bf6d0dab4a1631120f7fa5b19b5",
+      "summary": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.008s\n\nOK\n"
+    },
+    {
+      "file": "workers/aequilibrae_worker/test_dependency_pins.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.016,
+      "reported_unittest_cases": null,
+      "reported_skips": 0,
+      "output_sha256": "678c76dd20f2f865e65afea74924755d9bc9787eb3cd0059e42d7141a6ca9172",
+      "source_sha256": "245f1fae849001e9183133ee8572954b4af6726418670834bda5071723c8cc4c",
+      "summary": "ok  test_assignment_images_use_the_reviewed_python_abi\nok  test_both_lists_name_the_same_engine_pins\nok  test_hosted_image_checks_the_adapter_in_its_own_environment\nok  test_standalone_image_checks_the_adapter_after_copying_sources\nok  test_the_county_image_installs_the_county_list_and_runs_the_probe\nok  test_the_engine_pair_is_exact_in_both_lists\nok  test_the_hosted_image_installs_the_worker_list_and_runs_the_probe\n\n7 dependency-pin checks passed.\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_count_observation_uncertainty.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.139,
+      "reported_unittest_cases": 48,
+      "reported_skips": 0,
+      "output_sha256": "42520757f02d3c14eb50293c79ea878e10dc2598cacf7e1e709c4b256ba0c0ca",
+      "source_sha256": "448cfb439a97b82e3cbd7df7dbc22838b21ef3c9c78ceddf2ff8b9a4225c0dcb",
+      "summary": "_refuse_not_vehicle_counts) ... ok\ntest_refuse_observation_binding_mismatch (__main__.Intervals.test_refuse_observation_binding_mismatch) ... ok\ntest_refuse_period_unavailable (__main__.Intervals.test_refuse_period_unavailable) ... ok\ntest_refuse_qa_unavailable (__main__.Intervals.test_refuse_qa_unavailable) ... ok\ntest_refuse_source_binding_mismatch (__main__.Intervals.test_refuse_source_binding_mismatch) ... ok\ntest_refuse_source_hash_unavailable (__main__.Intervals.test_refuse_source_hash_unavailable) ... ok\ntest_refuse_unsupported_coverage (__main__.Intervals.test_refuse_unsupported_coverage) ... ok\ntest_refuse_unsupported_error_model (__main__.Intervals.test_refuse_unsupported_error_model) ... ok\ntest_refuse_vehicle_class_unavailable (__main__.Intervals.test_refuse_vehicle_class_unavailable) ... ok\ntest_refuse_year_unavailable (__main__.Intervals.test_refuse_year_unavailable) ... ok\n\n----------------------------------------------------------------------\nRan 48 tests in 0.019s\n\nOK\n"
+    },
+    {
+      "file": "scripts/modeling/tests/test_count_interval_coverage.py",
+      "exit_code": 0,
+      "elapsed_seconds": 0.081,
+      "reported_unittest_cases": 9,
+      "reported_skips": 0,
+      "output_sha256": "e2ac9ff2fb434b0f75c08f466834c3b1f0195a63962485af003196806fe83f3b",
+      "source_sha256": "5b53f64222a17f47586df2eecc3a71e69cd8d9a1adccc2635b4d87576ce80184",
+      "summary": "test_archive_hash (__main__.Coverage.test_archive_hash) ... ok\ntest_eligibility_parity_on_synthetic_inputs (__main__.Coverage.test_eligibility_parity_on_synthetic_inputs) ... ok\ntest_geography_path (__main__.Coverage.test_geography_path) ... ok\ntest_input_only_audit (__main__.Coverage.test_input_only_audit) ... ok\ntest_member_hash (__main__.Coverage.test_member_hash) ... ok\ntest_network_unchanged (__main__.Coverage.test_network_unchanged) ... ok\ntest_partition (__main__.Coverage.test_partition) ... ok\ntest_refuse_assignment_volumes (__main__.Coverage.test_refuse_assignment_volumes) ... ok\ntest_registry_hash (__main__.Coverage.test_registry_hash) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.005s\n\nOK\n"
+    }
+  ],
+  "passed_suites": 27,
+  "failed_suites": 0,
+  "reported_skips": 0
+}
