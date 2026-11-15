@@ -39,6 +39,7 @@ That record does not establish accepted transit accuracy or nationwide behavior.
 | [Comparable observations](../../data/modeling/comparable-observation-study-2026-08-28/study-report.md) | Improves comparability/accounting of evidence; it does not validate either demand method |
 | [Structural demand diagnosis](../../data/modeling/structural-demand-diagnosis-study-2026-08-28/study-report.md) | Preserves structural uncertainties and separate method results |
 | [Distributed work loading](../../data/modeling/distributed-work-loading-study-2026-08-31/study-report.md) | The overall candidate did not advance and remains inconclusive; no default changed or acceptance holdout opened |
+| [ActivitySim TBI 2019 attempt](ACTIVITYSIM_TBI2019_ATTEMPT_2026-10-24.md) | Archived by tag, not merged; no full-population run completed and the 1,497 held-out households remain unopened |
 
 The historical 43.3% median APE came from model selection in one county. It is
 not independent or nationwide accuracy. LODES measures a source-bounded
