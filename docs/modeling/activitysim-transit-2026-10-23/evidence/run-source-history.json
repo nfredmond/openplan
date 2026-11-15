@@ -1,0 +1,6 @@
+{
+  "initial_implementation_sha256": "c7ae01555bc5b89f3b5c2d2e9167579a550633a36e90bd21f6e4d71265398c18",
+  "initial_source_record": "matches source hash recorded by the first mutation invocation; snapshot reconstructed after metadata-only edits",
+  "final_implementation_sha256": "db2e85963579cac7c78148561393b9c5870ed905c0cf3e53214236f5468df3a6",
+  "repeat_reason": "Repeat full routing after adding units, no-path status distinction and implementation hash to custody. Numerical routing functions did not change."
+}

@@ -1,0 +1,23 @@
+{
+  "acquired_on": "2026-10-23",
+  "feed_url": "https://svc.metrotransit.org/mtgtfs/archive/GTFS20191005.zip",
+  "feed_sha256": "74f51981c4861a427caa06fcbf47cf5238733a8ae5ef123a03f1ebce9e59b020",
+  "feed_bytes": 22271178,
+  "gazetteer_url": "https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2019_Gazetteer/2019_Gaz_tracts_national.zip",
+  "gazetteer_sha256": "d7d9861d676f5d9dfbfbb431c305832c04b57c01c4adc3c8994c30f32c79db16",
+  "gazetteer_bytes": 2111407,
+  "zone_csv_sha256": "1d61426e09fa2fb09e8d55b7efc8799a2eda4c0098bc4cf8e56b7a321962ccf9",
+  "zones": 704,
+  "zone_ids": "GEOID ascending, 1-based",
+  "county_counts": {
+    "Anoka": 83,
+    "Carver": 19,
+    "Dakota": 95,
+    "Hennepin": 299,
+    "Ramsey": 137,
+    "Scott": 21,
+    "Washington": 50
+  },
+  "respondent_rows_read": 0,
+  "terms": "notice.rtf inside the exact feed; attached without alteration"
+}
