@@ -385,3 +385,71 @@ test('assembly: one journey whose public read carried a staff field marks the re
   assert.equal(record.participantChecks.publicRead.staffFieldsFound, true);
   assert.deepEqual(record.participantChecks.publicRead.staffFieldsSearched, ['moderation_notes'], 'only the fields every journey searched');
 });
+
+// ---------------------------------------------------------------------------
+// The demonstration reads as a demonstration (KI-2026-11-15-010)
+// ---------------------------------------------------------------------------
+
+const DEMO_TITLE = 'Demonstration by an automated OpenPlan proof run. Road safety comments, tribal-area run';
+const DEMO_INVITATION = 'Demonstration by an automated OpenPlan proof run. This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here. It will be closed when the run ends.';
+const TEMPLATE_TEXT = 'We are studying traffic safety in this area and want to hear from the people who travel here. Your comments are reviewed by the project team and inform which improvements are studied.';
+const readDemo = (surface, invitation = DEMO_INVITATION, title = DEMO_TITLE) => lib.readDemonstrationText({ surface, invitation, title });
+
+test('demonstration text: a portal that shows the invitation and not the template reads as a demonstration', () => {
+  const reading = readDemo({ name: 'portal at 1440 px', text: `${DEMO_TITLE}\n${DEMO_INVITATION}\nOpen for comments`, html: `<h1>${DEMO_TITLE}</h1><p>${DEMO_INVITATION.replace(/'/g, '&#x27;')}</p>` });
+  assert.equal(reading.readsAsDemonstration, true, reading.problems.join('; '));
+  assert.equal(reading.invitationOwnSentence, 'This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.');
+  assert.doesNotThrow(() => lib.assertReadsAsDemonstration([reading]));
+});
+
+test('demonstration text: the template sentence beside the title refuses, even though the title holds the first sentence', () => {
+  const reading = readDemo({ name: 'portal at 390 px', text: `${DEMO_TITLE}\n${TEMPLATE_TEXT}`, html: '' });
+  assert.equal(reading.invitationFirstSentenceFound, true, 'the title alone carries the first sentence');
+  assert.equal(reading.invitationOwnSentenceFound, false);
+  assert.equal(reading.templateSentenceFound, true);
+  assert.equal(reading.readsAsDemonstration, false);
+  assert.throws(() => lib.assertReadsAsDemonstration([reading]), /portal at 390 px shows the template's text "We are studying traffic safety in this area"/);
+  assert.throws(() => lib.assertReadsAsDemonstration([reading]), /does not show the invitation's sentence "This page is not a real consultation/);
+});
+
+test('demonstration text: the template sentence beside the invitation still refuses, in the page text or only in its HTML', () => {
+  const inText = readDemo({ name: 'portal', text: `${DEMO_TITLE}\n${DEMO_INVITATION}\n${TEMPLATE_TEXT.toUpperCase()}`, html: '' });
+  assert.equal(inText.readsAsDemonstration, false);
+  const inHtml = readDemo({ name: 'portal', text: `${DEMO_TITLE}\n${DEMO_INVITATION}`, html: `<meta name="description" content="${TEMPLATE_TEXT}">` });
+  assert.equal(inHtml.templateSentenceFound, true);
+  assert.throws(() => lib.assertReadsAsDemonstration([inHtml]), /shows the template's text/);
+});
+
+test('demonstration text: the invitation only in hidden HTML does not count as shown', () => {
+  const reading = readDemo({ name: 'portal at 390 px', text: DEMO_TITLE, html: `<div hidden>${DEMO_INVITATION}</div>` });
+  assert.equal(reading.invitationOwnSentenceFound, false);
+  assert.throws(() => lib.assertReadsAsDemonstration([reading]), /does not show the invitation's sentence/);
+});
+
+test('demonstration text: an invitation with no sentence the title lacks refuses, because the check would prove nothing', () => {
+  const reading = readDemo({ name: 'portal', text: DEMO_TITLE, html: '' }, 'Demonstration by an automated OpenPlan proof run.');
+  assert.equal(reading.invitationOwnSentence, null);
+  assert.throws(() => lib.assertReadsAsDemonstration([reading]), /has no sentence the campaign title lacks/);
+});
+
+test('demonstration text: a review PDF page 1 is read with the PDF matcher, across line breaks', () => {
+  const wrapped = (text) => text.replace(/(\S+ \S+ \S+ \S+ \S+ \S+) /g, '$1\n');
+  const good = readDemo({ name: 'public review PDF page 1', pages: [`PUBLIC REVIEW COPY\n\n${wrapped(DEMO_TITLE)}\n${wrapped(DEMO_INVITATION)}\n\nCampaign context\n\n${wrapped(DEMO_INVITATION)}`] });
+  assert.equal(good.readsAsDemonstration, true, good.problems.join('; '));
+  const bad = readDemo({ name: 'internal review PDF page 1', pages: [`INTERNAL REVIEW COPY\n\n${wrapped(DEMO_TITLE)}\n${wrapped(DEMO_INVITATION)}\n\nCampaign context\n\n${wrapped(TEMPLATE_TEXT)}`] });
+  assert.equal(bad.invitationOwnSentenceFound, true, 'the summary under the title carries the invitation');
+  assert.throws(() => lib.assertReadsAsDemonstration([good, bad]), /internal review PDF page 1 shows the template's text/);
+});
+
+test('demonstration text: no reading at all refuses', () => {
+  assert.throws(() => lib.assertReadsAsDemonstration([]), /No surface was read/);
+});
+
+test('demonstration text: the template the journey selects still opens its public text with the sentence the check refuses', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'openplan', 'src', 'lib', 'engagement', 'campaign-templates.ts'), 'utf8');
+  const at = source.indexOf(`id: "${lib.CAMPAIGN_TEMPLATE.id}"`);
+  assert.ok(at >= 0, `campaign-templates.ts has no template ${lib.CAMPAIGN_TEMPLATE.id}`);
+  const next = source.indexOf('suggestedPublicDescription:', at);
+  const text = source.slice(next, next + 400).replace(/\s+/g, ' ');
+  assert.match(text, new RegExp(`^suggestedPublicDescription: "${lib.CAMPAIGN_TEMPLATE.publicSentence}`));
+});

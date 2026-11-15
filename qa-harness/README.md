@@ -109,6 +109,12 @@ and no secret. Per journey:
   the full label the search shows, records a proposed decision, and creates
   and activates a campaign. The campaign's title and invitation must say
   "Demonstration by an automated OpenPlan proof run", in both modes.
+- Before activation the journey replaces the template's public description
+  with the invitation (Setup tab, "Public-facing description"). As an
+  anonymous participant it reads the portal and its about page at 1440 and
+  390 px, and later page 1 of both review PDFs, and stops unless each shows
+  the invitation and none shows the template's "We are studying traffic
+  safety in this area". The run file keeps the readings (`demonstrationText`).
 - Anonymous participants, each in a fresh browser context: one map point and
   one comment with no map point at 1440 px by pointer, one contribution at
   390 px with the keyboard only (Tab, Enter, Space; the focus trail is saved),

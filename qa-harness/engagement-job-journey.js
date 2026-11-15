@@ -35,6 +35,15 @@
  * by --confirm-link-file (and --second-confirm-link-file), opens the link and
  * records only a SHA-256 of its token.
  *
+ * Public text: the template applies its own public description at creation,
+ * which says a project team will study the comments. Before activation the
+ * journey replaces it with the inputs' invitation through the Setup tab's
+ * "Public-facing description" field, then reads the portal and its about page
+ * as an anonymous participant at 1440 and 390 px and refuses to go on (the
+ * campaign is closed as for any stop) unless each shows the invitation and none
+ * shows the template's sentence. Page 1 of both review PDFs is read the same
+ * way once they are printed. The run file keeps every reading.
+ *
  * Close at the end: whether the journey finishes or stops early, it sets the
  * campaign's status to Closed through the campaign settings form and checks
  * that the public address shows only the ended notice. The run file says
@@ -58,9 +67,10 @@ const AXE_SOURCE = path.join(appRoot, 'node_modules', 'axe-core', 'axe.min.js');
 
 const STEPS = [
   'health-start', 'sign-up', 'confirm-email', 'create-project', 'set-study-place', 'record-decision',
-  'create-campaign', 'activate-campaign', 'contribute-map-point', 'contribute-no-map-point',
-  'contribute-keyboard-390', 'contribute-to-reject', 'moderate', 'staff-review', 'publish-response',
-  'link-decision', 'request-review-files', 'download-review-files', 'read-counts', 'search-rejected-text',
+  'create-campaign', 'set-public-text', 'activate-campaign', 'read-portal-text', 'contribute-map-point',
+  'contribute-no-map-point', 'contribute-keyboard-390', 'contribute-to-reject', 'moderate', 'staff-review',
+  'publish-response', 'link-decision', 'request-review-files', 'download-review-files', 'read-review-file-text',
+  'read-counts', 'search-rejected-text',
   'screens', 'participant-checks', 'cross-workspace', 'close-campaign', 'health-end',
 ];
 const PLACE_KIND_LABELS = { county: 'County', city: 'City / town', cdp: 'Census-designated place', aiannh: 'Tribal area', cousub: 'Town or township' };
@@ -270,6 +280,7 @@ async function main() {
   const countTable = [];
   let rejectedSearch = null;
   let closeReading = null;
+  const demonstrationText = { publicTextSet: null, portal: [], reviewPdfs: [] };
 
   const browser = await puppeteer.launch({
     executablePath: chromePath(),
@@ -748,7 +759,7 @@ async function main() {
       await go(`/engagement?projectId=${ids.projectId}`);
       await clickText(page, 'button', 'New campaign', { exact: true });
       await page.waitForSelector('#engagement-campaign-creator-templateId');
-      await page.select('#engagement-campaign-creator-templateId', 'corridor-safety-study');
+      await page.select('#engagement-campaign-creator-templateId', lib.CAMPAIGN_TEMPLATE.id);
       await clickText(page, 'dialog[open] button', 'Next', { exact: true });
       await page.waitForSelector('#engagement-campaign-creator-title');
       ids.campaignTitle = inputs.campaign.title;
@@ -766,6 +777,36 @@ async function main() {
       ids.campaignId = page.url().match(/engagement\/([0-9a-f-]{36})/)[1];
       state.campaign.campaignId = ids.campaignId;
       return ids.campaignId;
+    }),
+
+    step('set-public-text', async () => {
+      const openField = async () => {
+        await go(`/engagement/${ids.campaignId}?tab=setup`);
+        await page.evaluate(() => {
+          const field = document.querySelector('#public-description');
+          for (let node = field; node; node = node.parentElement) if (node.tagName === 'DETAILS') node.open = true;
+          if (field) field.scrollIntoView({ block: 'center' });
+        });
+        await sleep(800);
+        return page.waitForSelector('#public-description', { visible: true, timeout: 30000 });
+      };
+      const field = await openField();
+      const before = await field.evaluate((el) => el.value);
+      await typeInto(field, inputs.campaign.invitation);
+      const saved = page.waitForResponse((r) => r.url().includes(`/api/engagement/campaigns/${ids.campaignId}`) && r.request().method() === 'PATCH', { timeout: 60000 });
+      await clickText(page, '#public-share-controls button', 'Save share settings', { exact: true });
+      const saveStatus = (await saved).status();
+      if (saveStatus !== 200) throw new Error(`Saving the public description answered ${saveStatus}.`);
+      await settle(page, 1500);
+      const after = await (await openField()).evaluate((el) => el.value);
+      demonstrationText.publicTextSet = {
+        control: 'Setup tab, Public-facing description, Save share settings',
+        saveStatus,
+        templateTextBefore: lib.readDemonstrationText({ surface: { name: 'the field before', text: before }, invitation: inputs.campaign.invitation, title: inputs.campaign.title }).templateSentenceFound,
+        readsInvitationAfter: after.trim() === inputs.campaign.invitation.trim(),
+      };
+      if (!demonstrationText.publicTextSet.readsInvitationAfter) throw new Error(`After saving, the public description reads "${after.slice(0, 80)}".`);
+      return `public description replaced${demonstrationText.publicTextSet.templateTextBefore ? " (it held the template's text)" : ''}`;
     }),
 
     step('activate-campaign', async () => {
@@ -792,6 +833,37 @@ async function main() {
       const live = await page.evaluate(() => /Live · accepting submissions/.test(document.body.innerText));
       if (!live) throw new Error('The portal status does not read "Live · accepting submissions".');
       return 'live';
+    }),
+
+    step('read-portal-text', async () => {
+      const visitor = await browser.createBrowserContext();
+      try {
+        const reader = await visitor.newPage();
+        for (const width of [1440, 390]) {
+          await reader.setViewport({ width, height: width === 390 ? 844 : 1000 });
+          for (const [name, route] of [['portal', ids.portalPath], ['about', `${ids.portalPath}/about`]]) {
+            await go(route, reader);
+            // At 390 px the portal's title and description sit in a bottom
+            // sheet that is shut until the participant opens it.
+            const sheet = await reader.$('#portal-sheet-toggle');
+            const handle = sheet && !(await sheet.evaluate((el) => el.checked)) ? await reader.$('label[for=portal-sheet-toggle]') : null;
+            const opened = Boolean(handle && (await handle.boundingBox()));
+            if (opened) {
+              await handle.click();
+              await sleep(800);
+            }
+            const text = await reader.evaluate(() => document.body.innerText);
+            const html = await reader.content();
+            await reader.screenshot({ path: path.join(out, 'screens', `demonstration-${name}-${width}.png`), fullPage: false });
+            const reading = lib.readDemonstrationText({ surface: { name: `${name} at ${width} px`, text, html }, invitation: inputs.campaign.invitation, title: inputs.campaign.title });
+            demonstrationText.portal.push({ ...reading, sheetOpened: opened });
+          }
+        }
+      } finally {
+        await visitor.close().catch(() => {});
+      }
+      lib.assertReadsAsDemonstration(demonstrationText.portal);
+      return `${demonstrationText.portal.length} readings show the invitation and not the template's text`;
     }),
 
     step('contribute-map-point', () => contribute('mapPoint', 'pointer-map')),
@@ -1018,6 +1090,15 @@ async function main() {
         }
       }
       return Object.entries(ids.files).map(([key, file]) => `${key} ${fs.statSync(file).size} bytes`).join('; ');
+    }),
+
+    step('read-review-file-text', async () => {
+      for (const scope of ['internal', 'public']) {
+        const pages = first.pdfPages(ids.files[`${scope}-pdf`]);
+        demonstrationText.reviewPdfs.push(lib.readDemonstrationText({ surface: { name: `${scope} review PDF page 1`, pages: pages.slice(0, 1) }, invitation: inputs.campaign.invitation, title: inputs.campaign.title }));
+      }
+      lib.assertReadsAsDemonstration(demonstrationText.reviewPdfs);
+      return "page 1 of both review PDFs shows the invitation and not the template's text";
     }),
 
     step('read-counts', async () => {
@@ -1325,6 +1406,7 @@ async function main() {
     counts: countTable,
     countPages: ids.countPages || null,
     rejectedTextSearch: rejectedSearch,
+    demonstrationText,
     findings,
     axeRules: ids.axeRules || [],
     consoleErrorsDuringJourney: consoleErrors.length,
