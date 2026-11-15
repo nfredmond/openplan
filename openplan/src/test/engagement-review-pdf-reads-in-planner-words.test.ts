@@ -96,17 +96,20 @@ const UNDERSCORE_CODE = /\b[a-z]+_[a-z_]+\b/;
  * not_assessed", "Retained decision status: proposed."), so prose such as
  * "Withheld, pending and flagged contributions are left out" is not a finding.
  */
-function bodyFindings(body: string, attributes = ""): string[] {
+function bodyFindings(body: string, attributes = "", readerAttributes = ""): string[] {
   const findings: string[] = [];
   for (const [name, pattern] of [["record id", UUID], ["64-character hash", HASH], ["stored time", STORED_TIME]] as const) {
     const match = pattern.exec(body) ?? pattern.exec(attributes);
     if (match) findings.push(`${name}: ${match[0]}`);
   }
-  if (body.includes("{")) findings.push(`JSON: ${body.slice(body.indexOf("{"), body.indexOf("{") + 40)}`);
-  const underscore = UNDERSCORE_CODE.exec(body);
+  // Words a reader meets: the text, and the alt, title, aria-label and href
+  // values (review 58: codes and JSON were checked in the text only).
+  const words = `${body}\n${readerAttributes}`;
+  if (words.includes("{")) findings.push(`JSON: ${words.slice(words.indexOf("{"), words.indexOf("{") + 40)}`);
+  const underscore = UNDERSCORE_CODE.exec(words);
   if (underscore) findings.push(`stored code: ${underscore[0]}`);
   const codes = new Set(REVIEW_PDF_STORED_CODES);
-  for (const segment of body.split(/[|·:().\n]/).map((part) => part.trim())) {
+  for (const segment of words.split(/[|·:().\n]/).map((part) => part.trim())) {
     if (codes.has(segment)) findings.push(`stored code: ${segment}`);
   }
   return [...new Set(findings)];
@@ -125,14 +128,15 @@ function splitReview(html: string) {
   const walker = document.createTreeWalker(document.body, 4);
   const parts: string[] = [];
   for (let node = walker.nextNode(); node; node = walker.nextNode()) parts.push(node.textContent ?? "");
-  return { body: parts.join("\n"), attributes, appendix: appendixText };
+  const readerAttributes = [...document.body.querySelectorAll("*")].flatMap((node) => [...node.attributes].filter((attribute) => ["alt", "title", "aria-label", "href"].includes(attribute.name)).map((attribute) => attribute.value)).join("\n");
+  return { body: parts.join("\n"), attributes, readerAttributes, appendix: appendixText };
 }
 
 describe("the review PDF's HTML, before and after the Record identifiers heading", () => {
   it.each(CASES)("$name: the body prints no record id, raw time, JSON or stored code", async ({ snapshot }) => {
     const { parsed, checksum } = await saved(snapshot);
-    const { body, attributes } = splitReview(buildCampaignReviewHtml(parsed, checksum));
-    expect(bodyFindings(body, attributes)).toEqual([]);
+    const { body, attributes, readerAttributes } = splitReview(buildCampaignReviewHtml(parsed, checksum));
+    expect(bodyFindings(body, attributes, readerAttributes)).toEqual([]);
   });
 
   it.each(CASES)("$name: the appendix lists every identifier the body used to print", async ({ snapshot }) => {
@@ -202,4 +206,47 @@ describe.skipIf(!PDF_TOOLS)("the printed review PDF, read back with Poppler page
     const appendix = pages.slice(first).join("\n");
     expect(expectedIdentifiers(parsed, checksum).filter((id) => !appendix.includes(id))).toEqual([]);
   }, 120_000);
+});
+
+describe("review 58: what the numbers mean, answer order, attribute text and an unknown filter", () => {
+  it("says on the cover and above the identifiers that numbers are positions in this copy", async () => {
+    for (const snapshot of [fullerPublicReviewSnapshot(), fullerInternalReviewSnapshot()]) {
+      const { parsed, checksum } = await saved(snapshot);
+      const { body, appendix } = splitReview(buildCampaignReviewHtml(parsed, checksum));
+      expect(body).toContain("Numbers are positions in this copy.");
+      expect(body).toContain("match the two copies by the identifiers at the end, not by number");
+      expect(appendix).toContain("Numbers are positions in this copy.");
+    }
+  });
+
+  it("numbers survey answers in the order the PDF prints them: by session, then answer", async () => {
+    const base = fullerInternalReviewSnapshot() as { sessions: Array<Record<string, unknown>>; answers: Array<Record<string, unknown>> };
+    expect(base.sessions.length).toBeGreaterThan(0);
+    expect(base.answers.length).toBeGreaterThan(0);
+    // A second session whose answer is stored FIRST, though its session prints
+    // second: stored order and print order now differ (review 58).
+    const secondSession = { ...base.sessions[0], id: "00000000-0000-4000-8000-0000000000b2" };
+    const itsAnswer = { ...base.answers[0], id: "00000000-0000-4000-8000-0000000000c9", session_id: secondSession.id };
+    const snapshot = { ...base, sessions: [...base.sessions, secondSession], answers: [itsAnswer, ...base.answers] };
+    const { parsed, checksum } = await saved(snapshot);
+    const { body } = splitReview(buildCampaignReviewHtml(parsed, checksum));
+    const printed = [...body.matchAll(/Survey answer (\d+)/g)].map((match) => Number(match[1]));
+    expect(printed.length).toBe(base.answers.length + 1);
+    expect(printed).toEqual(printed.map((_, index) => index + 1));
+  });
+
+  it("finds a stored code or JSON in a title, alt, aria-label or href value", () => {
+    expect(bodyFindings("Plain words.", "", "not_assessed")).toEqual(["stored code: not_assessed"]);
+    expect(bodyFindings("Plain words.", "", '{"status":"approved"}')).toContain('JSON: {"status":"approved"}');
+    expect(bodyFindings("Plain words.", "", "Record summary\n#summary")).toEqual([]);
+  });
+
+  it("names a status filter it does not know instead of printing every contribution", async () => {
+    const snapshot = { ...(fullerInternalReviewSnapshot() as { filters: Record<string, unknown> }) };
+    snapshot.filters = { ...snapshot.filters, status: "archived" };
+    const { parsed, checksum } = await saved(snapshot);
+    const { body } = splitReview(buildCampaignReviewHtml(parsed, checksum));
+    expect(body).toContain("Selection: contributions in an unrecognized review state (archived)");
+    expect(body).not.toContain("Selection: every contribution");
+  });
 });
