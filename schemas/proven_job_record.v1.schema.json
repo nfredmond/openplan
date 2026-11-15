@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://openplan.org/schemas/proven_job_record.v1.schema.json",
   "title": "Proven job record v1",
-  "description": "One agent-run proof that a named planning job completes on one hosted commit in named places. Read with docs/product/capability-evidence/README.md. Checked by openplan/scripts/ops/capability-evidence.mjs (validateProvenJobRecord), which also applies the job's rules from schemas/proven_job_definitions.v1.json. No field may hold a secret, token, sign-in link, cookie, password or email address.",
+  "description": "One agent-run proof that a named planning job completes on one hosted commit in named places. Read with docs/product/capability-evidence/README.md. Checked by openplan/scripts/ops/capability-evidence.mjs (validateProvenJobRecord), which also applies the job's rules from schemas/proven_job_definitions.v1.json. The fields common to every job are below; each job's own fields come from its entry in allOf, chosen by jobId. No field may hold a secret, token, sign-in link, cookie, password or email address.",
   "type": "object",
-  "required": ["schema", "jobId", "commit", "baseUrl", "recordedOn", "journeys", "crossWorkspace", "sourceCheck", "limits"],
+  "required": ["schema", "jobId", "commit", "baseUrl", "recordedOn", "journeys", "crossWorkspace", "limits"],
   "additionalProperties": false,
   "properties": {
     "schema": { "const": "openplan.proven_job_record.v1" },
@@ -12,7 +12,7 @@
     "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "baseUrl": { "type": "string", "pattern": "^https://" },
     "recordedOn": { "$ref": "#/$defs/date" },
-    "journeys": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/journey" } },
+    "journeys": { "type": "array", "minItems": 1, "description": "Each job's entry in allOf gives the shape of its journeys." },
     "crossWorkspace": {
       "type": "object",
       "required": ["checks"],
@@ -27,6 +27,7 @@
             "additionalProperties": false,
             "properties": {
               "target": { "$ref": "#/$defs/slug" },
+              "journey": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "The role of the journey whose records the second account asked for. Optional for the first proven job, whose record predates it; required by a job whose definition sets crossWorkspace.perJourney to role." },
               "request": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "What the second account asked for, for example report-page, report-pdf-download, application-read or application-pdf-download." },
               "kind": { "enum": ["page", "data"], "description": "data: an API route or a file download; only 403 or 404 counts. page: an HTML page; 403 or 404 counts, and 200 counts only with notFoundRendered true, recordTextFound false and at least three searched strings." },
               "status": { "type": "integer", "minimum": 100, "description": "HTTP status the second account received. Any status the rule for its kind does not accept is inconclusive and refuses the record." },
@@ -51,6 +52,39 @@
         "note": { "type": "string", "minLength": 1 }
       }
     },
+    "participantChecks": {
+      "type": "object",
+      "description": "Engagement job: what an anonymous public participant, with no session, was refused, and the public portal read searched for staff-only fields.",
+      "required": ["refusals", "publicRead"],
+      "additionalProperties": false,
+      "properties": {
+        "refusals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["request", "status", "contentReturned"],
+            "additionalProperties": false,
+            "properties": {
+              "request": { "$ref": "#/$defs/slug" },
+              "status": { "type": "integer", "minimum": 100, "description": "HTTP status the participant received. Only 401, 403 or 404 counts." },
+              "contentReturned": { "type": "boolean" }
+            }
+          }
+        },
+        "publicRead": {
+          "type": "object",
+          "required": ["request", "status", "staffFieldsSearched", "staffFieldsFound"],
+          "additionalProperties": false,
+          "properties": {
+            "request": { "$ref": "#/$defs/slug" },
+            "status": { "type": "integer", "minimum": 100 },
+            "staffFieldsSearched": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "Field names searched for in the JSON the public read returned." },
+            "staffFieldsFound": { "type": "boolean" }
+          }
+        }
+      }
+    },
     "limits": {
       "type": "array",
       "minItems": 1,
@@ -65,6 +99,32 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": { "required": ["jobId"], "properties": { "jobId": { "const": "safety-action-plan-and-ss4a-in-three-places" } } },
+      "then": {
+        "required": ["sourceCheck"],
+        "additionalProperties": false,
+        "properties": {
+          "schema": {}, "jobId": {}, "commit": {}, "baseUrl": {}, "recordedOn": {},
+          "journeys": { "items": { "$ref": "#/$defs/journey" } },
+          "crossWorkspace": {}, "sourceCheck": {}, "limits": {}
+        }
+      }
+    },
+    {
+      "if": { "required": ["jobId"], "properties": { "jobId": { "const": "engagement-campaign-review-and-response-in-three-places" } } },
+      "then": {
+        "required": ["participantChecks"],
+        "additionalProperties": false,
+        "properties": {
+          "schema": {}, "jobId": {}, "commit": {}, "baseUrl": {}, "recordedOn": {},
+          "journeys": { "items": { "$ref": "#/$defs/engagementJourney" } },
+          "crossWorkspace": {}, "participantChecks": {}, "limits": {}
+        }
+      }
+    }
+  ],
   "$defs": {
     "slug": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
     "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
@@ -72,6 +132,45 @@
     "uuid": { "type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "count": { "type": "integer", "minimum": 0 },
+    "place": {
+      "type": "object",
+      "required": ["kind", "geoid", "stateFips", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["county", "city", "cdp", "metro", "micro", "aiannh", "cousub"] },
+        "geoid": { "type": "string", "pattern": "^\\d{4,10}[RT]?$" },
+        "stateFips": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^\\d{2}$" } },
+        "label": { "type": "string", "minLength": 1 }
+      }
+    },
+    "executor": {
+      "type": "object",
+      "required": ["agent", "model"],
+      "additionalProperties": false,
+      "properties": {
+        "agent": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 }
+      }
+    },
+    "confirmationMethod": { "enum": ["email_link", "operator_relay", "admin_generate_link"] },
+    "health": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["point", "checkedAt", "status", "commit", "version", "migrationsExpected", "migrationsLatest"],
+        "additionalProperties": false,
+        "properties": {
+          "point": { "enum": ["start", "end"] },
+          "checkedAt": { "$ref": "#/$defs/dateTime" },
+          "status": { "type": "string", "minLength": 1 },
+          "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
+          "version": { "type": "string", "minLength": 1 },
+          "migrationsExpected": { "type": ["integer", "null"], "minimum": 0 },
+          "migrationsLatest": { "type": ["string", "null"], "pattern": "^\\d{14}$" }
+        }
+      }
+    },
     "journey": {
       "type": "object",
       "required": [
@@ -81,46 +180,11 @@
       "additionalProperties": false,
       "properties": {
         "role": { "$ref": "#/$defs/slug" },
-        "place": {
-          "type": "object",
-          "required": ["kind", "geoid", "stateFips", "label"],
-          "additionalProperties": false,
-          "properties": {
-            "kind": { "enum": ["county", "city", "cdp", "metro", "micro", "aiannh", "cousub"] },
-            "geoid": { "type": "string", "pattern": "^\\d{4,10}[RT]?$" },
-            "stateFips": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^\\d{2}$" } },
-            "label": { "type": "string", "minLength": 1 }
-          }
-        },
-        "executor": {
-          "type": "object",
-          "required": ["agent", "model"],
-          "additionalProperties": false,
-          "properties": {
-            "agent": { "type": "string", "minLength": 1 },
-            "model": { "type": "string", "minLength": 1 }
-          }
-        },
+        "place": { "$ref": "#/$defs/place" },
+        "executor": { "$ref": "#/$defs/executor" },
         "accountCreatedAt": { "$ref": "#/$defs/dateTime" },
-        "confirmationMethod": { "enum": ["email_link", "operator_relay", "admin_generate_link"] },
-        "health": {
-          "type": "array",
-          "minItems": 2,
-          "items": {
-            "type": "object",
-            "required": ["point", "checkedAt", "status", "commit", "version", "migrationsExpected", "migrationsLatest"],
-            "additionalProperties": false,
-            "properties": {
-              "point": { "enum": ["start", "end"] },
-              "checkedAt": { "$ref": "#/$defs/dateTime" },
-              "status": { "type": "string", "minLength": 1 },
-              "commit": { "type": "string", "pattern": "^[0-9a-f]{7,40}$" },
-              "version": { "type": "string", "minLength": 1 },
-              "migrationsExpected": { "type": ["integer", "null"], "minimum": 0 },
-              "migrationsLatest": { "type": ["string", "null"], "pattern": "^\\d{14}$" }
-            }
-          }
-        },
+        "confirmationMethod": { "$ref": "#/$defs/confirmationMethod" },
+        "health": { "$ref": "#/$defs/health" },
         "crashes": {
           "type": "object",
           "required": ["sourceId", "severityCoverage", "reportedCount", "storedCount"],
@@ -157,6 +221,153 @@
         "screens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/screen" } }
       }
     },
+    "engagementJourney": {
+      "type": "object",
+      "description": "One journey of the engagement job: a staff account runs a public comment campaign, a public participant contributes, staff moderate, review and publish a response, and the review files and the public response page are read.",
+      "required": ["role", "place", "executors", "accountCreatedAt", "confirmationMethod", "health", "campaign", "pdfs", "workbooks", "publicPage", "screens"],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "$ref": "#/$defs/slug" },
+        "place": { "$ref": "#/$defs/place" },
+        "executors": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["role", "agent", "model"],
+            "additionalProperties": false,
+            "properties": {
+              "role": { "enum": ["staff", "public-participant"] },
+              "agent": { "type": "string", "minLength": 1 },
+              "model": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "accountCreatedAt": { "$ref": "#/$defs/dateTime" },
+        "confirmationMethod": { "$ref": "#/$defs/confirmationMethod" },
+        "health": { "$ref": "#/$defs/health" },
+        "campaign": {
+          "type": "object",
+          "required": ["campaignId", "projectId", "portalAddressKind", "aiFeaturesUsed", "contributions", "moderation", "rejectedTextSha256", "rejectedTexts", "staffReview", "response"],
+          "additionalProperties": false,
+          "properties": {
+            "campaignId": { "$ref": "#/$defs/uuid" },
+            "projectId": { "$ref": "#/$defs/uuid" },
+            "portalAddressKind": { "enum": ["share-token", "printable-slug"], "description": "How the portal address was formed. Never the token or slug itself." },
+            "aiFeaturesUsed": { "type": "boolean", "description": "Whether any AI feature ran in this journey: translation, AI moderation, AI synthesis or AI drafting." },
+            "contributions": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["commentId", "kind", "viewportWidth", "input"],
+                "additionalProperties": false,
+                "properties": {
+                  "commentId": { "$ref": "#/$defs/uuid" },
+                  "kind": { "enum": ["map-point", "no-map-point"] },
+                  "viewportWidth": { "type": "integer", "minimum": 1 },
+                  "input": { "enum": ["pointer", "keyboard-only"] }
+                }
+              }
+            },
+            "moderation": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["commentId", "outcome", "reasonRecorded"],
+                "additionalProperties": false,
+                "properties": {
+                  "commentId": { "$ref": "#/$defs/uuid" },
+                  "outcome": { "enum": ["approved", "rejected"] },
+                  "reasonRecorded": { "type": "boolean" }
+                }
+              }
+            },
+            "rejectedTextSha256": { "type": "array", "items": { "$ref": "#/$defs/sha256" }, "description": "SHA-256 of each rejected comment's text, in the order of rejectedTexts." },
+            "rejectedTexts": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Each rejected comment's text as the participant typed it: a test entry the journey wrote, which represents no one. The journey searched the public response page for it; the checker searches the public review files for it and must find it in the internal ones (KI-2026-11-14-371)." },
+            "staffReview": {
+              "type": "object",
+              "required": ["reviewId", "revision", "approved", "themes"],
+              "additionalProperties": false,
+              "properties": {
+                "reviewId": { "$ref": "#/$defs/uuid" },
+                "revision": { "type": "integer", "minimum": 1 },
+                "approved": { "type": "boolean" },
+                "themes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "required": ["groupId", "commentIds"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "groupId": { "type": "string", "pattern": "^[A-Za-z0-9_-]{1,100}$" },
+                      "commentIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/uuid" } }
+                    }
+                  }
+                }
+              }
+            },
+            "response": {
+              "type": "object",
+              "required": ["responseId", "status", "aiAssisted", "sourceCommentIds", "decisionLinkId", "decisionId", "projectId"],
+              "additionalProperties": false,
+              "properties": {
+                "responseId": { "$ref": "#/$defs/uuid" },
+                "status": { "enum": ["draft", "published"] },
+                "aiAssisted": { "type": "boolean" },
+                "sourceCommentIds": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/uuid" } },
+                "decisionLinkId": { "$ref": "#/$defs/uuid" },
+                "decisionId": { "$ref": "#/$defs/uuid" },
+                "projectId": { "$ref": "#/$defs/uuid" }
+              }
+            }
+          }
+        },
+        "pdfs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pdf" } },
+        "workbooks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["kind", "path", "sha256", "bytes"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": { "$ref": "#/$defs/slug" },
+              "path": { "type": "string", "pattern": "\\.xlsx$" },
+              "sha256": { "$ref": "#/$defs/sha256" },
+              "bytes": { "type": "integer", "minimum": 1 }
+            }
+          }
+        },
+        "publicPage": {
+          "type": "object",
+          "required": ["readings"],
+          "additionalProperties": false,
+          "properties": {
+            "readings": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["width", "mode", "approvedShown", "respondedShown", "rejectedTextSearched", "rejectedTextFound"],
+                "additionalProperties": false,
+                "properties": {
+                  "width": { "type": "integer", "minimum": 1 },
+                  "mode": { "enum": ["light", "dark"] },
+                  "approvedShown": { "$ref": "#/$defs/count" },
+                  "respondedShown": { "$ref": "#/$defs/count" },
+                  "rejectedTextSearched": { "$ref": "#/$defs/count" },
+                  "rejectedTextFound": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "screens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/screen" } }
+      }
+    },
     "pdf": {
       "type": "object",
       "required": ["kind", "path", "sha256", "bytes", "pages", "draftStamp", "items"],
@@ -180,7 +391,8 @@
               "page": { "type": "integer", "minimum": 1 },
               "method": { "enum": ["pdftotext", "page-image"] },
               "text": { "type": "string", "minLength": 1 },
-              "imageSha256": { "$ref": "#/$defs/sha256" }
+              "imageSha256": { "$ref": "#/$defs/sha256" },
+              "pixelSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "page-image items: SHA-256 of the page as binary PPM, rendered by Poppler's pdftoppm at 72 dpi (-singlefile, no -png; openplan/scripts/lib/poppler-pixels.mjs). The checker renders the page again and refuses a different hash. Optional: the first proven job's record predates it; the journey writes it from then on. imageSha256 hashes the PNG, whose bytes differ between Poppler builds, and is not recomputed." }
             }
           }
         }

@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-11-02.3",
+  "registryVersion": "2026-11-14.1",
   "releaseVersion": "0.72.0",
   "reviewedAt": "2026-11-02",
   "reviewBy": "2026-12-02",
@@ -490,7 +490,7 @@
     {
       "id": "federal-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-federal.ts",
-      "sha256": "675568c54db9132f1a762180ce9d14908a8e30901eff99c9662b75351220227f"
+      "sha256": "58a5d66fe829da3df3e5443ad261f55fad3d77c26a0c50b41b2c295247c38ade"
     },
     {
       "id": "california-grant-adapter",
@@ -556,6 +556,11 @@
       "id": "land-use-rule-reconciliation-20261007",
       "path": "docs/reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_ACCEPTANCE.md",
       "sha256": "33d6c7b244b743b155fa7985dc35ff2f8c88ff8d59ff43f574356d416224ff87"
+    },
+    {
+      "id": "first-proven-job-record-20261114",
+      "path": "docs/product/capability-evidence/first-proven-job.v1.json",
+      "sha256": "b8d1beac045d8d99ec3afcc55db469d15995875b4c3c5584fd5b41fb126971c8"
     }
   ],
   "claims": [
@@ -615,8 +620,8 @@
       "jurisdictionId": "US-CA",
       "jobId": "safety-analysis",
       "status": "partial",
-      "applicability": "CCRS supplies statewide reported collisions and FARS supplies a fatal-crash backstop where its coverage applies.",
-      "sourceIds": ["crash-source-registry", "ccrs-source-adapter", "fars-source-adapter"],
+      "applicability": "CCRS supplies statewide reported collisions and FARS supplies a fatal-crash backstop where its coverage applies. On November 14, 2026 an agent-run journey on the hosted site stored 286 of the 288 CCRS crashes reported for one county and exported a safety action plan (first proven job record).",
+      "sourceIds": ["crash-source-registry", "ccrs-source-adapter", "fars-source-adapter", "first-proven-job-record-20261114"],
       "adapterIds": ["ccrs-ca", "fars-national"],
       "authorities": [
         {
@@ -632,15 +637,15 @@
           "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system"
         }
       ],
-      "limitations": ["CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible."]
+      "limitations": ["CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible.", "In the November 14, 2026 journey, the crash counts were not checked against the source independently, and no planner reviewed the plan that journey exported."]
     },
     {
       "id": "US-CA/grants-and-reimbursement",
       "jurisdictionId": "US-CA",
       "jobId": "grants-and-reimbursement",
       "status": "partial",
-      "applicability": "Federal and California program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",
-      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "california-grant-adapter"],
+      "applicability": "Federal and California program descriptors can be matched to the workspace jurisdiction and carried into project funding records. On November 14, 2026 an agent-run journey on the hosted site tracked the federal SS4A program for one county and exported an application packet (first proven job record).",
+      "sourceIds": ["grant-program-registry", "federal-grant-adapter", "california-grant-adapter", "first-proven-job-record-20261114"],
       "adapterIds": ["us-federal", "us-ca"],
       "authorities": [
         {
@@ -650,7 +655,7 @@
           "url": "https://catc.ca.gov/programs"
         }
       ],
-      "limitations": ["The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review."]
+      "limitations": ["The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.", "That journey used no California program and recorded no award or reimbursement. Its section text was a labeled demonstration that no agency prepared or submitted."]
     },
     {
       "id": "US-CA/model-validation-evidence",
@@ -2607,8 +2612,8 @@
       "jurisdictionId": "US-NV",
       "jobId": "project-evidence-handoff",
       "status": "unassessed",
-      "applicability": "The project record and evidence package are jurisdiction-neutral code, but no Nevada journey is retained as evidence.",
-      "sourceIds": ["project-handoff-proof-v037"],
+      "applicability": "The project record and evidence package are jurisdiction-neutral code. On November 14, 2026 an agent-run journey on the hosted site created a project record for one Nevada county and exported its plan and application (first proven job record), but it did not assemble an evidence package.",
+      "sourceIds": ["project-handoff-proof-v037", "first-proven-job-record-20261114"],
       "adapterIds": [],
       "authorities": [],
       "limitations": ["Support for this job is not assessed here. The evidence package is a retained snapshot, not approval, adoption, publication, or a backup."]
@@ -2629,8 +2634,8 @@
       "jurisdictionId": "US-NV",
       "jobId": "safety-analysis",
       "status": "partial",
-      "applicability": "FARS supplies Nevada fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them.",
-      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101"],
+      "applicability": "FARS supplies Nevada fatal crash records for 2010 through 2024 from NHTSA's National file, and a Safety acquisition stores them. On November 14, 2026 an agent-run journey on the hosted site stored 12 FARS fatal crashes for one Nevada county and exported a safety action plan (first proven job record).",
+      "sourceIds": ["crash-source-registry", "fars-source-adapter", "state-injury-crash-source-review-20261101", "first-proven-job-record-20261114"],
       "adapterIds": ["fars-national"],
       "authorities": [
         {
@@ -2642,7 +2647,8 @@
       ],
       "limitations": [
         "FARS is fatal-only. It cannot support an all-severity or serious-injury claim.",
-        "OpenPlan reads no Nevada crash source with injury severity. The November 1, 2026 state source review rated Nevada not usable: Both open crash services answered 'not started' on 2026-11-01 and the TrafficSafety folder lists no crash service; current access is a request form."
+        "OpenPlan reads no Nevada crash source with injury severity. The November 1, 2026 state source review rated Nevada not usable: Both open crash services answered 'not started' on 2026-11-01 and the TrafficSafety folder lists no crash service; current access is a request form.",
+        "In the November 14, 2026 journey, the 12 crashes stored for that one county are the same 12 case numbers NHTSA's published FARS files for 2022 through 2024 hold for it. No planner reviewed the plan that journey exported."
       ]
     },
     {
@@ -2651,10 +2657,10 @@
       "jobId": "grants-and-reimbursement",
       "status": "unavailable",
       "applicability": "No Nevada program bundle or reimbursement profile is registered.",
-      "sourceIds": ["grant-program-registry"],
+      "sourceIds": ["grant-program-registry", "first-proven-job-record-20261114"],
       "adapterIds": [],
       "authorities": [],
-      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Nevada."]
+      "limitations": ["Federal program descriptors match any U.S. workspace, but they are not enough to claim program eligibility or reimbursement procedure coverage in Nevada.", "On November 14, 2026 an agent-run journey on the hosted site exported a federal SS4A application packet for one Nevada county (first proven job record). It used no Nevada program and recorded no award or reimbursement."]
     },
     {
       "id": "US-NV/model-validation-evidence",

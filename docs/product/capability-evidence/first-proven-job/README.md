@@ -165,6 +165,56 @@ covered only by other evidence:
 
 KI-2026-11-14-303 lists these for the checker's next change.
 
+### Rechecked with the strengthened checker, November 14, 2026
+
+The checker was then changed to refuse eight of those changes: the map item
+pointed at another page, cross-workspace checks cut to one journey, screens
+cut to one page, a "matched" source check with any address or a trivial note,
+a journey with no crash, ranked segment or countermeasure (which covers both
+the California county and the tribal area rows above), a text item that is
+not its item's own heading, and a journey with no approved comment or staff
+review. This record, unchanged, was run through the strengthened checker with
+its six PDFs: it is still accepted. The same eleven changed copies the lead
+tried before are now all refused, the wrong map page among them. A test in
+the repository (`first-proven-job-record-accepted.test.ts`) repeats this on
+every run where Poppler is installed.
+
+Two changes that checker still accepted: a replaced map image hash and a
+place's Census id changed with its label kept.
+
+Later the same day the checker began to render the map page itself. For each
+map item it renders the recorded page with Poppler's pdftoppm at 72 dpi and
+counts highlight-red pixels with the journey's own rule; a page with fewer
+than 40 is refused. This record's six map pages hold:
+
+| PDF | Map page | Highlight-red pixels |
+|---|---|---|
+| California county safety action plan | 17 | 1,012 |
+| California county SS4A application | 9 | 1,015 |
+| Nevada county safety action plan | 15 | 600 |
+| Nevada county SS4A application | 9 | 600 |
+| Tribal area safety action plan | 14 | 154 |
+| Tribal area SS4A application | 9 | 154 |
+
+Poppler 25.07 on Windows and Poppler 24.02 in an Ubuntu 24.04 container
+rendered the same pixel bytes and the same counts for all six pages. Each
+PDF's first page and the page of its ranked table hold none, and a copy of
+this record with the map item pointed at either is refused. These counts use
+the journey's rule; they are not the 100 to 674 of the separate render listed
+above, whose settings this file does not record. This record, unchanged, is
+still accepted; `first-proven-job-record-accepted.test.ts` repeats the render
+and the counts on every run where Poppler's pdftotext and pdftoppm are
+installed.
+
+The checker still does not recompute the PNG hash this record carries,
+because PNG bytes differ between Poppler builds whose pixels are the same. A
+replaced PNG hash is still accepted, but the map no longer rests on it.
+Records written from now on also carry a hash of the pixels, which the
+checker recomputes; this record predates that field and is not changed. A
+place's Census id changed with its label kept is still accepted. Had this
+record failed the strengthened checker, its entry would have been withdrawn
+from the registry until a rerun passed.
+
 ## After the run
 
 The five public comment pages the three attempts created were taken offline

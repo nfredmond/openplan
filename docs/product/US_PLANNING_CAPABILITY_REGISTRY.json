@@ -8,7 +8,7 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "997125c6b7509b477012a27efc3cee596db25bc7e9437154786b1a6d3d3854b2"
+    "sha256": "2504807312ad6f8d5cbb9ac9b227e1a841655284a28f6096c5552d82c9fdc549"
   },
   "provenJobs": [
     {
@@ -69,7 +69,7 @@
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/README.md",
-          "sha256": "132e0d0febbcaf711dcee569f81b7809fe943ce22087eed1f0e1e6915d44db9a"
+          "sha256": "abf34cf7fa1a69e22a6dfa044d7b6dadc0ee4f02495cb9f9ea084989ee47cf2c"
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/inputs/sierra-county-ca.inputs.json",

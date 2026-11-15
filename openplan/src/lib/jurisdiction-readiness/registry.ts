@@ -18,6 +18,10 @@ const STATUS_LABELS: Record<JurisdictionReadinessStatus, string> = {
   unassessed: "Not assessed here",
 };
 
+/** What a place with no single state, DC or territory on record reads for every job. */
+const NO_SUBDIVISION_APPLICABILITY =
+  "This place has no single state, DC or territory on record. OpenPlan records none for a tribal area, a metropolitan or micropolitan area or a multistate region, even one inside one state, and assesses readiness only for states, DC and territories, so this job is not assessed for this place.";
+
 function normalizedCode(value: string | null | undefined): string | null {
   const normalized = value?.trim().toUpperCase();
   return normalized || null;
@@ -81,13 +85,11 @@ export function resolveJurisdictionReadiness(
       "The selected place has no country identity, so OpenPlan cannot choose a jurisdiction claim.",
     );
   }
+  // A tribal area always lands here: its Census id carries no state, even when
+  // the area lies in one state. The registry has rows for states, DC and
+  // territories only (docs/reviews/product-direction/tribal-area-readiness-design-2026-11-14.md).
   if (!subdivision) {
-    return unassessedReport(
-      place,
-      job,
-      registrySha256,
-      "The selected place does not identify one subdivision, so OpenPlan cannot apply a subdivision claim.",
-    );
+    return unassessedReport(place, job, registrySha256, NO_SUBDIVISION_APPLICABILITY);
   }
 
   const jurisdiction = JURISDICTION_READINESS_REGISTRY.jurisdictions.find(
