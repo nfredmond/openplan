@@ -303,19 +303,47 @@ test('identifying strings drop blanks and repeats, so the stated count is the co
   assert.deepEqual(lib.identifyingStrings({ reportTitle: null, projectName: ' A ', workspaceName: 'A', campaignTitle: 'B' }), ['A', 'B']);
 });
 
+const PROOF_ORIGIN = 'https://openplan-zeta.vercel.app';
+
 test('an assembled record states the page limit only when a page answered 200', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-assemble-'));
   const write = (name, checks) => {
     const file = path.join(dir, name);
-    fs.writeFileSync(file, JSON.stringify({ journey: { role: name }, crossWorkspace: { checks } }));
+    fs.writeFileSync(file, JSON.stringify({ mode: 'rehearsal', baseUrl: 'http://localhost:3450', expectedCommit: null, stoppedAt: null, journey: { role: name }, crossWorkspace: { checks } }));
     return file;
   };
   const data = { target: 'safety-action-plan', request: 'report-pdf-download', kind: 'data', status: 404, contentReturned: false };
-  const base = { jobId: 'job', commit: '0'.repeat(40), baseUrl: 'http://localhost:3450', recordedOn: '2026-11-14', sourceCheck: {}, limits: [{ id: 'no-pdf-ua-check', text: 'x' }] };
+  const base = { jobId: 'job', commit: '0'.repeat(40), baseUrl: 'http://localhost:3450', recordedOn: '2026-11-14', sourceCheck: {}, limits: [{ id: 'no-pdf-ua-check', text: 'x' }], proofOrigin: PROOF_ORIGIN };
   const withPage = lib.assembleRecord({ ...base, journeyFiles: [write('a', [{ target: 'safety-action-plan', request: 'report-page', kind: 'page', status: 200, contentReturned: false }, data])] });
   assert.deepEqual(withPage.limits.map((limit) => limit.id), ['no-pdf-ua-check', 'report-page-answers-200-with-not-found-screen']);
   const without = lib.assembleRecord({ ...base, journeyFiles: [write('b', [{ target: 'safety-action-plan', request: 'report-page', kind: 'page', status: 404, contentReturned: false }, data])] });
   assert.deepEqual(without.limits.map((limit) => limit.id), ['no-pdf-ua-check']);
+});
+
+// Review 59, finding 1, for the first job's runs made from now on: the record
+// that exists is not re-assembled and its checker rules do not change.
+test('assembly refuses a run that cannot go into a record for this commit and origin', async () => {
+  const checker = await import(require('url').pathToFileURL(path.join(__dirname, '..', 'openplan', 'scripts', 'ops', 'capability-evidence.mjs')).href);
+  assert.equal(PROOF_ORIGIN, checker.PROOF_ORIGIN, 'the tests\' proof origin is the checker\'s');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-assemble-'));
+  const commit = 'a'.repeat(40);
+  const proofRun = { mode: 'proof', baseUrl: PROOF_ORIGIN, expectedCommit: commit, stoppedAt: null, journey: { role: 'california-county' }, crossWorkspace: { checks: [] } };
+  const assembleOne = (change, baseUrl = PROOF_ORIGIN) => {
+    const run = JSON.parse(JSON.stringify(proofRun));
+    change(run);
+    const file = path.join(dir, 'journey-california-county.json');
+    fs.writeFileSync(file, JSON.stringify(run));
+    return lib.assembleRecord({ journeyFiles: [file], jobId: 'job', commit, baseUrl, recordedOn: '2026-11-20', sourceCheck: {}, limits: [], proofOrigin: PROOF_ORIGIN });
+  };
+  assert.equal(assembleOne(() => {}).journeys.length, 1, 'a finished proof run on the proof origin is assembled');
+  assert.throws(() => assembleOne((run) => { run.mode = 'rehearsal'; }), /journey-california-county\.json is a rehearsal run; a record on the proof origin takes proof runs only/);
+  assert.throws(() => assembleOne((run) => { run.baseUrl = 'http://localhost:3450'; }), /ran on http:\/\/localhost:3450, not the record's https:\/\/openplan-zeta\.vercel\.app/);
+  assert.throws(() => assembleOne((run) => { run.expectedCommit = null; }), /named no expected commit/);
+  assert.throws(() => assembleOne((run) => { run.expectedCommit = 'b'.repeat(40); }), /expected commit b{40}, not the record's a{40}/);
+  assert.throws(() => assembleOne((run) => { run.stoppedAt = 'export-pdfs'; }), /stopped at export-pdfs; an unfinished run cannot go into a record/);
+  assert.throws(() => assembleOne(() => {}, 'not a url'), /--base-url not a url is not a web address/);
+  const rehearsal = assembleOne((run) => { Object.assign(run, { mode: 'rehearsal', baseUrl: 'http://localhost:3450', expectedCommit: null }); }, 'http://localhost:3450');
+  assert.equal(rehearsal.baseUrl, 'http://localhost:3450', 'a rehearsal assembles under its own origin, where the checker refuses it');
 });
 
 const rehearsalInputs = () => JSON.parse(fs.readFileSync(lib.REHEARSAL_INPUTS_PATH, 'utf8'));

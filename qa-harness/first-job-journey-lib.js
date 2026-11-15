@@ -326,9 +326,41 @@ function buildJourney(state) {
   };
 }
 
-/** Combine three journey files into one proven job record for the checker. */
-function assembleRecord({ journeyFiles, jobId, commit, baseUrl, recordedOn, sourceCheck, limits }) {
-  const runs = journeyFiles.map((file) => JSON.parse(fs.readFileSync(file, 'utf8')));
+/**
+ * Refuse a run file that cannot go into a record for this commit and origin
+ * (review 59, finding 1, for runs made from now on). The run was made on the
+ * record's origin and finished, with no step stopping it. A run assembled
+ * under the proof origin ran in proof mode against the record's commit; a
+ * run that named an expected commit names this one. A rehearsal folder
+ * assembled by mistake as proof is refused here, before any checker reads
+ * it. The record that already exists is not re-assembled, and its checker
+ * rules do not change.
+ */
+function assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin }) {
+  const name = path.basename(file);
+  if (typeof proofOrigin !== 'string' || !proofOrigin) throw new Error('Assembly needs the checker\'s proof origin.');
+  let origin;
+  try {
+    origin = new URL(baseUrl).origin;
+  } catch {
+    throw new Error(`--base-url ${baseUrl} is not a web address.`);
+  }
+  if (run.baseUrl !== origin) throw new Error(`${name} ran on ${run.baseUrl}, not the record's ${origin}.`);
+  if (origin === proofOrigin) {
+    if (run.mode !== 'proof') throw new Error(`${name} is a ${run.mode} run; a record on the proof origin takes proof runs only.`);
+    if (!run.expectedCommit) throw new Error(`${name} named no expected commit; a proof run names the commit it tested.`);
+  }
+  if (run.expectedCommit && run.expectedCommit !== commit) throw new Error(`${name} expected commit ${run.expectedCommit}, not the record's ${commit}.`);
+  if (run.stoppedAt) throw new Error(`${name} stopped at ${run.stoppedAt}; an unfinished run cannot go into a record.`);
+}
+
+/** Combine three journey files into one proven job record for the checker. Each run must pass assertRunAssemblable. */
+function assembleRecord({ journeyFiles, jobId, commit, baseUrl, recordedOn, sourceCheck, limits, proofOrigin }) {
+  const runs = journeyFiles.map((file) => {
+    const run = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
+    return run;
+  });
   const checks = runs.flatMap((run) => run.crossWorkspace.checks);
   const stated = [...limits];
   // A page that answered 200 with the not-found screen is a fact of the build
@@ -562,6 +594,7 @@ module.exports = {
   SCREEN_WIDTHS,
   analyzePpm,
   assembleRecord,
+  assertRunAssemblable,
   buildJourney,
   checkConfirmLinkOrigin,
   checkJourneyOrigin,
