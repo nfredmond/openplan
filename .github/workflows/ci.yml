@@ -65,6 +65,8 @@ jobs:
           npm ci
           npm run check:first-week-discovery
           npm run check:service-key-headers
+          npm run check:first-job-journey
+          npm run check:engagement-job-journey
 
       - name: QA gate
         run: npm run qa:gate

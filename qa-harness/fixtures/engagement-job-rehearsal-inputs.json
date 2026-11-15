@@ -1,0 +1,45 @@
+{
+  "label": "Rehearsal inputs for the engagement journey, not a consultation. Synthetic text for a local rehearsal of engagement-job-journey.js. A proof run refuses this file.",
+  "rehearsal": true,
+  "organization": null,
+  "secondOrganization": null,
+  "projectName": null,
+  "projectSummary": "Demonstration project made by an automated OpenPlan proof run. It represents no agency and no real plan.",
+  "planType": "safety_plan",
+  "decision": {
+    "title": "Study a safer crossing at the demonstration location",
+    "rationale": "Entered by an automated OpenPlan proof run. It records no agency decision.",
+    "impact": "None. Demonstration record only."
+  },
+  "campaign": {
+    "title": "Road safety comments. Demonstration by an automated OpenPlan proof run",
+    "invitation": "Demonstration by an automated OpenPlan proof run. This page is not a real consultation and no agency will act on what is entered here."
+  },
+  "comments": {
+    "mapPoint": "Cars come around this corner fast and there is no crosswalk. Entered by an automated proof run; it represents no one.",
+    "noMapPoint": "People walk in the road because the shoulder is narrow. Entered by an automated proof run; it represents no one.",
+    "keyboard": "A marked crossing near the school would help children cross. Entered by an automated proof run; it represents no one.",
+    "rejected": "Please lower my water bill, the meter reads wrong every month. Entered by an automated proof run; it represents no one."
+  },
+  "reviewReasons": {
+    "approve": "Proof run review: on topic for this demonstration campaign, so the public copy is approved.",
+    "reject": "Proof run review: off topic, because utility billing is not part of this project, so it is not published."
+  },
+  "staffReview": {
+    "groupLabel": "Crossings and walking space",
+    "groupSummary": "Proof run summary: these demonstration comments ask for safer places to walk and cross. They represent no one.",
+    "correctionReason": "Proof run correction: name the group from the comments it holds.",
+    "approvalReason": "Proof run approval: the group label and summary match the approved demonstration comments."
+  },
+  "response": {
+    "theme": "Crossings and walking space",
+    "youSaid": "Proof run summary: demonstration comments asked for safer crossings and walking space.",
+    "weDid": "Proof run response: the demonstration project records a proposed decision to study a safer crossing. This text speaks for no agency.",
+    "publishReason": "Proof run: publish the demonstration response so the public page can be read."
+  },
+  "links": {
+    "decisionReason": "Proof run link: the demonstration response explains the proposed demonstration decision.",
+    "themeReason": "Proof run link: this group is the one the demonstration response answers.",
+    "refreshReason": "Proof run refresh: record the approved group now linked to this response."
+  }
+}
