@@ -73,7 +73,7 @@ export function decisionSynthesisReport(rows: VerifiedDecisionLink[], { escape, 
           <h4>Recorded approval</h4><p>Revision ${event.approval.intent.revisionNo} approved ${escape(reviewTime(event.approval.createdAt))} by ${escape(staff(event.approval.intent.actorId))}.</p>
           ${narrative(event.approval.intent.reason, `${linkAction}, approval reason`)}
           <h4>Response at this action</h4><p>Revision ${event.retained.responseHistory.revision}: ${escape(event.response.theme_title)} | ${escape(reviewWord("responseStatus", event.response.status, "response status"))}</p>
-          <h4>You said</h4>${narrative(event.response.you_said, `${linkAction}, you said`)}<h4>Agency response</h4>${narrative(event.response.we_did, `${linkAction}, agency response`)}
+          <h4>You said</h4>${narrative(event.response.you_said, `${linkAction}, you said`)}<h4>Staff response</h4>${narrative(event.response.we_did, `${linkAction}, staff response`)}
           <h4>${event.members.length} retained source references</h4><p>Source captured ${escape(reviewTime(event.source.capturedAt))}. The references below link to the retained words in the synthesis source appendix.</p><ul>${references}</ul></section>`;
       }
     }
