@@ -1,0 +1,10 @@
+{
+  "closure_files_verified_after_real_run": 26,
+  "aggregate_valid_and_hash_verified": true,
+  "runtime_unchanged": true,
+  "final_synthetic_numerical_aggregates_identical": true,
+  "synthetic_omx_matrix_values_identical": 826,
+  "synthetic_csv_and_config_bytes_identical": true,
+  "synthetic_omx_container_bytes_identical": false,
+  "default_production_source_diff_empty": true
+}

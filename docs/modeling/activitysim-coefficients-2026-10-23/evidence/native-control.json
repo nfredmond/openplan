@@ -1,0 +1,7 @@
+{
+  "outcome": "native missing-overlay fault rejected",
+  "assertion": "candidate has no probability effect",
+  "receipt_sha256": "54315b1b9e0e3bc12bc68828ace16de057b398f12c4b801988e89a2202e093de",
+  "aggregate_sha256": "e93d13079305eec999d290914dba189c97035e6522acf52e44a7376b7bc5b076",
+  "source_restored": true
+}

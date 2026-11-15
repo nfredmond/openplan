@@ -92,6 +92,10 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
 - [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
 - [First-week harness](../qa-harness/FIRST-WEEK-HARNESS.md): agent discovery,
   outcome verification, evidence capture and limits.
+- [ActivitySim coefficient inventory and development transfer](modeling/activitysim-coefficients-2026-10-23/INVENTORY.md):
+  [preregistration](modeling/activitysim-coefficients-2026-10-23/PREREGISTRATION.md),
+  [retired, inconclusive result](modeling/activitysim-coefficients-2026-10-23/RESULT.md)
+  and [verification](modeling/activitysim-coefficients-2026-10-23/VERIFICATION.md).
 - [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
   [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
   and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
