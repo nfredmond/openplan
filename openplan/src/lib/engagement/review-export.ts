@@ -9,7 +9,7 @@ import { ENGAGEMENT_REVIEW_STATES, countEngagementReview, engagementReviewStateL
 import { readDecisionLinkHistory, type VerifiedDecisionLink } from "./decision-links";
 import { verifyDecisionSynthesisSources } from "./decision-synthesis-history-server";
 import { decisionSynthesisReport, decisionSynthesisExportRows, decisionSynthesisCoverageFields, decisionSynthesisEventFields, decisionSynthesisMemberFields } from "./decision-synthesis-export";
-import { fieldWord, localeWord, numberedList, optionsWords, questionTypeWord, recordIdentifiers, reviewTime, reviewWord, staffMemberNumbers } from "./review-pdf-words";
+import { REVIEW_NUMBERS_NOTE, fieldWord, localeWord, numberedList, optionsWords, questionTypeWord, recordIdentifiers, reviewTime, reviewWord, staffMemberNumbers } from "./review-pdf-words";
 import { SURVEY_QUESTION_TYPES, type SurveyQuestionType } from "./survey";
 import { flattenSurveyAnswerForExport } from "./survey-responses";
 
@@ -179,7 +179,15 @@ const SETTINGS_NOT_KEPT = "Campaign settings not kept in this file";
 function reviewNames(snapshot: EngagementReviewSnapshot) {
   const identifiers = recordIdentifiers();
   const numbered = (rows: ReadonlyArray<{ id?: unknown }>) => new Map(rows.map((row, index) => [text(row.id), index + 1]));
-  const items = numbered(snapshot.items), answers = numbered(snapshot.answers), settingsSets = numbered(snapshot.definitions);
+  // Survey answers print under their session, so they are numbered in that
+  // order: by session, then as the snapshot keeps them. An answer whose
+  // session is not in this selection is numbered after the rest.
+  const sessionIds = new Set(snapshot.sessions.map((session) => text(session.id)));
+  const printedAnswers = [
+    ...snapshot.sessions.flatMap((session) => snapshot.answers.filter((answer) => answer.session_id === session.id)),
+    ...snapshot.answers.filter((answer) => !sessionIds.has(text(answer.session_id))),
+  ];
+  const items = numbered(snapshot.items), answers = numbered(printedAnswers), settingsSets = numbered(snapshot.definitions);
   const staffNumber = staffMemberNumbers();
   return {
     identifiers,
@@ -292,7 +300,9 @@ function surveyAnswerWords(snapshot: EngagementReviewSnapshot, answer: RecordDat
 function reviewSelectionText(snapshot: EngagementReviewSnapshot, identifiers: ReviewNames["identifiers"]): string {
   const filters = snapshot.filters;
   const status = snapshot.scope === "public" ? "approved" : ENGAGEMENT_REVIEW_STATES.find((state) => state === filters.status);
-  const parts = [status ? `${engagementReviewStateLabel(status).toLowerCase()} contributions only` : "every contribution"];
+  const unknownStatus = snapshot.scope !== "public" && !status && typeof filters.status === "string" && filters.status.trim() ? filters.status.trim() : null;
+  const parts = [status ? `${engagementReviewStateLabel(status).toLowerCase()} contributions only`
+    : unknownStatus ? `contributions in an unrecognized review state (${unknownStatus})` : "every contribution"];
   const categoryIds = Array.isArray(filters.categoryIds) ? filters.categoryIds.map(text) : [];
   if (categoryIds.length) {
     const labels = categoryIds.map((id) => {
@@ -438,7 +448,7 @@ export function buildCampaignReviewHtml(snapshot: EngagementReviewSnapshot, chec
   @page{size:A4;margin:18mm}*{box-sizing:border-box}body{font-family:"Noto Sans",Arial,sans-serif;font-size:10pt;line-height:1.5;color:#182f36}h1{font-size:27pt;line-height:1.15}h2{font-size:17pt;border-bottom:2px solid #136b73;padding-bottom:6px;margin-top:24px}h3{font-size:12pt}h1,h2,h3,h4,li{overflow-wrap:anywhere}p,td,th{overflow-wrap:anywhere;white-space:pre-wrap}table{width:100%;border-collapse:collapse}th,td{padding:6px;border-bottom:1px solid #ccd6d8;text-align:left}thead{display:table-header-group}svg{width:100%;height:auto}figure{break-inside:avoid;margin:16px 0}figcaption,.meta{font-size:8pt;color:#4a626a}.map-detail{break-inside:avoid}.entry>.meta{break-after:avoid}.entry>p.meta:last-child{break-before:avoid}.entry{border-top:1px solid #ccd6d8;padding:12px 0}h2,h3,h4{break-after:avoid}.narrative-part{break-inside:avoid}.definitions{break-before:page}.version{break-before:page}.version:first-of-type{break-before:auto}.question-summary{table-layout:fixed;font-size:8pt}.question-summary th{overflow-wrap:normal;white-space:normal}.question-summary th:first-child{width:35%}.badge{color:#136b73;font-weight:bold}.review-counts{break-inside:avoid}img{max-width:100%;max-height:220px;object-fit:contain}.identifiers{break-before:page}.identifier{margin:2px 0;font-size:8pt;break-inside:avoid}.identifier code{font-family:"Noto Sans Mono",Consolas,monospace;white-space:nowrap}.identifier-group h3{break-after:avoid}</style></head><body>
   <p class="badge">${snapshot.scope.toUpperCase()} REVIEW COPY</p><h1>${escape(snapshot.campaign.title)}</h1><p>${escape(snapshot.campaign.summary)}</p>
   <p>Campaign snapshot saved ${escape(reviewTime(snapshot.capturedAt))}. This report describes retained consultation records. Publication and a reviewed staff response are separate facts. Participation is not a representative survey of the population.</p>
-  <p class="meta">${escape(selection)}<br>Record identifiers for the campaign, this snapshot and each numbered entry are listed at the end of this report.</p>
+  <p class="meta">${escape(selection)}<br>Record identifiers for the campaign, this snapshot and each numbered entry are listed at the end of this report. ${REVIEW_NUMBERS_NOTE}</p>
   <nav><a href="#summary">Record summary</a> · <a href="#questions">Question summary</a> · <a href="#contributions">Contribution register</a> · <a href="#answers">Survey answers</a> · <a href="#responses">Staff responses</a> · <a href="#definitions">Historical definitions</a>${snapshot.scope === "internal" ? ' · <a href="#decision-history">Decision history</a>' : ""} · <a href="#record-identifiers">Record identifiers</a></nav>
   <h2>Campaign context</h2><p>${escape(context?.instructions ?? 'Historical campaign instructions unavailable.')}</p><p>${escape(campaignStudyAreaText(context))} Participation opens: ${escape(context?.participation_starts_at ? reviewTime(context.participation_starts_at) : 'No scheduled start')}. Closes: ${escape(context?.participation_ends_at ? reviewTime(context.participation_ends_at) : 'No scheduled end')}.</p>
   <h2 id="summary">Selected records</h2><p>${snapshot.items.length} contributions, ${snapshot.sessions.length} survey sessions, ${snapshot.answers.length} recorded answers and ${snapshot.responses.length} reviewed staff response entries. Category filters apply to contributions and answers; survey sessions retain their own scope and dates. Missing answers are not zero answers.</p><h3>Review counts</h3><ul class="review-counts">${counts}</ul><p>${missing} contributions have unavailable historical configuration. No current question or category has been substituted for their original definition.</p>
