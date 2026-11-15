@@ -1,0 +1,34 @@
+{
+  "controls": [
+    {
+      "name": "sealed_runtime_reproduces_wrong_volume",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-25ef0c0d/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "PCE flow must remain 360, not the 0.6 capacity ratio",
+      "matched_expectation": false,
+      "output": "test_county_assignment_refuses_before_writing_demand (__main__.MeasurementContractTests.test_county_assignment_refuses_before_writing_demand) ... ok\ntest_explicit_division_preserves_the_same_flow (__main__.MeasurementContractTests.test_explicit_division_preserves_the_same_flow) ... ok\ntest_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) ... \n  test_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) (links=40000) ... FAIL\ntest_trace_refuses_a_non_development_county_before_reading (__main__.MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading) ... FAIL\n\n======================================================================\nFAIL: test_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) (links=40000)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-25ef0c0d/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 77, in test_small_and_large_results_preserve_pce_flow\n    self.assertEqual(float(frame.PCE_tot.min()), 360.,\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                     'PCE flow must remain 360, not the 0.6 capacity ratio')\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0.6 != 360.0 : PCE flow must remain 360, not the 0.6 capacity ratio\n\n======================================================================\nFAIL: test_trace_refuses_a_non_development_county_before_reading (__main__.MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading)\n----------------------------------------------------------------------\nValueError: AequilibraE numerical runtime requires CPython 3.11; found CPython 3.14. Create a separate Python 3.11 environment with the pinned requirements. Python 3.14 with NumPy 2.0 can corrupt assignment volume measurements.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-25ef0c0d/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 56, in test_trace_refuses_a_non_development_county_before_reading\n    self.assertRaisesRegex(ValueError, 'five exposed development counties'):\n    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"five exposed development counties\" does not match \"AequilibraE numerical runtime requires CPython 3.11; found CPython 3.14. Create a separate Python 3.11 environment with the pinned requirements. Python 3.14 with NumPy 2.0 can corrupt assignment volume measurements.\"\n\n----------------------------------------------------------------------\nRan 4 tests in 0.124s\n\nFAILED (failures=2)\n",
+      "output_sha256": "4fb3827e20e4ca6d62bb042079c1b650e391eb46ddec53604ba12af698c4668a"
+    }
+  ],
+  "skips": 0,
+  "restored_exactly": true,
+  "restored_source_sha256": {
+    "workers/aequilibrae_worker/assignment_runtime.py": "4fd82e83b0ac108df83c404bbe048074a94e1843c8c3a37b78c7e2a54a8045fc",
+    "workers/aequilibrae_worker/assignment_settings.py": "1e88e0417a2949958e0b24a345e1ed38e6e208aed225d503acfcb790db71e75e",
+    "workers/aequilibrae_worker/check_local_dependencies.py": "9715717df2a132821d2e195475c63b80348a5d036a9307893b5d32c1410d453a",
+    "scripts/modeling/screening_runtime.py": "98540aae86c5a53168440b6051585201843cf32289b569652e76dc2fd6fedb19",
+    "scripts/modeling/s2_cordon/test_measurement_contract.py": "53498a7273f33932f4a25c0f521a12d948d90c1a758bf9f7451098eaf79c8b98",
+    "scripts/modeling/s2_cordon/trace_retained_measurement.py": "c5c58097e202c13a45f4b1821141758d5f3aa4b51edcda37da4151cc1d11b4b8"
+  },
+  "blind_categories": [
+    "native solver correctness",
+    "county reassignment",
+    "scientific accuracy",
+    "production deployment/runtime history"
+  ]
+}

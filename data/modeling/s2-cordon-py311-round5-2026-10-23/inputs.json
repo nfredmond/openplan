@@ -1,0 +1,241 @@
+{
+  "study_id": "s2-cordon-impedance-development-py311-20261023",
+  "preregistration_commit": "60bc3874d907e7321feb54abb34f061259193724",
+  "partition": "original five development counties only",
+  "members": [
+    {
+      "member": "06047/package/zone_attributes.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06047-base/package/zone_attributes.csv",
+      "bytes": 12617,
+      "sha256": "d75d14a67cb1f3b35b80d9ef95a2d7c25d464fdee355e8580083995f34640335"
+    },
+    {
+      "member": "06047/package/od_trip_matrix.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06047-base/package/od_trip_matrix.csv",
+      "bytes": 32405,
+      "sha256": "8dfa55e0b00360f79d2f2f780ae473aff6ecdbc756fb36b68a734f401c162202"
+    },
+    {
+      "member": "06047/work/network_setup_summary.json",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06047-base/work/network_setup_summary.json",
+      "bytes": 93154,
+      "sha256": "989e71c004b4413bd9fb5c9fe25ed5835c5f8278d47a4c172eb906407b2a37e3"
+    },
+    {
+      "member": "06047/run_output/travel_time_skims.omx",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06047-base/run_output/travel_time_skims.omx",
+      "bytes": 80251,
+      "sha256": "03b306300ddadfd07b4efa02ae81b01bd6b1c93c835f1a734cae7a3c81018c45"
+    },
+    {
+      "member": "06047/work/aeq_project/project_database.sqlite",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06047-base/work/aeq_project/project_database.sqlite",
+      "bytes": 64335872,
+      "sha256": "011721e34e4c0438fe002508551ab5221ae7b0839cff1351913036e671f4a601"
+    },
+    {
+      "member": "06047/counts/published_counts.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06047-base/counts/published_counts.csv",
+      "bytes": 30734,
+      "sha256": "8e62e4ddf48b163754d2e0044da04e88de710fca4d8a0e8c29ce5cf1e08c844d"
+    },
+    {
+      "member": "06069/package/zone_attributes.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/package/zone_attributes.csv",
+      "bytes": 3351,
+      "sha256": "5e4c11f81ec56975b10e5601ea2ca5ed50bddc45fd2c8a637f5ccb33c92d1937"
+    },
+    {
+      "member": "06069/package/od_trip_matrix.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/package/od_trip_matrix.csv",
+      "bytes": 2758,
+      "sha256": "8563093eecf9ddd38c09187b9072d798ec78dab0f6d6395146531a17355442df"
+    },
+    {
+      "member": "06069/work/network_setup_summary.json",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/work/network_setup_summary.json",
+      "bytes": 29149,
+      "sha256": "a8b8f3cf479948d9b8cf2b9523167596ca1d085c05a0165d10a50b2dd3bfbbe9"
+    },
+    {
+      "member": "06069/run_output/travel_time_skims.omx",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/run_output/travel_time_skims.omx",
+      "bytes": 17058,
+      "sha256": "bc2614e096f13b300d5f0beaa81386faccd2cefb375901b3557e0a98df2b9b2f"
+    },
+    {
+      "member": "06069/work/aeq_project/project_database.sqlite",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/work/aeq_project/project_database.sqlite",
+      "bytes": 28037120,
+      "sha256": "c694293621f577429295ef1d433ca81f478de1fe0233ccde3eca3272b340be01"
+    },
+    {
+      "member": "06069/counts/published_counts.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/counts/published_counts.csv",
+      "bytes": 7917,
+      "sha256": "9ac6aca40f4eb3a2ef678023a34124800773df215b9cc73370d919649eef4fe4"
+    },
+    {
+      "member": "06107/package/zone_attributes.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06107-base/package/zone_attributes.csv",
+      "bytes": 20223,
+      "sha256": "51e678735d378cd726d534d49bed734c94a261add4d062143c08ef192bd59cbb"
+    },
+    {
+      "member": "06107/package/od_trip_matrix.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06107-base/package/od_trip_matrix.csv",
+      "bytes": 75747,
+      "sha256": "99bde2bdffaef61af1eb4e3ad4375034ce784fefc9779246760f09fb96ffcddf"
+    },
+    {
+      "member": "06107/work/network_setup_summary.json",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06107-base/work/network_setup_summary.json",
+      "bytes": 144730,
+      "sha256": "c75736aa01e96cf1ba699fed4e5f3704707a59af9627ef02107adef96f627f2b"
+    },
+    {
+      "member": "06107/run_output/travel_time_skims.omx",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06107-base/run_output/travel_time_skims.omx",
+      "bytes": 178741,
+      "sha256": "e10e2cfa866d8fb0dd54f4ea9d2f097833a3a21f5cc4a4e20fb0fdaf83485443"
+    },
+    {
+      "member": "06107/work/aeq_project/project_database.sqlite",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06107-base/work/aeq_project/project_database.sqlite",
+      "bytes": 59826176,
+      "sha256": "8748c97d0f8e822cbbf51af9c617bb17efbe4dc971c512e33b91160f883bafc8"
+    },
+    {
+      "member": "06107/counts/published_counts.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06107-base/counts/published_counts.csv",
+      "bytes": 54341,
+      "sha256": "be40eb073386e2f9a4ef79807c73b54da9beed634b9eb5746389bc3748212e6c"
+    },
+    {
+      "member": "08014/package/zone_attributes.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08014-base/package/zone_attributes.csv",
+      "bytes": 5511,
+      "sha256": "3c4c57b393c25219ed779e365e66c36a3d672a21576ad575e1661b46107c8f3d"
+    },
+    {
+      "member": "08014/package/od_trip_matrix.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08014-base/package/od_trip_matrix.csv",
+      "bytes": 6706,
+      "sha256": "6205bb623ab5a91c03ed5d031ddda68d2415c82b0aa4a06f31f949f40781d140"
+    },
+    {
+      "member": "08014/work/network_setup_summary.json",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08014-base/work/network_setup_summary.json",
+      "bytes": 43658,
+      "sha256": "a375d2f29557f94c842c6345da40da4a1816ec6c1e4684707dbabcecfafc825f"
+    },
+    {
+      "member": "08014/run_output/travel_time_skims.omx",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08014-base/run_output/travel_time_skims.omx",
+      "bytes": 25901,
+      "sha256": "84f103669941325135053e900b4a605b16498690177b6aa98de019f39445acd9"
+    },
+    {
+      "member": "08014/work/aeq_project/project_database.sqlite",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08014-base/work/aeq_project/project_database.sqlite",
+      "bytes": 35688448,
+      "sha256": "057f5c74f9d3bcda6b24b5d45e27b2c5a487b79263f46d69fcd98914330f117d"
+    },
+    {
+      "member": "08014/counts/published_counts.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08014-base/counts/published_counts.csv",
+      "bytes": 6289,
+      "sha256": "3dd5f16047da61f9f7a37876a20e900a5fbaaff6ae38c555b174a955811827fe"
+    },
+    {
+      "member": "08101/package/zone_attributes.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08101-base/package/zone_attributes.csv",
+      "bytes": 11380,
+      "sha256": "e1b83d3ef2239387f225c7434cd78a1bd8e2cf3e68219d0a922e8fa29b49ac97"
+    },
+    {
+      "member": "08101/package/od_trip_matrix.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08101-base/package/od_trip_matrix.csv",
+      "bytes": 27185,
+      "sha256": "de9608b7ecfd56461467dabcb07a98157ec63c981b22d0b206cf0c22f0d48923"
+    },
+    {
+      "member": "08101/work/network_setup_summary.json",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08101-base/work/network_setup_summary.json",
+      "bytes": 87010,
+      "sha256": "bf6fcdc35ad000cf63dbe2c6a80274fa4acedb52b1501a482b38d2476e4c3f16"
+    },
+    {
+      "member": "08101/run_output/travel_time_skims.omx",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08101-base/run_output/travel_time_skims.omx",
+      "bytes": 71958,
+      "sha256": "fecb54e3f2efbd1698eb0b45416399a241075d28a9432159d54794bb3c0dbd80"
+    },
+    {
+      "member": "08101/work/aeq_project/project_database.sqlite",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08101-base/work/aeq_project/project_database.sqlite",
+      "bytes": 28422144,
+      "sha256": "eea1ffa9cbe9e2552f5e964ee41374762873d008d2f56427191bbc1d7771ddf4"
+    },
+    {
+      "member": "08101/counts/published_counts.csv",
+      "source_path": "/home/nathaniel/code/openplan/data/screening-runs/u2-08101-base/counts/published_counts.csv",
+      "bytes": 24735,
+      "sha256": "6f66aa59df4bb29d0f5615ab07f5b285095615d4824511d82b3b5fb6c7d743e7"
+    }
+  ],
+  "archive": {
+    "path": "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/development-inputs.zip",
+    "bytes": 74508907,
+    "sha256": "3fcf016c4ba7604fff07851a274e7af225c6cfc3a879c81002ee1ff580afba95"
+  },
+  "source": "OpenStreetMap contributors, ODbL; retained Census zone attributes; public state DOT count inputs",
+  "license_url": "https://www.openstreetmap.org/copyright",
+  "forbidden_partition_paths_opened": false,
+  "geographies": [
+    {
+      "id": "06047",
+      "split": "diagnosis"
+    },
+    {
+      "id": "06069",
+      "split": "evaluation"
+    },
+    {
+      "id": "06107",
+      "split": "evaluation"
+    },
+    {
+      "id": "08014",
+      "split": "diagnosis"
+    },
+    {
+      "id": "08101",
+      "split": "evaluation"
+    }
+  ],
+  "repeat_geography": "06069",
+  "runtime_versions": {
+    "aequilibrae": "1.6.2",
+    "numpy": "2.0.2",
+    "pandas": "2.3.3",
+    "scipy": "1.17.1",
+    "shapely": "2.2.0",
+    "openmatrix": "0.3.5.0",
+    "tables": "3.11.1",
+    "geopandas": "1.2.0",
+    "pyproj": "3.7.2"
+  },
+  "predecessor": {
+    "study_id": "s2-cordon-impedance-development-successor-20261023",
+    "lock_sha256": "d867974ee13a8a92834e99837519f278edc24db49d5da88495ce19ae6c94823a",
+    "receipt_sha256": "24201fe45da2f7eb9aacc315410fd1da308843801188b1c4ab0a7ae173bb3d61",
+    "aggregate_sha256": "9597071411578f9b09e53529123da47ba9416a404f134898974c0a5cf3680763",
+    "disposition": "Retained rejection; scientific interpretation invalid because Python 3.14.4 / NumPy 2.0.2 extracts capacity ratios as PCE flows",
+    "successor_reason": "Lead-authorized second successor on reviewed CPython 3.11.15; round 4 tooling failure preserved; full synthetic and mutation proof passes"
+  },
+  "runtime_manifest": {
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/data/modeling/s2-cordon-py311-round5-2026-10-23/runtime-manifest.json",
+    "sha256": "8151954eb80f4a804d35fe2560212ded91816f209d2b206878f6e68aa5083fdf"
+  }
+}

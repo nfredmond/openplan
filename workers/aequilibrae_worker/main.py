@@ -5117,6 +5117,16 @@ def stage_assignment(
             except Exception as e:
                 log += f"Cordon gateway loading warning: {e}\n"
 
+        from external_distribution import condition_external_demand
+
+        external_od, external_distribution_record = condition_external_demand(
+            external_od, time_skim_full,
+            np.array([node in set(cordon_map.values()) for node in assignment_centroids]),
+        )
+        if external_distribution_record is not None:
+            external_distribution_record["ordered_centroid_nodes"] = [int(node) for node in assignment_centroids]
+            external_distribution_record["network_source"] = setup_result.get("network_source", "unknown")
+
         # total_trips stays person-scale (internal person + gateway); routable_trips
         # reflects the assigned (auto + gateway) demand.
         total_trips = internal_person_trips + external_gateway_trips
@@ -5369,6 +5379,7 @@ def stage_assignment(
 
     return {
         **population_metadata,
+        **({"external_distribution": {**external_distribution_record, "network_state_digest": network_state_digest_value}} if external_distribution_record is not None else {}),
         "convergence": convergence_record,
         "network": {"links": int(graph.num_links), "nodes": int(graph.num_nodes), "zones": n_zones},
         "demand": {
@@ -6623,6 +6634,7 @@ def stage_artifacts(
         vmt_estimator_ratio = round(vmt_estimator_ratio, 4)
 
     evidence = {
+        **({"external_distribution": assign_result["external_distribution"]} if "external_distribution" in assign_result else {}),
         "packet_version": "2.0",
         "run_id": run_id,
         "engine": verified_engine_stamp,
