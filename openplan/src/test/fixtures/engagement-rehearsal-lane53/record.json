@@ -7,6 +7,7 @@
  "journeys": [
   {
    "role": "county",
+   "mode": "rehearsal",
    "place": {
     "kind": "county",
     "geoid": "41011",
@@ -670,10 +671,35 @@
      "consoleErrors": 0,
      "horizontalScroll": false
     }
-   ]
+   ],
+   "close": {
+    "attempted": true,
+    "closed": true,
+    "saveStatus": 200,
+    "statusAfter": "closed",
+    "addresses": [
+     {
+      "name": "portal",
+      "status": 200,
+      "endedNoticeShown": true,
+      "campaignTextFound": false
+     },
+     {
+      "name": "about",
+      "status": 200,
+      "endedNoticeShown": true,
+      "campaignTextFound": false
+     }
+    ],
+    "publicReadAfter": {
+     "status": 404
+    },
+    "endedAt": "2026-11-14T22:47:53Z"
+   }
   },
   {
    "role": "city-or-town",
+   "mode": "rehearsal",
    "place": {
     "kind": "city",
     "geoid": "5644760",
@@ -1337,10 +1363,35 @@
      "consoleErrors": 0,
      "horizontalScroll": false
     }
-   ]
+   ],
+   "close": {
+    "attempted": true,
+    "closed": true,
+    "saveStatus": 200,
+    "statusAfter": "closed",
+    "addresses": [
+     {
+      "name": "portal",
+      "status": 200,
+      "endedNoticeShown": true,
+      "campaignTextFound": false
+     },
+     {
+      "name": "about",
+      "status": 200,
+      "endedNoticeShown": true,
+      "campaignTextFound": false
+     }
+    ],
+    "publicReadAfter": {
+     "status": 404
+    },
+    "endedAt": "2026-11-14T22:48:35Z"
+   }
   },
   {
    "role": "tribal-area",
+   "mode": "rehearsal",
    "place": {
     "kind": "aiannh",
     "geoid": "1505R",
@@ -2004,7 +2055,31 @@
      "consoleErrors": 0,
      "horizontalScroll": false
     }
-   ]
+   ],
+   "close": {
+    "attempted": true,
+    "closed": true,
+    "saveStatus": 200,
+    "statusAfter": "closed",
+    "addresses": [
+     {
+      "name": "portal",
+      "status": 200,
+      "endedNoticeShown": true,
+      "campaignTextFound": false
+     },
+     {
+      "name": "about",
+      "status": 200,
+      "endedNoticeShown": true,
+      "campaignTextFound": false
+     }
+    ],
+    "publicReadAfter": {
+     "status": 404
+    },
+    "endedAt": "2026-11-14T22:48:35Z"
+   }
   }
  ],
  "crossWorkspace": {
@@ -2185,76 +2260,91 @@
  "participantChecks": {
   "refusals": [
    {
+    "journey": "county",
     "request": "campaign-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "county",
     "request": "campaign-export-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "county",
     "request": "rejected-item-history-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "county",
     "request": "review-pdf-download",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "county",
     "request": "review-xlsx-download",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "city-or-town",
     "request": "campaign-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "city-or-town",
     "request": "campaign-export-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "city-or-town",
     "request": "rejected-item-history-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "city-or-town",
     "request": "review-pdf-download",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "city-or-town",
     "request": "review-xlsx-download",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "tribal-area",
     "request": "campaign-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "tribal-area",
     "request": "campaign-export-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "tribal-area",
     "request": "rejected-item-history-read",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "tribal-area",
     "request": "review-pdf-download",
     "status": 401,
     "contentReturned": false
    },
    {
+    "journey": "tribal-area",
     "request": "review-xlsx-download",
     "status": 401,
     "contentReturned": false
@@ -2296,6 +2386,22 @@
   {
    "id": "no-translation-or-ai-synthesis",
    "text": "No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope."
+  },
+  {
+   "id": "live-screens-read-by-the-journey",
+   "text": "The journey read these on live screens and the checker cannot read them again: the public response page's counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign's public addresses."
+  },
+  {
+   "id": "build-named-by-the-journey",
+   "text": "Which build ran comes from the health readbacks the journey wrote at its start and end. Nothing in the record comes from the deployment itself."
+  },
+  {
+   "id": "contribution-input-stated-by-the-journey",
+   "text": "Which contribution was made with the keyboard only, and at which width, is the journey's statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook."
+  },
+  {
+   "id": "ai-and-approval-flags-set-by-the-journey",
+   "text": "The AI flags, the staff review's approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that."
   }
  ]
 }

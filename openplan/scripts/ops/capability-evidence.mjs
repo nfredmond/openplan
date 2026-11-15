@@ -155,6 +155,8 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
 
     checkJourneyFields(journey, rule.fields, label);
     checkJourneyFields(journey, job.journeyFields, label);
+    if (job.campaign) checkClose(journey, label);
+    if (job.health) checkHealthRule(journey, job, label);
 
     // A campaign job's own record is checked first; its rejected texts are
     // then searched as each file is read, before any other rule can refuse
@@ -166,9 +168,10 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkScreens(journey, job, label);
     if (job.campaign) checkCampaign(journey, job, label, workbooks, pages, campaignRecord);
   }
+  if (job.campaign) checkDistinctCampaigns(record.journeys);
 
   const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace, roles);
-  if (job.participantChecks) checkParticipantChecks(record.participantChecks, job.participantChecks);
+  if (job.participantChecks) checkParticipantChecks(record.participantChecks, job.participantChecks, roles);
 
   const requiredLimits = [...job.requiredLimits];
   if (job.sourceCheck) {
@@ -217,6 +220,79 @@ function checkJourneyFields(journey, rules, label) {
       throw new Error(`job definition rule for ${rule.field} needs equals, atLeast or minItems`);
     }
     if (!holds) refuse(`${label} ${rule.refusal.replaceAll("{found}", String(found)).replaceAll("{expected}", String(expected))}`);
+  }
+}
+
+/**
+ * How a campaign journey closed its campaign, as its run file recorded it
+ * (review 59, journey finding 8): the save answered 200, the status read
+ * back is closed, at least one public address was read afterward as a
+ * participant and each showed the ended notice and none of the campaign's
+ * own text, and the public portal read afterward did not answer 200 with
+ * the campaign's text.
+ *
+ * Blind category: every value here is the journey's reading of live
+ * screens. The checker cannot read the closed portal again.
+ */
+function checkClose(journey, label) {
+  const { close } = journey;
+  if (close.attempted !== true) refuse(`${label} did not try to close its campaign`);
+  if (close.saveStatus !== 200) refuse(`${label} campaign close was saved with status ${close.saveStatus}, not 200`);
+  if (close.statusAfter !== "closed") refuse(`${label} campaign status read ${close.statusAfter} after the close, not closed`);
+  if (close.addresses.length === 0) refuse(`${label} read no public address after closing its campaign`);
+  for (const address of close.addresses) {
+    if (address.endedNoticeShown !== true) refuse(`${label} public ${address.name} address does not show the ended notice after the close`);
+    if (address.campaignTextFound !== false) refuse(`${label} public ${address.name} address still shows the campaign's own text after the close`);
+  }
+  const read = close.publicReadAfter;
+  if (read.status === null) refuse(`${label} did not read the public portal data after the close`);
+  if (read.status === 200 && read.campaignTextFound !== false) {
+    refuse(`${label} public portal data answered 200 after the close${read.campaignTextFound ? " with the campaign's own text" : " and was not searched for the campaign's text"}`);
+  }
+}
+
+/**
+ * A job's health rule (its `health` block): every readback reports the
+ * required status, the start readback is no later than the account's
+ * creation, the account was made before the campaign's close, the end
+ * readback is no earlier than that close, and the end readback reports the
+ * start's version and migrations (review 59, HC3, HC4, HC6 and O5).
+ *
+ * Blind category: the readbacks and the times are written by the journey.
+ * A run that wrote a readback it never made is not caught; nothing in the
+ * record comes from the deployment itself.
+ */
+function checkHealthRule(journey, job, label) {
+  const at = (value) => Date.parse(value);
+  for (const reading of journey.health) {
+    if (reading.status !== job.health.status) refuse(`${label} ${reading.point} health readback reports status ${reading.status}, not ${job.health.status}`);
+  }
+  const start = journey.health.find((reading) => reading.point === "start");
+  const end = journey.health.find((reading) => reading.point === "end");
+  if (at(start.checkedAt) > at(journey.accountCreatedAt)) {
+    refuse(`${label} start health readback (${start.checkedAt}) comes after the account was created (${journey.accountCreatedAt})`);
+  }
+  if (journey.close && at(journey.accountCreatedAt) > at(journey.close.endedAt)) {
+    refuse(`${label} account was created (${journey.accountCreatedAt}) after the campaign was closed (${journey.close.endedAt})`);
+  }
+  if (journey.close && at(end.checkedAt) < at(journey.close.endedAt)) {
+    refuse(`${label} end health readback (${end.checkedAt}) comes before the campaign was closed (${journey.close.endedAt})`);
+  }
+  // One build from start to end: the version and migration fields cannot change.
+  for (const field of ["version", "migrationsExpected", "migrationsLatest"]) {
+    if (end[field] !== start[field]) refuse(`${label} end health readback reports ${field} ${end[field]}, but the start one reports ${start[field]}`);
+  }
+}
+
+/** Each journey ran its own campaign in its own project (review 59, O4). */
+function checkDistinctCampaigns(journeys) {
+  for (const field of ["campaignId", "projectId"]) {
+    const seen = new Map();
+    for (const journey of journeys) {
+      const value = journey.campaign[field];
+      if (seen.has(value)) refuse(`the ${journey.role} and ${seen.get(value)} journeys name the same ${field === "campaignId" ? "campaign" : "project"} ${value}`);
+      seen.set(value, journey.role);
+    }
   }
 }
 
@@ -372,12 +448,17 @@ function checkCrossWorkspacePerJourney(checks, rule, roles) {
  * public portal read answers 200, and the journey must have searched it for
  * every staff-only field name the job lists and found none.
  *
+ * With `perJourney: "role"`, each refusal names the journey whose
+ * participant made it, and each journey has each required request exactly
+ * once (review 59, A3), the rule the second-account checks follow.
+ *
  * Blind category: the checker trusts the journey's reading of each response.
  * It cannot tell whether a staff-only value was returned under another name.
  */
-function checkParticipantChecks(participant, rule) {
+function checkParticipantChecks(participant, rule, roles) {
   for (const check of participant.refusals) {
     const label = `public participant request ${check.request}`;
+    if (check.journey !== undefined && !roles.includes(check.journey)) refuse(`${label} names the ${check.journey} journey, which the record does not hold`);
     if (check.contentReturned) refuse(`${label} returned content (status ${check.status})`);
     if (!PARTICIPANT_REFUSAL_STATUSES.has(check.status)) {
       refuse(`${label} answered status ${check.status}, which is inconclusive; only 401, 403 or 404 shows the app refused it`);
@@ -385,6 +466,18 @@ function checkParticipantChecks(participant, rule) {
   }
   for (const request of rule.requiredRequests) {
     if (!participant.refusals.some((check) => check.request === request)) refuse(`public participant check ${request} is missing`);
+  }
+  if (rule.perJourney === "role") {
+    const unnamed = participant.refusals.find((check) => check.journey === undefined);
+    if (unnamed) refuse(`public participant request ${unnamed.request} does not name the journey that made it`);
+    for (const role of roles) {
+      for (const request of rule.requiredRequests) {
+        const own = participant.refusals.filter((check) => check.journey === role && check.request === request).length;
+        if (own !== 1) refuse(`the ${role} journey needs exactly one public participant ${request} check, found ${own}`);
+      }
+    }
+  } else if (rule.perJourney !== undefined) {
+    throw new Error(`job definition participantChecks.perJourney must be role, found ${rule.perJourney}`);
   }
   const { publicRead } = participant;
   const label = `public participant ${publicRead.request}`;
@@ -406,6 +499,13 @@ function checkPlace(place, rule, job, label) {
       refuse(`${label} must be in the state with FIPS ${rule.stateFips}`);
     }
   }
+  // A county, place or county subdivision id begins with its state's code (review 59, P6).
+  if (job.placeStateFromGeoid?.kinds.includes(place.kind)) {
+    const state = place.geoid.slice(0, 2);
+    if (place.stateFips.length !== 1 || place.stateFips[0] !== state) {
+      refuse(`${label} geoid ${place.geoid} is in the state with FIPS ${state}, but the record says ${place.stateFips.join(", ") || "none"}`);
+    }
+  }
 }
 
 /**
@@ -424,7 +524,9 @@ function checkPdfs(journey, job, label, root, readPdfPages, renderPdfPage, pdfPa
 
   for (const pdf of journey.pdfs) {
     const pdfLabel = `${label} ${pdf.kind} PDF`;
-    const { source, bytes } = readEvidenceFile(pdf, root, pdfLabel);
+    // The campaign job refuses a changed file in the checker's own form; the
+    // first job keeps the plain error its record has always been checked with.
+    const { source, bytes } = readEvidenceFile(pdf, root, pdfLabel, job.campaign ? refuse : undefined);
     if (pdfPaths.has(source)) refuse(`${pdfLabel} reuses another journey's file: ${pdf.path}`);
     pdfPaths.add(source);
     if (bytes.subarray(0, 5).toString("latin1") !== "%PDF-") refuse(`${pdfLabel} is not a PDF: ${pdf.path}`);
@@ -538,7 +640,7 @@ function checkWorkbooks(journey, job, label, root, readWorkbook, artifactPaths, 
 
   for (const workbook of workbooks) {
     const workbookLabel = `${label} ${workbook.kind} workbook`;
-    const { source, bytes } = readEvidenceFile(workbook, root, workbookLabel);
+    const { source, bytes } = readEvidenceFile(workbook, root, workbookLabel, refuse);
     if (artifactPaths.has(source)) refuse(`${workbookLabel} reuses another file: ${workbook.path}`);
     artifactPaths.add(source);
     if (bytes.subarray(0, 4).toString("latin1") !== "PK\u0003\u0004") refuse(`${workbookLabel} is not an XLSX file: ${workbook.path}`);
@@ -662,8 +764,9 @@ function checkCampaign(journey, job, label, workbooks, pagesByKind, { outcomes, 
     if (value !== expected[name]) refuse(`${where}; the journey's moderation outcomes and response give ${expected[name]}`);
   }
   for (const name of CAMPAIGN_COUNTS) checkCountSentence(internalPages, rule.countSentences[name], name, expected[name], pdfLabel);
+  checkCampaignWorkbookFacts(journey, book, sheets, bookLabel);
 
-  checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected, approved);
+  checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected, approved, job.participantChecks?.publicRead.staffOnlyFields ?? []);
 
   // The public response page, read at every width and mode.
   const rejectedHashes = campaign.rejectedTextSha256;
@@ -746,6 +849,124 @@ function checkCampaignRecord(journey, job, label) {
   return { outcomes, approved, responded, counts };
 }
 
+/**
+ * The record against the internal review workbook's own cells (review 59):
+ * - each rejected text is the rejected comment's own Contributions body
+ *   (verdict item 1; F5, F6, F7);
+ * - each moderation the record says was given a reason has a moderation
+ *   note in its Contributions row (item 2; O9);
+ * - a map-point contribution has a coordinate cell filled and a no-map-point
+ *   one has none (item 4; K4, K5, F11b);
+ * - the record's response is a Staff responses row (R8, O10; that the rows
+ *   are published and answer the record's comments is checked with the
+ *   counts); the decision link is a Decision history row
+ *   naming the response, the decision and the project (R6); its exact
+ *   payload names the campaign, the decision and the response (O7); and a
+ *   Synthesis actions row of that link names the staff review (R9).
+ *
+ * Blind category: the workbook and the record both come from the run. A run
+ * that wrote a false record and a matching false workbook is not caught;
+ * the checker shows only that the two agree, and that the workbook is the
+ * one the record's hash names.
+ */
+function checkCampaignWorkbookFacts(journey, book, sheets, bookLabel) {
+  const { campaign } = journey;
+  const { response } = campaign;
+  const blank = (value) => value == null || String(value).trim() === "";
+  const columnOf = (rows, name, sheetName) => {
+    const index = rows[0].indexOf(name);
+    if (index < 0) refuse(`${bookLabel} sheet ${sheetName} has no ${name} column`);
+    return index;
+  };
+  const value = (cell) => fullCellValue(sheets, book.longText, cell);
+
+  const items = book.contributions;
+  const itemRows = requiredSheet(sheets, items.sheet, bookLabel);
+  const idColumn = columnOf(itemRows, items.idColumn, items.sheet);
+  const bodyColumn = columnOf(itemRows, items.bodyColumn, items.sheet);
+  const notesColumn = columnOf(itemRows, items.notesColumn, items.sheet);
+  const pointColumns = items.pointColumns.map((name) => columnOf(itemRows, name, items.sheet));
+  const rowFor = (id) => {
+    const matching = itemRows.slice(1).filter((row) => row[idColumn] === id);
+    if (matching.length !== 1) refuse(`${bookLabel} ${items.sheet} has ${matching.length} rows for ${id}, not one`);
+    return matching[0];
+  };
+
+  const rejectedIds = campaign.moderation.filter((entry) => entry.outcome === "rejected").map((entry) => entry.commentId);
+  rejectedIds.forEach((id, index) => {
+    const body = value(rowFor(id)[bodyColumn]).trim();
+    if (body !== String(campaign.rejectedTexts[index] ?? "").trim()) {
+      refuse(`${bookLabel} ${items.sheet} ${items.bodyColumn} of rejected comment ${id} is not rejected text ${index + 1}; the record's text must be the rejected comment's own`);
+    }
+  });
+  for (const entry of campaign.moderation) {
+    if (entry.reasonRecorded && blank(value(rowFor(entry.commentId)[notesColumn]))) {
+      refuse(`${bookLabel} ${items.sheet} has no ${items.notesColumn} for ${entry.outcome} comment ${entry.commentId}, but the record says its reason was recorded`);
+    }
+  }
+  for (const contribution of campaign.contributions) {
+    const row = rowFor(contribution.commentId);
+    const filled = pointColumns.filter((index) => !blank(row[index])).length;
+    if (contribution.kind === "map-point" && filled === 0) {
+      refuse(`${bookLabel} ${items.sheet} has no coordinates for ${contribution.commentId}, which the record calls a map-point contribution`);
+    }
+    if (contribution.kind === "no-map-point" && filled > 0) {
+      refuse(`${bookLabel} ${items.sheet} has coordinates for ${contribution.commentId}, which the record calls a no-map-point contribution`);
+    }
+  }
+
+  const responses = book.responses;
+  const responseRows = requiredSheet(sheets, responses.sheet, bookLabel);
+  const responseIdColumn = columnOf(responseRows, responses.idColumn, responses.sheet);
+  const responseRow = responseRows.slice(1).find((row) => row[responseIdColumn] === response.responseId);
+  if (!responseRow) refuse(`${bookLabel} ${responses.sheet} has no row for the record's response ${response.responseId}`);
+
+  const history = book.decisionHistory;
+  const historyRows = requiredSheet(sheets, history.sheet, bookLabel);
+  const linkRow = historyRows.slice(1).find((row) => row[columnOf(historyRows, history.idColumn, history.sheet)] === response.decisionLinkId);
+  if (!linkRow) refuse(`${bookLabel} ${history.sheet} has no row for the record's decision link ${response.decisionLinkId}`);
+  const named = { response: response.responseId, decision: response.decisionId, project: response.projectId };
+  for (const [what, expected] of Object.entries(named)) {
+    const found = linkRow[columnOf(historyRows, history[`${what}Column`], history.sheet)];
+    if (found !== expected) refuse(`${bookLabel} ${history.sheet} decision link ${response.decisionLinkId} names ${what} ${found}, not the record's ${expected}`);
+  }
+
+  const context = book.decisionContext;
+  const contextRows = requiredSheet(sheets, context.sheet, bookLabel);
+  const contextRow = contextRows.slice(1).find((row) => row[columnOf(contextRows, context.actionColumn, context.sheet)] === response.decisionLinkId);
+  if (!contextRow) refuse(`${bookLabel} ${context.sheet} has no row for the record's decision link ${response.decisionLinkId}`);
+  let payload;
+  try {
+    payload = JSON.parse(value(contextRow[columnOf(contextRows, context.payloadColumn, context.sheet)]));
+  } catch {
+    refuse(`${bookLabel} ${context.sheet} ${context.payloadColumn} for ${response.decisionLinkId} is not JSON`);
+  }
+  const payloadNames = { campaignId: campaign.campaignId, decisionId: response.decisionId, responseId: response.responseId };
+  for (const [key, expected] of Object.entries(payloadNames)) {
+    if (payload?.[key] !== expected) refuse(`${bookLabel} ${context.sheet} payload of decision link ${response.decisionLinkId} names ${key} ${payload?.[key]}, not the record's ${expected}`);
+  }
+
+  const actions = book.synthesisActions;
+  const actionRows = requiredSheet(sheets, actions.sheet, bookLabel);
+  const actionColumn = columnOf(actionRows, actions.actionColumn, actions.sheet);
+  const reviewColumn = columnOf(actionRows, actions.reviewColumn, actions.sheet);
+  if (!actionRows.slice(1).some((row) => row[actionColumn] === response.decisionLinkId && row[reviewColumn] === campaign.staffReview.reviewId)) {
+    refuse(`${bookLabel} ${actions.sheet} has no row of decision link ${response.decisionLinkId} naming the record's staff review ${campaign.staffReview.reviewId}`);
+  }
+}
+
+/**
+ * A cell's whole value: when the export split it into the Long text sheet,
+ * the cell ends with "[Full value: Long text / <record id> / <field>]" and
+ * the value is those Long text rows joined in part order.
+ */
+function fullCellValue(sheets, longText, cell) {
+  const raw = String(cell ?? "");
+  const marker = raw.match(new RegExp(`\\[Full value: ${longText.sheet.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} / (.+) / ([^/\\]]+)\\]$`));
+  if (!marker) return raw;
+  return longTextValue(sheets, longText, raw, marker[1], marker[2]);
+}
+
 /** The five counts the review files state, in the order the checker compares them. */
 const CAMPAIGN_COUNTS = ["received", "approved", "rejected", "publishedResponses", "answered"];
 
@@ -756,11 +977,14 @@ const CAMPAIGN_COUNTS = ["received", "approved", "rejected", "publishedResponses
  * scope is public, its Summary rows hold the same counts and none it leaves
  * out, and its Contributions sheet holds exactly the approved comments.
  *
- * Blind category: a public copy that states the right counts and holds no
- * rejected text or id can still print something else a public copy should
- * not, such as a moderation note on an approved comment.
+ * No sheet's header row, and no field the Long text sheet splits, may be one
+ * of the job's staff-only field names (review 59, F9).
+ *
+ * Blind category: a public copy that states the right counts, holds no
+ * rejected text or id and names no staff-only field can still print a staff
+ * value under another column name, or in the PDF, which has no header row.
  */
-function checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected, approved) {
+function checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected, approved, staffOnlyFields) {
   const copy = rule.publicCopy;
   const pages = pagesByKind.get(copy.pdf);
   const pdfLabel = `${label} ${copy.pdf} PDF`;
@@ -778,6 +1002,13 @@ function checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected,
   const bookLabel = `${label} ${copy.workbook} workbook`;
   const scopeRow = requiredSheet(sheets, copy.scopeCell.sheet, bookLabel).find((row) => row[0] === copy.scopeCell.field);
   if (!scopeRow || scopeRow[1] !== copy.scopeCell.value) refuse(`${bookLabel} ${copy.scopeCell.sheet} ${copy.scopeCell.field} must be ${copy.scopeCell.value}`);
+  for (const [name, rows] of Object.entries(sheets)) {
+    const headers = (rows[0] ?? []).map((value, column) => [String(value).trim(), `sheet ${name} cell ${cellAddress(0, column)}`]);
+    const split = name === book.longText.sheet ? rows.slice(1).map((row, index) => [String(row[2] ?? "").trim(), `sheet ${name} cell ${cellAddress(index + 1, 2)}`]) : [];
+    for (const [field, where] of [...headers, ...split]) {
+      if (staffOnlyFields.includes(field)) refuse(`${bookLabel} names the staff-only field ${field} at ${where}`);
+    }
+  }
   const { summary } = book;
   const summaryRows = requiredSheet(sheets, summary.sheet, bookLabel);
   for (const name of copy.leftOut) {
@@ -920,14 +1151,17 @@ function checkCountSentence(pages, template, name, count, pdfLabel) {
  * review files, which print both, must hold every one. A search that cannot
  * find the text where it is would pass a leak too.
  *
- * A PDF is searched page by page with the shared matcher; an id is looked for
- * in all pages joined with spacing removed, since a narrow column can break
- * an id across lines. A workbook is searched cell by cell, and each value the
- * export split into Long text rows is joined and searched as one.
+ * A PDF is searched page by page with the shared matcher, then with its
+ * pages joined at each page break; an id is looked for in all pages joined
+ * with spacing removed, since a narrow column can break an id across lines.
+ * A workbook is searched cell by cell, and each value the export split into
+ * Long text rows is joined and searched as one. That each text is the
+ * rejected comment's own is checked against the internal workbook's cells
+ * (checkCampaignWorkbookFacts).
  *
- * Blind category: a rejected text reworded, shortened or split across two
- * cells is not found. The checker cannot tell whether the text is the one
- * the participant typed, only that it matches its hash.
+ * Blind category: a rejected text reworded, shortened, split across two
+ * cells, or split across a page break with a running header or footer
+ * printed between its parts is not found.
  */
 function rejectedTextSearch(journey, job, label) {
   const rule = job.campaign;
@@ -955,9 +1189,13 @@ function rejectedTextSearch(journey, job, label) {
   return {
     pdf(pdf, pages, pdfLabel) {
       if (!internal.has(pdf.kind) && !publicCopy.has(pdf.kind)) return;
+      // Each page, then every page joined at its page breaks, so a text split
+      // across a break with nothing printed between is found (review 59, F15).
+      const across = pages.map((pageText) => pageText.trim()).join("\n");
       texts.forEach((text, index) => {
         const page = pages.findIndex((pageText) => pdfTextHasPhrase(pageText, text));
-        verdict(pdf.kind, pdfLabel, `rejected text ${index + 1}`, page >= 0 ? `page ${page + 1}` : null);
+        const where = page >= 0 ? `page ${page + 1}` : pdfTextHasPhrase(across, text) ? "a page break" : null;
+        verdict(pdf.kind, pdfLabel, `rejected text ${index + 1}`, where);
       });
       const joined = pages.join("").replace(/\s+/g, "").toLowerCase();
       for (const id of rejectedIds) verdict(pdf.kind, pdfLabel, `the id of rejected comment ${id}`, joined.includes(id.toLowerCase()) ? "its text" : null);
@@ -1027,6 +1265,10 @@ function checkScreens(journey, job, label) {
     seen.add(key);
     if (row.axe.serious !== 0 || row.axe.critical !== 0) {
       refuse(`${rowLabel} has ${row.axe.serious} serious and ${row.axe.critical} critical accessibility violations`);
+    }
+    // A required screen that scrolls sideways at phone width (review 59, S5).
+    if (row.horizontalScroll && job.screens.noSidewaysScrollWidths?.includes(row.width) && job.screens.required?.includes(row.screen)) {
+      refuse(`${rowLabel} scrolls sideways`);
     }
   }
   for (const screen of new Set(journey.screens.map((row) => row.screen))) {
@@ -1239,30 +1481,40 @@ function readEvidenceList(evidence, root, label) {
   });
 }
 
-/** A repository file whose bytes match the recorded SHA-256, read once. */
-function readEvidenceFile(evidence, root, label) {
+/**
+ * A repository file whose bytes match the recorded SHA-256, read once.
+ * `fail` throws the refusal: a plain error by default, as the first proven
+ * job's record and every coverage cell have always been refused, or the
+ * checker's `proven job record refused:` form for a job that asks for it
+ * (review 59, F8).
+ */
+function readEvidenceFile(evidence, root, label, fail = plainFailure) {
   if (!evidence || typeof evidence.path !== "string" || !evidence.path.trim() || isAbsolute(evidence.path)) {
-    throw new Error(`${label} needs a repository-relative evidence path`);
+    fail(`${label} needs a repository-relative evidence path`);
   }
   let source;
   try {
     source = realpathSync(resolve(root, evidence.path));
     if (!statSync(source).isFile()) throw new Error("not a file");
   } catch {
-    throw new Error(`${label} evidence file is missing: ${evidence.path}`);
+    fail(`${label} evidence file is missing: ${evidence.path}`);
   }
   const local = relative(root, source);
   if (local === ".." || local.startsWith(`..${sep}`) || isAbsolute(local)) {
-    throw new Error(`${label} evidence must stay inside the repository: ${evidence.path}`);
+    fail(`${label} evidence must stay inside the repository: ${evidence.path}`);
   }
   if (!/^[0-9a-f]{64}$/.test(evidence.sha256 ?? "")) {
-    throw new Error(`${label} evidence needs a lowercase SHA-256: ${evidence.path}`);
+    fail(`${label} evidence needs a lowercase SHA-256: ${evidence.path}`);
   }
   const bytes = readFileSync(source);
-  if (bytes.length === 0) throw new Error(`${label} evidence file is empty: ${evidence.path}`);
+  if (bytes.length === 0) fail(`${label} evidence file is empty: ${evidence.path}`);
   const actual = createHash("sha256").update(bytes).digest("hex");
   if (actual !== evidence.sha256) {
-    throw new Error(`${label} evidence hash changed: ${evidence.path}`);
+    fail(`${label} evidence hash changed: ${evidence.path}`);
   }
   return { path: evidence.path, source, bytes };
+}
+
+function plainFailure(message) {
+  throw new Error(message);
 }

@@ -1163,6 +1163,7 @@ async function assembleMain(argv) {
     jobId: args.job || 'safety-action-plan-and-ss4a-in-three-places',
     commit: args.commit,
     baseUrl: args['base-url'],
+    proofOrigin: await lib.loadProofOrigin(),
     recordedOn: lib.utcNow().slice(0, 10),
     sourceCheck: { status: 'not-run', checkedOn: null, url: null, note: 'Crash counts were not compared with the source query tool.' },
     limits: [

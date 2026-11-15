@@ -145,7 +145,11 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
 
 1. It has three journeys in any state: a county, a city or town (`city` or
    `cousub`) and a tribal area (`aiannh`), and each names a staff executor and
-   a public participant executor.
+   a public participant executor. For a county, city or town, the one state
+   code is the geoid's first two digits. Each journey ran in proof mode,
+   confirmed its account by the emailed link and made its portal address from
+   the share token, and the three journeys name three different campaigns and
+   projects.
 2. No AI feature ran, the staff review was approved, and the response is
    published and was not drafted with AI.
 3. Contributions include a map point, a comment without a map point and one
@@ -165,24 +169,34 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
    responses answering the same comments. Its Summary rows (Received,
    Approved, Withheld, Published staff responses, Answered by a published
    staff response) agree with its own cells, with the PDF's sentences and
-   with the journey.
+   with the journey. The record also agrees with its cells (review 59): each
+   rejected text is that comment's own body cell, each moderation the record
+   says had a reason has a moderation note, each map point has a coordinate
+   cell and each comment without one has none, the response is a Staff
+   responses row, the decision link is a Decision history row naming the
+   response, decision and project, the link's exact payload names the
+   campaign, and a Synthesis actions row of the link names the staff review.
 6. The public review PDF reads "Public review copy", says it leaves out
    withheld, pending and flagged contributions, states the approved,
    published and answered counts with the journey's numbers, and states no
    received or withheld count. The public XLSX has scope public, the same
    Summary counts and no Received or Withheld row, and its Contributions
-   sheet holds exactly the approved comments.
+   sheet holds exactly the approved comments. No sheet's header row, and no
+   field it splits into the Long text sheet, is a staff-only field name.
 7. The record holds each rejected comment's text beside its hash (a test
    entry that represents no one). The checker searches every review file
    for each rejected text and its comment id itself: the PDFs page by page
-   with the shared matcher, the workbooks cell by cell. A public file that
+   and across each page break with the shared matcher, the workbooks cell by
+   cell. A public file that
    holds one is refused, and so is an internal file that does not, since a
    search that cannot find the text where it is would pass a leak too.
 8. The public response page was read at 1440 and 390 pixels in light and dark
    mode, shows the same approved and answered counts, was searched for every
    rejected text and shows none.
-9. The portal and staff campaign screens have zero serious and critical axe
-   violations at both widths and modes.
+9. All six screens the journey checks (the portal, the public response page
+   and the staff campaign's four tabs) were checked at both widths and modes,
+   with zero serious and critical axe violations, and none scrolls sideways
+   at 390 px.
 10. A second account was refused the review PDF and XLSX downloads, the
     campaign read, the campaign export and the rejected comment's history as
     data checks, and the staff campaign page as a page check. Each check
@@ -190,23 +204,45 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
     once.
 11. An anonymous participant was refused the campaign read, the campaign
     export, the rejected comment's history and both downloads (401, 403 or
-    404), and the public portal read carried no staff-only field. The
+    404), and the public portal read carried no staff-only field. Each
+    refusal names its journey, and each journey has each request once. The
     definition named a staff item list until November 14, 2026, but that
     route has no read, so it answered 405 (KI-2026-11-14-370).
 12. The record states the job's limits (see the definition entry).
+13. Each journey's health readbacks report ok, and the end one reports the
+    start's version and migrations. The start readback comes before the
+    account was made, and the end readback after the campaign was closed.
+    The close, from the run file: the save answered 200, the status reads
+    closed, each public address read afterward shows the ended notice and
+    none of the campaign's text, and the public portal data read afterward
+    does not answer 200 with the campaign's text.
+
+`qa-harness/engagement-job-journey.js --assemble` refuses a run file made on
+another origin, a run that stopped or left its campaign open, a run that
+names another expected commit, and, under the proof origin, a rehearsal run
+or one that names no expected commit. The first job's `--assemble` applies
+the same rule, less the close, to runs made from now on.
 
 What the checker repeats for this job and what it takes on trust: it reads
-all four review files again, so their counts, scope, approved-only rows and
-the absence of every rejected text and id are its own findings. The portal
-and the public response page are live screens it cannot read again: it keeps
-the journey's reading of their counts, its search of them for the rejected
-text and the status of each participant and second-account request. It
-cannot tell whether the rejected text is the one the participant typed, only
-that it matches its hash, and a rejected text reworded or split across two
-cells is not found.
+all four review files again, so their counts, scope, approved-only rows, the
+absence of every rejected text and id, and the record's agreement with the
+internal workbook (rule 5) are its own findings. The rest is on the
+journey's word, and the record must say so in four limits: what the journey
+read on live screens (the public response page's counts and its search for
+the rejected text, the portal data's staff fields, each participant and
+second-account status, axe results, console errors, sideways scroll and the
+closed campaign's public addresses); which build ran, since the health
+readbacks are the journey's; which contribution was made with the keyboard
+only and at which width; and the AI and approval flags. The record and its
+files both come from the run: a run that wrote a false record and matching
+false files is not caught, only a record that disagrees with its files. A
+rejected text reworded, split across two cells, or split across a page break
+with a header or footer printed between its parts is not found.
 
 No hosted record of this job exists yet (KI-2026-11-14-313). The checker
-refuses lane 53's local rehearsal record for its local origin only.
+refuses lane 53's local rehearsal record, and the November 15 dress
+rehearsal re-assembled from its run files, for their local origin and
+rehearsal mode only (KI-2026-11-15-020).
 
 ## What it cannot tell
 

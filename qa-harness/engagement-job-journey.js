@@ -407,6 +407,9 @@ async function main() {
     first.checkConfirmLinkOrigin(link, allowed);
     await targetPage.goto(link, { waitUntil: 'domcontentloaded', timeout: 120000 });
     link = '';
+    // A used link is still a sign-in credential until it expires: remove the
+    // file the operator wrote it to (review 59, journey finding 10).
+    fs.rmSync(confirmFile, { force: true });
     await settle(targetPage, 2500);
     if (targetPage.url().includes('/sign-in')) {
       await targetPage.type('#email', email);
@@ -658,10 +661,13 @@ async function main() {
         });
         await reader.screenshot({ path: path.join(out, 'screens', `campaign-closed-${name}-1440.png`) });
       }
-      const api = neverPublic ? { status: null } : await pageFetch(reader, `/api/engage/${tokenOf()}`);
+      const api = neverPublic ? { status: null, text: '' } : await pageFetch(reader, `/api/engage/${tokenOf()}`);
       await visitor.close();
-      const verdict = lib.closeVerdict({ saveStatus, statusAfter, addresses, neverPublic });
-      closeReading = { saveStatus, statusAfter, addresses, publicReadStatusAfter: api.status, ...verdict };
+      // The public portal data after the close: a 200 that still carries the
+      // campaign's title or a comment means the campaign is not offline.
+      const publicRead = { status: api.status, campaignTextFound: campaignStrings.some((value) => lib.searchRejected({ texts: [value], surfaces: [{ name: 'public portal data', text: api.text }] }).hits.length > 0) };
+      const verdict = lib.closeVerdict({ saveStatus, statusAfter, addresses, publicRead, neverPublic });
+      closeReading = { saveStatus, statusAfter, addresses, publicReadStatusAfter: api.status, publicReadCampaignTextFound: publicRead.campaignTextFound, ...verdict };
       return verdict;
     } finally {
       await staff.close().catch(() => {});
@@ -1300,7 +1306,7 @@ async function main() {
       for (const request of job.participantChecks.requiredRequests) {
         const result = await pageFetch(tab, requests[request]);
         const contentReturned = result.head === '%PDF-' || result.head.startsWith('PK') || result.text.includes(inputs.campaign.title) || result.text.includes(ids.submissions.rejected.id) || result.text.includes(inputs.comments.rejected);
-        participantChecks.refusals.push({ request, status: result.status, contentReturned });
+        participantChecks.refusals.push({ journey: options.role, request, status: result.status, contentReturned });
       }
       const read = await pageFetch(tab, `/api/engage/${tokenOf()}`);
       let parsed = null;
@@ -1447,6 +1453,7 @@ async function assembleMain(argv) {
     commit: args.commit,
     baseUrl: args['base-url'],
     recordedOn: first.utcNow().slice(0, 10),
+    proofOrigin: await first.loadProofOrigin(),
     root: args.root ? path.resolve(args.root) : path.dirname(path.resolve(args.out)),
   });
   fs.writeFileSync(path.resolve(args.out), `${JSON.stringify(record, null, 2)}\n`);

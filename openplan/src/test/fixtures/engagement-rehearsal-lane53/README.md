@@ -20,3 +20,10 @@ its base URL is the local dev server, so the checker refuses it as proof.
 The builder is kept with lane 53's run files, outside the repository
 (`fable-lead/pj2-journey-runs/lane53/tools/build-fixture.mjs` in the
 operator state folder).
+
+Lane 61 (November 15, 2026) added to `record.json` what the record schema
+now requires and lane 53's run files already held: each journey's `mode`
+and `close` (from `run2-county`, `run3-city` and `run3-tribal`, through the
+assembler's `closeForRecord`), the journey each participant refusal came
+from, and the four limits that say what stays on the journey's word. No
+other value changed.

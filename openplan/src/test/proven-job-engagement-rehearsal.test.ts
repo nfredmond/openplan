@@ -5,8 +5,11 @@
  * README). The county journey's four files are the bytes the local app
  * exported; the town and tribal files are stand-ins holding the real files'
  * pdftotext pages and workbook cells. The record is refused for its local
- * origin and accepted with the hosted origin in its place; each change below
- * is then refused for the stated reason (KI-2026-11-14-370, -371).
+ * origin and rehearsal mode, and accepted with the hosted origin and proof
+ * mode written in by hand (a forgery, in this test only); each change below
+ * is then refused for the stated reason (KI-2026-11-14-370, -371). Lane 61
+ * added each journey's mode and close, and each participant refusal's
+ * journey, from lane 53's own run files (see the fixture README).
  *
  * Blind category: one rehearsal, one county journey's real bytes. A review
  * file the export writes differently in another place, or on the hosted
@@ -40,7 +43,11 @@ const readPdfPages = (path: string): string[] => (isStandIn(path) ? body(path).s
 const readWorkbook = (path: string): Sheets => (isStandIn(path) ? JSON.parse(body(path)) : xlsxSheets(path));
 const check = (record: Json, pages = readPdfPages) => validateProvenJobRecord(record, { repoRoot: root, readPdfPages: pages, readWorkbook });
 
-const hosted = (): Json => ({ ...structuredClone(RECORD), baseUrl: PROOF_ORIGIN });
+const hosted = (): Json => {
+  const record = { ...structuredClone(RECORD), baseUrl: PROOF_ORIGIN };
+  for (const entry of record.journeys) entry.mode = "proof";
+  return record;
+};
 const county = (record: Json) => record.journeys.find((entry: Json) => entry.role === "county");
 const entryOf = (record: Json, list: "pdfs" | "workbooks", kind: string) => county(record)[list].find((entry: Json) => entry.kind === kind);
 const rejectedText: string = county(RECORD).campaign.rejectedTexts[0];
@@ -81,9 +88,10 @@ function swapFile(record: Json, list: "pdfs" | "workbooks", into: string, from: 
 }
 
 describe("lane 53's engagement rehearsal record", () => {
-  it("is refused for its local origin and for nothing else", () => {
+  it("is refused for its local origin and rehearsal mode and for nothing else", () => {
     expect(RECORD.baseUrl).toMatch(/^http:\/\/localhost:/);
     expect(() => check(structuredClone(RECORD))).toThrow(/record\.baseUrl is not in the expected form/);
+    expect(() => check({ ...structuredClone(RECORD), baseUrl: PROOF_ORIGIN })).toThrow(/county journey ran in rehearsal mode; only a proof run is proof/);
     expect(() => check(hosted())).not.toThrow();
   });
 

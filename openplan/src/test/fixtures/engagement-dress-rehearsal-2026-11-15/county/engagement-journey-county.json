@@ -1,0 +1,1203 @@
+{
+  "schema": "openplan.engagement_job_journey_run.v1",
+  "jobId": "engagement-campaign-review-and-response-in-three-places",
+  "mode": "rehearsal",
+  "baseUrl": "http://localhost:3484",
+  "recordedOn": "2026-11-15",
+  "expectedCommit": null,
+  "inputsLabel": "Proof inputs for the engagement journey, Coos County, OR. Demonstration text typed by an automated OpenPlan proof run on November 14, 2026. It is not a consultation and speaks for no agency, tribe or resident.",
+  "inputsSha256": "ecedf9239c67792008dc787faa0e9c979a7bff29c0aa1d75a22992f72a4d858b",
+  "aiFeaturesUsed": false,
+  "aiStatement": "No AI feature was used: no translation, AI moderation, AI synthesis or AI drafting control was pressed. The staff review groups come from the app's own grouping, corrected and approved by the staff account.",
+  "confirmationTokenSha256": "9e7fa6aeb38e4f5cdd90f1acdd74016dd475126d028b20ebd11602382b6833bf",
+  "furthestStep": "health-end",
+  "stoppedAt": null,
+  "stepsDefined": [
+    "health-start",
+    "sign-up",
+    "confirm-email",
+    "create-project",
+    "set-study-place",
+    "record-decision",
+    "create-campaign",
+    "activate-campaign",
+    "contribute-map-point",
+    "contribute-no-map-point",
+    "contribute-keyboard-390",
+    "contribute-to-reject",
+    "moderate",
+    "staff-review",
+    "publish-response",
+    "link-decision",
+    "request-review-files",
+    "download-review-files",
+    "read-counts",
+    "search-rejected-text",
+    "screens",
+    "participant-checks",
+    "cross-workspace",
+    "close-campaign",
+    "health-end"
+  ],
+  "steps": [
+    {
+      "step": "health-start",
+      "startedAt": "2026-11-15T02:11:35Z",
+      "status": "passed",
+      "detail": "ok, commit 65aba74fb3bd, version 0.72.0",
+      "endedAt": "2026-11-15T02:11:35Z"
+    },
+    {
+      "step": "sign-up",
+      "startedAt": "2026-11-15T02:11:35Z",
+      "status": "passed",
+      "detail": "confirmation email_link",
+      "endedAt": "2026-11-15T02:11:54Z"
+    },
+    {
+      "step": "confirm-email",
+      "startedAt": "2026-11-15T02:11:54Z",
+      "status": "passed",
+      "detail": "token sha256 9e7fa6aeb38e4f5cdd90f1acdd74016dd475126d028b20ebd11602382b6833bf",
+      "endedAt": "2026-11-15T02:11:54Z"
+    },
+    {
+      "step": "create-project",
+      "startedAt": "2026-11-15T02:11:54Z",
+      "status": "passed",
+      "detail": "50f9a653-25bf-46dc-a2d3-1fa7bc3f515c",
+      "endedAt": "2026-11-15T02:12:03Z"
+    },
+    {
+      "step": "set-study-place",
+      "startedAt": "2026-11-15T02:12:03Z",
+      "status": "passed",
+      "detail": "Coos County, OR (county 41011)",
+      "endedAt": "2026-11-15T02:12:15Z"
+    },
+    {
+      "step": "record-decision",
+      "startedAt": "2026-11-15T02:12:15Z",
+      "status": "passed",
+      "detail": "proposed decision recorded",
+      "endedAt": "2026-11-15T02:12:56Z"
+    },
+    {
+      "step": "create-campaign",
+      "startedAt": "2026-11-15T02:12:56Z",
+      "status": "passed",
+      "detail": "fef9825b-bffa-47ed-b672-4d6b76e9d1b4",
+      "endedAt": "2026-11-15T02:13:20Z"
+    },
+    {
+      "step": "activate-campaign",
+      "startedAt": "2026-11-15T02:13:20Z",
+      "status": "passed",
+      "detail": "live",
+      "endedAt": "2026-11-15T02:14:29Z"
+    },
+    {
+      "step": "contribute-map-point",
+      "startedAt": "2026-11-15T02:14:29Z",
+      "status": "passed",
+      "detail": "map-point, pointer at 1440 px, 8017a499",
+      "endedAt": "2026-11-15T02:14:43Z"
+    },
+    {
+      "step": "contribute-no-map-point",
+      "startedAt": "2026-11-15T02:14:43Z",
+      "status": "passed",
+      "detail": "no-map-point, pointer at 1440 px, 47764f74",
+      "endedAt": "2026-11-15T02:14:52Z"
+    },
+    {
+      "step": "contribute-keyboard-390",
+      "startedAt": "2026-11-15T02:14:52Z",
+      "status": "passed",
+      "detail": "map-point, keyboard-only at 390 px, 03bfa1b3",
+      "endedAt": "2026-11-15T02:15:07Z"
+    },
+    {
+      "step": "contribute-to-reject",
+      "startedAt": "2026-11-15T02:15:07Z",
+      "status": "passed",
+      "detail": "no-map-point, pointer at 1440 px, 9db57e47",
+      "endedAt": "2026-11-15T02:15:16Z"
+    },
+    {
+      "step": "moderate",
+      "startedAt": "2026-11-15T02:15:16Z",
+      "status": "passed",
+      "detail": "mapPoint approved with its reason; noMapPoint approved with its reason; keyboard approved with its reason; rejected rejected with its reason",
+      "endedAt": "2026-11-15T02:15:44Z"
+    },
+    {
+      "step": "staff-review",
+      "startedAt": "2026-11-15T02:15:44Z",
+      "status": "passed",
+      "detail": "review 4b824280 revision 2 approved; 1 group(s)",
+      "endedAt": "2026-11-15T02:16:24Z"
+    },
+    {
+      "step": "publish-response",
+      "startedAt": "2026-11-15T02:16:24Z",
+      "status": "passed",
+      "detail": "response 1725bd54 published, answering 2",
+      "endedAt": "2026-11-15T02:17:19Z"
+    },
+    {
+      "step": "link-decision",
+      "startedAt": "2026-11-15T02:17:19Z",
+      "status": "passed",
+      "detail": "decision a6b79d2e; link 13335d82",
+      "endedAt": "2026-11-15T02:20:28Z"
+    },
+    {
+      "step": "request-review-files",
+      "startedAt": "2026-11-15T02:20:28Z",
+      "status": "passed",
+      "detail": "internal dd87e300, public 8e8eca09",
+      "endedAt": "2026-11-15T02:21:21Z"
+    },
+    {
+      "step": "download-review-files",
+      "startedAt": "2026-11-15T02:21:21Z",
+      "status": "passed",
+      "detail": "internal-pdf 189456 bytes; internal-xlsx 39802 bytes; public-pdf 125525 bytes; public-xlsx 18292 bytes",
+      "endedAt": "2026-11-15T02:21:26Z"
+    },
+    {
+      "step": "read-counts",
+      "startedAt": "2026-11-15T02:21:26Z",
+      "status": "passed",
+      "detail": "received 4, approved 3, rejected 1, published 1, answered 2: 10 surfaces agree",
+      "endedAt": "2026-11-15T02:21:46Z"
+    },
+    {
+      "step": "search-rejected-text",
+      "startedAt": "2026-11-15T02:21:46Z",
+      "status": "passed",
+      "detail": "27 public surfaces searched, none holds the rejected text or id; found in 2 internal controls",
+      "endedAt": "2026-11-15T02:22:15Z"
+    },
+    {
+      "step": "screens",
+      "startedAt": "2026-11-15T02:22:15Z",
+      "status": "passed",
+      "detail": "24 checks, 0 serious or critical axe nodes, 0 with page scroll",
+      "endedAt": "2026-11-15T02:24:35Z"
+    },
+    {
+      "step": "participant-checks",
+      "startedAt": "2026-11-15T02:24:35Z",
+      "status": "passed",
+      "detail": "campaign-read 401; campaign-export-read 401; rejected-item-history-read 401; review-pdf-download 401; review-xlsx-download 401; public read 200, staff fields none",
+      "endedAt": "2026-11-15T02:24:41Z"
+    },
+    {
+      "step": "cross-workspace",
+      "startedAt": "2026-11-15T02:24:41Z",
+      "status": "passed",
+      "detail": "review-pdf-download 404; review-xlsx-download 404; campaign-read 404; campaign-export-read 404; rejected-item-history-read 403; campaign-page 404 (not-found screen shown, 4 strings searched, none found)",
+      "endedAt": "2026-11-15T02:24:55Z"
+    },
+    {
+      "step": "close-campaign",
+      "startedAt": "2026-11-15T02:24:55Z",
+      "status": "passed",
+      "detail": "closed; the portal and about page show only the ended notice",
+      "endedAt": "2026-11-15T02:25:13Z"
+    },
+    {
+      "step": "health-end",
+      "startedAt": "2026-11-15T02:25:13Z",
+      "status": "passed",
+      "detail": "ok, commit 65aba74fb3bd, version 0.72.0",
+      "endedAt": "2026-11-15T02:25:13Z"
+    }
+  ],
+  "journey": {
+    "role": "county",
+    "place": {
+      "kind": "county",
+      "geoid": "41011",
+      "stateFips": [
+        "41"
+      ],
+      "label": "Coos County, OR"
+    },
+    "executors": [
+      {
+        "role": "staff",
+        "agent": "Claude Code",
+        "model": "claude-opus-5-5"
+      },
+      {
+        "role": "public-participant",
+        "agent": "Claude Code",
+        "model": "claude-opus-5-5"
+      }
+    ],
+    "accountCreatedAt": "2026-11-15T02:11:42Z",
+    "confirmationMethod": "email_link",
+    "health": [
+      {
+        "point": "start",
+        "checkedAt": "2026-11-15T02:11:35Z",
+        "status": "ok",
+        "commit": "65aba74fb3bd",
+        "version": "0.72.0",
+        "migrationsExpected": 455,
+        "migrationsLatest": "20261102140000"
+      },
+      {
+        "point": "end",
+        "checkedAt": "2026-11-15T02:25:13Z",
+        "status": "ok",
+        "commit": "65aba74fb3bd",
+        "version": "0.72.0",
+        "migrationsExpected": 455,
+        "migrationsLatest": "20261102140000"
+      }
+    ],
+    "campaign": {
+      "campaignId": "fef9825b-bffa-47ed-b672-4d6b76e9d1b4",
+      "projectId": "50f9a653-25bf-46dc-a2d3-1fa7bc3f515c",
+      "portalAddressKind": "share-token",
+      "aiFeaturesUsed": false,
+      "contributions": [
+        {
+          "commentId": "8017a499-b681-4ad5-b857-f78ccead4985",
+          "kind": "map-point",
+          "viewportWidth": 1440,
+          "input": "pointer"
+        },
+        {
+          "commentId": "47764f74-2f82-45d8-b737-59f40c023487",
+          "kind": "no-map-point",
+          "viewportWidth": 1440,
+          "input": "pointer"
+        },
+        {
+          "commentId": "03bfa1b3-de3a-4bca-9608-7949517b9ee4",
+          "kind": "map-point",
+          "viewportWidth": 390,
+          "input": "keyboard-only"
+        },
+        {
+          "commentId": "9db57e47-1409-4ddd-a0e4-ddaad1771133",
+          "kind": "no-map-point",
+          "viewportWidth": 1440,
+          "input": "pointer"
+        }
+      ],
+      "moderation": [
+        {
+          "commentId": "8017a499-b681-4ad5-b857-f78ccead4985",
+          "outcome": "approved",
+          "reasonRecorded": true
+        },
+        {
+          "commentId": "47764f74-2f82-45d8-b737-59f40c023487",
+          "outcome": "approved",
+          "reasonRecorded": true
+        },
+        {
+          "commentId": "03bfa1b3-de3a-4bca-9608-7949517b9ee4",
+          "outcome": "approved",
+          "reasonRecorded": true
+        },
+        {
+          "commentId": "9db57e47-1409-4ddd-a0e4-ddaad1771133",
+          "outcome": "rejected",
+          "reasonRecorded": true
+        }
+      ],
+      "rejectedTextSha256": [
+        "26bf43c6639f4b6146b924c164942b3e83b33634bc1c08a27a5874563265c024"
+      ],
+      "rejectedTexts": [
+        "Off-topic demonstration entry about a water meter reading. Entered by an automated proof run; it represents no one and is here to be withheld."
+      ],
+      "staffReview": {
+        "reviewId": "4b824280-8b9a-4aba-a006-9a087b5eef5b",
+        "revision": 2,
+        "approved": true,
+        "themes": [
+          {
+            "groupId": "category-1",
+            "commentIds": [
+              "47764f74-2f82-45d8-b737-59f40c023487",
+              "8017a499-b681-4ad5-b857-f78ccead4985"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "responseId": "1725bd54-215d-4f9a-8843-56b4a04a0a6a",
+        "status": "published",
+        "aiAssisted": false,
+        "sourceCommentIds": [
+          "8017a499-b681-4ad5-b857-f78ccead4985",
+          "47764f74-2f82-45d8-b737-59f40c023487"
+        ],
+        "decisionLinkId": "13335d82-5ec8-43ee-9abf-555f9bd58470",
+        "decisionId": "a6b79d2e-4d15-4c59-a7f5-5016ec9e3f33",
+        "projectId": "50f9a653-25bf-46dc-a2d3-1fa7bc3f515c"
+      }
+    },
+    "pdfs": [
+      {
+        "kind": "campaign-review",
+        "path": "files/county-internal-campaign-review.pdf",
+        "sha256": "640909739781575fdcfa5c5fc623ab8f1c7bca68f36606d865225112391c143b",
+        "bytes": 21173,
+        "pages": 11,
+        "draftStamp": false,
+        "items": [
+          {
+            "item": "scope-badge",
+            "page": 1,
+            "method": "pdftotext",
+            "text": "Internal review copy"
+          },
+          {
+            "item": "approved-count",
+            "page": 2,
+            "method": "pdftotext",
+            "text": "Approved 3"
+          },
+          {
+            "item": "rejected-count",
+            "page": 2,
+            "method": "pdftotext",
+            "text": "Withheld 1"
+          },
+          {
+            "item": "responded-count",
+            "page": 2,
+            "method": "pdftotext",
+            "text": "Answered 2"
+          }
+        ]
+      },
+      {
+        "kind": "campaign-review-public",
+        "path": "files/county-public-campaign-review.pdf",
+        "sha256": "291cdbb2c34106f40a615767b70cf6f4c1d08d34214f0e0db5b2ee7f3eb16446",
+        "bytes": 9678,
+        "pages": 6,
+        "draftStamp": false,
+        "items": [
+          {
+            "item": "scope-badge",
+            "page": 1,
+            "method": "pdftotext",
+            "text": "Public review copy"
+          }
+        ]
+      }
+    ],
+    "workbooks": [
+      {
+        "kind": "campaign-review",
+        "path": "files/county-internal-campaign-review.xlsx",
+        "sha256": "12607175e630bba7a27c4cce7cb6a749f0d142db782a14bae1bdeaa4715d19e1",
+        "bytes": 109938
+      },
+      {
+        "kind": "campaign-review-public",
+        "path": "files/county-public-campaign-review.xlsx",
+        "sha256": "5f8194dbb07fa6f8e928755293acafc564839d276a32c55d7d4cc062df99b82c",
+        "bytes": 8195
+      }
+    ],
+    "publicPage": {
+      "readings": [
+        {
+          "width": 1440,
+          "mode": "light",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        },
+        {
+          "width": 1440,
+          "mode": "dark",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        },
+        {
+          "width": 390,
+          "mode": "light",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        },
+        {
+          "width": 390,
+          "mode": "dark",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        }
+      ]
+    },
+    "screens": [
+      {
+        "screen": "portal",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "portal",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "portal",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "portal",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      }
+    ]
+  },
+  "crossWorkspace": {
+    "checks": [
+      {
+        "journey": "county",
+        "target": "campaign-review-pdf",
+        "request": "review-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "county",
+        "target": "campaign-review-workbook",
+        "request": "review-xlsx-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "county",
+        "target": "staff-campaign",
+        "request": "campaign-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "county",
+        "target": "campaign-export",
+        "request": "campaign-export-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "county",
+        "target": "rejected-item-history",
+        "request": "rejected-item-history-read",
+        "kind": "data",
+        "status": 403,
+        "contentReturned": false
+      },
+      {
+        "journey": "county",
+        "target": "staff-campaign",
+        "request": "campaign-page",
+        "kind": "page",
+        "status": 404,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "496f20fb70bf2e33cca7aed6d2ba7b5587f912f8821e38d2bf61db2064a76098",
+          "2a8589a248a21fa780a8db4d7753c3b0f9a526a5ecb8beed9565862b4cd3e76c",
+          "dc41a9b7d556f9ebfc459a6a5ca85ea73b4049e12a320180cee13426fece5548",
+          "cf77c528040604c1f647c618c74f6d40fc04d64a2b49ba51327f21a8428e617a"
+        ],
+        "searchedStringCount": 4
+      }
+    ]
+  },
+  "participantChecks": {
+    "refusals": [
+      {
+        "request": "campaign-read",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "request": "campaign-export-read",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "request": "rejected-item-history-read",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "request": "review-pdf-download",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "request": "review-xlsx-download",
+        "status": 401,
+        "contentReturned": false
+      }
+    ],
+    "publicRead": {
+      "request": "public-portal-read",
+      "status": 200,
+      "staffFieldsSearched": [
+        "moderation_notes",
+        "review_reason",
+        "metadata_json",
+        "respondent_fingerprint"
+      ],
+      "staffFieldsFound": false
+    }
+  },
+  "close": {
+    "attempted": true,
+    "closed": true,
+    "problems": [],
+    "error": null,
+    "reading": {
+      "saveStatus": 200,
+      "statusAfter": "closed",
+      "addresses": [
+        {
+          "name": "portal",
+          "status": 200,
+          "endedNoticeShown": true,
+          "campaignTextFound": false
+        },
+        {
+          "name": "about",
+          "status": 200,
+          "endedNoticeShown": true,
+          "campaignTextFound": false
+        }
+      ],
+      "publicReadStatusAfter": 404,
+      "closed": true,
+      "problems": []
+    }
+  },
+  "counts": [
+    {
+      "surface": "journey (moderation outcomes and the published response)",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "internal review PDF",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public review PDF",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "internal workbook Summary rows",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "internal workbook cells",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public workbook Summary rows",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public workbook cells",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public response page 1440 px light",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    },
+    {
+      "surface": "public response page 1440 px dark",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    },
+    {
+      "surface": "public response page 390 px light",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    },
+    {
+      "surface": "public response page 390 px dark",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    }
+  ],
+  "countPages": {
+    "internal": {
+      "received": 2,
+      "approved": 2,
+      "rejected": 2,
+      "pending": 2,
+      "flagged": 2,
+      "publishedResponses": 2,
+      "answered": 2
+    },
+    "public": {
+      "approved": 1,
+      "publishedResponses": 1,
+      "answered": 1
+    }
+  },
+  "rejectedTextSearch": {
+    "searchedSha256": [
+      "26bf43c6639f4b6146b924c164942b3e83b33634bc1c08a27a5874563265c024"
+    ],
+    "searched": [
+      "public review PDF",
+      "public review workbook (every cell)",
+      "portal page (text)",
+      "portal page (HTML)",
+      "public response page \"You said / We did\" at 1440 px light (text)",
+      "public response page \"You said / We did\" at 1440 px light (HTML)",
+      "public response page Comments at 1440 px light (text)",
+      "public response page Comments at 1440 px light (HTML)",
+      "public response page \"You said / We did\" at 1440 px dark (text)",
+      "public response page \"You said / We did\" at 1440 px dark (HTML)",
+      "public response page Comments at 1440 px dark (text)",
+      "public response page Comments at 1440 px dark (HTML)",
+      "public response page \"You said / We did\" at 390 px light (text)",
+      "public response page \"You said / We did\" at 390 px light (HTML)",
+      "public response page Comments at 390 px light (text)",
+      "public response page Comments at 390 px light (HTML)",
+      "public response page \"You said / We did\" at 390 px dark (text)",
+      "public response page \"You said / We did\" at 390 px dark (HTML)",
+      "public response page Comments at 390 px dark (text)",
+      "public response page Comments at 390 px dark (HTML)",
+      "GET 200 /engage/<token>/about",
+      "GET 200 /engage/<token>/about",
+      "GET 200 /engage/<token>/about",
+      "GET 200 /engage/<token>/about",
+      "GET 200 /engage/<token>",
+      "GET 200 /api/engage/<token>",
+      "GET 200 /api/engage/<token>"
+    ],
+    "controls": [
+      "internal review PDF",
+      "internal review workbook (every cell)"
+    ],
+    "hits": []
+  },
+  "findings": [],
+  "axeRules": [],
+  "consoleErrorsDuringJourney": 0,
+  "ids": {
+    "projectId": "50f9a653-25bf-46dc-a2d3-1fa7bc3f515c",
+    "decisionId": "a6b79d2e-4d15-4c59-a7f5-5016ec9e3f33",
+    "campaignId": "fef9825b-bffa-47ed-b672-4d6b76e9d1b4",
+    "reviewId": "4b824280-8b9a-4aba-a006-9a087b5eef5b",
+    "responseId": "1725bd54-215d-4f9a-8843-56b4a04a0a6a",
+    "reviewJobs": {
+      "internal": "dd87e300-8b5c-4417-b2b0-bdb588e9ea11",
+      "public": "8e8eca09-8c66-48d6-87ef-ace7119c7710"
+    },
+    "contributions": {
+      "mapPoint": "8017a499-b681-4ad5-b857-f78ccead4985",
+      "noMapPoint": "47764f74-2f82-45d8-b737-59f40c023487",
+      "keyboard": "03bfa1b3-de3a-4bca-9608-7949517b9ee4",
+      "rejected": "9db57e47-1409-4ddd-a0e4-ddaad1771133"
+    }
+  }
+}
