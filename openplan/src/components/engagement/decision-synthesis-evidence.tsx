@@ -22,7 +22,7 @@ export function DecisionSynthesisEvidence({ context }: { context: DecisionLinkCo
           <h5 className="mt-2 font-medium">Recorded approval</h5><p>Approved revision {event.approval.intent.revisionNo} at {event.approval.createdAt}.</p>
           <p className="whitespace-pre-wrap">Approval reason: {event.approval.intent.reason}</p><p className="break-all text-xs">Approval actor: {event.approval.intent.actorId}</p>
           <h5 className="mt-2 font-medium">Response at this action</h5><p>Revision {event.retained.responseHistory.revision}: {event.response.theme_title} · {event.response.status}</p>
-          <p className="whitespace-pre-wrap">You said: {event.response.you_said}</p><p className="whitespace-pre-wrap">Agency response: {event.response.we_did}</p>
+          <p className="whitespace-pre-wrap">You said: {event.response.you_said}</p><p className="whitespace-pre-wrap">Staff response: {event.response.we_did}</p>
           <details className="mt-2"><summary className="cursor-pointer">{event.members.length} retained source references</summary>
             <p>Source captured {event.source.capturedAt}. Selection: {JSON.stringify(event.source.selection)}.</p>
             <ol className="space-y-3">{event.members.map(member => <li key={member.key} className="mt-2">

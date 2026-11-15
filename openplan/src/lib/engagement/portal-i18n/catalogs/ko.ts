@@ -40,7 +40,7 @@ export const KO_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "현재 이 캠페인 페이지에 표시된 승인된 주민 의견입니다.",
   "page.defaultDescription": "이 프로젝트에 대한 의견을 보내 주십시오. 의견은 검토 후 공개됩니다.",
   "closed.title": "의견 접수 기간이 끝났습니다.",
-  "closed.body": "더 이상 의견을 받지 않습니다. 문의 사항이 있으시면 이 링크를 보낸 시, 카운티 또는 기관에 연락해 주십시오.",
+  "closed.body": "더 이상 의견을 받지 않습니다. 문의 사항이 있으시면 이 링크를 보낸 시, 카운티, 부족 정부 또는 기관에 연락해 주십시오.",
   "portal.tab.submit": "의견 남기기",
   "portal.tab.feedback": "의견",
   "portal.tab.survey": "설문조사",

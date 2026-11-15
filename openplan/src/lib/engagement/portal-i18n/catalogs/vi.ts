@@ -40,7 +40,7 @@ export const VI_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Các ý kiến cộng đồng đã được duyệt và hiện đang hiển thị trên trang chiến dịch này.",
   "page.defaultDescription": "Hãy chia sẻ ý kiến của quý vị về dự án này. Ý kiến được xem xét trước khi công khai.",
   "closed.title": "Thời gian nhận ý kiến đã kết thúc.",
-  "closed.body": "Chúng tôi không còn nhận ý kiến. Nếu có thắc mắc, xin liên hệ thành phố, quận hạt hoặc cơ quan đã gửi cho quý vị liên kết này.",
+  "closed.body": "Chúng tôi không còn nhận ý kiến. Nếu có thắc mắc, xin liên hệ thành phố, quận hạt, chính quyền bộ lạc hoặc cơ quan đã gửi cho quý vị liên kết này.",
   "portal.tab.submit": "Góp ý",
   "portal.tab.feedback": "Ý kiến",
   "portal.tab.survey": "Khảo sát",

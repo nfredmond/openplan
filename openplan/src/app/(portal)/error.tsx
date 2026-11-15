@@ -30,8 +30,8 @@ export default function PortalError({
           Please try loading this page again in a moment.
         </p>
         <p className="text-base leading-7 text-muted-foreground">
-          If it keeps happening, contact the city, county or agency that sent you this link and tell them the page would
-          not open.
+          If it keeps happening, contact the city, county, tribal government or agency that sent you this link and tell
+          them the page would not open.
         </p>
         {error.digest ? <p className="text-sm text-muted-foreground">Reference: {error.digest}</p> : null}
       </div>

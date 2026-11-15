@@ -273,7 +273,9 @@ describe("a closed campaign's public page", () => {
     const notice = screen.getByTestId("closed-campaign-notice");
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("This comment period has ended.");
     expect(notice.textContent).toContain("Comments are no longer being accepted.");
-    expect(notice.textContent).toContain("contact the city, county or agency that sent you this link");
+    expect(notice.textContent).toContain(
+      "contact the city, county, tribal government or agency that sent you this link"
+    );
 
     expectNoticeOnly(container);
     expect(notFoundMock).not.toHaveBeenCalled();
@@ -298,7 +300,9 @@ describe("a closed campaign's public page", () => {
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
       "Este período de comentarios ha terminado."
     );
-    expect(screen.getByTestId("closed-campaign-notice").textContent).toContain("Ya no se aceptan comentarios.");
+    const notice = screen.getByTestId("closed-campaign-notice");
+    expect(notice.textContent).toContain("Ya no se aceptan comentarios.");
+    expect(notice.textContent).toContain("el condado, el gobierno tribal o la agencia");
     expectNoticeOnly(container);
   });
 

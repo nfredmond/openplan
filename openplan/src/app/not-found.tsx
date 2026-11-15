@@ -34,7 +34,7 @@ export default function NotFound() {
         description="The web address may have a small mistake in it, or the page may have been taken down. If you typed it from a postcard, a letter, a flyer or a poster, it is worth checking it once more. One wrong character is enough to end up here."
         detail={
           <p className="text-sm">
-            If you were sent this link by a city, county or agency and it still does not work, contact
+            If you were sent this link by a city, county, tribal government or agency and it still does not work, contact
             them and tell them the address you used. They can send you the right one.
           </p>
         }

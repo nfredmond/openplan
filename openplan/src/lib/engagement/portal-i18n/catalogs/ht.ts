@@ -40,7 +40,7 @@ export const HT_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Kòmantè kominote a ki apwouve epi ki parèt kounye a sou paj kanpay sa a.",
   "page.defaultDescription": "Bay opinyon ou sou pwojè sa a. Nou revize kòmantè yo anvan yo parèt piblikman.",
   "closed.title": "Peryòd kòmantè sa a fini.",
-  "closed.body": "Nou pa aksepte kòmantè ankò. Si ou gen yon kesyon, kontakte vil la, konte a oswa ajans ki te voye lyen sa a ba ou.",
+  "closed.body": "Nou pa aksepte kòmantè ankò. Si ou gen yon kesyon, kontakte vil la, konte a, gouvènman tribi a oswa ajans ki te voye lyen sa a ba ou.",
   "portal.tab.submit": "Ajoute yon kòmantè",
   "portal.tab.feedback": "Kòmantè",
   "portal.tab.survey": "Sondaj",

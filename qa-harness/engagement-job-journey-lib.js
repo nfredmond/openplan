@@ -502,10 +502,13 @@ function staffFieldsIn(value, fields) {
  * with status Closed, and every public address read afterward shows the ended
  * notice and none of the campaign's own strings (title, comments).
  */
-function closeVerdict({ saveStatus, statusAfter, addresses }) {
+function closeVerdict({ saveStatus, statusAfter, addresses, neverPublic = false }) {
   const problems = [];
   if (saveStatus !== 200) problems.push(`the save answered ${saveStatus}`);
   if (statusAfter !== 'closed') problems.push(`the status reads ${statusAfter}`);
+  // A journey that stopped before it made a public link has no address to
+  // read: the campaign was never public, and closing it is the whole job.
+  if (neverPublic) return { closed: problems.length === 0, problems, neverPublic: true };
   if (!addresses || addresses.length === 0) problems.push('no public address was read');
   for (const address of addresses || []) {
     if (!address.endedNoticeShown) problems.push(`${address.name} does not show the ended notice`);
@@ -638,7 +641,91 @@ function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, r
   };
 }
 
+// ---------------------------------------------------------------------------
+// The demonstration's own public text
+// ---------------------------------------------------------------------------
+
+/**
+ * The template the journey makes its campaign from, and the opening of the
+ * public text that template applies at creation
+ * (openplan/src/lib/engagement/campaign-templates.ts). A demonstration must
+ * never show it: on the 2026-11-15 dress rehearsal it told residents of the
+ * Hopi Reservation that "the project team" would study their comments.
+ */
+const CAMPAIGN_TEMPLATE = Object.freeze({
+  id: 'corridor-safety-study',
+  publicSentence: 'We are studying traffic safety in this area',
+});
+
+function sentencesOf(text) {
+  return String(text).replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter(Boolean);
+}
+
+/**
+ * The sentences that show the invitation is on a surface: its first sentence,
+ * and its first sentence the campaign title does not also hold. The inputs
+ * open the title and the invitation with the same sentence, so the first
+ * sentence alone is found on any page that shows the title.
+ */
+function invitationMarkers(invitation, title) {
+  const sentences = sentencesOf(invitation);
+  if (!sentences.length) throw new Error('The invitation has no sentence to look for.');
+  return {
+    firstSentence: sentences[0],
+    ownSentence: sentences.find((sentence) => !squash(title).includes(squash(sentence))) || null,
+  };
+}
+
+/**
+ * Read one surface for the demonstration's own text. A page is { name, text,
+ * html }: the invitation must be in the text a participant sees, and the
+ * template's sentence must be in neither the text nor the HTML (a link
+ * preview reads the HTML). A PDF is { name, pages }, read with the shared
+ * PDF matcher. Returns the reading with `readsAsDemonstration` and the
+ * problems that refuse it.
+ */
+function readDemonstrationText({ surface, invitation, title, templateSentence = CAMPAIGN_TEMPLATE.publicSentence, createdWith = '', requireInvitation = true }) {
+  const markers = invitationMarkers(invitation, title);
+  // What the campaign was created with must be gone too, whatever template
+  // made it: every sentence of that text the invitation does not also hold.
+  const createdWithSentences = sentencesOf(createdWith)
+    .filter((sentence) => squash(sentence).length >= 12 && !squash(invitation).includes(squash(sentence)));
+  const shown = (phrase) => (surface.pages
+    ? surface.pages.some((page) => pdfTextHasPhrase(page, phrase))
+    : textHolds(surface.text || '', phrase));
+  const anywhere = (phrase) => shown(phrase) || (!surface.pages && textHolds(surface.html || '', phrase));
+  const reading = {
+    surface: surface.name,
+    invitationFirstSentence: markers.firstSentence,
+    invitationFirstSentenceFound: shown(markers.firstSentence),
+    invitationOwnSentence: markers.ownSentence,
+    invitationOwnSentenceFound: markers.ownSentence ? shown(markers.ownSentence) : false,
+    templateSentence,
+    templateSentenceFound: anywhere(templateSentence),
+    createdWithSentencesLookedFor: createdWithSentences.length,
+    createdWithSentencesFound: createdWithSentences.filter(anywhere),
+    invitationRequired: requireInvitation,
+  };
+  const problems = [];
+  if (requireInvitation) {
+    if (!reading.invitationFirstSentenceFound) problems.push(`${surface.name} does not show the invitation's first sentence`);
+    if (!markers.ownSentence) problems.push(`the invitation has no sentence the campaign title lacks, so ${surface.name} cannot show that the invitation is there`);
+    else if (!reading.invitationOwnSentenceFound) problems.push(`${surface.name} does not show the invitation's sentence "${markers.ownSentence.slice(0, 60)}"`);
+  }
+  if (reading.templateSentenceFound) problems.push(`${surface.name} shows the template's text "${templateSentence}"`);
+  for (const sentence of reading.createdWithSentencesFound) problems.push(`${surface.name} shows text the campaign was created with: "${sentence.slice(0, 60)}"`);
+  return { ...reading, readsAsDemonstration: problems.length === 0, problems };
+}
+
+/** Refuse unless every reading shows the invitation and none shows the template's text. */
+function assertReadsAsDemonstration(readings) {
+  if (!readings || readings.length === 0) throw new Error('No surface was read for the demonstration\'s text.');
+  const problems = readings.flatMap((reading) => reading.problems);
+  if (problems.length) throw new Error(`The campaign does not read as a demonstration: ${problems.join('; ')}.`);
+}
+
 module.exports = {
+  CAMPAIGN_TEMPLATE,
   COUNT_NAMES,
   DEMONSTRATION_LABEL,
   JOB_ID,
@@ -647,6 +734,7 @@ module.exports = {
   REHEARSAL_LABEL,
   assembleEngagementRecord,
   assertCountsAgree,
+  assertReadsAsDemonstration,
   assertRejectedTextAbsent,
   buildEngagementJourney,
   closeVerdict,
@@ -656,6 +744,7 @@ module.exports = {
   loadJobDefinition,
   parseEngagementArgs,
   publicReviewPdfItems,
+  readDemonstrationText,
   readPublicPageCounts,
   readReviewPdfCounts,
   readReviewWorkbookCounts,

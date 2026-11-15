@@ -40,7 +40,7 @@ export const HMN_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Cov tswv yim ntawm zej zog uas tau pom zoo thiab tam sim no pom tau ntawm nplooj ntawv no.",
   "page.defaultDescription": "Qhia koj lub tswv yim txog txoj haujlwm no. Cov tswv yim raug rov saib ua ntej muab qhia rau pej xeem.",
   "closed.title": "Lub sijhawm txais tswv yim no xaus lawm.",
-  "closed.body": "Tsis txais tswv yim ntxiv lawm. Yog koj muaj lus nug, thov hu rau lub nroog, lub county los yog lub koom haum uas xa qhov txuas no rau koj.",
+  "closed.body": "Tsis txais tswv yim ntxiv lawm. Yog koj muaj lus nug, thov hu rau lub nroog, lub county, tsoom fwv pab pawg neeg los yog lub koom haum uas xa qhov txuas no rau koj.",
   "portal.tab.submit": "Ntxiv ib lub tswv yim",
   "portal.tab.feedback": "Cov tswv yim",
   "portal.tab.survey": "Daim ntawv nug",

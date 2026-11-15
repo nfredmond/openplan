@@ -40,7 +40,7 @@ export const PL_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Zatwierdzone wpisy mieszkańców widoczne obecnie na stronie tych konsultacji.",
   "page.defaultDescription": "Prosimy podzielić się opinią o tym projekcie. Komentarze są sprawdzane przed publikacją.",
   "closed.title": "Okres zbierania komentarzy się zakończył.",
-  "closed.body": "Komentarze nie są już przyjmowane. W razie pytań prosimy o kontakt z miastem, hrabstwem lub instytucją, która przesłała ten link.",
+  "closed.body": "Komentarze nie są już przyjmowane. W razie pytań prosimy o kontakt z miastem, hrabstwem, władzami plemiennymi lub instytucją, która przesłała ten link.",
   "portal.tab.submit": "Dodaj komentarz",
   "portal.tab.feedback": "Komentarze",
   "portal.tab.survey": "Ankieta",

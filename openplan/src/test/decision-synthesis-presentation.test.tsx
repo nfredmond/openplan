@@ -37,8 +37,8 @@ describe("retained decision synthesis presentation", () => {
     expect(screen.getByText("Action 1: link · review revision 1")).toBeInTheDocument();
     expect(screen.getByText("Action 2: refresh · review revision 1")).toBeInTheDocument();
     expect(screen.getByText("Action 3: withdraw · review revision 1")).toBeInTheDocument();
-    expect(screen.getAllByText(/Agency response: SYNTHETIC staff explanation é/)).toHaveLength(1);
-    expect(screen.getAllByText("Agency response: SYNTHETIC corrected response")).toHaveLength(2);
+    expect(screen.getAllByText(/Staff response: SYNTHETIC staff explanation é/)).toHaveLength(1);
+    expect(screen.getAllByText("Staff response: SYNTHETIC corrected response")).toHaveLength(2);
     expect(screen.getAllByText("Approval reason: SYNTHETIC exact private approval")).toHaveLength(3);
     expect(screen.getAllByText(/SYNTHETIC retained staff interpretation of the issue/)).toHaveLength(6);
     expect(screen.getAllByText("Review notes: SYNTHETIC retained review notes and unresolved concern")).toHaveLength(3);

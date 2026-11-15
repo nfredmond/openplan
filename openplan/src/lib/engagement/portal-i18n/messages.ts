@@ -145,7 +145,7 @@ export const EN_PORTAL_MESSAGES = {
   // printed postcard. It is the whole page: nothing from the campaign is shown.
   "closed.title": "This comment period has ended.",
   "closed.body":
-    "Comments are no longer being accepted. If you have a question, contact the city, county or agency that sent you this link.",
+    "Comments are no longer being accepted. If you have a question, contact the city, county, tribal government or agency that sent you this link.",
 
   // ------------------------------------------------------------------ portal
   "portal.tab.submit": "Add a comment",
@@ -633,7 +633,7 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
 
   "closed.title": "Este período de comentarios ha terminado.",
   "closed.body":
-    "Ya no se aceptan comentarios. Si tiene alguna pregunta, comuníquese con la ciudad, el condado o la agencia que le envió este enlace.",
+    "Ya no se aceptan comentarios. Si tiene alguna pregunta, comuníquese con la ciudad, el condado, el gobierno tribal o la agencia que le envió este enlace.",
 
 
   "portal.tab.submit": "Agregar un comentario",
