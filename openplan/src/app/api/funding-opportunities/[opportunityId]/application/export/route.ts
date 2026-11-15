@@ -8,6 +8,7 @@ import { loadFinalizerNames, type FinalizerNames } from "@/lib/grants/applicatio
 import { evidenceAppendixProgramFor, evidenceAppendixSelectionSchema } from "@/lib/grants/evidence-appendix-keys";
 import { summarizeEvidenceAppendices } from "@/lib/grants/evidence-appendices";
 import { assembleEvidenceAppendices, type AssembledEvidenceAppendices } from "@/lib/grants/evidence-appendix-programs";
+import { loadApplicationApplicant } from "@/lib/grants/application-applicant";
 import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -427,6 +428,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
     }
     const evidenceAppendices = assembled?.appendices;
+    // The cover names the project and the workspace. The appendix loader's
+    // project read is reused when it found the name.
+    const applicant = await loadApplicationApplicant(supabase, {
+      workspaceId: opportunity.workspace_id,
+      projectId: typeof opportunity.project_id === "string" ? opportunity.project_id : null,
+      projectName: assembled?.projectName,
+    });
 
     // Finalizers print as this workspace's roles, never as user ids or emails. The
     // roster is read with the service role behind its own membership check.
@@ -470,6 +478,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       evidenceAppendices,
       evidenceAppendixFrame: assembled?.frame,
       calendar,
+      applicant,
     });
 
     // The register row records the PDF's hash and appendix manifest. Ask for

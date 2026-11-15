@@ -380,7 +380,7 @@ describe("the report's safety action plan carries engagement, BCA and the map (D
     expect(support.networkMap).toMatchObject({ kind: "drawn", segmentCount: rows });
     expect(html.match(HIGHLIGHT)).toHaveLength(rows);
     expect(html.match(/<tbody>[\s\S]*?<\/tbody>/)![0].match(/<tr>/g)).toHaveLength(rows);
-    expect(text(html)).toContain(`High-injury network map. All ${rows} ranked segments in the table are drawn in red and numbered by rank.`);
+    expect(text(html)).toContain(`High-injury network map. All ${rows} ranked segments in the table are drawn in red, each marked with its number from the table's No. column.`);
     // The study area is drawn as the dashed outline.
     expect(html).toContain('stroke-dasharray="8 5"');
   });
@@ -400,7 +400,7 @@ describe("SS4A appendices A, C and the crash sentences (D14, D15, D17, D18)", ()
     const westward = { id: "west", name: "West Road", geometry: { type: "LineString" as const, coordinates: [[-100.0, 40.01], [-100.2, 40.01]] as [number, number][] },
       sourceId: "us-census-tiger-line-cache" as const, sourceLabel: "U.S. Census TIGER/Line roads", vintage: "2024" };
     const svg = renderSafetyStreetContextSvg({ roads: [westward], crashLocations: [], projectGeometry: null,
-      highlights: network.segments.map((segment) => ({ rank: segment.rank, geometry: segment.geometry })) })!;
+      highlights: network.segments.map((segment, index) => ({ number: index + 1, geometry: segment.geometry })) })!;
     const xs = [...svg.matchAll(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g)].map((match) => Number(match[1]));
     expect(Math.max(...xs)).toBeLessThan(760 * 2);
   });

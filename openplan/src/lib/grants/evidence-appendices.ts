@@ -31,6 +31,7 @@ import { formatSavedDate, type ProjectBcaScreeningSummary } from "@/lib/grants/b
 import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import { buildEngagementFactClaims, type ProjectEngagementEvidence } from "@/lib/grants/engagement-evidence";
 import { buildStaffReviewFindingClaims, type StaffReviewRead } from "@/lib/engagement/staff-review-finding";
+import { getCrashSourceById } from "@/lib/safety/sources/registry";
 
 export type EvidenceAppendixStatus = "included" | "missing" | "unreadable" | "omitted";
 
@@ -145,11 +146,59 @@ function money(value: number | null): string {
   return value === null ? "Not calculated" : formatUsd(value);
 }
 
+/**
+ * The workbench's calculation status as a reader says it. The stored values
+ * (`calculated`, `review-required`, `incomplete`) are the engine's own words
+ * and stay in the saved analysis.
+ */
+const BCA_CALCULATION_STATUS_LABELS: Record<string, string> = {
+  calculated: "Calculated",
+  "review-required": "Calculated, with checks open for review",
+  incomplete: "Incomplete",
+};
+function bcaCalculationStatusLabel(status: string): string {
+  return BCA_CALCULATION_STATUS_LABELS[status] ?? status;
+}
+
+/** The calculation method a stored engine version names. An unknown version prints as stored. */
+const BCA_ENGINE_LABELS: Record<string, string> = {
+  [WORKBENCH_ENGINE_VERSION]: "OpenPlan annual ledger, version 1",
+  "openplan-bca-ts": "OpenPlan screening calculator",
+};
+function bcaEngineLabel(version: string): string {
+  return BCA_ENGINE_LABELS[version] ?? version;
+}
+
+/** A high-injury segment as the document it prints in numbers it. */
+export type BcaSegmentRow = { number: number; location: string | null };
+
+/**
+ * A stored input locator as a reader can follow it. Safety streams store
+ * `Safety plan "<title>", segment <segment id>, acquisition <id>, source <source id>`.
+ * The segment id is a key no screen shows, so it prints as the row of this
+ * document's high-injury network table, with its location; the source id
+ * prints as the source's name. The acquisition id stays: it names a record a
+ * reviewer can open in Safety. The saved analysis and its input hash are not
+ * changed.
+ */
+function bcaLocatorForPrint(locator: string, segmentRows: ReadonlyMap<string, BcaSegmentRow> = new Map()): string {
+  return locator
+    .replace(/(^|, )segment ((?:road|grid):[^,\s]+)(?=,|$)/g, (_match, lead: string, segmentId: string) => {
+      const row = segmentRows.get(segmentId);
+      if (!row) return `${lead}a high-injury segment not listed in this document`;
+      return `${lead}high-injury network row No. ${row.number}${row.location ? `, ${row.location}` : ""}`;
+    })
+    .replace(/(^|, )source ([a-z0-9]+(?:-[a-z0-9]+)+)$/, (_match, lead: string, sourceId: string) =>
+      `${lead}source ${getCrashSourceById(sourceId)?.label ?? "not in this installation's crash source list"}`);
+}
+
 /** The latest saved benefit-cost analysis (workbench version) or screening for the linked project. */
 export function bcaEvidenceAppendix<K extends string>(
   shell: EvidenceAppendixShell<K>,
   read: ProjectBcaRead,
-  projectId: string | null
+  projectId: string | null,
+  /** This document's high-injury rows by segment id, so a safety input names its row. */
+  segmentRows: ReadonlyMap<string, BcaSegmentRow> = new Map()
 ): EvidenceAppendix<K> {
   if (read.status === "no_project") return absentEvidenceAppendix(shell, "missing", NO_PROJECT_REASON);
   if (read.status === "absent") return absentEvidenceAppendix(shell, "missing", "No benefit-cost analysis or screening is saved for the linked project.");
@@ -170,7 +219,7 @@ export function bcaEvidenceAppendix<K extends string>(
         { label: "Analysis horizon", value: `${s.analysisHorizonYears} years` },
         { label: "Real discount rate", value: `${s.discountRatePct}%` },
         { label: "Base year", value: String(s.baseYear) },
-        { label: "Engine", value: s.engineVersion },
+        { label: "Engine", value: bcaEngineLabel(s.engineVersion) },
       ],
       table: null,
       figureSvg: null,
@@ -205,18 +254,18 @@ export function bcaEvidenceAppendix<K extends string>(
     facts: [
       { label: "Analysis", value: doc.title },
       { label: "Program profile", value: `${profile?.title ?? doc.programId}, edition ${doc.programVersion}` },
-      { label: "Calculation status", value: result.status },
+      { label: "Calculation status", value: bcaCalculationStatusLabel(result.status) },
       { label: "Benefit-cost ratio", value: result.benefitCostRatio?.toFixed(3) ?? "Not calculated" },
       { label: "Net present value", value: money(result.netPresentValue) },
       { label: "Present-value numerator", value: money(result.presentValueBenefits) },
       { label: "Present-value denominator", value: money(result.presentValueCosts) },
       { label: "Open checks", value: `${errors} blocking, ${reviews} for review` },
-      { label: "Engine", value: storedEngine === WORKBENCH_ENGINE_VERSION ? storedEngine : `Saved with ${storedEngine}; recalculated with ${WORKBENCH_ENGINE_VERSION}` },
+      { label: "Engine", value: storedEngine === WORKBENCH_ENGINE_VERSION ? bcaEngineLabel(storedEngine) : `Saved with ${bcaEngineLabel(storedEngine)}; recalculated with ${bcaEngineLabel(WORKBENCH_ENGINE_VERSION)}` },
     ],
-    table: bcaInputSourceTable(doc),
+    table: bcaInputSourceTable(doc, segmentRows),
     figureSvg: null,
     notes: [
-      `Calculation status: ${result.status}. Responsible analyst review and program acceptance are not established by this calculation.`,
+      `Calculation status: ${bcaCalculationStatusLabel(result.status).toLowerCase()}. Responsible analyst review and program acceptance are not established by this calculation.`,
       ...(result.complete ? [] : ["These subtotals omit incomplete streams. They are not a project result."]),
       ...(doc.evidence.some((entry) => entry.status !== "documented")
         ? ["Inputs marked as an assumption, missing or model screening are not documented values. Each needs a source before the analysis is relied on."]
@@ -236,7 +285,7 @@ const BCA_EVIDENCE_STATUS_LABELS: Record<string, string> = {
 };
 
 /** Each input source the analysis records, how many streams cite it, and its stated limitation. */
-function bcaInputSourceTable(doc: BcaDocument): EvidenceAppendix["table"] {
+function bcaInputSourceTable(doc: BcaDocument, segmentRows: ReadonlyMap<string, BcaSegmentRow>): EvidenceAppendix["table"] {
   if (doc.evidence.length === 0) return null;
   const citations = new Map<string, number>();
   for (const flow of doc.flows) {
@@ -250,7 +299,7 @@ function bcaInputSourceTable(doc: BcaDocument): EvidenceAppendix["table"] {
       entry.title || "Untitled source",
       BCA_EVIDENCE_STATUS_LABELS[entry.status] ?? entry.status,
       String(citations.get(entry.id) ?? 0),
-      [entry.reference, entry.locator].filter((part) => part.trim()).join(", ") || "Not recorded",
+      [entry.reference, bcaLocatorForPrint(entry.locator, segmentRows)].filter((part) => part.trim()).join(", ") || "Not recorded",
       entry.limitation.trim() || "None stated",
     ]),
   };

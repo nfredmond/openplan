@@ -23,6 +23,7 @@ import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-ori
  *  - Every time prints on the workspace calendar with its zone named.
  */
 
+import { applicantNameLabel, type ApplicationApplicant } from "@/lib/grants/application-applicant";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
@@ -121,6 +122,8 @@ export type GrantApplicationExportData = {
   evidenceAppendixFrame?: EvidenceAppendixFrame;
   /** The workspace calendar every time prints on. Absent means UTC, said out loud. */
   calendar?: WorkspaceCalendar;
+  /** The linked project and the workspace, printed on the cover. Absent prints neither. */
+  applicant?: ApplicationApplicant;
 };
 
 /** The document label per pursuit kind, used in the title and cover eyebrow. */
@@ -273,14 +276,19 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
   const isProposal = opportunity.pursuit_kind === "proposal";
   const finalCount = data.sections.filter((entry) => entry.section.status === "final").length;
 
-  const coverFacts = isProposal
+  const applicantFacts = data.applicant
     ? `
+      <div><dt>Project</dt><dd>${esc(applicantNameLabel(data.applicant.project))}</dd></div>
+      <div><dt>Workspace</dt><dd>${esc(applicantNameLabel(data.applicant.workspace))}</dd></div>`
+    : "";
+  const coverFacts = isProposal
+    ? `${applicantFacts}
       <div><dt>Issuing agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
       <div><dt>Solicitation number</dt><dd>${esc(opportunity.solicitation_number ?? "Not set")}</dd></div>
       <div><dt>Proposals due</dt><dd>${esc(formatDateTime(opportunity.closes_at, calendar))}</dd></div>
       <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
       <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt, calendar))}</dd></div>`
-    : `
+    : `${applicantFacts}
       <div><dt>Funder / agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
       <div><dt>Program</dt><dd>${esc(data.programTitle ?? "Not linked")}</dd></div>
       <div><dt>Expected award</dt><dd>${esc(formatAmount(opportunity.expected_award_amount))}</dd></div>

@@ -519,8 +519,14 @@ describe("the network markers (D7)", () => {
     expect(paint["circle-opacity"]).toEqual(["interpolate", ["linear"], ["zoom"], 12, 0.85, 14, 0]);
   });
 
-  it("puts a road piece's marker on the line itself", () => {
+  it("puts a road piece's marker on the line itself, halfway along it", () => {
+    // Halfway along the piece: the point its printed location names (KI-2026-11-14-304).
     const markers = highInjuryNetworkMarkerCollection(highInjuryNetworkFeatureCollection(network()));
-    expect(markers.features.map((feature) => feature.geometry.coordinates)).toEqual([[-99.99, 40], [-99.99, 40.01]]);
+    const points = markers.features.map((feature) => feature.geometry.coordinates);
+    expect(points).toHaveLength(2);
+    for (const [index, [lon, lat]] of points.entries()) {
+      expect(lon).toBeCloseTo(-99.995, 9);
+      expect(lat).toBeCloseTo([40, 40.01][index], 9);
+    }
   });
 });

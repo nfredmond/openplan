@@ -179,7 +179,11 @@ describe("SS4A application export with evidence appendices", () => {
     for (const title of ["Appendix A. High-injury network map", "Appendix B. Crash summary", "Appendix C. Countermeasures", "Appendix D. Benefit-cost summary", "Appendix E. Engagement summary"]) {
       expect(html).toContain(title);
     }
-    expect(html).toContain('aria-label="Ranked high-injury network segments, numbered by rank"');
+    expect(html).toContain('aria-label="Ranked high-injury network segments, numbered by table row"');
+    // The cover names the project from the appendix loader's own read; the
+    // workspace read has no table here, so it says it could not be read.
+    expect(html).toContain("<div><dt>Project</dt><dd>Example safety project</dd></div>");
+    expect(html).toContain("<div><dt>Workspace</dt><dd>Could not be read</dd></div>");
     expect(html).toContain(snapshot.hash);
     expect(html).toContain(EVIDENCE_IDS.bcaVersion);
     expect(html).toContain(EVIDENCE_IDS.campaign);

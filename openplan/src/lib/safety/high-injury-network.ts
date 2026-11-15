@@ -28,7 +28,7 @@
 
 import type { CrashSeverity } from "./sources/types";
 import { isCrashSeverityCompleteness, separatesSeriousInjuries } from "./serious-injury-availability";
-import { matchSafetyRoadIdentity, type SafetyRoadContextFeature } from "./road-context";
+import { matchSafetyRoadIdentity, roadDisplayName, type SafetyRoadContextFeature } from "./road-context";
 
 export type HighInjuryNetworkBasis = "ksi" | "fatal_only";
 export type HighInjuryNetworkMethod = "road_segments" | "grid_cells";
@@ -464,7 +464,8 @@ function roadCandidates(
     const crashesPerMile = tally.crashCount / rateMiles;
     return {
       id: piece.id,
-      label: piece.roadName,
+      // The display name; the id above keys on the stored name.
+      label: roadDisplayName(piece.roadName),
       geometry: { type: "LineString", coordinates: piece.coordinates },
       lengthMiles,
       crashCount: tally.crashCount,
@@ -702,6 +703,47 @@ export function describeHighInjuryNetworkTie(
   return `All ${rows.length.toLocaleString("en-US")} listed ${items} are tied at rank ${rows[0].rank}, so this list is not a ranking.`;
 }
 
+/**
+ * Where a listed segment sits, as one point: halfway along a road piece, or the
+ * center of a grid square. The map's numbered mark and the printed location
+ * both use it, so the number a reader sees and the coordinates beside the row
+ * name the same place. Null when the geometry holds no usable position.
+ */
+export function highInjuryNetworkSegmentAnchor(geometry: LineGeometry | PolygonGeometry): [number, number] | null {
+  if (geometry.type === "Polygon") {
+    const ring = geometry.coordinates[0] ?? [];
+    if (ring.length === 0) return null;
+    const lons = ring.map(([lon]) => lon);
+    const lats = ring.map(([, lat]) => lat);
+    return [(Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2];
+  }
+  const coordinates = geometry.coordinates;
+  if (coordinates.length === 0) return null;
+  if (coordinates.length === 1) return coordinates[0];
+  const lengths = coordinates.slice(1).map((position, index) => haversineMeters(coordinates[index], position));
+  const half = lengths.reduce((sum, length) => sum + length, 0) / 2;
+  let walked = 0;
+  for (let index = 0; index < lengths.length; index += 1) {
+    if (walked + lengths[index] >= half && lengths[index] > 0) {
+      return interpolate(coordinates[index], coordinates[index + 1], (half - walked) / lengths[index]);
+    }
+    walked += lengths[index];
+  }
+  return coordinates[coordinates.length - 1];
+}
+
+/**
+ * The printed location of a listed segment: "near 39.4989, -121.0184"
+ * (latitude, longitude of its anchor, to about 10 meters). Tied rows on the
+ * same road carry the same name; this is what tells them apart. Null when the
+ * geometry holds no usable position.
+ */
+export function describeHighInjuryNetworkLocation(geometry: LineGeometry | PolygonGeometry): string | null {
+  const anchor = highInjuryNetworkSegmentAnchor(geometry);
+  if (!anchor || !Number.isFinite(anchor[0]) || !Number.isFinite(anchor[1])) return null;
+  return `near ${anchor[1].toFixed(4)}, ${anchor[0].toFixed(4)}`;
+}
+
 export type HighInjuryNetworkFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
@@ -748,8 +790,8 @@ export type HighInjuryNetworkMarkerCollection = {
 
 /**
  * One point per listed segment, so a half-mile piece that is a pixel long at
- * county zoom still shows: the middle vertex of a road piece, or the center
- * of a grid square.
+ * county zoom still shows: halfway along a road piece, or the center of a grid
+ * square, the same point the printed location names.
  */
 export function highInjuryNetworkMarkerCollection(
   collection: HighInjuryNetworkFeatureCollection | null | undefined,
@@ -758,18 +800,7 @@ export function highInjuryNetworkMarkerCollection(
   return {
     type: "FeatureCollection",
     features: collection.features.flatMap((feature) => {
-      let point: [number, number] | undefined;
-      if (feature.geometry.type === "LineString") {
-        const coordinates = feature.geometry.coordinates;
-        point = coordinates[Math.floor(coordinates.length / 2)];
-      } else {
-        const ring = feature.geometry.coordinates[0] ?? [];
-        const lons = ring.map(([lon]) => lon);
-        const lats = ring.map(([, lat]) => lat);
-        point = ring.length > 0
-          ? [(Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2]
-          : undefined;
-      }
+      const point = highInjuryNetworkSegmentAnchor(feature.geometry);
       if (!point) return [];
       return [{
         type: "Feature" as const,

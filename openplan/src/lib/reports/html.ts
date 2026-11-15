@@ -12,7 +12,19 @@ import {
 } from "@/lib/models/verified-dual-demand-agreement";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
-import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
+import { listStageGateTemplates } from "@/lib/stage-gates/template-loader";
+import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
+import { formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
+
+/**
+ * Every date and time a report prints: "Nov 14, 2026, 17:33 UTC", or the date
+ * alone for a stored date. The cover used to print "11/14/2026, 5:33:55 PM"
+ * in the server's zone with no zone named, which on the hosted site was UTC
+ * and read as local time (KI-2026-11-14-304). The SS4A packet's appendices
+ * print through the same formatter.
+ */
+const formatDateTime = formatEvidenceTimestamp;
 import {
   extractEngagementHandoffProvenance,
   type ReportEngagementSummary,
@@ -40,7 +52,8 @@ import { SAFETY_KSI_COVERAGE_UNAVAILABLE, safetyEvidenceSeriousInjury, type Safe
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { describeHighInjuryNetworkTie } from "@/lib/safety/high-injury-network";
-import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
+import { roadDisplayName } from "@/lib/safety/road-context";
+import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
 import {
   SAFETY_ACTION_PLAN_SECTION_TITLE,
   type SafetyActionPlanSectionDraft,
@@ -394,13 +407,13 @@ function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdiction
   if (payload.schema === "openplan.report-project-jurisdiction-schema-pending.v1") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
       <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}.</p>
-      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
+      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope.replace(/_/g, " "))}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
   }
 
   if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
       <p>${"projectRevision" in payload ? `Project revision: ${esc(payload.projectRevision ?? "Unavailable")}.` : "Jurisdiction context and registry inputs; project evidence revision is recorded separately."} Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
-      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
+      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope.replace(/_/g, " "))}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ? formatDateTime(payload.context.recordedAt) : "No separate declaration")}.</p>` : ""}
       ${payload.entries.length ? payload.entries.map(entry => `<article><h3>${esc(entry.declaration?.label ?? "Legacy study-place context")}</h3><p>${esc(entry.assessmentScope)}</p>
         ${entry.declaration ? `<p>Kind: ${esc(entry.declaration.kind)}. Source reference: ${esc(entry.declaration.reference ?? "None")}. Identity: ${esc(entry.declaration.identity === "staff_declared" ? "Unverified staff declaration" : "Server-resolved identity")}.</p><p>Declared country: ${esc(entry.declaration.countryCode ?? "Unspecified")}; subdivision: ${esc(entry.declaration.subdivisionCode ?? "Unspecified")}; scope: ${esc(entry.declaration.scope)}.</p>` : ""}
         ${jurisdictionReadinessMarkup(entry.assessment)}
@@ -1380,16 +1393,19 @@ export function safetyActionPlanMarkup(
     : `<h3>Crash summary</h3><p>${esc(draft.crashSummary.reason)}</p>`;
 
   const network = draft.network;
+  const locations = support?.segmentLocations ?? {};
+  const rowNumbers = new Map(network.kind === "computed" ? network.rows.map((row, index) => [row.segmentId, index + 1]) : []);
   const networkMarkup = network.kind === "unavailable"
     ? `<h3>High-injury network</h3><p>${esc(network.reason)}</p>`
     : `<h3>High-injury network</h3>
       <p><strong>${esc(network.measureLabel)}</strong>, ${esc(network.years)}.</p>
       ${describeHighInjuryNetworkTie(network.rows) ? `<p>${esc(describeHighInjuryNetworkTie(network.rows) ?? "")}</p>` : ""}
       ${network.rows.length > 0 ? `<table>
-        <thead><tr><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
-        <tbody>${network.rows.map((row) => `<tr>
+        <thead><tr><th>No.</th><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
+        <tbody>${network.rows.map((row, index) => `<tr>
+          <td>${index + 1}</td>
           <td>${esc(row.tied ? `${row.rank} (tie)` : String(row.rank))}</td>
-          <td>${esc(row.label)}</td>
+          <td>${esc(roadDisplayName(row.label))}${locations[row.segmentId] ? `<br><span class="meta">${esc(locations[row.segmentId])}</span>` : ""}</td>
           <td>${row.lengthMiles === null ? "Not a road piece" : esc(row.lengthMiles.toFixed(2))}</td>
           <td>${esc(row.fatalCrashCount.toLocaleString("en-US"))}</td>
           <td>${row.seriousInjuryCrashCount === null ? "Not in source (fatal crashes only)" : esc(row.seriousInjuryCrashCount.toLocaleString("en-US"))}</td>
@@ -1406,7 +1422,7 @@ export function safetyActionPlanMarkup(
     ? `<h3>Countermeasures</h3><p>No countermeasure is attached to a segment yet.</p>`
     : `<h3>Countermeasures</h3>
       <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
-      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
+      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(roadDisplayName(treatment.segmentLabel))}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `${rowNumbers.has(treatment.segmentId) ? `No. ${rowNumbers.get(treatment.segmentId)}, ` : ""}rank ${treatment.rank}`}${locations[treatment.segmentId] ? `, ${esc(locations[treatment.segmentId])}` : ""}):
         <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}.${item.listStatus ? `<span class="list-status">${esc(item.listStatus)}</span>` : ""} Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a class="source-url" href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
       </li>`).join("")}</ul>
       <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
@@ -1429,7 +1445,7 @@ export function safetyActionPlanMarkup(
 function networkMapMarkup(map: SafetyPlanSupport["networkMap"], rowCount: number): string {
   if (!map) return "";
   if (map.kind === "not_drawn") return `<p><strong>Map not drawn.</strong> ${esc(map.reason)}</p>`;
-  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red and numbered by rank${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}. The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
+  return `<figure class="safety-network-map">${map.svg}<figcaption>High-injury network map. All ${esc(map.segmentCount.toLocaleString("en-US"))} ranked ${map.segmentCount === 1 ? "segment" : "segments"} in the table ${map.segmentCount === 1 ? "is" : "are"} drawn in red, each marked with its number from the table's No. column${map.segmentCount === rowCount ? "" : `; the table lists ${esc(rowCount.toLocaleString("en-US"))}`}.${map.svg.includes('data-anchor="') ? ` ${esc(SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE)}` : ""} The dashed green line is the project area when one is saved. ${esc(SAFETY_STREET_CONTEXT_PROJECTION_NOTE)}</figcaption></figure>`;
 }
 
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
@@ -1445,6 +1461,28 @@ function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt
   </section>`;
 }
 
+/**
+ * The stage-gate template's name, as authored in the registry. The snapshot
+ * stores only the template's id (for example `us_federal_aid_stage_gates_v0_1`),
+ * which no reader should have to decode. An id this installation does not
+ * register prints as such, never as a guessed name.
+ */
+function stageGateTemplateName(templateId: string): string {
+  return listStageGateTemplates().find((descriptor) => descriptor.templateId === templateId)?.templateName
+    ?? "A template this installation does not register";
+}
+
+/**
+ * A missing artifact as its template titles it. Decisions store the template's
+ * evidence id (for example `G02_E03`); a value the template does not list was
+ * typed by staff and prints as stored.
+ */
+function stageGateEvidenceTitle(templateId: string, evidenceId: string): string {
+  return stageGateTemplateRegistry.get(templateId)?.document.gates
+    .flatMap((gate) => gate.required_evidence)
+    .find((evidence) => evidence?.evidence_id === evidenceId)?.title ?? evidenceId;
+}
+
 function stageGateProvenanceMarkup(data: ReportGenerationData): string {
   const { stageGateSnapshot } = data;
   const blockedGate = stageGateSnapshot.blockedGate;
@@ -1456,18 +1494,18 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
     <div class="metrics-stack">
       <article class="metric-card">
         <span class="metric-label">Template</span>
-        <strong>${esc(stageGateSnapshot.templateId)}</strong>
+        <strong>${esc(stageGateTemplateName(stageGateSnapshot.templateId))}</strong>
         <p>Version ${esc(stageGateSnapshot.templateVersion)} • ${stageGateSnapshot.passCount} pass • ${stageGateSnapshot.holdCount} hold • ${stageGateSnapshot.notStartedCount} not started</p>
         <p><a href="/projects/${esc(data.project.id)}#project-governance">Open governance</a></p>
       </article>
       <article class="metric-card">
         <span class="metric-label">Blocked gate</span>
-        <strong>${esc(blockedGate ? `${blockedGate.gateId} · ${blockedGate.name}` : "No gate on hold")}</strong>
+        <strong>${esc(blockedGate ? blockedGate.name : "No gate on hold")}</strong>
         <p>${
           blockedGate
             ? `${esc(blockedGate.rationale)}${
                 blockedGate.missingArtifacts.length > 0
-                  ? ` Missing artifacts: ${esc(blockedGate.missingArtifacts.join(", "))}.`
+                  ? ` Missing artifacts: ${esc(blockedGate.missingArtifacts.map((id) => stageGateEvidenceTitle(stageGateSnapshot.templateId, id)).join(", "))}.`
                   : ""
               }`
             : "No formal HOLD decision is recorded in this snapshot."
@@ -1475,7 +1513,7 @@ function stageGateProvenanceMarkup(data: ReportGenerationData): string {
       </article>
       <article class="metric-card">
         <span class="metric-label">Next gate</span>
-        <strong>${esc(nextGate ? `${nextGate.gateId} · ${nextGate.name}` : "Gate sequence complete")}</strong>
+        <strong>${esc(nextGate ? nextGate.name : "Gate sequence complete")}</strong>
         <p>${
           nextGate
             ? `${nextGate.requiredEvidenceCount} required evidence item${
@@ -2165,6 +2203,7 @@ const REPORT_DOCUMENT_STYLES = `
       table.wrap-cells th, table.wrap-cells td { overflow-wrap: anywhere; }
       .list-status { display: block; margin: 2px 0; font-size: 14px; color: #3b4952; }
       .source-url, .source-line { overflow-wrap: anywhere; }
+      .records-appendix { break-before: page; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {
@@ -2197,6 +2236,51 @@ export function buildReportHtml(data: ReportGenerationData): string {
     safetyAcquisitionCount: data.safetyEvidence?.length ?? 0,
   });
 
+  /**
+   * A report that carries a saved safety action plan is read as a safety
+   * action plan: its safety content comes first, then the project's own
+   * sections, and the OpenPlan records behind it (evidence chain, readiness
+   * registry, stage-gate and project-record snapshots, scenario basis) move
+   * to an appendix at the back under a heading that says what they are. The
+   * first proven job's plans opened with about eight pages of that material
+   * (KI-2026-11-14-304). Nothing is dropped. Every other report keeps the
+   * order it had: for a project status packet the records are the subject.
+   */
+  const safetyPlanFirst = Boolean(data.safetyActionPlan);
+  const projectGeography = projectGeographyMarkup(
+    data,
+    data.sections.some((section) => section.section_key === PROJECT_GEOGRAPHY_SECTION_KEY)
+  );
+  const recordsMaterial = [
+    evidenceChainMarkup(evidenceChainSummary),
+    jurisdictionReadinessMarkup(data.jurisdictionReadiness),
+    ...(safetyPlanFirst ? [] : [
+      guidedComparisonReportMarkup(data.guidedComparison),
+      modelingEvidenceMarkup(data.modelingEvidence),
+      reportEvidenceDescriptorMarkup(data),
+      dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? []),
+      aerialOrthoMarkup(data.aerialOrthoPreview),
+    ]),
+    stageGateProvenanceMarkup(data),
+    projectRecordsProvenanceMarkup(data),
+    scenarioBasisMarkup(data),
+  ];
+  const sectionsMarkup = enabledSections
+    .map(
+      (section) => `<section id="${esc(section.section_key)}">
+            <h2 class="section-title">${esc(section.title)}</h2>
+            ${sectionMarkup(section.section_key, data)}
+            ${acceptedNarrativeBySection.get(section.section_key) ?? ""}
+          </section>`
+    )
+    .join("");
+  // In the safety plan order the project's analysis evidence follows the plan
+  // with its own sections; in the other order it keeps its place between the
+  // readiness records and the governance snapshot.
+  const projectContent = safetyPlanFirst
+    ? `${guidedComparisonReportMarkup(data.guidedComparison)}${projectGeography}${modelingEvidenceMarkup(data.modelingEvidence)}${reportEvidenceDescriptorMarkup(data)}${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}${aerialOrthoMarkup(data.aerialOrthoPreview)}${sectionsMarkup}`
+    : `${recordsMaterial.slice(2).join("")}${sectionsMarkup}${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}`;
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -2220,33 +2304,20 @@ export function buildReportHtml(data: ReportGenerationData): string {
         </div>
         ${estimatedProjectCostMarkup(data.project)}
       </header>
-      ${projectGeographyMarkup(
-        data,
-        data.sections.some((section) => section.section_key === PROJECT_GEOGRAPHY_SECTION_KEY)
-      )}
-      ${evidenceChainMarkup(evidenceChainSummary)}
-      ${jurisdictionReadinessMarkup(data.jurisdictionReadiness)}
-      ${guidedComparisonReportMarkup(data.guidedComparison)}
-      ${modelingEvidenceMarkup(data.modelingEvidence)}
-      ${reportEvidenceDescriptorMarkup(data)}
-      ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}
-      ${aerialOrthoMarkup(data.aerialOrthoPreview)}
-      ${stageGateProvenanceMarkup(data)}
-      ${projectRecordsProvenanceMarkup(data)}
-      ${scenarioBasisMarkup(data)}
-      ${enabledSections
-        .map(
-          (section) => `<section id="${esc(section.section_key)}">
-            <h2 class="section-title">${esc(section.title)}</h2>
-            ${sectionMarkup(section.section_key, data)}
-            ${acceptedNarrativeBySection.get(section.section_key) ?? ""}
-          </section>`
-        )
-        .join("")}
-      ${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}
+      ${safetyPlanFirst ? `${safetyActionPlanMarkup(data.safetyActionPlan, data.safetyActionPlanSupport ?? null)}${projectContent}${recordsAppendixMarkup(recordsMaterial)}` : `${projectGeography}${recordsMaterial.slice(0, 2).join("")}${projectContent}`}
     </main>
   </body>
 </html>`;
+}
+
+/** The back appendix of a safety action plan report: a heading that says what follows, then the records. */
+function recordsAppendixMarkup(blocks: readonly string[]): string {
+  const body = blocks.join("");
+  if (!body.trim()) return "";
+  return `<section id="records-appendix" class="records-appendix">
+    <h2 class="section-title">Appendix: OpenPlan records behind this report</h2>
+    <p>The evidence chain, what OpenPlan's readiness registry says for this place, and the stage-gate, project-record and scenario snapshots, as recorded when this report was generated. They describe the product and the project record, not the safety findings above.</p>
+  </section>${body}`;
 }
 
 /**

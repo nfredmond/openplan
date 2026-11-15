@@ -2602,6 +2602,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             roads: safetyRoadContext,
             projectGeometry: planStudyArea.success ? planStudyArea.data : null,
           }),
+          network,
         });
         if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
           const evidenceFence = await readSafetyPlanEvidenceFence(supabase as unknown as SafetyPlanFenceClient, {

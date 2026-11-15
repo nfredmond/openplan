@@ -3795,12 +3795,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const generatedHtml = generatedArtifact?.metadata_json?.htmlContent;
 
     expect(generatedHtml).toContain("Evidence chain summary");
-    expect(generatedHtml).toContain("ca_stage_gates_v0_1");
+    // Names, not stored ids (KI-2026-11-14-304): the template, the gate and the missing artifact.
+    expect(generatedHtml).toContain("California Stage-Gate Scaffold");
+    expect(generatedHtml).not.toContain("ca_stage_gates_v0_1");
     expect(generatedHtml).toContain("1 pass");
     expect(generatedHtml).toContain("1 hold");
     expect(generatedHtml).toContain("Civil rights plan is still missing.");
-    expect(generatedHtml).toContain("Missing artifacts: G02_E03.");
-    expect(generatedHtml).toContain("G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS");
+    expect(generatedHtml).toContain("Missing artifacts: Civil rights/DBE/ADA/Title VI compliance plan.");
+    expect(generatedHtml).toContain("Agreements, Procurement, and Civil Rights Setup");
+    expect(generatedHtml).not.toContain("G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS");
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-governance');
   });
 

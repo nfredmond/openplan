@@ -26,7 +26,11 @@
 
 import type { CorridorGeojson } from "@/lib/models/run-launch";
 import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
-import { describeHighInjuryNetworkTie, type HighInjuryNetwork } from "@/lib/safety/high-injury-network";
+import {
+  describeHighInjuryNetworkLocation,
+  describeHighInjuryNetworkTie,
+  type HighInjuryNetwork,
+} from "@/lib/safety/high-injury-network";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import {
   type SeriousInjuryAvailability,
@@ -37,7 +41,7 @@ import {
   describeCrashStudyArea,
   readCrashStudyAreaCoverage,
 } from "@/lib/safety/crash-study-area";
-import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
+import { roadDisplayName, type SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { SS4A_APPENDIX_KEYS, SS4A_APPENDIX_TITLES, type Ss4aAppendixKey } from "@/lib/grants/ss4a-appendix-keys";
 import {
   absentEvidenceAppendix,
@@ -47,6 +51,7 @@ import {
   describeSeverityCoverage,
   engagementEvidenceAppendix,
   NO_PROJECT_REASON,
+  type BcaSegmentRow,
   type EvidenceAppendix,
   type EvidenceAppendixFrame,
   type EvidenceAppendixSource,
@@ -57,6 +62,7 @@ import {
 import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import {
   renderSafetyStreetContextSvg,
+  SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE,
   SAFETY_STREET_CONTEXT_PROJECTION_NOTE,
 } from "@/lib/safety/street-context-svg";
 
@@ -195,12 +201,16 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
   const seriousInjury = acquisitionSeriousInjury(safety.snapshot.acquisition);
   if (network.kind === "unavailable") return absentAppendix(key, index, "missing", network.reason);
 
+  const recompute = records.hinRecompute;
+  const locations = snapshotRowLocations(safety.snapshot, recompute);
   const table = network.rows.length > 0
     ? {
-        headers: ["Rank", "Location", "Miles", "Fatal", "Serious injury", "Per mile"],
-        rows: network.rows.map((row) => [
+        headers: ["No.", "Rank", "Location", "Miles", "Fatal", "Serious injury", "Per mile"],
+        rows: network.rows.map((row, rowIndex) => [
+          String(rowIndex + 1),
           row.tied ? `${row.rank} (tie)` : String(row.rank),
-          row.label,
+          // Frozen labels keep their stored spelling; they print as a reader writes them.
+          locations.get(row.segmentId) ? `${roadDisplayName(row.label)}, ${locations.get(row.segmentId)}` : roadDisplayName(row.label),
           row.lengthMiles === null ? "Not a road piece" : row.lengthMiles.toFixed(2),
           row.fatalCrashCount.toLocaleString("en-US"),
           row.seriousInjuryCrashCount === null ? seriousInjuryAbsence(seriousInjury) : row.seriousInjuryCrashCount.toLocaleString("en-US"),
@@ -211,7 +221,6 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
 
   let figureSvg: string | null = null;
   let statusNote: string | null = null;
-  const recompute = records.hinRecompute;
   if (network.rows.length === 0) {
     statusNote = "Map not drawn. No segment is ranked in the frozen snapshot, so there is nothing to map.";
   } else if (recompute.status === "not_attempted") {
@@ -225,8 +234,8 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
       roads: recompute.roads,
       crashLocations: [],
       projectGeometry: records.studyArea.status === "ready" ? records.studyArea.geometry : null,
-      highlights: recompute.network.segments.map((segment) => ({ rank: segment.rank, geometry: segment.geometry })),
-      ariaLabel: "Ranked high-injury network segments, numbered by rank",
+      highlights: recompute.network.segments.map((segment, segmentIndex) => ({ number: segmentIndex + 1, geometry: segment.geometry })),
+      ariaLabel: "Ranked high-injury network segments, numbered by table row",
     });
     if (!figureSvg) statusNote = "Map not drawn. The ranked segments carry no drawable coordinates.";
   }
@@ -248,10 +257,29 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     table,
     figureSvg,
     notes: [
-      ...(figureSvg ? [HIN_MAP_DRAWN_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE, "Numbered marks are the ranks in the table.", studyAreaNote(records.studyArea)] : []),
+      ...(figureSvg ? [HIN_MAP_DRAWN_NOTE, SAFETY_STREET_CONTEXT_PROJECTION_NOTE, "Each numbered mark is a row of the table, by its No. column. Tied rows share a rank but never a number.", ...(figureSvg.includes('data-anchor="') ? [SAFETY_STREET_CONTEXT_MOVED_MARK_NOTE] : []), studyAreaNote(records.studyArea)] : []),
       network.sourceLine,
     ],
   };
+}
+
+/**
+ * Each frozen row's location, from the export-time recomputation, and only
+ * when it reproduces the frozen ranking: the snapshot's rows carry no geometry.
+ */
+function snapshotRowLocations(snapshot: SafetyPlanSnapshot, recompute: Ss4aHinRecomputeRead): Map<string, string | null> {
+  const network = snapshot.draft.network;
+  if (network.kind !== "computed" || network.rows.length === 0 || recompute.status !== "computed"
+    || !recomputedNetworkMatchesSnapshot(snapshot, recompute.network)) return new Map();
+  return new Map(recompute.network.segments.map((segment) => [segment.id, describeHighInjuryNetworkLocation(segment.geometry)]));
+}
+
+/** Appendix A's rows by segment id, so Appendix D's safety inputs name the same row. */
+function snapshotSegmentRows(records: Ss4aEvidenceRecords): Map<string, BcaSegmentRow> {
+  if (records.safety.status !== "ready" || records.safety.snapshot.draft.network.kind !== "computed") return new Map();
+  const locations = snapshotRowLocations(records.safety.snapshot, records.hinRecompute);
+  return new Map(records.safety.snapshot.draft.network.rows.map((row, rowIndex) =>
+    [row.segmentId, { number: rowIndex + 1, location: locations.get(row.segmentId) ?? null }]));
 }
 
 /** The same tie line the Safety page prints, when every listed row shares one rank. */
@@ -323,6 +351,8 @@ function countermeasureAppendix(index: number, records: Ss4aEvidenceRecords): Ss
   if (draft.treatments.length === 0) {
     return absentAppendix(key, index, "missing", "No candidate countermeasures are recorded in this snapshot. This does not establish that the agency has none.");
   }
+  // The row number Appendix A prints for the same segment.
+  const rowNumbers = new Map(draft.network.kind === "computed" ? draft.network.rows.map((row, rowIndex) => [row.segmentId, rowIndex + 1]) : []);
   return {
     ...shell(key, index),
     status: "included",
@@ -333,8 +363,12 @@ function countermeasureAppendix(index: number, records: Ss4aEvidenceRecords): Ss
       headers: ["Location", "Network rank", "Countermeasure", "Addresses", "Crash types", "Crash modification factor", "Source"],
       rows: draft.treatments.flatMap((treatment) =>
         treatment.countermeasures.map((item) => [
-          treatment.segmentLabel,
-          treatment.rank === null ? "Not in the frozen ranked list" : String(treatment.rank),
+          roadDisplayName(treatment.segmentLabel),
+          treatment.rank === null
+            ? "Not in the frozen ranked list"
+            : rowNumbers.has(treatment.segmentId)
+              ? `No. ${rowNumbers.get(treatment.segmentId)}, rank ${treatment.rank}`
+              : String(treatment.rank),
           item.listStatus ? `${item.name}. ${item.listStatus}` : item.name,
           item.addresses,
           item.crashTypes.join(", "),
@@ -360,7 +394,7 @@ function safetyNotReady(
 }
 
 function bcaAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix {
-  return bcaEvidenceAppendix(shell("bca", index), records.bca, records.projectId);
+  return bcaEvidenceAppendix(shell("bca", index), records.bca, records.projectId, snapshotSegmentRows(records));
 }
 
 function engagementAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix {
