@@ -7,12 +7,13 @@
   "journeys": [
     {
       "role": "county",
+      "mode": "proof",
       "place": {"kind": "county", "geoid": "48998", "stateFips": ["48"], "label": "Synthetic county"},
       "executors": [
         {"role": "staff", "agent": "Claude Code", "model": "claude-opus-5-5"},
         {"role": "public-participant", "agent": "Claude Code", "model": "claude-opus-5-5"}
       ],
-      "accountCreatedAt": "2026-11-20T10:00:00Z",
+      "accountCreatedAt": "2026-11-20T10:00:10Z",
       "confirmationMethod": "email_link",
       "health": [
         {
@@ -76,8 +77,8 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review.pdf",
-          "sha256": "abd8dda88076a6367e0fd1dcf5706ce2630fbd2f922c6bd87c409d6698c328e1",
-          "bytes": 508,
+          "sha256": "3d4afd0404d4a59f5097a10b942d5c79d39321257bb33e9bfeea683c6fb6d32d",
+          "bytes": 576,
           "pages": 3,
           "draftStamp": false,
           "items": [
@@ -101,14 +102,14 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review.xlsx",
-          "sha256": "9bd070709543eeeeff22dc914fd80c3b5441ac327f1d729d89076c8086000317",
-          "bytes": 1137
+          "sha256": "1dcfb647c73b20eaa7ea99c7ff8f46cd349147f6d455b094b1e17c985b3ad79d",
+          "bytes": 2326
         },
         {
           "kind": "campaign-review-public",
           "path": "docs/product/capability-evidence/synthetic-example/county-campaign-review-public.xlsx",
-          "sha256": "1616da88f701ce801fc138c3fce405074c0266636e84b885e033a9b6cb465d24",
-          "bytes": 989
+          "sha256": "36f6e1c78899d680776f5a0e606075d2620f4ef13ec052299eadb336bbefe37f",
+          "bytes": 1105
         }
       ],
       "publicPage": {
@@ -183,17 +184,155 @@
           "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
           "consoleErrors": 0,
           "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
         }
-      ]
+      ],
+      "close": {
+        "attempted": true, "closed": true, "saveStatus": 200, "statusAfter": "closed",
+        "addresses": [
+          {"name": "portal", "status": 200, "endedNoticeShown": true, "campaignTextFound": false},
+          {"name": "about", "status": 200, "endedNoticeShown": true, "campaignTextFound": false}
+        ],
+        "publicReadAfter": {"status": 404},
+        "endedAt": "2026-11-20T10:44:00Z"
+      }
     },
     {
       "role": "city-or-town",
+      "mode": "proof",
       "place": {"kind": "cousub", "geoid": "2599812345", "stateFips": ["25"], "label": "Synthetic town"},
       "executors": [
         {"role": "staff", "agent": "Claude Code", "model": "claude-opus-5-5"},
         {"role": "public-participant", "agent": "Claude Code", "model": "claude-opus-5-5"}
       ],
-      "accountCreatedAt": "2026-11-20T11:00:00Z",
+      "accountCreatedAt": "2026-11-20T11:00:10Z",
       "confirmationMethod": "email_link",
       "health": [
         {
@@ -257,8 +396,8 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review.pdf",
-          "sha256": "5e3adbe812f8d9ae4113a86dd3123618a87b95ba7aa4a2d297e0a25735595dbd",
-          "bytes": 520,
+          "sha256": "2dfe3d83a22f609cec6ffb4903a2b021269a4dd102be6ed116e4d04bff61400d",
+          "bytes": 588,
           "pages": 3,
           "draftStamp": false,
           "items": [
@@ -282,14 +421,14 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review.xlsx",
-          "sha256": "bf6c11df429040f219485901968ca0a5e97aeaf3a3f6e1092ca4c4c020c1b83a",
-          "bytes": 1149
+          "sha256": "d2f8fc5f72c5961d7e2c04423a8b3db4e44d77d0541c9b50482f2d9caeafb3ce",
+          "bytes": 2338
         },
         {
           "kind": "campaign-review-public",
           "path": "docs/product/capability-evidence/synthetic-example/city-or-town-campaign-review-public.xlsx",
-          "sha256": "c0b62e9e44307646dc52f7cf1e957ca671ae22c4642e076a74aa9fd961e17af6",
-          "bytes": 995
+          "sha256": "e5f2c636a68ac68ab74d6b16edd33d227e01ee0d9e587873f691865b4dead3f2",
+          "bytes": 1111
         }
       ],
       "publicPage": {
@@ -364,17 +503,155 @@
           "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
           "consoleErrors": 0,
           "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
         }
-      ]
+      ],
+      "close": {
+        "attempted": true, "closed": true, "saveStatus": 200, "statusAfter": "closed",
+        "addresses": [
+          {"name": "portal", "status": 200, "endedNoticeShown": true, "campaignTextFound": false},
+          {"name": "about", "status": 200, "endedNoticeShown": true, "campaignTextFound": false}
+        ],
+        "publicReadAfter": {"status": 404},
+        "endedAt": "2026-11-20T11:44:00Z"
+      }
     },
     {
       "role": "tribal-area",
+      "mode": "proof",
       "place": {"kind": "aiannh", "geoid": "9997T", "stateFips": ["04"], "label": "Synthetic tribal area"},
       "executors": [
         {"role": "staff", "agent": "Claude Code", "model": "claude-opus-5-5"},
         {"role": "public-participant", "agent": "Claude Code", "model": "claude-opus-5-5"}
       ],
-      "accountCreatedAt": "2026-11-20T12:00:00Z",
+      "accountCreatedAt": "2026-11-20T12:00:10Z",
       "confirmationMethod": "email_link",
       "health": [
         {
@@ -438,8 +715,8 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review.pdf",
-          "sha256": "07a6524e7a2307cace2810b579f4655d84bb338541500957f7273e724a14267a",
-          "bytes": 518,
+          "sha256": "a4f0b2184fde71f50e5237085f3cbb4026cab9471e4d626ec799b71da1354085",
+          "bytes": 586,
           "pages": 3,
           "draftStamp": false,
           "items": [
@@ -463,14 +740,14 @@
         {
           "kind": "campaign-review",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review.xlsx",
-          "sha256": "847a9bc17c16a4be669d14cad4f09606a349d6374a6bc9019b67740e1f5f883a",
-          "bytes": 1147
+          "sha256": "a107920ae22a4b6d17b1fb39f4f6310f2f06fc37b15252323421308afd9f0364",
+          "bytes": 2336
         },
         {
           "kind": "campaign-review-public",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-campaign-review-public.xlsx",
-          "sha256": "c3d0c47fe27967260257a4f3d5f89c7b7223049554fd14a0d136cfdf4bb0ed7b",
-          "bytes": 994
+          "sha256": "e98d7197a8225470e52a650c96a1bad657efdd812479fe84e4e1573dd61a11f4",
+          "bytes": 1110
         }
       ],
       "publicPage": {
@@ -545,8 +822,145 @@
           "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
           "consoleErrors": 0,
           "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "public-response",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-responses",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-analysis",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 1440,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 1440,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 390,
+          "mode": "light",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
+        },
+        {
+          "screen": "staff-campaign-record",
+          "width": 390,
+          "mode": "dark",
+          "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0},
+          "consoleErrors": 0,
+          "horizontalScroll": false
         }
-      ]
+      ],
+      "close": {
+        "attempted": true, "closed": true, "saveStatus": 200, "statusAfter": "closed",
+        "addresses": [
+          {"name": "portal", "status": 200, "endedNoticeShown": true, "campaignTextFound": false},
+          {"name": "about", "status": 200, "endedNoticeShown": true, "campaignTextFound": false}
+        ],
+        "publicReadAfter": {"status": 404},
+        "endedAt": "2026-11-20T12:44:00Z"
+      }
     }
   ],
   "crossWorkspace": {
@@ -588,11 +1002,21 @@
   },
   "participantChecks": {
     "refusals": [
-      {"request": "campaign-read", "status": 401, "contentReturned": false},
-      {"request": "campaign-export-read", "status": 401, "contentReturned": false},
-      {"request": "rejected-item-history-read", "status": 401, "contentReturned": false},
-      {"request": "review-pdf-download", "status": 401, "contentReturned": false},
-      {"request": "review-xlsx-download", "status": 401, "contentReturned": false}
+      {"journey": "county", "request": "campaign-read", "status": 401, "contentReturned": false},
+      {"journey": "county", "request": "campaign-export-read", "status": 401, "contentReturned": false},
+      {"journey": "county", "request": "rejected-item-history-read", "status": 401, "contentReturned": false},
+      {"journey": "county", "request": "review-pdf-download", "status": 401, "contentReturned": false},
+      {"journey": "county", "request": "review-xlsx-download", "status": 401, "contentReturned": false},
+      {"journey": "city-or-town", "request": "campaign-read", "status": 401, "contentReturned": false},
+      {"journey": "city-or-town", "request": "campaign-export-read", "status": 401, "contentReturned": false},
+      {"journey": "city-or-town", "request": "rejected-item-history-read", "status": 401, "contentReturned": false},
+      {"journey": "city-or-town", "request": "review-pdf-download", "status": 401, "contentReturned": false},
+      {"journey": "city-or-town", "request": "review-xlsx-download", "status": 401, "contentReturned": false},
+      {"journey": "tribal-area", "request": "campaign-read", "status": 401, "contentReturned": false},
+      {"journey": "tribal-area", "request": "campaign-export-read", "status": 401, "contentReturned": false},
+      {"journey": "tribal-area", "request": "rejected-item-history-read", "status": 401, "contentReturned": false},
+      {"journey": "tribal-area", "request": "review-pdf-download", "status": 401, "contentReturned": false},
+      {"journey": "tribal-area", "request": "review-xlsx-download", "status": 401, "contentReturned": false}
     ],
     "publicRead": {
       "request": "public-portal-read",
@@ -618,6 +1042,10 @@
       "text": "The published response was written by the proof run for a labeled fixture place and speaks for no agency."
     },
     {"id": "no-translation-or-ai-synthesis", "text": "No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope."},
+    {"id": "live-screens-read-by-the-journey", "text": "The journey read these on live screens and the checker cannot read them again: the public response page's counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign's public addresses."},
+    {"id": "build-named-by-the-journey", "text": "Which build ran comes from the health readbacks the journey wrote at its start and end. Nothing in the record comes from the deployment itself."},
+    {"id": "contribution-input-stated-by-the-journey", "text": "Which contribution was made with the keyboard only, and at which width, is the journey's statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook."},
+    {"id": "ai-and-approval-flags-set-by-the-journey", "text": "The AI flags, the staff review's approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that."},
     {
       "id": "campaign-page-answers-200-with-not-found-screen",
       "text": "Another workspace's campaign page answers HTTP 200 with the not-found screen; the journey read the screen and found none of the first account's text. The campaign read and both review downloads were refused."

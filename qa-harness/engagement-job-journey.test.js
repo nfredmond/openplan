@@ -259,14 +259,33 @@ test('staff-only fields are found as keys at any depth', () => {
 });
 
 const OPEN = { name: 'portal', endedNoticeShown: true, campaignTextFound: false };
+const GONE = { status: 404, campaignTextFound: false };
 
 test('close: closed only when the save answered 200, the status reads closed and every public address shows only the notice', () => {
-  assert.deepEqual(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [OPEN, { ...OPEN, name: 'about' }] }), { closed: true, problems: [] });
-  assert.equal(lib.closeVerdict({ saveStatus: 400, statusAfter: 'closed', addresses: [OPEN] }).closed, false);
-  assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'active', addresses: [OPEN] }).closed, false);
-  assert.match(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [{ ...OPEN, endedNoticeShown: false }] }).problems.join(), /portal does not show the ended notice/);
-  assert.match(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [{ ...OPEN, campaignTextFound: true }] }).problems.join(), /still shows the campaign's own text/);
-  assert.match(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [] }).problems.join(), /no public address was read/);
+  assert.deepEqual(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [OPEN, { ...OPEN, name: 'about' }], publicRead: GONE }), { closed: true, problems: [] });
+  assert.equal(lib.closeVerdict({ saveStatus: 400, statusAfter: 'closed', addresses: [OPEN], publicRead: GONE }).closed, false);
+  assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'active', addresses: [OPEN], publicRead: GONE }).closed, false);
+  assert.match(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [{ ...OPEN, endedNoticeShown: false }], publicRead: GONE }).problems.join(), /portal does not show the ended notice/);
+  assert.match(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [{ ...OPEN, campaignTextFound: true }], publicRead: GONE }).problems.join(), /still shows the campaign's own text/);
+  assert.match(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [], publicRead: GONE }).problems.join(), /no public address was read/);
+});
+
+test('close: the public portal data read after the close may not answer 200 with the campaign\'s text (review 59, finding 8)', () => {
+  const closed = (publicRead) => lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [OPEN], publicRead });
+  assert.equal(closed({ status: 200, campaignTextFound: false }).closed, true, 'a 200 without the campaign\'s text is an ended notice');
+  assert.match(closed({ status: 200, campaignTextFound: true }).problems.join(), /public portal data still answers 200 with the campaign's own text/);
+  assert.match(closed({ status: 200 }).problems.join(), /still answers 200/, 'a 200 that was not searched does not pass');
+  assert.match(closed(null).problems.join(), /public portal data was not read after the close/);
+  assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', neverPublic: true }).closed, true, 'a campaign that was never public has nothing to read');
+});
+
+test('the rejected-text search finds a text split across a PDF page break, as the checker does (review 59, F15)', () => {
+  const text = 'Off-topic demonstration entry about a water meter reading. Entered by an automated proof run; it represents no one.';
+  const at = text.indexOf('Entered');
+  const split = { name: 'public review PDF', pages: [`Approved 3 contributions.\n${text.slice(0, at)}`, `${text.slice(at)}\nPage 2`] };
+  assert.deepEqual(lib.searchRejected({ texts: [text], surfaces: [split] }).hits, [{ surface: 'public review PDF', by: 'text' }]);
+  const footer = { name: 'public review PDF', pages: [`${text.slice(0, at)}\n\nPage 1 of 2`, text.slice(at)] };
+  assert.deepEqual(lib.searchRejected({ texts: [text], surfaces: [footer] }).hits, [], 'a footer printed between the parts is the stated blind category');
 });
 
 test('close at the end: a journey that stops early still closes the campaign it opened', async () => {
@@ -315,9 +334,16 @@ test('the public review PDF records its scope badge only, found with the shared 
 // ---------------------------------------------------------------------------
 
 const EXAMPLE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'examples', 'proven_job_record.v1.engagement.synthetic.json'), 'utf8'));
+/** The checker's PROOF_ORIGIN, written out because the checker is an ES module; a test below compares the two. */
+const PROOF_ORIGIN_FOR_TESTS = 'https://openplan-zeta.vercel.app';
 
-/** Three run files split from the synthetic example, with stand-in files the fake readers read. */
-function exampleRuns() {
+/**
+ * Three run files split from the synthetic example, with stand-in files the
+ * fake readers read. Each run file carries what the assembler reads: the
+ * job, mode, origin and expected commit, no stopping step, the close and
+ * the step that closed it.
+ */
+function exampleRuns({ baseUrl = PROOF_ORIGIN_FOR_TESTS, mode = 'proof' } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'openplan-engagement-journey-'));
   const files = [];
   EXAMPLE.journeys.forEach((journey, index) => {
@@ -325,18 +351,25 @@ function exampleRuns() {
     const rejected = journey.campaign.rejectedTexts[0];
     const leftOut = job.campaign.publicCopy.leftOutSentence;
     const counts = 'Approved 3 contributions.\nPublished 1 staff response.\nAnswered 2 contributions with a published staff response.';
+    const note = 'Synthetic review: off topic.';
+    const payload = JSON.stringify({ campaignId: id(base + 1), decisionId: id(base + 10), responseId: id(base + 8) });
     const sheets = (scope, rows, summary) => `PK\u0003\u0004 stand-in\n${JSON.stringify({
       'Read me': [['Field', 'Value'], ['Scope', scope]],
-      Contributions: [['id', 'status', 'title'], ...rows],
+      Contributions: [['id', 'status', 'body', 'latitude', 'longitude', 'geometry', ...(scope === 'internal' ? ['moderation_notes'] : [])], ...rows.map((row) => (scope === 'internal' ? [...row, note] : row))],
       'Staff responses': [['id', 'source_item_ids', 'published_at'], [id(base + 8), JSON.stringify([id(base + 3), id(base + 4)]), '2026-11-20T10:30:00Z']],
+      ...(scope === 'internal' ? {
+        'Decision history': [['id', 'response_id', 'decision_id', 'project_id'], [id(base + 9), id(base + 8), id(base + 10), id(base + 2)]],
+        'Decision exact context': [['Action ID', 'Exact payload text'], [id(base + 9), payload]],
+        'Synthesis actions': [['decision_action_id', 'review_id'], [id(base + 9), id(base + 7)]],
+      } : {}),
       'Long text': [['Record type', 'Record ID', 'Field', 'Part', 'Text']],
       Summary: summary,
     })}`;
-    const approvedRows = [[id(base + 3), 'approved', 'a'], [id(base + 4), 'approved', 'b'], [id(base + 5), 'approved', 'c']];
+    const approvedRows = [[id(base + 3), 'approved', 'a', 43.1, -124.2, ''], [id(base + 4), 'approved', 'b', '', '', ''], [id(base + 5), 'approved', 'c', '', '', '']];
     const texts = {
       'campaign-review.pdf': `%PDF-1.4 stand-in\nINTERNAL REVIEW COPY\nReceived 4 contributions.\nWithheld 1 contribution.\n${counts}\fRegister\n${id(base + 6)}\n${rejected}`,
       'campaign-review-public.pdf': `%PDF-1.4 stand-in\nPUBLIC REVIEW COPY\n${leftOut}\n${counts}`,
-      'campaign-review.xlsx': sheets('internal', [...approvedRows, [id(base + 6), 'rejected', rejected]], [['Received', 4], ['Approved', 3], ['Withheld', 1], ['Published staff responses', 1], ['Answered by a published staff response', 2]]),
+      'campaign-review.xlsx': sheets('internal', [...approvedRows, [id(base + 6), 'rejected', rejected, '', '', '']], [['Received', 4], ['Approved', 3], ['Withheld', 1], ['Published staff responses', 1], ['Answered by a published staff response', 2]]),
       'campaign-review-public.xlsx': sheets('public', approvedRows, [['Approved', 3], ['Published staff responses', 1], ['Answered by a published staff response', 2]]),
     };
     const copy = JSON.parse(JSON.stringify(journey));
@@ -349,11 +382,27 @@ function exampleRuns() {
     }
     copy.pdfs[0].pages = 2;
     copy.pdfs[0].items = copy.pdfs[0].items.map((item) => ({ ...item, page: 1 }));
+    const { mode: recordMode, close, ...plain } = copy;
     const run = {
-      journey: copy,
+      jobId: lib.JOB_ID,
+      mode,
+      baseUrl,
+      expectedCommit: EXAMPLE.commit,
+      stoppedAt: null,
+      steps: [{ step: 'close-campaign', status: 'passed', endedAt: close.endedAt }],
+      journey: plain,
       crossWorkspace: { checks: EXAMPLE.crossWorkspace.checks.filter((check) => check.journey === journey.role) },
-      participantChecks: { refusals: EXAMPLE.participantChecks.refusals, publicRead: EXAMPLE.participantChecks.publicRead },
+      // Run files made before lane 61 name no journey on a refusal; the assembler names it from the run.
+      participantChecks: { refusals: EXAMPLE.participantChecks.refusals.filter((check) => check.journey === journey.role).map(({ journey: _role, ...check }) => check), publicRead: EXAMPLE.participantChecks.publicRead },
+      close: {
+        attempted: close.attempted,
+        closed: close.closed,
+        problems: [],
+        error: null,
+        reading: { saveStatus: close.saveStatus, statusAfter: close.statusAfter, addresses: close.addresses, publicReadStatusAfter: close.publicReadAfter.status },
+      },
     };
+    assert.equal(recordMode, 'proof');
     const file = path.join(root, `engagement-journey-${journey.role}.json`);
     fs.writeFileSync(file, JSON.stringify(run));
     files.push(file);
@@ -364,26 +413,71 @@ function exampleRuns() {
 const fakePdfPages = (file) => fs.readFileSync(file, 'utf8').replace(/^[^\n]*\n/, '').split('\f');
 const fakeWorkbook = (file) => JSON.parse(fs.readFileSync(file, 'utf8').replace(/^[^\n]*\n/, ''));
 
+const loadChecker = () => import(require('url').pathToFileURL(path.join(__dirname, '..', 'openplan', 'scripts', 'ops', 'capability-evidence.mjs')).href);
+const assemble = (files, overrides = {}) => lib.assembleEngagementRecord({ journeyFiles: files, commit: EXAMPLE.commit, baseUrl: PROOF_ORIGIN_FOR_TESTS, recordedOn: '2026-11-20', proofOrigin: PROOF_ORIGIN_FOR_TESTS, ...overrides });
+/** Change one run file in place. */
+const editRun = (file, change) => {
+  const run = JSON.parse(fs.readFileSync(file, 'utf8'));
+  change(run);
+  fs.writeFileSync(file, JSON.stringify(run));
+};
+
+test('the tests\' proof origin is the checker\'s', async () => {
+  assert.equal(PROOF_ORIGIN_FOR_TESTS, (await loadChecker()).PROOF_ORIGIN);
+});
+
 test('assembly: three journey files make a record the checker accepts on the proof origin', async () => {
-  const checker = await import(require('url').pathToFileURL(path.join(__dirname, '..', 'openplan', 'scripts', 'ops', 'capability-evidence.mjs')).href);
+  const checker = await loadChecker();
   const { root, files } = exampleRuns();
-  const record = lib.assembleEngagementRecord({ journeyFiles: files, commit: EXAMPLE.commit, baseUrl: checker.PROOF_ORIGIN, recordedOn: '2026-11-20' });
+  const record = assemble(files);
   assert.deepEqual(record.limits.map((limit) => limit.id), [...job.requiredLimits, job.crossWorkspace.pageAnsweredOkLimit]);
   assert.equal(record.participantChecks.refusals.length, 15, 'every journey\'s refusals are kept');
+  assert.deepEqual([...new Set(record.participantChecks.refusals.map((check) => check.journey))], ['county', 'city-or-town', 'tribal-area'], 'each refusal names the journey whose run made it');
   assert.equal(record.participantChecks.publicRead.staffFieldsFound, false);
+  assert.deepEqual(record.journeys.map((journey) => journey.mode), ['proof', 'proof', 'proof']);
+  assert.deepEqual(record.journeys[0].close, EXAMPLE.journeys[0].close, 'the close comes from the run file');
   assert.doesNotThrow(() => checker.validateProvenJobRecord(record, { repoRoot: root, readPdfPages: fakePdfPages, readWorkbook: fakeWorkbook }));
   const local = { ...record, baseUrl: 'http://localhost:3482' };
   assert.throws(() => checker.validateProvenJobRecord(local, { repoRoot: root, readPdfPages: fakePdfPages, readWorkbook: fakeWorkbook }), /record.baseUrl is not in the expected form/);
 });
 
 test('assembly: one journey whose public read carried a staff field marks the record', () => {
-  const { files } = exampleRuns();
-  const run = JSON.parse(fs.readFileSync(files[1], 'utf8'));
-  run.participantChecks.publicRead = { ...run.participantChecks.publicRead, staffFieldsFound: true, staffFieldsSearched: ['moderation_notes'] };
-  fs.writeFileSync(files[1], JSON.stringify(run));
-  const record = lib.assembleEngagementRecord({ journeyFiles: files, commit: EXAMPLE.commit, baseUrl: 'https://example.invalid', recordedOn: '2026-11-20' });
+  const { files } = exampleRuns({ baseUrl: 'https://example.invalid', mode: 'rehearsal' });
+  editRun(files[1], (run) => { run.participantChecks.publicRead = { ...run.participantChecks.publicRead, staffFieldsFound: true, staffFieldsSearched: ['moderation_notes'] }; });
+  const record = assemble(files, { baseUrl: 'https://example.invalid' });
   assert.equal(record.participantChecks.publicRead.staffFieldsFound, true);
   assert.deepEqual(record.participantChecks.publicRead.staffFieldsSearched, ['moderation_notes'], 'only the fields every journey searched');
+});
+
+// Review 59, finding 1: a rehearsal folder assembled by mistake as proof is
+// refused before any checker reads it; so is an unfinished or open run.
+test('assembly refuses a run that cannot go into a record for this commit and origin', () => {
+  const cases = [
+    ['a rehearsal run under the proof origin', (run) => { run.mode = 'rehearsal'; }, {}, /engagement-journey-county\.json is a rehearsal run; a record on the proof origin takes proof runs only/],
+    ['a run made on another origin', (run) => { run.baseUrl = 'http://localhost:3484'; }, {}, /engagement-journey-county\.json ran on http:\/\/localhost:3484, not the record's https:\/\/openplan-zeta\.vercel\.app/],
+    ['a proof run with no expected commit', (run) => { run.expectedCommit = null; }, {}, /named no expected commit; a proof run names the commit it tested/],
+    ['a run made against another commit', (run) => { run.expectedCommit = '1'.repeat(40); }, {}, /expected commit 1{40}, not the record's/],
+    ['a run that stopped', (run) => { run.stoppedAt = 'moderate'; }, {}, /engagement-journey-county\.json stopped at moderate; an unfinished run cannot go into a record/],
+    ['a run that left its campaign open', (run) => { run.close.closed = false; }, {}, /did not take its campaign offline at the end, so it cannot go into a record/],
+    ['a run of another job', (run) => { run.jobId = 'safety-action-plan-and-ss4a-in-three-places'; }, {}, /is a run of safety-action-plan-and-ss4a-in-three-places, not engagement-campaign-review-and-response-in-three-places/],
+    ['a participant refusal named for another journey', (run) => { run.participantChecks.refusals[0].journey = 'tribal-area'; }, {}, /holds a participant refusal named for the tribal-area journey, not its own county/],
+  ];
+  for (const [name, change, overrides, reason] of cases) {
+    const { files } = exampleRuns();
+    editRun(files[0], change);
+    assert.throws(() => assemble(files, overrides), reason, name);
+  }
+  assert.throws(() => assemble(exampleRuns().files, { proofOrigin: undefined }), /Assembly needs the checker's proof origin/);
+});
+
+test('assembly takes a rehearsal under its own local origin, and keeps its mode for the checker to refuse', async () => {
+  const checker = await loadChecker();
+  const { root, files } = exampleRuns({ baseUrl: 'http://localhost:3484', mode: 'rehearsal' });
+  for (const file of files) editRun(file, (run) => { run.expectedCommit = null; });
+  const record = assemble(files, { baseUrl: 'http://localhost:3484' });
+  assert.deepEqual(record.journeys.map((journey) => journey.mode), ['rehearsal', 'rehearsal', 'rehearsal']);
+  const hosted = { ...record, baseUrl: checker.PROOF_ORIGIN };
+  assert.throws(() => checker.validateProvenJobRecord(hosted, { repoRoot: root, readPdfPages: fakePdfPages, readWorkbook: fakeWorkbook }), /county journey ran in rehearsal mode; only a proof run is proof/);
 });
 
 // ---------------------------------------------------------------------------

@@ -66,6 +66,7 @@
             "required": ["request", "status", "contentReturned"],
             "additionalProperties": false,
             "properties": {
+              "journey": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "The role of the journey whose participant made the request. Required by a job whose definition sets participantChecks.perJourney to role." },
               "request": { "$ref": "#/$defs/slug" },
               "status": { "type": "integer", "minimum": 100, "description": "HTTP status the participant received. Only 401, 403 or 404 counts." },
               "contentReturned": { "type": "boolean" }
@@ -224,10 +225,47 @@
     "engagementJourney": {
       "type": "object",
       "description": "One journey of the engagement job: a staff account runs a public comment campaign, a public participant contributes, staff moderate, review and publish a response, and the review files and the public response page are read.",
-      "required": ["role", "place", "executors", "accountCreatedAt", "confirmationMethod", "health", "campaign", "pdfs", "workbooks", "publicPage", "screens"],
+      "required": ["role", "mode", "place", "executors", "accountCreatedAt", "confirmationMethod", "health", "campaign", "pdfs", "workbooks", "publicPage", "screens", "close"],
       "additionalProperties": false,
       "properties": {
         "role": { "$ref": "#/$defs/slug" },
+        "mode": { "enum": ["rehearsal", "proof"], "description": "The mode the journey ran in, from its run file. Only proof counts; the assembler refuses a rehearsal run assembled under the proof origin." },
+        "close": {
+          "type": "object",
+          "description": "How the journey closed its campaign at the end, from its run file: the save, the status read back, each public address read afterward as a participant, and the public portal read afterward.",
+          "required": ["attempted", "closed", "saveStatus", "statusAfter", "addresses", "publicReadAfter", "endedAt"],
+          "additionalProperties": false,
+          "properties": {
+            "attempted": { "type": "boolean" },
+            "closed": { "type": "boolean" },
+            "saveStatus": { "type": "integer", "minimum": 100 },
+            "statusAfter": { "type": "string", "minLength": 1 },
+            "addresses": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "status", "endedNoticeShown", "campaignTextFound"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "$ref": "#/$defs/slug" },
+                  "status": { "type": "integer", "minimum": 100 },
+                  "endedNoticeShown": { "type": "boolean" },
+                  "campaignTextFound": { "type": "boolean" }
+                }
+              }
+            },
+            "publicReadAfter": {
+              "type": "object",
+              "required": ["status"],
+              "additionalProperties": false,
+              "properties": {
+                "status": { "type": ["integer", "null"], "minimum": 100 },
+                "campaignTextFound": { "type": "boolean", "description": "Whether the campaign's title or an approved comment was in the body. Required when the read answered 200." }
+              }
+            },
+            "endedAt": { "$ref": "#/$defs/dateTime" }
+          }
+        },
         "place": { "$ref": "#/$defs/place" },
         "executors": {
           "type": "array",

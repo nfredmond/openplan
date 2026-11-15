@@ -91,6 +91,9 @@ node first-job-journey.js --mode rehearsal --base-url http://localhost:3450 \
 # assemble three journeys into one record for the evidence checker
 node first-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 hex> \
   --base-url <the hosted origin> --out record.json
+# --assemble refuses a run made on another origin, a run that stopped, a run
+# that names another expected commit, and under the hosted origin a rehearsal
+# run or one with no expected commit (review 59)
 npm run check:first-job-journey   # unit tests; the PDF tests need Poppler
 ```
 
@@ -171,7 +174,10 @@ node engagement-job-journey.js --mode rehearsal --base-url http://localhost:3482
 # assemble three journeys into one record for the evidence checker
 node engagement-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 hex> \
   --base-url <the hosted origin> --out record.json
-npm run check:engagement-job-journey   # unit tests
+# --assemble applies the first job's run rule and also refuses a run that left
+# its campaign open; it carries each run's mode and close into the record and
+# names each participant refusal's journey (review 59)
+npm run check:engagement-job-journey   # unit tests, and review 59's changed copies of the dress rehearsal
 ```
 
 ## Current scripts

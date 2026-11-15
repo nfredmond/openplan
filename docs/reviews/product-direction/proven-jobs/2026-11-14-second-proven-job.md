@@ -50,10 +50,17 @@ A record is accepted only when:
    XLSX, read cell by cell (each contribution's status cell; each published
    response's sources cell); and on the public response page, read by the
    journey at 1440 and 390 px in light and dark.
-9. No rejected comment's text is on the public response page. The record
-   carries a SHA-256 hash of each rejected text, never the text.
+9. No rejected comment's text is on the public response page or in either
+   public review file. The record carries each rejected text beside its
+   SHA-256 hash: a test entry the journey typed, which represents no one, so
+   the checker can search the review files for it, and it must be that
+   comment's own text in the internal workbook. (Corrected November 15,
+   2026: this rule first said the record carries the hash, never the text;
+   KI-2026-11-14-371 added the text and review 59 tied it to the workbook.)
 10. The portal and the staff campaign screens pass axe with zero serious and
-    zero critical findings at both widths in both modes.
+    zero critical findings at both widths in both modes. (Since November 15,
+    2026 the definition requires all six screens the journey checks, and
+    none may scroll sideways at 390 px; review 59.)
 11. A second account is refused the review PDF and XLSX downloads and the
     campaign read as data checks, and the staff campaign page as a page check,
     under the cross-workspace rule the first job uses.

@@ -437,16 +437,18 @@ function textHolds(haystack, needle) {
 
 /**
  * Search surfaces for each rejected comment's text and its id. A surface is
- * { name, pages } for a PDF (the shared matcher, page by page) or
- * { name, text } for anything else (page text, HTML, JSON, workbook cells).
- * Returns the SHA-256 of each text searched and every surface that held one.
+ * { name, pages } for a PDF (the shared matcher, page by page, then with the
+ * pages joined at each page break, the checker's rule) or { name, text } for
+ * anything else (page text, HTML, JSON, workbook cells). Returns the SHA-256
+ * of each text searched and every surface that held one.
  */
 function searchRejected({ texts, ids = [], surfaces }) {
   const hits = [];
   for (const surface of surfaces) {
+    const across = surface.pages ? surface.pages.map((page) => page.trim()).join('\n') : null;
     for (const text of texts) {
       const held = surface.pages
-        ? surface.pages.some((page) => pdfTextHasPhrase(page, text))
+        ? surface.pages.some((page) => pdfTextHasPhrase(page, text)) || pdfTextHasPhrase(across, text)
         : textHolds(surface.text, text);
       if (held) hits.push({ surface: surface.name, by: 'text' });
     }
@@ -499,10 +501,13 @@ function staffFieldsIn(value, fields) {
 
 /**
  * Whether the campaign is closed and offline: the screen's save answered 200
- * with status Closed, and every public address read afterward shows the ended
- * notice and none of the campaign's own strings (title, comments).
+ * with status Closed, every public address read afterward shows the ended
+ * notice and none of the campaign's own strings (title, comments), and the
+ * public portal data read afterward (`publicRead`, { status,
+ * campaignTextFound }) did not answer 200 with those strings (review 59,
+ * finding 8).
  */
-function closeVerdict({ saveStatus, statusAfter, addresses, neverPublic = false }) {
+function closeVerdict({ saveStatus, statusAfter, addresses, publicRead = null, neverPublic = false }) {
   const problems = [];
   if (saveStatus !== 200) problems.push(`the save answered ${saveStatus}`);
   if (statusAfter !== 'closed') problems.push(`the status reads ${statusAfter}`);
@@ -514,6 +519,8 @@ function closeVerdict({ saveStatus, statusAfter, addresses, neverPublic = false 
     if (!address.endedNoticeShown) problems.push(`${address.name} does not show the ended notice`);
     if (address.campaignTextFound) problems.push(`${address.name} still shows the campaign's own text`);
   }
+  if (!publicRead || publicRead.status == null) problems.push('the public portal data was not read after the close');
+  else if (publicRead.status === 200 && publicRead.campaignTextFound !== false) problems.push('the public portal data still answers 200 with the campaign\'s own text');
   return { closed: problems.length === 0, problems };
 }
 
@@ -591,21 +598,76 @@ const LIMIT_TEXTS = {
   'test-comments-represent-no-one': 'The comments were entered by an automated proof run and represent no one. A few test comments are not public opinion.',
   'response-speaks-for-no-agency': 'The published response was written by an automated proof run under a demonstration label and speaks for no agency.',
   'no-translation-or-ai-synthesis': 'No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope.',
+  // What stays on the journey's word (review 59): the checker reads the
+  // review files itself, but nothing below comes from a file it can read.
+  'live-screens-read-by-the-journey': 'The journey read these on live screens and the checker cannot read them again: the public response page\'s counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign\'s public addresses.',
+  'build-named-by-the-journey': 'Which build ran comes from the health readbacks the journey wrote at its start and end. The record\'s origin and each journey\'s mode are also the journey\'s own statements, carried from its run files. Nothing in the record comes from the deployment itself.',
+  'contribution-input-stated-by-the-journey': 'Which contribution was made with the keyboard only, and at which width, is the journey\'s statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook.',
+  'ai-and-approval-flags-set-by-the-journey': 'The AI flags, the staff review\'s approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that.',
 };
 
 const PAGE_ANSWERED_OK_TEXT = 'Another workspace\'s campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account\'s identifying strings was in its text or HTML. The campaign read, the campaign export, the rejected comment\'s history and both review downloads were refused.';
 
 /**
- * Combine three journey files into one record. Cross-workspace checks keep the
- * journey that made them; the participant refusals of all three journeys are
- * kept; the public read is one entry that answered 200 only if every journey's
- * did, searched only the fields every journey searched, and found a staff
- * field if any journey did. `root`, when given, is the folder the record's
- * file paths are relative to.
+ * Refuse a run file that cannot go into a record for this commit and origin
+ * (review 59, finding 1). The run must be this job's, made on the record's
+ * origin, finished (no step stopped it) and its campaign closed. A run
+ * assembled under the proof origin must have run in proof mode against the
+ * record's commit; a run that named an expected commit must name this one.
+ * The first job's assembler applies the same rule (first-job-journey-lib.js,
+ * assertRunAssemblable), less the close.
  */
-function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, root = null, job = loadJobDefinition(), extraLimits = [] }) {
+function assertEngagementRunAssemblable(run, { file, commit, baseUrl, proofOrigin }) {
+  const name = path.basename(file);
+  if (run.jobId !== JOB_ID) throw new Error(`${name} is a run of ${run.jobId}, not ${JOB_ID}.`);
+  first.assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
+  const close = run.close || {};
+  if (!close.attempted || !close.closed) throw new Error(`${name} did not take its campaign offline at the end, so it cannot go into a record.`);
+}
+
+/**
+ * The record's close for one run: what the run file says the close step did
+ * and read, and when that step ended. Nothing here is computed; a field the
+ * run file does not hold is left out, and the checker refuses the gap.
+ */
+function closeForRecord(run) {
+  const close = run.close || {};
+  const reading = close.reading || {};
+  const step = (run.steps || []).find((entry) => entry.step === 'close-campaign');
+  const publicReadAfter = { status: reading.publicReadStatusAfter ?? null };
+  if (typeof reading.publicReadCampaignTextFound === 'boolean') publicReadAfter.campaignTextFound = reading.publicReadCampaignTextFound;
+  return {
+    attempted: close.attempted === true,
+    closed: close.closed === true,
+    saveStatus: reading.saveStatus,
+    statusAfter: reading.statusAfter,
+    addresses: (reading.addresses || []).map(({ name, status, endedNoticeShown, campaignTextFound }) => ({ name, status, endedNoticeShown, campaignTextFound })),
+    publicReadAfter,
+    endedAt: step ? step.endedAt : undefined,
+  };
+}
+
+/**
+ * Combine three journey files into one record. Each journey carries its run's
+ * mode and close. Cross-workspace checks keep the journey that made them; the
+ * participant refusals of all three journeys are kept, each naming its
+ * journey; the public read is one entry that answered 200 only if every
+ * journey's did, searched only the fields every journey searched, and found a
+ * staff field if any journey did. `root`, when given, is the folder the
+ * record's file paths are relative to. A run that cannot go into a record for
+ * this commit and origin refuses the assembly (assertEngagementRunAssemblable).
+ */
+function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, proofOrigin, root = null, job = loadJobDefinition(), extraLimits = [] }) {
+  if (typeof proofOrigin !== 'string' || !proofOrigin) throw new Error('Assembly needs the checker\'s proof origin.');
   const runs = journeyFiles.map((file) => {
     const run = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assertEngagementRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
+    const role = run.journey.role;
+    for (const check of run.participantChecks.refusals) {
+      if (check.journey !== undefined && check.journey !== role) throw new Error(`${path.basename(file)} holds a participant refusal named for the ${check.journey} journey, not its own ${role}.`);
+    }
+    run.participantChecks = { ...run.participantChecks, refusals: run.participantChecks.refusals.map((check) => ({ ...check, journey: role })) };
+    run.journey = { role, mode: run.mode, ...run.journey, close: closeForRecord(run) };
     // Each journey names its files relative to its own folder. With `root`,
     // they are named relative to it instead, as the checker reads them.
     if (root) {
@@ -632,7 +694,9 @@ function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, r
     schema: 'openplan.proven_job_record.v1',
     jobId: JOB_ID,
     commit,
-    baseUrl,
+    // The origin the runs were compared with, not the argument as typed: a
+    // trailing slash assembled and then failed the checker (review 62, A12).
+    baseUrl: new URL(baseUrl).origin,
     recordedOn,
     journeys: runs.map((run) => run.journey),
     crossWorkspace: { checks },
@@ -735,8 +799,10 @@ module.exports = {
   assembleEngagementRecord,
   assertCountsAgree,
   assertReadsAsDemonstration,
+  assertEngagementRunAssemblable,
   assertRejectedTextAbsent,
   buildEngagementJourney,
+  closeForRecord,
   closeVerdict,
   countDisagreements,
   journeyCounts,

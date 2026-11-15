@@ -6,7 +6,7 @@
     "county": "^\\d{5}$",
     "aiannh": "^\\d{4}[RT]$"
   },
-  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once).",
+  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways.",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -111,8 +111,20 @@
         { "field": "campaign.aiFeaturesUsed", "equals": false, "refusal": "used an AI feature; translation, AI moderation and AI synthesis are out of scope for this job" },
         { "field": "campaign.staffReview.approved", "equals": true, "refusal": "staff review was not approved" },
         { "field": "campaign.response.status", "equals": "published", "refusal": "response is {found}, not {expected}" },
-        { "field": "campaign.response.aiAssisted", "equals": false, "refusal": "response was drafted with AI assistance" }
+        { "field": "campaign.response.aiAssisted", "equals": false, "refusal": "response was drafted with AI assistance" },
+        { "field": "confirmationMethod", "equals": "email_link", "refusal": "confirmed its account by {found}; this job's journey confirms only by the emailed link ({expected})" },
+        { "field": "campaign.portalAddressKind", "equals": "share-token", "refusal": "formed its portal address by {found}; this job's journey uses only the {expected}" },
+        { "field": "mode", "equals": "proof", "refusal": "ran in {found} mode; only a proof run is proof" },
+        { "field": "close.closed", "equals": true, "refusal": "did not take its campaign offline at the end" }
       ],
+      "placeStateFromGeoid": {
+        "note": "For these place kinds the Census id begins with the state's two-digit FIPS code, so the record's one stateFips must be the geoid's first two digits. A tribal area can cross states and has no state prefix.",
+        "kinds": ["county", "city", "cousub"]
+      },
+      "health": {
+        "note": "Each journey's health readbacks: status ok, the start readback before the account was created, the account created before the campaign was closed (close.endedAt), the end readback after that close, and the same version and migrations at the end as at the start.",
+        "status": "ok"
+      },
       "pdfs": ["campaign-review", "campaign-review-public"],
       "items": {
         "scope-badge": "pdftotext",
@@ -125,7 +137,12 @@
         "campaign-review-public": { "scope-badge": "pdftotext" }
       },
       "workbooks": ["campaign-review", "campaign-review-public"],
-      "screens": { "widths": [1440, 390], "modes": ["light", "dark"], "required": ["portal", "staff-campaign"] },
+      "screens": {
+        "widths": [1440, 390],
+        "modes": ["light", "dark"],
+        "required": ["portal", "public-response", "staff-campaign", "staff-campaign-responses", "staff-campaign-analysis", "staff-campaign-record"],
+        "noSidewaysScrollWidths": [390]
+      },
       "campaign": {
         "note": "Counts come from the journey's moderation outcomes and published response. The internal review PDF must carry each count as the phrase below, found on its page with the shared matcher (scripts/lib/pdf-text-match.mjs), and every count sentence (countSentences) with the journey's number and no other. The workbook is read by cell: one Contributions row per comment with its status, one Staff responses row per response with its sources, and the Summary rows, which must agree with those cells, the PDF's sentences and the journey. The public copy is read the same way (publicCopy). Each rejected comment's text, which the record holds, must be in the internal PDF and workbook and in neither public file. The public response page is read by the journey at every width and mode.",
         "contributions": { "requiredKinds": ["map-point", "no-map-point"], "keyboardOnlyWidth": 390 },
@@ -145,9 +162,15 @@
             "sheet": "Contributions",
             "idColumn": "id",
             "statusColumn": "status",
-            "statusValues": { "approved": "approved", "rejected": "rejected" }
+            "statusValues": { "approved": "approved", "rejected": "rejected" },
+            "bodyColumn": "body",
+            "notesColumn": "moderation_notes",
+            "pointColumns": ["latitude", "longitude", "geometry"]
           },
           "responses": { "sheet": "Staff responses", "idColumn": "id", "sourcesColumn": "source_item_ids", "publishedColumn": "published_at" },
+          "decisionHistory": { "sheet": "Decision history", "idColumn": "id", "responseColumn": "response_id", "decisionColumn": "decision_id", "projectColumn": "project_id" },
+          "decisionContext": { "sheet": "Decision exact context", "actionColumn": "Action ID", "payloadColumn": "Exact payload text" },
+          "synthesisActions": { "sheet": "Synthesis actions", "actionColumn": "decision_action_id", "reviewColumn": "review_id" },
           "longText": { "sheet": "Long text" },
           "summary": {
             "sheet": "Summary",
@@ -196,6 +219,7 @@
       "participantChecks": {
         "note": "Requests an anonymous participant sends with no session. campaign-read is GET /api/engagement/campaigns/<id>; campaign-export-read is GET /api/engagement/campaigns/<id>/export, every contribution with its moderation notes; rejected-item-history-read is GET /api/engagement/campaigns/<id>/items/<itemId>/history for the comment the journey rejected, its moderation history; review-pdf-download and review-xlsx-download are GET /api/engagement/campaigns/<id>/reports/<jobId>/download with format pdf or xlsx. public-portal-read is GET /api/engage/<shareToken>, which answers 200 and must carry none of the staff-only field names.",
         "requiredRequests": ["campaign-read", "campaign-export-read", "rejected-item-history-read", "review-pdf-download", "review-xlsx-download"],
+        "perJourney": "role",
         "publicRead": {
           "request": "public-portal-read",
           "staffOnlyFields": ["moderation_notes", "review_reason", "metadata_json", "respondent_fingerprint"]
@@ -207,7 +231,11 @@
         "no-human-usefulness-review",
         "test-comments-represent-no-one",
         "response-speaks-for-no-agency",
-        "no-translation-or-ai-synthesis"
+        "no-translation-or-ai-synthesis",
+        "live-screens-read-by-the-journey",
+        "build-named-by-the-journey",
+        "contribution-input-stated-by-the-journey",
+        "ai-and-approval-flags-set-by-the-journey"
       ]
     }
   ]

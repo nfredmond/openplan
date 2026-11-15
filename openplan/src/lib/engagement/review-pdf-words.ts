@@ -14,6 +14,14 @@ import { SURVEY_QUESTION_TYPES, type SurveyQuestionType } from "./survey";
 
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
+/**
+ * Printed on the cover and above the identifiers. A public copy holds fewer
+ * entries than the internal copy, so one staff response can read "Answers
+ * contributions 1 and 4" in one and "1 and 3" in the other.
+ */
+export const REVIEW_NUMBERS_NOTE =
+  "Numbers are positions in this copy. The internal and public copies can give the same contribution or response a different number, so match the two copies by the identifiers at the end, not by number.";
+
 /** A stored time as the review PDF prints it: "Nov 14, 2026, 16:08 UTC". */
 export function reviewTime(value: unknown): string {
   return formatEvidenceTimestamp(typeof value === "string" ? value : null);
@@ -118,7 +126,7 @@ export function recordIdentifiers() {
     },
     html(): string {
       const sections = [...groups].map(([group, rows]) => `<section class="identifier-group"><h3>${escapeHtml(group)}</h3>${rows.map(([label, value]) => `<p class="identifier">${escapeHtml(label)}: <code>${escapeHtml(value)}</code></p>`).join("")}</section>`).join("");
-      return `<section class="identifiers"><h2 id="record-identifiers">Record identifiers</h2><p>These identifiers match this report to its workbook and portable snapshot. Each one is listed under the number or name this report gives it. The snapshot's SHA-256 hash checks that the snapshot file is the one this report was printed from.</p>${sections}</section>`;
+      return `<section class="identifiers"><h2 id="record-identifiers">Record identifiers</h2><p>These identifiers match this report to its workbook and portable snapshot. Each one is listed under the number or name this report gives it. ${REVIEW_NUMBERS_NOTE} The snapshot's SHA-256 hash checks that the snapshot file is the one this report was printed from.</p>${sections}</section>`;
     },
   };
 }
