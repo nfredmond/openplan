@@ -643,7 +643,9 @@ async function main() {
       const reader = await visitor.newPage();
       const campaignStrings = [inputs.campaign.title, ...approveKeys.map((key) => inputs.comments[key])];
       const addresses = [];
-      for (const [name, route] of [['portal', ids.portalPath], ['about', `${ids.portalPath}/about`]]) {
+      // No public link was made if the journey stopped before activation.
+      const neverPublic = !ids.portalPath;
+      for (const [name, route] of neverPublic ? [] : [['portal', ids.portalPath], ['about', `${ids.portalPath}/about`]]) {
         const response = await reader.goto(new URL(route, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
         await settle(reader, 1500);
         const html = await reader.content();
@@ -656,9 +658,9 @@ async function main() {
         });
         await reader.screenshot({ path: path.join(out, 'screens', `campaign-closed-${name}-1440.png`) });
       }
-      const api = await pageFetch(reader, `/api/engage/${tokenOf()}`);
+      const api = neverPublic ? { status: null } : await pageFetch(reader, `/api/engage/${tokenOf()}`);
       await visitor.close();
-      const verdict = lib.closeVerdict({ saveStatus, statusAfter, addresses });
+      const verdict = lib.closeVerdict({ saveStatus, statusAfter, addresses, neverPublic });
       closeReading = { saveStatus, statusAfter, addresses, publicReadStatusAfter: api.status, ...verdict };
       return verdict;
     } finally {
@@ -792,6 +794,7 @@ async function main() {
       };
       const field = await openField();
       const before = await field.evaluate((el) => el.value);
+      ids.createdWithPublicText = before;
       await typeInto(field, inputs.campaign.invitation);
       const saved = page.waitForResponse((r) => r.url().includes(`/api/engagement/campaigns/${ids.campaignId}`) && r.request().method() === 'PATCH', { timeout: 60000 });
       await clickText(page, '#public-share-controls button', 'Save share settings', { exact: true });
@@ -855,7 +858,7 @@ async function main() {
             const text = await reader.evaluate(() => document.body.innerText);
             const html = await reader.content();
             await reader.screenshot({ path: path.join(out, 'screens', `demonstration-${name}-${width}.png`), fullPage: false });
-            const reading = lib.readDemonstrationText({ surface: { name: `${name} at ${width} px`, text, html }, invitation: inputs.campaign.invitation, title: inputs.campaign.title });
+            const reading = lib.readDemonstrationText({ surface: { name: `${name} at ${width} px`, text, html }, invitation: inputs.campaign.invitation, title: inputs.campaign.title, createdWith: ids.createdWithPublicText });
             demonstrationText.portal.push({ ...reading, sheetOpened: opened });
           }
         }
@@ -1095,10 +1098,15 @@ async function main() {
     step('read-review-file-text', async () => {
       for (const scope of ['internal', 'public']) {
         const pages = first.pdfPages(ids.files[`${scope}-pdf`]);
-        demonstrationText.reviewPdfs.push(lib.readDemonstrationText({ surface: { name: `${scope} review PDF page 1`, pages: pages.slice(0, 1) }, invitation: inputs.campaign.invitation, title: inputs.campaign.title }));
+        const about = { invitation: inputs.campaign.invitation, title: inputs.campaign.title, createdWith: ids.createdWithPublicText };
+        // The invitation belongs on page 1. The text the campaign was created
+        // with must be on no page: the first dress rehearsal found it under
+        // "Historical definitions" as well as on page 1.
+        demonstrationText.reviewPdfs.push(lib.readDemonstrationText({ surface: { name: `${scope} review PDF page 1`, pages: pages.slice(0, 1) }, ...about }));
+        demonstrationText.reviewPdfs.push(lib.readDemonstrationText({ surface: { name: `${scope} review PDF, all ${pages.length} pages`, pages }, ...about, requireInvitation: false }));
       }
       lib.assertReadsAsDemonstration(demonstrationText.reviewPdfs);
-      return "page 1 of both review PDFs shows the invitation and not the template's text";
+      return "page 1 of both review PDFs shows the invitation, and no page of either shows the text the campaign was created with";
     }),
 
     step('read-counts', async () => {

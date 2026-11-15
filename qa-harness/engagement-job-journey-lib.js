@@ -502,10 +502,13 @@ function staffFieldsIn(value, fields) {
  * with status Closed, and every public address read afterward shows the ended
  * notice and none of the campaign's own strings (title, comments).
  */
-function closeVerdict({ saveStatus, statusAfter, addresses }) {
+function closeVerdict({ saveStatus, statusAfter, addresses, neverPublic = false }) {
   const problems = [];
   if (saveStatus !== 200) problems.push(`the save answered ${saveStatus}`);
   if (statusAfter !== 'closed') problems.push(`the status reads ${statusAfter}`);
+  // A journey that stopped before it made a public link has no address to
+  // read: the campaign was never public, and closing it is the whole job.
+  if (neverPublic) return { closed: problems.length === 0, problems, neverPublic: true };
   if (!addresses || addresses.length === 0) problems.push('no public address was read');
   for (const address of addresses || []) {
     if (!address.endedNoticeShown) problems.push(`${address.name} does not show the ended notice`);
@@ -681,8 +684,12 @@ function invitationMarkers(invitation, title) {
  * PDF matcher. Returns the reading with `readsAsDemonstration` and the
  * problems that refuse it.
  */
-function readDemonstrationText({ surface, invitation, title, templateSentence = CAMPAIGN_TEMPLATE.publicSentence }) {
+function readDemonstrationText({ surface, invitation, title, templateSentence = CAMPAIGN_TEMPLATE.publicSentence, createdWith = '', requireInvitation = true }) {
   const markers = invitationMarkers(invitation, title);
+  // What the campaign was created with must be gone too, whatever template
+  // made it: every sentence of that text the invitation does not also hold.
+  const createdWithSentences = sentencesOf(createdWith)
+    .filter((sentence) => squash(sentence).length >= 12 && !squash(invitation).includes(squash(sentence)));
   const shown = (phrase) => (surface.pages
     ? surface.pages.some((page) => pdfTextHasPhrase(page, phrase))
     : textHolds(surface.text || '', phrase));
@@ -695,12 +702,18 @@ function readDemonstrationText({ surface, invitation, title, templateSentence = 
     invitationOwnSentenceFound: markers.ownSentence ? shown(markers.ownSentence) : false,
     templateSentence,
     templateSentenceFound: anywhere(templateSentence),
+    createdWithSentencesLookedFor: createdWithSentences.length,
+    createdWithSentencesFound: createdWithSentences.filter(anywhere),
+    invitationRequired: requireInvitation,
   };
   const problems = [];
-  if (!reading.invitationFirstSentenceFound) problems.push(`${surface.name} does not show the invitation's first sentence`);
-  if (!markers.ownSentence) problems.push(`the invitation has no sentence the campaign title lacks, so ${surface.name} cannot show that the invitation is there`);
-  else if (!reading.invitationOwnSentenceFound) problems.push(`${surface.name} does not show the invitation's sentence "${markers.ownSentence.slice(0, 60)}"`);
+  if (requireInvitation) {
+    if (!reading.invitationFirstSentenceFound) problems.push(`${surface.name} does not show the invitation's first sentence`);
+    if (!markers.ownSentence) problems.push(`the invitation has no sentence the campaign title lacks, so ${surface.name} cannot show that the invitation is there`);
+    else if (!reading.invitationOwnSentenceFound) problems.push(`${surface.name} does not show the invitation's sentence "${markers.ownSentence.slice(0, 60)}"`);
+  }
   if (reading.templateSentenceFound) problems.push(`${surface.name} shows the template's text "${templateSentence}"`);
+  for (const sentence of reading.createdWithSentencesFound) problems.push(`${surface.name} shows text the campaign was created with: "${sentence.slice(0, 60)}"`);
   return { ...reading, readsAsDemonstration: problems.length === 0, problems };
 }
 

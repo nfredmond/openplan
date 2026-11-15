@@ -453,3 +453,45 @@ test('demonstration text: the template the journey selects still opens its publi
   const text = source.slice(next, next + 400).replace(/\s+/g, ' ');
   assert.match(text, new RegExp(`^suggestedPublicDescription: "${lib.CAMPAIGN_TEMPLATE.publicSentence}`));
 });
+
+// Review 60: the check named one template's opening words and read page 1 only.
+
+test('demonstration text: a later sentence of the text the campaign was created with is refused, whatever template made it', () => {
+  const OTHER_TEMPLATE = 'Tell us how you get around downtown. Your comments are reviewed by the project team and inform which improvements are studied.';
+  const page = { name: 'portal at 1440 px', text: `${DEMO_TITLE}\n${DEMO_INVITATION}\nYour comments are reviewed by the project team and inform which improvements are studied.`, html: '' };
+  const withoutIt = lib.readDemonstrationText({ surface: page, invitation: DEMO_INVITATION, title: DEMO_TITLE });
+  assert.equal(withoutIt.readsAsDemonstration, true, 'the fixed opening words alone do not catch this text');
+  const reading = lib.readDemonstrationText({ surface: page, invitation: DEMO_INVITATION, title: DEMO_TITLE, createdWith: OTHER_TEMPLATE });
+  assert.equal(reading.readsAsDemonstration, false);
+  assert.equal(reading.createdWithSentencesLookedFor, 2);
+  assert.deepEqual(reading.createdWithSentencesFound, ['Your comments are reviewed by the project team and inform which improvements are studied.']);
+  assert.throws(() => lib.assertReadsAsDemonstration([reading]), /shows text the campaign was created with: "Your comments are reviewed by the project team/);
+});
+
+test('demonstration text: a campaign created with the invitation itself is not refused for showing it', () => {
+  const page = { name: 'portal at 1440 px', text: `${DEMO_TITLE}\n${DEMO_INVITATION}`, html: '' };
+  const reading = lib.readDemonstrationText({ surface: page, invitation: DEMO_INVITATION, title: DEMO_TITLE, createdWith: DEMO_INVITATION });
+  assert.equal(reading.createdWithSentencesLookedFor, 0);
+  assert.equal(reading.readsAsDemonstration, true, reading.problems.join('; '));
+});
+
+test('demonstration text: the created-with text on a later page of a review PDF is refused, and later pages need not repeat the invitation', () => {
+  const pageOne = `PUBLIC REVIEW COPY\n${DEMO_TITLE}\n${DEMO_INVITATION}\nCampaign context\n${DEMO_INVITATION}`;
+  const clean = lib.readDemonstrationText({ surface: { name: 'public review PDF, all 2 pages', pages: [pageOne, 'Contributions\n1. Untitled contribution'] }, invitation: DEMO_INVITATION, title: DEMO_TITLE, createdWith: TEMPLATE_TEXT, requireInvitation: false });
+  assert.equal(clean.readsAsDemonstration, true, clean.problems.join('; '));
+  const laterPage = lib.readDemonstrationText({ surface: { name: 'public review PDF, all 2 pages', pages: [pageOne, `Historical definitions\nCampaign settings 1\n${TEMPLATE_TEXT}`] }, invitation: DEMO_INVITATION, title: DEMO_TITLE, createdWith: TEMPLATE_TEXT, requireInvitation: false });
+  assert.equal(laterPage.readsAsDemonstration, false);
+  assert.throws(() => lib.assertReadsAsDemonstration([laterPage]), /all 2 pages shows the template's text/);
+  // Without the invitation requirement lifted, a page-1-only reading of the same file would pass: that was the gap.
+  const pageOneOnly = lib.readDemonstrationText({ surface: { name: 'public review PDF page 1', pages: [pageOne] }, invitation: DEMO_INVITATION, title: DEMO_TITLE, createdWith: TEMPLATE_TEXT });
+  assert.equal(pageOneOnly.readsAsDemonstration, true);
+  const noInvitation = lib.readDemonstrationText({ surface: { name: 'a later page', pages: ['Contributions'] }, invitation: DEMO_INVITATION, title: DEMO_TITLE, requireInvitation: false });
+  assert.equal(noInvitation.readsAsDemonstration, true, 'a reading that does not require the invitation passes a page without it');
+  assert.equal(lib.readDemonstrationText({ surface: { name: 'a later page', pages: ['Contributions'] }, invitation: DEMO_INVITATION, title: DEMO_TITLE }).readsAsDemonstration, false);
+});
+
+test('close verdict: a campaign closed before it had a public link is closed and never public', () => {
+  assert.deepEqual(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [], neverPublic: true }), { closed: true, problems: [], neverPublic: true });
+  assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'active', addresses: [], neverPublic: true }).closed, false);
+  assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [] }).closed, false, 'with a public link, reading no address is still a problem');
+});

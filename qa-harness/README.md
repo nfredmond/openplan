@@ -112,9 +112,12 @@ and no secret. Per journey:
 - Before activation the journey replaces the template's public description
   with the invitation (Setup tab, "Public-facing description"). As an
   anonymous participant it reads the portal and its about page at 1440 and
-  390 px, and later page 1 of both review PDFs, and stops unless each shows
-  the invitation and none shows the template's "We are studying traffic
-  safety in this area". The run file keeps the readings (`demonstrationText`).
+  390 px, and later both review PDFs, and stops unless each page and page 1
+  of each PDF shows the invitation and no surface, on any PDF page, shows the
+  template's "We are studying traffic safety in this area" or any other
+  sentence of the text the campaign was created with. The run file keeps the
+  readings (`demonstrationText`). A journey that stops before it has a public
+  link closes the campaign and records it as closed and never public.
 - Anonymous participants, each in a fresh browser context: one map point and
   one comment with no map point at 1440 px by pointer, one contribution at
   390 px with the keyboard only (Tab, Enter, Space; the focus trail is saved),
