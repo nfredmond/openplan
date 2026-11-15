@@ -297,7 +297,24 @@ const PUNCTUATION_ONLY_2026_11_02: PortalCatalogSources = {
   "survey.draftSaveFailed": "cd907407",
 };
 
-const CURRENT_ENGLISH: PortalCatalogSources = { ...ENGLISH_OF_2026_10_10, ...PUNCTUATION_ONLY_2026_11_02 };
+/**
+ * The closed-campaign notice named cities, counties and agencies but not
+ * tribal governments. On 2026-11-15 its English became "contact the city,
+ * county, tribal government or agency that sent you this link", and each
+ * catalog's sentence was refreshed by an agent the same way the catalogs were
+ * first made, by inserting the words for tribal government into the list.
+ * Hmong was not refreshed: it keeps the old fingerprint and shows English
+ * until a translation of the current English is recorded.
+ */
+const TRIBAL_GOVERNMENT_NOTICE_2026_11_15: PortalCatalogSources = {
+  "closed.body": "6c30f99b",
+};
+
+const CURRENT_ENGLISH: PortalCatalogSources = {
+  ...ENGLISH_OF_2026_10_10,
+  ...PUNCTUATION_ONLY_2026_11_02,
+  ...TRIBAL_GOVERNMENT_NOTICE_2026_11_15,
+};
 
 export const PORTAL_CATALOG_TRANSLATED_FROM: Partial<Record<PortalLocale, PortalCatalogSources>> = {
   // Spanish was written key by key from July to October 2026. For each entry,
@@ -316,7 +333,8 @@ export const PORTAL_CATALOG_TRANSLATED_FROM: Partial<Record<PortalLocale, Portal
   bn: CURRENT_ENGLISH,
   fa: CURRENT_ENGLISH,
   fr: CURRENT_ENGLISH,
-  hmn: CURRENT_ENGLISH,
+  // Translated 2026-10-10 from the notice without tribal governments.
+  hmn: { ...CURRENT_ENGLISH, "closed.body": "914fe3b2" },
   ht: CURRENT_ENGLISH,
   hy: CURRENT_ENGLISH,
   km: CURRENT_ENGLISH,
@@ -338,4 +356,5 @@ export const PORTAL_CATALOG_TRANSLATED_FROM: Partial<Record<PortalLocale, Portal
  */
 export const PORTAL_CATALOG_KNOWN_STALE: Partial<Record<PortalLocale, readonly PortalMessageKey[]>> = {
   es: ["page.submissionsOpen", "page.submissionsClosed"],
+  hmn: ["closed.body"],
 };

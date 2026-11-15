@@ -40,7 +40,7 @@ export const AM_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "በዚህ የዘመቻ ገጽ ላይ አሁን የሚታዩ የጸደቁ የማኅበረሰብ አስተያየቶች።",
   "page.defaultDescription": "ስለዚህ ፕሮጀክት ሐሳብዎን ያካፍሉ። አስተያየቶች ለሕዝብ ከመታየታቸው በፊት ይገመገማሉ።",
   "closed.title": "ይህ የአስተያየት መስጫ ጊዜ አብቅቷል።",
-  "closed.body": "ከአሁን በኋላ አስተያየቶች አይቀበሉም። ጥያቄ ካለዎት ይህን ሊንክ የላከልዎትን ከተማ፣ ካውንቲ ወይም ኤጀንሲ ያነጋግሩ።",
+  "closed.body": "ከአሁን በኋላ አስተያየቶች አይቀበሉም። ጥያቄ ካለዎት ይህን ሊንክ የላከልዎትን ከተማ፣ ካውንቲ፣ የጎሳ መንግሥት ወይም ኤጀንሲ ያነጋግሩ።",
   "portal.tab.submit": "አስተያየት ያክሉ",
   "portal.tab.feedback": "አስተያየቶች",
   "portal.tab.survey": "መጠይቅ",

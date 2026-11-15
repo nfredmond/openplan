@@ -40,7 +40,7 @@ export const FR_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Contributions du public approuvées et actuellement visibles sur la page de cette consultation.",
   "page.defaultDescription": "Donnez votre avis sur ce projet. Les commentaires sont examinés avant d'être publiés.",
   "closed.title": "Cette période de commentaires est terminée.",
-  "closed.body": "Les commentaires ne sont plus acceptés. Si vous avez une question, contactez la ville, le comté ou l'organisme qui vous a envoyé ce lien.",
+  "closed.body": "Les commentaires ne sont plus acceptés. Si vous avez une question, contactez la ville, le comté, le gouvernement tribal ou l'organisme qui vous a envoyé ce lien.",
   "portal.tab.submit": "Ajouter un commentaire",
   "portal.tab.feedback": "Commentaires",
   "portal.tab.survey": "Questionnaire",

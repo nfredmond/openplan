@@ -40,7 +40,7 @@ export const TL_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Mga inaprubahang ambag ng komunidad na kasalukuyang nakikita sa pahinang ito ng kampanya.",
   "page.defaultDescription": "Ibahagi ang inyong opinyon tungkol sa proyektong ito. Sinusuri ang mga komento bago ito ipakita sa publiko.",
   "closed.title": "Tapos na ang panahon ng pagbibigay ng komento.",
-  "closed.body": "Hindi na tumatanggap ng mga komento. Kung may tanong kayo, makipag-ugnayan sa lungsod, county o ahensiyang nagpadala sa inyo ng link na ito.",
+  "closed.body": "Hindi na tumatanggap ng mga komento. Kung may tanong kayo, makipag-ugnayan sa lungsod, county, pamahalaang tribo o ahensiyang nagpadala sa inyo ng link na ito.",
   "portal.tab.submit": "Magdagdag ng komento",
   "portal.tab.feedback": "Mga komento",
   "portal.tab.survey": "Sarbey",

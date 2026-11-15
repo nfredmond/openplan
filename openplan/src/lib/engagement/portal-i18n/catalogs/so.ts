@@ -40,7 +40,7 @@ export const SO_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "Faallooyinka bulshada ee la ansixiyay ee hadda ka muuqda bogga ololahan.",
   "page.defaultDescription": "Ra'yigaaga ka dhiibo mashruucan. Faallooyinka dib ayaa loo eegaa ka hor inta aan si guud loo muujin.",
   "closed.title": "Muddadii faallooyinka way dhammaatay.",
-  "closed.body": "Faallooyin dambe lama aqbalayo. Haddii aad su'aal qabto, la xiriir magaalada, degmada ama hay'adda kuu soo dirtay xiriirkan.",
+  "closed.body": "Faallooyin dambe lama aqbalayo. Haddii aad su'aal qabto, la xiriir magaalada, degmada, dowladda qabiilka ama hay'adda kuu soo dirtay xiriirkan.",
   "portal.tab.submit": "Ku dar faallo",
   "portal.tab.feedback": "Faallooyinka",
   "portal.tab.survey": "Sahan",

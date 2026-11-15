@@ -40,7 +40,7 @@ export const ZH_PORTAL_MESSAGES: PortalMessageCatalog = {
   "page.publishedFeedbackDetail": "此活动页面上当前可见的已批准社区内容。",
   "page.defaultDescription": "欢迎对本项目发表意见。意见经审阅后才会公开显示。",
   "closed.title": "本次意见征求期已结束。",
-  "closed.body": "现已不再接受意见。如有疑问，请联系向您发送此链接的市、县或机构。",
+  "closed.body": "现已不再接受意见。如有疑问，请联系向您发送此链接的市、县、部落政府或机构。",
   "portal.tab.submit": "发表意见",
   "portal.tab.feedback": "意见",
   "portal.tab.survey": "问卷",
