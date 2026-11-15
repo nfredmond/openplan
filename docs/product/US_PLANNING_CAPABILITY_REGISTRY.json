@@ -69,7 +69,7 @@
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/README.md",
-          "sha256": "abf34cf7fa1a69e22a6dfa044d7b6dadc0ee4f02495cb9f9ea084989ee47cf2c"
+          "sha256": "c1bc01d1ac1d0de2bec90dd493529cc82d6af88aec8ced43d2ca36f8f35dae40"
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/inputs/sierra-county-ca.inputs.json",
@@ -86,6 +86,116 @@
         {
           "path": "docs/product/capability-evidence/first-proven-job/inputs/budget-demonstration.csv",
           "sha256": "a38dac9e7b8086dc8bc214c531d31d04278dd445b537731a32cf346fd1b5c32e"
+        }
+      ]
+    },
+    {
+      "jobId": "engagement-campaign-review-and-response-in-three-places",
+      "places": [
+        {
+          "kind": "county",
+          "geoid": "41011",
+          "stateFips": [
+            "41"
+          ]
+        },
+        {
+          "kind": "city",
+          "geoid": "5644760",
+          "stateFips": [
+            "56"
+          ]
+        },
+        {
+          "kind": "aiannh",
+          "geoid": "1505R",
+          "stateFips": [
+            "04"
+          ]
+        }
+      ],
+      "commit": "3af5a8b35860138e2a01214702ff7016b4b6fd32",
+      "reviewedAt": "2026-11-15",
+      "evidence": [
+        {
+          "path": "docs/product/capability-evidence/second-proven-job.v1.json",
+          "sha256": "a322fdba601405ec325c65397c1f3dbe773ef4d11c26553db71728f39de8f863"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/county/engagement-journey-county.json",
+          "sha256": "3f94d7749f1ba996157213c4dd5fd10131405270fcd1645d546bc76bdacae494"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/county/files/county-internal-campaign-review.pdf",
+          "sha256": "e403fce08f0f564d7493aeb027ee22b6e7e92cbf60aa4480c947ff0faca1ad4a"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/county/files/county-public-campaign-review.pdf",
+          "sha256": "2e21afbe89bf9d66ec0a99718a8a757600e7686b15374199ac85630517d64d18"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/county/files/county-internal-campaign-review.xlsx",
+          "sha256": "bc4462d1254198058c4a59844093957cf59956afed490e723b32cec55f6c7982"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/county/files/county-public-campaign-review.xlsx",
+          "sha256": "5e40d3c60dd581a4e1e2a573bcfd606971c3dca4d79e08e5787012994fb0c16d"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/city-or-town/engagement-journey-city-or-town.json",
+          "sha256": "1c18002ed3554f1480a59be3c619ca51f501ce49e6b8d308f8034dc771766718"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/city-or-town/files/city-or-town-internal-campaign-review.pdf",
+          "sha256": "85f372d36d603d53e41d3cc6285896dfe32b9aff957db3b9f8530c8d1d761a9c"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/city-or-town/files/city-or-town-public-campaign-review.pdf",
+          "sha256": "6fd4a2bab32ebc95b6eb04e3ef94c4d56b0fc175eccefceebb0224d9c3b2ffd3"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/city-or-town/files/city-or-town-internal-campaign-review.xlsx",
+          "sha256": "31ab64cea8d6940affc3eb75cd352e504dd9b33e6b9b1f67e5071f3af497ac0d"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/city-or-town/files/city-or-town-public-campaign-review.xlsx",
+          "sha256": "a156ef1bff80a0bf84a85e2441133182207e9a00357ee33838f74e0f4edde3f1"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/tribal-area/engagement-journey-tribal-area.json",
+          "sha256": "48b0ddf5efb3f18522517fdee82355e8e4e91819a65ede8bbd100ff73fdcdee9"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/tribal-area/files/tribal-area-internal-campaign-review.pdf",
+          "sha256": "cfaae9d75032f91e6f43c7402454298c2ff1115918df463a6d9eaa4a774c3c7e"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/tribal-area/files/tribal-area-public-campaign-review.pdf",
+          "sha256": "7ac632c1f88b6ba89808eefcc6c180fef28bd1d602472c8a8ac1fe6bb2f68a20"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/tribal-area/files/tribal-area-internal-campaign-review.xlsx",
+          "sha256": "6d3cfcfba4e00b856f446c6f07af9fcae026bbb2c7eb638cb9178c229f4043d4"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/tribal-area/files/tribal-area-public-campaign-review.xlsx",
+          "sha256": "0790d70a1b023ef08e9042acb2d8d369096908c4e75deda2adf47aac36e9d5b9"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/README.md",
+          "sha256": "60e58ee48d3911d60cc52d0f7fd9afaa96432cd865f857a471213f49478298b1"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/inputs/coos-county.inputs.json",
+          "sha256": "1ed2aee0c4cde678c248cca703402d35a56869b7fd94a38a5a7994bbb2e287c4"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/inputs/lander.inputs.json",
+          "sha256": "dd8325036067f2be5fe300e408c34108000d56dae8bb3b7ad5793437a00585af"
+        },
+        {
+          "path": "docs/product/capability-evidence/second-proven-job/inputs/hopi-reservation.inputs.json",
+          "sha256": "9b08c78e0edbfc3a1158ccf93ecf444c8a3595c7086a6bbd4ef1e374d0a66375"
         }
       ]
     }

@@ -1,0 +1,45 @@
+{
+  "label": "Proof inputs for the engagement journey, Coos County, OR. Demonstration text typed by an automated OpenPlan proof run on November 14, 2026. It is not a consultation and speaks for no agency, tribe or resident.",
+  "rehearsal": false,
+  "organization": "OpenPlan proof run, Coos County engagement demonstration",
+  "secondOrganization": "OpenPlan proof run second account, engagement county",
+  "projectName": "Road safety comments demonstration 1 of 3 by an automated OpenPlan proof run",
+  "projectSummary": "Demonstration project made by an automated OpenPlan proof run. It represents no agency and no real plan.",
+  "planType": "safety_plan",
+  "decision": {
+    "title": "Demonstration decision: study a safer crossing at a location to be chosen",
+    "rationale": "Entered by an automated OpenPlan proof run. It records no agency decision and names no real location.",
+    "impact": "None. Demonstration record only."
+  },
+  "campaign": {
+    "title": "Demonstration by an automated OpenPlan proof run. Road safety comments, demonstration 1 of 3",
+    "invitation": "Demonstration by an automated OpenPlan proof run. This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here. The only review of comments on this page is by the same automated run, which approves or withholds its own test entries. It will be closed when the run ends."
+  },
+  "comments": {
+    "mapPoint": "Demonstration comment with a map point: a marked crossing here would help people cross. Entered by an automated proof run; it represents no one and describes no real location.",
+    "noMapPoint": "Demonstration comment with no map point: people need more room to walk beside the road. Entered by an automated proof run; it represents no one.",
+    "keyboard": "Demonstration comment typed with the keyboard only at phone width: a warning sign before the school would help. Entered by an automated proof run; it represents no one.",
+    "rejected": "Off-topic demonstration entry about a water meter reading. Entered by an automated proof run; it represents no one and is here to be withheld."
+  },
+  "reviewReasons": {
+    "approve": "Proof run review: on topic for this demonstration campaign, so the public copy is approved.",
+    "reject": "Proof run review: off topic for a road safety campaign, so it is not published."
+  },
+  "staffReview": {
+    "groupLabel": "Crossings and warning signs",
+    "groupSummary": "Proof run summary: two demonstration comments ask for a marked crossing and a warning sign. They represent no one.",
+    "correctionReason": "Proof run correction: name the group from the comments it holds.",
+    "approvalReason": "Proof run approval: the group label and summary match the approved demonstration comments."
+  },
+  "response": {
+    "theme": "Crossings and warning signs",
+    "youSaid": "Proof run summary: demonstration comments asked for a marked crossing and a warning sign.",
+    "weDid": "Proof run response: the demonstration project records a proposed decision to study a safer crossing. This text speaks for no agency or tribe, and nothing will be built because of it.",
+    "publishReason": "Proof run: publish the demonstration response so the public page can be read."
+  },
+  "links": {
+    "decisionReason": "Proof run link: the demonstration response explains the proposed demonstration decision.",
+    "themeReason": "Proof run link: this group is the one the demonstration response answers.",
+    "refreshReason": "Proof run refresh: record the approved group now linked to this response."
+  }
+}

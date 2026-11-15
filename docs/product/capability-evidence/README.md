@@ -7,10 +7,15 @@ exported PDFs it names beside it. The registry lists a record under
 direction check (`npm run product:direction:check`) then reads the record and
 refuses it unless every rule below holds.
 
-One record exists: `first-proven-job.v1.json`, recorded November 14, 2026, for
-the job `safety-action-plan-and-ss4a-in-three-places` on commit `ccf88a921`.
+Two records exist. `first-proven-job.v1.json`, recorded November 14, 2026, is
+the safety action plan and SS4A application in three places;
 [first-proven-job/README.md](first-proven-job/README.md) says what it shows,
-the two attempts that failed first, and its limits.
+what it does not, and every attempt. `second-proven-job.v1.json`, recorded
+November 15, 2026, is a public engagement campaign with its review report and
+a published response in three places;
+[second-proven-job/README.md](second-proven-job/README.md) says the same for
+it. Both were run by an agent on the hosted site, and no person reviewed
+whether the artifacts are useful.
 
 ## Files
 
