@@ -292,7 +292,9 @@ test('the not-found title the journey looks for is the one the app prints', () =
 test('a page check carries only fields the record schema defines', () => {
   const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'proven_job_record.v1.schema.json'), 'utf8'));
   const allowed = Object.keys(schema.properties.crossWorkspace.properties.checks.items.properties).sort();
-  assert.deepEqual(allowed, ['contentReturned', 'kind', 'notFoundRendered', 'recordTextFound', 'request', 'searchedStringCount', 'searchedStringSha256', 'status', 'target']);
+  // `journey` (lane 45) is optional for this job: its checker counts each
+  // required request once per journey instead of matching names.
+  assert.deepEqual(allowed, ['contentReturned', 'journey', 'kind', 'notFoundRendered', 'recordTextFound', 'request', 'searchedStringCount', 'searchedStringSha256', 'status', 'target']);
   const source = fs.readFileSync(path.join(__dirname, 'first-job-journey.js'), 'utf8');
   for (const key of ['notFoundRendered', 'recordTextFound', 'searchedStringSha256', 'searchedStringCount']) assert.ok(source.includes(`${key}:`), key);
 });
@@ -429,4 +431,18 @@ test('the study place is chosen by its full label only (KI-2026-11-14-230)', () 
   // Two results with the same label are not one place.
   assert.equal(lib.choosePlaceResult('Washington township, OH', ['Washington township, OH', 'Washington township, OH']), -1);
   assert.equal(lib.choosePlaceResult('', tribal), -1);
+});
+
+test('the record carries the map page pixel hash the checker recomputes (KI-2026-11-14-303)', { skip: !hasPoppler() && 'Poppler is not installed' }, () => {
+  const pixels = require('../openplan/scripts/lib/poppler-pixels.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-pdf-'));
+  const file = writePdf(dir, 'pixels.pdf', reportPages());
+  const { pdf, findings } = lib.describePdf('safety-action-plan', file, 'docs/pixels.pdf', dir);
+  const map = pdf.items.find((entry) => entry.item === 'high-injury-map');
+  const ppm = pixels.popplerPagePpm(file, map.page);
+  assert.equal(map.pixelSha256, sha(ppm));
+  assert.notEqual(map.pixelSha256, map.imageSha256);
+  assert.equal(findings.mapRedPixels, pixels.analyzePpm(ppm).redPixels);
+  assert.ok(findings.mapRedPixels >= pixels.MIN_RED_PIXELS);
+  assert.ok(!('redPixels' in map));
 });

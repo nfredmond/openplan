@@ -158,6 +158,7 @@ function summarizeAxe(results, { version = AXE_VERSION, tags = AXE_TAGS } = {}) 
  */
 const { findPdfPhrase, joinLetterSpacing, pdfTextHasPhrase } = require('../openplan/scripts/lib/pdf-text-match.mjs');
 const { assertPopplerTool, popplerPdfPages } = require('../openplan/scripts/lib/poppler-text.mjs');
+const { MAP_RENDER_DPI, MIN_RED_PIXELS, analyzePpm, popplerPagePpm } = require('../openplan/scripts/lib/poppler-pixels.mjs');
 
 /** Page texts as the evidence checker reads them; refuses a pdftotext that is not Poppler's. */
 function pdfPages(pdfPath, options) {
@@ -192,50 +193,19 @@ const ITEM_RULES = {
 };
 /** Words an export prints right after a heading whose item is absent. */
 const ABSENT_AFTER_HEADING = ['Missing', 'Could not be read', 'Map not drawn', 'No countermeasure is attached'];
-const MIN_RED_PIXELS = 40;
 
-/** Read a binary PPM (P6) and count highlight-red and non-background pixels. */
-function analyzePpm(buffer) {
-  let offset = 0;
-  const tokens = [];
-  while (tokens.length < 4) {
-    while (offset < buffer.length && /\s/.test(String.fromCharCode(buffer[offset]))) offset += 1;
-    if (buffer[offset] === 0x23) {
-      while (offset < buffer.length && buffer[offset] !== 0x0a) offset += 1;
-      continue;
-    }
-    let token = '';
-    while (offset < buffer.length && !/\s/.test(String.fromCharCode(buffer[offset]))) {
-      token += String.fromCharCode(buffer[offset]);
-      offset += 1;
-    }
-    tokens.push(token);
-  }
-  offset += 1;
-  const [magic, w, h, max] = tokens;
-  if (magic !== 'P6' || Number(max) !== 255) throw new Error('Only 8-bit binary PPM (P6) is read.');
-  const width = Number(w);
-  const height = Number(h);
-  let red = 0;
-  let ink = 0;
-  for (let i = offset; i + 2 < buffer.length; i += 3) {
-    const r = buffer[i];
-    const g = buffer[i + 1];
-    const b = buffer[i + 2];
-    if (r >= 140 && r <= 230 && g <= 90 && b <= 90 && r - g >= 90) red += 1;
-    if (r < 235 || g < 235 || b < 235) ink += 1;
-  }
-  return { width, height, redPixels: red, inkFraction: width && height ? ink / (width * height) : 0 };
-}
-
-/** Render one page with pdftoppm; returns the PNG hash and the PPM pixel counts. */
+/**
+ * Render one page with pdftoppm; returns the PNG hash, the hash of the PPM
+ * pixels and the pixel counts. The PPM comes from the renderer the checker
+ * uses (scripts/lib/poppler-pixels.mjs), so the checker can recompute
+ * pixelSha256 and the count on any platform; the PNG is kept as the run's
+ * image file, but its bytes depend on the PNG encoder.
+ */
 function renderPdfPage(pdfPath, page, outPrefix) {
-  execFileSync('pdftoppm', ['-f', String(page), '-l', String(page), '-r', '72', '-singlefile', pdfPath, outPrefix], { stdio: 'ignore' });
-  execFileSync('pdftoppm', ['-f', String(page), '-l', String(page), '-r', '72', '-png', '-singlefile', pdfPath, outPrefix], { stdio: 'ignore' });
-  const ppm = fs.readFileSync(`${outPrefix}.ppm`);
+  const ppm = popplerPagePpm(pdfPath, page);
+  execFileSync('pdftoppm', ['-f', String(page), '-l', String(page), '-r', String(MAP_RENDER_DPI), '-png', '-singlefile', pdfPath, outPrefix], { stdio: 'ignore' });
   const png = fs.readFileSync(`${outPrefix}.png`);
-  fs.unlinkSync(`${outPrefix}.ppm`);
-  return { ...analyzePpm(ppm), imageSha256: sha256(png), imagePath: `${outPrefix}.png` };
+  return { ...analyzePpm(ppm), imageSha256: sha256(png), pixelSha256: sha256(ppm), imagePath: `${outPrefix}.png` };
 }
 
 /**
@@ -286,7 +256,7 @@ function findPdfItems(kind, pages, renderPage) {
         missing.push({ item, page, reason: `no page near the heading has ${MIN_RED_PIXELS} or more highlight-red pixels` });
         continue;
       }
-      items.push({ item, page: best.page, method: 'page-image', imageSha256: best.imageSha256, redPixels: best.redPixels });
+      items.push({ item, page: best.page, method: 'page-image', imageSha256: best.imageSha256, pixelSha256: best.pixelSha256, redPixels: best.redPixels });
       continue;
     }
     items.push({ item, page, method: 'pdftotext', text: rule.heading });
