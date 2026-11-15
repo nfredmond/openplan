@@ -303,8 +303,6 @@ const PUNCTUATION_ONLY_2026_11_02: PortalCatalogSources = {
  * county, tribal government or agency that sent you this link", and each
  * catalog's sentence was refreshed by an agent the same way the catalogs were
  * first made, by inserting the words for tribal government into the list.
- * Hmong was not refreshed: it keeps the old fingerprint and shows English
- * until a translation of the current English is recorded.
  */
 const TRIBAL_GOVERNMENT_NOTICE_2026_11_15: PortalCatalogSources = {
   "closed.body": "6c30f99b",
@@ -333,8 +331,7 @@ export const PORTAL_CATALOG_TRANSLATED_FROM: Partial<Record<PortalLocale, Portal
   bn: CURRENT_ENGLISH,
   fa: CURRENT_ENGLISH,
   fr: CURRENT_ENGLISH,
-  // Translated 2026-10-10 from the notice without tribal governments.
-  hmn: { ...CURRENT_ENGLISH, "closed.body": "914fe3b2" },
+  hmn: CURRENT_ENGLISH,
   ht: CURRENT_ENGLISH,
   hy: CURRENT_ENGLISH,
   km: CURRENT_ENGLISH,
@@ -356,5 +353,4 @@ export const PORTAL_CATALOG_TRANSLATED_FROM: Partial<Record<PortalLocale, Portal
  */
 export const PORTAL_CATALOG_KNOWN_STALE: Partial<Record<PortalLocale, readonly PortalMessageKey[]>> = {
   es: ["page.submissionsOpen", "page.submissionsClosed"],
-  hmn: ["closed.body"],
 };
