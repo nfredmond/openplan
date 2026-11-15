@@ -82,7 +82,7 @@ describe("JurisdictionReadinessPanel", () => {
 
     // The default job is explicitly not assessed, and it names what was examined.
     expect(screen.getByText("Not assessed here")).toBeInTheDocument();
-    expect(screen.getByText(/no Nevada journey is retained as evidence/)).toBeInTheDocument();
+    expect(screen.getByText(/did not assemble an evidence package/)).toBeInTheDocument();
     expect(screen.queryByText(/no evidence-backed claim is registered/i)).not.toBeInTheDocument();
     const handoff = payload.reports.find((report) => report.job.id === "project-evidence-handoff")!;
     expect(screen.getByText(`sha256:${handoff.sources[0].sha256}`)).toBeInTheDocument();

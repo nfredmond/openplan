@@ -29,9 +29,14 @@ import {
   homeGeographyFromPlaceBoundary,
   placeOfRecordFromHomeGeography,
   resolveJurisdiction,
+  subdivisionCodeFromTigerwebGeoid,
   tigerwebCountyFipsFromHomeGeography,
 } from "@/lib/workspaces/home-geography";
-import { JURISDICTION_READINESS_JOBS, resolveJurisdictionReadiness } from "@/lib/jurisdiction-readiness/registry";
+import {
+  JURISDICTION_READINESS_JOBS,
+  resolveAllJurisdictionReadiness,
+  resolveJurisdictionReadiness,
+} from "@/lib/jurisdiction-readiness/registry";
 import { describeGrantProgramCoverage } from "@/lib/grants/programs/coverage";
 import { describeBlockedCoverage, resolveCensusTractCoverageTarget } from "@/lib/geographies/census-tract-coverage";
 
@@ -215,7 +220,30 @@ describe("a multi-state reservation as a home geography", () => {
     );
     expect(report?.status).toBe("unassessed");
     expect(report?.jurisdiction.subdivision).toBeNull();
-    expect(report?.applicability).toMatch(/does not identify one subdivision/);
+    expect(report?.applicability).toMatch(/OpenPlan records none for a tribal area/);
+  });
+
+  // The first proven job printed "Safety analysis: NOT ASSESSED HERE" for the
+  // Pyramid Lake Paiute Reservation, explained only as "does not identify one
+  // subdivision". A tribal area inside one state gets no state either, so each
+  // job says why in words a planner reads, and still answers for no state.
+  // Blind category: the resolver gets no place kind, so this sentence is the
+  // same for any place with no state on record, tribal or not.
+  it("says why a one-state tribal area is not assessed, without naming a subdivision", () => {
+    expect(subdivisionCodeFromTigerwebGeoid("aiannh", "3010R")).toBeNull();
+    const reports = resolveAllJurisdictionReadiness({
+      countryCode: "US",
+      subdivisionCode: subdivisionCodeFromTigerwebGeoid("aiannh", "3010R"),
+      label: "Pyramid Lake Paiute Reservation, NV",
+    });
+    expect(reports).toHaveLength(JURISDICTION_READINESS_JOBS.length);
+    for (const report of reports) {
+      expect(report.status, report.job.id).toBe("unassessed");
+      expect(report.applicability, report.job.id).toBe(
+        "This place has no single state, DC or territory on record. OpenPlan records none for a tribal area, a metropolitan or micropolitan area or a multistate region, even one inside one state, and assesses readiness only for states, DC and territories, so this job is not assessed for this place.",
+      );
+      expect(JSON.stringify(report), report.job.id).not.toMatch(/subdivision claim|Nevada/);
+    }
   });
 
   it("tells the grant catalog the state is not established", async () => {

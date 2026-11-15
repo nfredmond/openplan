@@ -115,7 +115,7 @@ describe("jurisdiction readiness registry", () => {
     );
 
     expect(report?.status).toBe("unassessed");
-    expect(report?.applicability).toMatch(/does not identify one subdivision/i);
+    expect(report?.applicability).toMatch(/no single state, DC or territory on record/);
   });
 
   it("makes Puerto Rico limits explicit for every registered job", () => {
@@ -320,6 +320,105 @@ describe("readiness entries for every state, DC and inhabited territory", () => 
         }
       }
       expect(claimFor(jurisdictionId, "project-evidence-handoff").status, jurisdictionId).toBe("unassessed");
+    }
+  });
+});
+
+/**
+ * THE FIRST PROVEN JOB CHANGED WHAT FIVE ROWS MAY SAY, AND NOTHING ELSE.
+ *
+ * The November 14, 2026 record (docs/product/capability-evidence) holds
+ * agent-run hosted journeys for one California county, one Nevada county and
+ * a tribal area. The Nevada handoff row said "no Nevada journey is retained as
+ * evidence", which the record made false. Each row the record touches now
+ * cites it, quotes only counts the record holds, and keeps the status it had:
+ * the registry has no rule that a proven job record raises a status.
+ *
+ * Blind category: whether the record's journeys were themselves sound (the
+ * direction check and its review cover that), and rows for jobs the record
+ * did not exercise, which are not read here.
+ */
+describe("rows the first proven job record changes", () => {
+  type RecordJourney = { role: string; crashes: { sourceId: string; reportedCount: number; storedCount: number } };
+  const capabilityRegistry = JSON.parse(
+    readFileSync(resolve(REPO_ROOT, "docs/product/US_PLANNING_CAPABILITY_REGISTRY.json"), "utf8"),
+  ) as { provenJobs: Array<{ evidence: Array<{ path: string; sha256: string }> }> };
+  const recordEvidence = capabilityRegistry.provenJobs[0].evidence.find((item) => item.path.endsWith(".v1.json"))!;
+  const record = JSON.parse(readFileSync(resolve(REPO_ROOT, recordEvidence.path), "utf8")) as {
+    journeys: RecordJourney[];
+  };
+  const journey = (role: string) => record.journeys.find((candidate) => candidate.role === role)!;
+  const RECORD_SOURCE = "first-proven-job-record-20261114";
+
+  it("pins the same record bytes the proven job entry names", () => {
+    expect(SOURCES_BY_ID.get(RECORD_SOURCE)).toEqual({
+      id: RECORD_SOURCE,
+      path: recordEvidence.path,
+      sha256: recordEvidence.sha256,
+    });
+  });
+
+  it("cites the record from exactly these rows and leaves each status as it was", () => {
+    const citing = JURISDICTION_READINESS_REGISTRY.claims
+      .filter((claim) => claim.sourceIds.includes(RECORD_SOURCE))
+      .map((claim) => [claim.id, claim.status]);
+    expect(citing).toEqual([
+      ["US-CA/safety-analysis", "partial"],
+      ["US-CA/grants-and-reimbursement", "partial"],
+      ["US-NV/project-evidence-handoff", "unassessed"],
+      ["US-NV/safety-analysis", "partial"],
+      ["US-NV/grants-and-reimbursement", "unavailable"],
+    ]);
+    for (const claim of JURISDICTION_READINESS_REGISTRY.claims.filter((row) => row.sourceIds.includes(RECORD_SOURCE))) {
+      const text = [claim.applicability, ...claim.limitations].join(" ");
+      expect(text, claim.id).toMatch(/agent-run journey on the hosted site/);
+    }
+  });
+
+  it("names the journey in every limit, because limits print under their own heading in each project's plan", () => {
+    // Review 54: "The county's 12 stored crashes ... No planner reviewed the plan." read as the
+    // reader's own county and plan on every Nevada project.
+    for (const claim of JURISDICTION_READINESS_REGISTRY.claims.filter((row) => row.sourceIds.includes(RECORD_SOURCE))) {
+      for (const limitation of claim.limitations) {
+        expect(limitation, claim.id).not.toMatch(/^The county|\bits plan\b|reviewed the plan\./);
+        if (/case numbers|not checked against the source independently/.test(limitation)) {
+          expect(limitation, claim.id).toMatch(/^In the November 14, 2026 journey,/);
+          expect(limitation, claim.id).toMatch(/the plan that journey exported/);
+        }
+      }
+    }
+  });
+
+  it("no longer says no Nevada journey is retained, and still does not assess the handoff", () => {
+    const claim = claimFor("US-NV", "project-evidence-handoff");
+    expect(claim.applicability).not.toMatch(/no Nevada journey/i);
+    expect(claim.applicability).toMatch(/did not assemble an evidence package/);
+    expect(claim.limitations.join(" ")).toMatch(/not assessed here/);
+  });
+
+  it("quotes the crash counts the record holds, and their limits", () => {
+    const california = journey("california-county").crashes;
+    const nevada = journey("nevada-county").crashes;
+    const californiaSafety = claimFor("US-CA", "safety-analysis");
+    const nevadaSafety = claimFor("US-NV", "safety-analysis");
+
+    expect(california.sourceId).toBe("ccrs-ca");
+    expect(californiaSafety.applicability).toContain(
+      `stored ${california.storedCount} of the ${california.reportedCount} CCRS crashes`,
+    );
+    expect(californiaSafety.limitations.join(" ")).toMatch(/not checked against the source independently/);
+
+    expect(nevada.sourceId).toBe(FARS_SOURCE_ID);
+    expect(nevadaSafety.applicability).toContain(`stored ${nevada.storedCount} FARS fatal crashes for one Nevada county`);
+    expect(nevadaSafety.limitations.join(" ")).toContain(`same ${nevada.storedCount} case numbers`);
+    expect(nevadaSafety.limitations.join(" ")).toMatch(/fatal-only/i);
+  });
+
+  it("says the grant journeys covered one federal program and no award or reimbursement", () => {
+    for (const jurisdictionId of ["US-CA", "US-NV"]) {
+      const claim = claimFor(jurisdictionId, "grants-and-reimbursement");
+      expect(claim.applicability + " " + claim.limitations.join(" "), jurisdictionId).toMatch(/federal SS4A/);
+      expect(claim.limitations.join(" "), jurisdictionId).toMatch(/recorded no award or reimbursement/);
     }
   });
 });
