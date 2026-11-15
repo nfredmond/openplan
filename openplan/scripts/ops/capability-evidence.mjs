@@ -263,7 +263,13 @@ function checkClose(journey, label) {
  * record comes from the deployment itself.
  */
 function checkHealthRule(journey, job, label) {
-  const at = (value) => Date.parse(value);
+  // A time Date.parse cannot read compares false with everything, which
+  // would pass every order rule below (review 62, X3).
+  const at = (value) => {
+    const time = Date.parse(value);
+    if (Number.isNaN(time)) refuse(`${label} holds a time that cannot be read: ${JSON.stringify(value)}`);
+    return time;
+  };
   for (const reading of journey.health) {
     if (reading.status !== job.health.status) refuse(`${label} ${reading.point} health readback reports status ${reading.status}, not ${job.health.status}`);
   }
@@ -1002,11 +1008,18 @@ function checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected,
   const bookLabel = `${label} ${copy.workbook} workbook`;
   const scopeRow = requiredSheet(sheets, copy.scopeCell.sheet, bookLabel).find((row) => row[0] === copy.scopeCell.field);
   if (!scopeRow || scopeRow[1] !== copy.scopeCell.value) refuse(`${bookLabel} ${copy.scopeCell.sheet} ${copy.scopeCell.field} must be ${copy.scopeCell.value}`);
+  // A field is named in a header row, in the first column of a sheet of
+  // field and value rows (Read me, Summary), or in the Long text sheet's field
+  // column. Names are compared in lower case with spaces, hyphens and
+  // underscores alike, so "Moderation Notes" is "moderation_notes".
+  const fieldName = (value) => String(value ?? "").trim().toLowerCase().replace(/[\s_-]+/g, "_");
+  const staffOnly = new Set(staffOnlyFields.map(fieldName));
   for (const [name, rows] of Object.entries(sheets)) {
-    const headers = (rows[0] ?? []).map((value, column) => [String(value).trim(), `sheet ${name} cell ${cellAddress(0, column)}`]);
-    const split = name === book.longText.sheet ? rows.slice(1).map((row, index) => [String(row[2] ?? "").trim(), `sheet ${name} cell ${cellAddress(index + 1, 2)}`]) : [];
-    for (const [field, where] of [...headers, ...split]) {
-      if (staffOnlyFields.includes(field)) refuse(`${bookLabel} names the staff-only field ${field} at ${where}`);
+    const headers = (rows[0] ?? []).map((value, column) => [value, `sheet ${name} cell ${cellAddress(0, column)}`]);
+    const firstColumn = rows.slice(1).map((row, index) => [row[0], `sheet ${name} cell ${cellAddress(index + 1, 0)}`]);
+    const split = name === book.longText.sheet ? rows.slice(1).map((row, index) => [row[2], `sheet ${name} cell ${cellAddress(index + 1, 2)}`]) : [];
+    for (const [field, where] of [...headers, ...firstColumn, ...split]) {
+      if (staffOnly.has(fieldName(field))) refuse(`${bookLabel} names the staff-only field ${fieldName(field)} at ${where}`);
     }
   }
   const { summary } = book;

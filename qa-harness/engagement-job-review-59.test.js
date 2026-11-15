@@ -175,3 +175,51 @@ test('each changed copy review 59 found accepted, and this lane closes, is refus
     assert.throws(() => check(record, typeof pages === 'function' ? pages : undefined), reason, `${id}: ${change}`);
   }
 });
+
+// Review 62 (a fresh-context review of this checker, November 15, 2026) found
+// five small gaps no honest run can trip. Four are closed here.
+
+const publicBook = (record, role) => J(record, role).workbooks.find((entry) => /public/.test(entry.path));
+
+test('review 62, X3: a health time that cannot be read is refused, not compared as nothing', async () => {
+  const { check, forged } = await honest();
+  const record = forged();
+  J(record, 'county').health[0].checkedAt = '2026-13-45T99:00:00Z';
+  assert.throws(() => check(record), /county journey holds a time that cannot be read: "2026-13-45T99:00:00Z"/);
+  assert.doesNotThrow(() => check(forged()), 'the honest record with readable times is accepted, so the refusal above is the rule\'s');
+});
+
+test('review 62, N10b to N10d: a staff-only field name in the public workbook is refused in any case, with a space, or as a field row', async () => {
+  const variants = [
+    ['a header in another case', (s) => { s.Contributions[0].push('Moderation_Notes'); for (const row of s.Contributions.slice(1)) row.push('a note'); }, /campaign-review-public workbook names the staff-only field moderation_notes at sheet Contributions cell/],
+    ['a header with a space', (s) => { s.Contributions[0].push('moderation notes'); for (const row of s.Contributions.slice(1)) row.push('a note'); }, /names the staff-only field moderation_notes at sheet Contributions cell/],
+    ['a field row in the Read me sheet', (s) => { s['Read me'].push(['moderation_notes', 'a note']); }, /names the staff-only field moderation_notes at sheet Read me cell A/],
+    ['another staff-only name, hyphenated', (s) => { s.Contributions[0].push('Respondent-Fingerprint'); for (const row of s.Contributions.slice(1)) row.push('x'); }, /names the staff-only field respondent_fingerprint/],
+  ];
+  for (const [what, change, reason] of variants) {
+    const { root, check, forged } = await honest();
+    const record = forged();
+    changeSheets(root, publicBook(record, 'county'), change);
+    assert.throws(() => check(record), reason, what);
+  }
+  // A harmless added column is still accepted: the rule refuses names, not columns.
+  const { root, check, forged } = await honest();
+  const record = forged();
+  changeSheets(root, publicBook(record, 'county'), (s) => { s.Contributions[0].push('Review notes for readers'); for (const row of s.Contributions.slice(1)) row.push(''); });
+  assert.doesNotThrow(() => check(record));
+});
+
+test('review 62, A12: a base URL typed with a trailing slash is written to the record as its origin', async () => {
+  const checker = await loadChecker();
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'openplan-review-62-'));
+  fs.cpSync(FIXTURE, root, { recursive: true });
+  const record = lib.assembleEngagementRecord({ journeyFiles: RUN_FILES.map((file) => path.join(root, file)), commit: COMMIT, baseUrl: `${LOCAL}/`, recordedOn: '2026-11-15', proofOrigin: checker.PROOF_ORIGIN, root });
+  assert.strictEqual(record.baseUrl, LOCAL);
+});
+
+test('review 62: the build limit says the origin and mode are also the journey\'s statements', async () => {
+  const { record } = await honest();
+  const limit = record.limits.find((entry) => entry.id === 'build-named-by-the-journey');
+  assert.ok(limit, 'the record states the build limit');
+  assert.match(limit.text, /origin and each journey's mode are also the journey's own statements/);
+});

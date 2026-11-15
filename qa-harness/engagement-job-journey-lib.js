@@ -601,7 +601,7 @@ const LIMIT_TEXTS = {
   // What stays on the journey's word (review 59): the checker reads the
   // review files itself, but nothing below comes from a file it can read.
   'live-screens-read-by-the-journey': 'The journey read these on live screens and the checker cannot read them again: the public response page\'s counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign\'s public addresses.',
-  'build-named-by-the-journey': 'Which build ran comes from the health readbacks the journey wrote at its start and end. Nothing in the record comes from the deployment itself.',
+  'build-named-by-the-journey': 'Which build ran comes from the health readbacks the journey wrote at its start and end. The record\'s origin and each journey\'s mode are also the journey\'s own statements, carried from its run files. Nothing in the record comes from the deployment itself.',
   'contribution-input-stated-by-the-journey': 'Which contribution was made with the keyboard only, and at which width, is the journey\'s statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook.',
   'ai-and-approval-flags-set-by-the-journey': 'The AI flags, the staff review\'s approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that.',
 };
@@ -694,7 +694,9 @@ function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, p
     schema: 'openplan.proven_job_record.v1',
     jobId: JOB_ID,
     commit,
-    baseUrl,
+    // The origin the runs were compared with, not the argument as typed: a
+    // trailing slash assembled and then failed the checker (review 62, A12).
+    baseUrl: new URL(baseUrl).origin,
     recordedOn,
     journeys: runs.map((run) => run.journey),
     crossWorkspace: { checks },
