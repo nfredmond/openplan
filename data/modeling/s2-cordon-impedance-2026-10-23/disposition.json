@@ -1,0 +1,64 @@
+{
+  "study_id": "s2-cordon-impedance-development-20261023",
+  "development_decision": "retire",
+  "decision_scope": "this execution cannot advance",
+  "scientific_outcome": "inconclusive",
+  "scientific_rejection": false,
+  "reason": "EvaluatorProcessFailed during preparation; exact exception not retained by sealed protocol",
+  "defaults_changed": false,
+  "held_out_or_consumed_holdout_partition_opened": false,
+  "assignments_planned": 11,
+  "assignments_executed": 0,
+  "geographies": [
+    {
+      "geography": "06047",
+      "split": "diagnosis",
+      "baseline": "not_run",
+      "candidate": "not_run",
+      "raw_residual": null,
+      "uncertainty_aware_residual": null,
+      "road_class_results": "not_reached",
+      "decision": "retire_execution"
+    },
+    {
+      "geography": "06069",
+      "split": "evaluation",
+      "baseline": "not_run",
+      "candidate": "not_run",
+      "raw_residual": null,
+      "uncertainty_aware_residual": null,
+      "road_class_results": "not_reached",
+      "decision": "retire_execution"
+    },
+    {
+      "geography": "06107",
+      "split": "evaluation",
+      "baseline": "not_run",
+      "candidate": "not_run",
+      "raw_residual": null,
+      "uncertainty_aware_residual": null,
+      "road_class_results": "not_reached",
+      "decision": "retire_execution"
+    },
+    {
+      "geography": "08014",
+      "split": "diagnosis",
+      "baseline": "not_run",
+      "candidate": "not_run",
+      "raw_residual": null,
+      "uncertainty_aware_residual": null,
+      "road_class_results": "not_reached",
+      "decision": "retire_execution"
+    },
+    {
+      "geography": "08101",
+      "split": "evaluation",
+      "baseline": "not_run",
+      "candidate": "not_run",
+      "raw_residual": null,
+      "uncertainty_aware_residual": null,
+      "road_class_results": "not_reached",
+      "decision": "retire_execution"
+    }
+  ]
+}

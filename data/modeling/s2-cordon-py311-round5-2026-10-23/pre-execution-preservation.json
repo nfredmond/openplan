@@ -1,0 +1,17 @@
+{
+  "base_commit": "b801d736321e8170a1e607c7a0544a39e18817d3",
+  "prior_result_bytes": 49421,
+  "prior_result_sha256": "03339b0a107455ca43ac539df02b395b9e28d6bee1476e842afdbf0e2d65841c",
+  "historical_closures": [
+    {
+      "study": "s2-cordon-impedance-development-20261023",
+      "files": 190,
+      "mismatches": []
+    },
+    {
+      "study": "s2-cordon-impedance-development-successor-20261023",
+      "files": 201,
+      "mismatches": []
+    }
+  ]
+}

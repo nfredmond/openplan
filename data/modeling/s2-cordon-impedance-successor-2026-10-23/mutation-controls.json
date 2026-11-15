@@ -1,0 +1,101 @@
+{
+  "source_sha256": "0e5ae3248f81f3b4be7b2d79c3f76de95d42650611bf11fbfe532c7c34573445",
+  "restored_exactly": true,
+  "controls": [
+    {
+      "name": "harmless_comment",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "expected_assertion": null,
+      "control_passed": true,
+      "output_sha256": "b849f3bdef3aa0e2ae1f34e88cce86796c1b40b7df9aac9b892984d8cc75239a",
+      "output": "test_complete_sealed_synthetic_native_execution (__main__.SuccessorTests.test_complete_sealed_synthetic_native_execution) ... ok\ntest_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 3.238s\n\nOK\n"
+    },
+    {
+      "name": "old_omx_core_read",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "-v",
+        "SuccessorTests.test_native_preparation_reads_omx_and_preserves_order"
+      ],
+      "returncode": 1,
+      "expected_assertion": "Complete synthetic preparation must succeed: KeyError: 'travel_time'",
+      "control_passed": true,
+      "output_sha256": "87480c649e6e82c6017a6ee9aa44a522b685bb18cf176ef921cb83836e0850c5",
+      "output": "test_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order) ... FAIL\n\n======================================================================\nFAIL: test_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py\", line 123, in test_native_preparation_reads_omx_and_preserves_order\n    cases = evaluate.prepare(registry, root / 'prepared')\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/evaluate_successor.py\", line 76, in prepare\n    times = np.array(skim.matrix[\"travel_time\"], dtype=float)[np.ix_(order, order)]\n                     ~~~~~~~~~~~^^^^^^^^^^^^^^^\nKeyError: 'travel_time'\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py\", line 125, in test_native_preparation_reads_omx_and_preserves_order\n    self.fail(f'Complete synthetic preparation must succeed: {type(error).__name__}: {error}')\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Complete synthetic preparation must succeed: KeyError: 'travel_time'\n\n----------------------------------------------------------------------\nRan 1 test in 0.025s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "public_reader_restored",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "-v",
+        "SuccessorTests.test_native_preparation_reads_omx_and_preserves_order"
+      ],
+      "returncode": 0,
+      "expected_assertion": null,
+      "control_passed": true,
+      "output_sha256": "2826158f22ec5b0df054506f34b6f427a4539d8fa19dc85e026e8ea440767933",
+      "output": "test_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.036s\n\nOK\n"
+    },
+    {
+      "name": "wrong_omx_axis",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "-v",
+        "SuccessorTests.test_native_preparation_reads_omx_and_preserves_order"
+      ],
+      "returncode": 1,
+      "expected_assertion": "OMX centroid ordering must preserve the expected candidate",
+      "control_passed": true,
+      "output_sha256": "78f186684898e271175a1d274fc194a25b809206ca9d9d121b4064f257230ce3",
+      "output": "test_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order) ... FAIL\n\n======================================================================\nFAIL: test_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py\", line 129, in test_native_preparation_reads_omx_and_preserves_order\n    np.testing.assert_allclose(case['candidate'], expected, rtol=0, atol=1e-10,\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                               err_msg='OMX centroid ordering must preserve the expected candidate')\n                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/lib/python3.14/site-packages/numpy/testing/_private/utils.py\", line 1684, in assert_allclose\n    assert_array_compare(compare, actual, desired, err_msg=str(err_msg),\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                         verbose=verbose, header=header, equal_nan=equal_nan,\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                         strict=strict)\n                         ^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.14/contextlib.py\", line 85, in inner\n    return func(*args, **kwds)\n  File \"/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/lib/python3.14/site-packages/numpy/testing/_private/utils.py\", line 885, in assert_array_compare\n    raise AssertionError(msg)\nAssertionError: \nNot equal to tolerance rtol=0, atol=1e-10\nOMX centroid ordering must preserve the expected candidate\nMismatched elements: 8 / 16 (50%)\nMax absolute difference among violations: 2.55289425\nMax relative difference among violations: 3.19700146\n ACTUAL: array([[ 3.      ,  5.      , 31.313628,  1.186377],\n       [ 7.      , 11.      , 33.686372, 63.813623],\n       [61.414515,  3.585489,  0.      , 35.      ],\n       [16.585485, 48.414511, 35.      ,  0.      ]])\n DESIRED: array([[ 3.      ,  5.      , 32.217336,  0.282672],\n       [ 7.      , 11.      , 32.782664, 64.717328],\n       [63.96741 ,  1.032597,  0.      , 35.      ],\n       [14.03259 , 50.967403, 35.      ,  0.      ]])\n\n----------------------------------------------------------------------\nRan 1 test in 0.038s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "omit_native_repeat",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "-v",
+        "SuccessorTests.test_complete_sealed_synthetic_native_execution"
+      ],
+      "returncode": 1,
+      "expected_assertion": "All five synthetic assignments must finish",
+      "control_passed": true,
+      "output_sha256": "5cf2de0743c9decec76b746907df0170c5b50938e35f0876f43579c6daf9b3b3",
+      "output": "test_complete_sealed_synthetic_native_execution (__main__.SuccessorTests.test_complete_sealed_synthetic_native_execution) ... FAIL\n\n======================================================================\nFAIL: test_complete_sealed_synthetic_native_execution (__main__.SuccessorTests.test_complete_sealed_synthetic_native_execution)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py\", line 152, in test_complete_sealed_synthetic_native_execution\n    self.assertEqual(len(assignments), 5, 'All five synthetic assignments must finish')\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 4 != 5 : All five synthetic assignments must finish\n\n----------------------------------------------------------------------\nRan 1 test in 3.126s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "restored_complete_suite",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "expected_assertion": null,
+      "control_passed": true,
+      "output_sha256": "26ef766e37d4c8add2bde94cd6cfaa7afb0bf73fdd13e0f6149f92ba77e3a6aa",
+      "output": "test_complete_sealed_synthetic_native_execution (__main__.SuccessorTests.test_complete_sealed_synthetic_native_execution) ... ok\ntest_native_preparation_reads_omx_and_preserves_order (__main__.SuccessorTests.test_native_preparation_reads_omx_and_preserves_order) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 3.171s\n\nOK\n"
+    }
+  ],
+  "skips": 0,
+  "blind_categories": [
+    "real county inputs and assignment",
+    "scientific validity",
+    "machine crash recovery",
+    "hosted operation"
+  ]
+}

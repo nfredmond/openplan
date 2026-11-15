@@ -175,6 +175,7 @@ if str(_WORKER_DIR) not in sys.path:
 
 from gateway_counts import attach_passthrough_ceilings  # noqa: E402
 from assignment_settings import build_traffic_assignment  # noqa: E402
+from assignment_runtime import require_assignment_python  # noqa: E402
 from gateways import (  # noqa: E402
     GATEWAY_PASSTHROUGH_SHARE,
     build_external_gateway_matrix as worker_build_external_gateway_matrix,
@@ -2813,6 +2814,14 @@ def synthesize_demand(
             for gateway in gateways
         ]
     external = build_external_gateway_matrix(gateways, zones_df)
+    from external_distribution import condition_external_demand
+
+    external, external_distribution_record = condition_external_demand(
+        external, skim_matrix,
+        np.array([zone_id in set(external_zone_ids(zones_df)) for zone_id in zone_ids]),
+    )
+    if external_distribution_record is not None:
+        external_distribution_record["ordered_zone_ids"] = [int(zone_id) for zone_id in zone_ids]
     external_vehicle_before_reachability = float(external.sum())
 
     valid_pairs = np.isfinite(skim_matrix) & (skim_matrix > 0)
@@ -2942,6 +2951,8 @@ def synthesize_demand(
         },
         "files": {"od_trip_matrix": "package/od_trip_matrix.csv"},
     }
+    if external_distribution_record is not None:
+        layers["external_distribution"] = external_distribution_record
     (package_dir / "demand_layers.json").write_text(json.dumps(layers, indent=2))
     return {
         "matrix": total,
@@ -3094,6 +3105,7 @@ def run_assignment(
     class_factors: dict[str, float] | None = None,
     write_outputs: bool = True,
 ) -> dict[str, Any]:
+    require_assignment_python()
     from aequilibrae.matrix import AequilibraeMatrix
     from aequilibrae.paths import Graph, TrafficAssignment, TrafficClass
 

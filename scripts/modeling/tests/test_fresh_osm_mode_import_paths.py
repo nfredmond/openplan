@@ -26,7 +26,7 @@ SOURCES = tuple(SCRIPTS / name for name in (
     'run_screening_model.py', 'screening_runtime.py', 'screening_boundary.py',
     'screening_bundle.py', 'screening_metrics.py', 'demand_package.py', 'gateway_counts.py',
 )) + tuple(WORKER / name for name in (
-    'main.py', 'model_fresh_osm_modes.py', 'assignment_settings.py', 'gateways.py',
+    'main.py', 'model_fresh_osm_modes.py', 'assignment_settings.py', 'assignment_runtime.py', 'gateways.py',
     'centroid_geometry.py',
 ))
 

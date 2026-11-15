@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Metropolitan Council 2019",
+    "url": "https://www.arcgis.com/sharing/rest/content/items/15cdcdd4d7684ac0a091cd4ca65fe838?f=pjson",
+    "accessed": "2026-10-23",
+    "bytes": 4375,
+    "sha256": "a1f558c22f17d8519981d2b7241abebe3ce94675e704b312bbba8327c54fe4c2",
+    "licenseInfo": "None. This dataset is public domain under the Minnesota Government Data Practices Act (Minnesota Statutes Chapter 13)."
+  },
+  {
+    "name": "CMAP",
+    "url": "https://www.arcgis.com/sharing/rest/content/items/2e0719dce2c34eeea81039eca35def80?f=pjson",
+    "accessed": "2026-10-23",
+    "bytes": 4262,
+    "sha256": "574490ed20ccb7a4ec4d4a0078238eb4ebbccbbb71c3e999ebde61b6866110a9",
+    "licenseInfo": "<p><span style='background-color:rgb(255,255,255); color:rgb(74,74,74); font-family:&quot;Avenir Next W01&quot;, &quot;Avenir Next W00&quot;, &quot;Avenir Next&quot;, Avenir, &quot;Helvetica Neue&quot;, sans-serif; font-size:16px;'><span style='display:inline !important; float:none; font-style:normal; font-variant-caps:normal; font-variant-ligatures:normal; font-weight:400; letter-spacing:normal; text-align:start; text-decoration-color:initial; text-decoration-style:initial; text-indent:0px; text-transform:none; word-spacing:0px;'>Not restricted. Users are expected to cite the Chicago Metropolitan Agency for Planning (CMAP) as the source of these data.</span></span></p>"
+  }
+]

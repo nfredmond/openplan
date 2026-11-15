@@ -1,0 +1,28 @@
+{
+  "source_model": "ActivitySim 1.5.1 production_semcog",
+  "region": "Southeast Michigan",
+  "calibration_evidence_year": 2015,
+  "exact_coefficient_revision_to_published_table": "unverified; source bytes pinned independently",
+  "files": {
+    "tour_mode_choice_coeffs.csv": {
+      "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/examples/production_semcog/configs/tour_mode_choice_coeffs.csv",
+      "sha256": "4e7b7ed7e37672ec76ed0a3aa877708cb723207586074923946831c41dec482c",
+      "bytes": 22265
+    },
+    "tour_mode_choice_coeffs_template.csv": {
+      "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/examples/production_semcog/configs/tour_mode_choice_coeffs_template.csv",
+      "sha256": "36cba4d55538fa9309709869bfe99f260432c1b55ece81191cb4bdf332858771",
+      "bytes": 42858
+    },
+    "tour_mode_choice.csv": {
+      "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/examples/production_semcog/configs/tour_mode_choice.csv",
+      "sha256": "fc490cc0d923f159dd62d602c9a04d00192e8664f08d8e34de8d8ac7d2ea3a55",
+      "bytes": 57196
+    },
+    "LICENSE.txt": {
+      "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/LICENSE.txt",
+      "sha256": "fd0061b0d097157c786dfad9e66cd58dde3891d3b096b05c3423bd563c6f734e",
+      "bytes": 1520
+    }
+  }
+}
