@@ -1,0 +1,44 @@
+{
+  "all_passed": true,
+  "schema": "openplan.station-evidence-scoped-tests.v1",
+  "skips": 0,
+  "suites": [
+    {
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s1-uncertainty-20261023/venv/bin/python",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/modeling/tests",
+        "-p",
+        "test_station_evidence*.py"
+      ],
+      "exit_code": 0,
+      "output": "Running as unit: run-p2014410-i60638243.scope; invocation ID: 6f86c3086c864d9a86b697eef97e5d5a\n......................................\n----------------------------------------------------------------------\nRan 38 tests in 0.011s\n\nOK\n",
+      "tests": 38
+    },
+    {
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s1-uncertainty-20261023/venv/bin/python",
+        "-B",
+        "scripts/modeling/tests/test_count_observation_uncertainty.py"
+      ],
+      "exit_code": 0,
+      "output": "Running as unit: run-p2014412-i60611013.scope; invocation ID: 921ca8aae840421ab4bc5d2d01e4aeba\ntest_all_alignment_dimensions_refuse_without_changing_raw (__main__.Intervals.test_all_alignment_dimensions_refuse_without_changing_raw) ... ok\ntest_bounds_nonfinite_negative_reversed_or_missing (__main__.Intervals.test_bounds_nonfinite_negative_reversed_or_missing) ... ok\ntest_calibration_scope (__main__.Intervals.test_calibration_scope) ... ok\ntest_computed_bounds_invalid (__main__.Intervals.test_computed_bounds_invalid) ... ok\ntest_continuous_missing_data_method (__main__.Intervals.test_continuous_missing_data_method) ... ok\ntest_count_year_mismatch (__main__.Intervals.test_count_year_mismatch) ... ok\ntest_duration_dates_invalid (__main__.Intervals.test_duration_dates_invalid) ... ok\ntest_duration_specific_quantiles_invert_error_denominator (__main__.Intervals.test_duration_specific_quantiles_invert_error_denominator) ... ok\ntest_error_definition (__main__.Intervals.test_error_definition) ... ok\ntest_estimated_method (__main__.Intervals.test_estimated_method) ... ok\ntest_every_count_type_preserves_original_and_custody (__main__.Intervals.test_every_count_type_preserves_original_and_custody) ... ok\ntest_existing_annotation_is_not_trusted (__main__.Intervals.test_existing_annotation_is_not_trusted) ... ok\ntest_invalid_json (__main__.Intervals.test_invalid_json) ... ok\ntest_invalid_modeled_value (__main__.Intervals.test_invalid_modeled_value) ... ok\ntest_invalid_quantiles (__main__.Intervals.test_invalid_quantiles) ... ok\ntest_missing_evidence_has_no_default (__main__.Intervals.test_missing_evidence_has_no_default) ... ok\ntest_opt_in_wrapper_preserves_default_and_refuses_synthetic_aadt (__main__.Intervals.test_opt_in_wrapper_preserves_default_and_refuses_synthetic_aadt) ... ok\ntest_quantiles_require_short_duration (__main__.Intervals.test_quantiles_require_short_duration) ... ok\ntest_raw_and_excess_are_separate_and_zero_is_retained (__main__.Intervals.test_raw_and_excess_are_separate_and_zero_is_retained) ... ok\ntest_refuse_applicability_unproved (__main__.Intervals.test_refuse_applicability_unproved) ... ok\ntest_refuse_carriageway_unavailable (__main__.Intervals.test_refuse_carriageway_unavailable) ... ok\ntest_refuse_citation_unverified (__main__.Intervals.test_refuse_citation_unverified) ... ok\ntest_refuse_count_dates_unavailable (__main__.Intervals.test_refuse_count_dates_unavailable) ... ok\ntest_refuse_count_type_unavailable (__main__.Intervals.test_refuse_count_type_unavailable) ... ok\ntest_refuse_dependent_evidence (__main__.Intervals.test_refuse_dependent_evidence) ... ok\ntest_refuse_direction_unavailable (__main__.Intervals.test_refuse_direction_unavailable) ... ok\ntest_refuse_duration_unavailable (__main__.Intervals.test_refuse_duration_unavailable) ... ok\ntest_refuse_error_components_unavailable (__main__.Intervals.test_refuse_error_components_unavailable) ... ok\ntest_refuse_evidence_dimensions_mismatch (__main__.Intervals.test_refuse_evidence_dimensions_mismatch) ... ok\ntest_refuse_evidence_not_verified (__main__.Intervals.test_refuse_evidence_not_verified) ... ok\ntest_refuse_evidence_process_mismatch (__main__.Intervals.test_refuse_evidence_process_mismatch) ... ok\ntest_refuse_factor_metadata_unavailable (__main__.Intervals.test_refuse_factor_metadata_unavailable) ... ok\ntest_refuse_interval_evidence_schema (__main__.Intervals.test_refuse_interval_evidence_schema) ... ok\ntest_refuse_invalid_bounds (__main__.Intervals.test_refuse_invalid_bounds) ... ok\ntest_refuse_invalid_center (__main__.Intervals.test_refuse_invalid_center) ... ok\ntest_refuse_lane_unavailable (__main__.Intervals.test_refuse_lane_unavailable) ... ok\ntest_refuse_not_annual_aadt (__main__.Intervals.test_refuse_not_annual_aadt) ... ok\ntest_refuse_not_station_interval (__main__.Intervals.test_refuse_not_station_interval) ... ok\ntest_refuse_not_vehicle_counts (__main__.Intervals.test_refuse_not_vehicle_counts) ... ok\ntest_refuse_observation_binding_mismatch (__main__.Intervals.test_refuse_observation_binding_mismatch) ... ok\ntest_refuse_period_unavailable (__main__.Intervals.test_refuse_period_unavailable) ... ok\ntest_refuse_qa_unavailable (__main__.Intervals.test_refuse_qa_unavailable) ... ok\ntest_refuse_source_binding_mismatch (__main__.Intervals.test_refuse_source_binding_mismatch) ... ok\ntest_refuse_source_hash_unavailable (__main__.Intervals.test_refuse_source_hash_unavailable) ... ok\ntest_refuse_unsupported_coverage (__main__.Intervals.test_refuse_unsupported_coverage) ... ok\ntest_refuse_unsupported_error_model (__main__.Intervals.test_refuse_unsupported_error_model) ... ok\ntest_refuse_vehicle_class_unavailable (__main__.Intervals.test_refuse_vehicle_class_unavailable) ... ok\ntest_refuse_year_unavailable (__main__.Intervals.test_refuse_year_unavailable) ... ok\n\n----------------------------------------------------------------------\nRan 48 tests in 0.018s\n\nOK\n",
+      "tests": 48
+    },
+    {
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s1-uncertainty-20261023/venv/bin/python",
+        "-B",
+        "scripts/modeling/tests/test_count_interval_coverage.py"
+      ],
+      "exit_code": 0,
+      "output": "Running as unit: run-p2014437-i60618880.scope; invocation ID: 232ca81624cb4f209bff232485285d13\ntest_archive_hash (__main__.Coverage.test_archive_hash) ... ok\ntest_eligibility_parity_on_synthetic_inputs (__main__.Coverage.test_eligibility_parity_on_synthetic_inputs) ... ok\ntest_geography_path (__main__.Coverage.test_geography_path) ... ok\ntest_input_only_audit (__main__.Coverage.test_input_only_audit) ... ok\ntest_member_hash (__main__.Coverage.test_member_hash) ... ok\ntest_network_unchanged (__main__.Coverage.test_network_unchanged) ... ok\ntest_partition (__main__.Coverage.test_partition) ... ok\ntest_refuse_assignment_volumes (__main__.Coverage.test_refuse_assignment_volumes) ... ok\ntest_registry_hash (__main__.Coverage.test_registry_hash) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.005s\n\nOK\n",
+      "tests": 9
+    }
+  ],
+  "total_tests": 95
+}

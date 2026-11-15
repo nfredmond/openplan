@@ -1,0 +1,50 @@
+{
+  "schema": "openplan.development-station-evidence-config.v1",
+  "partition": "original five development counties only",
+  "input_registry_sha256": "9ad0ff220af4b8c97c8bf9c046196dec738c54dfae02d93f7b7b9380e9e276ab",
+  "baseline_path": "data/modeling/s1-count-uncertainty-2026-10-23/retained-input-coverage.json",
+  "baseline_sha256": "c144a6bc44fadef320aad299f1419b23c061c222f2cd33f41fc25aa5fc5d3b35",
+  "location_tolerance_metres": 30,
+  "geographies": [
+    {"id": "06047", "name": "Merced", "source": "caltrans", "county_code": "MER"},
+    {"id": "06069", "name": "San Benito", "source": "caltrans", "county_code": "SBT"},
+    {"id": "06107", "name": "Tulare", "source": "caltrans", "county_code": "TUL"},
+    {"id": "08014", "name": "Broomfield", "source": "cdot"},
+    {"id": "08101", "name": "Pueblo", "source": "cdot"}
+  ],
+  "sources": {
+    "caltrans": {
+      "access": "public_no_registration",
+      "terms_url": "https://dot.ca.gov/conditions-of-use",
+      "query_url": "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/Traffic_AADT/FeatureServer/0/query",
+      "annual_url": "https://dot.ca.gov/-/media/dot-media/programs/traffic-operations/documents/census/2023/2023-traffic-volumes-ca-a11y.xlsx",
+      "year": 2023
+    },
+    "cdot": {
+      "access": "public_no_registration",
+      "terms_url": "https://www.codot.gov/topcontent/cora/faq",
+      "station_url": "https://dtdapps.codot.gov/otis/API/TRANSYS/GetTrafficStationById/",
+      "dates_url": "https://dtdapps.codot.gov/otis/API/TRANSYS/GetCountDatesForStation/",
+      "query_url": "https://dtdapps.codot.gov/server/rest/services/Webapps/open_data_sde/FeatureServer/13/query"
+    },
+    "tmas": {
+      "access": "public_no_registration",
+      "terms_url": "https://www.fhwa.dot.gov/policyinformation/tables/tmasdata/",
+      "url": "https://www.fhwa.dot.gov/policyinformation/tables/tmasdata/2023/2023_station_data.zip",
+      "year": 2023,
+      "members": ["CA_2023 (TMAS).STA", "CO_2023 (TMAS).STA"]
+    },
+    "hpms": {
+      "access": "public_no_registration",
+      "terms_url": "https://data.transportation.gov/api/views/42um-tgh5",
+      "query_url": "https://data.transportation.gov/resource/42um-tgh5.json",
+      "page_size": 2000,
+      "fields": "stateid,county_id,route_id,route_number,route_signing,begin_point,end_point,year_record,aadt,aadt_d,facility_type,f_system,through_lanes,dir_through_lanes,sample_id,aadt_single_unit,aadt_combination,line"
+    },
+    "pems": {
+      "access": "registration_and_terms_acceptance_required",
+      "terms_url": "https://pems.dot.ca.gov/?dnode=apply",
+      "url": "https://pems.dot.ca.gov/"
+    }
+  }
+}
