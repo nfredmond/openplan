@@ -145,7 +145,7 @@ export const ATP_STUDY_PLACE_NOT_RECORDED = "Study place not recorded in OpenPla
 export const ATP_APPLICANT_NOT_ENTERED = "Applicant not entered in OpenPlan";
 
 /** What the packet prints where the project has no summary. */
-export const ATP_DESCRIPTION_NOT_RECORDED = "Not recorded in OpenPlan. The project has no summary.";
+const ATP_DESCRIPTION_NOT_RECORDED = "Not recorded in OpenPlan. The project has no summary.";
 
 /**
  * The project's study place as the packet states it.

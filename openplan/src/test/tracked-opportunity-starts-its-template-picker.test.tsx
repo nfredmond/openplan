@@ -74,7 +74,7 @@ const baseOpportunity = {
 describe("an opportunity tracked from a catalog card", () => {
   it("tells the application workspace which catalog program the opportunity was tracked from (KI-2026-11-16-035)", () => {
     const trackedKey = (opportunity: Opportunity) => {
-      const { unmount } = render(<GrantsOpportunityRegistryCard opportunity={opportunity} activeFocusedOpportunityId={null} />);
+      const { unmount } = render(<GrantsOpportunityRegistryCard opportunity={opportunity} activeFocusedOpportunityId={null} projectGrantModelingEvidence={null} />);
       const key = screen.getByTestId("application-workspace").getAttribute("data-tracked-catalog-key");
       unmount();
       return key;

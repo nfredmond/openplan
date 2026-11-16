@@ -70,7 +70,7 @@ export const ATP_APPENDIX_FRAME: EvidenceAppendixFrame = {
 };
 
 /** Said beside the study place wherever it prints: it is not the project's limits. */
-export const ATP_STUDY_PLACE_NOTE =
+const ATP_STUDY_PLACE_NOTE =
   "The study place is the area recorded for the linked project in OpenPlan. It does not state the project limits.";
 
 /** What the cover says when the project read failed: a failed read is not an absence. */
@@ -197,7 +197,7 @@ function programFacts(): Array<{ label: string; value: string }> {
 /** The label every screening score in the packet carries. */
 export const ATP_SCREENING_SCORE_LABEL = "OpenPlan screening score (not a CTC score)";
 /** The weighted total's own name, which says the weights are OpenPlan's. */
-export const ATP_TOTAL_SCORE_LABEL = "Total (OpenPlan weights 30/25/25/20, not CTC points)";
+const ATP_TOTAL_SCORE_LABEL = "Total (OpenPlan weights 30/25/25/20, not CTC points)";
 
 function scoringPacketAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix {
   const shell = appendixShell("scoring_packet" as const, index, ATP_APPENDIX_TITLES);
