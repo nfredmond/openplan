@@ -411,9 +411,9 @@
         },
         "sections": {
           "source": "openplan/src/lib/grants/programs/us-ca.ts (atp2027Sections), the template with applicationTemplateKey atp-2027",
-          "note": "Each title is a heading of its own, on one line or wrapped over up to maxTitleLines lines that hold nothing else, found exactly once before the end heading and in this order. A section's text runs from its title to the next. No section may print the notFinal words. Every section's text begins with the demonstration label. A section whose disposition is fixed-note also carries the fixedNote sentence. The record states each section's key and disposition, and they must be the ones given here.",
+          "note": "Each title is a heading of its own, on one line or wrapped over up to maxTitleLines lines that hold nothing else (the longest title takes three lines on Windows fonts; the hosted site prints on Linux fonts, so the limit leaves room), found exactly once before the end heading and in this order. A section's text runs from its title to the next. No section may print the notFinal words. Every section's text begins with the demonstration label. A section whose disposition is fixed-note also carries the fixedNote sentence. The record states each section's key and disposition, and they must be the ones given here.",
           "end": "Attachment checklist",
-          "maxTitleLines": 4,
+          "maxTitleLines": 6,
           "notFinal": "Not finalized: this section is still in",
           "fixedNote": "The application asks no question here.",
           "list": [

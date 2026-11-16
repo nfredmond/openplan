@@ -372,7 +372,7 @@ executor and date parts of rule 4, and refuses a record unless:
 
 The checker reads section titles and facts with the shared matcher, because
 long titles and several facts wrap. Headings are compared as whole lines, on
-one line or wrapped over up to four lines that hold nothing else.
+one line or wrapped over up to six lines that hold nothing else.
 
 ### Definition fields the third job added
 
