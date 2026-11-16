@@ -629,7 +629,7 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
       // Every box that starts on a page ends on it. Each page's text is read with its line breaks
       // and layout spaces collapsed: where the box's sentence wraps depends on the font, and a wrap
       // inside "no approved text exists for it yet." is not a split. On CI's Linux fonts the line-by-
-      // line match failed on every page with boxes (KI-2026-11-16-128). A page break is still a
+      // line match failed on every page with boxes (PR 512's first CI run). A page break is still a
       // split: the two phrases are counted on each page by itself.
       const flat = page.replace(/\s+/g, " ");
       const starts = count(flat, /Not finalized: this section/g);
