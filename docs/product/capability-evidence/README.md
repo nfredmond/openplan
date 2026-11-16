@@ -49,7 +49,10 @@ fit its journeys (`recordedOn`). A job's entry may also pin the
 accessibility engine and tags (`screens.axe`), refuse console errors on its
 required screens (`screens.consoleErrorsRefused`) and hold the words of each
 limit it names (`limitTexts`), which the journey's assembler writes and the
-checker requires.
+checker requires. Both jobs' entries do (the first job's since November 16,
+2026, KI-2026-11-16-020). A limit may list more than one wording: the first
+is what the assembler writes, and a later one is what an earlier record
+carries, because a record cannot change.
 
 On November 14, 2026 (lane 39) the first job's saved benefit-cost analysis,
 its Nevada crash source and stored count, and its crash source check moved

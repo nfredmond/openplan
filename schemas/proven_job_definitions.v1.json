@@ -83,7 +83,12 @@
       "screens": {
         "widths": [1440, 390],
         "modes": ["light", "dark"],
-        "required": ["sign-up", "portal", "dashboard", "project", "safety", "bca", "campaign-responses", "report", "grants-application"]
+        "required": ["sign-up", "portal", "dashboard", "project", "safety", "bca", "campaign-responses", "report", "grants-application"],
+        "axe": {
+          "source": "qa-harness/first-job-journey-lib.js (AXE_VERSION, AXE_TAGS), the engine and tags both journeys run",
+          "version": "4.11.1",
+          "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+        }
       },
       "crossWorkspace": {
         "note": "Lead decision 2026-11-14 (KI-2026-11-14-060). A data check (an API route or a file download) counts only with 403 or 404. A page check also counts with 200 when the journey read the rendered page and found the not-found screen and none of the first account's identifying strings. Each target needs its download refused as a data check; a page check alone never satisfies the rule.",
@@ -112,6 +117,18 @@
         "no-human-usefulness-review",
         "fars-is-fatal-only"
       ],
+      "limitTextsNote": "KI-2026-11-16-020. The words of each limit this job names. A record whose limit with one of these ids says anything else is refused. Where a list is given, the first wording is what the assembler writes and each later one is the wording an earlier record carries: the record of 2026-11-14 names its own places in its FARS limit, and a record cannot change.",
+      "limitTexts": {
+        "no-pdf-ua-check": "No PDF/UA check was run on the exported PDFs.",
+        "no-keyboard-or-screen-reader-pass": "No keyboard-only or screen-reader pass was made.",
+        "no-human-usefulness-review": "No planner reviewed whether the PDFs are useful. Every check in this record was run by an agent.",
+        "fars-is-fatal-only": [
+          "FARS records fatal crashes only, so every count that comes from FARS omits serious injuries.",
+          "FARS records fatal crashes only, so the Nevada county and tribal area counts omit serious injuries."
+        ],
+        "crash-counts-not-independently-confirmed": "Crash counts were not compared with the source query tool.",
+        "report-page-answers-200-with-not-found-screen": "Another workspace's report page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The report and application downloads answered 403 or 404."
+      },
       "newRecordRules": {
         "note": "Lane 65, November 16, 2026. The first record (recorded 2026-11-14) left its public comment pages open under the places' names until they were closed by hand, and does not name its runs' mode or harness checkout. A record of this job dated on or after recordedOnOrAfter must carry, for each journey, the mode, the campaign close and the harness checkout its run file recorded, and the close must pass the same reading the engagement job's does. The first record is accepted without them.",
         "recordedOnOrAfter": "2026-11-16",

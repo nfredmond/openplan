@@ -573,10 +573,31 @@ function finalizerCells(pages) {
 // Cross-workspace page check (KI-2026-11-14-060)
 // ---------------------------------------------------------------------------
 
-const PAGE_ANSWERED_OK_LIMIT = {
-  id: 'report-page-answers-200-with-not-found-screen',
-  text: 'Another workspace\'s report page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account\'s identifying strings was in its text or HTML. The report and application downloads answered 403 or 404.',
-};
+/**
+ * The words of each limit the first job names, from its definition's
+ * limitTexts (schemas/proven_job_definitions.v1.json), so the assembler and
+ * the checker read the same words (KI-2026-11-16-020). Where the definition
+ * lists several wordings, the first is the one written; the others are what
+ * an earlier record carries.
+ */
+const FIRST_JOB_ID = 'safety-action-plan-and-ss4a-in-three-places';
+function loadFirstJobDefinition(file = path.join(repoRoot, 'schemas', 'proven_job_definitions.v1.json')) {
+  const job = JSON.parse(fs.readFileSync(file, 'utf8')).jobs.find((entry) => entry.id === FIRST_JOB_ID);
+  if (!job) throw new Error(`${path.basename(file)} has no job ${FIRST_JOB_ID}.`);
+  return job;
+}
+function limitFromDefinition(id, job = loadFirstJobDefinition()) {
+  const text = [(job.limitTexts || {})[id]].flat()[0];
+  if (typeof text !== 'string' || !text) throw new Error(`The first job's definition holds no words for the ${id} limit.`);
+  return { id, text };
+}
+/** The limits every first-job record states, and the one for a source check that was not run. */
+function definitionLimits({ sourceConfirmed = false, job = loadFirstJobDefinition() } = {}) {
+  const ids = [...job.requiredLimits];
+  if (!sourceConfirmed) ids.push(job.sourceCheck.unconfirmedLimit);
+  return ids.map((id) => limitFromDefinition(id, job));
+}
+const PAGE_ANSWERED_OK_LIMIT = limitFromDefinition('report-page-answers-200-with-not-found-screen');
 
 /** The title of the app's not-found screen (openplan/src/app/not-found.tsx). */
 const NOT_FOUND_TITLE = 'We could not find that page.';
@@ -701,6 +722,7 @@ module.exports = {
   choosePlaceResult,
   confirmationTokenHash,
   countMarkers,
+  definitionLimits,
   describePdf,
   draftPages,
   finalizerCells,
