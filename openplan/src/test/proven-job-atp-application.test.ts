@@ -284,6 +284,8 @@ describe("the ATP application job refuses PDFs that are not three committed file
     ["a byte count that is not the file's", (r) => { journey(r, "county").pdfs[0].bytes += 1; }, /county journey atp-application PDF is \d+ bytes, record says \d+/],
     ["a page count that is not the file's", (r) => { journey(r, "county").pdfs[0].pages = 8; }, /county journey atp-application PDF has 7 pages, record says 8/],
     ["a second PDF the job does not define", (r) => { journey(r, "county").pdfs.push({ ...structuredClone(journey(r, "county").pdfs[0]), kind: "atp-packet" }); }, /is the same bytes|has PDFs this job does not define/],
+    ["a PDF the export's fallback writer typeset", (r) => editPdf(r, "county", (text) => swap(text, "OPENPLAN GRANTS: APPLICATION PACKET", "Typeset by OpenPlan's built-in PDF writer because this deployment has no browser rendering engine.\n\nOPENPLAN GRANTS: APPLICATION PACKET")),
+      /county journey atp-application PDF was typeset by OpenPlan's built-in writer, not the browser engine/],
     ["a PDF with an email address on a page", (r) => editPdf(r, "county", (text) => after(text, RULE.applicant.line, "Contact: planner@example.org")), /atp-application PDF page 1 contains an email address/],
     ["an appendix heading the record places on the wrong page", (r) => { journey(r, "county").pdfs[0].items[3].page = 2; }, /appendix-d text is not on page 2/],
     ["an appendix heading missing from the record's items", (r) => { journey(r, "county").pdfs[0].items.pop(); }, /must find appendix-f exactly once, found 0/],

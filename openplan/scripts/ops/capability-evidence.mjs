@@ -1732,6 +1732,8 @@ function checkApplicationRecord(journey, job, label) {
  * - the required disclaimers, no refused phrase, no score under another
  *   label, no "Attached for" line, and the workspace's name on no line with
  *   an applicant label.
+ * A PDF the export's fallback writer typeset (its notice is in the text) is
+ * refused before anything else is read.
  *
  * The PDF is read as one run of lines with the page footers left out, so a
  * passage that crosses a page is read whole.
@@ -1772,6 +1774,11 @@ function checkApplication(journey, job, label, pagesByKind) {
   const text = (from, to) => lines.slice(from, to).join("\n");
   const everywhere = text(0, lines.length);
   const printsAnywhere = (phrase) => pdfTextHasPhrase(everywhere, phrase) || pages.some((page) => pdfTextHasPhrase(page, phrase));
+
+  // The export's fallback writer says so in the PDF. That file is not the one a planner gets.
+  if (rule.fallbackWriter && printsAnywhere(rule.fallbackWriter.notice)) {
+    refuse(`${pdfLabel} was typeset by OpenPlan's built-in writer, not the browser engine ("${rule.fallbackWriter.notice}"); the export fell back, and a proof needs the PDF a planner gets`);
+  }
 
   // The sections: each title once, as a heading, in order, before the checklist.
   const ends = headingBlocks(lines, rule.sections.end);

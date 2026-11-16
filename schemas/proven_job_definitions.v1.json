@@ -373,6 +373,12 @@
         "note": "What this job's exported application PDF must state, read by the checker with Poppler and the shared matcher (scripts/lib/pdf-text-match.mjs). The PDF is read as one run of lines: every page's lines in order, with the page footer lines (pageFooter) left out, so a section or an appendix that crosses a page is still one passage. The cover is everything before the first section title. The sections end at the sections.end heading. Each appendix runs from its heading to the next one, and the last to the appendices.end heading. {label}, {geoid} and {kind} take the journey's place (kind through kindWords); {count} takes a number with thousands separators; {years}, {projectName} and {workspaceName} take the journey's own fields; {title} takes a checklist row's title.",
         "pdf": "atp-application",
         "pageFooter": "^\\s*Active Transportation Program \\(ATP\\) · Page \\d+ of \\d+\\s*$",
+        "pageFooterNote": "The footer the browser engine prints on every page: the opportunity's title, which is the program's name when the program is tracked from the catalog, and the page number (openplan/src/lib/reports/pdf.ts).",
+        "fallbackWriter": {
+          "source": "openplan/src/lib/reports/pdf.ts (BUILTIN_PDF_NOTICE)",
+          "note": "When a deployment's browser engine is missing or fails, the export falls back to OpenPlan's built-in writer and says so in the PDF with a notice that opens with these words. That PDF has no styled layout and is not the one a planner gets from the hosted site, so a record that carries it is refused: the hosted export fell back, and that is a finding.",
+          "notice": "Typeset by OpenPlan's built-in PDF writer"
+        },
         "demonstrationLabel": {
           "note": "The same words the engagement job's journey uses (qa-harness/journey-campaign-lib.js, DEMONSTRATION_LABEL). The project name must hold them, and every section's text must begin with them.",
           "text": "Demonstration by an automated OpenPlan proof run"
