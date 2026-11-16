@@ -6,6 +6,17 @@
     "county": "^\\d{5}$",
     "aiannh": "^\\d{4}[RT]$"
   },
+  "censusNames": {
+    "note": "A record's place label must be the name the Census Bureau gives its id (reviews 59 and 64: a place's id changed with its label kept was accepted). Each table lists every id of one kind with its name, taken from the Bureau's 2026 Gazetteer files; schemas/census_gazetteer_2026/SOURCES.md says how. A county, place or county subdivision label is the Gazetteer name, with or without its closing descriptor words (city, town, CDP and the like), a comma and the state's postal code. A tribal area id is its four-digit Census code with R for the reservation or T for off-reservation trust land; the Gazetteer names the area once for both. An id the tables do not list is refused: the record's place must be one the Bureau lists for that year.",
+    "year": 2026,
+    "folder": "census_gazetteer_2026",
+    "files": {
+      "county": "counties.tsv",
+      "city": "places.tsv",
+      "cousub": "cousubs.tsv",
+      "aiannh": "aiannh.tsv"
+    }
+  },
   "executors": {
     "note": "A proven job is agent-run: no person drives a journey or stands in for a check. An agent executor is a coding agent named by its harness, one of agents, running a model named by the model id its provider publishes: lower-case letters and digits in at least two parts joined by hyphens or dots, such as claude-fable-5-2 (modelPattern). A person's name, a blank name, or a model of none is not an agent executor, and the checker refuses it (review 64, case 25). A new harness is added here before a record names it.",
     "agents": ["Claude Code", "Codex"],
@@ -15,7 +26,7 @@
     "note": "A record is written after its journeys and soon after. recordedOn may not be earlier than the last end health readback's calendar day in the westernmost time zone (UTC-12), so a record dated in any zone on the day its last journey ended is accepted, and may not be more than maxDaysAfterLastEnd days after that day in the easternmost zone (UTC+14). Fourteen days covers an assembly that waits on a review; a record dated before its runs, or weeks after them, is refused (review 64, case 31).",
     "maxDaysAfterLastEnd": 14
   },
-  "ruleNote":"journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways. screens.axe, when a job has it, is the accessibility engine version and rule tags every screen check must report. screens.consoleErrorsRefused true refuses a required screen with one or more console errors. limitTexts, when a job has it, gives the words of each limit it names: a record limit with one of those ids must carry that text exactly.",
+  "ruleNote":"journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways. screens.axe, when a job has it, is the accessibility engine version and rule tags every screen check must report. screens.consoleErrorsRefused true refuses a required screen with one or more console errors. limitTexts, when a job has it, gives the words of each limit it names: a record limit with one of those ids must carry that text exactly. newRecordRules holds rules that apply only to records whose recordedOn is on or after its recordedOnOrAfter date: its journeyFields, and with checkClose the campaign close reading every campaign job gets.",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -100,7 +111,17 @@
         "no-keyboard-or-screen-reader-pass",
         "no-human-usefulness-review",
         "fars-is-fatal-only"
-      ]
+      ],
+      "newRecordRules": {
+        "note": "Lane 65, November 16, 2026. The first record (recorded 2026-11-14) left its public comment pages open under the places' names until they were closed by hand, and does not name its runs' mode or harness checkout. A record of this job dated on or after recordedOnOrAfter must carry, for each journey, the mode, the campaign close and the harness checkout its run file recorded, and the close must pass the same reading the engagement job's does. The first record is accepted without them.",
+        "recordedOnOrAfter": "2026-11-16",
+        "checkClose": true,
+        "journeyFields": [
+          { "field": "mode", "equals": "proof", "refusal": "ran in {found} mode; only a proof run is proof" },
+          { "field": "close.closed", "equals": true, "refusal": "did not take its campaign offline at the end (close.closed is {found})" },
+          { "field": "harness.clean", "equals": true, "refusal": "names no clean harness checkout (harness.clean is {found}); a proof runs from a checkout with no uncommitted change" }
+        ]
+      }
     },
     {
       "id": "engagement-campaign-review-and-response-in-three-places",

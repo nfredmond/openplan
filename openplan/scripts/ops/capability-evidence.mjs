@@ -43,7 +43,7 @@ const PARTICIPANT_REFUSAL_STATUSES = new Set([401, 403, 404]);
  * @param {{reviewedAt: string, dimensions: Record<string, Array<{id: string, status: string, reviewedAt?: string, evidence?: Array<{path: string, sha256: string}>}>>, provenJobs?: Array<Record<string, unknown>>}} registry
  * @param {string} repoRoot
  * @param {string} today
- * @param {{readPdfPages?: (absolutePath: string) => string[], renderPdfPage?: (absolutePath: string, page: number) => Uint8Array, readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>}} [options]
+ * @param {{readPdfPages?: (absolutePath: string) => string[], renderPdfPage?: (absolutePath: string, page: number) => Uint8Array, readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>, censusNames?: boolean}} [options]
  */
 export function validateCapabilityEvidence(registry, repoRoot, today, options = {}) {
   const root = realpathSync(repoRoot);
@@ -80,6 +80,7 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
       readPdfPages: options.readPdfPages,
       renderPdfPage: options.renderPdfPage,
       readWorkbook: options.readWorkbook,
+      censusNames: options.censusNames === true,
     });
     if (record.jobId !== entry.jobId) throw new Error(`${label} names a record for ${record.jobId}`);
     if (record.commit !== entry.commit) throw new Error(`${label} commit does not match its record`);
@@ -114,10 +115,10 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
  * place's ranked segments, or whether a label names the place whose Census
  * id it carries.
  * @param {unknown} record
- * @param {{repoRoot: string, readPdfPages?: (absolutePath: string) => string[], renderPdfPage?: (absolutePath: string, page: number) => Uint8Array, readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>}} options
+ * @param {{repoRoot: string, readPdfPages?: (absolutePath: string) => string[], renderPdfPage?: (absolutePath: string, page: number) => Uint8Array, readWorkbook?: (absolutePath: string) => Record<string, unknown[][]>, censusNames?: boolean}} options
  *   readPdfPages and renderPdfPage default to Poppler's pdftotext and pdftoppm; tests may pass stand-ins.
  */
-export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdftotextPages, renderPdfPage = pdftoppmPagePpm, readWorkbook = xlsxSheets }) {
+export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdftotextPages, renderPdfPage = pdftoppmPagePpm, readWorkbook = xlsxSheets, censusNames = false }) {
   const root = realpathSync(repoRoot);
   checkSchema(record, RECORD_SCHEMA, "record", RECORD_SCHEMA);
   scanStrings(record, "record");
@@ -140,6 +141,10 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     const rule = job.journeys.find((candidate) => candidate.role === journey.role);
     const label = `${journey.role} journey`;
     checkPlace(journey.place, rule, job, label);
+    // Real records only: the direction check sets this for every record in the
+    // registry. Synthetic examples use ids the Census Bureau does not list, on
+    // purpose, so they name no real place.
+    if (censusNames) checkPlaceName(journey.place, label);
     checkExecutors(journey, job, label);
 
     const points = journey.health.map((reading) => reading.point);
@@ -157,6 +162,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkJourneyFields(journey, rule.fields, label);
     checkJourneyFields(journey, job.journeyFields, label);
     if (job.campaign) checkClose(journey, label);
+    checkNewRecordRules(record, journey, job, label);
     if (job.health) checkHealthRule(journey, job, label);
 
     // A campaign job's own record is checked first; its rejected texts are
@@ -224,6 +230,30 @@ function checkJourneyFields(journey, rules, label) {
     }
     if (!holds) refuse(`${label} ${rule.refusal.replaceAll("{found}", String(found)).replaceAll("{expected}", String(expected))}`);
   }
+}
+
+/**
+ * A job's rules for records made from a date on (its `newRecordRules`): a
+ * record whose recordedOn is on or after `recordedOnOrAfter` must meet the
+ * block's journeyFields and, with `checkClose`, the close reading every
+ * campaign job gets. A record dated earlier is checked as it was when it was
+ * recorded. The fields are checked before the close, so a journey with no
+ * close is refused by name rather than by a missing value.
+ *
+ * Blind category: recordedOn is the assembler's statement, not a signed
+ * time. A new record given an earlier date escapes these rules; the
+ * registry's pinned bytes and its review date are what tie a record to when
+ * it was made.
+ */
+function checkNewRecordRules(record, journey, job, label) {
+  const rules = job.newRecordRules;
+  if (!rules) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(rules.recordedOnOrAfter))) {
+    throw new Error(`job definition ${job.id} newRecordRules needs recordedOnOrAfter as a date`);
+  }
+  if (record.recordedOn < rules.recordedOnOrAfter) return;
+  checkJourneyFields(journey, rules.journeyFields, label);
+  if (rules.checkClose) checkClose(journey, label);
 }
 
 /**
@@ -585,6 +615,66 @@ function checkPlace(place, rule, job, label) {
       refuse(`${label} geoid ${place.geoid} is in the state with FIPS ${state}, but the record says ${place.stateFips.join(", ") || "none"}`);
     }
   }
+}
+
+const censusTables = new Map();
+
+/** One kind's Census ids and names, read once from the Gazetteer table the definitions name. */
+function censusTable(kind) {
+  const names = JOB_DEFINITIONS.censusNames;
+  const file = names?.files?.[kind];
+  if (!file) return null;
+  if (!censusTables.has(kind)) {
+    const rows = new Map();
+    const lines = readFileSync(resolve(SCHEMA_DIR, names.folder, file), "utf8").split(/\r?\n/);
+    const header = lines[0].split("\t");
+    const [idColumn, stateColumn, nameColumn] = ["GEOID", "USPS", "NAME"].map((name) => header.indexOf(name));
+    for (const line of lines.slice(1)) {
+      if (!line) continue;
+      const cells = line.split("\t");
+      rows.set(cells[idColumn], { usps: stateColumn === -1 ? null : cells[stateColumn], name: cells[nameColumn] });
+    }
+    censusTables.set(kind, rows);
+  }
+  return censusTables.get(kind);
+}
+
+/**
+ * The place's label is the name the Census Bureau gives its id (reviews 59
+ * and 64: an id changed with its label kept was accepted). A county, place
+ * or county subdivision label is the Gazetteer name, with or without its
+ * closing descriptor words, then a comma and the state's postal code. A
+ * tribal area's Gazetteer row covers its reservation and its trust land, so
+ * a reservation label opens the Gazetteer name and a trust land label says
+ * "Trust Land" and opens with the same word.
+ *
+ * Blind category: the Gazetteer says what an id is called, not that the
+ * journey worked in that place. A label the product words another way (a
+ * nickname, another language) is refused; the label must be the Bureau's.
+ */
+function checkPlaceName(place, label) {
+  const table = censusTable(place.kind);
+  if (!table || typeof place.label !== "string") return;
+  const year = JOB_DEFINITIONS.censusNames.year;
+  const tribal = place.kind === "aiannh";
+  const row = table.get(tribal ? place.geoid.slice(0, 4) : place.geoid);
+  if (!row) refuse(`${label} geoid ${place.geoid} is not a ${place.kind} id in the Census Bureau's ${year} Gazetteer`);
+  const comma = place.label.lastIndexOf(", ");
+  const name = (comma === -1 ? place.label : place.label.slice(0, comma)).trim();
+  const state = comma === -1 ? "" : place.label.slice(comma + 2).trim();
+  const wrong = () => refuse(`${label} label "${place.label}" is not the Census Bureau's name for ${place.kind} ${place.geoid}, which the ${year} Gazetteer calls "${row.name}"${row.usps ? ` in ${row.usps}` : ""}`);
+  if (!name) wrong();
+  if (row.usps && state !== row.usps) wrong();
+  const opens = row.name.toLowerCase().startsWith(name.toLowerCase());
+  const rest = opens ? row.name.slice(name.length) : "";
+  if (tribal) {
+    const trustLand = place.geoid.endsWith("T");
+    const sameFirstWord = name.split(/\s+/)[0].toLowerCase() === row.name.split(/\s+/)[0].toLowerCase();
+    if (trustLand ? !(sameFirstWord && /trust land/i.test(name)) : !(opens && /^(\s|$)/.test(rest) && !/off-reservation trust land/i.test(name))) wrong();
+    return;
+  }
+  // What may follow the label's name in the Gazetteer name: descriptor words only.
+  if (!opens || !/^(\s+([a-z]+|CDP|\(balance\)))*$/.test(rest)) wrong();
 }
 
 /**

@@ -279,6 +279,18 @@ refuses lane 53's local rehearsal record, and the November 15 dress
 rehearsal re-assembled from its run files, for their local origin and
 rehearsal mode only (KI-2026-11-15-020).
 
+### The place label and its Census id
+
+For every record in the registry the direction check compares each journey's
+place label with the name the Census Bureau gives its id, from the Bureau's
+2026 Gazetteer (`schemas/census_gazetteer_2026`). A county, place or county
+subdivision label is the Gazetteer name, with or without its closing descriptor
+words, then a comma and the state's postal code. A tribal area's id is its
+four-digit Census code with R for the reservation or T for trust land. An id
+the Gazetteer does not list is refused. A record checked outside the registry
+is held to this only when the caller asks (`censusNames: true`): synthetic
+examples use made-up ids so that they name no real place.
+
 ## What it cannot tell
 
 The checker proves that the required parts are present and bound to one
