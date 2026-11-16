@@ -35,14 +35,21 @@ whether the artifacts are useful.
 The record schema holds the fields every job shares, and each job's own
 fields in a sub-schema chosen by `jobId` (its `allOf`). The checker's code
 holds the rules every job shares: the hosted origin, one commit read back at
-the start and end of each journey, place kinds and Census ids, named
-executors, artifact custody, no DRAFT stamp, accessibility rows at the stated
+the start and end of each journey, place kinds and Census ids, agent
+executors, a record date that fits its journeys, artifact custody, no DRAFT stamp, accessibility rows at the stated
 widths and modes, the cross-workspace rule, required limits and the string
 scans. What a job needs because of what it is lives in its definition entry:
 value rules on journey fields (`journeyFields`, and `fields` on one journey),
 an independent source check (`sourceCheck`), required screens, workbooks, the
 campaign agreement rules (`campaign`) and the public participant's refusals
-(`participantChecks`).
+(`participantChecks`). Two shared rules take their words from the top of
+the definitions file: what an agent executor is (`executors`: a listed
+harness running a model named by a model id) and how a record's date must
+fit its journeys (`recordedOn`). A job's entry may also pin the
+accessibility engine and tags (`screens.axe`), refuse console errors on its
+required screens (`screens.consoleErrorsRefused`) and hold the words of each
+limit it names (`limitTexts`), which the journey's assembler writes and the
+checker requires.
 
 On November 14, 2026 (lane 39) the first job's saved benefit-cost analysis,
 its Nevada crash source and stored count, and its crash source check moved
@@ -81,9 +88,15 @@ the checker refuses a record unless:
 3. The commit has 40 hexadecimal characters, and each journey has one start
    and one end `/api/health` readback whose commit begins that commit (health
    reports the first 12 characters).
-4. Each journey names its executor (agent and model) and how the sign-up
-   confirmation was read: `email_link`, `operator_relay` or
-   `admin_generate_link`.
+4. Each journey names its executor and how the sign-up confirmation was
+   read: `email_link`, `operator_relay` or `admin_generate_link`. The
+   executor is an agent: a harness the definitions file lists (`Claude
+   Code`, `Codex`) and a model named by a model id such as
+   `claude-fable-5-2`, never a person's name or `none`. The record is dated
+   no earlier than the day its last journey ended and no more than 14 days
+   after it, read in the zones that give each bound the most room (UTC-12
+   and UTC+14), so a record dated in any zone on the day its last journey
+   ended is accepted.
 5. Every journey stored at least one crash, ranked at least one high-injury
    segment, saved at least one countermeasure and recorded at least one
    approved comment and one staff review. The Nevada journey's crashes come
@@ -146,7 +159,8 @@ places must match that record.
 
 For the job `engagement-campaign-review-and-response-in-three-places`, decided
 in the [second proven job note](../../reviews/product-direction/proven-jobs/2026-11-14-second-proven-job.md),
-the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
+the checker applies rules 2, 3, 7, 8 and 10 above, and the executor and date
+parts of rule 4, and refuses a record unless:
 
 1. It has three journeys in any state: a county, a city or town (`city` or
    `cousub`) and a tribal area (`aiannh`), and each names a staff executor and
@@ -187,7 +201,12 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
    received or withheld count. The public XLSX has scope public, the same
    Summary counts and no Received or Withheld row, and its Contributions
    sheet holds exactly the approved comments. No sheet's header row, and no
-   field it splits into the Long text sheet, is a staff-only field name.
+   field it splits into the Long text sheet, is a staff-only field name, and
+   no cell or Long text value holds one of the internal workbook's
+   moderation notes under any name (a note of 20 characters or more is
+   found inside a longer value; a shorter one only as the whole value). A
+   rejected text is compared with its body cell with a Windows line ending
+   read as a line ending on both sides.
 7. The record holds each rejected comment's text beside its hash (a test
    entry that represents no one). The checker searches every review file
    for each rejected text and its comment id itself: the PDFs page by page
@@ -200,8 +219,11 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
    rejected text and shows none.
 9. All six screens the journey checks (the portal, the public response page
    and the staff campaign's four tabs) were checked at both widths and modes,
-   with zero serious and critical axe violations, and none scrolls sideways
-   at 390 px.
+   with zero serious and critical axe violations from the engine version and
+   rule tags the definition names (axe 4.11.1; `wcag2a`, `wcag2aa`,
+   `wcag21a`, `wcag21aa`), none scrolls sideways at 390 px, and none logged
+   a console error. A third-party script's console noise therefore fails a
+   run, and that is intended: a planner's page should not log errors.
 10. A second account was refused the review PDF and XLSX downloads, the
     campaign read, the campaign export and the rejected comment's history as
     data checks, and the staff campaign page as a page check. Each check
@@ -210,10 +232,18 @@ the checker applies rules 2, 3, 7, 8 and 10 above and refuses a record unless:
 11. An anonymous participant was refused the campaign read, the campaign
     export, the rejected comment's history and both downloads (401, 403 or
     404), and the public portal read carried no staff-only field. Each
-    refusal names its journey, and each journey has each request once. The
+    refusal names its journey, and each journey has each request once; a
+    refusal message names the journey too. The
     definition named a staff item list until November 14, 2026, but that
     route has no read, so it answered 405 (KI-2026-11-14-370).
-12. The record states the job's limits (see the definition entry).
+12. The record states the job's limits (see the definition entry), each in
+    the words the definition holds for it (`limitTexts`), so a limit cannot
+    say the opposite of its id. A record may add limits of its own, and the
+    second record adds four. No definition can name a limit a run has not
+    yet found, so before a record is committed nothing holds it to its own
+    added limits; that is inherent. Once committed, the record's bytes are
+    pinned by SHA-256 in the capability registry, so dropping or rewording
+    an added limit afterward fails the registry check (review 64, case 32).
 13. Each journey's health readbacks report ok, and the end one reports the
     start's version and migrations. The start readback comes before the
     account was made, and the end readback after the campaign was closed.
@@ -264,7 +294,10 @@ bytes). The first record predates `pixelSha256`, so its map pages are counted
 but not matched to a hash. A Poppler release that rasterizes differently
 would change the pixel hash. It cannot repeat a source check's comparison.
 For the first job it counts cross-workspace checks per journey, so one
-journey's checks repeated for each journey would pass. It does not check console errors or page-level
-horizontal scroll; the record states them for a reviewer. Reading PDF text
+journey's checks repeated for each journey would pass. For the first job it
+does not check console errors, page-level horizontal scroll, the
+accessibility engine version or a limit's words; the record states them.
+For the second job it refuses console errors and sideways scroll at 390 px
+on required screens, but those are still the journey's readings. Reading PDF text
 and rendering the map page need Poppler's `pdftotext` and `pdftoppm`;
 without them the checker refuses the record.
