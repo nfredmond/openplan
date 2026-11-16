@@ -233,7 +233,11 @@ export function syntheticApplicationPdfText(journey, job) {
   return `${SYNTHETIC_PDF_HEADER}\n${syntheticApplicationPages(journey, job).join("\f")}`;
 }
 
-/** The stand-in reader for a synthetic file's text: its pages, without the header line. */
+/**
+ * The stand-in reader for a synthetic file's text: its pages, without the header line.
+ * @param {string} text
+ * @returns {string[]}
+ */
 export function syntheticPdfPages(text) {
   return text.replace(/^[^\n]*\n/, "").split("\f");
 }
