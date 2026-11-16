@@ -590,23 +590,13 @@ function buildEngagementJourney(state) {
   };
 }
 
-/** The limits this job's record must state (the definition's requiredLimits), in words. */
-const LIMIT_TEXTS = {
-  'no-pdf-ua-check': 'No PDF/UA check was run on the review PDF.',
-  'no-keyboard-or-screen-reader-pass-beyond-one-contribution': 'One contribution per journey was made with the keyboard only at 390 px. No other keyboard-only or screen-reader pass was made.',
-  'no-human-usefulness-review': 'No planner reviewed whether the review files or the response are useful. Agent-run checks are the acceptance evidence.',
-  'test-comments-represent-no-one': 'The comments were entered by an automated proof run and represent no one. A few test comments are not public opinion.',
-  'response-speaks-for-no-agency': 'The published response was written by an automated proof run under a demonstration label and speaks for no agency.',
-  'no-translation-or-ai-synthesis': 'No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope.',
-  // What stays on the journey's word (review 59): the checker reads the
-  // review files itself, but nothing below comes from a file it can read.
-  'live-screens-read-by-the-journey': 'The journey read these on live screens and the checker cannot read them again: the public response page\'s counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign\'s public addresses.',
-  'build-named-by-the-journey': 'Which build ran comes from the health readbacks the journey wrote at its start and end. The record\'s origin and each journey\'s mode are also the journey\'s own statements, carried from its run files. Nothing in the record comes from the deployment itself.',
-  'contribution-input-stated-by-the-journey': 'Which contribution was made with the keyboard only, and at which width, is the journey\'s statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook.',
-  'ai-and-approval-flags-set-by-the-journey': 'The AI flags, the staff review\'s approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that.',
-};
-
-const PAGE_ANSWERED_OK_TEXT = 'Another workspace\'s campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account\'s identifying strings was in its text or HTML. The campaign read, the campaign export, the rejected comment\'s history and both review downloads were refused.';
+/**
+ * The words of each limit this job names, from its definition's limitTexts
+ * (schemas/proven_job_definitions.v1.json). The checker refuses a record
+ * whose limit with one of these ids says anything else (review 59, L2), so
+ * the assembler and the checker read the same words.
+ */
+const LIMIT_TEXTS = Object.freeze({ ...loadJobDefinition().limitTexts });
 
 /**
  * Refuse a run file that cannot go into a record for this commit and origin
@@ -685,9 +675,11 @@ function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, p
     staffFieldsSearched: searched,
     staffFieldsFound: reads.some((read) => read.staffFieldsFound !== false),
   };
-  const limits = job.requiredLimits.map((id) => ({ id, text: LIMIT_TEXTS[id] || id }));
+  const texts = job.limitTexts || {};
+  const limits = job.requiredLimits.map((id) => ({ id, text: texts[id] || id }));
   if (checks.some((check) => check.kind === 'page' && check.status === 200)) {
-    limits.push({ id: job.crossWorkspace.pageAnsweredOkLimit, text: PAGE_ANSWERED_OK_TEXT });
+    const pageLimit = job.crossWorkspace.pageAnsweredOkLimit;
+    limits.push({ id: pageLimit, text: texts[pageLimit] || pageLimit });
   }
   limits.push(...extraLimits);
   return {

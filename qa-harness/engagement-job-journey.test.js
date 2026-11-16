@@ -589,3 +589,19 @@ test('close verdict: a campaign closed before it had a public link is closed and
   assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'active', addresses: [], neverPublic: true }).closed, false);
   assert.equal(lib.closeVerdict({ saveStatus: 200, statusAfter: 'closed', addresses: [] }).closed, false, 'with a public link, reading no address is still a problem');
 });
+
+// Lane 66: the definition holds what the journey and the checker share.
+test('lane 66: the definition pins the accessibility engine and tags the journey runs', () => {
+  const first = require('./first-job-journey-lib');
+  assert.deepEqual(job.screens.axe.version, first.AXE_VERSION, 'the journey refuses another engine version; the checker reads this one');
+  assert.deepEqual(job.screens.axe.tags, first.AXE_TAGS);
+});
+
+test('lane 66: the assembler writes each limit in the definition\'s words, and only those words', () => {
+  assert.deepEqual(Object.keys(lib.LIMIT_TEXTS).sort(), [...job.requiredLimits, job.crossWorkspace.pageAnsweredOkLimit].sort(), 'every limit this job names has its words, and no other');
+  assert.ok(Object.isFrozen(lib.LIMIT_TEXTS));
+  for (const [limitId, text] of Object.entries(lib.LIMIT_TEXTS)) {
+    assert.strictEqual(text, job.limitTexts[limitId], limitId);
+    assert.ok(!text.includes('\u2014'), `${limitId} has no em dash`);
+  }
+});
