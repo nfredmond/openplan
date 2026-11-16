@@ -822,4 +822,69 @@ describe("/api/analysis crash state", () => {
     });
     expect(await crashStateFor({ projectId: PROJECT_ID })).toBeNull();
   });
+
+  /** A tribal-area boundary as the resolver answers it, with the Census state list. */
+  function tribalBoundary(geoid: string, states: string[]) {
+    return { kind: "aiannh", geoid, label: "A tribal area", bbox: CORRIDOR_BBOX, tribalAreaStateFips: states };
+  }
+
+  function tribalAreaPassed() {
+    const [area] = fetchCrashesForStudyAreaMock.mock.calls[0] as [{ tribalArea?: unknown }];
+    return area.tribalArea;
+  }
+
+  it("uses a picked tribal area's one Census state, and passes the Census list with it", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue(tribalBoundary("1490R", ["06"]));
+    expect(await crashStateFor({ place: { kind: "aiannh", geoid: "1490R" } })).toEqual(["06"]);
+    expect(tribalAreaPassed()).toEqual({ censusStateFips: ["06"] });
+  });
+
+  it("gives a picked tribal area in another state that other state", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue(tribalBoundary("4690R", ["41"]));
+    expect(await crashStateFor({ place: { kind: "aiannh", geoid: "4690R" } })).toEqual(["41"]);
+  });
+
+  it("passes every state of a several-state tribal area, never the first alone", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue(tribalBoundary("2430R", ["04", "35", "49"]));
+    expect(await crashStateFor({ place: { kind: "aiannh", geoid: "2430R" } })).toEqual(["04", "35", "49"]);
+    expect(tribalAreaPassed()).toEqual({ censusStateFips: ["04", "35", "49"] });
+  });
+
+  function tribalProject(bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number }) {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_source: "tigerweb",
+        place_kind: "aiannh",
+        place_ref: "1490R",
+        place_country_code: "US",
+        place_subdivision_code: null,
+        place_min_lon: bbox.minLon,
+        place_min_lat: bbox.minLat,
+        place_max_lon: bbox.maxLon,
+        place_max_lat: bbox.maxLat,
+      },
+      error: null,
+    });
+  }
+
+  it("asks the Census Bureau for a saved tribal area's states when the corridor is that area", async () => {
+    tribalProject(CORRIDOR_BBOX);
+    resolvePlaceBoundaryMock.mockResolvedValue(tribalBoundary("1490R", ["06"]));
+    expect(await crashStateFor({ projectId: PROJECT_ID })).toEqual(["06"]);
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("aiannh", "1490R");
+    expect(tribalAreaPassed()).toEqual({ censusStateFips: ["06"] });
+    const selected = String(projectSelectMock.mock.calls[0]?.[0] ?? "").split(",").map((column) => column.trim());
+    for (const column of ["place_source", "place_kind", "place_ref"]) {
+      expect(selected, `project select is missing ${column}`).toContain(column);
+    }
+    expect(selected).not.toContain("place_geometry_geojson");
+  });
+
+  it("does not give a corridor drawn inside a tribal-area project that area's state", async () => {
+    tribalProject({ minLon: -121.3, minLat: 39.0, maxLon: -119.6, maxLat: 39.7 });
+    expect(await crashStateFor({ projectId: PROJECT_ID })).toBeNull();
+    expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
+    expect(tribalAreaPassed()).toBeNull();
+  });
 });
