@@ -221,6 +221,45 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     expect(callsFor("engagement_campaigns", "eq")).toEqual([["project_id", ATP_IDS.project]]);
   });
 
+  it("prints the 2027 template's sections in the application's order and its if-applicable checklist items as such (KI-2026-11-16-033)", async () => {
+    // The seeded checklist, as the application route stores it: required is yes or no.
+    tables.funding_opportunity_attachments = () => ({
+      data: (ATP_TEMPLATE.requiredAttachments ?? []).map((template, index) => ({
+        id: seedId(40 + index), workspace_id: ATP_IDS.workspace, opportunity_id: ATP_IDS.opportunity, attachment_key: template.key,
+        title: template.title, guidance: null, required: template.required, status: "missing", kb_document_id: null,
+        report_artifact_id: null, note: null, sort_order: index, updated_by: null, created_at: EVIDENCE_DATE, updated_at: EVIDENCE_DATE,
+      })),
+      error: null,
+    });
+    const response = await exportApplication(post(), context);
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    const positions = [
+      "Part A1 to A4: Applicant and project information",
+      "Part A5: Project funding",
+      "Part A6: Screening criteria",
+      "Part B, Question 1: Disadvantaged Communities (DAC)",
+      "Part B, Question 2: Potential to Increase Walking, Biking and Rolling",
+      "Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries",
+      "Part B, Question 4: Public Participation and Planning",
+      "Part B, Question 5: Scope and Plan Layout Consistency",
+      "Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)",
+      "Part B, Question 7: Performance on Past ATP Projects",
+      "Attachment checklist",
+    ].map((title) => html.indexOf(`<h2 class="section-title">${title}</h2>`));
+    expect(positions.every((position) => position > 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+    // The six appendices follow the checklist.
+    for (const title of ["Appendix A. ATP screening packet", "Appendix F. Benefit-cost summary"]) {
+      expect(html.lastIndexOf(title)).toBeGreaterThan(positions[positions.length - 1]);
+    }
+    // The route reads "if applicable" back from the template the sections identify.
+    expect(html).toContain("<td>State-Only Funds Request (Exhibit 25-F)</td>\n          <td>Required if applicable</td>");
+    expect(html).toContain("<td>Signature Page</td>\n          <td>Required</td>");
+    expect(html).toContain("<td>Additional attachments</td>\n          <td>Optional</td>");
+    expect((await response.json()).draftStamps).toEqual(["DRAFT: 25 required attachment(s) outstanding"]);
+  });
+
   it("lists the caveats for the evidence the packet carries, and only those (KI-2026-11-02-047)", async () => {
     await exportApplication(post(), context);
     const html = renderReportPdfMock.mock.calls[0][0] as string;

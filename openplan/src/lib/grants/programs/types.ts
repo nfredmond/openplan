@@ -66,6 +66,27 @@ export type GrantApplicationAttachmentTemplate = {
   guidance: string;
   /** Whether the program's applications generally require this item. */
   required: boolean;
+  /**
+   * True when the program's own checklist asks for the item only in some
+   * cases: it says "if applicable" or names the project types it applies to.
+   * The item seeds as required, so the planner attaches it or marks it not
+   * applicable, and its checklist row reads "Required if applicable". Only
+   * valid with `required: true`.
+   */
+  ifApplicable?: boolean;
+};
+
+/**
+ * An application template a program seeded before its current one. It is
+ * never offered for a new application. It stays in the catalog so an
+ * application already seeded from it is still recognised as this program's,
+ * which is read back from the saved section keys. Those keys never change.
+ */
+export type GrantApplicationEarlierTemplate = {
+  /** Stable key, unique across every template in the catalog. */
+  templateKey: string;
+  applicationSections: readonly GrantApplicationSectionTemplate[];
+  requiredAttachments: readonly GrantApplicationAttachmentTemplate[];
 };
 
 export type GrantProgramCatalogEntry = {
@@ -106,6 +127,14 @@ export type GrantProgramCatalogEntry = {
   applicationSections?: readonly GrantApplicationSectionTemplate[];
   /** Attachment checklist this program's applications typically require. */
   requiredAttachments?: readonly GrantApplicationAttachmentTemplate[];
+  /**
+   * Key of the template in `applicationSections` and `requiredAttachments`,
+   * the one a new application seeds from. Set when the program has had more
+   * than one template; otherwise the template is known by the entry's key.
+   */
+  applicationTemplateKey?: string;
+  /** Templates this program seeded before the current one, oldest last. */
+  earlierApplicationTemplates?: readonly GrantApplicationEarlierTemplate[];
 };
 
 /**

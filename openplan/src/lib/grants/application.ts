@@ -254,6 +254,21 @@ export function buildCatalogAttachmentSeeds(
   }));
 }
 
+/**
+ * The checklist's word for how firmly an item is asked for. A saved row holds
+ * required as yes or no; "Required if applicable" is known only from the
+ * catalog template the application was seeded from, so the caller passes that
+ * template's if-applicable keys (`ifApplicableAttachmentKeys`). A row the
+ * planner has made optional reads "Optional" whatever the template says.
+ */
+export function attachmentRequirementLabel(
+  attachment: Pick<ApplicationAttachmentRow, "attachment_key" | "required">,
+  ifApplicableKeys?: ReadonlySet<string>
+): "Required" | "Required if applicable" | "Optional" {
+  if (!attachment.required) return "Optional";
+  return ifApplicableKeys?.has(attachment.attachment_key) ? "Required if applicable" : "Required";
+}
+
 // ---------------------------------------------------------------------------
 // Status machines
 // ---------------------------------------------------------------------------

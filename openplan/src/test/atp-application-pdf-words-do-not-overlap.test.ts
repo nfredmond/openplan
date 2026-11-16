@@ -3,7 +3,9 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
+import { buildCatalogAttachmentSeeds, buildCatalogSectionSeeds, findGrantProgramCatalogEntry } from "@/lib/grants/application";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
+import { ifApplicableAttachmentKeys, listGrantApplicationTemplates } from "@/lib/grants/application-templates";
 import { ATP_APPENDIX_FRAME, buildAtpEvidenceAppendices } from "@/lib/grants/atp-evidence-appendices";
 import { ATP_APPENDIX_KEYS } from "@/lib/grants/evidence-appendix-keys";
 import { renderHtmlToPdf } from "@/lib/reports/pdf";
@@ -88,5 +90,62 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with Poppler's wor
     // The address is printed (possibly wrapped), so the check has something to find.
     expect(list.map((w) => w.text).join("")).toContain("https://catc.ca.gov/programs/active-transportation-program");
     expect(overlappingWords(list)).toEqual([]);
+  }, 120_000);
+
+  it("prints an application seeded from the 2027 template: ten sections in order, 26 checklist rows, six appendices, no word over another", async () => {
+    process.env.CHROME_EXECUTABLE_PATH = CHROME;
+    const atp = findGrantProgramCatalogEntry("atp")!;
+    const template = listGrantApplicationTemplates().find((entry) => entry.templateKey === "atp-2027")!;
+    const row = { workspace_id: ATP_IDS.workspace, opportunity_id: ATP_IDS.opportunity, updated_by: null, created_at: "", updated_at: "" };
+    const sections = buildCatalogSectionSeeds(atp).map((seed, index) => {
+      const final = index === 0 || index === 4;
+      return {
+        section: {
+          ...row, id: `section-${index}`, section_key: seed.section_key, title: seed.title, guidance: seed.guidance, sort_order: seed.sort_order,
+          source: seed.source, suggested_evidence: seed.suggested_evidence, ai_drafting_enabled: seed.ai_drafting_enabled,
+          status: final ? ("final" as const) : ("not_started" as const), final_markdown: final ? "Demonstration text, typed by an agent for a layout check." : null,
+          finalized_from_draft_id: null, finalized_by: null, finalized_at: null,
+        },
+        provenance: { origin: final ? ("operator_authored" as const) : ("none" as const), model: null, groundedSentenceCount: null, totalSentenceCount: null, finalizedBy: final ? "Workspace owner" : null, finalizedAt: null },
+      };
+    });
+    const attachments = buildCatalogAttachmentSeeds(atp).map((seed, index) => ({
+      ...row, id: `attachment-${index}`, attachment_key: seed.attachment_key, title: seed.title, guidance: seed.guidance, required: seed.required,
+      status: "missing" as const, kb_document_id: null, report_artifact_id: null, note: null, sort_order: seed.sort_order,
+    }));
+    const html = buildGrantApplicationHtml({
+      opportunity: { id: ATP_IDS.opportunity, title: "ATP application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null, sections, attachments, generatedAt: "2026-11-16T04:00:00.000Z",
+      ifApplicableAttachmentKeys: ifApplicableAttachmentKeys(template),
+      evidenceAppendices: buildAtpEvidenceAppendices(completeAtpRecords(), new Set<string>(ATP_APPENDIX_KEYS)),
+      evidenceAppendixFrame: ATP_APPENDIX_FRAME,
+    });
+    const file = path.join(workDir, "atp-2027-application.pdf");
+    writeFileSync(file, await renderHtmlToPdf(html, { footerLabel: "Active Transportation Program (ATP)" }));
+    const list = words(file);
+    expect(overlappingWords(list)).toEqual([]);
+
+    // Read as a planner would: the text in reading order, spaces collapsed.
+    const pdftotext = path.join(POPPLER!, `pdftotext${process.platform === "win32" ? ".exe" : ""}`);
+    const text = execFileSync(pdftotext, ["-layout", file, "-"]).toString().replace(/\s+/g, " ");
+    const order = [
+      "Part A1 to A4: Applicant and project information",
+      "Part A5: Project funding",
+      "Part A6: Screening criteria",
+      "Part B, Question 1: Disadvantaged Communities (DAC)",
+      "Part B, Question 2: Potential to Increase Walking, Biking and Rolling",
+      "Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries",
+      "Part B, Question 4: Public Participation and Planning",
+      "Part B, Question 5: Scope and Plan Layout Consistency",
+      "Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)",
+      "Part B, Question 7: Performance on Past ATP Projects",
+      "Attachment checklist",
+    ].map((title) => text.indexOf(title));
+    expect(order.every((position) => position > 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+    for (const letter of ["A", "B", "C", "D", "E", "F"]) expect(text.lastIndexOf(`Appendix ${letter}.`)).toBeGreaterThan(order[order.length - 1]);
+    // The label wraps inside its column, so the layout text reads "Required if" and "applicable" on two lines.
+    expect(text.match(/Required if /g)).toHaveLength(12);
+    expect(text).toContain("DRAFT: 25 required attachment(s) outstanding");
   }, 120_000);
 });
