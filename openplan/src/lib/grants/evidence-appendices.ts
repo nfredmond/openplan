@@ -222,7 +222,7 @@ export function bcaEvidenceAppendix<K extends string>(
         { label: "Net present value", value: formatUsd(s.netPresentValue) },
         { label: "Discounted benefits", value: formatUsd(s.presentValueBenefits) },
         { label: "Discounted costs", value: formatUsd(s.presentValueCosts) },
-        { label: "Analysis horizon", value: `${s.analysisHorizonYears} years` },
+        { label: "Analysis horizon", value: `${s.analysisHorizonYears} ${s.analysisHorizonYears === 1 ? "year" : "years"}` },
         { label: "Real discount rate", value: `${s.discountRatePct}%` },
         { label: "Base year", value: String(s.baseYear) },
         { label: "Engine", value: bcaEngineLabel(s.engineVersion) },

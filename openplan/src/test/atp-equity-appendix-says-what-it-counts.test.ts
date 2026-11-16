@@ -32,6 +32,7 @@ import {
   evaluateProxyDisadvantage,
   screenEquity,
 } from "@/lib/data-sources/equity";
+import { proxyEquityNarrativeLine } from "@/lib/data-sources/equity-designation/disclosure";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
 import {
   ATP_APPENDIX_FRAME,
@@ -228,6 +229,29 @@ describe("Appendix E prints each proxy count with its total and its rule", () =>
     const equity = equityOf(recordsFor(metrics));
     expect(fact(equity, FLAGGED_LABEL)).toMatch(/^1\. The proxy flags a tract when /);
     expect(fact(equity, LOW_INCOME_LABEL)).toMatch(/^2\. A tract counts as low-income here when /);
+  });
+});
+
+describe("the same fault and the same numbers elsewhere", () => {
+  it("writes a one-year benefit-cost horizon as 1 year in Appendix F", () => {
+    const screening = (analysisHorizonYears: number) => ({
+      id: "screening-1", projectId: ATP_IDS.project, netPresentValue: 1000, benefitCostRatio: 1.2, presentValueBenefits: 6000, presentValueCosts: 5000,
+      analysisHorizonYears, discountRatePct: 3.1, baseYear: 2026, engineVersion: "openplan-bca-ts", createdAt: "2026-11-02T16:00:00+00:00",
+    });
+    const horizon = (years: number) =>
+      fact(appendices({ ...completeAtpRecords(), bca: { status: "screening", screening: screening(years) } }).find((appendix) => appendix.key === "bca")!, "Analysis horizon");
+    expect(horizon(1)).toBe("1 year");
+    expect(horizon(20)).toBe("20 years");
+  });
+
+  it("keeps the corridor summary's proxy sentence on the calculation's numbers", () => {
+    // That sentence is saved in each run's summary and cited by narratives, so its words stay as they
+    // are. Its numbers are written out in it, not read from the constants: this holds the two together.
+    const line = proxyEquityNarrativeLine({ disadvantagedTracts: 1, totalTracts: 4 });
+    expect(line).toContain(
+      `median household income <$${EQUITY_PROXY_THRESHOLDS.lowIncomeMedian / 1000}k plus at least one of: poverty ≥${EQUITY_PROXY_THRESHOLDS.highPovertyPct}%, ` +
+        `minority ≥${EQUITY_PROXY_THRESHOLDS.highMinorityPct}%, zero-vehicle ≥${EQUITY_PROXY_THRESHOLDS.lowVehicleAccessPct}%, transit commute ≥${EQUITY_PROXY_THRESHOLDS.transitDependencyPct}%`
+    );
   });
 });
 
