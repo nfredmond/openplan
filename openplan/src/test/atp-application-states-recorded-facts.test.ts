@@ -565,6 +565,48 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
     expect(lines.filter((line) => /^\s*record 0f3c9a1e|^\s*0f3c9a1e/.test(line)).length).toBeGreaterThan(3);
   }, 120_000);
 
+  it("never splits a not-final box or a cover box across a page break", async () => {
+    // Forty sections under the long cover of a tracked opportunity. Every other one has no final text
+    // and prints a two-line box. Between them sit final sections whose text grows by one sentence each
+    // time, so the boxes fall at many different heights on their pages. With nothing holding a box
+    // together, some land across a page break (the mutation pair for this test shows it).
+    const row = { workspace_id: ATP_IDS.workspace, opportunity_id: ATP_IDS.opportunity, updated_by: null, created_at: "", updated_at: "" };
+    const records = recordsFor(COUNTY);
+    const filler = "Demonstration text, typed by an agent for a layout check, long enough to fill most of one printed line.";
+    const html = buildGrantApplicationHtml({
+      opportunity: { id: ATP_IDS.opportunity, title: "Active Transportation Program (ATP)", agency_name: "California Transportation Commission / Caltrans", summary: TRACKED_SUMMARY, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null,
+      sections: Array.from({ length: 40 }, (_, index) => {
+        const final = index % 2 === 1;
+        return {
+          section: {
+            ...row, id: `section-${index}`, section_key: `demonstration-${index}`, title: `Demonstration section ${index + 1}`, guidance: null, sort_order: index,
+            source: "custom" as const, suggested_evidence: [], ai_drafting_enabled: true, status: final ? ("final" as const) : ("not_started" as const),
+            final_markdown: final ? Array.from({ length: (index % 9) + 1 }, () => filler).join(" ") : null,
+            finalized_from_draft_id: null, finalized_by: null, finalized_at: null,
+          },
+          provenance: { origin: final ? ("operator_authored" as const) : ("none" as const), model: null, groundedSentenceCount: null, totalSentenceCount: null, finalizedBy: null, finalizedAt: null },
+        };
+      }),
+      attachments: [], generatedAt: "2026-11-16T04:00:00.000Z",
+      coverLines: atpCoverLines(records.project),
+      applicant: { project: { status: "named", name: "Main Street sidewalk gap closure" }, workspace: { status: "named", name: "Demonstration Planning Consultants" } },
+    });
+    const pages = await pdfPages(html, "boxes-across-pages");
+    expect(pages.length).toBeGreaterThanOrEqual(6);
+    const count = (page: string, pattern: RegExp) => (page.match(pattern) ?? []).length;
+    const split: number[] = [];
+    let boxes = 0;
+    pages.forEach((page, index) => {
+      // Every box that starts on a page ends on it.
+      const starts = count(page, /Not finalized: this section/g);
+      if (starts !== count(page, /no approved text exists for it yet\./g)) split.push(index + 1);
+      boxes += starts;
+    });
+    expect(split).toEqual([]);
+    expect(boxes).toBe(20);
+  }, 120_000);
+
   it("prints the tribal-area fact on one line in the tribal-area PDF only", async () => {
     const tribalFact = "Guidelines criterion, Native American Tribal Lands: The study place is a Census tribal area: Hoopa Valley Reservation, CA";
     const tribal = await pdfPages(applicationHtml(recordsFor(TRIBAL_AREA), "Demonstration Planning Consultants"), "tribal-row");

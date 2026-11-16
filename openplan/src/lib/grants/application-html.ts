@@ -218,7 +218,8 @@ function formatAmount(value: number | string | null | undefined): string {
  * its hyphens (`runningText` in `evidence-appendices.ts`); a piece wider than
  * the line still wraps inside the line, never past the page edge.
  *
- * A cover box does not split across pages: on a cover that ran past one page
+ * A cover box, and the box that says a section is not final or an appendix
+ * is missing, does not split across pages: on a cover that ran past one page
  * the last box's label ended the first page and its value began the second.
  *
  * The cover's Project and Workspace boxes take a full row each. In a narrow
@@ -253,7 +254,7 @@ const DOCUMENT_STYLES = `
       .draft-stamp { margin-top: 20px; border: 2px solid #9a3412; border-radius: 18px; padding: 16px 18px; background: #fde2d2; color: #9a3412; font: 700 18px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; }
       .warning-box { margin-top: 18px; border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
       .warning-box ul { margin: 8px 0 0; padding-left: 20px; }
-      .outstanding { border: 1px dashed rgba(150, 92, 42, 0.5); border-radius: 18px; padding: 14px 16px; background: #fff8ec; color: #6d7479; font-style: italic; }
+      .outstanding { border: 1px dashed rgba(150, 92, 42, 0.5); border-radius: 18px; padding: 14px 16px; background: #fff8ec; color: #6d7479; font-style: italic; break-inside: avoid; }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
       tr { break-inside: avoid; }
       th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(19, 34, 43, 0.12); vertical-align: top; }
