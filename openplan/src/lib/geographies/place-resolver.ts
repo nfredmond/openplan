@@ -216,6 +216,14 @@ export interface ResolvedBoundary {
   label: string | null;
   geojson: CorridorGeojson;
   bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number };
+  /**
+   * Every state the Census Bureau lists for a tribal area, in its order, from
+   * the same record the boundary came from. Present only for a tribal area;
+   * empty when that record names no readable state. The crash source resolver
+   * reads it (`src/lib/safety/study-area-states.ts`). It is not a jurisdiction:
+   * the subdivision code of a tribal area stays unset.
+   */
+  tribalAreaStateFips?: string[];
 }
 
 interface TigerAttributes {
@@ -1096,6 +1104,11 @@ function fetchTigerBoundary(layerId: number, geoid: string, outFields?: string):
     retries: 1,
     cacheTtlMs: 24 * 60 * 60 * 1000,
     cacheKey: `tigerweb:boundary:${layerId}:${geoid}`,
+    // The Census service reports an error inside an HTTP 200 body. Keeping that
+    // for a day would hold a tribal area on the national crash file while the
+    // page says retrieving again may help (review 72). Only an answer with a
+    // feature list is kept; an empty list is a real answer and is kept too.
+    cacheWhen: (payload) => Array.isArray((payload as TigerGeojson | null)?.features),
   });
 }
 
@@ -1149,5 +1162,6 @@ export async function resolvePlaceBoundary(kind: PlaceKind, geoid: string): Prom
     label: labelFromBoundaryGeojson(json, kind, countyNames),
     geojson,
     bbox,
+    ...(kind === "aiannh" ? { tribalAreaStateFips: aiannhStateFips(json?.features?.[0]?.properties) } : {}),
   };
 }

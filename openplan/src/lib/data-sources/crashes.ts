@@ -46,9 +46,11 @@ import {
   clipCrashRecordsToBoundary,
   crashCountsForStudyArea,
   describeCrashStudyArea,
+  withCrashTribalArea,
   type CrashStudyAreaCoverage,
   type CrashStudyBoundary,
 } from "@/lib/safety/crash-study-area";
+import type { CrashTribalAreaStates } from "@/lib/safety/study-area-states";
 import type {
   CrashFetchResult,
   CrashRecord,
@@ -435,6 +437,12 @@ export type CorridorCrashStudyArea = {
   stateFips: CrashStudyAreaStates;
   /** The corridor's polygon. Crashes outside it are left out. */
   boundary?: CrashStudyBoundary | null;
+  /**
+   * Set when the corridor is a tribal area: the Census Bureau's state list for
+   * it. Recorded with the counts beside which kind of crash file answered. It
+   * never chooses the source; `stateFips` does.
+   */
+  tribalArea?: CrashTribalAreaStates | null;
 };
 
 /**
@@ -492,7 +500,20 @@ export async function fetchCrashesForStudyArea(
       const joined = await enrichSeriousInjuries(adapter, inArea, { signal: options.signal });
       const joinedById = new Map(joined.records.map((record) => [record.externalId, record]));
       const records = fetched.records.map((record) => joinedById.get(record.externalId) ?? record);
-      const core = summarizeCrashFetch(adapter, { ...fetched, records }, bbox, years, area.boundary, joined.seriousInjury);
+      const summary = summarizeCrashFetch(adapter, { ...fetched, records }, bbox, years, area.boundary, joined.seriousInjury);
+      // A tribal corridor records the Census state list and whether one
+      // state's file answered, so its narrative carries the same sentence a
+      // Safety acquisition of the same area does.
+      const core: CrashSummaryCore =
+        summary.studyArea && area.tribalArea
+          ? {
+              ...summary,
+              studyArea: withCrashTribalArea(summary.studyArea, {
+                censusStateFips: area.tribalArea.censusStateFips,
+                stateFileUsed: adapter.coversStateFips !== undefined,
+              }),
+            }
+          : summary;
       return withDisclosure({
         ...core,
         studyAreaStates,

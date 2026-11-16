@@ -421,6 +421,99 @@ describe("POST /api/safety/crashes/ingest derives the study area's state", () =>
     expect(ingestMock).not.toHaveBeenCalled();
   });
 
+  /** A tribal-area boundary as the resolver answers it, with the Census state list. */
+  function tribalBoundary(geoid: string, states?: string[]) {
+    return { kind: "aiannh", geoid, label: "A tribal area", bbox: BBOX, ...(states ? { tribalAreaStateFips: states } : {}) };
+  }
+
+  /** A project whose saved place is a tribal area. No saved column holds a state. */
+  function tribalProject(ref: string) {
+    projectMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: PROJECT_ID,
+        place_source: "tigerweb",
+        place_kind: "aiannh",
+        place_ref: ref,
+        place_country_code: "US",
+        place_subdivision_code: null,
+        place_min_lon: BBOX.minLon,
+        place_min_lat: BBOX.minLat,
+        place_max_lon: BBOX.maxLon,
+        place_max_lat: BBOX.maxLat,
+      },
+      error: null,
+    });
+  }
+
+  it("uses a picked tribal area's one Census state, and a different state for a different area", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValueOnce(tribalBoundary("1490R", ["06"]));
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "aiannh", geoid: "1490R" } })
+    );
+    expect(ingestMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ stateFips: ["06"], tribalArea: { censusStateFips: ["06"] } })
+    );
+
+    resolvePlaceBoundaryMock.mockResolvedValueOnce(tribalBoundary("4690R", ["41"]));
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "aiannh", geoid: "4690R" } })
+    );
+    expect(ingestMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ stateFips: ["41"], tribalArea: { censusStateFips: ["41"] } })
+    );
+  });
+
+  it("passes every state of a several-state tribal area, never the first alone", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValueOnce(tribalBoundary("2430R", ["04", "35", "49"]));
+    await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], place: { kind: "aiannh", geoid: "2430R" } })
+    );
+    expect(ingestMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ stateFips: ["04", "35", "49"], tribalArea: { censusStateFips: ["04", "35", "49"] } })
+    );
+  });
+
+  it("asks the Census Bureau for a saved tribal area's states by its saved id", async () => {
+    tribalProject("1490R");
+    resolvePlaceBoundaryMock.mockResolvedValueOnce(tribalBoundary("1490R", ["06"]));
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(200);
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("aiannh", "1490R");
+    expect(ingestMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ stateFips: ["06"], tribalArea: { censusStateFips: ["06"] } })
+    );
+    expect(projectSelectMock.mock.calls[0][0]).toMatch(/place_source/);
+    expect(projectSelectMock.mock.calls[0][0]).toMatch(/place_kind/);
+    expect(projectSelectMock.mock.calls[0][0]).toMatch(/place_ref/);
+
+    // A second saved area in another state gets that state, not the first one's.
+    tribalProject("4690R");
+    resolvePlaceBoundaryMock.mockResolvedValueOnce(tribalBoundary("4690R", ["41"]));
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID }));
+    expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: ["41"] }));
+  });
+
+  it("keeps a saved tribal-area project working on the national file when the Census Bureau does not answer", async () => {
+    tribalProject("1490R");
+    resolvePlaceBoundaryMock.mockRejectedValueOnce(new Error("tigerweb down"));
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(200);
+    expect(ingestMock).toHaveBeenLastCalledWith(
+      expect.objectContaining({ stateFips: null, tribalArea: { censusStateFips: null } })
+    );
+  });
+
+  it("does not ask the Census Bureau about a project whose saved place is not a tribal area", async () => {
+    projectIn("US", "NV");
+    await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID }));
+    expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
+    expect(ingestMock).toHaveBeenLastCalledWith(expect.objectContaining({ stateFips: ["32"], tribalArea: null }));
+  });
+
   it("passes null when no place identity is supplied at all", async () => {
     await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
     expect(resolvePlaceBoundaryMock).not.toHaveBeenCalled();
