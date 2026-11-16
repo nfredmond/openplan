@@ -653,9 +653,13 @@ function disclosureSection(data: ReimbursementWorksheetData): string {
     </section>`;
 }
 
+// The body's padding is cloned onto every printed page. The fixed page-footer
+// repeats on each page but reserves no space, so without the clone the row or
+// line that reaches the bottom of a page prints under it (lane 84: an invoice's
+// amounts cut in half at the foot of page 1).
 const DOCUMENT_STYLES = `
   * { box-sizing: border-box; }
-  body { font-family: Georgia, 'Times New Roman', serif; color: #1a2330; margin: 0; padding: 40px 48px 96px; font-size: 12px; line-height: 1.5; }
+  body { font-family: Georgia, 'Times New Roman', serif; color: #1a2330; margin: 0; padding: 40px 48px 96px; font-size: 12px; line-height: 1.5; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   header { border-bottom: 2px solid #1a2330; padding-bottom: 14px; margin-bottom: 18px; }
   .doc-title { font-size: 24px; font-weight: 700; margin: 0; letter-spacing: 0.03em; }
   .issuer-name { font-size: 15px; margin: 4px 0 0; }
