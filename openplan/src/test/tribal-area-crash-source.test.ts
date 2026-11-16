@@ -449,7 +449,30 @@ describe("a crash acquisition for a tribal area", () => {
 });
 
 describe("a corridor analysis whose corridor is a tribal area", () => {
-  afterEach(() => vi.restoreAllMocks());
+  // A corridor analysis runs CCRS's serious-injury join after the fetch. Left
+  // unstubbed it called the live CCRS service from a unit test, which hung
+  // past the 20-second limit on CI once (main 532ea062d, November 16, 2026).
+  // Any network call from here now fails the test instead of waiting on it.
+  beforeEach(() => {
+    vi.spyOn(ccrsAdapter, "enrichSeriousInjury" as never).mockImplementation((async ({
+      records,
+    }: {
+      records: CrashRecord[];
+    }) => ({ records, upgraded: 0 })) as never);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("a unit test reached the network");
+      })
+    );
+  });
+  afterEach(() => {
+    // The join swallows a failed call, so a thrown fetch alone would not show.
+    const reached = (globalThis.fetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    expect(reached).toBe(0);
+  });
   const boundary = { geometry: SQUARE, source: "picked_place" as const };
   const NOW = new Date("2026-07-23T00:00:00Z");
 
