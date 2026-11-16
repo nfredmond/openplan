@@ -179,8 +179,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // column to `billing_invoice_records` (lane 84, November 16, 2026), so
     // PostgREST answers "column does not exist" on every install. The read is
     // retried without the column and the page says plainly that no payment
-    // date is recorded, rather than implying a setup step will bring one. It is retried only for a pending-schema error — never for a
-    // permission or constraint failure, which would be hiding a real refusal.
+    // date is recorded, rather than implying a setup step will bring one. It
+    // is retried only for a pending-schema error, never for a permission or
+    // constraint failure, which would be hiding a real refusal.
     // One loose result shape for both reads: the two select strings would
     // otherwise infer different structural types, and this codebase's Supabase
     // reads are cast deliberately (the clients are untyped by convention).
