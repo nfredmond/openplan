@@ -433,6 +433,17 @@ function guidelinesCriteriaFacts(project: AtpProjectRecord): Array<{ label: stri
   }));
 }
 
+/**
+ * Printed under Appendix E when the study place is a Census tribal area
+ * (review 76). The Guidelines' criterion is a project located within federally
+ * recognized Tribal Lands, or one a tribal government submits. A Census tribal
+ * area is neither: it is the study place, not the project location, and the
+ * Census Bureau's tribal areas include state reservations, Hawaiian home lands
+ * and statistical areas (KI-2026-11-16-032).
+ */
+export const ATP_CENSUS_TRIBAL_AREA_NOTE =
+  "A Census tribal area is not a finding that the project is located within federally recognized Tribal Lands.";
+
 function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix {
   const shell = appendixShell("equity" as const, index, ATP_APPENDIX_TITLES);
   if (records.project.status !== "ready") return notReady(shell, records.project, "The linked project could not be found in this workspace.");
@@ -440,6 +451,8 @@ function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix
   const run = records.run.run;
   const metrics = run.metrics ?? null;
   const app = buildAtpPacketView({ project: records.project.project, run, generatedAt: records.generatedAt, timeZone: records.timeZone }).packet.applications[0];
+  const studyPlace = readAtpStudyPlace(records.project.project);
+  const censusTribalArea = studyPlace.recorded && studyPlace.censusTribalAreaName !== null;
   return {
     ...shell,
     status: "included",
@@ -461,6 +474,7 @@ function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix
     notes: [
       "The Guidelines criteria are the six the CTC's 2027 ATP Guidelines list in section 12.A, by the Guidelines' names and in their order. A community qualifies by meeting at least one. The Guidelines state each criterion's threshold and data year.",
       "No row above is a determination that a community is disadvantaged or that the project benefits one. The applicant shows that in the application.",
+      ...(censusTribalArea ? [ATP_CENSUS_TRIBAL_AREA_NOTE] : []),
       "The ACS proxy is a screening measure. It is not the Guidelines' median household income criterion or any other criterion above.",
     ],
   };
