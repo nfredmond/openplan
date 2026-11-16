@@ -73,6 +73,7 @@ const { appRoot, repoRoot } = require('./harness-env');
 const first = require('./first-job-journey-lib');
 const campaign = require('./journey-campaign-lib');
 const lib = require('./atp-job-journey-lib');
+const { assertPopplerTool } = require('../openplan/scripts/lib/poppler-text.mjs');
 const { IDLE_TIMEOUT_MS, appFetch, chromePath, clickText, controlByLabel, createProject, pickStudyPlace, readHealth, readJson, retrieveCrashes, scanScreens, settle, signUpAndConfirm, sleep, typeInto, waitForDownload } = require('./journey-browser-lib');
 
 const puppeteer = require(require.resolve('puppeteer-core', { paths: [appRoot] }));
@@ -96,6 +97,9 @@ async function main() {
   const proofOrigin = await first.loadProofOrigin();
   const origin = first.checkJourneyOrigin(options.mode, options.baseUrl, proofOrigin);
   if (!fs.existsSync(AXE_SOURCE)) throw new Error(`axe-core not found at ${AXE_SOURCE}. Run npm ci in openplan/.`);
+  // Poppler reads the exported PDF at step 13 of 17. Find out now that it is on PATH, not 25 minutes in (review 80).
+  assertPopplerTool('pdftotext');
+  lib.assertNoStaleLinkFiles(options);
   // Rehearsal falls back to the labeled fixture; a proof refuses it.
   const loadedInputs = lib.loadAtpInputs(options.mode, options.inputsFile, { job, run: options });
   const inputs = loadedInputs.inputs;
@@ -535,6 +539,9 @@ async function main() {
       if (serious) findings.push({ id: 'screens-serious-or-critical', text: `The record checker will refuse these screens: ${rules.map((entry) => `${describe(entry)} (${entry.rules.map((found) => `${found.id}, ${found.impact}, ${found.nodes}`).join('; ')})`).join('; ')}` });
       if (withErrors.length) findings.push({ id: 'screens-console-errors', text: `The record checker will refuse these screens for console errors: ${withErrors.map((row) => `${describe(row)} (${row.consoleErrors})`).join('; ')}` });
       if (scrolling.length) findings.push({ id: 'screens-sideways-scroll', text: `The record checker will refuse these screens for sideways scroll: ${scrolling.map(describe).join('; ')}` });
+      // A proof stops on what the checker refuses; the findings above are already in the run file (review 80).
+      const stop = lib.screensStop(options.mode, { serious, consoleErrorScreens: withErrors.length, scrollingScreens: scrolling.length });
+      if (stop) throw new Error(stop);
       return `${state.screens.length} checks, ${serious} serious or critical axe nodes, ${withErrors.length} with console errors, ${scrolling.length} scrolling sideways at ${job.screens.noSidewaysScrollWidths.join(', ')} px`;
     });
 

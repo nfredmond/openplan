@@ -1028,6 +1028,38 @@ function assembleAtpRecord({ journeyFiles, commit, baseUrl, recordedOn, proofOri
   };
 }
 
+// ---------------------------------------------------------------------------
+// Stops that save a hosted hour (review 80)
+// ---------------------------------------------------------------------------
+
+/**
+ * A confirmation link file left from an earlier attempt would be opened as
+ * this run's link, and the failure would not name the cause. Refuse to
+ * start while one exists.
+ */
+function assertNoStaleLinkFiles(options, { exists = fs.existsSync } = {}) {
+  for (const file of [options.confirmLinkFile, options.secondConfirmLinkFile]) {
+    if (file && exists(file)) {
+      throw new Error(`A confirmation link file from an earlier attempt is at ${file}. Delete it before starting: this run writes its own.`);
+    }
+  }
+}
+
+/**
+ * What the screens step found that the record checker refuses, as one
+ * message, or null. A proof stops on it: the run could never go into a
+ * record, and ending "journey complete" would hide that. A rehearsal goes
+ * on, with the findings in its run file.
+ */
+function screensStop(mode, { serious = 0, consoleErrorScreens = 0, scrollingScreens = 0 } = {}) {
+  if (mode !== 'proof') return null;
+  const parts = [];
+  if (serious > 0) parts.push(`${serious} serious or critical accessibility finding(s)`);
+  if (consoleErrorScreens > 0) parts.push(`${consoleErrorScreens} screen(s) with console errors`);
+  if (scrollingScreens > 0) parts.push(`${scrollingScreens} screen(s) scrolling sideways`);
+  return parts.length ? `The required screens show what the record checker refuses: ${parts.join(', ')}. A proof stops here; the run file's findings name each screen.` : null;
+}
+
 module.exports = {
   DEFAULT_ANALYSIS_QUESTION,
   JOB_ID,
@@ -1035,6 +1067,7 @@ module.exports = {
   REHEARSAL_INPUTS_PATH,
   REHEARSAL_LABEL,
   applicationLines,
+  assertNoStaleLinkFiles,
   assembleAtpRecord,
   assertAtpRunAssemblable,
   assertCaliforniaCrashFile,
@@ -1059,6 +1092,7 @@ module.exports = {
   placeStatesListed,
   readApplicationPdf,
   rowsFromScreen,
+  screensStop,
   tractDataReading,
   validateAtpInputs,
   writeAtpRunFile,

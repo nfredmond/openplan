@@ -649,3 +649,30 @@ test('assembler: three rehearsal runs assemble under their own local origin, car
   assert.deepEqual(record.crossWorkspace.ownerChecks.map((check) => check.journey), ['county', 'county', 'city', 'city', 'tribal-area', 'tribal-area']);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('a run refuses to start beside a confirmation link file left from an earlier attempt (review 80)', () => {
+  const options = { confirmLinkFile: '/runs/a/confirm-1.txt', secondConfirmLinkFile: '/runs/a/confirm-2.txt' };
+  assert.doesNotThrow(() => lib.assertNoStaleLinkFiles(options, { exists: () => false }));
+  assert.throws(() => lib.assertNoStaleLinkFiles(options, { exists: (file) => file.endsWith('confirm-1.txt') }), /earlier attempt is at \/runs\/a\/confirm-1\.txt/);
+  assert.throws(() => lib.assertNoStaleLinkFiles(options, { exists: (file) => file.endsWith('confirm-2.txt') }), /earlier attempt is at \/runs\/a\/confirm-2\.txt/);
+  // No link file named (a rehearsal with the mail catcher): nothing to refuse.
+  assert.doesNotThrow(() => lib.assertNoStaleLinkFiles({ confirmLinkFile: null, secondConfirmLinkFile: null }, { exists: () => true }));
+});
+
+test('a proof stops on a screen the checker refuses; a rehearsal records it and goes on (review 80)', () => {
+  assert.equal(lib.screensStop('proof', { serious: 0, consoleErrorScreens: 0, scrollingScreens: 0 }), null);
+  assert.match(lib.screensStop('proof', { serious: 2 }), /2 serious or critical accessibility finding\(s\)/);
+  assert.match(lib.screensStop('proof', { consoleErrorScreens: 1 }), /1 screen\(s\) with console errors/);
+  assert.match(lib.screensStop('proof', { scrollingScreens: 3 }), /3 screen\(s\) scrolling sideways/);
+  assert.match(lib.screensStop('proof', { serious: 1, consoleErrorScreens: 1, scrollingScreens: 1 }), /finding\(s\), 1 screen\(s\) with console errors, 1 screen\(s\) scrolling sideways/);
+  assert.equal(lib.screensStop('rehearsal', { serious: 5, consoleErrorScreens: 5, scrollingScreens: 5 }), null);
+});
+
+test('the journey script checks Poppler and stale link files before it opens a browser (review 80)', () => {
+  const source = fs.readFileSync(path.join(__dirname, 'atp-job-journey.js'), 'utf8');
+  const start = source.indexOf("assertPopplerTool('pdftotext');");
+  const stale = source.indexOf('lib.assertNoStaleLinkFiles(options);');
+  const launch = source.indexOf('puppeteer.launch(');
+  assert.ok(start > 0 && stale > start && launch > stale, 'both checks run before the browser starts');
+  assert.ok(source.includes('if (stop) throw new Error(stop);'), 'the screens step throws the stop it is given');
+});

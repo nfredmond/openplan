@@ -325,6 +325,14 @@ node atp-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 
 npm run check:atp-job-journey   # unit tests
 ```
 
+Before a proof: unset `OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS`, use a new run folder and new
+addresses for each attempt (the run refuses to start beside a link file from an
+earlier one), and read `findings` and `axeRules` in the run file, not the exit
+code alone. A proof stops at the screens step when a required screen shows what
+the record checker refuses. The run folder's screenshots show the signed-in
+account's address: copy only the run file and the PDF into a record, never the
+`screens` or `console` folders.
+
 ## Current scripts
 - `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, verifies the denied session still loads its own workspace URL afterward, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-local-ui-ux-settle-capture.js` — read-only local Playwright capture harness for the UI/UX settle route manifest. It requires an already-authenticated local Playwright storage state, refuses production/Vercel URLs, captures desktop/mobile screenshots for populated local routes, and ledgers fixture-required routes instead of accepting empty-state proof.
