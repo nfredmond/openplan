@@ -13,8 +13,8 @@
  * record whose county and tribal area journeys carry those PDFs.
  *
  * Two engines print the PDF. Chrome prints the PDF the hosted site serves;
- * that block runs only where Chrome is installed (this machine; not CI), and
- * the checker must accept it. The built-in writer is the export's fallback
+ * that block runs only where Chrome is installed (the lane's Windows machine
+ * and CI's Linux runner both have it), and the checker must accept it. The built-in writer is the export's fallback
  * when no browser engine works. It needs nothing installed, so its block
  * runs wherever Poppler is (CI's gate has it), and the checker must refuse
  * its PDF by name: a fallback PDF is not the one a planner gets.
@@ -27,8 +27,8 @@
  * (the route tests cover those with fakes). A city PDF is not printed here;
  * the county and the tribal area cover the two shapes the place rule and the
  * tribal sentences take. Skipped where Poppler is missing: a skipped run
- * proves nothing. Where Chrome is missing (CI), no real PDF is accepted by
- * any test; only the document's lines are compared with the definition.
+ * proves nothing. Where Chrome is missing, no real PDF is accepted by any
+ * test; only the document's lines are compared with the definition.
  */
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

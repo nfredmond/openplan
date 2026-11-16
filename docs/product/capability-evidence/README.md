@@ -420,10 +420,10 @@ appear once. A fact that wraps across a page break with a running header
 between its parts is not found. Which states the Bureau lists for the tribal
 area, the stored crash count, every status, every screen result, the mode
 and the harness checkout are the journey's statements. A record and PDFs
-falsified to agree are not caught. No test accepts a real PDF where Chrome
-is not installed (CI): there the definition's lines are compared with the
-document the product builds, and only the fallback writer's PDF is read
-with Poppler. Wrap points on the hosted site's Chrome are unseen.
+falsified to agree are not caught. The test that accepts a real PDF needs
+Chrome and Poppler. It ran on Windows fonts on the lane's machine and on
+Linux fonts in CI's QA gate (November 16, 2026), and is skipped where either
+is missing. Wrap points on the hosted site's own Chrome are unseen.
 
 ### The place label and its Census id
 
