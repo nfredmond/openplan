@@ -495,7 +495,7 @@
     {
       "id": "california-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-ca.ts",
-      "sha256": "fcfe86b9a1050a175cc999bdbfcac58a4277fe8fcdaea212a1096860ea6a51d7"
+      "sha256": "9ad82f85ddf519329bfae93ae59672ad6afbfe6ba689966fbfd7d768dff48e20"
     },
     {
       "id": "comparable-observation-proof-v041",

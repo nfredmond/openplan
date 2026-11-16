@@ -32,8 +32,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Active transportation plans",
       "Non-infrastructure education and encouragement programs",
     ],
-    cycleNote:
-      "The Commission adopts a program each odd-numbered year. The 2027 ATP (Cycle 8) call opened March 19, 2026 and applications were due June 22, 2026. Verify the next call with the CTC.",
+    cycleNote: "The CTC adopts an ATP program each odd-numbered year; the 2027 ATP is Cycle 8. Verify the current call with the CTC.",
     matchRequirement:
       "No local match required; an MPO may require one in the MPO Component. Committed leveraged funds earn points only in Large and Medium project applications. Verify current guidelines.",
     url: "https://catc.ca.gov/programs/active-transportation-program",

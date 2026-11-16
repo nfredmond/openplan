@@ -74,6 +74,7 @@ describe("California program text", () => {
     expect(atp.summary).toContain("at least 25 percent to projects that benefit disadvantaged communities");
     expect(atp.typicalApplicants).toContain("federally recognized tribal governments");
     expect(atp.eligibleProjectTypes).toContain("Non-infrastructure education and encouragement programs");
+    expect(atp.cycleNote).toContain("each odd-numbered year");
   });
 
   it("says leverage scores only in Large and Medium applications and asks for no benefit-cost ratio", () => {
