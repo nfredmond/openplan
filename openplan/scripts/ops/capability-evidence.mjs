@@ -100,7 +100,8 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
  *
  * Rules that hold for every job live in this file: the hosted origin, one
  * commit read back at the start and end of each journey, the place rules,
- * named executors, artifact custody, no DRAFT stamp, accessibility rows at
+ * agent executors (the definitions' executors block), a record date that
+ * fits its journeys (recordedOn block), artifact custody, no DRAFT stamp, accessibility rows at
  * the stated widths and modes, the cross-workspace rule, required limits and
  * the string scans. What one job needs because of what that job is (a saved
  * benefit-cost analysis, a crash source, a campaign's count agreement) is
@@ -170,6 +171,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     if (job.campaign) checkCampaign(journey, job, label, workbooks, pages, campaignRecord);
   }
   if (job.campaign) checkDistinctCampaigns(record.journeys);
+  checkRecordedOn(record);
 
   const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace, roles);
   if (job.participantChecks) checkParticipantChecks(record.participantChecks, job.participantChecks, roles);
@@ -193,6 +195,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
   for (const id of requiredLimits) {
     if (!limitIds.has(id)) refuse(`record does not state the ${id} limit`);
   }
+  checkLimitTexts(record.limits, job);
 }
 
 /**
@@ -361,6 +364,7 @@ function checkMatchedSource(sourceCheck, rule, subject) {
 function checkExecutors(journey, job, label) {
   if (!job.executorRoles) {
     if (!journey.executor.agent.trim() || !journey.executor.model.trim()) refuse(`${label} executor is not named`);
+    checkAgentExecutor(journey.executor, `${label} executor`);
     return;
   }
   for (const role of job.executorRoles) {
@@ -368,6 +372,72 @@ function checkExecutors(journey, job, label) {
     if (named.length !== 1) refuse(`${label} needs exactly one ${role} executor, found ${named.length}`);
   }
   if (journey.executors.length !== job.executorRoles.length) refuse(`${label} names executors this job does not define`);
+  for (const executor of journey.executors) checkAgentExecutor(executor, `${label} ${executor.role} executor`);
+}
+
+/**
+ * An executor is an agent, as the definitions' `executors` block says: a
+ * harness it lists, running a model named by a model id (review 64, case 25).
+ *
+ * Blind category: the names are the journey's statement. A run that names
+ * a listed harness and a well-formed model id it did not run is not caught.
+ */
+function checkAgentExecutor(executor, label) {
+  const rule = JOB_DEFINITIONS.executors;
+  if (!rule.agents.includes(executor.agent)) {
+    refuse(`${label} is ${JSON.stringify(executor.agent)}, not an agent harness this checker knows (${rule.agents.join(", ")}); a proven job is agent-run`);
+  }
+  if (!new RegExp(rule.modelPattern).test(executor.model)) {
+    refuse(`${label} names model ${JSON.stringify(executor.model)}, which is not a model id`);
+  }
+}
+
+/**
+ * The record's date fits its journeys (review 64, case 31): no earlier than
+ * the last end health readback's day in the westernmost time zone (UTC-12),
+ * and no more than the definitions' maxDaysAfterLastEnd days after that
+ * day in the easternmost (UTC+14). The bounds hold in every zone, so an
+ * honest record dated on the day its last journey ended, wherever it was
+ * written, is accepted.
+ *
+ * Blind category: the readback times are the journey's own. A record whose
+ * times and date were moved together is not caught.
+ */
+function checkRecordedOn(record) {
+  const rule = JOB_DEFINITIONS.recordedOn;
+  const day = 24 * 60 * 60 * 1000;
+  const ends = record.journeys.flatMap((journey) => journey.health.filter((reading) => reading.point === "end"));
+  const times = ends.map((reading) => {
+    const time = Date.parse(reading.checkedAt);
+    if (Number.isNaN(time)) refuse(`an end health readback holds a time that cannot be read: ${JSON.stringify(reading.checkedAt)}`);
+    return time;
+  });
+  const last = Math.max(...times);
+  const recorded = Date.parse(`${record.recordedOn}T00:00:00Z`);
+  if (Number.isNaN(recorded) || new Date(recorded).toISOString().slice(0, 10) !== record.recordedOn) {
+    refuse(`recordedOn ${record.recordedOn} is not a calendar date`);
+  }
+  const dayOf = (time) => new Date(time).toISOString().slice(0, 10);
+  const earliest = dayOf(last - 12 * 60 * 60 * 1000);
+  const latest = dayOf(last + 14 * 60 * 60 * 1000 + rule.maxDaysAfterLastEnd * day);
+  if (record.recordedOn < earliest) refuse(`recordedOn ${record.recordedOn} is before the last journey ended (${new Date(last).toISOString()})`);
+  if (record.recordedOn > latest) {
+    refuse(`recordedOn ${record.recordedOn} is more than ${rule.maxDaysAfterLastEnd} days after the last journey ended (${new Date(last).toISOString()})`);
+  }
+}
+
+/**
+ * A limit the job's definition words (its limitTexts) must carry those words
+ * exactly, so a limit cannot say the opposite of its id (review 59, L2). A
+ * record's own added limits have no definition text; see the
+ * capability-evidence README on why they are pinned by the record's hash.
+ */
+function checkLimitTexts(limits, job) {
+  if (!job.limitTexts) return;
+  for (const limit of limits) {
+    if (!Object.hasOwn(job.limitTexts, limit.id)) continue;
+    if (limit.text !== job.limitTexts[limit.id]) refuse(`record's ${limit.id} limit does not carry its definition's words`);
+  }
 }
 
 /**
@@ -488,8 +558,11 @@ function checkCrossWorkspacePerJourney(checks, rule, roles) {
  */
 function checkParticipantChecks(participant, rule, roles) {
   for (const check of participant.refusals) {
-    const label = `public participant request ${check.request}`;
-    if (check.journey !== undefined && !roles.includes(check.journey)) refuse(`${label} names the ${check.journey} journey, which the record does not hold`);
+    if (check.journey !== undefined && !roles.includes(check.journey)) {
+      refuse(`public participant request ${check.request} names the ${check.journey} journey, which the record does not hold`);
+    }
+    // The refusal names the journey whose participant made it (lane 63).
+    const label = `${check.journey === undefined ? "" : `${check.journey} journey `}public participant request ${check.request}`;
     if (check.contentReturned) refuse(`${label} returned content (status ${check.status})`);
     if (!PARTICIPANT_REFUSAL_STATUSES.has(check.status)) {
       refuse(`${label} answered status ${check.status}, which is inconclusive; only 401, 403 or 404 shows the app refused it`);
@@ -924,9 +997,12 @@ function checkCampaignWorkbookFacts(journey, book, sheets, bookLabel) {
   };
 
   const rejectedIds = campaign.moderation.filter((entry) => entry.outcome === "rejected").map((entry) => entry.commentId);
+  // A Windows line ending is a line ending on both sides: SheetJS reads
+  // "\r\n" back as "\n" (review 62).
+  const lines = (text) => String(text ?? "").replace(/\r\n?/g, "\n").trim();
   rejectedIds.forEach((id, index) => {
-    const body = value(rowFor(id)[bodyColumn]).trim();
-    if (body !== String(campaign.rejectedTexts[index] ?? "").trim()) {
+    const body = lines(value(rowFor(id)[bodyColumn]));
+    if (body !== lines(campaign.rejectedTexts[index])) {
       refuse(`${bookLabel} ${items.sheet} ${items.bodyColumn} of rejected comment ${id} is not rejected text ${index + 1}; the record's text must be the rejected comment's own`);
     }
   });
@@ -998,6 +1074,9 @@ function fullCellValue(sheets, longText, cell) {
   return longTextValue(sheets, longText, raw, marker[1], marker[2]);
 }
 
+/** The shortest moderation note searched for inside a longer public value (checkPublicCopy). */
+const NOTE_SEARCH_MIN_LENGTH = 20;
+
 /** The five counts the review files state, in the order the checker compares them. */
 const CAMPAIGN_COUNTS = ["received", "approved", "rejected", "publishedResponses", "answered"];
 
@@ -1045,6 +1124,26 @@ function checkPublicCopy(journey, rule, label, workbooks, pagesByKind, expected,
     const split = name === book.longText.sheet ? rows.slice(1).map((row, index) => [row[2], `sheet ${name} cell ${cellAddress(index + 1, 2)}`]) : [];
     for (const [field, where] of [...headers, ...firstColumn, ...split]) {
       if (staffOnly.has(fieldName(field))) refuse(`${bookLabel} names the staff-only field ${fieldName(field)} at ${where}`);
+    }
+  }
+  // A staff-only value under any name (review 62, N10b to N10d): no public
+  // cell, or value split into Long text, may hold one of the internal
+  // workbook's moderation notes. A note of at least NOTE_SEARCH_MIN_LENGTH
+  // characters is found inside a longer value; a shorter one only as the
+  // whole value, so a two-word note cannot match ordinary words.
+  const internal = rule.workbook;
+  const internalRows = requiredSheet(workbooks.get(internal.kind), internal.contributions.sheet, `${label} ${internal.kind} workbook`);
+  const notesColumn = internalRows[0].indexOf(internal.contributions.notesColumn);
+  const notes = new Set(
+    internalRows.slice(1)
+      .map((row) => squashText(fullCellValue(workbooks.get(internal.kind), internal.longText, row[notesColumn])))
+      .filter(Boolean),
+  );
+  for (const { text, where } of workbookSearchValues(sheets, book.longText.sheet)) {
+    for (const note of notes) {
+      if (text === note || (note.length >= NOTE_SEARCH_MIN_LENGTH && text.includes(note))) {
+        refuse(`${bookLabel} holds a staff-only moderation note at ${where}`);
+      }
     }
   }
   const { summary } = book;
@@ -1303,6 +1402,16 @@ function checkScreens(journey, job, label) {
     seen.add(key);
     if (row.axe.serious !== 0 || row.axe.critical !== 0) {
       refuse(`${rowLabel} has ${row.axe.serious} serious and ${row.axe.critical} critical accessibility violations`);
+    }
+    // The engine and rule tags the job's definition names (review 59, S7):
+    // a clean result from another version or a narrower tag set is not the same check.
+    const axe = job.screens.axe;
+    if (axe && (row.axe.version !== axe.version || JSON.stringify(row.axe.tags) !== JSON.stringify(axe.tags))) {
+      refuse(`${rowLabel} ran accessibility engine ${row.axe.version} with tags ${row.axe.tags.join(", ")}; this job's definition names ${axe.version} with ${axe.tags.join(", ")}`);
+    }
+    // Only when the job's definition says so (review 59, S6; the lead's decision of November 15).
+    if (job.screens.consoleErrorsRefused && job.screens.required?.includes(row.screen) && row.consoleErrors > 0) {
+      refuse(`${rowLabel} logged ${row.consoleErrors} console errors`);
     }
     // A required screen that scrolls sideways at phone width (review 59, S5).
     if (row.horizontalScroll && job.screens.noSidewaysScrollWidths?.includes(row.width) && job.screens.required?.includes(row.screen)) {

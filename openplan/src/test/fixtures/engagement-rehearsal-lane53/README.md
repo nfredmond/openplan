@@ -27,3 +27,8 @@ and `close` (from `run2-county`, `run3-city` and `run3-tribal`, through the
 assembler's `closeForRecord`), the journey each participant refusal came
 from, and the four limits that say what stays on the journey's word. No
 other value changed.
+
+Lane 66 (November 16, 2026) changed one value: the
+`build-named-by-the-journey` limit's text, to the words the job's
+definition now holds (`limitTexts` in `schemas/proven_job_definitions.v1.json`),
+which the checker requires of every record. No other value changed.

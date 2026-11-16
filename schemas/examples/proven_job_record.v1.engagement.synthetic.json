@@ -1030,25 +1030,25 @@
     {"id": "no-pdf-ua-check", "text": "No PDF/UA check was run on the review PDF."},
     {
       "id": "no-keyboard-or-screen-reader-pass-beyond-one-contribution",
-      "text": "One contribution was made with the keyboard only at 390 px. No other keyboard-only or screen-reader pass was made."
+      "text": "One contribution per journey was made with the keyboard only at 390 px. No other keyboard-only or screen-reader pass was made."
     },
-    {"id": "no-human-usefulness-review", "text": "No planner reviewed whether the review files or the response are useful."},
+    {"id": "no-human-usefulness-review", "text": "No planner reviewed whether the review files or the response are useful. Agent-run checks are the acceptance evidence."},
     {
       "id": "test-comments-represent-no-one",
-      "text": "The comments were entered by the proof run and represent no one. A few test comments are not public opinion."
+      "text": "The comments were entered by an automated proof run and represent no one. A few test comments are not public opinion."
     },
     {
       "id": "response-speaks-for-no-agency",
-      "text": "The published response was written by the proof run for a labeled fixture place and speaks for no agency."
+      "text": "The published response was written by an automated proof run under a demonstration label and speaks for no agency."
     },
     {"id": "no-translation-or-ai-synthesis", "text": "No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope."},
     {"id": "live-screens-read-by-the-journey", "text": "The journey read these on live screens and the checker cannot read them again: the public response page's counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign's public addresses."},
-    {"id": "build-named-by-the-journey", "text": "Which build ran comes from the health readbacks the journey wrote at its start and end. Nothing in the record comes from the deployment itself."},
+    {"id": "build-named-by-the-journey", "text": "Which build ran comes from the health readbacks the journey wrote at its start and end. The record's origin and each journey's mode are also the journey's own statements, carried from its run files. Nothing in the record comes from the deployment itself."},
     {"id": "contribution-input-stated-by-the-journey", "text": "Which contribution was made with the keyboard only, and at which width, is the journey's statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook."},
     {"id": "ai-and-approval-flags-set-by-the-journey", "text": "The AI flags, the staff review's approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that."},
     {
       "id": "campaign-page-answers-200-with-not-found-screen",
-      "text": "Another workspace's campaign page answers HTTP 200 with the not-found screen; the journey read the screen and found none of the first account's text. The campaign read and both review downloads were refused."
+      "text": "Another workspace's campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The campaign read, the campaign export, the rejected comment's history and both review downloads were refused."
     }
   ]
 }
