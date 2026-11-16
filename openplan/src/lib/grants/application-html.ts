@@ -30,7 +30,7 @@ import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
 import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
-import type { ApplicationAttachmentRow, ApplicationSectionRow } from "@/lib/grants/application";
+import { attachmentRequirementLabel, type ApplicationAttachmentRow, type ApplicationSectionRow } from "@/lib/grants/application";
 import { formatMoney } from "@/lib/money/format";
 import {
   evidenceAppendicesMarkup,
@@ -124,6 +124,8 @@ export type GrantApplicationExportData = {
   calendar?: WorkspaceCalendar;
   /** The linked project and the workspace, printed on the cover. Absent prints neither. */
   applicant?: ApplicationApplicant;
+  /** Checklist keys the seeded template asks for only in some cases; they print "Required if applicable". */
+  ifApplicableAttachmentKeys?: ReadonlySet<string>;
 };
 
 /** The document label per pursuit kind, used in the title and cover eyebrow. */
@@ -346,7 +348,7 @@ function sectionMarkup(entry: GrantApplicationExportSection): string {
   </section>`;
 }
 
-function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[]): string {
+function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[], ifApplicableKeys?: ReadonlySet<string>): string {
   if (attachments.length === 0) {
     return `<section>
       <h2 class="section-title">Attachment checklist</h2>
@@ -370,7 +372,7 @@ function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[]): st
                 : "—";
             return `<tr>
           <td>${esc(attachment.title)}</td>
-          <td>${attachment.required ? "Required" : "Optional"}</td>
+          <td>${attachmentRequirementLabel(attachment, ifApplicableKeys)}</td>
           <td>${esc(ATTACHMENT_STATUS_LABELS[attachment.status] ?? attachment.status)}</td>
           <td>${esc(fulfillment)}</td>
           <td>${esc(attachment.note ?? "—")}</td>
@@ -437,7 +439,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
     <main>
       ${coverMarkup({ ...data, sections: orderedSections }, draftStamps)}
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
-      ${attachmentsMarkup(data.attachments)}
+      ${attachmentsMarkup(data.attachments, data.ifApplicableAttachmentKeys)}
       ${evidenceAppendicesMarkup(data.evidenceAppendices, data.evidenceAppendixFrame ?? SS4A_APPENDIX_FRAME)}
       ${provenanceMarkup(orderedSections, data.calendar ?? UTC_CALENDAR)}
       ${safetySeedHistoryMarkup(data.safetySeedHistory ?? orderedSections.flatMap((entry) => entry.provenance.safetySeed ? [entry.provenance.safetySeed] : []))}

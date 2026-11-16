@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
-import { identifySeededCatalogKey } from "@/lib/grants/atp-packet";
+import { identifySeededTemplate } from "@/lib/grants/atp-packet";
+import { ifApplicableAttachmentKeys } from "@/lib/grants/application-templates";
 import { loadFinalizerNames, type FinalizerNames } from "@/lib/grants/application-finalizers";
 import { evidenceAppendixProgramFor, evidenceAppendixSelectionSchema } from "@/lib/grants/evidence-appendix-keys";
 import { summarizeEvidenceAppendices } from "@/lib/grants/evidence-appendices";
@@ -409,7 +410,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     // The evidence appendices of a program that declares them, read from the
     // linked project's saved records. Other programs keep the packet they had.
-    const catalogKey = pursuit.context.pursuitKind === "grant" ? identifySeededCatalogKey(sections) : null;
+    const seededTemplate = pursuit.context.pursuitKind === "grant" ? identifySeededTemplate(sections) : null;
+    const catalogKey = seededTemplate?.catalogKey ?? null;
     const appendixProgram = evidenceAppendixProgramFor(catalogKey);
     let assembled: AssembledEvidenceAppendices | null = null;
     if (appendixProgram) {
@@ -474,6 +476,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       programTitle,
       sections: exportSections,
       attachments,
+      ifApplicableAttachmentKeys: ifApplicableAttachmentKeys(seededTemplate),
       generatedAt,
       evidenceAppendices,
       evidenceAppendixFrame: assembled?.frame,
