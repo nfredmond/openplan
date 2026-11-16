@@ -201,6 +201,20 @@ async function main() {
     }
   }
 
+  /**
+   * Hold the journey so far to the definition's per-journey rules, as the
+   * record checker will. A proof stops on a refusal. A rehearsal records it
+   * as a finding and goes on, so everything after it is still rehearsed; the
+   * run file lists every such refusal at the end.
+   */
+  const holdToDefinition = (only) => {
+    const refusals = lib.definitionRefusals(state, job, { only });
+    if (!refusals.length) return '';
+    if (options.mode === 'proof') throw new Error(`This journey ${refusals.join('; ')}.`);
+    for (const refusal of refusals) findings.push({ id: `definition-refuses:${only.replace(/\.$/, '')}`, text: `The record checker will refuse this journey: it ${refusal}.` });
+    return `; THE DEFINITION REFUSES: ${refusals.join('; ')}`;
+  };
+
   const health = (point) => readHealth({ origin, point, mode: options.mode, expectedCommit: options.expectedCommit, readings: state.health, findings });
 
   /** Open the grants screen on the project and the application workspace under the tracked opportunity; returns the application the screen loaded. */
@@ -234,9 +248,9 @@ async function main() {
     });
 
     await step('confirm-email', async () => {
-      const refusals = lib.definitionRefusals(state, job, { only: 'confirmationMethod' });
-      if (refusals.length) throw new Error(`This journey ${refusals.join('; ')}.`);
-      return `token sha256 ${ids.tokenSha256}`;
+      // The emailed link only, in both modes: a sign-up that needs no confirmation does not exercise it.
+      if (state.confirmationMethod !== 'email_link') throw new Error(`Sign-up was confirmed by ${state.confirmationMethod}; this job's journey confirms only by the emailed link.`);
+      return `token sha256 ${ids.tokenSha256}${holdToDefinition('confirmationMethod')}`;
     });
 
     await step('create-project', async () => {
@@ -257,12 +271,10 @@ async function main() {
     await step('retrieve-crashes', async () => {
       const { body, request } = await retrieveCrashes({ page, go, projectId: ids.projectId, placeLabel: state.place.label, findings });
       ids.ingestId = body.ingestId;
-      ids.crashRetrieval = { severityCoverage: String(body.severityCompleteness || body.coverageState || 'not reported'), truncated: body.truncated === true, yearsRequested: request && request.years ? request.years : null };
+      ids.crashRetrieval = { sourceLabel: body.sourceLabel ?? null, severityCoverage: String(body.severityCompleteness || body.coverageState || 'not reported'), truncated: body.truncated === true, yearsRequested: request && request.years ? request.years : null };
       state.crashes = lib.crashesForRecord(body, request);
-      const refusals = lib.definitionRefusals(state, job, { only: 'crashes.' });
-      if (refusals.length) throw new Error(`This journey ${refusals.join('; ')}.`);
-      if (state.crashes.storedCount > state.crashes.reportedCount) throw new Error(`The retrieval stored ${state.crashes.storedCount} crashes but reported ${state.crashes.reportedCount}.`);
-      return `${body.sourceId}: ${body.crashCount} reported, ${body.storedCount} stored, years ${state.crashes.years}`;
+      lib.assertCaliforniaCrashFile(body, state.crashes, job);
+      return `${body.sourceLabel} (${body.sourceId}): ${body.crashCount} reported, ${body.storedCount} stored, years ${state.crashes.years}${holdToDefinition('crashes.')}`;
     });
 
     await step('run-corridor-analysis', async () => {
@@ -347,8 +359,8 @@ async function main() {
       state.application.templateKey = isTemplate ? wantedTemplate : 'unidentified';
       ids.seededSectionKeys = seededSections.map((row) => row.key);
       ids.seededRowKeys = (seeded.attachments || []).map((row) => row.attachment_key);
-      const refusals = lib.definitionRefusals(state, job, { only: 'application.catalogKey' }).concat(lib.definitionRefusals(state, job, { only: 'application.templateKey' }));
-      if (refusals.length) throw new Error(`This journey ${refusals.join('; ')} (the application lists ${ids.seededSectionKeys.join(', ') || 'no sections'}).`);
+      if (state.application.catalogKey !== wantedKey) throw new Error(`The application was set up from catalog key ${state.application.catalogKey}, not ${wantedKey}.`);
+      if (!isTemplate) throw new Error(`The application's sections are not the 2027 template's ten (it lists ${ids.seededSectionKeys.join(', ') || 'none'}).`);
       const wantedRows = rule.rows.list.map((row) => row.key);
       if (JSON.stringify(ids.seededRowKeys) !== JSON.stringify(wantedRows)) throw new Error(`The application's checklist is not the 2027 template's 26 rows in order (it lists ${ids.seededRowKeys.length}).`);
       await settle(page, 1500);
@@ -400,8 +412,7 @@ async function main() {
       const drafts = Object.keys((after && after.latestDraftsBySectionId) || {}).length;
       const fromDraft = rows.filter((row) => row.finalized_from_draft_id).length;
       state.application.aiDraftingUsed = draftRequests > 0 || drafts > 0 || fromDraft > 0;
-      const refusals = lib.definitionRefusals(state, job, { only: 'application.aiDraftingUsed' });
-      if (refusals.length) throw new Error(`This journey ${refusals.join('; ')}.`);
+      if (state.application.aiDraftingUsed) throw new Error(`A draft was asked for or stored (${draftRequests} request(s), ${drafts} stored, ${fromDraft} section(s) finalized from one); every section of this job is typed text.`);
       state.application.sections = rule.sections.list.map((section) => ({ key: section.key, disposition: section.disposition }));
       return `${ids.sectionEntries.length} of ${wanted.length} final from typed text; no draft asked for or stored`;
     });

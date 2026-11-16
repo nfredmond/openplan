@@ -415,6 +415,33 @@ function crashesForRecord(body, request) {
   return { sourceId: String(body.sourceId), years: formatYears(years), reportedCount: body.crashCount, storedCount: body.storedCount };
 }
 
+/**
+ * The printed name of California's crash file, from the definition's own
+ * words: the "Source:" fact Appendix B must state.
+ */
+function californiaCrashFileName(job = loadJobDefinition()) {
+  const appendix = job.application.appendices.list.find((entry) => entry.item === 'appendix-b');
+  const fact = ((appendix && appendix.facts) || []).find((entry) => /^Source: /.test(entry) && !entry.includes('{'));
+  if (!fact) throw new Error('The job\'s definition names no crash source for Appendix B.');
+  return fact.replace(/^Source: /, '');
+}
+
+/**
+ * The journey's own stop at the crash step, in both modes: the retrieval
+ * names its source as California's crash file (the name Appendix B must
+ * print), stored at least the definition's minimum, and stored no more than
+ * it reported. The definition's rule on the source's id is applied beside
+ * this one (definitionRefusals); the two are kept apart so that a wrong id
+ * in either place is seen and not worked around.
+ */
+function assertCaliforniaCrashFile(body, crashes, job = loadJobDefinition()) {
+  const wanted = californiaCrashFileName(job);
+  if (body.sourceLabel !== wanted) throw new Error(`The crashes come from "${body.sourceLabel ?? 'a source with no name'}", not "${wanted}".`);
+  const minimum = ((job.journeyFields || []).find((entry) => entry.field === 'crashes.storedCount') || {}).atLeast ?? 1;
+  if (crashes.storedCount < minimum) throw new Error(`The retrieval stored ${crashes.storedCount} crashes; every journey of this job stores at least ${minimum}.`);
+  if (crashes.storedCount > crashes.reportedCount) throw new Error(`The retrieval stored ${crashes.storedCount} crashes but reported ${crashes.reportedCount}.`);
+}
+
 /** A dotted field of a journey ("crashes.sourceId"). */
 function journeyField(journey, field) {
   return field.split('.').reduce((value, key) => (value === null || value === undefined ? undefined : value[key]), journey);
@@ -753,7 +780,9 @@ function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
   for (const phrase of rule.refusedPhrases.phrases) read(`refused-phrase:${phrase}`, !printsAnywhere(phrase), `the PDF does not print "${phrase}"`);
   const scores = scoreMatches(everywhere, rule);
   read('scores-are-openplan-screening-scores', scores.length === 0, scores.length ? `a score is printed under another label: "${scores[0]}"` : 'every printed score is under one of OpenPlan\'s two screening score labels');
-  read('screening-score-label-printed', rule.scores.labels.some(printsAnywhere), 'the PDF prints an OpenPlan screening score label');
+  // A plain search: the shared matcher finds no phrase that ends in a bracket with a colon after it.
+  const flatEverywhere = squashPdf(everywhere);
+  read('screening-score-label-printed', rule.scores.labels.some((label) => flatEverywhere.includes(squashPdf(label))), 'the PDF prints an OpenPlan screening score label');
 
   return { readings, problems: readings.filter((reading) => !reading.ok).map((reading) => reading.detail), items, stampCount, draftLineCount: draftLines.length };
 }
@@ -943,11 +972,13 @@ module.exports = {
   applicationLines,
   assembleAtpRecord,
   assertAtpRunAssemblable,
+  assertCaliforniaCrashFile,
   assertDemonstrationSentence,
   assertDraftCountAgrees,
   assertPlaceForRole,
   assertPrintableText,
   buildAtpJourney,
+  californiaCrashFileName,
   checklistPlan,
   crashesForRecord,
   definitionRefusals,
