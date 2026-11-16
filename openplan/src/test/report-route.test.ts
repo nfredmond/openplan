@@ -58,6 +58,7 @@ import {
   NOT_RECORDED_METHOD,
   gtfsServiceLevelMethod,
 } from "@/lib/data-sources/transit/method";
+import { EQUITY_PROXY_THRESHOLDS } from "@/lib/data-sources/equity";
 import { GTFS_NOT_A_TIMETABLE_CAVEAT } from "@/lib/gtfs/caveats";
 
 const GTFS_METHOD = gtfsServiceLevelMethod(true);
@@ -432,6 +433,34 @@ describe("POST /api/report", () => {
 
     expect(html).toContain("Decision use: not recorded");
     expect(html).not.toContain("Decision use: concept-level");
+  });
+
+  /**
+   * The equity table's counts say what they count (KI-2026-11-16-111). "Low-Income
+   * Tracts" printed a count with no income line, and nothing said what the proxy
+   * flags or what the equity score adds up. The lines come from the constants the
+   * calculation reads, so the constant is moved here and the report must follow.
+   */
+  it("prints the proxy's income line and rule under the equity table, from the calculation's own constants", async () => {
+    const thresholds = EQUITY_PROXY_THRESHOLDS as { lowIncomeMedian: number; highPovertyPct: number };
+    const original = { ...EQUITY_PROXY_THRESHOLDS };
+    try {
+      const before = await (await postReport(jsonRequest({ runId, format: "html" }))).text();
+      expect(before).toContain(`<td>Low-Income Tracts (median household income below $${original.lowIncomeMedian.toLocaleString("en-US")})</td>`);
+      expect(before).toContain(`<td>High-Poverty Tracts (&ge;${original.highPovertyPct}%)</td>`);
+
+      Object.assign(thresholds, { lowIncomeMedian: 61_000, highPovertyPct: 33 });
+      const html = await (await postReport(jsonRequest({ runId, format: "html" }))).text();
+      expect(html).toContain("<td>Low-Income Tracts (median household income below $61,000)</td>");
+      expect(html).toContain("<td>High-Poverty Tracts (&ge;33%)</td>");
+      expect(html).toContain("<strong>What the proxy counts:</strong> The proxy flags a tract when its median household income is below $61,000 and at least one of these holds: a poverty rate of 33 percent or more,");
+      expect(html).toContain("A tract with no reported median is not counted. A count of zero means no tract met those fixed lines. It is not a finding that no disadvantaged community is present.");
+      expect(html).toContain("<strong>What the equity score counts:</strong> The equity screening score adds four shares of the run");
+      expect(html).toContain("A low score means few tracts met those fixed lines.");
+      expect(html).not.toContain(`$${original.lowIncomeMedian.toLocaleString("en-US")}`);
+    } finally {
+      Object.assign(thresholds, original);
+    }
   });
 
   /**

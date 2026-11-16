@@ -27,6 +27,7 @@
  */
 
 import { scoreWithheldReason, type HeadlineScoreKey } from "@/lib/analysis/score-presentation";
+import { equityScoreMeaning, proxyFlagRule, proxyLowIncomeRule, tractCountPhrase } from "@/lib/data-sources/equity";
 import {
   ATP_APPLICANT_NOT_ENTERED,
   ATP_CATALOG_KEY,
@@ -265,6 +266,8 @@ function scoringPacketAppendix(index: number, records: AtpEvidenceRecords): AtpA
       "These are OpenPlan screening scores from the project's corridor analysis. The CTC scores ATP applications under its current guidelines.",
       "OpenPlan does not decide ATP eligibility.",
       "Climate, feasibility and the weighted total have no source in OpenPlan yet.",
+      // The equity score prints above as a number, so this appendix says what a low one means.
+      ...(app.equity_score === null ? [] : [equityScoreMeaning()]),
       ATP_STUDY_PLACE_NOTE,
     ],
   };
@@ -425,17 +428,35 @@ function demographicSource(metrics: Record<string, unknown> | null): string {
   if (!censusAvailable) {
     return `${dataset}${vintage}: no tract data was retrieved for this run`;
   }
-  const tracts = typeof census.tractCount === "number" ? `, ${count(census.tractCount)} tracts` : "";
+  const tracts = typeof census.tractCount === "number" ? `, ${tractCountPhrase(census.tractCount)}` : "";
   const scale = census.clipScale === "corridor" ? ", clipped to the corridor" : census.clipScale === "county" ? ", whole county set, not clipped to the corridor" : "";
   return `${dataset}${vintage}${tracts}${scale}`;
 }
 
-/** A tract count the run recorded, only when its Census inputs were available. */
-function proxyTractCount(metrics: Record<string, unknown> | null, key: string): string {
+/** How many tracts the run's proxy counts are out of, when the run recorded it. */
+function runTractTotal(metrics: Record<string, unknown> | null): number | null {
+  const stored = [metrics?.tractCount, record(record(metrics?.sourceSnapshots)?.census)?.tractCount];
+  const total = stored.find((value): value is number => typeof value === "number" && Number.isFinite(value));
+  return total ?? null;
+}
+
+/**
+ * A tract count the run recorded, only when its Census inputs were available,
+ * with the total it is out of and the rule that decides what it counts
+ * (KI-2026-11-16-111). A bare "0" beside a place's name read as a finding
+ * about the people who live there. The rule's words come from `equity.ts`,
+ * which reads the constants the calculation uses.
+ */
+function proxyTractCount(metrics: Record<string, unknown> | null, key: string, rule: string): string {
   const censusAvailable = record(metrics?.dataQuality)?.censusAvailable === true;
   const value = metrics?.[key];
-  return censusAvailable && typeof value === "number" && Number.isFinite(value) ? count(value) : "Not recorded";
+  if (!censusAvailable || typeof value !== "number" || !Number.isFinite(value)) return "Not recorded";
+  const total = runTractTotal(metrics);
+  return `${count(value)}${total === null ? "" : ` of ${tractCountPhrase(total)}`}. ${rule}`;
 }
+
+/** The label of the line that says what the equity screening score adds up. It must not end in "score": a label that does reads as a second score. */
+export const ATP_EQUITY_SCORE_MEANING_LABEL = "What this score counts";
 
 /**
  * One row per criterion of the Guidelines' section 12.A, in the Guidelines'
@@ -467,6 +488,17 @@ function guidelinesCriteriaFacts(project: AtpProjectRecord): Array<{ label: stri
 export const ATP_CENSUS_TRIBAL_AREA_NOTE =
   "A Census tribal area is not a finding that the project is located within federally recognized Tribal Lands.";
 
+/**
+ * Printed last under Appendix E. The proxy's income line is OpenPlan's own
+ * fixed number. The Guidelines' Median Household Income criterion is a share
+ * of the statewide median from the Census data years the Guidelines name
+ * (2027 ATP Guidelines, section 12.A, read November 16, 2026 from the CTC's
+ * adopted PDF). That figure changes with each cycle's Guidelines, so it is
+ * not printed here: the note points to the section instead.
+ */
+export const ATP_PROXY_IS_NOT_THE_GUIDELINES_NOTE =
+  "The ACS proxy is a screening measure that uses OpenPlan's own fixed lines. It is not the Guidelines' median household income criterion or any other criterion above. The Guidelines use their own income threshold and Census data years, set for each cycle and stated in section 12.A, Disadvantaged Communities. A count of zero here does not show that an area fails a criterion of the Guidelines, and a flagged tract does not show that it meets one.";
+
 function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix {
   const shell = appendixShell("equity" as const, index, ATP_APPENDIX_TITLES);
   if (records.project.status !== "ready") return notReady(shell, records.project, "The linked project could not be found in this workspace.");
@@ -483,9 +515,11 @@ function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix
     source: runSource(run),
     facts: [
       { label: "Equity screening score (OpenPlan, not a CTC score)", value: scoreCell(app.equity_score, metrics, "equityScore") },
+      // Only beside a printed number: a withheld score has no low value to explain.
+      ...(app.equity_score === null ? [] : [{ label: ATP_EQUITY_SCORE_MEANING_LABEL, value: equityScoreMeaning() }]),
       { label: "Demographic source", value: demographicSource(metrics) },
-      { label: "Tracts the ACS income and burden proxy flags", value: proxyTractCount(metrics, "disadvantagedTracts") },
-      { label: "Low-income tracts (ACS proxy)", value: proxyTractCount(metrics, "lowIncomeTracts") },
+      { label: "Tracts the ACS income and burden proxy flags", value: proxyTractCount(metrics, "disadvantagedTracts", proxyFlagRule()) },
+      { label: "Low-income tracts (ACS proxy)", value: proxyTractCount(metrics, "lowIncomeTracts", proxyLowIncomeRule()) },
       {
         label: "ATP disadvantaged-community criteria",
         value: `Not assessed. OpenPlan does not decide ATP eligibility; the CTC's guidelines set the criteria. ${ATP_VERIFY_GUIDELINES}`,
@@ -498,7 +532,7 @@ function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix
       "The Guidelines criteria are the six the CTC's 2027 ATP Guidelines list in section 12.A, by the Guidelines' names and in their order. A community qualifies by meeting at least one. The Guidelines state each criterion's threshold and data year.",
       "No row above is a determination that a community is disadvantaged or that the project benefits one. The applicant shows that in the application.",
       ...(censusTribalArea ? [ATP_CENSUS_TRIBAL_AREA_NOTE] : []),
-      "The ACS proxy is a screening measure. It is not the Guidelines' median household income criterion or any other criterion above.",
+      ATP_PROXY_IS_NOT_THE_GUIDELINES_NOTE,
     ],
   };
 }
