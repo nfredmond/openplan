@@ -216,6 +216,14 @@ export interface ResolvedBoundary {
   label: string | null;
   geojson: CorridorGeojson;
   bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number };
+  /**
+   * Every state the Census Bureau lists for a tribal area, in its order, from
+   * the same record the boundary came from. Present only for a tribal area;
+   * empty when that record names no readable state. The crash source resolver
+   * reads it (`src/lib/safety/study-area-states.ts`). It is not a jurisdiction:
+   * the subdivision code of a tribal area stays unset.
+   */
+  tribalAreaStateFips?: string[];
 }
 
 interface TigerAttributes {
@@ -1149,5 +1157,6 @@ export async function resolvePlaceBoundary(kind: PlaceKind, geoid: string): Prom
     label: labelFromBoundaryGeojson(json, kind, countyNames),
     geojson,
     bbox,
+    ...(kind === "aiannh" ? { tribalAreaStateFips: aiannhStateFips(json?.features?.[0]?.properties) } : {}),
   };
 }
