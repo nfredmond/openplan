@@ -62,7 +62,7 @@ export const READ_FAILURE_PLANNER_ACTION =
  * now `<div className="module-alert">`.
  *
  * The inherited colour is never dimmed. The summary used to carry 80 percent
- * opacity, which took muted text on the map notice from 5.4:1 to 3.6:1 in
+ * opacity, which took muted text on the map notice from 5.4:1 to 3.5:1 in
  * light mode (axe color-contrast, serious, on Corridor Analysis:
  * KI-2026-11-16-039). The summary is set apart by its underline instead.
  */

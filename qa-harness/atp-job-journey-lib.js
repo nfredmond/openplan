@@ -181,8 +181,12 @@ function assertPrintableText(text, at, job = loadJobDefinition()) {
   }
   if (scoreMatches(value, rule).length) throw new Error(`${at} holds a number after a label ending in ${rule.scores.words.join(', ')}; the PDF may print only OpenPlan's own screening scores.`);
   const headings = [...rule.sections.list.map((section) => section.title), ...Object.values(job.itemHeadings[rule.pdf]), rule.sections.end, rule.appendices.end].map(squash);
+  const boxLabels = rule.applicant.labels.map(squash);
   for (const line of value.split(/\r?\n/)) {
     if (headings.includes(squash(line))) throw new Error(`${at} holds a line that is one of the PDF's own headings ("${line.trim().slice(0, 60)}").`);
+    // A line that is only an applicant label, with or without the word name and a colon, reads as a box that names an applicant (review 79).
+    const said = squash(line).replace(/\s*:$/, '').replace(/ name$/, '');
+    if (boxLabels.includes(said)) throw new Error(`${at} leaves "${line.trim().slice(0, 60)}" alone on a line, which the checker reads as a box that names an applicant.`);
   }
 }
 
@@ -271,6 +275,10 @@ function validateAtpInputs(inputs, mode, { job = loadJobDefinition(), today = fi
   const label = rule.demonstrationLabel.text;
   if (!squash(inputs.projectName).includes(squash(label))) throw new Error(`projectName must say "${label}", in rehearsal and in proof.`);
   const names = first.workspaceNames(inputs, '');
+  // The checker refuses a project or workspace name that holds the word draft in any letter case (review 79).
+  for (const [at, name] of [['projectName', inputs.projectName], ['organization', names.first], ['secondOrganization', names.second]]) {
+    if (/\bdraft\b/i.test(joinLetterSpacing(name))) throw new Error(`${at} holds the word "draft", which the record checker refuses in a name in any letter case.`);
+  }
   for (const [at, name] of [['organization', names.first], ['secondOrganization', names.second]]) {
     if (!/demonstration/i.test(name)) throw new Error(`${at} must be a demonstration name (it must hold the word "demonstration"), never a person's or an agency's.`);
     for (const word of rule.applicant.labels) {
@@ -888,7 +896,9 @@ const LEFT_ON_SITE = ['two accounts and their workspaces', 'one project with its
 
 /** The first account's identifying strings for the project page check: its project name, workspace name and project summary. */
 function identifyingStrings({ projectName, workspaceName, projectSummary }) {
-  const values = [projectName, workspaceName, projectSummary].map((value) => (typeof value === 'string' ? value.trim() : '')).filter(Boolean);
+  // Exactly as given, never trimmed or lower-cased: the checker hashes the record's own
+  // project name and workspace name and looks for those hashes among the ones searched (review 79).
+  const values = [projectName, workspaceName, projectSummary].filter((value) => typeof value === 'string' && value.trim());
   return [...new Set(values)];
 }
 

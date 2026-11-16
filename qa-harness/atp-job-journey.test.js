@@ -145,6 +145,9 @@ test('inputs: no text the PDF prints holds an email address, a [VERIFY] marker, 
     ['A Census tribal area is not a finding that the project is located within federally recognized Tribal Lands.', /which only OpenPlan prints/],
     ['CTC score: 85', /holds a number after a label ending in score, scores, points/],
     ['Total points: 92', /holds a number after a label ending in/],
+    ['Applicant', /leaves "Applicant" alone on a line/],
+    ['Lead agency:', /leaves "Lead agency:" alone on a line/],
+    ['Implementing agency name:', /leaves "Implementing agency name:" alone on a line/],
     ['Attachment checklist', /one of the PDF's own headings/],
     ['Appendix B. Crash summary', /one of the PDF's own headings/],
   ];
@@ -156,6 +159,8 @@ test('inputs: no text the PDF prints holds an email address, a [VERIFY] marker, 
   assert.throws(() => validate((inputs) => { inputs.checklist['partnering-agency-letter-of-intent'].reason = 'Ask planner@example.org about the partner.'; }), /checklist.partnering-agency-letter-of-intent.reason holds an email address/);
   assert.throws(() => validate((inputs) => { inputs.projectName += ' [VERIFY]'; }), /projectName holds a \[VERIFY\] marker/);
   assert.throws(() => validate((inputs) => { inputs.projectSummary += ' Contact planner@example.org.'; }), /holds an email address/);
+  // The same words inside a sentence are a planner's own text, not a box.
+  assert.doesNotThrow(() => validate((inputs) => { inputs.sections[key].text += '\n\nAn applicant would name its lead agency and any implementing agency here.'; }));
   // The product's own disclaimers are worded to stay outside the refused list, and so is honest demonstration text.
   assert.doesNotThrow(() => validate((inputs) => { inputs.sections[key].text += '\n\nThis demonstration makes no statement that a project meets any screening criterion, and OpenPlan does not decide ATP eligibility.'; }));
 });
@@ -164,6 +169,12 @@ test('inputs: names carry the demonstration label and no applicant label', () =>
   assert.throws(() => validate((inputs) => { inputs.projectName = 'Trinity County walking and biking connections'; }), /projectName must say "Demonstration by an automated OpenPlan proof run"/);
   assert.throws(() => validate((inputs) => { inputs.organization = 'Trinity County Department of Transportation'; }), /organization must be a demonstration name/);
   assert.throws(() => validate((inputs) => { inputs.organization = 'Lead agency demonstration workspace'; }), /organization holds the words "Lead agency"/);
+  // Review 79: the word draft in a name is refused in any letter case.
+  for (const word of ['Draft', 'draft', 'DRAFT']) {
+    assert.throws(() => validate((inputs) => { inputs.projectName += ` (${word} two)`; }), /projectName holds the word "draft"/, word);
+    assert.throws(() => validate((inputs) => { inputs.organization += ` ${word}`; }), /organization holds the word "draft"/, word);
+  }
+  assert.doesNotThrow(() => validate((inputs) => { inputs.projectName += ' on Drafthorse Road'; }));
   assert.throws(() => validate((inputs) => { delete inputs.secondOrganization; }), /needs secondOrganization/);
   assert.throws(() => validate((inputs) => { inputs.secondOrganization = `${inputs.organization} two`; }), /contains the first workspace name/);
   assert.throws(() => validate((inputs) => { inputs.applicationType = 'large'; }), /Small Infrastructure application only/);
@@ -475,6 +486,22 @@ test('run file: the journey is in the shape the record schema gives an applicati
   assert.deepEqual(Object.keys(journey.application).sort(), [...schema.properties.application.required].sort());
   assert.equal(journey.application.tractData, 'none-retrieved');
   assert.deepEqual(schema.properties.application.properties.tractData.enum, ['retrieved', 'none-retrieved', 'not-recorded'], 'the three readings tractDataReading gives');
+});
+
+test('project page check: the strings searched are the record\'s own names, byte for byte', () => {
+  const names = { projectName: 'Yreka ATP rehearsal. Demonstration by an automated OpenPlan proof run', workspaceName: 'OpenPlan rehearsal, Yreka ATP demonstration', projectSummary: 'A summary.' };
+  const strings = lib.identifyingStrings(names);
+  assert.deepEqual(strings, [names.projectName, names.workspaceName, names.projectSummary]);
+  assert.ok(strings.length >= job.crossWorkspace.minSearchedStrings);
+  const reading = first.readPageForRecord({ text: 'We could not find that page.', html: '<h1>We could not find that page.</h1>', strings });
+  for (const field of job.crossWorkspace.searchedStringFields) {
+    assert.ok(reading.searchedStringSha256.includes(first.sha256(Buffer.from(names[field], 'utf8'))), field);
+  }
+  assert.equal(reading.notFoundRendered, true);
+  assert.equal(reading.recordTextFound, false);
+  // A page that shows the first account's project name, in another letter case, is found.
+  assert.equal(first.readPageForRecord({ text: names.projectName.toUpperCase(), html: '', strings }).recordTextFound, true);
+  assert.deepEqual(lib.identifyingStrings({ projectName: 'A', workspaceName: 'A', projectSummary: '  ' }), ['A']);
 });
 
 const SECRETS = ['Jr-0123456789abcdefghijklmn', 'Jr-zyxwvutsrqponmlkjihgfed', 'owner@openplan.test', 'second@openplan.test', 'http://127.0.0.1:58531/auth/v1/verify?token=pkce_0123456789abcdef&type=signup'];
