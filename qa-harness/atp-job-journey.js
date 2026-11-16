@@ -73,7 +73,7 @@ const { appRoot, repoRoot } = require('./harness-env');
 const first = require('./first-job-journey-lib');
 const campaign = require('./journey-campaign-lib');
 const lib = require('./atp-job-journey-lib');
-const { appFetch, chromePath, clickText, controlByLabel, createProject, pickStudyPlace, readHealth, readJson, retrieveCrashes, scanScreens, settle, signUpAndConfirm, sleep, typeInto, waitForDownload } = require('./journey-browser-lib');
+const { IDLE_TIMEOUT_MS, appFetch, chromePath, clickText, controlByLabel, createProject, pickStudyPlace, readHealth, readJson, retrieveCrashes, scanScreens, settle, signUpAndConfirm, sleep, typeInto, waitForDownload } = require('./journey-browser-lib');
 
 const puppeteer = require(require.resolve('puppeteer-core', { paths: [appRoot] }));
 const AXE_SOURCE = path.join(appRoot, 'node_modules', 'axe-core', 'axe.min.js');
@@ -153,8 +153,13 @@ async function main() {
 
   // What the screens request, read for ids and counts. Never written, never replayed.
   const observed = { places: [], application: null };
+  // Requests the first account's page has sent and not yet had answered, so a
+  // step that waited out the whole idle limit can say what it waited on.
+  const inFlight = new Map();
+  for (const done of ['requestfinished', 'requestfailed']) page.on(done, (request) => inFlight.delete(request));
   page.on('request', (request) => {
     const url = request.url();
+    inFlight.set(request, `${request.method()} ${request.resourceType()} ${url.replace(/[?#].*$/, '').slice(0, 120)}`);
     if (!url.startsWith(origin)) return;
     if (lib.isPublicPageRequest(url, request.method())) publicRequests.push(`${request.method()} ${new URL(url).pathname.split('/').slice(0, 4).join('/')}`);
     if (request.method() === 'POST' && /\/api\/funding-opportunities\/[^/]+\/sections\/[^/]+\/draft/.test(url)) draftRequests += 1;
@@ -190,6 +195,8 @@ async function main() {
       if (publicRequests.length) throw new Error(`The browser sent a request that opens or reads a public page (${[...new Set(publicRequests)].join(', ')}); this job opens none.`);
       entry.status = 'passed';
       if (detail) entry.detail = detail;
+      const waiting = [...new Set(inFlight.values())];
+      if (waiting.length) entry.requestsInFlightAtEnd = waiting.slice(0, 6).map((line) => first.scrubText(line, secrets));
       log(`${name}: passed${detail ? ` (${typeof detail === 'string' ? detail : JSON.stringify(detail)})` : ''}`);
     } catch (error) {
       entry.status = 'failed';
@@ -595,6 +602,7 @@ async function main() {
     recordedOn: first.utcNow().slice(0, 10),
     expectedCommit: options.expectedCommit,
     harness,
+    idleTimeoutMs: IDLE_TIMEOUT_MS,
     inputsLabel: inputs.label || null,
     inputsSha256: loadedInputs.sha256,
     inputFacts: inputs.facts.map((fact) => ({ id: fact.id, source: fact.source, readOn: fact.readOn })),

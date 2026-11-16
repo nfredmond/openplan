@@ -105,8 +105,16 @@ async function selectByText(element, text) {
   return value;
 }
 
+/**
+ * The longest a step waits for a page's requests to finish before it goes
+ * on: 60 seconds, as the journeys have always waited. A page that keeps a
+ * request in flight uses all of it at every wait. OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS
+ * shortens it for a local rehearsal; a run says so in its file (idleTimeoutMs).
+ */
+const IDLE_TIMEOUT_MS = Number(process.env.OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS) > 0 ? Number(process.env.OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS) : 60000;
+
 async function settle(page, ms = 1500) {
-  await page.waitForNetworkIdle({ idleTime: 800, timeout: 60000 }).catch(() => {});
+  await page.waitForNetworkIdle({ idleTime: 800, timeout: IDLE_TIMEOUT_MS }).catch(() => {});
   await sleep(ms);
 }
 
@@ -369,6 +377,7 @@ async function scanScreens({ browser, context, origin, screens, out, secrets, ax
 }
 
 module.exports = {
+  IDLE_TIMEOUT_MS,
   PLACE_KIND_LABELS,
   appFetch,
   chromePath,
