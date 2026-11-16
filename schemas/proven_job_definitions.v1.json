@@ -117,7 +117,7 @@
         "no-human-usefulness-review",
         "fars-is-fatal-only"
       ],
-      "limitTextsNote": "KI-2026-11-16-020. The words of each limit this job names. A record whose limit with one of these ids says anything else is refused. Where a list is given, the first wording is what the assembler writes and each later one is the wording an earlier record carries: the record of 2026-11-14 names its own places in its FARS limit, and a record cannot change.",
+      "limitTextsNote": "KI-2026-11-16-020. The words of each limit this job names. A record whose limit with one of these ids says anything else is refused. Where a list is given, the first wording is what the assembler writes and each later one is the wording an earlier record carries: the record of 2026-11-14 names its own places in its FARS limit, and a record cannot change. Delete the second FARS wording when that record is replaced: a newer record that carries it names places it may not have run in.",
       "limitTexts": {
         "no-pdf-ua-check": "No PDF/UA check was run on the exported PDFs.",
         "no-keyboard-or-screen-reader-pass": "No keyboard-only or screen-reader pass was made.",
