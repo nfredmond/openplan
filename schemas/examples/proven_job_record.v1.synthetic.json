@@ -3,7 +3,7 @@
   "jobId": "safety-action-plan-and-ss4a-in-three-places",
   "commit": "0123456789abcdef0123456789abcdef01234567",
   "baseUrl": "https://openplan-zeta.vercel.app",
-  "recordedOn": "2026-11-20",
+  "recordedOn": "2026-11-14",
   "journeys": [
     {
       "role": "california-county",
@@ -14,11 +14,11 @@
         "label": "Synthetic California county"
       },
       "executor": { "agent": "Claude Code", "model": "claude-opus-5-5" },
-      "accountCreatedAt": "2026-11-20T10:00:00Z",
+      "accountCreatedAt": "2026-11-14T10:00:00Z",
       "confirmationMethod": "email_link",
       "health": [
-        { "point": "start", "checkedAt": "2026-11-20T10:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
-        { "point": "end", "checkedAt": "2026-11-20T10:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
+        { "point": "start", "checkedAt": "2026-11-14T10:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
+        { "point": "end", "checkedAt": "2026-11-14T10:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
       ],
       "crashes": { "sourceId": "ccrs-ca", "severityCoverage": "all_severities", "reportedCount": 40, "storedCount": 40 },
       "highInjuryNetwork": { "method": "Fatal and serious injury crashes per mile, top segments", "segmentCount": 4 },
@@ -157,11 +157,11 @@
         "label": "Synthetic Nevada county"
       },
       "executor": { "agent": "Claude Code", "model": "claude-opus-5-5" },
-      "accountCreatedAt": "2026-11-20T11:00:00Z",
+      "accountCreatedAt": "2026-11-14T11:00:00Z",
       "confirmationMethod": "operator_relay",
       "health": [
-        { "point": "start", "checkedAt": "2026-11-20T11:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
-        { "point": "end", "checkedAt": "2026-11-20T11:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
+        { "point": "start", "checkedAt": "2026-11-14T11:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
+        { "point": "end", "checkedAt": "2026-11-14T11:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
       ],
       "crashes": { "sourceId": "fars-national", "severityCoverage": "fatal_only", "reportedCount": 6, "storedCount": 6 },
       "highInjuryNetwork": { "method": "Fatal and serious injury crashes per mile, top segments", "segmentCount": 4 },
@@ -300,11 +300,11 @@
         "label": "Synthetic tribal area"
       },
       "executor": { "agent": "Claude Code", "model": "claude-opus-5-5" },
-      "accountCreatedAt": "2026-11-20T12:00:00Z",
+      "accountCreatedAt": "2026-11-14T12:00:00Z",
       "confirmationMethod": "admin_generate_link",
       "health": [
-        { "point": "start", "checkedAt": "2026-11-20T12:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
-        { "point": "end", "checkedAt": "2026-11-20T12:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
+        { "point": "start", "checkedAt": "2026-11-14T12:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" },
+        { "point": "end", "checkedAt": "2026-11-14T12:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.73.0", "migrationsExpected": 452, "migrationsLatest": "20261113000000" }
       ],
       "crashes": { "sourceId": "fars-national", "severityCoverage": "fatal_only", "reportedCount": 3, "storedCount": 3 },
       "highInjuryNetwork": { "method": "Fatal and serious injury crashes per mile, top segments", "segmentCount": 4 },

@@ -504,7 +504,9 @@ function runCheck() {
       }
     }
   }
-  validateCapabilityEvidence(registry, REPO_ROOT, new Date().toISOString().slice(0, 10));
+  // Every record in the registry is a real run: its place labels must be the
+  // Census Bureau's names for their ids (schemas/census_gazetteer_2026).
+  validateCapabilityEvidence(registry, REPO_ROOT, new Date().toISOString().slice(0, 10), { censusNames: true });
   checkJurisdictionReadinessRegistry(registry.readinessRegistry);
 
   const reviewPath = latestReviewPath();

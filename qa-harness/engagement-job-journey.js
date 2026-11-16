@@ -50,7 +50,9 @@
  * whether it tried and whether it worked.
  *
  * Output (in --out): engagement-journey-<role>.json, screenshots, scrubbed
- * console captures and the downloaded review files. Assemble three journey
+ * console captures and the downloaded review files. The campaign's public
+ * address goes to public-address.txt beside the run file and nowhere else;
+ * the operator reads it in a fresh session after the run, then deletes it. Assemble three journey
  * files into one record with --assemble, then run the evidence checker on it.
  * See qa-harness/README.md.
  */
@@ -60,6 +62,7 @@ const crypto = require('crypto');
 const { appRoot } = require('./harness-env');
 const first = require('./first-job-journey-lib');
 const lib = require('./engagement-job-journey-lib');
+const campaign = require('./journey-campaign-lib');
 
 const puppeteer = require(require.resolve('puppeteer-core', { paths: [appRoot] }));
 const XLSX = require(require.resolve('xlsx', { paths: [appRoot] }));
@@ -1434,10 +1437,19 @@ async function main() {
       contributions: Object.fromEntries(Object.entries(ids.submissions).map(([key, entry]) => [key, entry.id])),
     },
   };
-  const serialized = first.scrubText(hideToken(JSON.stringify(result, null, 2)), secrets);
-  fs.writeFileSync(path.join(out, `engagement-journey-${options.role}.json`), `${serialized}\n`);
+  // The run file hides the share token; the public address goes to its own
+  // file beside it, for the operator's one reading in a fresh session.
+  const written = campaign.writeRunFiles({
+    outDir: out,
+    runFileName: `engagement-journey-${options.role}.json`,
+    result,
+    scrub: (text) => first.scrubText(hideToken(text), secrets),
+    origin,
+    portalPath: ids.portalPath,
+  });
   fs.writeFileSync(path.join(out, 'console', 'journey.txt'), consoleErrors.map((line) => first.scrubText(hideToken(line), secrets)).join('\n'));
-  log(`wrote ${path.join(out, `engagement-journey-${options.role}.json`)}`);
+  log(`wrote ${written.runFile}`);
+  if (written.addressFile) log(`wrote the campaign's public address to ${written.addressFile}; read it in a fresh session, then delete it`);
   log(`campaign closed at the end: ${finished.close.attempted ? (finished.close.closed ? 'yes' : 'NO') : 'no campaign was created'}`);
   log(`furthest step passed: ${result.furthestStep}${failure ? `; ${first.scrubText(hideToken(failure.message), secrets)}` : '; journey complete'}`);
   if (failure) process.exitCode = 1;
