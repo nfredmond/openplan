@@ -301,10 +301,11 @@ function formatAmount(value: number | string | null | undefined): string {
  * A heading stays with what follows it. A section's card, and the provenance
  * appendix, does not split across pages when it is shorter than a page; one
  * that is longer starts on a new page. An appendix heading stays with its
- * source line and that line with the first fact, figure or table under it. A
- * heading's opening paragraph stays with the table under it, and a table's
- * header row with its first row. `:not(:last-child)` keeps the rule off the
- * last block of an appendix, where it would tie the appendix to the next one.
+ * source line, and that line, a note box and a lead paragraph each stay with
+ * the block under them, down to the first fact, figure or table.
+ * `:not(:last-child)` keeps the rule off the last block of an appendix, where
+ * it would tie the appendix to the next one. A table's header row needs no
+ * rule: Chrome kept it with the first row in every forced print (lane 83).
  *
  * The provenance table's columns have widths that fit what they hold: the
  * section's title gets the most room, and a role's name, the day and the
@@ -334,8 +335,6 @@ const DOCUMENT_STYLES = `
       h1 { margin-top: 12px; font-size: 38px; line-height: 1.25; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
       .keep-whole, #provenance-appendix { break-inside: avoid; }
-      .section-title + p, #evidence-appendices > p { break-after: avoid; }
-      thead { break-after: avoid; }
       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
       .section-title { margin-bottom: 14px; font-size: 22px; break-after: avoid; break-inside: avoid; }
       .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); break-inside: avoid; }

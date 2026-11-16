@@ -37,7 +37,8 @@ import { ATP_IDS, atpProject, atpRun, completeAtpRecords } from "./fixtures/gran
  *   distances step by 20 px across the height where a heading with its first
  *   line of content stops fitting. A fact line is 31 px tall, so on any font
  *   at least one step falls where the heading and its source line fit and
- *   the first fact does not. Each check confirms the steps straddled that
+ *   the first fact does not; a note box and a lead paragraph are taller
+ *   still. Each check confirms the steps straddled that
  *   height: some headings stayed on the figure's page and some moved on;
  * - the provenance appendix begins 160 px above a page foot, room for its
  *   heading and opening paragraph and not for its table.
@@ -86,14 +87,19 @@ const APPLICANT_LINE = "Applicant not entered in OpenPlan";
 const RUN_QUESTION = "Demonstration by an automated OpenPlan proof run: what crash history involves people walking and bicycling in this study area?";
 const STORED_RUN_TITLE = buildRunTitle(RUN_QUESTION);
 
-/** The 2027 template's ten sections, final, each a few short paragraphs that end in a word found nowhere else. */
-function sections(paragraphs: number): GrantApplicationExportData["sections"] {
+/**
+ * The 2027 template's ten sections, final, each ending in a word found
+ * nowhere else. `paragraphs` gives each section's count of one-line
+ * paragraphs, so a card can be made tall and can break after any line.
+ */
+function sections(paragraphs: (index: number) => number): GrantApplicationExportData["sections"] {
   return buildCatalogSectionSeeds(ATP).map((seed, index) => ({
     section: {
       ...ROW, id: `section-${index}`, section_key: seed.section_key, title: seed.title, guidance: seed.guidance, sort_order: seed.sort_order,
       source: seed.source, suggested_evidence: seed.suggested_evidence, ai_drafting_enabled: seed.ai_drafting_enabled, status: "final" as const,
       final_markdown: [
-        ...Array.from({ length: paragraphs }, () => "Demonstration text, typed by an agent for a layout check. It describes no real project and makes no claim about any agency, place or community."),
+        "Demonstration text, typed by an agent for a layout check.",
+        ...Array.from({ length: paragraphs(index) }, (_, line) => `Layout line ${line + 1}.`),
         `Closing line EndOfSection${index}`,
       ].join("\n\n"),
       finalized_from_draft_id: null, finalized_by: null, finalized_at: null,
@@ -119,7 +125,7 @@ function application(overrides: Partial<GrantApplicationExportData>): string {
       expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null,
     },
     programTitle: null,
-    sections: sections(1),
+    sections: sections(() => 0),
     attachments: attachments(),
     generatedAt: "2026-11-16T04:00:00.000Z",
     evidenceAppendices: buildAtpEvidenceAppendices({ ...records, run: { status: "ready", run: atpRun({ title: STORED_RUN_TITLE }) } }, new Set<string>(ATP_APPENDIX_KEYS)),
@@ -164,6 +170,14 @@ const KINDS = {
     source: { record: "Stress record", id: `stress-${id}`, date: "2026-11-02", dateLabel: "Saved", hash: null, hashLabel: "No content hash is stored for this record", link: null, details: [] },
     facts: [{ label: "First fact", value: `First${id}` }, { label: "Second fact", value: "second" }, { label: "Third fact", value: "third" }],
   }) },
+  /** A source line, a note box, a lead paragraph, then facts: each must stay with the next, down to the first fact. */
+  noted: { rooms: [100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300], build: (id: string) => ({
+    ...included(`target-${id}`, `T${id}`, `Heading${id}`),
+    source: { record: "Stress record", id: `stress-${id}`, date: "2026-11-02", dateLabel: "Saved", hash: null, hashLabel: "No content hash is stored for this record", link: null, details: [] },
+    statusNote: "Part of this record could not be read.",
+    lead: "Proposed by staff for review.",
+    facts: [{ label: "First fact", value: `First${id}` }, { label: "Second fact", value: "second" }],
+  }) },
   /** No record: the heading must stay with the box that says so. */
   missing: { rooms: [30, 50, 70, 90, 110, 130, 150], build: (id: string) =>
     absentEvidenceAppendix({ key: `target-${id}`, letter: `T${id}`, title: `Heading${id}` }, "missing", `First${id} no record is saved.`) },
@@ -174,7 +188,7 @@ const KINDS = {
   }) },
 } satisfies Record<string, { rooms: number[]; build: (id: string) => EvidenceAppendix }>;
 
-const targets: Record<keyof typeof KINDS, Target[]> = { facts: [], missing: [], table: [] };
+const targets: Record<keyof typeof KINDS, Target[]> = { facts: [], noted: [], missing: [], table: [] };
 const stressAppendices: EvidenceAppendix[] = [];
 for (const kind of Object.keys(KINDS) as Array<keyof typeof KINDS>) {
   for (const room of KINDS[kind].rooms) {
@@ -221,7 +235,12 @@ const lastLine = (printed: Printed, page: number) => printed.lines[page - 1][pri
 
 describe.runIf(PDF_TOOLS)("the ATP application PDF, printed with every hard case forced", () => {
   let printed: Printed;
-  const tenSections = sections(4);
+  // Eleven to fifteen one-line paragraphs: each card is between about 590 and 800 px tall, most of a
+  // 960 px page and never all of it, and no two neighbors are the same height. Two never share a page,
+  // so nearly every page end falls inside a card that could break after any of its lines. An earlier
+  // version gave every card the same four paragraphs: two fit a page with the same room to spare each
+  // time, no card ever met a page end, and the check passed with the rule taken out.
+  const tenSections = sections((index) => 11 + ((index * 3) % 5));
   beforeAll(async () => {
     printed = await print("atp-layout-forced", application({
       opportunity: {
@@ -436,7 +455,7 @@ describe("the application document's words, with no browser", () => {
   });
 
   it("says nothing about a time zone under a table that prints no time", () => {
-    const none = sections(1).map((entry) => ({ ...entry, provenance: { ...entry.provenance, finalizedAt: null } }));
+    const none = sections(() => 0).map((entry) => ({ ...entry, provenance: { ...entry.provenance, finalizedAt: null } }));
     const html = application({ sections: none });
     expect(html).not.toContain("Finalized times are in UTC");
     expect(html.match(/<td>Not recorded<\/td>/g)).toHaveLength(10);
