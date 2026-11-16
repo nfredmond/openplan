@@ -274,9 +274,19 @@ readings) are in `journey-browser-lib.js`. Per journey:
 - The job opens no public page. A request that would make an engagement
   campaign or a share link stops the journey.
 
-The journey applies the definition's per-journey rules as the checker will.
-A proof stops on a refusal. A rehearsal records it as a finding and goes on,
-and the run file lists what the checker would refuse (`definitionRefusals`).
+The journey applies the definition's per-journey rules, and its rules for the
+PDF, as the checker will. A proof stops on a refusal. A rehearsal records it
+as a finding and goes on, so the steps after it are still rehearsed, and the
+run file lists what the checker would refuse (`definitionRefusals`). The
+journey's own stops hold in both modes: the place rule for its role, the
+crash file's name and counts, the template, no draft, nothing attached and
+one DRAFT count everywhere.
+
+A page opened for a project can keep a request in flight on a local build, so
+each wait for a page's requests to finish runs to its limit of 60 seconds.
+`OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS` sets a shorter limit for a rehearsal; the
+run file states the limit it ran with (`idleTimeoutMs`) and the requests
+still in flight when each step ended.
 
 Inputs: `--inputs` names a JSON file (`fixtures/atp-job-rehearsal-inputs.json`
 shows the shape, for one place). It carries `projectName` (with the

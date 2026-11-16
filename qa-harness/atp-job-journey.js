@@ -502,7 +502,15 @@ async function main() {
       pdfReading = { readings: described.reading.readings, stampCount: described.reading.stampCount, emailLocations: described.emailLocations };
       if (described.emailLocations.length) throw new Error(`The application PDF prints an email address at ${described.emailLocations.map((entry) => `page ${entry.page} line ${entry.line}`).join(', ')}.`);
       lib.assertDraftCountAgrees(expectedOutstanding, { 'the PDF': described.reading.stampCount });
-      if (described.reading.problems.length) throw new Error(`The application PDF does not read as the job requires: not true that ${described.reading.problems.slice(0, 4).join('; not true that ')}${described.reading.problems.length > 4 ? `; and ${described.reading.problems.length - 4} more` : ''}.`);
+      const { problems } = described.reading;
+      pdfReading.problems = problems;
+      if (problems.length) {
+        // The checker will refuse this PDF. A proof stops here. A rehearsal says so and goes on, so the steps after it are still rehearsed.
+        const said = `The application PDF does not read as the job requires: not true that ${problems.slice(0, 4).join('; not true that ')}${problems.length > 4 ? `; and ${problems.length - 4} more` : ''}.`;
+        if (options.mode === 'proof') throw new Error(said);
+        findings.push({ id: 'pdf-read-back-refuses', text: `The record checker will refuse this journey's PDF. ${said}` });
+        return `${described.pdf.pages} pages, ${described.reading.readings.length} readings; THE PDF IS REFUSED on ${problems.length}: ${problems.slice(0, 2).join('; ')}`;
+      }
       return `${described.pdf.pages} pages, ${described.reading.readings.length} readings, all as required; stamp count ${described.reading.stampCount}`;
     });
 
@@ -605,7 +613,7 @@ async function main() {
   const furthest = [...steps].reverse().find((entry) => entry.status === 'passed');
   const journey = lib.buildAtpJourney(state);
   // What the record checker would refuse in this journey beyond its mode: said in the run file, not left for the checker to find.
-  const refusals = failure ? [] : lib.definitionRefusals({ ...journey, mode: options.mode, harness }, job);
+  const refusals = failure ? [] : [...lib.definitionRefusals({ ...journey, mode: options.mode, harness }, job), ...((pdfReading && pdfReading.problems) || []).map((problem) => `exported a PDF of which it is not true that ${problem}`)];
   const result = {
     schema: 'openplan.atp_job_journey_run.v1',
     jobId: lib.JOB_ID,
