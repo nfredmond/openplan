@@ -116,7 +116,10 @@ describe("California's administration still reaches California", () => {
       "Caltrans Division of Rail and Mass Transportation"
     );
     expect(coverageEntry(CALIFORNIA, "fta-5311").cycleNote).toContain("Caltrans DRMT");
-    expect(coverageEntry(CALIFORNIA, "protect").summary).toContain("rural California agencies");
+    // The PROTECT summary used to end "Directly relevant to rural California agencies", a claim with no source;
+    // the ATP run-through change removed it. What California's entry still carries is who administers the funds.
+    expect(coverageEntry(CALIFORNIA, "protect").summary).not.toContain("Directly relevant");
+    expect(coverageEntry(CALIFORNIA, "protect").administeringAgency).toContain("formula funds via Caltrans");
     expect(coverageEntry(CALIFORNIA, "infra").summary).toContain("partnership with Caltrans");
   });
 

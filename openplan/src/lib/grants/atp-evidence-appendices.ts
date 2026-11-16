@@ -288,12 +288,19 @@ function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 }
 
-/** The run's Census source line, as the run recorded it. */
+/**
+ * The run's Census source line, as the run recorded it. A run whose Census
+ * inputs were unavailable stores a tract count of 0; that is no data, not zero
+ * tracts, so the line says no tract data was retrieved.
+ */
 function demographicSource(metrics: Record<string, unknown> | null): string {
   const census = record(record(metrics?.sourceSnapshots)?.census);
   if (!census) return "Not recorded in the analysis run";
   const dataset = typeof census.dataset === "string" ? census.dataset : "Census dataset not recorded";
   const vintage = typeof census.vintage === "number" || typeof census.vintage === "string" ? ` ${census.vintage}` : "";
+  if (record(metrics?.dataQuality)?.censusAvailable !== true) {
+    return `${dataset}${vintage}: no tract data was retrieved for this run`;
+  }
   const tracts = typeof census.tractCount === "number" ? `, ${count(census.tractCount)} tracts` : "";
   const scale = census.clipScale === "corridor" ? ", clipped to the corridor" : census.clipScale === "county" ? ", whole county set, not clipped to the corridor" : "";
   return `${dataset}${vintage}${tracts}${scale}`;

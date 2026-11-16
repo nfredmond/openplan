@@ -232,7 +232,8 @@ const DOCUMENT_STYLES = `
       .appendix li, #safety-seed-provenance li { overflow-wrap: anywhere; }
       .appendix-facts { display: grid; grid-template-columns: minmax(130px, 28%) 1fr; gap: 6px 14px; margin: 12px 0; }
       .appendix-facts dt, .appendix-facts dd { margin: 0; }
-      .appendix-facts dd { font-size: 15px; line-height: 1.5; }
+      .appendix-facts > div { min-width: 0; }
+      .appendix-facts dd { font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
       .table-scroll { overflow-x: auto; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }

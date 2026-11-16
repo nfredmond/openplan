@@ -73,8 +73,9 @@ export function ExploreLayerVisibilityControls({
           </button>
         </div>
         <div className="mt-3 space-y-1.5">
-          <p className="analysis-studio-inline-meta-label">Tract theme</p>
+          <p id="explore-tract-theme-label" className="analysis-studio-inline-meta-label">Tract theme</p>
           <select
+            aria-labelledby="explore-tract-theme-label"
             value={tractMetric}
             onChange={(event) => onChangeTractMetric(event.target.value as TractMetric)}
             className="analysis-sidepanel-select"

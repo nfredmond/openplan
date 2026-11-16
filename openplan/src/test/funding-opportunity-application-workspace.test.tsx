@@ -477,3 +477,15 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     expect(recordedCalls().find((call) => call.method === "POST")?.body).toBeNull();
   });
 });
+
+// Lane 67's run-through: at 390 px the export button's label ran 28 px past
+// the export panel and was cut off ("Export application packet (PD"). The
+// shared Button never wraps, so this button must opt in. Blind category:
+// jsdom does no layout; the 390 px check is in the run-through screenshots.
+describe("the export button at narrow widths", () => {
+  it("may wrap its label inside the panel instead of running past it", async () => {
+    await openWorkspace(applicationPayload());
+    const button = await screen.findByRole("button", { name: /export application packet \(pdf\)/i });
+    expect(button).toHaveClass("whitespace-normal", "h-auto", "max-w-full");
+  });
+});
