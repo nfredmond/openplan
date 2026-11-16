@@ -101,6 +101,81 @@ export const EQUITY_PROXY_THRESHOLDS = {
 
 const THRESHOLDS = EQUITY_PROXY_THRESHOLDS;
 
+/**
+ * How the equity screening score weighs four shares of a run's tracts: the
+ * share the proxy flags, and the shares at or above the poverty, zero-vehicle
+ * and transit commute lines. `screenEquity` multiplies by these and
+ * `equityScoreMeaning` prints them, so the score and its explanation cannot
+ * state different weights.
+ */
+export const EQUITY_SCORE_WEIGHTS = {
+  proxyFlagged: 0.4,
+  highPoverty: 0.2,
+  lowVehicleAccess: 0.2,
+  highTransitDependency: 0.2,
+} as const;
+
+/** "1 tract", "2 tracts", "1,204 tracts". */
+export function tractCountPhrase(count: number): string {
+  return `${count.toLocaleString("en-US")} ${count === 1 ? "tract" : "tracts"}`;
+}
+
+/** The proxy's income line in dollars, read from the constant the calculation compares against. */
+export function proxyLowIncomeLine(): string {
+  return `$${THRESHOLDS.lowIncomeMedian.toLocaleString("en-US")}`;
+}
+
+/**
+ * THE WORDS FOR WHAT THE PROXY COUNTS (KI-2026-11-16-111).
+ *
+ * An export printed "Low-income tracts (ACS proxy): 0" and an equity score of
+ * 0.0 beside the name of a real tribal area, with nothing saying that the
+ * count rests on a fixed income line or what the score adds up. A reader could
+ * take the zero as a finding about the people who live there. The functions
+ * below say what each number counts. They read the thresholds and weights
+ * when they are called, from the same objects `evaluateProxyDisadvantage` and
+ * `screenEquity` read, so a printed line cannot name a rule the code does not
+ * apply. They state the rule only: nothing here describes a place or the
+ * people in it.
+ */
+
+/** What makes a tract count as low-income here, and what a tract with no published median does. */
+export function proxyLowIncomeRule(): string {
+  return `A tract counts as low-income here when the ACS reports a median household income for it below ${proxyLowIncomeLine()}. A tract with no reported median is not counted.`;
+}
+
+/** The three burden lines the score also counts on their own, each with its threshold. */
+function scoredBurdenLines(): { highPoverty: string; lowVehicleAccess: string; highTransitDependency: string } {
+  return {
+    highPoverty: `a poverty rate of ${THRESHOLDS.highPovertyPct} percent or more`,
+    lowVehicleAccess: `${THRESHOLDS.lowVehicleAccessPct} percent or more of households without a vehicle`,
+    highTransitDependency: `${THRESHOLDS.transitDependencyPct} percent or more of commuters using transit`,
+  };
+}
+
+/** What makes the proxy flag a tract: the income line and at least one of the four burden lines. */
+export function proxyFlagRule(): string {
+  const burden = scoredBurdenLines();
+  return `The proxy flags a tract when its median household income is below ${proxyLowIncomeLine()} and at least one of these holds: ${burden.highPoverty}, a minority population share of ${THRESHOLDS.highMinorityPct} percent or more, ${burden.lowVehicleAccess}, or ${burden.highTransitDependency}.`;
+}
+
+/**
+ * What the equity screening score adds up, and what a low value does and does
+ * not mean. The score is a weighted sum of shares of tracts, so a low score
+ * says few tracts met the proxy's fixed lines. It says nothing else.
+ */
+export function equityScoreMeaning(): string {
+  const burden = scoredBurdenLines();
+  const weight = (value: number) => `${Math.round(value * 100)} percent`;
+  return (
+    `The equity screening score adds four shares of the run's tracts: ${weight(EQUITY_SCORE_WEIGHTS.proxyFlagged)} of the share the ACS proxy flags, ` +
+    `${weight(EQUITY_SCORE_WEIGHTS.highPoverty)} of the share with ${burden.highPoverty}, ` +
+    `${weight(EQUITY_SCORE_WEIGHTS.lowVehicleAccess)} of the share with ${burden.lowVehicleAccess}, and ` +
+    `${weight(EQUITY_SCORE_WEIGHTS.highTransitDependency)} of the share with ${burden.highTransitDependency}. ` +
+    "A low score means few tracts met those fixed lines. It is not a finding that no disadvantaged community is present."
+  );
+}
+
 function pct(numerator: number, denominator: number): number {
   if (denominator <= 0) return 0;
   return Math.round((numerator / denominator) * 1000) / 10;
@@ -231,10 +306,10 @@ export function screenEquity(
   const equityScore = Math.min(
     100,
     Math.round(
-      pctDisadvantaged * 0.4 +
-        pct(highPovertyTracts, tracts.length) * 0.2 +
-        pct(lowVehicleAccessTracts, tracts.length) * 0.2 +
-        pct(highTransitDependencyTracts, tracts.length) * 0.2
+      pctDisadvantaged * EQUITY_SCORE_WEIGHTS.proxyFlagged +
+        pct(highPovertyTracts, tracts.length) * EQUITY_SCORE_WEIGHTS.highPoverty +
+        pct(lowVehicleAccessTracts, tracts.length) * EQUITY_SCORE_WEIGHTS.lowVehicleAccess +
+        pct(highTransitDependencyTracts, tracts.length) * EQUITY_SCORE_WEIGHTS.highTransitDependency
     )
   );
 

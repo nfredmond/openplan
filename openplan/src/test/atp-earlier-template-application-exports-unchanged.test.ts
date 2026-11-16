@@ -55,8 +55,16 @@ import { seedId } from "./fixtures/grants/safety-seed";
 // Re-taken on November 16, 2026 (lane 75, after review 78): the section title's print rule gained
 // `break-inside: avoid`, one CSS declaration in the document's style block. No text changed, and
 // the built-in writer's PDF, which reads no CSS, kept its hash.
-const PINNED_HTML_SHA256 = "68e4d4dd9978efd38aaddfec56e68ba738fc20d41d38d640df0722bce0ebc479";
-const PINNED_PDF_SHA256 = "7a962fe8807667fc156ece49bb7d406ae7d75249bb84d1a92c00ab4a282f38e7";
+//
+// Re-taken again on November 16, 2026 (lane 82, KI-2026-11-16-111): the last note under Appendix E
+// now says the proxy uses OpenPlan's own fixed lines, that the Guidelines use their own threshold
+// and data years (section 12.A), and that a zero count or a flagged tract shows nothing about a
+// Guidelines criterion. Both hashes moved (HTML from `68e4d4dd...`, PDF from `7a962fe8...`). With
+// the earlier note put back, both earlier values returned, so that sentence is the whole change.
+// This fixture's run retrieved no tract data, so its count lines still read "Not recorded" and it
+// prints no equity score.
+const PINNED_HTML_SHA256 = "229b94c6a7c476b1d0dea24e2a074c9e06a83e740383b5f14d15a29b3511edd7";
+const PINNED_PDF_SHA256 = "bd6e3ee3f1523506eca4efa1909d215a049811a1d2ec9c9120e5c7ffb396e89e";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
