@@ -392,12 +392,27 @@ async function main() {
     return { createdAt, confirmationMethod: 'email_link', tokenSha256 };
   }
 
-  /** Close the campaign through the settings form, then read its public addresses as a participant. */
+  /**
+   * Close the campaign through the settings form, then read its public
+   * addresses as a participant. The journey signed the first account out
+   * before the cross-workspace check, so the close signs it back in on the
+   * sign-in screen when the app asks.
+   */
   async function closeCampaign() {
     const staff = await context.newPage();
+    let signedInAgain = false;
     try {
       await staff.goto(new URL(`/engagement/${ids.campaignId}?tab=setup`, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
       await settle(staff);
+      if (new URL(staff.url()).pathname.startsWith('/sign-in')) {
+        await staff.type('#email', options.email);
+        await staff.type('#password', password);
+        await clickText(staff, 'button[type=submit]', 'Sign in');
+        await staff.waitForFunction(() => !location.pathname.startsWith('/sign-in'), { timeout: 60000 });
+        signedInAgain = true;
+        await staff.goto(new URL(`/engagement/${ids.campaignId}?tab=setup`, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
+        await settle(staff);
+      }
       await staff.evaluate(() => {
         const select = document.querySelector('#campaign-control-status');
         for (let node = select; node; node = node.parentElement) if (node.tagName === 'DETAILS') node.open = true;
@@ -450,8 +465,11 @@ async function main() {
       // campaign's title or a comment means the campaign is not offline.
       const publicRead = { status: api.status, campaignTextFound: holdsCampaignText(api.text) };
       const verdict = campaignLib.closeVerdict({ saveStatus, statusAfter, addresses, publicRead, neverPublic });
-      closeReading = { saveStatus, statusAfter, addresses, publicReadStatusAfter: api.status, publicReadCampaignTextFound: publicRead.campaignTextFound, ...verdict };
+      closeReading = { signedInAgain, saveStatus, statusAfter, addresses, publicReadStatusAfter: api.status, publicReadCampaignTextFound: publicRead.campaignTextFound, ...verdict };
       return verdict;
+    } catch (error) {
+      await staff.screenshot({ path: path.join(out, 'screens', 'failed-close-campaign.png') }).catch(() => {});
+      throw error;
     } finally {
       await staff.close().catch(() => {});
     }
