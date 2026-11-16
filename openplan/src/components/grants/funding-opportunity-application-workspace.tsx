@@ -806,7 +806,7 @@ export function FundingOpportunityApplicationWorkspace({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="mt-2"
+                    className="mt-2 h-auto min-h-8 max-w-full whitespace-normal py-1.5 text-left"
                     disabled={isExporting}
                     onClick={() => void handleExport()}
                   >

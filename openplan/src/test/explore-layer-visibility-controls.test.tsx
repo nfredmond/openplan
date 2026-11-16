@@ -69,3 +69,12 @@ describe("ExploreLayerVisibilityControls", () => {
     expect(props.onChangeTractMetric).toHaveBeenCalledWith("poverty");
   });
 });
+
+// Lane 67's run-through: axe-core 4.11.1 reported select-name (critical) on
+// the Corridor Analysis screen because the tract theme select had no name.
+describe("the tract theme select", () => {
+  it("is named by its visible label", () => {
+    renderControls();
+    expect(screen.getByRole("combobox", { name: "Tract theme" })).toBeInTheDocument();
+  });
+});
