@@ -17,9 +17,12 @@ a published response in three places;
 it. Both were run by an agent on the hosted site, and no person reviewed
 whether the artifacts are useful.
 
-A third job is defined and has no record: a California Active Transportation
-Program application in three places. Its rules are below. Nothing here says
-it is proven.
+A third job was recorded on November 16, 2026: a California Active
+Transportation Program application in three places
+(`third-proven-job.v1.json`, with its files and its own README in
+`third-proven-job/`). Its rules are below. It is a rehearsal of a closed
+call on the 2027 Small Infrastructure forms; its README says what that
+does and does not show.
 
 ## Files
 

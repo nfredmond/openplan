@@ -1,0 +1,1692 @@
+{
+  "schema": "openplan.atp_job_journey_run.v1",
+  "jobId": "california-atp-application-in-three-places",
+  "mode": "proof",
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "recordedOn": "2026-11-16",
+  "expectedCommit": "95be0369cd0ff55366d140d4b44522d18f499341",
+  "harness": {
+    "commit": "95be0369cd0ff55366d140d4b44522d18f499341",
+    "clean": true
+  },
+  "idleTimeoutMs": 60000,
+  "inputsLabel": "Proof inputs for the Hoopa Valley Reservation, California, as the Census Bureau maps it: demonstration text and checklist dispositions for one OpenPlan third-job proof journey (a California ATP application), written from public sources read on 2026-11-16 and listed in facts. A demonstration only; not prepared, reviewed, adopted or submitted by any agency or tribe. Version 1.",
+  "inputsSha256": "24a40e06fc80f8a49032f27b854251207357af32d43c2e826a30dbcdeb3ba402",
+  "inputFacts": [
+    {
+      "id": "census-2020-population",
+      "source": "U.S. Census Bureau, TIGERweb, 2020 Census map service (tigerWMS_Census2020), layer 34, record GEOID 1490R, field POP100. https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/34 (saved read: reads/tigerweb-2020-hoopa-valley.json)",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-small-application",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 13, Submittal Requirements.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-2027-applications-due",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 3, Program Schedule.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-eligible-tribal-government",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 10, Eligible Applicants, item 5.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-no-match",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 6, Matching Requirement.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-minimum-request",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 14, Minimum Funding Request.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-rtp-pages",
+      "source": "California Transportation Commission, 2027 ATP Application Checklist. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-application-checklist-final-a11y.pdf (SHA-256 b14e7674553788127f5fd6953d8781b02e877f7ed7935f50113663fd7e405f89), Part A6: Screening Criteria.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-dac-income-criterion",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 12.A, Disadvantaged Communities.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-dac-tribal-lands-criterion",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 12.A, Disadvantaged Communities.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-small-rubric-q2",
+      "source": "California Transportation Commission, 2027 ATP Small Infrastructure Application Scoring Rubric. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/3-2027-atp-small-infrastructure-application-scoring-rubric-final.pdf (SHA-256 db9255f5e00be87587cf6e1fccee80d196fc5df8e4eb0d572ccbc89265bc7323), Question 2.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-small-rubric-q3",
+      "source": "California Transportation Commission, 2027 ATP Small Infrastructure Application Scoring Rubric. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/3-2027-atp-small-infrastructure-application-scoring-rubric-final.pdf (SHA-256 db9255f5e00be87587cf6e1fccee80d196fc5df8e4eb0d572ccbc89265bc7323), Question 3.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-small-rubric-q4",
+      "source": "California Transportation Commission, 2027 ATP Small Infrastructure Application Scoring Rubric. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/3-2027-atp-small-infrastructure-application-scoring-rubric-final.pdf (SHA-256 db9255f5e00be87587cf6e1fccee80d196fc5df8e4eb0d572ccbc89265bc7323), Question 4.",
+      "readOn": "2026-11-16"
+    },
+    {
+      "id": "ca-atp-corps-deduction",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 18, Scoring Criteria, scoring table, row Corps Use, column Small Inf. and I + NI.",
+      "readOn": "2026-11-16"
+    }
+  ],
+  "furthestStep": "health-end",
+  "stoppedAt": null,
+  "stepsDefined": [
+    "health-start",
+    "sign-up",
+    "confirm-email",
+    "create-project",
+    "set-study-place",
+    "retrieve-crashes",
+    "run-corridor-analysis",
+    "track-atp",
+    "set-up-application",
+    "finalize-sections",
+    "set-checklist-dispositions",
+    "export-application-pdf",
+    "read-application-pdf",
+    "screens",
+    "owner-control",
+    "cross-workspace",
+    "health-end"
+  ],
+  "steps": [
+    {
+      "step": "health-start",
+      "startedAt": "2026-11-16T16:08:01Z",
+      "status": "passed",
+      "detail": "ok, commit 95be0369cd0f, version 0.72.0",
+      "endedAt": "2026-11-16T16:08:01Z"
+    },
+    {
+      "step": "sign-up",
+      "startedAt": "2026-11-16T16:08:01Z",
+      "status": "passed",
+      "detail": "confirmation email_link",
+      "endedAt": "2026-11-16T16:08:22Z"
+    },
+    {
+      "step": "confirm-email",
+      "startedAt": "2026-11-16T16:08:22Z",
+      "status": "passed",
+      "detail": "token sha256 b5c5604a3c7566304f7fd2f6bd5a94e9f5600e8abfb53db31ea625ef309edd00",
+      "endedAt": "2026-11-16T16:08:22Z"
+    },
+    {
+      "step": "create-project",
+      "startedAt": "2026-11-16T16:08:22Z",
+      "status": "passed",
+      "detail": "58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects",
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans",
+        "GET fetch https://openplan-zeta.vercel.app/plans",
+        "GET fetch https://openplan-zeta.vercel.app/programs",
+        "GET fetch https://openplan-zeta.vercel.app/grants"
+      ],
+      "endedAt": "2026-11-16T16:08:28Z"
+    },
+    {
+      "step": "set-study-place",
+      "startedAt": "2026-11-16T16:08:28Z",
+      "status": "passed",
+      "detail": "Hoopa Valley Reservation, CA (aiannh 1490R); the search lists it in 06",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial"
+      ],
+      "endedAt": "2026-11-16T16:09:54Z"
+    },
+    {
+      "step": "retrieve-crashes",
+      "startedAt": "2026-11-16T16:09:54Z",
+      "status": "passed",
+      "detail": "California Crash Reporting System (CCRS) (ccrs-ca): 134 reported, 134 stored, years 2022–2025",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial"
+      ],
+      "endedAt": "2026-11-16T16:13:27Z"
+    },
+    {
+      "step": "run-corridor-analysis",
+      "startedAt": "2026-11-16T16:13:27Z",
+      "status": "passed",
+      "detail": "run aa68d4b2; tract data retrieved",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial"
+      ],
+      "endedAt": "2026-11-16T16:17:38Z"
+    },
+    {
+      "step": "track-atp",
+      "startedAt": "2026-11-16T16:17:38Z",
+      "status": "passed",
+      "detail": "ee4276a8-c06e-47ae-abfd-54bb56c7290f",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/dashboard"
+      ],
+      "endedAt": "2026-11-16T16:18:43Z"
+    },
+    {
+      "step": "set-up-application",
+      "startedAt": "2026-11-16T16:18:43Z",
+      "status": "passed",
+      "detail": "catalog key atp, template atp-2027, 10 sections, 26 checklist rows",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:21:50Z"
+    },
+    {
+      "step": "finalize-sections",
+      "startedAt": "2026-11-16T16:21:50Z",
+      "status": "passed",
+      "detail": "10 of 10 final from typed text; no draft asked for or stored",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:26:45Z"
+    },
+    {
+      "step": "set-checklist-dispositions",
+      "startedAt": "2026-11-16T16:26:45Z",
+      "status": "passed",
+      "detail": "8 not applicable with a reason, 18 outstanding, nothing attached; 17 required outstanding",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:31:06Z"
+    },
+    {
+      "step": "export-application-pdf",
+      "startedAt": "2026-11-16T16:31:06Z",
+      "status": "passed",
+      "detail": "398383 bytes; stamped for 17 required attachment(s) outstanding",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:31:14Z"
+    },
+    {
+      "step": "read-application-pdf",
+      "startedAt": "2026-11-16T16:31:14Z",
+      "status": "passed",
+      "detail": "16 pages, 119 readings, all as required; stamp count 17",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:31:14Z"
+    },
+    {
+      "step": "screens",
+      "startedAt": "2026-11-16T16:31:14Z",
+      "status": "passed",
+      "detail": "16 checks, 0 serious or critical axe nodes, 0 with console errors, 0 scrolling sideways at 390 px",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:33:07Z"
+    },
+    {
+      "step": "owner-control",
+      "startedAt": "2026-11-16T16:33:07Z",
+      "status": "passed",
+      "detail": "application read 200, PDF download 200 after the redirect to the signed file",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:33:09Z"
+    },
+    {
+      "step": "cross-workspace",
+      "startedAt": "2026-11-16T16:33:09Z",
+      "status": "passed",
+      "detail": "application-read 404; application-pdf-download 404; project-page 404 (not-found screen shown, 3 strings searched, none found)",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:33:40Z"
+    },
+    {
+      "step": "health-end",
+      "startedAt": "2026-11-16T16:33:40Z",
+      "status": "passed",
+      "detail": "ok, commit 95be0369cd0f, version 0.72.0",
+      "requestsInFlightAtEnd": [
+        "GET fetch https://openplan-zeta.vercel.app/projects/58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+        "GET fetch https://openplan-zeta.vercel.app/api/assistant/context",
+        "GET fetch https://openplan-zeta.vercel.app/knowledge-base",
+        "GET fetch https://openplan-zeta.vercel.app/aerial",
+        "GET fetch https://openplan-zeta.vercel.app/grants",
+        "GET fetch https://openplan-zeta.vercel.app/land-use-plans"
+      ],
+      "endedAt": "2026-11-16T16:33:41Z"
+    }
+  ],
+  "journey": {
+    "role": "tribal-area",
+    "place": {
+      "kind": "aiannh",
+      "geoid": "1490R",
+      "stateFips": [
+        "06"
+      ],
+      "label": "Hoopa Valley Reservation, CA"
+    },
+    "executor": {
+      "agent": "Claude Code",
+      "model": "claude-fable-5-2"
+    },
+    "accountCreatedAt": "2026-11-16T16:08:05Z",
+    "confirmationMethod": "email_link",
+    "health": [
+      {
+        "point": "start",
+        "checkedAt": "2026-11-16T16:08:01Z",
+        "status": "ok",
+        "commit": "95be0369cd0f",
+        "version": "0.72.0",
+        "migrationsExpected": 455,
+        "migrationsLatest": "20261102140000"
+      },
+      {
+        "point": "end",
+        "checkedAt": "2026-11-16T16:33:41Z",
+        "status": "ok",
+        "commit": "95be0369cd0f",
+        "version": "0.72.0",
+        "migrationsExpected": 455,
+        "migrationsLatest": "20261102140000"
+      }
+    ],
+    "projectName": "Hoopa Valley Reservation ATP demonstration. Demonstration by an automated OpenPlan proof run",
+    "workspaceName": "OpenPlan proof run, Hoopa Valley Reservation ATP demonstration",
+    "crashes": {
+      "sourceId": "ccrs-ca",
+      "years": "2022–2025",
+      "reportedCount": 134,
+      "storedCount": 134
+    },
+    "application": {
+      "catalogKey": "atp",
+      "templateKey": "atp-2027",
+      "aiDraftingUsed": false,
+      "tractData": "retrieved",
+      "exportedAt": "2026-11-16T16:31:12Z",
+      "sections": [
+        {
+          "key": "atp-2027-part-a-project-information",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-part-a5-project-funding",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-part-a6-screening-criteria",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-b1-disadvantaged-communities",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-b2-walking-biking-rolling",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-b3-fatalities-and-injuries",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-b4-public-participation-planning",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-b5-scope-plan-layout-consistency",
+          "disposition": "fixed-note"
+        },
+        {
+          "key": "atp-2027-b6-conservation-corps",
+          "disposition": "text"
+        },
+        {
+          "key": "atp-2027-b7-past-performance",
+          "disposition": "fixed-note"
+        }
+      ],
+      "rows": [
+        {
+          "key": "partnering-agency-letter-of-intent",
+          "disposition": "not-applicable",
+          "reason": "The demonstration names no partnering agency."
+        },
+        {
+          "key": "safe-routes-school-map-and-statements",
+          "disposition": "not-applicable",
+          "reason": "The demonstration is not a Safe Routes to School project."
+        },
+        {
+          "key": "state-highway-project-impact-assessment-form",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "railroad-and-agency-letters",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "project-programming-request",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "ceqa-nepa-signature-pages",
+          "disposition": "not-applicable",
+          "reason": "The demonstration shows no phase complete, so it shows no completed environmental phase."
+        },
+        {
+          "key": "right-of-way-certification",
+          "disposition": "not-applicable",
+          "reason": "The demonstration shows no phase complete, so it shows no completed right of way phase."
+        },
+        {
+          "key": "regional-transportation-plan-pages",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "caltrans-need-for-atp-funds",
+          "disposition": "not-applicable",
+          "reason": "The demonstration is not a Caltrans-implemented project."
+        },
+        {
+          "key": "caltrans-local-coordination",
+          "disposition": "not-applicable",
+          "reason": "The demonstration is not a Caltrans-implemented project."
+        },
+        {
+          "key": "disadvantaged-community-map",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "disadvantaged-community-identifier-data",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "gap-closure-and-route-maps",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "collision-data",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "public-participation-documentation",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "corps-consultation-responses",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "signature-page",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "engineers-checklist",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "project-location-map",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "project-layouts-and-plans",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "photos-of-existing-conditions",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "project-estimate",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "non-infrastructure-work-plan",
+          "disposition": "not-applicable",
+          "reason": "The demonstration fills in the infrastructure-only application, with no non-infrastructure part."
+        },
+        {
+          "key": "letters-of-support",
+          "disposition": "outstanding"
+        },
+        {
+          "key": "state-only-funds-request",
+          "disposition": "not-applicable",
+          "reason": "The demonstration requests no funds, so it requests no state-only funds."
+        },
+        {
+          "key": "additional-attachments",
+          "disposition": "outstanding"
+        }
+      ],
+      "outstandingRequiredCount": 17
+    },
+    "pdfs": [
+      {
+        "kind": "atp-application",
+        "path": "downloads/tribal-area-atp-application.pdf",
+        "sha256": "1a3fca4b2bdcbfca76d969cdd60b3d11e7686ae6539b0013688d82254fe1254d",
+        "bytes": 398383,
+        "pages": 16,
+        "draftStamp": true,
+        "items": [
+          {
+            "item": "appendix-a",
+            "page": 10,
+            "method": "pdftotext",
+            "text": "Appendix A. ATP screening packet"
+          },
+          {
+            "item": "appendix-b",
+            "page": 11,
+            "method": "pdftotext",
+            "text": "Appendix B. Crash summary"
+          },
+          {
+            "item": "appendix-c",
+            "page": 13,
+            "method": "pdftotext",
+            "text": "Appendix C. Cost estimate"
+          },
+          {
+            "item": "appendix-d",
+            "page": 13,
+            "method": "pdftotext",
+            "text": "Appendix D. Engagement summary"
+          },
+          {
+            "item": "appendix-e",
+            "page": 13,
+            "method": "pdftotext",
+            "text": "Appendix E. Disadvantaged-community and equity inputs"
+          },
+          {
+            "item": "appendix-f",
+            "page": 14,
+            "method": "pdftotext",
+            "text": "Appendix F. Benefit-cost summary"
+          }
+        ]
+      }
+    ],
+    "screens": [
+      {
+        "screen": "project",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "project",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "project",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "project",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "safety",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "safety",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "safety",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "safety",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "corridor-analysis",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "corridor-analysis",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "corridor-analysis",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "corridor-analysis",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "grants-application",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "grants-application",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "grants-application",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "grants-application",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      }
+    ]
+  },
+  "crossWorkspace": {
+    "checks": [
+      {
+        "target": "atp-application",
+        "request": "application-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "atp-application-pdf",
+        "request": "application-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "target": "atp-application",
+        "request": "project-page",
+        "kind": "page",
+        "status": 404,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "53a120b802fef60306cb883fa1984de85b8df0571498863f389af26e3fede05f",
+          "6e370f9edec9724e7846e5958e8c8e1c5e47dc92a74c1c6a4df33165720f4cd0",
+          "6c4cf8e32f1c388370f9f56f0ad737165dee1ce13050c77d11f954b22076c59a"
+        ],
+        "searchedStringCount": 3
+      }
+    ],
+    "ownerChecks": [
+      {
+        "request": "application-read",
+        "status": 200
+      },
+      {
+        "request": "application-pdf-download",
+        "status": 200
+      }
+    ],
+    "secondAccounts": [
+      {
+        "confirmed": true,
+        "ownRequest": "own-workspace-read",
+        "ownStatus": 200
+      }
+    ]
+  },
+  "ownerDownload": {
+    "redirected": true,
+    "isPdf": true
+  },
+  "placeStatesListed": {
+    "stateFips": [
+      "06"
+    ],
+    "labelStates": [
+      "CA"
+    ]
+  },
+  "crashRetrieval": {
+    "sourceLabel": "California Crash Reporting System (CCRS)",
+    "severityCoverage": "kabco_full",
+    "truncated": false,
+    "yearsRequested": [
+      2025,
+      2024,
+      2023,
+      2022
+    ]
+  },
+  "corridorAnalysis": {
+    "runId": "aa68d4b2-db94-4f56-b164-2a15643407ae",
+    "reportStyle": "atp",
+    "tractData": {
+      "state": "retrieved",
+      "censusRecordStored": true,
+      "tractCount": 1
+    }
+  },
+  "application": {
+    "templatePickerStartsOn": {
+      "value": "atp",
+      "text": "Active Transportation Program (ATP)"
+    },
+    "seededSectionKeys": [
+      "atp-2027-part-a-project-information",
+      "atp-2027-part-a5-project-funding",
+      "atp-2027-part-a6-screening-criteria",
+      "atp-2027-b1-disadvantaged-communities",
+      "atp-2027-b2-walking-biking-rolling",
+      "atp-2027-b3-fatalities-and-injuries",
+      "atp-2027-b4-public-participation-planning",
+      "atp-2027-b5-scope-plan-layout-consistency",
+      "atp-2027-b6-conservation-corps",
+      "atp-2027-b7-past-performance"
+    ],
+    "seededRowKeys": [
+      "partnering-agency-letter-of-intent",
+      "safe-routes-school-map-and-statements",
+      "state-highway-project-impact-assessment-form",
+      "railroad-and-agency-letters",
+      "project-programming-request",
+      "ceqa-nepa-signature-pages",
+      "right-of-way-certification",
+      "regional-transportation-plan-pages",
+      "caltrans-need-for-atp-funds",
+      "caltrans-local-coordination",
+      "disadvantaged-community-map",
+      "disadvantaged-community-identifier-data",
+      "gap-closure-and-route-maps",
+      "collision-data",
+      "public-participation-documentation",
+      "corps-consultation-responses",
+      "signature-page",
+      "engineers-checklist",
+      "project-location-map",
+      "project-layouts-and-plans",
+      "photos-of-existing-conditions",
+      "project-estimate",
+      "non-infrastructure-work-plan",
+      "letters-of-support",
+      "state-only-funds-request",
+      "additional-attachments"
+    ],
+    "sections": [
+      {
+        "sectionKey": "atp-2027-part-a-project-information",
+        "textSha256": "0d8dcb278302471f836050e2b12bf60fc6c42fc8b88238ec71dee74de47b985b",
+        "characters": 1073
+      },
+      {
+        "sectionKey": "atp-2027-part-a5-project-funding",
+        "textSha256": "e58f778b3434c43a6ead74d4ce0e7da63fb9f297f8c9499e7d6197f1ee43b538",
+        "characters": 589
+      },
+      {
+        "sectionKey": "atp-2027-part-a6-screening-criteria",
+        "textSha256": "3ca50e8363182cfadffccce7bffe50dbba6251deb91d692450d75d398e740161",
+        "characters": 517
+      },
+      {
+        "sectionKey": "atp-2027-b1-disadvantaged-communities",
+        "textSha256": "87fe94c29ce49567b4dd77e5ec460134d25312b1cb765593c44cfed945b7b0c4",
+        "characters": 1039
+      },
+      {
+        "sectionKey": "atp-2027-b2-walking-biking-rolling",
+        "textSha256": "b3ebf5afb2c1dfce13ac1de9ddbb2fb454231800c0c6550c845bc2d68a110446",
+        "characters": 480
+      },
+      {
+        "sectionKey": "atp-2027-b3-fatalities-and-injuries",
+        "textSha256": "458e9ddf208f0d0794472b3bd30daecdf307639b6ac1e6bf692a0b4940484a99",
+        "characters": 661
+      },
+      {
+        "sectionKey": "atp-2027-b4-public-participation-planning",
+        "textSha256": "f15dae8e0bf25bae356c0a9408dfb874777b7f26b8b7f9e1f1215ddb2d6fc446",
+        "characters": 457
+      },
+      {
+        "sectionKey": "atp-2027-b5-scope-plan-layout-consistency",
+        "textSha256": "39866ef7af69fa1227d2a441db0d67f621445fca4694b853c2bb2d3ac03e7416",
+        "characters": 348
+      },
+      {
+        "sectionKey": "atp-2027-b6-conservation-corps",
+        "textSha256": "9c0dd489170f114ae700e76edfdcf239bd2f3554c2deeabda57c641bba48234f",
+        "characters": 418
+      },
+      {
+        "sectionKey": "atp-2027-b7-past-performance",
+        "textSha256": "0fa72522041469641c02bcda6ebd391679b19a7566eb62eefca823e9e7cbe565",
+        "characters": 326
+      }
+    ],
+    "draftRequestsSeen": 0,
+    "expectedOutstandingRequiredCount": 17,
+    "stamp": {
+      "exportPanelBefore": "Will be stamped DRAFT: 17 required attachment(s) outstanding",
+      "exportAnswer": [
+        "DRAFT: 17 required attachment(s) outstanding"
+      ],
+      "exportResultOnScreen": [
+        "Stamped DRAFT: 17 required attachment(s) outstanding"
+      ],
+      "engineDisclosure": null
+    }
+  },
+  "pdfReading": {
+    "readings": [
+      {
+        "id": "not-fallback-writer",
+        "ok": true,
+        "detail": "the PDF was printed by the browser engine, not typeset by the export's fallback writer"
+      },
+      {
+        "id": "sections-end-heading",
+        "ok": true,
+        "detail": "the heading \"Attachment checklist\" closes the sections"
+      },
+      {
+        "id": "section-title:atp-2027-part-a-project-information",
+        "ok": true,
+        "detail": "the section title \"Part A1 to A4: Applicant and project information\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-part-a5-project-funding",
+        "ok": true,
+        "detail": "the section title \"Part A5: Project funding\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-part-a6-screening-criteria",
+        "ok": true,
+        "detail": "the section title \"Part A6: Screening criteria\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b1-disadvantaged-communities",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 1: Disadvantaged Communities (DAC)\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b2-walking-biking-rolling",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 2: Potential to Increase Walking, Biking and Rolling\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b3-fatalities-and-injuries",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b4-public-participation-planning",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 4: Public Participation and Planning\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b5-scope-plan-layout-consistency",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 5: Scope and Plan Layout Consistency\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b6-conservation-corps",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-title:atp-2027-b7-past-performance",
+        "ok": true,
+        "detail": "the section title \"Part B, Question 7: Performance on Past ATP Projects\" is a heading exactly once (found 1)"
+      },
+      {
+        "id": "section-titles-in-order",
+        "ok": true,
+        "detail": "the ten section titles are in the template's order"
+      },
+      {
+        "id": "demonstration-label-on-project-name",
+        "ok": true,
+        "detail": "the project name carries \"Demonstration by an automated OpenPlan proof run\""
+      },
+      {
+        "id": "cover:projectName",
+        "ok": true,
+        "detail": "the cover prints the projectName"
+      },
+      {
+        "id": "cover:workspaceName",
+        "ok": true,
+        "detail": "the cover prints the workspaceName"
+      },
+      {
+        "id": "cover-study-place-line",
+        "ok": true,
+        "detail": "the cover states \"Study place: Hoopa Valley Reservation, CA (Census tribal area, GEOID 1490R)\" as a line of its own"
+      },
+      {
+        "id": "cover-applicant-line",
+        "ok": true,
+        "detail": "the cover prints \"Applicant not entered in OpenPlan\""
+      },
+      {
+        "id": "study-place-recorded",
+        "ok": true,
+        "detail": "the PDF does not print \"Study place not recorded in OpenPlan\""
+      },
+      {
+        "id": "study-place-label-lines",
+        "ok": true,
+        "detail": "every line that holds \"Study place:\" is the journey's place line and nothing more"
+      },
+      {
+        "id": "workspace-is-not-the-applicant",
+        "ok": true,
+        "detail": "the PDF names the workspace nowhere as the applicant, the lead agency or the implementing agency"
+      },
+      {
+        "id": "draft-stamp-on-cover",
+        "ok": true,
+        "detail": "the cover carries \"DRAFT: 17 required attachment(s) outstanding\""
+      },
+      {
+        "id": "draft-stamp-count",
+        "ok": true,
+        "detail": "the stamp counts 17 (the PDF's says 17)"
+      },
+      {
+        "id": "draft-lines-are-the-stamp",
+        "ok": true,
+        "detail": "every line that holds the word DRAFT is that stamp"
+      },
+      {
+        "id": "section-final:atp-2027-part-a-project-information",
+        "ok": true,
+        "detail": "\"Part A1 to A4: Applicant and project information\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-part-a-project-information",
+        "ok": true,
+        "detail": "\"Part A1 to A4: Applicant and project information\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-part-a-project-information",
+        "ok": true,
+        "detail": "\"Part A1 to A4: Applicant and project information\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-part-a5-project-funding",
+        "ok": true,
+        "detail": "\"Part A5: Project funding\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-part-a5-project-funding",
+        "ok": true,
+        "detail": "\"Part A5: Project funding\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-part-a5-project-funding",
+        "ok": true,
+        "detail": "\"Part A5: Project funding\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-part-a6-screening-criteria",
+        "ok": true,
+        "detail": "\"Part A6: Screening criteria\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-part-a6-screening-criteria",
+        "ok": true,
+        "detail": "\"Part A6: Screening criteria\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-part-a6-screening-criteria",
+        "ok": true,
+        "detail": "\"Part A6: Screening criteria\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b1-disadvantaged-communities",
+        "ok": true,
+        "detail": "\"Part B, Question 1: Disadvantaged Communities (DAC)\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b1-disadvantaged-communities",
+        "ok": true,
+        "detail": "\"Part B, Question 1: Disadvantaged Communities (DAC)\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b1-disadvantaged-communities",
+        "ok": true,
+        "detail": "\"Part B, Question 1: Disadvantaged Communities (DAC)\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b2-walking-biking-rolling",
+        "ok": true,
+        "detail": "\"Part B, Question 2: Potential to Increase Walking, Biking and Rolling\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b2-walking-biking-rolling",
+        "ok": true,
+        "detail": "\"Part B, Question 2: Potential to Increase Walking, Biking and Rolling\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b2-walking-biking-rolling",
+        "ok": true,
+        "detail": "\"Part B, Question 2: Potential to Increase Walking, Biking and Rolling\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b3-fatalities-and-injuries",
+        "ok": true,
+        "detail": "\"Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b3-fatalities-and-injuries",
+        "ok": true,
+        "detail": "\"Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b3-fatalities-and-injuries",
+        "ok": true,
+        "detail": "\"Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b4-public-participation-planning",
+        "ok": true,
+        "detail": "\"Part B, Question 4: Public Participation and Planning\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b4-public-participation-planning",
+        "ok": true,
+        "detail": "\"Part B, Question 4: Public Participation and Planning\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b4-public-participation-planning",
+        "ok": true,
+        "detail": "\"Part B, Question 4: Public Participation and Planning\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b5-scope-plan-layout-consistency",
+        "ok": true,
+        "detail": "\"Part B, Question 5: Scope and Plan Layout Consistency\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b5-scope-plan-layout-consistency",
+        "ok": true,
+        "detail": "\"Part B, Question 5: Scope and Plan Layout Consistency\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b5-scope-plan-layout-consistency",
+        "ok": true,
+        "detail": "\"Part B, Question 5: Scope and Plan Layout Consistency\" carries the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b6-conservation-corps",
+        "ok": true,
+        "detail": "\"Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b6-conservation-corps",
+        "ok": true,
+        "detail": "\"Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b6-conservation-corps",
+        "ok": true,
+        "detail": "\"Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)\" holds text of its own and not the fixed note"
+      },
+      {
+        "id": "section-final:atp-2027-b7-past-performance",
+        "ok": true,
+        "detail": "\"Part B, Question 7: Performance on Past ATP Projects\" is final"
+      },
+      {
+        "id": "section-opens-with-label:atp-2027-b7-past-performance",
+        "ok": true,
+        "detail": "\"Part B, Question 7: Performance on Past ATP Projects\" begins with the demonstration label"
+      },
+      {
+        "id": "section-fixed-note:atp-2027-b7-past-performance",
+        "ok": true,
+        "detail": "\"Part B, Question 7: Performance on Past ATP Projects\" carries the fixed note"
+      },
+      {
+        "id": "no-attached-line",
+        "ok": true,
+        "detail": "the PDF prints no \"Attached for\" line"
+      },
+      {
+        "id": "appendix-heading:appendix-a",
+        "ok": true,
+        "detail": "the heading \"Appendix A. ATP screening packet\" is a line of its own exactly once, after the sections (found 1)"
+      },
+      {
+        "id": "appendix-heading:appendix-b",
+        "ok": true,
+        "detail": "the heading \"Appendix B. Crash summary\" is a line of its own exactly once, after the sections (found 1)"
+      },
+      {
+        "id": "appendix-heading:appendix-c",
+        "ok": true,
+        "detail": "the heading \"Appendix C. Cost estimate\" is a line of its own exactly once, after the sections (found 1)"
+      },
+      {
+        "id": "appendix-heading:appendix-d",
+        "ok": true,
+        "detail": "the heading \"Appendix D. Engagement summary\" is a line of its own exactly once, after the sections (found 1)"
+      },
+      {
+        "id": "appendix-heading:appendix-e",
+        "ok": true,
+        "detail": "the heading \"Appendix E. Disadvantaged-community and equity inputs\" is a line of its own exactly once, after the sections (found 1)"
+      },
+      {
+        "id": "appendix-heading:appendix-f",
+        "ok": true,
+        "detail": "the heading \"Appendix F. Benefit-cost summary\" is a line of its own exactly once, after the sections (found 1)"
+      },
+      {
+        "id": "appendix-headings-in-order",
+        "ok": true,
+        "detail": "the six appendix headings are in order"
+      },
+      {
+        "id": "appendices-end-heading",
+        "ok": true,
+        "detail": "the heading \"Provenance appendix\" closes the appendices"
+      },
+      {
+        "id": "appendix-fact:appendix-a:Program: Active Transportation Program (ATP)",
+        "ok": true,
+        "detail": "\"Appendix A. ATP screening packet\" states \"Program: Active Transportation Program (ATP)\""
+      },
+      {
+        "id": "appendix-fact:appendix-a:Administering agency: California Transportation Commission / Caltrans",
+        "ok": true,
+        "detail": "\"Appendix A. ATP screening packet\" states \"Administering agency: California Transportation Commission / Caltrans\""
+      },
+      {
+        "id": "appendix-fact:appendix-a:Project: {projectName}",
+        "ok": true,
+        "detail": "\"Appendix A. ATP screening packet\" states \"Project: Hoopa Valley Reservation ATP demonstration. Demonstration by an automated OpenPlan proof run\" as a line of its own"
+      },
+      {
+        "id": "appendix-fact:appendix-a:Study place: {label} ({kind}, GEOID {geoid})",
+        "ok": true,
+        "detail": "\"Appendix A. ATP screening packet\" states \"Study place: Hoopa Valley Reservation, CA (Census tribal area, GEOID 1490R)\""
+      },
+      {
+        "id": "appendix-fact:appendix-a:Applicant not entered in OpenPlan",
+        "ok": true,
+        "detail": "\"Appendix A. ATP screening packet\" states \"Applicant not entered in OpenPlan\""
+      },
+      {
+        "id": "appendix-fact:appendix-a:OpenPlan does not decide ATP eligibility.",
+        "ok": true,
+        "detail": "\"Appendix A. ATP screening packet\" states \"OpenPlan does not decide ATP eligibility.\""
+      },
+      {
+        "id": "appendix-fact:appendix-b:Source: California Crash Reporting System (CCRS)",
+        "ok": true,
+        "detail": "\"Appendix B. Crash summary\" states \"Source: California Crash Reporting System (CCRS)\""
+      },
+      {
+        "id": "appendix-fact:appendix-b:Years requested: {years}",
+        "ok": true,
+        "detail": "\"Appendix B. Crash summary\" states \"Years requested: 2022–2025\" as a line of its own"
+      },
+      {
+        "id": "appendix-fact:appendix-b:Crashes reported: {count}",
+        "ok": true,
+        "detail": "\"Appendix B. Crash summary\" states \"Crashes reported: 134\" as a line of its own"
+      },
+      {
+        "id": "appendix-content:appendix-c",
+        "ok": true,
+        "detail": "\"Appendix C. Cost estimate\" carries \"Missing.\""
+      },
+      {
+        "id": "appendix-content:appendix-d",
+        "ok": true,
+        "detail": "\"Appendix D. Engagement summary\" carries \"Missing.\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:Guidelines criterion, Median Household Income: Not recorded in OpenPlan",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"Guidelines criterion, Median Household Income: Not recorded in OpenPlan\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:Guidelines criterion, National School Lunch Program: Not recorded in OpenPlan",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"Guidelines criterion, National School Lunch Program: Not recorded in OpenPlan\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:Guidelines criterion, Healthy Places Index: Not recorded in OpenPlan",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"Guidelines criterion, Healthy Places Index: Not recorded in OpenPlan\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:Guidelines criterion, Other: Not recorded in OpenPlan",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"Guidelines criterion, Other: Not recorded in OpenPlan\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:No row above is a determination that a community is disadvantaged or that the project benefits one.",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"No row above is a determination that a community is disadvantaged or that the project benefits one.\""
+      },
+      {
+        "id": "appendix-fact:appendix-e:Guidelines criterion, Native American Tribal Lands: The study place is a Census tribal area: {label}",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" states \"Guidelines criterion, Native American Tribal Lands: The study place is a Census tribal area: Hoopa Valley Reservation, CA\" as a line of its own"
+      },
+      {
+        "id": "appendix-rows:appendix-e",
+        "ok": true,
+        "detail": "every \"Guidelines criterion,\" row of \"Appendix E. Disadvantaged-community and equity inputs\" is one the job expects"
+      },
+      {
+        "id": "appendix-content:appendix-f",
+        "ok": true,
+        "detail": "\"Appendix F. Benefit-cost summary\" carries \"Missing.\""
+      },
+      {
+        "id": "role-fact:appendix-b",
+        "ok": true,
+        "detail": "\"Appendix B. Crash summary\" carries the missing-reports sentence"
+      },
+      {
+        "id": "role-fact:appendix-e",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" carries the Census tribal area note"
+      },
+      {
+        "id": "tract-data-value-known",
+        "ok": true,
+        "detail": "the run's tract data reading (\"retrieved\") is one the definition knows"
+      },
+      {
+        "id": "tract-data-label",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" prints a \"Demographic source:\" line"
+      },
+      {
+        "id": "tract-data-sentence:retrieved",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" says what belongs to a run where its run retrieved tract data"
+      },
+      {
+        "id": "tract-data-sentence-absent:none-retrieved",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" does not say what belongs to a run where its run retrieved no tract data"
+      },
+      {
+        "id": "tract-data-sentence-absent:not-recorded",
+        "ok": true,
+        "detail": "\"Appendix E. Disadvantaged-community and equity inputs\" does not say what belongs to a run where its run did not record whether tract data was retrieved"
+      },
+      {
+        "id": "required-phrase:Scores are OpenPlan screening scores, not CTC scores.",
+        "ok": true,
+        "detail": "the PDF prints \"Scores are OpenPlan screening scores, not CTC scores.\""
+      },
+      {
+        "id": "required-phrase:These appendices do not establish ATP eligibility or that this package meets the current call for projects.",
+        "ok": true,
+        "detail": "the PDF prints \"These appendices do not establish ATP eligibility or that this package meets the current call for projects.\""
+      },
+      {
+        "id": "refused-phrase:to be provided",
+        "ok": true,
+        "detail": "the PDF does not print \"to be provided\""
+      },
+      {
+        "id": "refused-phrase:is eligible for",
+        "ok": true,
+        "detail": "the PDF does not print \"is eligible for\""
+      },
+      {
+        "id": "refused-phrase:are eligible for",
+        "ok": true,
+        "detail": "the PDF does not print \"are eligible for\""
+      },
+      {
+        "id": "refused-phrase:project is eligible",
+        "ok": true,
+        "detail": "the PDF does not print \"project is eligible\""
+      },
+      {
+        "id": "refused-phrase:applicant is eligible",
+        "ok": true,
+        "detail": "the PDF does not print \"applicant is eligible\""
+      },
+      {
+        "id": "refused-phrase:eligible for ATP funding",
+        "ok": true,
+        "detail": "the PDF does not print \"eligible for ATP funding\""
+      },
+      {
+        "id": "refused-phrase:meets the eligibility",
+        "ok": true,
+        "detail": "the PDF does not print \"meets the eligibility\""
+      },
+      {
+        "id": "refused-phrase:qualifies as a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"qualifies as a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:qualifies as disadvantaged",
+        "ok": true,
+        "detail": "the PDF does not print \"qualifies as disadvantaged\""
+      },
+      {
+        "id": "refused-phrase:qualify as a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"qualify as a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:is a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"is a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:is in a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"is in a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:is located in a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"is located in a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:is located within a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"is located within a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:benefits a disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"benefits a disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:meets the screening criteria",
+        "ok": true,
+        "detail": "the PDF does not print \"meets the screening criteria\""
+      },
+      {
+        "id": "refused-phrase:passes the screening criteria",
+        "ok": true,
+        "detail": "the PDF does not print \"passes the screening criteria\""
+      },
+      {
+        "id": "refused-phrase:passes the Commission's screening",
+        "ok": true,
+        "detail": "the PDF does not print \"passes the Commission's screening\""
+      },
+      {
+        "id": "refused-phrase:meets the disadvantaged community criteria",
+        "ok": true,
+        "detail": "the PDF does not print \"meets the disadvantaged community criteria\""
+      },
+      {
+        "id": "refused-phrase:Disadvantaged community: Yes",
+        "ok": true,
+        "detail": "the PDF does not print \"Disadvantaged community: Yes\""
+      },
+      {
+        "id": "refused-phrase:DAC or Low-income group: Yes",
+        "ok": true,
+        "detail": "the PDF does not print \"DAC or Low-income group: Yes\""
+      },
+      {
+        "id": "refused-phrase:severely disadvantaged community",
+        "ok": true,
+        "detail": "the PDF does not print \"severely disadvantaged community\""
+      },
+      {
+        "id": "refused-phrase:is a DAC",
+        "ok": true,
+        "detail": "the PDF does not print \"is a DAC\""
+      },
+      {
+        "id": "refused-phrase:qualifies for ATP funding",
+        "ok": true,
+        "detail": "the PDF does not print \"qualifies for ATP funding\""
+      },
+      {
+        "id": "refused-phrase:satisfies all screening criteria",
+        "ok": true,
+        "detail": "the PDF does not print \"satisfies all screening criteria\""
+      },
+      {
+        "id": "scores-are-openplan-screening-scores",
+        "ok": true,
+        "detail": "every printed score is under one of OpenPlan's two screening score labels"
+      },
+      {
+        "id": "screening-score-label-printed",
+        "ok": true,
+        "detail": "the PDF prints an OpenPlan screening score label"
+      }
+    ],
+    "stampCount": 17,
+    "emailLocations": [],
+    "problems": []
+  },
+  "publicPageRequests": [],
+  "leftOnSite": [
+    "two accounts and their workspaces",
+    "one project with its study place",
+    "one crash retrieval and its crash records",
+    "one corridor analysis run",
+    "one tracked opportunity",
+    "one application with ten final sections and 26 checklist rows",
+    "one exported application PDF"
+  ],
+  "definitionRefusals": [],
+  "confirmationTokenSha256": "b5c5604a3c7566304f7fd2f6bd5a94e9f5600e8abfb53db31ea625ef309edd00",
+  "findings": [],
+  "axeRules": [],
+  "consoleErrorsDuringJourney": 0,
+  "ids": {
+    "projectId": "58231d0b-8a0f-4702-8734-ec4e7f4e2214",
+    "ingestId": "79022387-34a5-44a4-8545-e68d6bfe8c9b",
+    "opportunityId": "ee4276a8-c06e-47ae-abfd-54bb56c7290f",
+    "exportId": "45dd5758-7ebe-4adc-9826-9b3a154b8fff"
+  }
+}
