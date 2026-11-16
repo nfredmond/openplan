@@ -17,6 +17,10 @@ a published response in three places;
 it. Both were run by an agent on the hosted site, and no person reviewed
 whether the artifacts are useful.
 
+A third job is defined and has no record: a California Active Transportation
+Program application in three places. Its rules are below. Nothing here says
+it is proven.
+
 ## Files
 
 - `schemas/proven_job_record.v1.schema.json`: the record's fields. The checker
@@ -24,10 +28,14 @@ whether the artifacts are useful.
 - `schemas/proven_job_definitions.v1.json`: what each job requires, as data.
   Places are rules (a place kind and a state), never a named place. The record
   names the places a run used.
-- `schemas/examples/proven_job_record.v1.synthetic.json` and
-  `proven_job_record.v1.engagement.synthetic.json`: complete synthetic
+- `schemas/examples/proven_job_record.v1.synthetic.json`,
+  `proven_job_record.v1.engagement.synthetic.json` and
+  `proven_job_record.v1.atp-application.synthetic.json`: complete synthetic
   records, one per job. The checker tests accept them against synthetic
-  files. They are not evidence.
+  files. They are not evidence. The third job's synthetic files are text
+  files written by `openplan/src/test/fixtures/proven-job-atp-application.mjs`
+  from the definition entry and the example record; a reviewer's script can
+  load that module to write them.
 - `openplan/scripts/ops/capability-evidence.mjs`: `validateProvenJobRecord`.
 
 ## Which rules live where
@@ -36,12 +44,14 @@ The record schema holds the fields every job shares, and each job's own
 fields in a sub-schema chosen by `jobId` (its `allOf`). The checker's code
 holds the rules every job shares: the hosted origin, one commit read back at
 the start and end of each journey, place kinds and Census ids, agent
-executors, a record date that fits its journeys, artifact custody, no DRAFT stamp, accessibility rows at the stated
-widths and modes, the cross-workspace rule, required limits and the string
-scans. What a job needs because of what it is lives in its definition entry:
+executors, a record date that fits its journeys, artifact custody, no DRAFT
+stamp (unless the job's definition requires one, as the application job's
+does), accessibility rows at the stated widths and modes, the cross-workspace
+rule, required limits and the string scans. What a job needs because of what it is lives in its definition entry:
 value rules on journey fields (`journeyFields`, and `fields` on one journey),
 an independent source check (`sourceCheck`), required screens, workbooks, the
-campaign agreement rules (`campaign`) and the public participant's refusals
+campaign agreement rules (`campaign`), what an application PDF must state
+(`application`) and the public participant's refusals
 (`participantChecks`). Two shared rules take their words from the top of
 the definitions file: what an agent executor is (`executors`: a listed
 harness running a model named by a model id) and how a record's date must
@@ -283,6 +293,137 @@ No hosted record of this job exists yet (KI-2026-11-14-313). The checker
 refuses lane 53's local rehearsal record, and the November 15 dress
 rehearsal re-assembled from its run files, for their local origin and
 rehearsal mode only (KI-2026-11-15-020).
+
+For the job `california-atp-application-in-three-places`, decided in the
+[third proven job note](../../reviews/product-direction/proven-jobs/2026-11-16-third-proven-job.md),
+the checker applies rules 2, 3 and 10 of the first job above, and the
+executor and date parts of rule 4, and refuses a record unless:
+
+1. It has three journeys in California: a county, a city and a tribal area.
+   The county's and the city's Census ids begin 06 and their one state code
+   is 06. The tribal area's state list is exactly 06. For a record in the
+   registry, each label is the Bureau's name for its id, and the city's
+   Bureau name does not end in CDP.
+2. Each journey ran in proof mode from a clean harness checkout, all three
+   from the same checkout, and confirmed its account by the emailed link.
+   Its health readbacks report ok, the start one before the account and the
+   end one after the export, with the same version and migrations.
+3. Each application was seeded from catalog key `atp`, is identified as
+   template `atp-2027`, and used no AI drafting.
+4. The three PDFs are three committed files whose bytes match the record,
+   and no two have the same SHA-256. One PDF copied with a byte added has
+   another hash; it is refused because its text names another journey's
+   project and place.
+5. The record lists the template's ten sections with the disposition the
+   definition gives each, and its 26 checklist rows, each with a disposition.
+   No row is attached. A row marked not applicable is one the template asks
+   for only in some cases, and it has a reason of 20 characters or more. The
+   record's count of required rows outstanding is the count its rows give,
+   and at least one.
+6. Each PDF, read with Poppler's text as one run of lines with the page
+   footers left out:
+   - was printed by the browser engine, not typeset by the export's fallback
+     writer, whose notice is in the text;
+   - prints the project name and the workspace name on the cover, and the
+     project name carries the demonstration label;
+   - states the study place line for the record's place on the cover and in
+     Appendix A, and every line that holds "Study place:" names that place;
+   - prints "Applicant not entered in OpenPlan" on the cover and in Appendix
+     A, and the workspace's name on no line with "Applicant", "Lead agency"
+     or "Implementing agency";
+   - is stamped "DRAFT: N required attachment(s) outstanding" on the cover
+     with the record's count, and every line holding the word DRAFT is that
+     stamp;
+   - prints each of the ten section titles once as a heading, in the
+     template's order, before the "Attachment checklist" heading; no section
+     says it is not final; every section's text begins with the
+     demonstration label; Questions 5 and 7 carry the fixed note and no other
+     section does;
+   - prints no "Attached for" line for any checklist row;
+   - prints each of the six appendix headings once as a line of its own,
+     after the sections and in order, with a "Provenance appendix" heading
+     after the last. Appendix A states the program, the administering agency,
+     the project, the study place line, the applicant line and that OpenPlan
+     does not decide ATP eligibility. Appendix B states California's crash
+     file, the record's years and the record's reported count. Appendix E
+     states five Guidelines criteria as not recorded and that no row is a
+     determination. Appendices C, D and F each carry their fact or open with
+     "Missing.";
+   - carries the missing-reports sentence in Appendix B and the Census tribal
+     area note in Appendix E when it is the tribal area's PDF, and neither
+     sentence anywhere when it is not;
+   - says in Appendix E that no tract data was retrieved exactly when the
+     record says so;
+   - prints the two required disclaimers, none of the 21 refused phrases, and
+     no number after a label ending in "score" or "points" unless the label
+     is one of OpenPlan's two screening score labels.
+7. Each journey's crashes come from `ccrs` with at least one stored.
+8. All four screens (project, safety, corridor analysis, grants application)
+   were checked at both widths and modes with the pinned engine and tags, no
+   serious or critical finding, no console error and no sideways scroll at
+   390 px.
+9. A second account was refused the application read and the PDF download as
+   data checks and the project page as a page check, each named for its
+   journey. Each journey's owner received 200 for the read and the download
+   in the same run. Each journey's second account was confirmed and received
+   200 for a read of its own record.
+10. The record states the job's 13 limits in the definition's words, and the
+    page limit when a project page answered 200.
+
+The checker reads section titles and facts with the shared matcher, because
+long titles and several facts wrap. Headings are compared as whole lines, on
+one line or wrapped over up to four lines that hold nothing else.
+
+### Definition fields the third job added
+
+- `journeys[].statesExactly`: the states a journey's place must lie in, as a
+  whole list. `statesNote` says where the list comes from.
+- `journeys[].censusNameRefused`: a pattern for the Bureau's name of the id
+  and the refusal's words, applied to records in the registry.
+- `sameAcrossJourneys`: dotted journey fields every journey must share, each
+  with its refusal ({role}, {found}, {firstRole}, {expected}).
+- `distinctPdfs`: true refuses two PDFs with the same SHA-256.
+- `health.endAfter`: the dotted journey field holding the time a journey's
+  work ended, for a job with no campaign close.
+- `crossWorkspace.ownerControl`: the requests the owner must have received
+  the listed status for, per journey. `crossWorkspace.secondAccount`: the
+  second account's own read and its status. The record carries them in
+  `crossWorkspace.ownerChecks` and `crossWorkspace.secondAccounts`.
+- `application`: the block the application rules read. `pdf`; `pageFooter` (a
+  pattern for footer lines to leave out); `fallbackWriter.notice`;
+  `demonstrationLabel.text`; `cover.phrases`; `placeLine` (`label`,
+  `template`, `kindWords`, `notRecorded`); `applicant` (`line`, `labels`);
+  `sections` (`end`, `maxTitleLines`, `notFinal`, `fixedNote`, `list` of key,
+  title and disposition); `rows` (`refusedDispositions`, `notApplicableFor`,
+  `minReasonLength`, `countedRequirements`, `attachedLine`, `list` of key,
+  title and requirement); `draftStamp` (`required`, `phrase`,
+  `minOutstanding`); `appendices` (`end`, `missing`, `list` of item with
+  `facts` or `includedFact`, `countField`, `roleFacts`, `equity`);
+  `requiredPhrases`; `scores` (`words`, `labels`); `refusedPhrases.phrases`.
+  Each sub-block's `note` in the definitions file says what it means.
+
+The record's fields for this job are the `applicationJourney` sub-schema.
+
+### What the checker cannot see for this job
+
+It reads words in the three PDFs. It cannot tell whether a section says
+anything true, whether a printed score is the run's stored score, or whether
+the place a PDF names is where the journey worked. The refused phrases are a
+list, and a list cannot catch every wording of a determination or every way
+to print a score ("85 out of 100" is not caught). The PDF's checklist table
+cannot be read row by row, so the record's row dispositions are tied to the
+PDF only through the stamp's count and the absence of any "Attached for"
+line. The workspace's name is the record's statement; the checker requires
+it on the cover but cannot tie it to the workspace box. A line that holds
+only a heading's words counts as that heading, which is why each heading may
+appear once. A fact that wraps across a page break with a running header
+between its parts is not found. Which states the Bureau lists for the tribal
+area, the stored crash count, every status, every screen result, the mode
+and the harness checkout are the journey's statements. A record and PDFs
+falsified to agree are not caught. No test accepts a real PDF where Chrome
+is not installed (CI): there the definition's lines are compared with the
+document the product builds, and only the fallback writer's PDF is read
+with Poppler. Wrap points on the hosted site's Chrome are unseen.
 
 ### The place label and its Census id
 

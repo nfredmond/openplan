@@ -1,32 +1,200 @@
-# Third proven job: a California ATP application (draft for the lead's decision)
+# Third proven job: a California ATP application in three places
 
-**Draft.** Written November 16, 2026 by lane 67 (Opus 5.5, agent) for the
-agent lead (Fable 5.2), who chose the job from research 38 (candidate C2) and
-decides the definition. No definition entry, checker rule or journey script
-exists for this job yet; this note says what they would have to hold. No person
-made or reviewed it. Like the second job's note, it sits in this subfolder so
-the direction check does not read it as a direction review.
+**Decision record.** The agent lead (Fable 5.2) chose this job from research
+38 (candidate C2) and decided its rules on November 16, 2026, after a hand
+run-through (lane 67) and reviews 68, 72, 73 and 76. Lane 75 (Fable 5.2,
+agent) wrote this note, the definition entry and the checker rules from those
+decisions. No person made or reviewed any of it. Agent-run checks are the
+acceptance evidence, and this note asks no person for anything. Like the
+second job's note, it sits in this subfolder so the direction check does not
+read it as a direction review.
 
-The evidence behind it is a hand run on a local build (lane 67's run-through,
-in the lead's state folder `fable-lead/pj3-run-through/`): three places, every
-step on screen, three exported PDFs read with Poppler. It is agent-run and
-local, not hosted and not proof.
+**State on November 16, 2026.** The definition, the checker rules and their
+tests exist. No journey script, hosted run, record or registry entry exists
+yet. Nothing here says the job is proven.
 
 ## The job
 
-A local agency's planner takes a California Active Transportation Program
-application from an empty workspace to an exported application PDF: sets the
-project's place, retrieves crash data, runs (or records the absence of) the
-corridor analysis whose scores the ATP packet reads, tracks ATP from the grants
-catalog, seeds the application from the ATP template, finalizes all seven
-sections from text the planner wrote, attaches the required documents, and
-exports and downloads the packet with its six evidence appendices. A second
-account is refused the application and its download. Proposed id:
-`atp-application-in-three-california-places`.
+Job id: `california-atp-application-in-three-places`.
+
+An agent takes a California Active Transportation Program (ATP) application
+from sign-up to an exported application PDF on the hosted site. It sets the
+project's study place, retrieves crash data, runs the corridor analysis,
+tracks the program from the grants catalog, seeds the application from the
+2027 template, makes all ten sections final with typed demonstration text,
+gives every checklist row a disposition, and exports and downloads the PDF
+with its six evidence appendices. It does this three times on one commit, in
+three California places. A second account is refused each application.
+
+The run is a rehearsal. The 2027 statewide call closed June 22, 2026
+(KI-2026-11-16-075). No application goes to the Commission, and no agency or
+tribe makes or submits one.
+
+## The three places
+
+Each journey's place is a rule, never a named place. The record names the
+places a run used.
+
+| Journey | Place kind | What the checker holds it to |
+|---|---|---|
+| `county` | A California county | A five-digit Census id that begins 06, and state code 06. |
+| `city` | An incorporated California place | A seven-digit Census id that begins 06, and a Bureau name that does not end in CDP. |
+| `tribal-area` | A Census tribal area the Bureau lists in California and no other state | A tribal area id, and a state list that is exactly California. |
+
+Each label is held to the Census Bureau's 2026 Gazetteer name for its id.
+
+Three things no committed file holds, and what the job does about each:
+
+- **Whether a city is incorporated.** Required. OpenPlan's place search tells a
+  city from a Census designated place, and the Gazetteer names the second
+  kind with the closing word CDP. The checker refuses that name.
+- **A city's population range.** Not required. The Small Urban and Rural
+  component has a population range, but no committed table holds a place's
+  population, and the job proves the application path, not a component.
+- **Which states a tribal area lies in.** Required to be California alone,
+  because OpenPlan reads a state's crash file inside a tribal area only then.
+  The Gazetteer's tribal area table has no state column. The list is what the
+  journey read from the place search answer. The crash appendix naming
+  California's file is the second sign.
+
+## The rules, in plain words
+
+The lead's twelve rules, each with where it is held. "Definition" means the
+job's entry in `schemas/proven_job_definitions.v1.json`. "Checker" means
+`openplan/scripts/ops/capability-evidence.mjs`.
+
+1. **Three journeys, one commit, proof mode, one clean checkout.** The record's
+   origin is the hosted site. Each journey has a start and an end health
+   readback on the record's commit, reporting ok, with the same version and
+   migrations. The start readback comes before the account, and the end
+   readback after the export. Each journey ran in proof mode from a harness
+   checkout with no uncommitted change, and all three name the same
+   checkout. The three PDFs are three different files, and each one's
+   SHA-256 is recomputed from the committed file. Held by the definition's
+   journey fields, `health`, `sameAcrossJourneys` and `distinctPdfs`, read by
+   the checker.
+2. **The 2027 template.** The application is seeded from catalog key `atp` and
+   identified as `atp-2027`. The definition lists that template's ten
+   sections and 26 checklist rows, and a test compares the list with the
+   product's catalog. The record states the rehearsal as a limit.
+3. **Demonstration labels, and no applicant.** The project name carries the
+   words "Demonstration by an automated OpenPlan proof run", and every
+   section's text begins with them. Nothing in OpenPlan can hold an
+   applicant's name yet (KI-2026-11-16-080), so every PDF must print
+   "Applicant not entered in OpenPlan" on the cover and in Appendix A, and
+   the record states that as a limit. This replaces the lead's first wording
+   of rule 3, which had the applicant entered. Section text comes from
+   sourced inputs kept outside the repository, every version kept. The
+   checker cannot see those inputs. It sees the label and that text follows.
+4. **Every section has a disposition.** Eight sections are final with typed
+   text. Questions 5 and 7 are final with the label and the fixed note "The
+   application asks no question here." The checker reads the PDF: each of the
+   ten titles appears once as a heading, in order; no section says it is not
+   final; the fixed note is in those two sections and in no other.
+5. **Every checklist row has a disposition, and the DRAFT stamp is
+   required.** An agent cannot honestly produce a signature page or an
+   engineer's checklist, and a stand-in would be a fabrication. So no row may
+   be attached. A row that applies only in some cases may be marked not
+   applicable with a reason. Every other row is outstanding. The PDF's cover
+   must carry "DRAFT: N required attachment(s) outstanding", N must be the
+   count the record's rows give, at least one, and every line of the PDF
+   that holds the word DRAFT must be that stamp. A PDF with no stamp, a stamp
+   with another count, or a stamp for unverified items is refused. This
+   proves the product says what is missing.
+6. **Crash data.** Each journey's crashes come from California's crash file
+   (`ccrs`), with at least one stored. Appendix B must state "Source:
+   California Crash Reporting System (CCRS)", the years requested and the
+   record's reported count. The tribal area's PDF must carry, in Appendix B,
+   the sentence that crash reports on tribal land may be missing from the
+   state's file. The other two PDFs may not carry it anywhere.
+7. **Scores and determinations.** Any label ending in "score" or "points"
+   that is followed by a number must be one of the two labels OpenPlan prints
+   for its screening scores. A list of placeholder and determination
+   wordings is refused anywhere in the PDF: "to be provided", "is eligible
+   for", "qualifies as a disadvantaged community", "meets the screening
+   criteria" and 17 more. The PDF must carry the sentence that its scores are
+   OpenPlan screening scores, not CTC scores, and the sentence that the
+   appendices establish no eligibility. A list cannot catch every wording.
+8. **Facts the checker reads from the PDF.** The study place line, the
+   applicant line, the program, the ten section titles, the six appendix
+   headings with facts under each, the DRAFT count and the crash source. The
+   study place line must be on the cover and in Appendix A, and every line
+   that holds "Study place:" must name the record's place, so a line typed
+   into a project name or a section cannot stand in for the one OpenPlan
+   prints. The workspace's name may share no line with "Applicant", "Lead
+   agency" or "Implementing agency". The checker uses the shared phrase
+   matcher, never whole-line equality, except for headings.
+9. **Screens.** Project, Safety, Corridor Analysis and the application
+   workspace, at 1440 and 390 px, in light and dark: axe 4.11.1 with the four
+   rule tags, no serious or critical finding, no console error, no sideways
+   scroll at 390 px. Corridor Analysis has open findings today
+   (KI-2026-11-16-039), and the checker would refuse a run that records
+   them. The rule is not loosened for it.
+10. **The refusal has a control.** A second account is refused the application
+    read and the PDF download (403 or 404) and the project page. In the same
+    run the owner received 200 for the read and the download. Each journey's
+    second account was confirmed and received 200 for a read of its own
+    record, so it was signed in.
+11. **Equity inputs.** The job does not require Census tract data. Each
+    journey says whether its run retrieved any, and Appendix E must agree.
+12. **Limits.** The record must state 13 limits in the definition's words: no
+    PDF/UA check; no keyboard or screen-reader pass; no planner reviewed
+    usefulness; a rehearsal of a closed call; attachments not produced; not a
+    Commission score; no eligibility or disadvantaged community
+    determination; section text is a labeled demonstration; Small
+    application only; the applicant's name cannot be entered; equity inputs
+    as each run found them; what the journey leaves on the hosted site; and
+    what the journey read that the checker cannot read again.
+
+Two rules the lead did not write, added while building, with the reason:
+
+- **A fallback PDF is refused.** When a deployment's browser engine fails, the
+  export falls back to a plain built-in writer and says so in the PDF. That
+  file is not the one a planner gets. The hosted site once fell back for
+  weeks unnoticed. A record that carries a fallback PDF is refused by name.
+- **Tribal area note.** When the study place is a Census tribal area,
+  Appendix E now prints: "A Census tribal area is not a finding that the
+  project is located within federally recognized Tribal Lands." The tribal
+  area's PDF must carry it, and the other two may not (review 76).
+
+## What a proof is not
+
+A record of this job, when one exists, is not:
+
+- a Commission score, ranking or likelihood of award;
+- an eligibility finding;
+- a disadvantaged community determination under any criterion in section
+  12.A of the Guidelines, or a finding that a tribal area qualifies;
+- a forecast, or a benefit-cost result for the program (the Commission runs
+  its own tool, and the corridor run is concept-level);
+- a finding that the application would pass the Commission's screening;
+- an application any agency or tribe made or submitted.
+
+The PDF is not the Commission's online application. It carries no signature
+and no attachment.
+
+## What stays on the journey's word
+
+The checker reads the three PDFs again, so their text is its own finding. The
+rest is the journey's statement, and the record must say so in a limit:
+
+- which states the Bureau lists for the tribal area;
+- the crash counts stored;
+- each section's and each checklist row's state on screen (the PDF's
+  checklist table cannot be read row by row, so the rows are tied to the PDF
+  only through the stamp's count and the absence of any "Attached for" line);
+- every status the owner and the second account received;
+- accessibility results, console errors and sideways scroll;
+- which build, mode and harness checkout ran.
+
+A record and a PDF that were both falsified to agree are not caught. Only a
+record that disagrees with its PDF is. Nothing checks that section text says
+anything true about a place.
 
 ## Why this job
 
-Program facts, each read on November 15, 2026 (Pacific) from the source named:
+Program facts, each read on November 15, 2026 (Pacific) by lane 67 from the
+source named. Lane 75 did not read them again.
 
 - The CTC's 2027 Active Transportation Program Guidelines (Resolution G-26-31,
   adopted March 19, 2026),
@@ -50,207 +218,72 @@ Program facts, each read on November 15, 2026 (Pacific) from the source named:
     Scope and Plan Layout Consistency 3, Corps Use 0 or -5, Past Performance 0
     to -10.
   - Section 12.A: "there is no presumption of benefit, even for projects
-    located within a disadvantaged community"; qualifying criteria are median
-    household income, CalEnviroScreen 4.0, free or reduced-price meals,
-    Healthy Places Index, Native American Tribal Lands, and an approved other
-    measure.
+    located within a disadvantaged community". Review 76 read the six
+    criteria from the Guidelines: Median Household Income, CalEnviroScreen,
+    National School Lunch Program, Healthy Places Index, Native American
+    Tribal Lands, Other.
   - Section 38.2: "The Commission will use the California Active
     Transportation Benefit-Cost Tool to provide a program-level summary of
     expected benefits."
   - Section 3: applications were due June 22, 2026; Statewide and Small Urban
-    and Rural adoption December 3-4, 2026; the Commission adopts a program
-    no later than a statutory date in each odd-numbered year (and may adopt
-    one annually), so the next is expected to be the 2029 ATP.
+    and Rural adoption December 3-4, 2026.
 - CTC, 2027 ATP Staff Recommendations (November 2, 2026),
   https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-staff-recommendations-sw-sur-a11y.pdf:
   317 applications requested $2.9 billion; Small Urban and Rural: 5 projects,
   $61,932,000.
 - CTC, 2027 ATP Application Checklist (PDF of March 18, 2026) and the Small
   Infrastructure Application Questions, both linked from
-  https://catc.ca.gov/programs/active-transportation-program: Part C
-  attachments are Signature Page, Engineer's Checklist, Project Location Map,
-  Project Layouts/Plans, Photos of Existing Conditions, Project Estimate,
-  Non-Infrastructure Work Plan, Letters of Support, State-Only Funds Request
-  (if applicable).
+  https://catc.ca.gov/programs/active-transportation-program.
 
-Why it is worth proving: it is the deepest California grant path OpenPlan has,
-it serves counties, small cities and tribal governments alike, and it needs no
-AI key. ATP export journeys are the open item on roadmap M13e.
+Why it is worth proving: it is the deepest California grant path OpenPlan
+has, it serves counties, small cities and tribal governments alike, and it
+needs no AI key. ATP export journeys are the open item on roadmap M13e.
 
-## The three journeys
+## History: the hand run-through and what followed
 
-By place kind, any California place of that kind:
+Lane 67 (Opus 5.5, agent) ran the job by hand on a local build before any
+rule was written: three places (Trinity County, Yreka and the Hoopa Valley
+Reservation), every step on screen, three exported PDFs read with Poppler.
+It was local and agent-run, not hosted and not proof. All three places
+reached a downloaded 9-page PDF with seven sections and six appendices. A
+second account received 404, and the owner 200. It found four things between
+that and a job that could be defined:
 
-1. A rural county (run-through: Trinity County, CA, county 06105).
-2. An incorporated city in the Small Urban and Rural range (run-through:
-   Yreka, CA, place 0686944).
-3. A federally recognized tribal area in California (run-through: Hoopa Valley
-   Reservation, CA, tribal area 1490R, the label the place search shows).
+1. A tribal area received only the national fatal crash file
+   (KI-2026-11-16-030). Fixed in PR 503 for a tribal area the Bureau lists in
+   one state.
+2. Every PDF printed "Lead agency to be provided" and "Location to be
+   provided by lead agency" for a project whose study place was recorded
+   (KI-2026-11-16-031). Fixed in PR 506: the PDF prints the study place and
+   the fixed applicant line.
+3. The template's sections and attachments did not follow the 2027
+   application (KI-2026-11-16-033). Fixed in PR 504 with a second template,
+   `atp-2027`.
+4. No definition, checker rule or journey script existed. This note, the
+   definition and the checker rules close the first two. The journey script
+   is the next lane.
 
-## Every step a journey takes
-
-1. Health readback at start and end (commit, version, migrations).
-2. Sign up through the form and confirm through the confirmation email.
-3. New project (name, summary, kind), then Set study area from the place
-   search, choosing the exact label; record kind and GEOID from the search
-   answer.
-4. Safety: Retrieve crash data; record source id, reported and stored counts,
-   severity coverage.
-5. Corridor Analysis: Set up the analysis, write a question, attach the
-   project, keep "ATP: Active Transportation Program", Run the analysis;
-   record the run id and which scores it recorded or withheld. If the run is
-   skipped, the record says so and every score must print "Not recorded".
-6. Grants catalog, search "Active Transportation Program", Track as
-   opportunity on the California card; confirm the opportunity links the
-   project.
-7. Open application workspace, choose the ATP template, Initialize
-   application; seven sections and five attachments are listed.
-8. For each section: Finalize edited text, type the journey's text into the
-   Final text box, Save as final; the header reads Final with no unverified
-   count.
-9. Upload the attachment documents to Documents for the project and attach
-   each from the checklist (at least the two marked Required).
-10. Export application packet (PDF) with all six appendices selected; record
-    the export id, stamps and SHA-256; download through Download PDF.
-11. Screens at 1440 and 390 px, light and dark, with axe-core 4.11.1: project
-    overview, Safety, Corridor Analysis, application workspace.
-12. A second account requests the application, the ATP packet, the PDF
-    download and the project page.
-
-## What the PDF must hold, with words a checker can find
-
-All read with Poppler `pdftotext -layout` and the shared matcher
-(`openplan/scripts/lib/pdf-text-match.mjs`):
-
-1. Cover: "Active Transportation Program (ATP)", the project name, the
-   workspace name, "SECTIONS FINAL" with "7 of 7".
-2. Each of the seven section headings on a line of its own, followed by the
-   journey's text: "Project description and scope", "Statement of need: safety
-   and mobility", "Benefit to disadvantaged communities", "Public
-   participation and planning", "Cost effectiveness and leveraging",
-   "Deliverability and schedule", "Budget and engineer's estimate narrative".
-   (The section titles change if KI-2026-11-16-033 is fixed first.)
-3. "Attachment checklist", with each required attachment's row reading
-   "Required" and "Attached".
-4. "Evidence appendices" and each of: "Appendix A. ATP screening packet",
-   "Appendix B. Crash summary", "Appendix C. Cost estimate", "Appendix D.
-   Engagement summary", "Appendix E. Disadvantaged-community and equity
-   inputs", "Appendix F. Benefit-cost summary"; each either with a "Source:"
-   line or with "Missing." and its reason.
-5. The screening label, exactly as printed: "Scores are OpenPlan screening
-   scores, not CTC scores." (appendix frame) and "OpenPlan screening score (not
-   a CTC score)" (Appendix A table header) and "Total (OpenPlan weights
-   30/25/25/20, not CTC points)". The brief's phrase "OpenPlan screening scores
-   (not CTC scores)" does not appear verbatim; a checker must use these.
-6. Each score printed as a number has its run: on the Appendix A page, "Source:
-   Corridor analysis run <run id>" where the id is the journey's run, and the
-   number equals the run's stored score to one decimal. Every other score row
-   reads "Not recorded".
-7. "OpenPlan does not decide ATP eligibility." and, in Appendix E, "Not
-   assessed. OpenPlan does not decide ATP eligibility".
-8. Appendix B's "CRASHES REPORTED" equals the journey's stored acquisition's
-   reported count, and its source label equals the acquisition's.
-9. "Provenance appendix" with each section "Operator-authored" and a workspace
-   role under Finalized by, no email address on any page.
-
-## What must be refused
-
-- A recorded fact printed as "to be provided". Today every ATP PDF prints
-  "Lead agency to be provided" and "Location to be provided by lead agency"
-  on purpose (KI-2026-11-02-041). The lead must decide before writing the rule
-  (KI-2026-11-16-031): allow exactly these two strings, or change the packet
-  first.
-- A score printed as a number without its run on the same appendix, or a
-  number that differs from the run's stored score.
-- A `[VERIFY` marker other than the four the ATP packet prints by design
-  (the appendix frame, the cycle note, the match note and the
-  disadvantaged-community criteria, each the exact text "[VERIFY: confirm the
-  cycle in effect and its scoring criteria in the CTC's current ATP
-  guidelines, https://catc.ca.gov/programs/active-transportation-program]").
-  A marker inside a section's final text is refused.
-- A DRAFT stamp, unless the journey deliberately leaves a required attachment
-  out and the stamp says so exactly ("DRAFT: N required attachment(s)
-  outstanding"). The proof journeys should attach both required items.
-- A second account receiving anything but 403 or 404 for the application, the
-  ATP packet and the PDF download, or a 200 project page that carries the first
-  account's project name. Run-through result: all 404, no first-account text;
-  the owner received 200 for the same requests.
-- A serious or critical axe finding on the four screens at either width.
-
-## What stays on trust, and must be stated as a limit
-
-- The section text is the journey's own demonstration text; nothing checks it
-  says anything true about a place.
-- The attached documents are labeled demonstration files; the checker sees
-  only that each required row reads Attached (and the PDF does not name the
-  document, KI-2026-11-16-034).
-- Crash counts are the source's as retrieved that day; for a tribal area the
-  source is today the national fatal-only file (KI-2026-11-16-030).
-- No Census key: the equity score is withheld and Appendix E has no ACS input.
-- No person judged the application useful; no PDF/UA or screen-reader check.
-
-## What a proof must not be read as
-
-Not a CTC score, ranking or likelihood of award. Not a disadvantaged community
-determination under any criterion in section 12.A, and not a finding that a
-tribal area qualifies (the guidelines make tribal lands a criterion; OpenPlan
-records none). Not a benefit-cost result for the program (the Commission runs
-its own tool). Not a forecast: the corridor run is concept-level. Not an
-eligibility or completeness finding: the PDF is not the Submittable
-application and lacks parts the current cycle requires (KI-2026-11-16-033).
+Review 68 read the draft of this note against the two reviews that got false
+records accepted on the second job. It asked for the origin and mode rule,
+the demonstration labels, hashes tied to files, the place printed outside
+typed text, a control beside the refusal, the console and scroll rules,
+facts printed as findable lines, a statement of what no file holds, and one
+more thing a proof is not. Each is in the rules above.
 
 ## What could not be established
 
-- Whether CCRS returns collisions inside a California reservation; the
-  resolver never asks it for a tribal area.
-- Whether the hosted site sets a Census key, so whether hosted ATP runs record
-  equity inputs.
-- The 2029 ATP call date (not posted on November 15, 2026). `[VERIFY]`
-- Whether the key-free map path draws on Safety and Corridor Analysis on the
-  hosted build; on this local build both said the map could not be drawn.
+- Whether the hosted site holds a Census key, so whether a hosted run records
+  tract inputs. The job does not depend on it (rule 11).
+- What California's crash file returns inside a reservation on the hosted
+  site. KI-2026-11-16-060 records 134 crashes counted for the Hoopa Valley
+  Reservation on a local build.
+- Where lines wrap and pages break in a PDF the hosted site's Chrome prints.
+  The checker's tests read a PDF this machine's Chrome printed.
+- The date of the next call (not posted on November 15, 2026). `[VERIFY]`
 
-## What a fresh-context review said this draft still lacks
+## What comes next
 
-Review 68 (November 16, 2026, agent-run) read this draft against the
-run-through's files and against the two reviews that got false records
-accepted for the second job. Before a definition and a checker are written,
-the final note must add:
-
-- **Origin and mode.** The record's origin is the hosted site, all three
-  journeys ran in proof mode on one commit, and a rehearsal or local run is
-  refused, by the assembler and by the checker.
-- **What the journey leaves behind.** The project name, the applicant field
-  and every section carry the demonstration label, and the record says what
-  remains on the hosted site after the run.
-- **Ids tied to files.** The PDF's hash is recomputed from the committed file
-  and compared with the export's stored hash; the crash acquisition and the
-  analysis run named in the appendices are the journey's own; the three PDFs
-  differ.
-- **The place.** The PDF prints the study area's name outside text the
-  journey typed, so one place cannot stand for three. The record's place
-  label is held to the Census Bureau's name for its id.
-- **The refusal has a control.** In the same run the owner gets 200 for the
-  requests the second account is refused, and the second account is signed
-  in and confirmed.
-- **Screens.** No sideways scroll at 390 px and no console errors on the
-  required screens, beside the axe rule. Corridor Analysis has an open
-  serious contrast finding in light mode (KI-2026-11-16-039) that the axe
-  rule would refuse today.
-- **Words a checker can find.** A fact in the screening packet's two-column
-  grid and a marker that crosses a page break are not one string in the
-  PDF's text. Each fact the checker reads must print as one findable line,
-  and the note must say where the checker reads a stored score from.
-- **What no file holds.** Whether a city is incorporated, its population
-  range, and which state a tribal area lies in: say which of these the job
-  requires, and from what.
-- **One more thing a proof is not:** a finding that the application would
-  pass the Commission's screening.
-
-## Where the product cannot yet produce what the job asks
-
-1. A tribal area gets fatal-only crashes (KI-2026-11-16-030).
-2. The two "to be provided" placeholders need a decision (KI-2026-11-16-031).
-3. The template's sections and attachments do not follow the 2027
-   application (KI-2026-11-16-033).
-4. No journey script or definition exists; the first and second jobs' shared
-   journey library and checker would carry it.
+A fresh-context review tries to get false records accepted. Then: the journey
+script; sourced inputs for three California places, every version kept; a
+dress rehearsal on main; the declaration; the hosted run; the record; a
+fresh-context review; the evidence pull request.
