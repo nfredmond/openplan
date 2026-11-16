@@ -40,9 +40,11 @@ import {
 import { SS4A_APPENDIX_FRAME } from "@/lib/grants/ss4a-evidence-appendices";
 import { applicationDraftStamps } from "@/lib/grants/application-draft-stamps";
 import {
+  calendarDayOf,
   formatRecordedMoment,
   timeZoneInputLabel,
   UTC_TIME_ZONE,
+  wallClockTimeOf,
   type WorkspaceCalendar,
 } from "@/lib/time/workspace-calendar";
 
@@ -161,6 +163,18 @@ const ATTACHMENT_STATUS_LABELS: Record<string, string> = {
   not_applicable: "Not applicable",
 };
 
+/**
+ * A checklist row's status as the document prints it. An optional row with
+ * nothing attached reads "Not attached": "Missing" said the application lacked
+ * something the program does not require (KI-2026-11-16-104). The stored
+ * status is unchanged, and the DRAFT stamp counts required rows only, as
+ * before (`countOutstandingRequiredAttachments`).
+ */
+function attachmentStatusLabel(attachment: Pick<ApplicationAttachmentRow, "required" | "status">): string {
+  if (!attachment.required && attachment.status === "missing") return "Not attached";
+  return ATTACHMENT_STATUS_LABELS[attachment.status] ?? attachment.status;
+}
+
 const ORIGIN_LABELS: Record<GrantApplicationSectionOrigin, string> = {
   operator_authored: "Operator-authored",
   ai_draft_unedited: "AI draft finalized unedited (passed the grounding gate)",
@@ -190,6 +204,41 @@ const UTC_CALENDAR: WorkspaceCalendar = { timeZone: UTC_TIME_ZONE, source: "utc_
 function formatDateTime(value: string | null | undefined, calendar: WorkspaceCalendar): string {
   if (!value) return "Not set";
   return formatRecordedMoment(value, calendar.timeZone, timeZoneInputLabel(calendar)) ?? value;
+}
+
+/**
+ * A stored time in a table cell: "Nov 16, 2026, 15:31 UTC", or "Nov 16, 2026,
+ * 08:31 (America/Los_Angeles)" on a workspace's own zone. The cover's long
+ * form wrapped over seven lines in the provenance table's last column, so ten
+ * rows took more than two pages (KI-2026-11-16-104). The day and the time are
+ * the same ones the long form prints, and the zone is still named in every
+ * cell. That no zone is set is said once, under the table. A date-only value
+ * prints as the day; a value that does not read as a time prints as stored.
+ */
+function formatShortDateTime(value: string, calendar: WorkspaceCalendar): { day: string; time: string | null; zone: string | null } {
+  const day = calendarDayOf(value, calendar.timeZone);
+  if (!day) return { day: value, time: null, zone: null };
+  const [year, month, date] = day.split("-").map(Number);
+  // The day is already the workspace's; format it as a plain calendar day.
+  const shortDay = new Intl.DateTimeFormat("en-US", { timeZone: UTC_TIME_ZONE, year: "numeric", month: "short", day: "numeric" })
+    .format(new Date(Date.UTC(year, month - 1, date)));
+  const time = wallClockTimeOf(value, calendar.timeZone);
+  if (!time) return { day: shortDay, time: null, zone: null };
+  return { day: shortDay, time, zone: calendar.timeZone === UTC_TIME_ZONE ? "UTC" : `(${calendar.timeZone})` };
+}
+
+/**
+ * The cell's markup. The day and the time are each one piece that does not
+ * wrap, so the cell reads on two lines, not five. A zone name may wrap after
+ * a slash.
+ */
+function shortDateTimeMarkup(value: string, calendar: WorkspaceCalendar): string {
+  const { day, time, zone } = formatShortDateTime(value, calendar);
+  if (!time || !zone) return esc(day);
+  const zoneMarkup = esc(zone).replaceAll("/", "/<wbr>");
+  return zone === "UTC"
+    ? `<span class="nowrap">${esc(day)},</span> <span class="nowrap">${esc(time)} UTC</span>`
+    : `<span class="nowrap">${esc(day)},</span> <span class="nowrap">${esc(time)}</span> ${zoneMarkup}`;
 }
 
 function formatAmount(value: number | string | null | undefined): string {
@@ -230,6 +279,24 @@ function formatAmount(value: number | string | null | undefined): string {
  * title that wrapped to two lines had word boxes that overlapped in the PDF's
  * text layer (KI-2026-11-16-074).
  *
+ * The cover's boxes are one block that does not split across pages, and they
+ * sit right under the title, the cover lines and the DRAFT stamp, above the
+ * opportunity's summary. Under a summary of seven lines the last row of boxes
+ * began page two (KI-2026-11-16-104); a summary of any length now leaves them
+ * on page one.
+ *
+ * A heading stays with what follows it. A section's card, and the provenance
+ * appendix, does not split across pages when it is shorter than a page; one
+ * that is longer starts on a new page. An appendix heading stays with its
+ * source line and that line with the first fact, figure or table under it. A
+ * heading's opening paragraph stays with the table under it, and a table's
+ * header row with its first row. `:not(:last-child)` keeps the rule off the
+ * last block of an appendix, where it would tie the appendix to the next one.
+ *
+ * The provenance table's columns have widths that fit what they hold: the
+ * section's title gets the most room, and the day and the time each print
+ * whole on a line of their own.
+ *
  * Print drops the spacing under the last text. When the text ended near a
  * page end, that empty spacing spilled onto a blank last page
  * (KI-2026-11-14-116).
@@ -244,9 +311,12 @@ const DOCUMENT_STYLES = `
       h1, h2, h3 { margin: 0; }
       h1 { margin-top: 12px; font-size: 38px; line-height: 1.25; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
+      .keep-whole { break-inside: avoid; }
+      .section-title + p, #evidence-appendices > p { break-after: avoid; }
+      thead { break-after: avoid; }
       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
       .section-title { margin-bottom: 14px; font-size: 22px; break-after: avoid; break-inside: avoid; }
-      .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); break-inside: avoid; }
       .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; break-inside: avoid; }
       .facts div.wide { grid-column: 1 / -1; }
       dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
@@ -268,6 +338,7 @@ const DOCUMENT_STYLES = `
       .appendix th, .appendix td { padding: 6px 8px; overflow-wrap: normal; word-break: normal; }
       .appendix th { font-size: 12px; letter-spacing: 0; text-transform: none; }
       .appendix-source { font-size: 13px; color: #3c4a52; overflow-wrap: anywhere; }
+      .appendix-source:not(:last-child), .appendix-lead:not(:last-child), .appendix > .outstanding:not(:last-child) { break-after: avoid; }
       .appendix li, #safety-seed-provenance li { overflow-wrap: anywhere; }
       .appendix-facts { margin: 12px 0; }
       .appendix-facts > div { break-inside: avoid; padding: 4px 0; border-bottom: 1px solid rgba(19, 34, 43, 0.08); font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
@@ -279,6 +350,17 @@ const DOCUMENT_STYLES = `
       .attached-lines p { margin: 4px 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; break-inside: avoid; }
       .cover-lines p { max-width: none; margin: 4px 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
+      .nowrap { white-space: nowrap; }
+      .provenance-table { font-size: 13px; }
+      .provenance-table th, .provenance-table td { padding: 7px 6px; }
+      .provenance-table col:nth-child(1) { width: 36%; }
+      .provenance-table col:nth-child(2) { width: 7%; }
+      .provenance-table col:nth-child(3) { width: 14%; }
+      .provenance-table col:nth-child(4) { width: 10%; }
+      .provenance-table col:nth-child(5) { width: 11%; }
+      .provenance-table col:nth-child(6) { width: 10%; }
+      .provenance-table col:nth-child(7) { width: 12%; }
+      .table-note { margin: 10px 0 0; font-size: 13px; color: #3c4a52; }
       .whole-id { display: inline-block; max-width: 100%; }
       .table-scroll { overflow-x: auto; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } }
@@ -354,13 +436,7 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
 
   return `<header class="hero">
     <span class="eyebrow">OpenPlan Grants: ${esc(applicationExportPacketLabel(opportunity.pursuit_kind))}</span>
-    <h1>${esc(opportunity.title)}</h1>
-    <p>${esc(
-      opportunity.summary ||
-        (isProposal
-          ? "Assembled from operator-approved section texts for this solicitation response."
-          : "Assembled from operator-approved section texts and the application attachment checklist.")
-    )}</p>${coverLines}
+    <h1>${esc(opportunity.title)}</h1>${coverLines}
     ${
       // Above the boxes: the cover lines and full-width boxes had pushed the
       // stamp to the second page, and a reader must meet DRAFT on the first
@@ -369,6 +445,14 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
     }
     <div class="facts" style="margin-top: 18px;">${coverFacts}
     </div>
+    <p>${esc(
+      // Under the boxes: above them, a long summary pushed the boxes to the
+      // second page (KI-2026-11-16-104).
+      opportunity.summary ||
+        (isProposal
+          ? "Assembled from operator-approved section texts for this solicitation response."
+          : "Assembled from operator-approved section texts and the application attachment checklist.")
+    )}</p>
     ${
       caveats.length > 0
         ? `<div class="warning-box">
@@ -388,7 +472,7 @@ function sectionMarkup(entry: GrantApplicationExportSection): string {
   const statusLabel = SECTION_STATUS_LABELS[section.status] ?? section.status;
 
   if (section.status === "final" && section.final_markdown) {
-    return `<section id="${esc(section.section_key)}">
+    return `<section id="${esc(section.section_key)}" class="keep-whole">
       <h2 class="section-title">${esc(section.title)}</h2>
       <div class="section-body">${renderChapterMarkdownToHtml(
         stripFactCitationTokens(section.final_markdown)
@@ -398,7 +482,7 @@ function sectionMarkup(entry: GrantApplicationExportSection): string {
 
   // Not finalized: an outstanding item, disclosed as such — never draft text
   // presented as approved application prose, and never a silent omission.
-  return `<section id="${esc(section.section_key)}">
+  return `<section id="${esc(section.section_key)}" class="keep-whole">
     <h2 class="section-title">${esc(section.title)}</h2>
     <div class="outstanding">Not finalized: this section is still in &ldquo;${esc(
       statusLabel
@@ -444,7 +528,7 @@ function attachmentsMarkup(
             return `<tr>
           <td>${esc(attachment.title)}</td>
           <td>${attachmentRequirementLabel(attachment, ifApplicableKeys)}</td>
-          <td>${esc(ATTACHMENT_STATUS_LABELS[attachment.status] ?? attachment.status)}</td>
+          <td>${esc(attachmentStatusLabel(attachment))}</td>
           <td>${esc(fulfillment)}</td>
           <td>${esc(attachment.note?.trim() || "None")}</td>
         </tr>`;
@@ -471,11 +555,17 @@ function attachedLinesMarkup(attachments: readonly ApplicationAttachmentRow[], d
 }
 
 function provenanceMarkup(sections: readonly GrantApplicationExportSection[], calendar: WorkspaceCalendar): string {
-  return `<section id="provenance-appendix">
+  // Said once, under the table, in place of once in every row.
+  const zoneNote = calendar.source === "utc_fallback" && sections.some((entry) => entry.provenance.finalizedAt)
+    ? `
+    <p class="table-note">Finalized times are in UTC: no workspace time zone is set.</p>`
+    : "";
+  return `<section id="provenance-appendix" class="keep-whole">
     <h2 class="section-title">Provenance appendix</h2>
     <p>How each section's text came to be, disclosed per section. AI drafts are writing support
     grounded in workspace evidence; the operator who finalized a section is the authority for it.</p>
-    <div class="table-scroll"><table>
+    <div class="table-scroll"><table class="provenance-table">
+      <colgroup><col><col><col><col><col><col><col></colgroup>
       <thead>
         <tr><th>Section</th><th>Status</th><th>Origin</th><th>Model</th><th>Grounding</th><th>Finalized by</th><th>Finalized</th></tr>
       </thead>
@@ -497,12 +587,12 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[], ca
           <td>${esc(provenance.model ?? (fromAiDraft ? "Not recorded" : "No model"))}</td>
           <td>${esc(grounding)}</td>
           <td>${esc(provenance.finalizedBy ?? (isFinal ? "Not recorded" : "Not finalized"))}</td>
-          <td>${esc(provenance.finalizedAt ? formatDateTime(provenance.finalizedAt, calendar) : isFinal ? "Not recorded" : "Not finalized")}</td>
+          <td>${provenance.finalizedAt ? shortDateTimeMarkup(provenance.finalizedAt, calendar) : isFinal ? "Not recorded" : "Not finalized"}</td>
         </tr>`;
           })
           .join("\n        ")}
       </tbody>
-    </table></div>
+    </table></div>${zoneNote}
   </section>`;
 }
 

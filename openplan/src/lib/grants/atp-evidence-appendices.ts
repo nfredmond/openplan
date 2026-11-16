@@ -156,6 +156,29 @@ function notReady<K extends AtpAppendixKey>(
   return absentEvidenceAppendix(shell, "unreadable", read.reason);
 }
 
+/** How long a stored run title is when the analysis route cut it: 57 characters of the question and three dots. */
+const CUT_RUN_TITLE_LENGTH = 60;
+
+/**
+ * The run's title on the source line. The analysis route stores a long
+ * question's first 57 characters and three dots, wherever that falls, so a
+ * title printed "what cr...", and the sentence's own period made four dots
+ * (KI-2026-11-16-104). A title cut that way is cut back to its last whole
+ * word here and keeps its three dots. A title that already ends its own
+ * sentence gets no second mark. The stored title is not changed.
+ */
+export function atpRunTitleLine(title: string): string {
+  const text = title.trim();
+  // The stored length is read before trimming: the route counts every character it keeps.
+  const cut = title.length === CUT_RUN_TITLE_LENGTH && title.endsWith("...");
+  if (!cut) return `Run title: ${text}${/[.?!…]$/.test(text) ? "" : "."}`;
+  const kept = text.slice(0, -3);
+  // Ending in a space, the cut fell between two words and the last one is whole.
+  const lastSpace = /\s$/.test(kept) ? -1 : kept.lastIndexOf(" ");
+  const whole = (lastSpace > 0 ? kept.slice(0, lastSpace) : kept).trimEnd();
+  return `Run title: ${whole}...`;
+}
+
 function runSource(run: AtpPacketRun): EvidenceAppendixSource {
   return {
     record: "Corridor analysis run",
@@ -165,7 +188,7 @@ function runSource(run: AtpPacketRun): EvidenceAppendixSource {
     hash: null,
     hashLabel: NO_RECORD_HASH,
     link: null,
-    details: run.title ? [`Run title: ${run.title}.`] : [],
+    details: run.title?.trim() ? [atpRunTitleLine(run.title)] : [],
   };
 }
 
