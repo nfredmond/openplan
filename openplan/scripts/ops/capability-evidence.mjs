@@ -138,6 +138,10 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
   }
   if (roles.length !== job.journeys.length) refuse(`record has journeys this job does not define: ${roles.join(", ")}`);
 
+  // Before any file is read: the record may not name the same PDF bytes twice.
+  // Each hash is then recomputed from its committed file by checkPdfs.
+  if (job.distinctPdfs) checkDistinctPdfs(record.journeys);
+
   const artifactPaths = new Set();
   for (const journey of record.journeys) {
     const rule = job.journeys.find((candidate) => candidate.role === journey.role);
@@ -180,7 +184,6 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
   }
   if (job.campaign) checkDistinctCampaigns(record.journeys);
   checkSameAcrossJourneys(record.journeys, job);
-  if (job.distinctPdfs) checkDistinctPdfs(record.journeys);
   checkRecordedOn(record);
 
   const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace, roles);
@@ -268,8 +271,9 @@ function checkSameAcrossJourneys(journeys, job) {
 
 /**
  * Each journey exported its own PDF (`distinctPdfs`): no two PDFs of a record
- * are the same bytes. Each hash was recomputed from its committed file by
- * checkPdfs before this runs.
+ * are the same bytes. This compares the hashes the record states; checkPdfs
+ * then recomputes each one from its committed file, so two entries with
+ * different hashes cannot point at the same bytes either.
  *
  * Blind category: one PDF with a byte appended has another hash. The place
  * line rule is what refuses that copy: its text names another journey's place.
