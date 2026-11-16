@@ -28,6 +28,7 @@ import {
   type VmtClaimTierEvidence,
 } from "./vmt-screening-records";
 import { formatFixedPython, formatPythonFloat, pythonRound } from "./utilities";
+import { equityScoreMeaning } from "@/lib/data-sources/equity";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 
 export type RenderPlannerPackOptions = {
@@ -392,6 +393,7 @@ of projects and scores the applications.
 - **Screening scores** (safety and equity) come from the linked project's
   latest Corridor Analysis run. A score the run withheld or never computed
   reads "Not recorded", never 0.
+- **What the equity score counts.** ${equityScoreMeaning()}
 - **Climate, feasibility and the weighted total** have no source in
   OpenPlan yet and read "Not recorded" unless a run supplied them.
 - **Programming fields** (description, location, cost, schedule) come from

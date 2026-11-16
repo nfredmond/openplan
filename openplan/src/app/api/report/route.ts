@@ -17,6 +17,13 @@ import {
   PROGRAM_DISCONTINUED_CAVEAT,
 } from "@/lib/data-sources/equity-designation/disclosure";
 import type { Justice40Determination, Justice40Status } from "@/lib/data-sources/equity-designation/types";
+import {
+  EQUITY_PROXY_THRESHOLDS,
+  equityScoreMeaning,
+  proxyFlagRule,
+  proxyLowIncomeLine,
+  proxyLowIncomeRule,
+} from "@/lib/data-sources/equity";
 import { formatMoney } from "@/lib/money/format";
 import { scoreValueForPresentation, scoreWithheldReason } from "@/lib/analysis/score-presentation";
 
@@ -521,11 +528,11 @@ ${transitCaveats
 <table>
   <tr><th>Metric</th><th>Value</th></tr>
   <tr><td>Disadvantaged Tracts (proxy screening, not CEJST)</td><td>${fmt(m.disadvantagedTracts as number)} of ${fmt(m.tractCount as number)} (${pct(m.pctDisadvantaged as number)})</td></tr>
-  <tr><td>Low-Income Tracts</td><td>${fmt(m.lowIncomeTracts as number)}</td></tr>
-  <tr><td>High-Poverty Tracts (&ge;30%)</td><td>${fmt(m.highPovertyTracts as number)}</td></tr>
-  <tr><td>High-Minority Tracts (&ge;50%)</td><td>${fmt(m.highMinorityTracts as number)}</td></tr>
-  <tr><td>Low Vehicle Access Tracts (&ge;10% zero-vehicle households)</td><td>${fmt(m.lowVehicleAccessTracts as number)}</td></tr>
-  <tr><td>Transit Dependency Tracts (&ge;15% transit commute share)</td><td>${fmt(m.highTransitDependencyTracts as number)}</td></tr>
+  <tr><td>Low-Income Tracts (median household income below ${esc(proxyLowIncomeLine())})</td><td>${fmt(m.lowIncomeTracts as number)}</td></tr>
+  <tr><td>High-Poverty Tracts (&ge;${EQUITY_PROXY_THRESHOLDS.highPovertyPct}%)</td><td>${fmt(m.highPovertyTracts as number)}</td></tr>
+  <tr><td>High-Minority Tracts (&ge;${EQUITY_PROXY_THRESHOLDS.highMinorityPct}%)</td><td>${fmt(m.highMinorityTracts as number)}</td></tr>
+  <tr><td>Low Vehicle Access Tracts (&ge;${EQUITY_PROXY_THRESHOLDS.lowVehicleAccessPct}% zero-vehicle households)</td><td>${fmt(m.lowVehicleAccessTracts as number)}</td></tr>
+  <tr><td>Transit Dependency Tracts (&ge;${EQUITY_PROXY_THRESHOLDS.transitDependencyPct}% transit commute share)</td><td>${fmt(m.highTransitDependencyTracts as number)}</td></tr>
   <tr><td>Burdened Low-Income Tracts</td><td>${fmt(m.burdenedLowIncomeTracts as number)}</td></tr>
   <tr><td>Proxy screening method</td><td>${esc(String(m.equitySource ?? "proxy-census"))} (ACS income + burden, not a federal designation)</td></tr>
   <tr><td>Federal Justice40 / CEJST determination</td><td>${
@@ -534,6 +541,8 @@ ${transitCaveats
       : "Not recorded (legacy run: equity shown is an ACS proxy, not CEJST)"
   }</td></tr>
 </table>
+<p class="note"><strong>What the proxy counts:</strong> ${esc(proxyFlagRule())} ${esc(proxyLowIncomeRule())} A count of zero means no tract met those fixed lines. It is not a finding that no disadvantaged community is present.</p>
+<p class="note"><strong>What the equity score counts:</strong> ${esc(equityScoreMeaning())}</p>
 
 ${title6Flags.length > 0 ? `
 <h3>Title VI / Environmental Justice Considerations</h3>

@@ -6,6 +6,7 @@ import {
   identifySeededCatalogKey,
   isAtpApplication,
 } from "@/lib/grants/atp-packet";
+import { equityScoreMeaning } from "@/lib/data-sources/equity";
 import { atpGrantFactBlocks, computeAtpPacket } from "@/lib/planner-pack/atp";
 import { renderAtpPacketMarkdown } from "@/lib/planner-pack/render";
 
@@ -147,5 +148,12 @@ describe("ATP equity findings the lens did not record", () => {
     expect(atpGrantFactBlocks(result, "packet.csv").at(-1)?.claim_text).toContain(
       "(partial: 1 of 2 applications have equity findings)."
     );
+  });
+
+  // KI-2026-11-16-111: the packet prints an equity score, so its Method says what the score adds up.
+  it("says what the equity score adds up and what a low one means, in the product's own words", () => {
+    const markdown = renderAtpPacketMarkdown(computeAtpPacket(rows, { runId: "r" }), { runId: "r", engineVersion: "test" });
+    expect(markdown).toContain(`- **What the equity score counts.** ${equityScoreMeaning()}\n`);
+    expect(equityScoreMeaning()).toMatch(/A low score means few tracts met those fixed lines\. It is not a finding that no disadvantaged community is present\.$/);
   });
 });
