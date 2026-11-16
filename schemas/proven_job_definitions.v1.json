@@ -348,7 +348,7 @@
         { "field": "application.catalogKey", "equals": "atp", "refusal": "seeded its application from catalog key {found}, not {expected}" },
         { "field": "application.templateKey", "equals": "atp-2027", "refusal": "application is identified as template {found}, not {expected}, the template that follows the 2027 application" },
         { "field": "application.aiDraftingUsed", "equals": false, "refusal": "used AI drafting; every section of this job is typed demonstration text" },
-        { "field": "crashes.sourceId", "equals": "ccrs", "refusal": "crashes come from {found}, not {expected}, California's crash file" },
+        { "field": "crashes.sourceId", "equals": "ccrs-ca", "refusal": "crashes come from {found}, not {expected}, California's crash file" },
         { "field": "crashes.storedCount", "atLeast": 1, "refusal": "stored {found} crashes; every journey of this job stores at least {expected}" },
         { "field": "crashes.reportedCount", "atLeast": 1, "refusal": "reports {found} crashes; every journey of this job reports at least {expected}, and the crash appendix prints that count" },
         { "field": "crashes.storedCount", "atMostField": "crashes.reportedCount", "refusal": "stored {found} crashes, more than the {expected} the source reported" }

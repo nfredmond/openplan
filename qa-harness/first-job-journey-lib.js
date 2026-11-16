@@ -432,6 +432,27 @@ function countMarkers(text) {
 }
 
 /**
+ * Refuse facts a journey cannot stand on: the list is not empty, and every
+ * fact has an id, a statement, a source and the calendar date it was read,
+ * not after `today`. A proof refuses a fact sourced as synthetic or
+ * rehearsal. The first and third jobs' validators both call this.
+ */
+function assertSourcedFacts(facts, mode, today = utcNow().slice(0, 10)) {
+  if (!Array.isArray(facts) || facts.length === 0) throw new Error('The inputs file needs at least one fact with its source and the date it was read.');
+  for (const [index, fact] of facts.entries()) {
+    const label = `Fact ${fact && fact.id ? fact.id : index + 1}`;
+    for (const key of ['id', 'statement', 'source', 'readOn']) {
+      if (!fact || typeof fact[key] !== 'string' || !fact[key].trim()) throw new Error(`${label} needs ${key}.`);
+    }
+    const read = new Date(`${fact.readOn}T00:00:00Z`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fact.readOn) || Number.isNaN(read.valueOf()) || read.toISOString().slice(0, 10) !== fact.readOn || fact.readOn > today) {
+      throw new Error(`${label} needs readOn as the calendar date it was read, not after ${today}.`);
+    }
+    if (mode === 'proof' && /synthetic|rehearsal/i.test(fact.source)) throw new Error(`${label} is sourced as synthetic or rehearsal; a proof needs a real source.`);
+  }
+}
+
+/**
  * Refuse inputs a journey cannot enter honestly. Every section text must be
  * free of markers, placeholders, email addresses and the word DRAFT; every
  * fact needs a statement, a source and the date it was read. The campaign's
@@ -473,18 +494,7 @@ function validateJourneyInputs(inputs, mode, today = utcNow().slice(0, 10)) {
     const markers = countMarkers(text);
     if (markers.verify + markers.placeholders > 0) throw new Error(`${at} holds a [VERIFY] marker or an [OPERATOR] placeholder.`);
   }
-  if (!Array.isArray(inputs.facts) || inputs.facts.length === 0) throw new Error('The inputs file needs at least one fact with its source and the date it was read.');
-  for (const [index, fact] of inputs.facts.entries()) {
-    const label = `Fact ${fact && fact.id ? fact.id : index + 1}`;
-    for (const key of ['id', 'statement', 'source', 'readOn']) {
-      if (!fact || typeof fact[key] !== 'string' || !fact[key].trim()) throw new Error(`${label} needs ${key}.`);
-    }
-    const read = new Date(`${fact.readOn}T00:00:00Z`);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(fact.readOn) || Number.isNaN(read.valueOf()) || read.toISOString().slice(0, 10) !== fact.readOn || fact.readOn > today) {
-      throw new Error(`${label} needs readOn as the calendar date it was read, not after ${today}.`);
-    }
-    if (mode === 'proof' && /synthetic|rehearsal/i.test(fact.source)) throw new Error(`${label} is sourced as synthetic or rehearsal; a proof needs a real source.`);
-  }
+  assertSourcedFacts(inputs.facts, mode, today);
   const sections = inputs.sections;
   if (!sections || typeof sections !== 'object' || Array.isArray(sections) || Object.keys(sections).length === 0) throw new Error('The inputs file needs section texts keyed by section.');
   for (const [key, entry] of Object.entries(sections)) {
@@ -716,6 +726,7 @@ module.exports = {
   assertFirstJobRunAssemblable,
   assertPortalReadsAsDemonstration,
   assertRunAssemblable,
+  assertSourcedFacts,
   buildJourney,
   checkConfirmLinkOrigin,
   checkJourneyOrigin,

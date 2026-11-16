@@ -384,7 +384,8 @@ executor and date parts of rule 4, and refuses a record unless:
      (also not across a page break or with two spaces between words), and
      no number after a label ending in "score" or "points" unless the label
      is one of OpenPlan's two screening score labels.
-7. Each journey's crashes come from `ccrs`, with at least one reported, at
+7. Each journey's crashes come from `ccrs-ca` (the product's id for
+   California's crash file), with at least one reported, at
    least one stored, and no more stored than reported.
 8. All four screens (project, safety, corridor analysis, grants application)
    were checked at both widths and modes with the pinned engine and tags, no

@@ -19,7 +19,7 @@
       ],
       "projectName": "Synthetic county walking and biking connections (Demonstration by an automated OpenPlan proof run)",
       "workspaceName": "Synthetic county demonstration workspace",
-      "crashes": {"sourceId": "ccrs", "years": "2022–2025", "reportedCount": 1234, "storedCount": 1230},
+      "crashes": {"sourceId": "ccrs-ca", "years": "2022–2025", "reportedCount": 1234, "storedCount": 1230},
       "application": {
         "catalogKey": "atp",
         "templateKey": "atp-2027",
@@ -119,7 +119,7 @@
       ],
       "projectName": "Synthetic city walking and biking connections (Demonstration by an automated OpenPlan proof run)",
       "workspaceName": "Synthetic city demonstration workspace",
-      "crashes": {"sourceId": "ccrs", "years": "2022–2025", "reportedCount": 212, "storedCount": 212},
+      "crashes": {"sourceId": "ccrs-ca", "years": "2022–2025", "reportedCount": 212, "storedCount": 212},
       "application": {
         "catalogKey": "atp",
         "templateKey": "atp-2027",
@@ -219,7 +219,7 @@
       ],
       "projectName": "Synthetic tribal-area walking and biking connections (Demonstration by an automated OpenPlan proof run)",
       "workspaceName": "Synthetic tribal-area demonstration workspace",
-      "crashes": {"sourceId": "ccrs", "years": "2022–2025", "reportedCount": 37, "storedCount": 37},
+      "crashes": {"sourceId": "ccrs-ca", "years": "2022–2025", "reportedCount": 37, "storedCount": 37},
       "application": {
         "catalogKey": "atp",
         "templateKey": "atp-2027",

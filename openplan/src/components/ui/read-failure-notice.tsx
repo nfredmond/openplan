@@ -60,6 +60,11 @@ export const READ_FAILURE_PLANNER_ACTION =
  * theme. Its parent must be a block element: `<details>` is not valid inside a
  * `<p>`, which is why the callers that used `<p className="module-alert">` are
  * now `<div className="module-alert">`.
+ *
+ * The inherited colour is never dimmed. The summary used to carry 80 percent
+ * opacity, which took muted text on the map notice from 5.4:1 to 3.5:1 in
+ * light mode (axe color-contrast, serious, on Corridor Analysis:
+ * KI-2026-11-16-039). The summary is set apart by its underline instead.
  */
 export function OperatorDetail({
   children,
@@ -74,10 +79,10 @@ export function OperatorDetail({
 }) {
   return (
     <details className={cn("mt-1.5 text-xs", className)} data-testid={testId}>
-      <summary className="cursor-pointer select-none opacity-80 transition hover:opacity-100">
+      <summary className="cursor-pointer select-none underline decoration-dotted underline-offset-2 hover:decoration-solid">
         {summary}
       </summary>
-      <div className="mt-1.5 space-y-1 opacity-90">{children}</div>
+      <div className="mt-1.5 space-y-1">{children}</div>
     </details>
   );
 }

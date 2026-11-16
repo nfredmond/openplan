@@ -700,8 +700,16 @@ function labelFromBoundaryGeojson(
     const usps = stateUspsFromFips(String(props.GEOID ?? ""));
     return usps ? `${name}, ${usps}` : name;
   }
+  // A city or a Census designated place, labeled as search labels it: the
+  // base name, a comma and the state's postal code ("Yreka, CA"). The base
+  // name alone does not say which state's Springfield a project is in, and
+  // this label is the one saved on the project and printed by its exports as
+  // the study place (KI-2026-11-16-102). A place id begins with its state.
   const basename = typeof props.BASENAME === "string" ? props.BASENAME : null;
-  return basename ?? (typeof props.NAME === "string" ? props.NAME : null);
+  const name = (basename ?? (typeof props.NAME === "string" ? props.NAME : null))?.trim();
+  if (!name) return null;
+  const usps = stateUspsFromFips(typeof props.GEOID === "string" ? props.GEOID : null);
+  return usps ? `${name}, ${usps}` : name;
 }
 
 async function fetchTigerSearch(options: PlaceSearchUrlOptions): Promise<TigerQueryJson | null> {

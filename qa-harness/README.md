@@ -218,6 +218,121 @@ node engagement-job-journey.js --assemble --journeys a.json,b.json,c.json --comm
 npm run check:engagement-job-journey   # unit tests, and review 59's changed copies of the dress rehearsal
 ```
 
+## Third proven job: the ATP application journey
+
+`atp-job-journey.js` runs one place through the California Active
+Transportation Program job (`california-atp-application-in-three-places` in
+`schemas/proven_job_definitions.v1.json`) on screen, with the other journeys'
+guards: rehearsal on a local origin only, proof on the hosted proof origin
+only, the confirmation link read from a file, health readbacks against
+`--expected-commit`, axe-core 4.11.1 at 1440 and 390 px in light and dark, the
+shared PDF matcher and Poppler reader, and a run file that never holds an
+address, a token or a password. The steps it shares with the first job's
+journey (sign-up, the project, the study place, crash retrieval, the screen
+readings) are in `journey-browser-lib.js`. Per journey:
+
+- An account signs up and confirms by the emailed link only, makes a project
+  with the inputs' demonstration name, and sets its place by the full label
+  the search shows. The role is `county`, `city` or `tribal-area`, each held
+  to the definition's rule. For the tribal area the journey records the
+  Census states the search answer listed (its state code and the letters that
+  close its label) and stops unless both are exactly California.
+- It retrieves crashes and stops unless the retrieval names California's
+  crash file (the name the definition's Appendix B fact gives), stored at
+  least one crash and stored no more than it reported. The record states the
+  years as the export prints them.
+- It runs the corridor analysis the ATP packet reads its screening scores
+  from, linked to the project, and records whether the run retrieved Census
+  tract data (retrieved, none retrieved, or not recorded by the run). The job
+  does not require tract data.
+- It tracks the ATP from its catalog card and sets the application up. The
+  template picker must start on ATP without the journey choosing it; the
+  request must carry catalog key `atp`; the application must list the 2027
+  template's ten sections and 26 checklist rows in order.
+- It types each section's text into its "Final text" box and saves it as
+  final. No draft is asked for: the journey counts draft requests and reads
+  the application back for a stored draft.
+- It marks each row the inputs call not applicable, with its reason as the
+  row's note, and leaves every other row outstanding. Nothing is attached. It
+  then reads all 26 rows back from a fresh load of the screen.
+- It exports the application PDF and downloads it. The count of required
+  attachments outstanding must be one number in the inputs, the rows on
+  screen, the export panel, the export's answer, the export result on screen
+  and the PDF's DRAFT stamp.
+- It reads the PDF back with the shared matcher: the study place line and
+  "Applicant not entered in OpenPlan" on the cover and in Appendix A, the
+  program, the ten section titles in order, every section final and opening
+  with the demonstration label, the fixed note in Questions 5 and 7 only, the
+  six appendix headings with their facts, the crash source, years and
+  reported count as whole values, the screening score labels, the two
+  sentences only the tribal area's PDF prints, and no phrase the definition
+  refuses ("to be provided" among them).
+- Axe on the Project, Safety, Corridor Analysis and application screens. The
+  owner asks for its own application and PDF (200 expected), then a second,
+  confirmed account reads its own workspace (200) and is refused the
+  application, the PDF and the project page.
+- The job opens no public page. A request that would make an engagement
+  campaign or a share link stops the journey.
+
+The journey applies the definition's per-journey rules, and its rules for the
+PDF, as the checker will. A proof stops on a refusal. A rehearsal records it
+as a finding and goes on, so the steps after it are still rehearsed, and the
+run file lists what the checker would refuse (`definitionRefusals`). The
+journey's own stops hold in both modes: the place rule for its role, the
+crash file's name and counts, the template, no draft, nothing attached and
+one DRAFT count everywhere.
+
+A page opened for a project can keep a request in flight on a local build, so
+each wait for a page's requests to finish runs to its limit of 60 seconds.
+`OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS` sets a shorter limit for a rehearsal; the
+run file states the limit it ran with (`idleTimeoutMs`) and the requests
+still in flight when each step ended.
+
+Inputs: `--inputs` names a JSON file (`fixtures/atp-job-rehearsal-inputs.json`
+shows the shape, for one place). It carries `projectName` (with the
+demonstration label), `projectSummary`, `organization` and
+`secondOrganization` (demonstration names), `sections` (the template's ten
+keys, each text opening with "Demonstration by an automated OpenPlan proof
+run" and a sentence that the named agency or tribe did not prepare it),
+`checklist` (every one of the template's 26 row keys, `outstanding` or
+`not-applicable` with a `reason`), `requiredAttachmentsOutstanding` and
+`facts` (statement, source, date read). `role`, `placeKind`, `placeQuery` and
+`placeGeoid`, when present, must be the run's own. `planType` and
+`analysisQuestion` are optional. The validator refuses, in both modes, a
+section key the template lacks or a missing one, text without the
+demonstration sentence, an email address, a `[VERIFY]` marker, a placeholder,
+the word DRAFT, a phrase the definition refuses, a checklist key the template
+lacks, a not-applicable row without a reason, and an attached row. A proof
+also refuses the rehearsal fixture.
+
+```bash
+# rehearsal, from qa-harness/ (local stack, dev server and mail catcher running; Poppler on PATH)
+node atp-job-journey.js --mode rehearsal --base-url http://localhost:3530 \
+  --place-query "Trinity County, CA" --place-kind county --role county \
+  --email owner-1@openplan.test --second-email second-1@openplan.test \
+  --confirm-link-file ../../confirm-1.link --second-confirm-link-file ../../confirm-2.link \
+  --out ../../atp-runs/county
+# roles and place kinds: county (county), city (city), tribal-area (aiannh)
+# proof: --mode proof --base-url <the hosted origin> --inputs <sourced inputs JSON>
+#   --expected-commit <40-character commit> --executor-agent <harness> --executor-model <model id>
+# assemble three journeys into one record for the evidence checker
+node atp-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 hex> \
+  --base-url <the hosted origin> --root <folder the record's PDF paths are relative to> --out record.json
+# --assemble refuses a run of another job, a run made on another origin, a run
+# that stopped, a run that names another expected commit or no harness
+# checkout, and under the hosted origin a rehearsal run, a run with no
+# expected commit or one from a checkout with changes
+npm run check:atp-job-journey   # unit tests
+```
+
+Before a proof: unset `OPENPLAN_JOURNEY_IDLE_TIMEOUT_MS`, use a new run folder and new
+addresses for each attempt (the run refuses to start beside a link file from an
+earlier one), and read `findings` and `axeRules` in the run file, not the exit
+code alone. A proof stops at the screens step when a required screen shows what
+the record checker refuses. The run folder's screenshots show the signed-in
+account's address: copy only the run file and the PDF into a record, never the
+`screens` or `console` folders.
+
 ## Current scripts
 - `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, verifies the denied session still loads its own workspace URL afterward, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-local-ui-ux-settle-capture.js` — read-only local Playwright capture harness for the UI/UX settle route manifest. It requires an already-authenticated local Playwright storage state, refuses production/Vercel URLs, captures desktop/mobile screenshots for populated local routes, and ledgers fixture-required routes instead of accepting empty-state proof.
