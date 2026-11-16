@@ -186,6 +186,24 @@ describe("tribal areas: boundary", () => {
     expect((await resolvePlaceBoundary("aiannh", "2430R"))?.tribalAreaStateFips).toEqual([]);
   });
 
+  it("keeps a boundary answer for a day only when it has a feature list (an error sent with HTTP 200 is not kept)", async () => {
+    // Review 72. The request helper is replaced in this file, so this reads
+    // the rule the resolver hands it; http-fetch-json-retry.test.ts shows the
+    // helper obeys such a rule.
+    answerBoundary({ "36": navajoBoundary.response });
+    await resolvePlaceBoundary("aiannh", "2430R");
+    const rules = fetchJsonWithRetryMock.mock.calls.map(([, , options]) => (options as { cacheWhen?: (payload: unknown) => boolean }).cacheWhen);
+    expect(rules).toHaveLength(AIANNH_LAYER_IDS.length);
+    for (const keep of rules) {
+      expect(typeof keep).toBe("function");
+      expect(keep?.({ error: { code: 400, message: "Failed to execute query.", details: [] } })).toBe(false);
+      expect(keep?.(null)).toBe(false);
+      expect(keep?.(navajoBoundary.response)).toBe(true);
+      // No such area in this layer is a real answer, and is kept.
+      expect(keep?.(EMPTY_GEOJSON)).toBe(true);
+    }
+  });
+
   it("refuses a GEOID found in two AIANNH layers instead of picking one", async () => {
     answerBoundary({ "36": navajoBoundary.response, "38": navajoBoundary.response });
     expect(await resolvePlaceBoundary("aiannh", "2430R")).toBeNull();

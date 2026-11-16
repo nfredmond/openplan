@@ -302,17 +302,18 @@ export function crashBoundaryCountLabel(studyArea: CrashStudyAreaCoverage): stri
 /**
  * Said wherever a state's crash file is read inside a tribal area.
  *
- * It is worded as what OpenPlan does not know. The sourced part is that crash
+ * It is worded as what OpenPlan does not know, and it does not presuppose
+ * that anything is shared (review 72). The sourced part is that crash
  * reports reach a state from a tribal agency through data-sharing agreements
  * the tribal government controls, so a state's file cannot be assumed to hold
  * them: NHTSA, "Tribal Crash Reporting Toolkit: Crash Reporting Facts and
- * Fictions Tool", DOT HS 813 058, June 2022, pages 5 and 30
+ * Fictions Tool", DOT HS 813 058, June 2022, printed pages 6 and 30
  * (https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813058, read
  * November 15, 2026). It says nothing about who has authority over a road,
  * and it does not say any tribe reported, agreed to or withheld anything.
  */
 export const TRIBAL_AREA_STATE_FILE_SENTENCE =
-  "Crash reports on tribal land may be missing from the state's crash file, because tribal agencies share crash reports with a state by agreement and OpenPlan does not know what is shared for this tribal area.";
+  "Crash reports on tribal land may be missing from the state's crash file, because a tribal agency may not share its crash reports with the state, and OpenPlan does not know whether any are shared for this tribal area.";
 
 function listed(items: string[]): string {
   if (items.length <= 1) return items.join("");
@@ -341,7 +342,11 @@ export function describeCrashTribalArea(studyArea: CrashStudyAreaCoverage): stri
   }
   if (states.length > 1) {
     const names = states.map((fips) => stateUspsFromFips(fips) ?? fips);
-    return `The Census Bureau lists this tribal area in more than one state (${listed(names)}), so no one state's crash file covers it and only the national fatal-crash file was read.`;
+    // The Bureau's list covers the whole named area, reservation and trust land
+    // together, so a reservation that lies in one state can list two (the
+    // Umatilla Reservation lists OR and WA). The sentence says what the list
+    // is and does not say no state's file covers the land (review 72).
+    return `The Census Bureau lists this tribal area, with its trust land, in more than one state (${listed(names)}), so only the national fatal-crash file was read.`;
   }
   return null;
 }

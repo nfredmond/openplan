@@ -1104,6 +1104,11 @@ function fetchTigerBoundary(layerId: number, geoid: string, outFields?: string):
     retries: 1,
     cacheTtlMs: 24 * 60 * 60 * 1000,
     cacheKey: `tigerweb:boundary:${layerId}:${geoid}`,
+    // The Census service reports an error inside an HTTP 200 body. Keeping that
+    // for a day would hold a tribal area on the national crash file while the
+    // page says retrieving again may help (review 72). Only an answer with a
+    // feature list is kept; an empty list is a real answer and is kept too.
+    cacheWhen: (payload) => Array.isArray((payload as TigerGeojson | null)?.features),
   });
 }
 

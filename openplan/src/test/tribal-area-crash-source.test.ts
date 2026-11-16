@@ -263,7 +263,7 @@ describe("what is said about the crash file read for a tribal area", () => {
 
   it("says why only the national file was read for several states, naming them", () => {
     expect(describeCrashTribalArea(tribal(["04", "35", "49"], false))).toBe(
-      "The Census Bureau lists this tribal area in more than one state (AZ, NM and UT), so no one state's crash file covers it and only the national fatal-crash file was read."
+      "The Census Bureau lists this tribal area, with its trust land, in more than one state (AZ, NM and UT), so only the national fatal-crash file was read."
     );
     expect(describeCrashTribalArea(tribal(["06", "32"], false))).toContain("(CA and NV)");
   });
@@ -531,7 +531,7 @@ describe("the ATP application's crash appendix for a tribal area", () => {
       severity_completeness: "fatal_only",
       dimension_coverage: { study_area: { ...BOUNDARY_ENTRY, tribalArea: { censusStateFips: ["06", "32"], stateFileUsed: false } } },
     });
-    expect(text).toContain("The Census Bureau lists this tribal area in more than one state (CA and NV)");
+    expect(text).toContain("The Census Bureau lists this tribal area, with its trust land, in more than one state (CA and NV), so only the national fatal-crash file was read.");
     expect(text).not.toContain(TRIBAL_AREA_STATE_FILE_SENTENCE);
   });
 
