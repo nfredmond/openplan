@@ -210,14 +210,30 @@ describe("the definition's sentences are the product's", () => {
     expect(lib).toContain(`const DEMONSTRATION_LABEL = '${RULE.demonstrationLabel.text}';`);
   });
 
+  it("names each place kind in the product's own words, so an honest city PDF is not refused (review 79)", () => {
+    // The definition said "city" where the product prints "city or town", and every honest city PDF
+    // was refused. Nobody had printed a city PDF before. The line the definition builds for each
+    // journey must be in the document the product builds for it.
+    for (const role of ["county", "city", "tribal-area"]) {
+      const entry = journey(EXAMPLE, role);
+      const line = RULE.placeLine.template
+        .replace("{label}", entry.place.label)
+        .replace("{kind}", RULE.placeLine.kindWords[entry.place.kind])
+        .replace("{geoid}", entry.place.geoid);
+      expect(applicationHtml(entry), role).toContain(line);
+    }
+    expect(RULE.placeLine.kindWords.city).toBe("city or town");
+  });
+
   it("tells the browser to keep a section title whole on one page", () => {
     expect(applicationHtml(journey(EXAMPLE, "county"))).toMatch(/\.section-title \{[^}]*break-inside: avoid;[^}]*\}/);
   });
 
-  it("prints every line the checker reads in the document the product builds, for a county and a tribal area", () => {
+  it("prints every line the checker reads in the document the product builds, for a county, a city and a tribal area", () => {
     const county = applicationHtml(journey(EXAMPLE, "county"));
+    const city = applicationHtml(journey(EXAMPLE, "city"));
     const tribal = applicationHtml(journey(EXAMPLE, "tribal-area"));
-    for (const html of [county, tribal]) {
+    for (const html of [county, city, tribal]) {
       expect(html).toContain("DRAFT: 15 required attachment(s) outstanding");
       expect(html).toContain(RULE.applicant.line);
       for (const section of RULE.sections.list) expect(html).toContain(section.title.replace(/&/g, "&amp;"));
@@ -227,6 +243,7 @@ describe("the definition's sentences are the product's", () => {
     const sentence = TRIBAL_AREA_STATE_FILE_SENTENCE.replace(/'/g, "&#39;");
     expect(tribal).toContain(sentence);
     expect(county).not.toContain(sentence);
+    expect(city).not.toContain(sentence);
   });
 });
 
@@ -245,9 +262,9 @@ describe.runIf(POPPLER)("the checker on a real ATP application PDF typeset by th
 
 describe.runIf(CHROME_AND_POPPLER)("the checker on a real ATP application PDF printed by the browser engine", () => {
   const engine: Engine = "chrome";
-  it("accepts a record whose county and tribal area PDFs the product printed", async () => {
-    const record = await recordWithRealPdfs(engine, ["county", "tribal-area"]);
-    for (const role of ["county", "tribal-area"]) {
+  it("accepts a record whose county, city and tribal area PDFs the product printed", async () => {
+    const record = await recordWithRealPdfs(engine, ["county", "city", "tribal-area"]);
+    for (const role of ["county", "city", "tribal-area"]) {
       const pdf = journey(record, role).pdfs[0];
       expect(readFileSync(path.join(root, pdf.path)).subarray(0, 5).toString("latin1")).toBe("%PDF-");
       expect(pdf.items.every((item: Json) => item.page > 0), `every appendix heading is a line of its own in the ${role} PDF`).toBe(true);

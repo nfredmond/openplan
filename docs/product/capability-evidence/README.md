@@ -324,6 +324,15 @@ executor and date parts of rule 4, and refuses a record unless:
    record's project name and workspace name hold neither "Study place:", the
    applicant line nor the word DRAFT, so a typed name cannot stand in for a
    line the product prints.
+   Three of these rules refuse an honest record by design, and a journey
+   must be written to them (review 79): the word draft in a project or
+   workspace name is refused in any letter case; the hashes a page check
+   carries must be of the exact project name and workspace name, byte for
+   byte; and typed section text may not leave "Applicant", "Lead agency"
+   or "Implementing agency" alone on a line.
+   The place line names a city as the product does, "city or town": the
+   definition first said "city", and every honest city PDF was refused
+   until a review printed one.
 6. Each PDF, read with Poppler's text as one run of lines. Each page's
    footer line is left out with the blank lines above it and at the top of
    the next page, so a title, a note or a sentence that continues on the

@@ -406,10 +406,10 @@
         },
         "placeLine": {
           "source": "openplan/src/lib/grants/atp-packet.ts (atpStudyPlaceLine)",
-          "note": "The line must be a whole line on the cover and in Appendix A, and every line of the PDF that holds the label must be this line and nothing more. A PDF that prints another place after the label anywhere, more words after the place, or the notRecorded line, is refused. The record's project name and workspace name may not hold the label, so a typed name cannot stand in for the line OpenPlan prints from the project's recorded study place.",
+          "note": "The line must be a whole line on the cover and in Appendix A, and every line of the PDF that holds the label must be this line and nothing more. A PDF that prints another place after the label anywhere, more words after the place on the same line, or the notRecorded line, is refused. The line under it is not read, and the same holds for every whole-line fact. The kind words are the product's own (openplan/src/lib/api/place-geographies.ts, PLACE_KIND_LABELS): a city prints as city or town. The record's project name and workspace name may not hold the label, so a typed name cannot stand in for the line OpenPlan prints from the project's recorded study place.",
           "label": "Study place:",
           "template": "Study place: {label} ({kind}, GEOID {geoid})",
-          "kindWords": { "county": "county", "city": "city", "aiannh": "Census tribal area" },
+          "kindWords": { "county": "county", "city": "city or town", "aiannh": "Census tribal area" },
           "notRecorded": "Study place not recorded in OpenPlan"
         },
         "applicant": {
