@@ -245,7 +245,7 @@ const DOCUMENT_STYLES = `
       h1 { margin-top: 12px; font-size: 38px; line-height: 1.25; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
-      .section-title { margin-bottom: 14px; font-size: 22px; break-after: avoid; }
+      .section-title { margin-bottom: 14px; font-size: 22px; break-after: avoid; break-inside: avoid; }
       .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
       .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; break-inside: avoid; }
       .facts div.wide { grid-column: 1 / -1; }

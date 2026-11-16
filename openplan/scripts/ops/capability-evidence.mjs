@@ -184,10 +184,12 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
   }
   if (job.campaign) checkDistinctCampaigns(record.journeys);
   checkSameAcrossJourneys(record.journeys, job);
+  checkDistinctAcrossJourneys(record.journeys, job);
   checkRecordedOn(record);
 
   const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace, roles);
   checkCrossWorkspaceControls(record.crossWorkspace, job.crossWorkspace, roles);
+  checkSearchedStrings(record, job.crossWorkspace);
   if (job.participantChecks) checkParticipantChecks(record.participantChecks, job.participantChecks, roles);
 
   const requiredLimits = [...job.requiredLimits];
@@ -215,8 +217,8 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
 /**
  * A job's per-journey value rules, from its definition: each names a dotted
  * field of the journey and what it must hold (`equals` a value, be `atLeast`
- * a number, or hold `minItems` entries in a list), and the refusal to give
- * otherwise. `{found}` and `{expected}` in the refusal take the journey's
+ * a number, hold `minItems` entries in a list, or be no greater than another
+ * field of the journey, `atMostField`), and the refusal to give otherwise. `{found}` and `{expected}` in the refusal take the journey's
  * value (for a list, its length) and the rule's.
  */
 function checkJourneyFields(journey, rules, label) {
@@ -234,8 +236,11 @@ function checkJourneyFields(journey, rules, label) {
       expected = rule.minItems;
       holds = Array.isArray(found) && found.length >= rule.minItems;
       if (Array.isArray(found)) found = found.length;
+    } else if (Object.hasOwn(rule, "atMostField")) {
+      expected = journeyField(journey, rule.atMostField);
+      holds = typeof found === "number" && typeof expected === "number" && found <= expected;
     } else {
-      throw new Error(`job definition rule for ${rule.field} needs equals, atLeast or minItems`);
+      throw new Error(`job definition rule for ${rule.field} needs equals, atLeast, minItems or atMostField`);
     }
     if (!holds) refuse(`${label} ${rule.refusal.replaceAll("{found}", String(found)).replaceAll("{expected}", String(expected))}`);
   }
@@ -265,6 +270,25 @@ function checkSameAcrossJourneys(journeys, job) {
           .replaceAll("{found}", String(found))
           .replaceAll("{expected}", String(expected)),
       );
+    }
+  }
+}
+
+/**
+ * Fields the definition says no two journeys of a record may share
+ * (`distinctAcrossJourneys`): three project names and three workspace names
+ * for the application job. The refusal takes {role}, {otherRole} and {found}.
+ */
+function checkDistinctAcrossJourneys(journeys, job) {
+  for (const rule of job.distinctAcrossJourneys ?? []) {
+    const seen = new Map();
+    for (const journey of journeys) {
+      const found = journeyField(journey, rule.field);
+      const key = typeof found === "string" ? squashPdfText(found) : JSON.stringify(found);
+      if (seen.has(key)) {
+        refuse(rule.refusal.replaceAll("{role}", journey.role).replaceAll("{otherRole}", seen.get(key)).replaceAll("{found}", String(found)));
+      }
+      seen.set(key, journey.role);
     }
   }
 }
@@ -582,6 +606,31 @@ function checkCrossWorkspace(checks, rule, roles) {
 }
 
 /**
+ * A page check that answered 200 searched the page for the journey's own
+ * names (review 78, X15): for a job whose definition lists
+ * `searchedStringFields`, the SHA-256 of each listed journey field is among
+ * the hashes that journey's page check carries. Three hashes of anything no
+ * longer pass.
+ *
+ * Blind category: the hashes show which strings the journey says it searched
+ * for, not that it searched or what the page held.
+ */
+function checkSearchedStrings(record, rule) {
+  if (!rule.searchedStringFields) return;
+  for (const check of record.crossWorkspace.checks) {
+    if (check.kind !== "page" || check.status !== 200) continue;
+    const journey = record.journeys.find((entry) => entry.role === check.journey);
+    for (const field of rule.searchedStringFields) {
+      const value = journeyField(journey, field);
+      const hash = createHash("sha256").update(String(value), "utf8").digest("hex");
+      if (!(check.searchedStringSha256 ?? []).includes(hash)) {
+        refuse(`cross-workspace page request ${check.request} of the ${check.journey} journey answered 200, but its searched strings do not include the journey's ${field}; the page must be searched for the first account's own names`);
+      }
+    }
+  }
+}
+
+/**
  * The controls beside the second account's refusals, for a job whose
  * definition has them (the lead's rule 10 for the application job).
  * `ownerControl`: in the same run each journey's owner received the listed
@@ -733,6 +782,10 @@ function checkPlace(place, rule, job, label) {
     if (place.stateFips.length !== 1 || place.stateFips[0] !== rule.stateFips || !place.geoid.startsWith(rule.stateFips)) {
       refuse(`${label} must be in the state with FIPS ${rule.stateFips}`);
     }
+  }
+  // A journey whose label must close with given words (the application job's tribal area: ", CA").
+  if (rule.labelSuffix && !String(place.label).endsWith(rule.labelSuffix)) {
+    refuse(`${label} label "${place.label}" does not end with "${rule.labelSuffix}"`);
   }
   // A journey whose place must lie in exactly the listed states (the
   // application job's tribal area, whose Census list must be California alone).
@@ -1645,6 +1698,9 @@ function headingBlocks(lines, heading, maxLines = 1) {
   return blocks;
 }
 
+/** How many lines a fact that is a line of its own may wrap over. */
+const WRAPPED_FACT_LINES = 4;
+
 /** A count as the export prints it: thousands separators, no decimals. */
 function printedCount(value) {
   return Number(value).toLocaleString("en-US");
@@ -1674,6 +1730,14 @@ function checkApplicationRecord(journey, job, label) {
     if (pdfTextHasPhrase(journey.workspaceName, word)) {
       refuse(`${label} workspace name holds the words "${word}", so its name could not be told from an applicant line`);
     }
+  }
+  // A typed name may not hold a line the product prints (review 78, W25, W32, D17):
+  // the place label, the applicant line or the word DRAFT.
+  for (const [what, name] of [["project name", journey.projectName], ["workspace name", journey.workspaceName]]) {
+    for (const words of [rule.placeLine.label, rule.applicant.line]) {
+      if (squashPdfText(name).includes(squashPdfText(words))) refuse(`${label} ${what} holds "${words}", words the product prints on a line of its own`);
+    }
+    if (/\bdraft\b/i.test(joinLetterSpacing(name))) refuse(`${label} ${what} holds the word DRAFT, which the product prints as its stamp`);
   }
 
   const sections = rule.sections.list;
@@ -1713,9 +1777,6 @@ function checkApplicationRecord(journey, job, label) {
   if (application.outstandingRequiredCount !== outstanding) {
     refuse(`${label} says ${application.outstandingRequiredCount} required attachments are outstanding; its checklist rows give ${outstanding}`);
   }
-  if (outstanding < rule.draftStamp.minOutstanding) {
-    refuse(`${label} leaves ${outstanding} required attachments outstanding; this job's record leaves at least ${rule.draftStamp.minOutstanding}, because an agent produces none`);
-  }
   return outstanding;
 }
 
@@ -1742,8 +1803,11 @@ function checkApplicationRecord(journey, job, label) {
  * A PDF the export's fallback writer typeset (its notice is in the text) is
  * refused before anything else is read.
  *
- * The PDF is read as one run of lines with the page footers left out, so a
- * passage that crosses a page is read whole.
+ * The PDF is read as one run of lines. Each page's footer line is left out,
+ * with the blank lines above it and at the top of the next page, so a title,
+ * a note or a sentence that continues on the next page reads as consecutive
+ * lines. Two paragraphs that meet at a page break therefore also read as
+ * consecutive lines; for refused words that errs toward refusing.
  *
  * Blind category: the checker reads words. It cannot tell whether a section
  * says anything true, whether a score is the run's stored score, or whether
@@ -1776,11 +1840,26 @@ function checkApplication(journey, job, label, pagesByKind) {
       return String(all[name]);
     });
 
+  // One run of lines. Each page loses its footer line, the blank lines above
+  // the footer and the blank lines at its top, so a title, a sentence or a
+  // note that continues on the next page reads as consecutive lines (review
+  // 78: an honest PDF whose title split across two pages was refused).
   const footer = new RegExp(rule.pageFooter);
-  const lines = pages.flatMap((page) => page.split(/\r?\n/).filter((line) => !footer.test(line)));
+  const lines = pages.flatMap((page) => {
+    const kept = page.split(/\r?\n/).filter((line) => !footer.test(line));
+    while (kept.length > 0 && kept[kept.length - 1].trim() === "") kept.pop();
+    while (kept.length > 0 && kept[0].trim() === "") kept.shift();
+    return kept;
+  });
   const text = (from, to) => lines.slice(from, to).join("\n");
   const everywhere = text(0, lines.length);
   const printsAnywhere = (phrase) => pdfTextHasPhrase(everywhere, phrase) || pages.some((page) => pdfTextHasPhrase(page, phrase));
+  // For words that are refused: the same search with each run of spaces on a
+  // line read as one space, so two spaces inside a phrase do not hide it.
+  const singleSpaced = everywhere.replace(/[ \t]{2,}/g, " ");
+  const printsRefused = (phrase) => printsAnywhere(phrase) || pdfTextHasPhrase(singleSpaced, phrase);
+  // A fact that is a whole line of its own, on one line or wrapped over lines that hold nothing else.
+  const wholeLineIn = (from, to, fact) => headingBlocks(lines.slice(from, to), fact, WRAPPED_FACT_LINES).length > 0;
 
   // The export's fallback writer says so in the PDF. That file is not the one a planner gets.
   if (rule.fallbackWriter && printsAnywhere(rule.fallbackWriter.notice)) {
@@ -1813,18 +1892,16 @@ function checkApplication(journey, job, label, pagesByKind) {
 
   // The study place line, outside planner-typed text: on the cover, and every printing of its label.
   const placeLine = fill(rule.placeLine.template);
-  if (!pdfTextHasPhrase(cover, placeLine)) refuse(`${pdfLabel} cover does not state "${placeLine}", the study place line for the record's place`);
-  if (printsAnywhere(rule.placeLine.notRecorded)) refuse(`${pdfLabel} prints "${rule.placeLine.notRecorded}"`);
+  if (!wholeLineIn(0, titles[0].start, placeLine)) refuse(`${pdfLabel} cover does not state "${placeLine}", the study place line for the record's place`);
+  if (printsRefused(rule.placeLine.notRecorded)) refuse(`${pdfLabel} prints "${rule.placeLine.notRecorded}"`);
   const placeLabel = squashPdfText(rule.placeLine.label);
-  const wantedPlace = squashPdfText(placeLine);
   lines.forEach((line, index) => {
-    const squashed = squashPdfText(line);
-    for (let at = squashed.indexOf(placeLabel); at !== -1; at = squashed.indexOf(placeLabel, at + 1)) {
-      // The line from its label on, with the lines a long place name wraps onto.
-      const passage = squashPdfText(lines.slice(index, index + 4).join(" "));
-      if (!passage.slice(at).startsWith(wantedPlace)) {
-        refuse(`${pdfLabel} prints "${rule.placeLine.label}" with another place than the record's ("${placeLine}"): "${line.trim().slice(0, 160)}"`);
-      }
+    if (!squashPdfText(line).includes(placeLabel)) return;
+    // The line that holds the label, with the lines a long place name wraps
+    // onto, must be the record's place line and nothing more.
+    const whole = headingBlocks(lines.slice(index, index + WRAPPED_FACT_LINES), placeLine, WRAPPED_FACT_LINES);
+    if (!whole.some((block) => block.start === 0)) {
+      refuse(`${pdfLabel} prints "${rule.placeLine.label}" with another place than the record's ("${placeLine}"): "${line.trim().slice(0, 160)}"`);
     }
   });
 
@@ -1835,6 +1912,19 @@ function checkApplication(journey, job, label, pagesByKind) {
     const sameLine = lines.some((line) => squashPdfText(line).includes(workspace) && pdfTextHasPhrase(line, word));
     const asValue = [`${word}: ${journey.workspaceName}`, `${word} ${journey.workspaceName}`].some(printsAnywhere);
     if (sameLine || asValue) refuse(`${pdfLabel} prints the workspace's name with "${word}"; the workspace is not the applicant`);
+    // The cover's box layout: a label on a line of its own, a blank line, then the value (review 78,
+    // W13 to W16). The product prints no box with one of these labels, so a line that is only the
+    // label is refused, and so is a line that ends in the label when the workspace's name comes next.
+    const boxLabel = squashPdfText(word);
+    lines.forEach((line, index) => {
+      const said = squashPdfText(line).replace(/\s*:$/, "").replace(/ name$/, "");
+      if (said === boxLabel) refuse(`${pdfLabel} prints a box labeled "${line.trim().slice(0, 60)}"; this job's PDF names no applicant, and the product prints no such box`);
+      if (!said.endsWith(` ${boxLabel}`)) return;
+      const next = lines.slice(index + 1).find((candidate) => candidate.trim() !== "");
+      if (next !== undefined && squashPdfText(next).includes(workspace)) {
+        refuse(`${pdfLabel} prints the workspace's name under a line that ends in "${word}"; the workspace is not the applicant`);
+      }
+    });
   }
 
   // The DRAFT stamp: required, on the cover, with the record's count, and no other DRAFT line.
@@ -1890,19 +1980,43 @@ function checkApplication(journey, job, label, pagesByKind) {
   const last = appendices[appendices.length - 1];
   const closing = headingBlocks(lines, rule.appendices.end).find((block) => block.start >= last.end);
   if (!closing) refuse(`${pdfLabel} has no "${rule.appendices.end}" heading after "${last.heading}", where its appendices end`);
-  const bodyOf = (item) => {
+  const boundsOf = (item) => {
     const index = appendices.findIndex((appendix) => appendix.item === item);
     if (index === -1) throw new Error(`job definition ${job.id} names the unknown appendix ${item}`);
-    return text(appendices[index].end, index + 1 < appendices.length ? appendices[index + 1].start : closing.start);
+    return [appendices[index].end, index + 1 < appendices.length ? appendices[index + 1].start : closing.start];
   };
+  const bodyOf = (item) => text(...boundsOf(item));
   for (const appendix of appendices) {
     const body = bodyOf(appendix.item);
     if (appendix.facts) {
       const countField = rule.appendices.countField?.[appendix.item];
       const extra = countField ? { count: printedCount(journeyField(journey, countField)) } : {};
-      for (const template of appendix.facts) {
+      // The rows this journey's role must print, beside the facts every journey's PDF prints.
+      const byRole = appendix.factsByRole?.[journey.role] ?? appendix.factsByRole?.default ?? [];
+      const expected = [];
+      for (const template of [...appendix.facts, ...byRole]) {
         const fact = fill(template, extra);
-        if (!pdfTextHasPhrase(body, fact)) refuse(`${pdfLabel} "${appendix.heading}" does not state "${fact}"`);
+        expected.push(fact);
+        // A fact that ends in a filled value, or a row held to the role, must be the whole
+        // line: "Crashes reported: 1" is not stated by "Crashes reported: 1,234" (review 78, K24).
+        const whole = /\}$/.test(template) || byRole.includes(template);
+        const found = whole ? wholeLineIn(...boundsOf(appendix.item), fact) : pdfTextHasPhrase(body, fact);
+        if (!found) refuse(`${pdfLabel} "${appendix.heading}" does not state "${fact}"${whole ? " as a line of its own" : ""}`);
+      }
+      // Every row under the appendix's row label is one of those facts: no second row with another value.
+      if (appendix.rowLabel) {
+        const [from, to] = boundsOf(appendix.item);
+        const rowLabel = squashPdfText(appendix.rowLabel);
+        for (let index = from; index < to; index += 1) {
+          if (!squashPdfText(lines[index]).startsWith(rowLabel)) continue;
+          const window = lines.slice(index, Math.min(to, index + WRAPPED_FACT_LINES));
+          const known = expected.some((fact) => {
+            const head = squashPdfText(fact);
+            // A fact stated as a phrase may carry more words after it on its line; a row may not.
+            return head.startsWith(rowLabel) && headingBlocks(window, fact, WRAPPED_FACT_LINES).some((block) => block.start === 0);
+          });
+          if (!known) refuse(`${pdfLabel} "${appendix.heading}" prints a "${appendix.rowLabel}" row this job does not expect: "${lines[index].trim().slice(0, 160)}"`);
+        }
       }
     } else if (!pdfTextHasPhrase(body, appendix.includedFact) && !squashPdfText(body).startsWith(squashPdfText(rule.appendices.missing))) {
       refuse(`${pdfLabel} "${appendix.heading}" carries neither its fact "${appendix.includedFact}" nor "${rule.appendices.missing}" under its heading`);
@@ -1914,7 +2028,7 @@ function checkApplication(journey, job, label, pagesByKind) {
     const heading = headings[fact.item];
     if (fact.roles.includes(journey.role)) {
       if (!pdfTextHasPhrase(bodyOf(fact.item), fact.phrase)) refuse(`${pdfLabel} "${heading}" does not carry ${fact.name}, which the ${journey.role} journey's PDF must`);
-    } else if (printsAnywhere(fact.phrase)) {
+    } else if (printsRefused(fact.phrase)) {
       refuse(`${pdfLabel} carries ${fact.name}, which only the ${fact.roles.join(" or ")} journey's PDF prints`);
     }
   }
@@ -1922,17 +2036,26 @@ function checkApplication(journey, job, label, pagesByKind) {
   // Tract data: the appendix agrees with what the journey says its run retrieved.
   const { equity } = rule.appendices;
   if (equity) {
-    const retrieved = journeyField(journey, equity.field);
-    const saysNone = pdfTextHasPhrase(bodyOf(equity.item), equity.noTractData);
-    if (retrieved === false && !saysNone) refuse(`${pdfLabel} "${headings[equity.item]}" does not say "${equity.noTractData}", but the record says its run retrieved no tract data`);
-    if (retrieved !== false && saysNone) refuse(`${pdfLabel} "${headings[equity.item]}" says "${equity.noTractData}", but the record says its run retrieved tract data`);
+    const stated = journeyField(journey, equity.field);
+    if (!Object.hasOwn(equity.values, stated)) refuse(`${label} states ${equity.field} as ${JSON.stringify(stated)}; this job's definition knows ${Object.keys(equity.values).join(", ")}`);
+    const body = bodyOf(equity.item);
+    if (!pdfTextHasPhrase(body, equity.label)) refuse(`${pdfLabel} "${headings[equity.item]}" prints no "${equity.label}" line`);
+    for (const [value, { meaning, sentences }] of Object.entries(equity.values)) {
+      const printed = sentences.filter((sentence) => pdfTextHasPhrase(body, sentence));
+      if (value === stated && sentences.length > 0 && printed.length === 0) {
+        refuse(`${pdfLabel} "${headings[equity.item]}" does not say "${sentences.join('" or "')}", but the record says ${meaning}`);
+      }
+      if (value !== stated && printed.length > 0) {
+        refuse(`${pdfLabel} "${headings[equity.item]}" says "${printed[0]}", but the record says ${equity.values[stated].meaning}`);
+      }
+    }
   }
 
   for (const phrase of rule.requiredPhrases ?? []) {
     if (!printsAnywhere(phrase)) refuse(`${pdfLabel} does not print "${phrase}"`);
   }
   for (const phrase of rule.refusedPhrases.phrases) {
-    if (printsAnywhere(phrase)) refuse(`${pdfLabel} prints "${phrase}", which this job refuses anywhere in the PDF`);
+    if (printsRefused(phrase)) refuse(`${pdfLabel} prints "${phrase}", which this job refuses anywhere in the PDF`);
   }
 
   // Scores: a label ending in score or points, a colon and a number must end one of the definition's labels.

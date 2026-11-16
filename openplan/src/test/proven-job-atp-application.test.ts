@@ -59,6 +59,8 @@ function writeFile(path: string, text: string) {
 for (const entry of EXAMPLE.journeys) writeFile(entry.pdfs[0].path, syntheticApplicationPdfText(entry, JOB));
 
 const proven = (): Json => structuredClone(EXAMPLE);
+/** The second account's project page check of one journey. */
+const pageCheck = (record: Json, role: string) => record.crossWorkspace.checks.find((entry: Json) => entry.journey === role && entry.kind === "page");
 const journey = (record: Json, role: string) => record.journeys.find((entry: Json) => entry.role === role);
 const check = (record: Json, options: { censusNames?: boolean } = {}) =>
   validateProvenJobRecord(record, { repoRoot: jobRoot, readPdfPages: fakePdfPages, ...options });
@@ -72,10 +74,10 @@ function repin(pdf: Json, text: string) {
   pdf.bytes = Buffer.byteLength(text);
 }
 
-/** Change the PDF's text only: the record keeps what it said. */
+/** Change the text of the PDF the record names now, and nothing in the record: edits can follow one another. */
 function editPdf(record: Json, role: string, change: (text: string) => string) {
   const entry = journey(record, role);
-  const before = syntheticApplicationPdfText(entry, JOB);
+  const before = readFileSync(join(jobRoot, entry.pdfs[0].path), "utf8");
   const after = change(before);
   expect(after, "the edit must change the PDF's text").not.toBe(before);
   repin(entry.pdfs[0], after);
@@ -96,6 +98,17 @@ const swap = (text: string, from: string, to: string) => {
 /** Insert lines after the first line that is exactly `anchor`. */
 const after = (text: string, anchor: string, ...lines: string[]) => swap(text, `\n${anchor}\n`, `\n${anchor}\n${lines.join("\n")}\n`);
 
+/** A page break as Poppler prints one: blank lines, the footer, a form feed, and a blank line at the top of the next page. */
+const PAGE_BREAK = `\n\n${" ".repeat(60)}Active Transportation Program (ATP) · Page 2 of 8\f\n`;
+/** Put a page break between two lines of the PDF's text, and count the page in the record. */
+function breakBetween(record: Json, role: string, first: string, second: string) {
+  editPdf(record, role, (text) => swap(text, `${first}\n${second}`, `${first}${PAGE_BREAK}${second}`));
+  const entry = journey(record, role);
+  const pages = syntheticPdfPages(readFileSync(join(jobRoot, entry.pdfs[0].path), "utf8"));
+  entry.pdfs[0].pages = pages.length;
+  for (const item of entry.pdfs[0].items) item.page = pages.findIndex((page) => page.split("\n").some((line) => line.trim() === item.text)) + 1;
+}
+
 const PLACE_LINE = (entry: Json) => `Study place: ${entry.place.label} (${RULE.placeLine.kindWords[entry.place.kind]}, GEOID ${entry.place.geoid})`;
 const SECTION_TEXT = `${RULE.demonstrationLabel.text}. This synthetic text describes no real project and makes no claim about any`;
 const Q2 = "Part B, Question 2: Potential to Increase Walking,";
@@ -104,6 +117,9 @@ const ROLES = ["county", "city", "tribal-area"];
 /** The last line of the words that open the evidence appendices, a place to print a line outside any appendix. */
 const FRAME_END = "package meets the current call for projects.";
 const REFUSED = "proven job record refused: ";
+
+/** Type words into the county's first section, in place of its second line's closing sentence. */
+const typedIn = (words: string) => (record: Json) => editPdf(record, "county", (text) => swap(text, "An agency would write its own answer here.", words));
 
 type Case = [string, (record: Json) => void, RegExp];
 /** Each changed copy is refused with the checker's own message and the rule's reason. */
@@ -158,6 +174,7 @@ describe("the definition entry follows the product", () => {
   it("words every limit it requires, and the page limit", () => {
     for (const id of [...JOB.requiredLimits, JOB.crossWorkspace.pageAnsweredOkLimit]) expect(typeof JOB.limitTexts[id], id).toBe("string");
     expect(JOB.requiredLimits).toHaveLength(13);
+    expect(RULE.draftStamp.minOutstanding, "a rule no record can reach is not kept").toBeUndefined();
   });
 
   it("refuses none of the product's own disclaimers and no em dash", () => {
@@ -200,7 +217,7 @@ describe("the ATP application job's synthetic example", () => {
 
   it("accepts a run that retrieved tract data, a missing cost appendix and a numbered equity score under its own label", () => {
     const record = proven();
-    editBoth(record, "county", (entry) => { entry.application.tractDataRetrieved = true; });
+    editBoth(record, "county", (entry) => { entry.application.tractData = "retrieved"; });
     editPdf(record, "city", (text) => swap(text, "Planning-level estimate: USD 1,850,000.00\n\nPrice year: 2026", "  Missing. No planning-level estimate is recorded on the project."));
     editPdf(record, "tribal-area", (text) => swap(text, "Equity, OpenPlan screening score (not a CTC score): Not recorded. Equity is withheld\nbecause required demographic inputs are unavailable.", "Equity, OpenPlan screening score (not a CTC score): 62.5")
       .replace("Equity screening score (OpenPlan, not a CTC score): Not recorded. Equity is withheld\nbecause required demographic inputs are unavailable.", "Equity screening score (OpenPlan, not a CTC score): 62.5"));
@@ -258,6 +275,8 @@ describe("what the ATP application job's checker cannot see (KI-2026-11-16-091, 
   it("accepts a workspace name that is some other words on the cover", () => {
     const record = proven();
     journey(record, "county").workspaceName = "Synthetic summary of the program";
+    // The project page's searched strings must hold the name's hash, so the record carries it.
+    pageCheck(record, "county").searchedStringSha256[1] = sha("Synthetic summary of the program");
     expect(() => check(record)).not.toThrow();
   });
 });
@@ -332,7 +351,13 @@ describe("the ATP application job refuses PDFs that are not three committed file
     ["a file that is missing", (r) => { journey(r, "county").pdfs[0].path = "docs/product/capability-evidence/synthetic-example/none.pdf"; }, /evidence file is missing/],
     ["a byte count that is not the file's", (r) => { journey(r, "county").pdfs[0].bytes += 1; }, /county journey atp-application PDF is \d+ bytes, record says \d+/],
     ["a page count that is not the file's", (r) => { journey(r, "county").pdfs[0].pages = 8; }, /county journey atp-application PDF has 7 pages, record says 8/],
-    ["a second PDF the job does not define", (r) => { journey(r, "county").pdfs.push({ ...structuredClone(journey(r, "county").pdfs[0]), kind: "atp-packet" }); }, /is the same bytes|has PDFs this job does not define/],
+    ["a second PDF the job does not define", (r) => {
+      const extra = { ...structuredClone(journey(r, "county").pdfs[0]), kind: "atp-packet", path: "docs/product/capability-evidence/synthetic-example/county-atp-packet.pdf" };
+      const text = `${syntheticApplicationPdfText(journey(r, "county"), JOB)}\nA second file.`;
+      Object.assign(extra, { sha256: sha(text), bytes: Buffer.byteLength(text) });
+      writeFile(extra.path, text);
+      journey(r, "county").pdfs.push(extra);
+    }, /county journey has PDFs this job does not define/],
     ["a PDF the export's fallback writer typeset", (r) => editPdf(r, "county", (text) => swap(text, "OPENPLAN GRANTS: APPLICATION PACKET", "Typeset by OpenPlan's built-in PDF writer because this deployment has no browser rendering engine.\n\nOPENPLAN GRANTS: APPLICATION PACKET")),
       /county journey atp-application PDF was typeset by OpenPlan's built-in writer, not the browser engine/],
     ["a PDF with an email address on a page", (r) => editPdf(r, "county", (text) => after(text, RULE.applicant.line, "Contact: planner@example.org")), /atp-application PDF page 1 contains an email address/],
@@ -410,10 +435,12 @@ describe("the ATP application job requires the DRAFT stamp and a disposition for
     ["a row with no disposition the schema knows", (r) => { journey(r, "county").application.rows[4].disposition = "waived"; }, /rows\[4\]\.disposition must be one of outstanding, not-applicable, attached/],
     ["a record with 25 rows", (r) => { journey(r, "county").application.rows.pop(); }, /lists 25 checklist rows; the template this job names has 26/],
     ["rows out of the template's order", (r) => { const rows = journey(r, "county").application.rows; [rows[4], rows[7]] = [rows[7], rows[4]]; }, /checklist row 5 is regional-transportation-plan-pages; the template's is project-programming-request/],
-    ["every row marked not applicable or optional, so nothing is outstanding", (r) => editBoth(r, "county", (entry) => {
+    // No record can leave nothing outstanding: 13 rows are required of every application, none may be
+    // attached and none may be marked not applicable. This copy tries, and the not-applicable rule refuses it.
+    ["every row marked not applicable, so nothing is outstanding", (r) => editBoth(r, "county", (entry) => {
       entry.application.rows = entry.application.rows.map((row: Json) => ({ key: row.key, disposition: "not-applicable", reason: "Synthetic example: marked away to drop the stamp." }));
       entry.application.outstandingRequiredCount = 0;
-    }), /is marked not applicable, but the template requires it of every application/],
+    }), /checklist row project-programming-request is marked not applicable, but the template requires it of every application/],
     ["a PDF that prints an attached document", (r) => editPdf(r, "county", (text) => after(text, FRAME_END, "", "Attached for Signature Page: Knowledge Base document: Demonstration signature page")), /prints "Attached for Signature Page:", but the record attaches nothing/],
     ["a PDF that prints an attached document whose title ends in a bracket", (r) => editPdf(r, "county", (text) => after(text, FRAME_END, "", "Attached for Project Programming Request (PPR): Knowledge Base document: Demonstration\nrequest")), /prints "Attached for Project Programming Request \(PPR\):", but the record attaches nothing/],
   ]);
@@ -441,7 +468,7 @@ describe("the ATP application job refuses appendices that are missing, out of or
     ["an appendix that was not selected for the export", (r) => editPdf(r, "county", (text) => swap(text, "  Missing. No benefit-cost analysis or screening is saved for the linked project.", "  Omitted. Not selected for this export.")), /"Appendix F\. Benefit-cost summary" carries neither its fact "Benefit-cost ratio" nor "Missing\."/],
     ["Appendix E without a Guidelines criterion row", (r) => editPdf(r, "county", (text) => swap(text, "Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan", "Guidelines criterion, CalEnviroScreen: Yes")), /does not state "Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan"/],
     ["Appendix E without the sentence that no row is a determination", (r) => editPdf(r, "county", (text) => swap(text, "      No row above is a determination that a community is disadvantaged or that the\n      project benefits one.", "      The rows above are OpenPlan's.")), /does not state "No row above is a determination/],
-    ["a record that says tract data was retrieved when Appendix E says none was", (r) => { journey(r, "county").application.tractDataRetrieved = true; }, /says "no tract data was retrieved for this run", but the record says its run retrieved tract data/],
+    ["a record that says tract data was retrieved when Appendix E says none was", (r) => { journey(r, "county").application.tractData = "retrieved"; }, /says "no tract data was retrieved for this run", but the record says its run retrieved tract data/],
     ["a record that says no tract data when Appendix E lists tracts", (r) => editPdf(r, "county", (text) => swap(text, "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run", "Demographic source: ACS 5-Year 2023, 4 tracts, clipped to the corridor")), /does not say "no tract data was retrieved for this run", but the record says its run retrieved no tract data/],
   ]);
 });
@@ -461,7 +488,7 @@ describe("the ATP application job refuses placeholders, determinations and score
   const typed = (words: string) => (r: Json) => editPdf(r, "county", (text) => swap(text, "An agency would write its own answer here.", words));
   refuses([
     ["a recorded fact printed as to be provided", (r) => editPdf(r, "county", (text) => after(text, RULE.applicant.line, "Location to be provided by lead agency")), /prints "to be provided", which this job refuses anywhere in the PDF/],
-    ["an eligibility finding", typed("The project is eligible for ATP funding."), /prints "(is eligible for|project is eligible|eligible for ATP funding)"/],
+    ["an eligibility finding", typed("The project is eligible for ATP funding."), /prints "is eligible for"/],
     ["an eligibility finding in capitals, wrapped", typed("THE APPLICANT IS\nELIGIBLE under the Guidelines."), /prints "applicant is eligible"/],
     ["a disadvantaged community determination", typed("The community qualifies as a disadvantaged community."), /prints "qualifies as a disadvantaged community"/],
     ["a located-within determination", typed("The project is located within a disadvantaged community."), /prints "is located within a disadvantaged community"/],
@@ -477,6 +504,178 @@ describe("the ATP application job refuses placeholders, determinations and score
     ["no sentence that the appendices establish no eligibility", (r) => editPdf(r, "county", (text) => swap(text, "These appendices do not establish ATP eligibility or that this\npackage meets the current call for projects.", "These appendices are OpenPlan's.")), /does not print "These appendices do not establish ATP eligibility/],
     ["no sentence that OpenPlan decides no eligibility", (r) => editPdf(r, "county", (text) => swap(text, "      OpenPlan does not decide ATP eligibility.\n", "")), /"Appendix A\. ATP screening packet" does not state "OpenPlan does not decide ATP eligibility\."/],
   ]);
+});
+
+describe("the ATP application job reads a PDF across its page breaks (review 78)", () => {
+  const Q3 = ["Part B, Question 3: Potential for Reducing the Number", "and/or Rate of Active Transportation User Fatalities"];
+  const NOTE_LINES = ["agency, place or community. The application asks no", "question here."];
+  const wrapNote = (text: string) => text.replaceAll(`agency, place or community. ${RULE.sections.fixedNote}`, NOTE_LINES.join("\n"));
+
+  it("accepts a section title, the fixed note, an Appendix A fact and the missing-reports sentence that each continue on the next page", () => {
+    const record = proven();
+    breakBetween(record, "county", Q3[0], Q3[1]);
+    editPdf(record, "city", wrapNote);
+    breakBetween(record, "city", NOTE_LINES[0], NOTE_LINES[1]);
+    editPdf(record, "tribal-area", (text) => swap(text, `      ${MISSING_REPORTS}`, `      ${MISSING_REPORTS.replace("because a tribal", "because\n      a tribal")}`));
+    breakBetween(record, "tribal-area", `      ${MISSING_REPORTS.split("because a tribal")[0]}because`, `      a tribal${MISSING_REPORTS.split("because a tribal")[1]}`);
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it("accepts the text Poppler read from a real Chrome-printed PDF whose Question 3 title splits across two pages", () => {
+    // Review 78 printed this PDF with the product's export code; the checker then refused it for layout alone.
+    const text = readFileSync(fileURLToPath(new URL("./fixtures/proven-job-atp-application-split-title.txt", import.meta.url)), "utf8");
+    const pages = syntheticPdfPages(text);
+    const split = pages.findIndex((page) => page.includes(Q3[1]) && !page.includes("and Injuries"));
+    expect(split, "the title's first two lines end a page").toBeGreaterThanOrEqual(0);
+    expect(pages[split + 1].trimStart().startsWith("and Injuries")).toBe(true);
+
+    const record = proven();
+    const entry = journey(record, "county");
+    entry.crashes = { sourceId: "ccrs", years: "2022–2025", reportedCount: 80, storedCount: 80 };
+    repin(entry.pdfs[0], text);
+    entry.pdfs[0].pages = pages.length;
+    for (const item of entry.pdfs[0].items) item.page = pages.findIndex((page) => page.split("\n").some((line) => line.trim() === item.text)) + 1;
+    expect(() => check(record)).not.toThrow();
+
+    // The same text is still refused for a real fault: another count than the PDF prints.
+    entry.crashes.reportedCount = 8;
+    entry.crashes.storedCount = 8;
+    expect(() => check(record)).toThrow(/proven job record refused: county journey atp-application PDF "Appendix B\. Crash summary" does not state "Crashes reported: 8" as a line of its own/);
+  });
+
+  refuses([
+    ["to be provided, split across a page break", (r) => {
+      editPdf(r, "county", (text) => swap(text, "An agency would write its own answer here.", "The location is to be\nprovided by the lead agency."));
+      breakBetween(r, "county", "agency, place or community. The location is to be", "provided by the lead agency.");
+    }, /prints "to be provided", which this job refuses anywhere in the PDF/],
+    ["a determination split across a page break", (r) => {
+      editPdf(r, "county", (text) => swap(text, "An agency would write its own answer here.", "The community qualifies as a\ndisadvantaged community."));
+      breakBetween(r, "county", "agency, place or community. The community qualifies as a", "disadvantaged community.");
+    }, /prints "qualifies as a disadvantaged community"/],
+    ["the missing-reports sentence in the county's PDF, split across a page break", (r) => {
+      const [head, tail] = MISSING_REPORTS.split("because a tribal");
+      editPdf(r, "county", (text) => swap(text, "      modeled estimates.\n", `      modeled estimates.\n\n      ${head}because\n      a tribal${tail}\n`));
+      breakBetween(r, "county", `      ${head}because`, `      a tribal${tail}`);
+    }, /county journey atp-application PDF carries the missing-reports sentence, which only the tribal-area journey's PDF prints/],
+    ["a listed phrase with two spaces inside it", typedIn("The project is  eligible for the program."), /prints "is eligible for"/],
+    ["the place line with more words after it on the cover", (r) => editPdf(r, "county", (text) => swap(text, `\n${PLACE_LINE(journey(r, "county"))}\n\n${RULE.applicant.line}\n\nThe study place`, `\n${PLACE_LINE(journey(r, "county"))} and Another County\n\n${RULE.applicant.line}\n\nThe study place`)),
+      /cover does not state "Study place: Synthetic County, CA \(county, GEOID 06998\)"/],
+  ]);
+});
+
+describe("the ATP application job refuses each wording its definition lists", () => {
+  // The list is written out here, so a phrase deleted from the definition or swapped for another fails
+  // a test by name (review 78, mutant ME).
+  const LISTED = [
+    "to be provided",
+    "is eligible for",
+    "are eligible for",
+    "project is eligible",
+    "applicant is eligible",
+    "eligible for ATP funding",
+    "meets the eligibility",
+    "qualifies as a disadvantaged community",
+    "qualifies as disadvantaged",
+    "qualify as a disadvantaged community",
+    "is a disadvantaged community",
+    "is in a disadvantaged community",
+    "is located in a disadvantaged community",
+    "is located within a disadvantaged community",
+    "benefits a disadvantaged community",
+    "meets the screening criteria",
+    "passes the screening criteria",
+    "passes the Commission's screening",
+    "meets the disadvantaged community criteria",
+    "Disadvantaged community: Yes",
+    "DAC or Low-income group: Yes",
+    "severely disadvantaged community",
+    "is a DAC",
+    "qualifies for ATP funding",
+    "satisfies all screening criteria",
+  ];
+  it("lists these 25 wordings and no other", () => expect(RULE.refusedPhrases.phrases).toEqual(LISTED));
+  it.each(LISTED)("refuses \"%s\" typed into a section", (phrase) => {
+    const record = proven();
+    typedIn(`It reads: ${phrase} (typed).`)(record);
+    let message = "";
+    try { check(record); } catch (error) { message = (error as Error).message; }
+    expect(message).toBe(`${REFUSED}county journey atp-application PDF prints "${phrase}", which this job refuses anywhere in the PDF`);
+  });
+});
+
+describe("the ATP application job refuses review 78's accepted copies", () => {
+  const workspace = (r: Json) => journey(r, "county").workspaceName;
+  const tribalRow = "Guidelines criterion, Native American Tribal Lands: The study place is a Census\ntribal area: Synthetic Reservation, CA";
+  refuses([
+    // Counts and years: the whole value (K24, K11, K25, K26, K20).
+    ["a record count of 1 against a PDF that prints 1,234", (r) => { Object.assign(journey(r, "county").crashes, { reportedCount: 1, storedCount: 1 }); }, /"Appendix B\. Crash summary" does not state "Crashes reported: 1" as a line of its own/],
+    ["a PDF count with more digits after the record's", (r) => editPdf(r, "city", (text) => swap(text, "Crashes reported: 212", "Crashes reported: 212,500")), /does not state "Crashes reported: 212" as a line of its own/],
+    ["a PDF count with a decimal part after the record's", (r) => editPdf(r, "tribal-area", (text) => swap(text, "Crashes reported: 37", "Crashes reported: 37.5 thousand")), /does not state "Crashes reported: 37" as a line of its own/],
+    ["PDF years that go on after the record's range", (r) => editPdf(r, "county", (text) => swap(text, "Years requested: 2022–2025", "Years requested: 2022–2025, 2027")), /does not state "Years requested: 2022–2025" as a line of its own/],
+    ["a PDF project name longer than the record's in Appendix A", (r) => editPdf(r, "county", (text) => swap(text, `Project: ${journey(r, "county").projectName}`, `Project: ${journey(r, "county").projectName} for the City of Example`)), /"Appendix A\. ATP screening packet" does not state "Project: Synthetic county .*" as a line of its own/],
+    // Zero crashes, and more stored than reported (K05, K07, H40).
+    ["a record and a PDF that report zero crashes", (r) => { journey(r, "county").crashes.reportedCount = 0; editPdf(r, "county", (text) => swap(text, "Crashes reported: 1,234", "Crashes reported: 0")); }, /county journey reports 0 crashes; every journey of this job reports at least 1/],
+    ["more crashes stored than the source reported", (r) => { journey(r, "county").crashes.storedCount = 5000; }, /county journey stored 5000 crashes, more than the 1234 the source reported/],
+    ["a stored count of 1e21", (r) => { journey(r, "county").crashes.storedCount = 1e21; }, /stored 1e\+21 crashes, more than the 1234 the source reported/],
+    // The applicant in the cover's box layout (W13 to W16), and each half of the same-line rule (mutant MB).
+    ["an APPLICANT box over the workspace's name", (r) => editPdf(r, "county", (text) => swap(text, "  WORKSPACE\n", "  APPLICANT\n")), /prints a box labeled "APPLICANT"; this job's PDF names no applicant/],
+    ["a LEAD AGENCY box over the workspace's name", (r) => editPdf(r, "county", (text) => swap(text, "  WORKSPACE\n", "  LEAD AGENCY\n")), /prints a box labeled "LEAD AGENCY"/],
+    ["an Applicant name: line, a blank line, then the workspace's name", (r) => editPdf(r, "county", (text) => swap(text, "  WORKSPACE\n", "  Applicant name:\n")), /prints a box labeled "Applicant name:"/],
+    ["a line that ends in Implementing agency above the workspace's name", (r) => editPdf(r, "county", (text) => swap(text, "  WORKSPACE\n", "  Name of the implementing agency:\n")), /prints the workspace's name under a line that ends in "Implementing agency"/],
+    ["the workspace's name and Implementing agency in two columns of one row", (r) => editPdf(r, "county", (text) => after(text, FRAME_END, "", `Implementing agency          ${workspace(r)}`)), /prints the workspace's name with "Implementing agency"; the workspace is not the applicant/],
+    // A typed name standing in for a product line (W25, W32, D17).
+    ["a project name that holds the place label", (r) => editBoth(r, "county", (entry) => { entry.projectName = `Study place: Synthetic County, CA (county, GEOID 06998) ${RULE.demonstrationLabel.text}`; }), /county journey project name holds "Study place:", words the product prints on a line of its own/],
+    ["a project name that holds the applicant line", (r) => editBoth(r, "county", (entry) => { entry.projectName += `. ${RULE.applicant.line}`; }), /project name holds "Applicant not entered in OpenPlan"/],
+    ["a project name that holds the word DRAFT", (r) => editBoth(r, "county", (entry) => { entry.projectName += " DRAFT: 15 required attachment(s) outstanding"; }), /project name holds the word DRAFT, which the product prints as its stamp/],
+    ["a workspace name that holds the word draft", (r) => editBoth(r, "county", (entry) => { entry.workspaceName = "Synthetic county draft workspace"; }), /workspace name holds the word DRAFT/],
+    // Names on the cover, not only somewhere in the PDF (mutant MG).
+    ["a project name that is in Appendix A but not on the cover", (r) => editPdf(r, "county", (text) => swap(text, `  PROJECT\n\n  ${journey(r, "county").projectName}\n`, "  PROJECT\n\n  Another name\n")), /cover does not print projectName/],
+    ["a workspace name that is in a section but not on the cover", (r) => editPdf(r, "county", (text) => swap(swap(text, `  WORKSPACE\n\n  ${workspace(r)}\n`, "  WORKSPACE\n\n  Another name\n"), "An agency would write its own answer here.", `Typed by the ${workspace(r)}.`)), /cover does not print workspaceName/],
+    // An appendix heading among the sections (mutant MC).
+    ["an appendix heading printed among the sections, where the record places it", (r) => {
+      editPdf(r, "county", (text) => swap(swap(text, "Appendix F. Benefit-cost summary\n\n  Missing. No benefit-cost analysis or screening is saved for the linked project.\n", ""), "\nPart A5: Project funding\n", "\nAppendix F. Benefit-cost summary\n\n  Missing. No benefit-cost analysis or screening is saved for the linked project.\n\nPart A5: Project funding\n"));
+      journey(r, "county").pdfs[0].items[5].page = 2;
+    }, /prints the heading "Appendix F\. Benefit-cost summary" among its sections, not after "Attachment checklist"/],
+    // Controls that name a journey the record lacks (mutant MD).
+    ["an owner check for a journey the record does not hold", (r) => { r.crossWorkspace.ownerChecks.push({ journey: "village", request: "application-read", status: 200 }); }, /owner check application-read names the village journey, which the record does not hold/],
+    ["a second account entry for a journey the record does not hold", (r) => { r.crossWorkspace.secondAccounts.push({ journey: "village", confirmed: true, ownRequest: "own-workspace-read", ownStatus: 200 }); }, /a second account entry names the village journey, which the record does not hold/],
+    // The project page's searched strings (X15, X16).
+    ["a project page searched for three strings that identify nothing", (r) => { pageCheck(r, "county").searchedStringSha256 = ["a", "b", "c"].map(sha); }, /project-page of the county journey answered 200, but its searched strings do not include the journey's projectName/],
+    ["a project page not searched for the workspace's name", (r) => { pageCheck(r, "city").searchedStringSha256[1] = sha("another name"); }, /project-page of the city journey answered 200, but its searched strings do not include the journey's workspaceName/],
+    ["one journey's searched strings copied to another", (r) => { pageCheck(r, "tribal-area").searchedStringSha256 = [...pageCheck(r, "county").searchedStringSha256]; }, /project-page of the tribal-area journey answered 200, but its searched strings do not include the journey's projectName/],
+    // Tract data: three values (KI-2026-11-16-097).
+    ["a record that says the run did not record tract data when Appendix E says none was retrieved", (r) => { journey(r, "county").application.tractData = "not-recorded"; }, /says "no tract data was retrieved for this run", but the record says its run did not record whether tract data was retrieved/],
+    ["a record that says the run did not record tract data when Appendix E lists tracts", (r) => { journey(r, "county").application.tractData = "not-recorded"; editPdf(r, "county", (text) => swap(text, "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run", "Demographic source: ACS 5-Year 2023, 4 tracts, clipped to the corridor")); }, /does not say "Demographic source: Not recorded in the analysis run" or "the run did not record whether tract data was retrieved", but the record says its run did not record whether tract data was retrieved/],
+    ["a record that says none was retrieved when Appendix E says the run did not record it", (r) => editPdf(r, "county", (text) => swap(text, "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run", "Demographic source: Not recorded in the analysis run")), /does not say "no tract data was retrieved for this run", but the record says its run retrieved no tract data/],
+    ["a record that says tract data was retrieved when Appendix E says the run did not record it", (r) => { journey(r, "county").application.tractData = "retrieved"; editPdf(r, "county", (text) => swap(text, "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run", "Demographic source: ACS 5-Year 2023: the run did not record whether tract data was retrieved")); }, /says "the run did not record whether tract data was retrieved", but the record says its run retrieved tract data/],
+    ["Appendix E with no demographic source line", (r) => { journey(r, "county").application.tractData = "retrieved"; editPdf(r, "county", (text) => swap(text, "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run\n", "")); }, /prints no "Demographic source:" line/],
+    ["a tract data value the schema does not know", (r) => { journey(r, "county").application.tractData = true; }, /application\.tractData must be one of retrieved, none-retrieved, not-recorded/],
+    // Places and names (P21, P22, A24).
+    ["a tribal area label that names three states", (r) => editBoth(r, "tribal-area", (entry) => { entry.place.label = "Synthetic Reservation, AZ--CA--NV"; }), /tribal-area journey label "Synthetic Reservation, AZ--CA--NV" does not end with ", CA"/],
+    ["a tribal area label in another state", (r) => editBoth(r, "tribal-area", (entry) => { entry.place.label = "Synthetic Reservation, OR"; }), /does not end with ", CA"/],
+    ["one project name in two journeys", (r) => editBoth(r, "city", (entry) => { entry.projectName = journey(r, "county").projectName; pageCheck(r, "city").searchedStringSha256[0] = sha(entry.projectName); }), /the city and county journeys name the same project/],
+    ["one workspace name in two journeys", (r) => editBoth(r, "tribal-area", (entry) => { entry.workspaceName = journey(r, "city").workspaceName; pageCheck(r, "tribal-area").searchedStringSha256[1] = sha(entry.workspaceName); }), /the tribal-area and city journeys name the same workspace/],
+    // Appendix E's Tribal Lands row, held to the role and the place (E02, E03, E04, W75).
+    ["the tribal area's row naming another area", (r) => editPdf(r, "tribal-area", (text) => swap(text, tribalRow, tribalRow.replace("Synthetic Reservation, CA", "Another Reservation, CA"))), /does not state "Guidelines criterion, Native American Tribal Lands: The study place is a Census tribal area: Synthetic Reservation, CA" as a line of its own/],
+    ["the tribal area's row in the county's PDF", (r) => editPdf(r, "county", (text) => swap(text, "Guidelines criterion, Native American Tribal Lands: Not recorded in OpenPlan", tribalRow)), /county journey atp-application PDF "Appendix E\. .*" does not state "Guidelines criterion, Native American Tribal Lands: Not recorded in OpenPlan" as a line of its own/],
+    ["the tribal area's row worded as a finding", (r) => editPdf(r, "tribal-area", (text) => swap(text, tribalRow, "Guidelines criterion, Native American Tribal Lands: Met. The project is on Tribal Lands")), /does not state "Guidelines criterion, Native American Tribal Lands: The study place is a Census tribal area/],
+    ["a second Guidelines criterion row with a value", (r) => editPdf(r, "county", (text) => after(text, "Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan", "", "Guidelines criterion, CalEnviroScreen: Yes, 82nd percentile")), /prints a "Guidelines criterion," row this job does not expect: "Guidelines criterion, CalEnviroScreen: Yes, 82nd percentile"/],
+    ["a Guidelines criterion row with more words after its value", (r) => editPdf(r, "county", (text) => swap(text, "Guidelines criterion, Other: Not recorded in OpenPlan", "Guidelines criterion, Other: Not recorded in OpenPlan, but met")), /prints a "Guidelines criterion," row this job does not expect/],
+  ]);
+
+  it("accepts each of the three tract data values when Appendix E prints its sentence", () => {
+    for (const value of ["retrieved", "none-retrieved", "not-recorded"]) {
+      const record = proven();
+      editBoth(record, "county", (entry) => { entry.application.tractData = value; });
+      editBoth(record, "tribal-area", (entry) => { entry.application.tractData = value; });
+      expect(() => check(record), value).not.toThrow();
+    }
+    // The second sentence the export prints for a run that did not record it.
+    const record = proven();
+    journey(record, "city").application.tractData = "not-recorded";
+    editPdf(record, "city", (text) => swap(text, "ACS 5-Year 2023: no tract data was retrieved for this run", "ACS 5-Year 2023: the run did not record whether tract data was retrieved"));
+    expect(() => check(record)).not.toThrow();
+  });
 });
 
 describe("the ATP application job refuses screens that fail its checks", () => {

@@ -24,7 +24,7 @@
         "catalogKey": "atp",
         "templateKey": "atp-2027",
         "aiDraftingUsed": false,
-        "tractDataRetrieved": false,
+        "tractData": "none-retrieved",
         "exportedAt": "2026-11-20T10:40:00Z",
         "sections": [
           {"key": "atp-2027-part-a-project-information", "disposition": "text"},
@@ -124,7 +124,7 @@
         "catalogKey": "atp",
         "templateKey": "atp-2027",
         "aiDraftingUsed": false,
-        "tractDataRetrieved": false,
+        "tractData": "none-retrieved",
         "exportedAt": "2026-11-20T11:40:00Z",
         "sections": [
           {"key": "atp-2027-part-a-project-information", "disposition": "text"},
@@ -224,7 +224,7 @@
         "catalogKey": "atp",
         "templateKey": "atp-2027",
         "aiDraftingUsed": false,
-        "tractDataRetrieved": false,
+        "tractData": "none-retrieved",
         "exportedAt": "2026-11-20T12:40:00Z",
         "sections": [
           {"key": "atp-2027-part-a-project-information", "disposition": "text"},
@@ -319,7 +319,7 @@
         "contentReturned": false,
         "notFoundRendered": true,
         "recordTextFound": false,
-        "searchedStringSha256": ["468ae353d6df37d776ce9ed0da2fdf71dc3a63e09efb2ac583afe656e298aac5", "fafec99adb2a7b01a4719e77f8cdf35a00cdb166ccd494b6c46d4e4fdbfd8664", "7684001508991d1afa7f454ce321a256558d625c340820121c3e3d3861a3ed99"],
+        "searchedStringSha256": ["58c3cb87c014b05e94acd79d5e2a26ba71856ebbd9dc7f4055d367570a57b7dc", "f331ec7e0b2977d3db0d0415946a3e9c5d50910014468ed53baafd8a63bc28b9", "e3aafea4fc4aab79fc5a116bcdb10b198d8559f606c7844bf4923f7d25728361"],
         "searchedStringCount": 3
       },
       {"journey": "city", "target": "atp-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false},
@@ -333,7 +333,7 @@
         "contentReturned": false,
         "notFoundRendered": true,
         "recordTextFound": false,
-        "searchedStringSha256": ["468ae353d6df37d776ce9ed0da2fdf71dc3a63e09efb2ac583afe656e298aac5", "fafec99adb2a7b01a4719e77f8cdf35a00cdb166ccd494b6c46d4e4fdbfd8664", "7684001508991d1afa7f454ce321a256558d625c340820121c3e3d3861a3ed99"],
+        "searchedStringSha256": ["96b58b256fab81a074e69654feed8acbae6f5dfba5260556bd2666cb2268902a", "e01743bd94716d619403e033b5adf91c30a5727825f5021f5b75854f6f23885c", "6c2c2f51c16e0c64678eec59a9113ea16d4f0c53b9a6d3144ab6fbdd6733a606"],
         "searchedStringCount": 3
       },
       {"journey": "tribal-area", "target": "atp-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false},
@@ -347,7 +347,7 @@
         "contentReturned": false,
         "notFoundRendered": true,
         "recordTextFound": false,
-        "searchedStringSha256": ["468ae353d6df37d776ce9ed0da2fdf71dc3a63e09efb2ac583afe656e298aac5", "fafec99adb2a7b01a4719e77f8cdf35a00cdb166ccd494b6c46d4e4fdbfd8664", "7684001508991d1afa7f454ce321a256558d625c340820121c3e3d3861a3ed99"],
+        "searchedStringSha256": ["2934b45d6cdf744930625655f3a58408af9214353c6a83d2f79c248e5987e867", "2a701e2d00e11f7b97235b7e5ed145d33037b800f96441438dd459e2bfc83d51", "3686d49bf11354c047aa58e44fe58bb6e188e556905b63098834dd272e3b6f51"],
         "searchedStringCount": 3
       }
     ],
@@ -391,7 +391,7 @@
     {"id": "applicant-name-cannot-be-entered", "text": "OpenPlan cannot yet hold an applicant's name (KI-2026-11-16-080), so every PDF prints that the applicant is not entered in OpenPlan."},
     {
       "id": "equity-inputs-as-each-run-found-them",
-      "text": "The job does not require Census tract data. Where a run retrieved none, its equity score is withheld and Appendix E says no tract data was retrieved. Each journey's record says which happened."
+      "text": "The job does not require Census tract data. Each journey's record says whether its run retrieved tract data, retrieved none or did not record which, and Appendix E prints the sentence for that case. Where none was retrieved, the equity score is withheld."
     },
     {
       "id": "what-the-journey-leaves-on-the-hosted-site",
@@ -399,7 +399,7 @@
     },
     {
       "id": "read-by-the-journey",
-      "text": "The journey read these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, each section's and each checklist row's state on screen, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, and which build, mode and harness checkout ran."
+      "text": "The journey read or set these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, the catalog key and template key, that no AI drafting ran, how the account was confirmed, each section's and each checklist row's state on screen, whether the run retrieved tract data, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, every time, the executor, and which build, mode and harness checkout ran."
     },
     {
       "id": "project-page-answers-200-with-not-found-screen",

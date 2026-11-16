@@ -52,7 +52,10 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * reads what it says.
  */
 
-const PINNED_HTML_SHA256 = "60f96c20dd4499ec2ba51628a27d653f30cf21a08fcbab024b50f89337555973";
+// Re-taken on November 16, 2026 (lane 75, after review 78): the section title's print rule gained
+// `break-inside: avoid`, one CSS declaration in the document's style block. No text changed, and
+// the built-in writer's PDF, which reads no CSS, kept its hash.
+const PINNED_HTML_SHA256 = "68e4d4dd9978efd38aaddfec56e68ba738fc20d41d38d640df0722bce0ebc479";
 const PINNED_PDF_SHA256 = "7a962fe8807667fc156ece49bb7d406ae7d75249bb84d1a92c00ab4a282f38e7";
 
 const createClientMock = vi.fn();

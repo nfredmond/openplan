@@ -44,6 +44,7 @@ import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { BUILTIN_PDF_NOTICE, renderHtmlToPdf, renderReportPdf } from "@/lib/reports/pdf";
 import { TRIBAL_AREA_STATE_FILE_SENTENCE } from "@/lib/safety/crash-study-area";
 import { pdftotextPages, validateProvenJobRecord } from "../../scripts/ops/capability-evidence.mjs";
+import { pdfTextHasPhrase } from "../../scripts/lib/pdf-text-match.mjs";
 import { ATP_IDS, atpCrashEvidence, atpIngestRow, atpProject, atpRun, atpRunMetrics, completeAtpRecords } from "./fixtures/grants/atp-evidence";
 import { syntheticApplicationPdfText, syntheticPdfPages, SYNTHETIC_PDF_HEADER } from "./fixtures/proven-job-atp-application.mjs";
 
@@ -59,7 +60,7 @@ const ATP = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
 const GENERATED_AT = "2026-11-20T10:40:00.000Z";
 
 /** The application document the product builds for one journey of the example record. */
-function applicationHtml(entry: Json): string {
+function applicationHtml(entry: Json, filler = 0): string {
   const tribalArea = entry.place.kind === "aiannh";
   const studyArea = (atpIngestRow().dimension_coverage as { study_area: Record<string, unknown> }).study_area;
   const base = completeAtpRecords();
@@ -102,7 +103,8 @@ function applicationHtml(entry: Json): string {
       section: {
         ...row, id: `section-${index}`, section_key: section.key, title: section.title, guidance: null, sort_order: index,
         source: "catalog", suggested_evidence: [], ai_drafting_enabled: false, status: "final",
-        final_markdown: text(RULE.sections.list[index].disposition), finalized_from_draft_id: null, finalized_by: null, finalized_at: null,
+        // Review 78's recipe: more text in the third section moves every later title down the page.
+        final_markdown: text(RULE.sections.list[index].disposition) + (index === 2 ? " Filler sentence for layout only.".repeat(filler) : ""), finalized_from_draft_id: null, finalized_by: null, finalized_at: null,
       },
       provenance: { origin: "operator_authored", model: null, groundedSentenceCount: null, totalSentenceCount: null, finalizedBy: "Workspace owner", finalizedAt: GENERATED_AT },
     })),
@@ -162,7 +164,7 @@ async function printPdf(html: string, engine: Engine): Promise<Uint8Array> {
 }
 
 /** The example record with the named journeys' PDFs printed by the product, and their crash facts from the fixture. */
-async function recordWithRealPdfs(engine: Engine, roles: string[]): Promise<Json> {
+async function recordWithRealPdfs(engine: Engine, roles: string[], filler = 0): Promise<Json> {
   const record = structuredClone(EXAMPLE);
   for (const entry of record.journeys) {
     const pdf = entry.pdfs[0];
@@ -173,8 +175,8 @@ async function recordWithRealPdfs(engine: Engine, roles: string[]): Promise<Json
     }
     // What the fixture's acquisition holds: 80 crashes reported and stored, 2022 to 2025.
     entry.crashes = { sourceId: "ccrs", years: "2022–2025", reportedCount: 80, storedCount: 80 };
-    const bytes = await printPdf(applicationHtml(entry), engine);
-    pdf.path = `real/${engine}-${entry.role}-atp-application.pdf`;
+    const bytes = await printPdf(applicationHtml(entry, filler), engine);
+    pdf.path = `real/${engine}-${entry.role}-${filler}-atp-application.pdf`;
     mkdirSync(path.dirname(path.join(root, pdf.path)), { recursive: true });
     writeFileSync(path.join(root, pdf.path), bytes);
     pdf.sha256 = createHash("sha256").update(bytes).digest("hex");
@@ -206,6 +208,10 @@ describe("the definition's sentences are the product's", () => {
   it("uses the demonstration label the journeys use", () => {
     const lib = readFileSync(fileURLToPath(new URL("../../../qa-harness/journey-campaign-lib.js", import.meta.url)), "utf8");
     expect(lib).toContain(`const DEMONSTRATION_LABEL = '${RULE.demonstrationLabel.text}';`);
+  });
+
+  it("tells the browser to keep a section title whole on one page", () => {
+    expect(applicationHtml(journey(EXAMPLE, "county"))).toMatch(/\.section-title \{[^}]*break-inside: avoid;[^}]*\}/);
   });
 
   it("prints every line the checker reads in the document the product builds, for a county and a tribal area", () => {
@@ -249,6 +255,21 @@ describe.runIf(CHROME_AND_POPPLER)("the checker on a real ATP application PDF pr
     expect(() => check(record)).not.toThrow();
   }, 120_000);
 
+  it("keeps every section title whole on one page, and is accepted, when more text moves the titles down the page (review 78)", async () => {
+    // With 33 more sentences in Part A6 the three-line title of Question 3 split across two pages on
+    // Windows fonts, and the checker refused an honest record. The export now keeps a title whole, and
+    // the checker reads across a page break. Where a title falls depends on the machine's fonts, so
+    // several lengths are printed and nothing here assumes which one would have split.
+    for (const filler of [30, 33, 36]) {
+      const record = await recordWithRealPdfs(engine, ["county"], filler);
+      const pages = pdftotextPages(path.join(root, journey(record, "county").pdfs[0].path));
+      for (const section of RULE.sections.list) {
+        expect(pages.some((page) => pdfTextHasPhrase(page, section.title)), `"${section.title}" whole on one page with ${filler} more sentences`).toBe(true);
+      }
+      expect(() => check(record), `${filler} more sentences`).not.toThrow();
+    }
+  }, 240_000);
+
   it("refuses the same PDFs under a record that names another place, another count or the other journey's file", async () => {
     const record = await recordWithRealPdfs(engine, ["county", "tribal-area"]);
 
@@ -258,7 +279,12 @@ describe.runIf(CHROME_AND_POPPLER)("the checker on a real ATP application PDF pr
 
     const count = structuredClone(record);
     journey(count, "county").crashes.reportedCount = 81;
-    expect(() => check(count)).toThrow(/proven job record refused: county journey atp-application PDF "Appendix B\. Crash summary" does not state "Crashes reported: 81"/);
+    expect(() => check(count)).toThrow(/proven job record refused: county journey atp-application PDF "Appendix B\. Crash summary" does not state "Crashes reported: 81" as a line of its own/);
+
+    // The record says 8 and the PDF prints 80: a count is not found inside a longer number (review 78).
+    const prefix = structuredClone(record);
+    Object.assign(journey(prefix, "county").crashes, { reportedCount: 8, storedCount: 8 });
+    expect(() => check(prefix)).toThrow(/does not state "Crashes reported: 8" as a line of its own/);
 
     const rows = structuredClone(record);
     Object.assign(journey(rows, "county").application.rows[0], { disposition: "outstanding" });

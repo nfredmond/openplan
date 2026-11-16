@@ -313,11 +313,12 @@
       "id": "california-atp-application-in-three-places",
       "decidedIn": "docs/reviews/product-direction/proven-jobs/2026-11-16-third-proven-job.md",
       "journeys": [
-        { "role": "county", "placeKind": "county", "stateFips": "06" },
+        { "role": "county", "placeKind": "county", "stateFips": "06", "labelSuffix": ", CA" },
         {
           "role": "city",
           "placeKind": "city",
           "stateFips": "06",
+          "labelSuffix": ", CA",
           "censusNameRefused": {
             "note": "An incorporated place. OpenPlan's place search calls a Census place a city or a Census designated place, and the record carries that kind. For a record in the registry the checker also reads the Bureau's name for the id and refuses one that matches this pattern: the Gazetteer names a Census designated place with the closing word CDP. The job does not require a population range, and no committed table holds a place's population.",
             "pattern": " CDP$",
@@ -328,6 +329,7 @@
           "role": "tribal-area",
           "placeKind": "aiannh",
           "statesExactly": ["06"],
+          "labelSuffix": ", CA",
           "statesNote": "The Census states the place search answer listed for the tribal area, as the journey read them. The list must be exactly California: OpenPlan reads a state's crash file inside a tribal area only when the Bureau lists the area in that one state. The Gazetteer table of tribal areas has no state column, so the checker cannot read this from a committed file. It is the journey's statement, and the crash appendix naming California's file is the second sign."
         }
       ],
@@ -347,10 +349,16 @@
         { "field": "application.templateKey", "equals": "atp-2027", "refusal": "application is identified as template {found}, not {expected}, the template that follows the 2027 application" },
         { "field": "application.aiDraftingUsed", "equals": false, "refusal": "used AI drafting; every section of this job is typed demonstration text" },
         { "field": "crashes.sourceId", "equals": "ccrs", "refusal": "crashes come from {found}, not {expected}, California's crash file" },
-        { "field": "crashes.storedCount", "atLeast": 1, "refusal": "stored {found} crashes; every journey of this job stores at least {expected}" }
+        { "field": "crashes.storedCount", "atLeast": 1, "refusal": "stored {found} crashes; every journey of this job stores at least {expected}" },
+        { "field": "crashes.reportedCount", "atLeast": 1, "refusal": "reports {found} crashes; every journey of this job reports at least {expected}, and the crash appendix prints that count" },
+        { "field": "crashes.storedCount", "atMostField": "crashes.reportedCount", "refusal": "stored {found} crashes, more than the {expected} the source reported" }
       ],
       "sameAcrossJourneys": [
         { "field": "harness.commit", "refusal": "the {role} journey ran from harness checkout {found}, but the {firstRole} journey ran from {expected}; a proof's journeys run from one checkout" }
+      ],
+      "distinctAcrossJourneys": [
+        { "field": "projectName", "refusal": "the {role} and {otherRole} journeys name the same project (\"{found}\"); each journey makes its own" },
+        { "field": "workspaceName", "refusal": "the {role} and {otherRole} journeys name the same workspace (\"{found}\"); each journey signs up its own" }
       ],
       "health": {
         "note": "Each journey's health readbacks: status ok, the start readback before the account was created, the account created before the application was exported (endAfter names the journey field holding that time), the end readback after the export, and the same version and migrations at the end as at the start.",
@@ -379,7 +387,7 @@
         }
       },
       "application": {
-        "note": "What this job's exported application PDF must state, read by the checker with Poppler and the shared matcher (scripts/lib/pdf-text-match.mjs). The PDF is read as one run of lines: every page's lines in order, with the page footer lines (pageFooter) left out, so a section or an appendix that crosses a page is still one passage. The cover is everything before the first section title. The sections end at the sections.end heading. Each appendix runs from its heading to the next one, and the last to the appendices.end heading. {label}, {geoid} and {kind} take the journey's place (kind through kindWords); {count} takes a number with thousands separators; {years}, {projectName} and {workspaceName} take the journey's own fields; {title} takes a checklist row's title.",
+        "note": "What this job's exported application PDF must state, read by the checker with Poppler and the shared matcher (scripts/lib/pdf-text-match.mjs). The PDF is read as one run of lines: every page's lines in order, with each page's footer line (pageFooter), the blank lines above it and the blank lines at the top of the next page left out. A title, a note or a sentence that continues on the next page therefore reads as consecutive lines, and so do two paragraphs that meet at a page break. A running header between the two parts would still split them; the browser engine prints none. The cover is everything before the first section title. The sections end at the sections.end heading. Each appendix runs from its heading to the next one, and the last to the appendices.end heading. {label}, {geoid} and {kind} take the journey's place (kind through kindWords); {count} takes a number with thousands separators; {years}, {projectName} and {workspaceName} take the journey's own fields; {title} takes a checklist row's title. A fact whose template ends in a filled value, and a row held to a role, must be a whole line of its own, on one line or wrapped over lines that hold nothing else: \"Crashes reported: 1\" is not stated by \"Crashes reported: 1,234\".",
         "pdf": "atp-application",
         "pageFooter": "^\\s*Active Transportation Program \\(ATP\\) · Page \\d+ of \\d+\\s*$",
         "pageFooterNote": "The footer the browser engine prints on every page: the opportunity's title, which is the program's name when the program is tracked from the catalog, and the page number (openplan/src/lib/reports/pdf.ts).",
@@ -398,14 +406,14 @@
         },
         "placeLine": {
           "source": "openplan/src/lib/grants/atp-packet.ts (atpStudyPlaceLine)",
-          "note": "The line must be on the cover and in Appendix A, and every line of the PDF that holds the label must hold this line. A PDF that prints another place after the label anywhere, or the notRecorded line, is refused, so a line typed into a project name or a section cannot stand in for the one OpenPlan prints from the project's recorded study place.",
+          "note": "The line must be a whole line on the cover and in Appendix A, and every line of the PDF that holds the label must be this line and nothing more. A PDF that prints another place after the label anywhere, more words after the place, or the notRecorded line, is refused. The record's project name and workspace name may not hold the label, so a typed name cannot stand in for the line OpenPlan prints from the project's recorded study place.",
           "label": "Study place:",
           "template": "Study place: {label} ({kind}, GEOID {geoid})",
           "kindWords": { "county": "county", "city": "city", "aiannh": "Census tribal area" },
           "notRecorded": "Study place not recorded in OpenPlan"
         },
         "applicant": {
-          "note": "KI-2026-11-16-080: nothing in OpenPlan can hold an applicant's name yet, so the line is a fixed sentence, required on the cover and in Appendix A. No line may hold one of the labels together with the workspace's name.",
+          "note": "KI-2026-11-16-080: nothing in OpenPlan can hold an applicant's name yet, so the line is a fixed sentence, required on the cover and in Appendix A. No line may hold one of the labels together with the workspace's name. No line may be only one of the labels, with or without the word name and a colon, because the product prints no such box. No line may end in one of the labels when the workspace's name is the next line that is not blank. The record's project name and workspace name may not hold the line.",
           "line": "Applicant not entered in OpenPlan",
           "labels": ["Applicant", "Lead agency", "Implementing agency"]
         },
@@ -468,13 +476,12 @@
         },
         "draftStamp": {
           "source": "openplan/src/lib/grants/application-draft-stamps.ts (applicationDraftStamps)",
-          "note": "The stamp is required, not refused (the lead's rule 5): it shows the product says what is missing. The record's PDF entry must say draftStamp true, the stamp must be on the cover with the count of outstanding rows the record's dispositions give, at least minOutstanding, and every line of the PDF that holds the word DRAFT must be that stamp. A stamp with another count, a stamp for unverified items in section text, or no stamp refuses the record.",
+          "note": "The stamp is required, not refused (the lead's rule 5): it shows the product says what is missing. The record's PDF entry must say draftStamp true, the stamp must be on the cover with the count of outstanding rows the record's dispositions give, and every line of the PDF that holds the word DRAFT must be that stamp. A stamp with another count, a stamp for unverified items in section text, or no stamp refuses the record. The count cannot be zero: 13 rows are required of every application and none may be attached or marked not applicable. The record's project name and workspace name may not hold the word DRAFT.",
           "required": true,
-          "phrase": "DRAFT: {count} required attachment(s) outstanding",
-          "minOutstanding": 1
+          "phrase": "DRAFT: {count} required attachment(s) outstanding"
         },
         "appendices": {
-          "note": "Each heading (itemHeadings) is found exactly once as a line of its own after the sections, in order. An appendix with facts must carry every one of them between its heading and the next. Any other appendix must carry its includedFact or the missing words: a heading with neither under it is refused. countField names the journey field whose number fills {count} in that appendix. roleFacts are required in the named journey's PDF, in the named appendix, and refused anywhere in another journey's.",
+          "note": "Each heading (itemHeadings) is found exactly once as a line of its own after the sections, in order. An appendix with facts must carry every one of them between its heading and the next. factsByRole lists rows a journey's role must print there as whole lines, by role, with default for every other role. rowLabel names the words that open the appendix's rows: every line that opens with them must be one of the appendix's facts, so a second row with another value is refused. Any other appendix must carry its includedFact or the missing words: a heading with neither under it is refused. countField names the journey field whose number fills {count} in that appendix. roleFacts are required in the named journey's PDF, in the named appendix, and refused anywhere in another journey's.",
           "end": "Provenance appendix",
           "missing": "Missing.",
           "list": [
@@ -482,7 +489,15 @@
             { "item": "appendix-b", "facts": ["Source: California Crash Reporting System (CCRS)", "Years requested: {years}", "Crashes reported: {count}"] },
             { "item": "appendix-c", "includedFact": "Planning-level estimate:" },
             { "item": "appendix-d", "includedFact": "Source: Engagement campaign" },
-            { "item": "appendix-e", "facts": ["Guidelines criterion, Median Household Income: Not recorded in OpenPlan", "Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan", "Guidelines criterion, National School Lunch Program: Not recorded in OpenPlan", "Guidelines criterion, Healthy Places Index: Not recorded in OpenPlan", "Guidelines criterion, Other: Not recorded in OpenPlan", "No row above is a determination that a community is disadvantaged or that the project benefits one."] },
+            {
+              "item": "appendix-e",
+              "facts": ["Guidelines criterion, Median Household Income: Not recorded in OpenPlan", "Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan", "Guidelines criterion, National School Lunch Program: Not recorded in OpenPlan", "Guidelines criterion, Healthy Places Index: Not recorded in OpenPlan", "Guidelines criterion, Other: Not recorded in OpenPlan", "No row above is a determination that a community is disadvantaged or that the project benefits one."],
+              "rowLabel": "Guidelines criterion,",
+              "factsByRole": {
+                "tribal-area": ["Guidelines criterion, Native American Tribal Lands: The study place is a Census tribal area: {label}"],
+                "default": ["Guidelines criterion, Native American Tribal Lands: Not recorded in OpenPlan"]
+              }
+            },
             { "item": "appendix-f", "includedFact": "Benefit-cost ratio" }
           ],
           "countField": { "appendix-b": "crashes.reportedCount" },
@@ -503,10 +518,18 @@
             }
           ],
           "equity": {
-            "note": "The lead's rule 11: the job does not require Census tract data. The journey says whether its run retrieved any (the field), and Appendix E must agree: the noTractData words are there when it retrieved none and absent when it did.",
+            "note": "The lead's rule 11 and decision on KI-2026-11-16-097: the job does not require Census tract data. The journey states one of three values (the field), each a truthful record, and Appendix E must print the label and the sentence that belongs to that value and none that belongs to another. retrieved: the run retrieved tract data, and neither sentence below prints. none-retrieved: the run asked and got none. not-recorded: the run stored no Census record, or did not record whether tract data was retrieved; the export prints one of two sentences for it (openplan/src/lib/grants/atp-evidence-appendices.ts, demographicSource).",
             "item": "appendix-e",
-            "field": "application.tractDataRetrieved",
-            "noTractData": "no tract data was retrieved for this run"
+            "field": "application.tractData",
+            "label": "Demographic source:",
+            "values": {
+              "retrieved": { "meaning": "its run retrieved tract data", "sentences": [] },
+              "none-retrieved": { "meaning": "its run retrieved no tract data", "sentences": ["no tract data was retrieved for this run"] },
+              "not-recorded": {
+                "meaning": "its run did not record whether tract data was retrieved",
+                "sentences": ["Demographic source: Not recorded in the analysis run", "the run did not record whether tract data was retrieved"]
+              }
+            }
           }
         },
         "requiredPhrases": [
@@ -519,7 +542,7 @@
           "labels": ["OpenPlan screening score (not a CTC score)", "Equity screening score (OpenPlan, not a CTC score)"]
         },
         "refusedPhrases": {
-          "note": "Words that would state a placeholder for a recorded fact, or a determination OpenPlan does not make, refused on any page, in any case, wrapped or not. The list comes from what the product and a planner could plausibly print. A list cannot catch every wording, and the product's own disclaimers (does not decide ATP eligibility; no row above is a determination) are worded to stay outside it.",
+          "note": "Words that would state a placeholder for a recorded fact, or a determination OpenPlan does not make, refused anywhere in the PDF, in any case, wrapped, across a page break or with more than one space between two words. The list comes from what the product and a planner could plausibly print. A list cannot catch every wording, and the product's own disclaimers (does not decide ATP eligibility; no row above is a determination) are worded to stay outside it.",
           "phrases": [
             "to be provided",
             "is eligible for",
@@ -541,7 +564,11 @@
             "passes the Commission's screening",
             "meets the disadvantaged community criteria",
             "Disadvantaged community: Yes",
-            "DAC or Low-income group: Yes"
+            "DAC or Low-income group: Yes",
+            "severely disadvantaged community",
+            "is a DAC",
+            "qualifies for ATP funding",
+            "satisfies all screening criteria"
           ]
         }
       },
@@ -558,7 +585,7 @@
         "consoleErrorsRefused": true
       },
       "crossWorkspace": {
-        "note": "The same rule as the first two jobs (KI-2026-11-14-060), with a control (the lead's rule 10). A second account is refused the application read and the PDF download as data checks and the project page as a page check, each named for its journey. ownerControl: in the same run the owner received the listed status for each listed request, so a refusal is not a route that refuses everyone. secondAccount: each journey's second account was confirmed and read its own record with the listed status, so a refusal is not an account that was never signed in. The project has no read route of its own, so its page is checked under the application.",
+        "note": "The same rule as the first two jobs (KI-2026-11-14-060), with a control (the lead's rule 10). A second account is refused the application read and the PDF download as data checks and the project page as a page check, each named for its journey. ownerControl: in the same run the owner received the listed status for each listed request, so a refusal is not a route that refuses everyone. secondAccount: each journey's second account was confirmed and read its own record with the listed status, so a refusal is not an account that was never signed in. The project has no read route of its own, so its page is checked under the application. searchedStringFields: a project page that answered 200 was searched for that journey's own project name and workspace name, so the SHA-256 of each is among the hashes its check carries.",
         "targets": ["atp-application", "atp-application-pdf"],
         "requiredDataRequests": {
           "atp-application": "application-read",
@@ -567,6 +594,7 @@
         "requiredPageRequests": { "atp-application": "project-page" },
         "perJourney": "role",
         "minSearchedStrings": 3,
+        "searchedStringFields": ["projectName", "workspaceName"],
         "pageAnsweredOkLimit": "project-page-answers-200-with-not-found-screen",
         "ownerControl": { "requests": ["application-read", "application-pdf-download"], "status": 200 },
         "secondAccount": { "ownRequest": "own-workspace-read", "status": 200 }
@@ -597,9 +625,9 @@
         "section-text-is-a-labeled-demonstration": "Every section's text was typed by an automated proof run under a demonstration label. It describes no real project and speaks for no agency or tribe. Nothing checks that it says anything true about a place.",
         "small-application-only": "Only the Small infrastructure application was run. The Medium, Large, Non-infrastructure and Plan applications were not.",
         "applicant-name-cannot-be-entered": "OpenPlan cannot yet hold an applicant's name (KI-2026-11-16-080), so every PDF prints that the applicant is not entered in OpenPlan.",
-        "equity-inputs-as-each-run-found-them": "The job does not require Census tract data. Where a run retrieved none, its equity score is withheld and Appendix E says no tract data was retrieved. Each journey's record says which happened.",
+        "equity-inputs-as-each-run-found-them": "The job does not require Census tract data. Each journey's record says whether its run retrieved tract data, retrieved none or did not record which, and Appendix E prints the sentence for that case. Where none was retrieved, the equity score is withheld.",
         "what-the-journey-leaves-on-the-hosted-site": "Each journey leaves its account, workspace, project, crash records, analysis run, tracked opportunity, application and exported PDF on the hosted site under the demonstration label. It publishes nothing and opens no public page.",
-        "read-by-the-journey": "The journey read these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, each section's and each checklist row's state on screen, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, and which build, mode and harness checkout ran.",
+        "read-by-the-journey": "The journey read or set these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, the catalog key and template key, that no AI drafting ran, how the account was confirmed, each section's and each checklist row's state on screen, whether the run retrieved tract data, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, every time, the executor, and which build, mode and harness checkout ran.",
         "project-page-answers-200-with-not-found-screen": "Another workspace's project page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The application read and the PDF download were refused."
       }
     }
