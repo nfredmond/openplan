@@ -310,6 +310,11 @@ function formatAmount(value: number | string | null | undefined): string {
  * section's title gets the most room, and the day and the time each print
  * whole on a line of their own.
  *
+ * The note under the provenance table carries its own space below, inside
+ * the note, and does not split or leave the table's last row: the card's own
+ * bottom padding is dropped in print (next paragraph), and without it the
+ * note sat on the card's edge.
+ *
  * Print drops the spacing under the last text. When the text ended near a
  * page end, that empty spacing spilled onto a blank last page
  * (KI-2026-11-14-116).
@@ -364,20 +369,21 @@ const DOCUMENT_STYLES = `
       .cover-lines p { max-width: none; margin: 4px 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
       .nowrap { white-space: nowrap; }
-      .provenance-table { font-size: 13px; }
-      .provenance-table th, .provenance-table td { padding: 7px 6px; }
-      .provenance-table col:nth-child(1) { width: 34%; }
-      .provenance-table col:nth-child(2) { width: 7%; }
-      .provenance-table col:nth-child(3) { width: 13%; }
-      .provenance-table col:nth-child(4) { width: 9%; }
-      .provenance-table col:nth-child(5) { width: 11%; }
-      .provenance-table col:nth-child(6) { width: 14%; }
-      .provenance-table col:nth-child(7) { width: 12%; }
-      .table-note { margin: 10px 0 0; font-size: 13px; color: #3c4a52; }
+      .provenance-table { font-size: 12px; }
+      .provenance-table th, .provenance-table td { padding: 6px 5px; }
+      .provenance-table th { font-size: 10px; letter-spacing: 0.03em; }
+      .provenance-table col:nth-child(1) { width: 42%; }
+      .provenance-table col:nth-child(2) { width: 6%; }
+      .provenance-table col:nth-child(3) { width: 12%; }
+      .provenance-table col:nth-child(4) { width: 8%; }
+      .provenance-table col:nth-child(5) { width: 10%; }
+      .provenance-table col:nth-child(6) { width: 11%; }
+      .provenance-table col:nth-child(7) { width: 11%; }
+      .table-note { margin: 10px 0 0; padding-bottom: 14px; font-size: 13px; color: #3c4a52; break-before: avoid; break-inside: avoid; }
       .whole-id { display: inline-block; max-width: 100%; }
       .table-scroll { overflow-x: auto; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } }
-      @media print { main, main > :last-child { padding-bottom: 0; } main > :last-child :last-child { margin-bottom: 0; } }`;
+      @media print { main { padding-left: 0; padding-right: 0; } main, main > :last-child { padding-bottom: 0; } main > :last-child :last-child { margin-bottom: 0; } }`;
 
 /**
  * The standing caveats whose evidence this document carries, in cover order.
