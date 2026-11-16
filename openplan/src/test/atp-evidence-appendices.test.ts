@@ -226,8 +226,10 @@ describe("ATP evidence appendices", () => {
       sourceSnapshots: { census: { dataset: "ACS 5-Year", vintage: 2023, tractCount: 9, clipScale: "corridor" } },
     }) }) };
     const equity = byKey(buildAtpEvidenceAppendices(records, ALL), "equity");
-    expect(fact(equity, "Tracts the ACS income and burden proxy flags")).toBe("3");
-    expect(fact(equity, "Low-income tracts (ACS proxy)")).toBe("5");
+    // Each count names the total it is out of and then its rule
+    // (atp-equity-appendix-says-what-it-counts.test.ts reads the rule's words).
+    expect(fact(equity, "Tracts the ACS income and burden proxy flags")).toMatch(/^3 of 9 tracts\. The proxy flags a tract when /);
+    expect(fact(equity, "Low-income tracts (ACS proxy)")).toMatch(/^5 of 9 tracts\. A tract counts as low-income here when /);
     expect(fact(equity, "Demographic source")).toBe("ACS 5-Year 2023, 9 tracts, clipped to the corridor");
     expect(fact(equity, "Guidelines criterion, Median Household Income")).toBe("Not recorded in OpenPlan");
   });
