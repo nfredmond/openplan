@@ -321,7 +321,7 @@ function validateAtpInputs(inputs, mode, { job = loadJobDefinition(), today = fi
   if (inputs.requiredAttachmentsOutstanding !== outstanding) {
     throw new Error(`requiredAttachmentsOutstanding is ${inputs.requiredAttachmentsOutstanding}, but the checklist dispositions leave ${outstanding} required attachments outstanding.`);
   }
-  if (outstanding < rule.draftStamp.minOutstanding) throw new Error(`The checklist leaves ${outstanding} required attachments outstanding; this job leaves at least ${rule.draftStamp.minOutstanding}, because an agent produces none.`);
+  if (outstanding < 1) throw new Error('The checklist leaves no required attachment outstanding; an agent produces none, so the count the DRAFT stamp shows cannot be zero.');
 
   first.assertSourcedFacts(inputs.facts, mode, today);
   return inputs;
@@ -375,6 +375,11 @@ function assertPlaceForRole(item, role, job = loadJobDefinition()) {
   if (!rule) throw new Error(`The job defines no ${role} journey.`);
   if (!item || item.kind !== rule.placeKind) throw new Error(`The ${role} journey needs a place of kind ${rule.placeKind}, found ${item ? item.kind : 'none'}.`);
   const listed = placeStatesListed(item);
+  const assertLabelSuffix = () => {
+    if (rule.labelSuffix && !String(item.label).endsWith(rule.labelSuffix)) {
+      throw new Error(`The label ${item.label} does not end with "${rule.labelSuffix}", as the ${role} journey's place must.`);
+    }
+  };
   if (rule.statesExactly) {
     const wanted = [...rule.statesExactly].sort();
     const found = [...listed.stateFips].sort();
@@ -385,6 +390,7 @@ function assertPlaceForRole(item, role, job = loadJobDefinition()) {
     if (listed.labelStates.length !== letters.length || listed.labelStates.some((state, index) => state !== letters[index])) {
       throw new Error(`The label ${item.label} names ${listed.labelStates.length ? listed.labelStates.join(', ') : 'no state'}; the ${role} journey's place must name exactly ${letters.join(', ')}.`);
     }
+    assertLabelSuffix();
     return listed.stateFips;
   }
   if (rule.stateFips) {
@@ -392,6 +398,7 @@ function assertPlaceForRole(item, role, job = loadJobDefinition()) {
       throw new Error(`${item.label} (${item.geoid}) is not in the state with FIPS ${rule.stateFips}, where the ${role} journey's place must be.`);
     }
   }
+  assertLabelSuffix();
   return listed.stateFips;
 }
 
@@ -469,6 +476,11 @@ function definitionRefusals(journey, job = loadJobDefinition(), { only = '', ski
     } else if (Object.hasOwn(rule, 'minItems')) {
       expected = rule.minItems;
       ok = Array.isArray(value) && value.length >= rule.minItems;
+    } else if (Object.hasOwn(rule, 'atMostField')) {
+      expected = journeyField(journey, rule.atMostField);
+      ok = typeof value === 'number' && typeof expected === 'number' && value <= expected;
+    } else {
+      throw new Error(`The job's definition rule for ${rule.field} is of a kind this journey does not know.`);
     }
     if (!ok) refusals.push(rule.refusal.replace('{found}', Array.isArray(value) ? String(value.length) : String(value)).replace('{expected}', String(expected)));
   }
@@ -598,30 +610,37 @@ function applicationLines(pages, job) {
   return lines;
 }
 
+/** How many lines a fact that is a line of its own may wrap over, as the checker allows. */
+const WRAPPED_FACT_LINES = 4;
+
 /**
  * Read the exported application PDF the way the record checker will, with
  * the shared matcher, and say what it holds. `pages` is Poppler's text, one
  * entry per page; `journey` is the journey so far (place, projectName,
  * workspaceName, role, crashes, application with outstandingRequiredCount
- * and the tract reading). Returns `readings`, one per thing looked for with
- * whether it was found; `problems`, the readings that refuse the PDF, in the
- * order read; `items`, the six appendix headings with their pages, as the
- * record's PDF entry lists them; and `stampCount`.
+ * and tractData). Returns `readings`, one per thing looked for with whether
+ * it was found; `problems`, the readings that refuse the PDF, in the order
+ * read; `items`, the six appendix headings with their pages, as the record's
+ * PDF entry lists them; and `stampCount`.
  *
  * It reads: the cover's project name and workspace name; the study place
- * line on the cover and in Appendix A, and every other line with its label;
- * the applicant line; the ten section titles once each, in order; every
- * section final and opening with the demonstration label; the fixed note
- * where the definition puts it; the DRAFT stamp and its count; the six
+ * line as a whole line on the cover and in Appendix A, and every other line
+ * with its label; the applicant line, and no box or line that names the
+ * workspace as the applicant; the ten section titles once each, in order;
+ * every section final and opening with the demonstration label; the fixed
+ * note where the definition puts it; the DRAFT stamp and its count; the six
  * appendix headings in order with their facts (the program, the crash
- * source, years and reported count among them); the sentences only the
- * tribal area's PDF prints; the tract data sentence against the run's own
- * reading; the two disclaimers; no refused phrase ("to be provided" first
- * among them); no "Attached for" line; no score under another label; and
- * that the PDF was not typeset by the fallback writer.
+ * source, and the years and reported count as whole lines), the rows a
+ * journey's role must print and no other row under the same label; the
+ * sentences only the tribal area's PDF prints; the tract data sentence that
+ * belongs to the run's own reading and none that belongs to another; the two
+ * disclaimers; no refused phrase ("to be provided" first among them); no
+ * "Attached for" line; no score under another label; and that the PDF was
+ * not typeset by the fallback writer.
  *
- * Blind category: it reads words, as the checker does. A count is compared
- * as a whole value here (a longer number that begins with it is refused).
+ * Blind category: it reads words, as the checker does, and follows the
+ * checker's rules as they stood when this was written. The checker is the
+ * authority; a rule added there is not read here until it is added here.
  */
 function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
   const rule = job.application;
@@ -631,6 +650,11 @@ function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
   const text = (from, to) => lines.slice(from, to).join('\n');
   const everywhere = text(0, lines.length);
   const printsAnywhere = (phrase) => pdfTextHasPhrase(everywhere, phrase) || pages.some((page) => pdfTextHasPhrase(page, phrase));
+  // Refused words are also looked for with each run of spaces on a line read as one.
+  const singleSpaced = everywhere.replace(/[ \t]{2,}/g, ' ');
+  const printsRefused = (phrase) => printsAnywhere(phrase) || pdfTextHasPhrase(singleSpaced, phrase);
+  // A fact that is a whole line of its own, on one line or wrapped over lines that hold nothing else.
+  const wholeLineIn = (from, to, fact) => headingBlocks(lines.slice(from, to), fact, WRAPPED_FACT_LINES).length > 0;
   const readings = [];
   const read = (id, ok, detail) => {
     readings.push({ id, ok: Boolean(ok), detail });
@@ -651,23 +675,6 @@ function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
     return String(filled[name]);
   });
   const printed = (count) => Number(count).toLocaleString('en-US');
-  /**
-   * A fact that ends in a filled value is found only as a whole value: the
-   * text may not go on with another digit, a separator and a digit, or
-   * another year ("Crashes reported: 1" is not in "Crashes reported: 1,234").
-   */
-  const holdsWhole = (passage, fact) => {
-    if (!pdfTextHasPhrase(passage, fact)) return false;
-    const flat = squashPdf(passage);
-    const wanted = squashPdf(fact);
-    let seen = false;
-    for (let at = flat.indexOf(wanted); at !== -1; at = flat.indexOf(wanted, at + 1)) {
-      seen = true;
-      if (!/^(?:\d|[,.]\d|, \d{4})/.test(flat.slice(at + wanted.length))) return true;
-    }
-    // The matcher found it in a form a plain search cannot follow (letter spacing); what follows cannot be read here.
-    return !seen;
-  };
 
   read('not-fallback-writer', !printsAnywhere(rule.fallbackWriter.notice), 'the PDF was printed by the browser engine, not typeset by the export\'s fallback writer');
 
@@ -684,28 +691,36 @@ function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
   if (allTitles) read('section-titles-in-order', titles.every((title, index) => index === 0 || title.start >= titles[index - 1].end), 'the ten section titles are in the template\'s order');
 
   // The cover: everything before the first section title.
-  const cover = allTitles ? text(0, titles[0].start) : '';
+  const coverEnd = allTitles ? titles[0].start : 0;
+  const cover = text(0, coverEnd);
   const placeLine = fill(rule.placeLine.template);
   const stamp = fill(rule.draftStamp.phrase, { count: printed(journey.application.outstandingRequiredCount) });
   read('demonstration-label-on-project-name', squashPdf(journey.projectName).includes(squashPdf(rule.demonstrationLabel.text)), `the project name carries "${rule.demonstrationLabel.text}"`);
   for (const template of rule.cover.phrases) read(`cover:${template.replace(/[{}]/g, '')}`, pdfTextHasPhrase(cover, fill(template)), `the cover prints the ${template.replace(/[{}]/g, '')}`);
-  read('cover-study-place-line', pdfTextHasPhrase(cover, placeLine), `the cover states "${placeLine}"`);
+  read('cover-study-place-line', wholeLineIn(0, coverEnd, placeLine), `the cover states "${placeLine}" as a line of its own`);
   read('cover-applicant-line', pdfTextHasPhrase(cover, rule.applicant.line), `the cover prints "${rule.applicant.line}"`);
-  read('study-place-recorded', !printsAnywhere(rule.placeLine.notRecorded), `the PDF does not print "${rule.placeLine.notRecorded}"`);
+  read('study-place-recorded', !printsRefused(rule.placeLine.notRecorded), `the PDF does not print "${rule.placeLine.notRecorded}"`);
+  // Every line that holds the label, with the lines a long place name wraps onto, is the journey's place line and nothing more.
   const placeLabel = squashPdf(rule.placeLine.label);
-  const wantedPlace = squashPdf(placeLine);
-  const otherPlaceLines = lines.filter((line, index) => {
-    const squashed = squashPdf(line);
-    for (let at = squashed.indexOf(placeLabel); at !== -1; at = squashed.indexOf(placeLabel, at + 1)) {
-      if (!squashPdf(lines.slice(index, index + 4).join(' ')).slice(at).startsWith(wantedPlace)) return true;
-    }
-    return false;
-  });
-  read('study-place-label-lines', otherPlaceLines.length === 0, `every line that holds "${rule.placeLine.label}" names the journey's place`);
+  const otherPlaceLines = lines.filter((line, index) => squashPdf(line).includes(placeLabel)
+    && !headingBlocks(lines.slice(index, index + WRAPPED_FACT_LINES), placeLine, WRAPPED_FACT_LINES).some((block) => block.start === 0));
+  read('study-place-label-lines', otherPlaceLines.length === 0, `every line that holds "${rule.placeLine.label}" is the journey's place line and nothing more`);
+  // The applicant: the workspace's name on no line with an applicant label, in no box under one, and no box that is only a label.
   const workspace = squashPdf(journey.workspaceName);
-  const asApplicant = rule.applicant.labels.filter((word) => lines.some((line) => squashPdf(line).includes(workspace) && pdfTextHasPhrase(line, word))
-    || [`${word}: ${journey.workspaceName}`, `${word} ${journey.workspaceName}`].some(printsAnywhere));
-  read('workspace-is-not-the-applicant', asApplicant.length === 0, 'the workspace\'s name shares no line with "Applicant", "Lead agency" or "Implementing agency"');
+  const asApplicant = [];
+  for (const word of rule.applicant.labels) {
+    const sameLine = lines.some((line) => squashPdf(line).includes(workspace) && pdfTextHasPhrase(line, word));
+    if (sameLine || [`${word}: ${journey.workspaceName}`, `${word} ${journey.workspaceName}`].some(printsAnywhere)) asApplicant.push(`"${word}" with the workspace's name`);
+    const boxLabel = squashPdf(word);
+    lines.forEach((line, index) => {
+      const said = squashPdf(line).replace(/\s*:$/, '').replace(/ name$/, '');
+      if (said === boxLabel) asApplicant.push(`a box labeled "${line.trim().slice(0, 60)}"`);
+      if (!said.endsWith(` ${boxLabel}`)) return;
+      const next = lines.slice(index + 1).find((candidate) => candidate.trim() !== '');
+      if (next !== undefined && squashPdf(next).includes(workspace)) asApplicant.push(`the workspace's name under a line that ends in "${word}"`);
+    });
+  }
+  read('workspace-is-not-the-applicant', asApplicant.length === 0, asApplicant.length ? `the PDF prints ${asApplicant[0]}` : 'the PDF names the workspace nowhere as the applicant, the lead agency or the implementing agency');
 
   // The DRAFT stamp: on the cover, with the journey's count, and no other DRAFT line.
   const draftLines = lines.map((line, index) => ({ line, index })).filter(({ line }) => /\bDRAFT\b/.test(joinLetterSpacing(line)));
@@ -743,20 +758,40 @@ function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
     const last = appendices[appendices.length - 1];
     const closing = headingBlocks(lines, rule.appendices.end).find((block) => block.start >= last.end);
     read('appendices-end-heading', Boolean(closing), `the heading "${rule.appendices.end}" closes the appendices`);
-    const bodyOf = (item) => {
+    const boundsOf = (item) => {
       const index = appendices.findIndex((appendix) => appendix.item === item);
-      return text(appendices[index].end, index + 1 < appendices.length ? appendices[index + 1].start : (closing ? closing.start : lines.length));
+      return [appendices[index].end, index + 1 < appendices.length ? appendices[index + 1].start : (closing ? closing.start : lines.length)];
     };
+    const bodyOf = (item) => text(...boundsOf(item));
     for (const appendix of appendices) {
       items.push({ item: appendix.item, page: all[appendix.start].page, method: 'pdftotext', text: appendix.heading });
       const body = bodyOf(appendix.item);
+      const [from, to] = boundsOf(appendix.item);
       if (appendix.facts) {
         const countField = rule.appendices.countField && rule.appendices.countField[appendix.item];
         const extra = countField ? { count: printed(journeyField(journey, countField)) } : {};
-        for (const template of appendix.facts) {
+        // The rows this journey's role must print, beside the facts every journey's PDF prints.
+        const roleRows = appendix.factsByRole || {};
+        const byRole = roleRows[journey.role] || roleRows.default || [];
+        const expected = [];
+        for (const template of [...appendix.facts, ...byRole]) {
           const fact = fill(template, extra);
-          const whole = /\{(?:count|years)\}\s*$/.test(template) ? holdsWhole(body, fact) : pdfTextHasPhrase(body, fact);
-          read(`appendix-fact:${appendix.item}:${template}`, whole, `"${appendix.heading}" states "${fact}"`);
+          expected.push(fact);
+          // A fact that ends in a filled value, or a row held to the role, must be a whole line:
+          // "Crashes reported: 1" is not stated by "Crashes reported: 1,234".
+          const whole = /\}$/.test(template) || byRole.includes(template);
+          read(`appendix-fact:${appendix.item}:${template}`, whole ? wholeLineIn(from, to, fact) : pdfTextHasPhrase(body, fact), `"${appendix.heading}" states "${fact}"${whole ? ' as a line of its own' : ''}`);
+        }
+        if (appendix.rowLabel) {
+          const rowLabel = squashPdf(appendix.rowLabel);
+          const strangers = [];
+          for (let index = from; index < to; index += 1) {
+            if (!squashPdf(lines[index]).startsWith(rowLabel)) continue;
+            const window = lines.slice(index, Math.min(to, index + WRAPPED_FACT_LINES));
+            const known = expected.some((fact) => squashPdf(fact).startsWith(rowLabel) && headingBlocks(window, fact, WRAPPED_FACT_LINES).some((block) => block.start === 0));
+            if (!known) strangers.push(lines[index].trim().slice(0, 120));
+          }
+          read(`appendix-rows:${appendix.item}`, strangers.length === 0, strangers.length ? `"${appendix.heading}" prints a "${appendix.rowLabel}" row the job does not expect: "${strangers[0]}"` : `every "${appendix.rowLabel}" row of "${appendix.heading}" is one the job expects`);
         }
       } else {
         const included = pdfTextHasPhrase(body, appendix.includedFact);
@@ -766,18 +801,28 @@ function readApplicationPdf({ pages, job = loadJobDefinition(), journey }) {
     }
     for (const fact of rule.appendices.roleFacts || []) {
       if (fact.roles.includes(journey.role)) read(`role-fact:${fact.item}`, pdfTextHasPhrase(bodyOf(fact.item), fact.phrase), `"${headings[fact.item]}" carries ${fact.name}`);
-      else read(`role-fact-absent:${fact.item}`, !printsAnywhere(fact.phrase), `the PDF does not carry ${fact.name}, which only the ${fact.roles.join(' or ')} journey's PDF prints`);
+      else read(`role-fact-absent:${fact.item}`, !printsRefused(fact.phrase), `the PDF does not carry ${fact.name}, which only the ${fact.roles.join(' or ')} journey's PDF prints`);
     }
+    // Tract data: the appendix prints the sentence that belongs to the run's own reading, and none that belongs to another.
     const { equity } = rule.appendices;
     if (equity) {
-      const saysNone = pdfTextHasPhrase(bodyOf(equity.item), equity.noTractData);
-      const state = journey.application.tractData;
-      read('equity-agrees-with-the-run', state === 'none-retrieved' ? saysNone : !saysNone, `"${headings[equity.item]}" ${saysNone ? 'says' : 'does not say'} "${equity.noTractData}", and the run's own reading is ${state}`);
+      const stated = journeyField(journey, equity.field);
+      const body = bodyOf(equity.item);
+      const known = Object.hasOwn(equity.values, stated);
+      read('tract-data-value-known', known, `the run's tract data reading (${JSON.stringify(stated)}) is one the definition knows`);
+      read('tract-data-label', pdfTextHasPhrase(body, equity.label), `"${headings[equity.item]}" prints a "${equity.label}" line`);
+      if (known) {
+        for (const [value, { meaning, sentences }] of Object.entries(equity.values)) {
+          const found = sentences.filter((sentence) => pdfTextHasPhrase(body, sentence));
+          if (value === stated) read(`tract-data-sentence:${value}`, sentences.length === 0 || found.length > 0, `"${headings[equity.item]}" says what belongs to a run where ${meaning}`);
+          else read(`tract-data-sentence-absent:${value}`, found.length === 0, `"${headings[equity.item]}" does not say what belongs to a run where ${meaning}`);
+        }
+      }
     }
   }
 
   for (const phrase of rule.requiredPhrases || []) read(`required-phrase:${phrase}`, printsAnywhere(phrase), `the PDF prints "${phrase}"`);
-  for (const phrase of rule.refusedPhrases.phrases) read(`refused-phrase:${phrase}`, !printsAnywhere(phrase), `the PDF does not print "${phrase}"`);
+  for (const phrase of rule.refusedPhrases.phrases) read(`refused-phrase:${phrase}`, !printsRefused(phrase), `the PDF does not print "${phrase}"`);
   const scores = scoreMatches(everywhere, rule);
   read('scores-are-openplan-screening-scores', scores.length === 0, scores.length ? `a score is printed under another label: "${scores[0]}"` : 'every printed score is under one of OpenPlan\'s two screening score labels');
   // A plain search: the shared matcher finds no phrase that ends in a bracket with a colon after it.
@@ -864,7 +909,7 @@ function buildAtpJourney(state) {
       catalogKey: application.catalogKey,
       templateKey: application.templateKey,
       aiDraftingUsed: application.aiDraftingUsed,
-      tractDataRetrieved: application.tractData === undefined ? undefined : application.tractData === 'retrieved',
+      tractData: application.tractData,
       exportedAt: application.exportedAt,
       sections: application.sections,
       rows: application.rows,
@@ -943,6 +988,16 @@ function assembleAtpRecord({ journeyFiles, commit, baseUrl, recordedOn, proofOri
   const roles = runs.map((run) => run.journey.role);
   const doubled = roles.find((role, index) => roles.indexOf(role) !== index);
   if (doubled) throw new Error(`Two run files are the ${doubled} journey; a record takes one of each.`);
+  // Fields the definition says no two journeys may share, in its own words.
+  for (const rule of job.distinctAcrossJourneys || []) {
+    const seen = new Map();
+    for (const run of runs) {
+      const found = journeyField(run.journey, rule.field);
+      const key = typeof found === 'string' ? squashPdf(found) : JSON.stringify(found);
+      if (seen.has(key)) throw new Error(`${rule.refusal.split('{role}').join(run.journey.role).split('{otherRole}').join(seen.get(key)).split('{found}').join(String(found))}.`);
+      seen.set(key, run.journey.role);
+    }
+  }
   const checks = runs.flatMap((run) => run.checks);
   const texts = job.limitTexts || {};
   const limit = (id) => {

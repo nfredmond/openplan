@@ -236,6 +236,9 @@ test('study place: the county and the city are in California, by state code and 
   assert.throws(() => lib.assertPlaceForRole({ kind: 'county', geoid: '32031', label: 'Washoe County, NV', stateFips: '32' }, 'county', job), /is not in the state with FIPS 06/);
   assert.throws(() => lib.assertPlaceForRole({ kind: 'county', geoid: '48455', label: 'Trinity County, TX', stateFips: '06' }, 'county', job), /is not in the state with FIPS 06/);
   assert.throws(() => lib.assertPlaceForRole({ kind: 'cdp', geoid: '0600156', label: 'Acampo, CA', stateFips: '06' }, 'city', job), /needs a place of kind city, found cdp/);
+  // The definition's own closing words for the label: a city's saved label once lacked its state (KI-2026-11-16-102).
+  assert.equal(job.journeys.find((entry) => entry.role === 'city').labelSuffix, ', CA');
+  assert.throws(() => lib.assertPlaceForRole({ kind: 'city', geoid: '0686944', label: 'Yreka', stateFips: '06' }, 'city', job), /The label Yreka does not end with ", CA"/);
 });
 
 // ---------------------------------------------------------------------------
@@ -254,6 +257,25 @@ test('crashes: the record states the years as the export prints them, and the de
   assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, storedCount: 0 } }, job, { only: 'crashes.' }), ['stored 0 crashes; every journey of this job stores at least 1']);
   assert.throws(() => lib.crashesForRecord({ sourceId: 'ccrs', crashCount: 995, storedCount: 979 }, null), /names no years/);
   assert.throws(() => lib.crashesForRecord({ sourceId: 'ccrs', storedCount: 979 }, { years: [2024] }), /did not report how many crashes/);
+  // The rules review 78 added: at least one crash reported, and no more stored than reported.
+  assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, reportedCount: 0, storedCount: 0 } }, job, { only: 'crashes.' }), [
+    'stored 0 crashes; every journey of this job stores at least 1',
+    'reports 0 crashes; every journey of this job reports at least 1, and the crash appendix prints that count',
+  ]);
+  assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, storedCount: 5000 } }, job, { only: 'crashes.' }), ['stored 5000 crashes, more than the 995 the source reported']);
+});
+
+test('crashes: the journey\'s own stop reads the name of California\'s crash file from the definition', () => {
+  const crashes = { sourceId: 'ccrs-ca', years: '2022–2025', reportedCount: 995, storedCount: 979 };
+  const CCRS = 'California Crash Reporting System (CCRS)';
+  assert.equal(lib.californiaCrashFileName(job), CCRS);
+  assert.doesNotThrow(() => lib.assertCaliforniaCrashFile({ sourceLabel: CCRS }, crashes, job));
+  assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: 'Fatality Analysis Reporting System (FARS)' }, crashes, job), /come from "Fatality Analysis Reporting System \(FARS\)", not "California Crash Reporting System \(CCRS\)"/);
+  assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: null }, crashes, job), /come from "a source with no name"/);
+  assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: CCRS }, { ...crashes, storedCount: 0 }, job), /stored 0 crashes/);
+  assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: CCRS }, { ...crashes, storedCount: 996 }, job), /stored 996 crashes but reported 995/);
+  // The product's id for that file is not the one the definition asks for (KI-2026-11-16-100). The journey writes what the product says.
+  assert.deepEqual(lib.definitionRefusals({ crashes }, job, { only: 'crashes.sourceId' }), ['crashes come from ccrs-ca, not ccrs, California\'s crash file']);
 });
 
 test('a rehearsal journey is told what the checker would refuse: its mode, and nothing it could have met', () => {
@@ -314,10 +336,7 @@ test('DRAFT stamp: the count is read from each surface and must be one number ev
 // ---------------------------------------------------------------------------
 
 /** One journey of the synthetic example, as the journey's own state holds it when it reads its PDF. */
-const journeyState = (role) => {
-  const journey = example().journeys.find((entry) => entry.role === role);
-  return { ...journey, application: { ...journey.application, tractData: journey.application.tractDataRetrieved ? 'retrieved' : 'none-retrieved' } };
-};
+const journeyState = (role) => example().journeys.find((entry) => entry.role === role);
 const pagesOf = (journey) => synthetic.syntheticApplicationPages(journey, job);
 const problemsOf = (pages, journey) => lib.readApplicationPdf({ pages, job, journey }).problems;
 const replaceIn = (pages, from, to) => {
@@ -408,6 +427,39 @@ test('PDF read-back: a count is a whole value, and a title that crosses a page i
   assert.deepEqual(reading.problems.filter((problem) => /section title/.test(problem)), []);
 });
 
+test('PDF read-back: each tract data reading has its own sentence, and a PDF that prints another reading\'s is refused', () => {
+  const county = journeyState('county');
+  const states = Object.keys(rule.appendices.equity.values);
+  assert.deepEqual(states, ['retrieved', 'none-retrieved', 'not-recorded']);
+  const withState = (state) => ({ ...county, application: { ...county.application, tractData: state } });
+  for (const printed of states) {
+    const pages = pagesOf(withState(printed));
+    for (const stated of states) {
+      const problems = problemsOf(pages, withState(stated));
+      if (stated === printed) assert.deepEqual(problems, [], `${printed} read as itself`);
+      else assert.ok(problems.some((problem) => /Appendix E\. .* (says|does not say) what belongs to a run where/.test(problem)), `a ${printed} PDF read as ${stated}: ${JSON.stringify(problems)}`);
+    }
+  }
+  assert.ok(problemsOf(pagesOf(county), withState('some')).some((problem) => /is one the definition knows/.test(problem)));
+});
+
+test('PDF read-back: the rules review 78 added are read here too', () => {
+  const county = journeyState('county');
+  const pages = pagesOf(county);
+  const tribalRow = 'Guidelines criterion, Native American Tribal Lands: Not recorded in OpenPlan';
+  const cases = [
+    ['the county PDF prints the tribal area\'s row', replaceIn(pages, tribalRow, 'Guidelines criterion, Native American Tribal Lands: The study place is a Census\ntribal area: Synthetic Reservation, CA'), /states "Guidelines criterion, Native American Tribal Lands: Not recorded in OpenPlan" as a line of its own/],
+    ['a second criterion row with a value', replaceIn(pages, tribalRow, `${tribalRow}\n\nGuidelines criterion, CalEnviroScreen: Yes`), /prints a "Guidelines criterion," row the job does not expect: "Guidelines criterion, CalEnviroScreen: Yes"/],
+    ['more words after the place line', replaceIn(pages, 'Study place: Synthetic County, CA (county, GEOID 06998)', 'Study place: Synthetic County, CA (county, GEOID 06998) and Another County'), /is the journey's place line and nothing more/],
+    ['the workspace box relabeled', replaceIn(pages, '  WORKSPACE\n', '  LEAD AGENCY\n'), /prints a box labeled "LEAD AGENCY"/],
+    ['a refused phrase with two spaces inside it', replaceIn(pages, 'An agency would write its own answer here.', 'The project is  eligible for funding.'), /does not print "is eligible for"/],
+  ];
+  for (const [name, changed, reason] of cases) {
+    const problems = problemsOf(changed, county);
+    assert.ok(problems.some((problem) => reason.test(problem)), `${name}: ${JSON.stringify(problems)}`);
+  }
+});
+
 // ---------------------------------------------------------------------------
 // The run file
 // ---------------------------------------------------------------------------
@@ -421,9 +473,8 @@ test('run file: the journey is in the shape the record schema gives an applicati
   assert.deepEqual(Object.keys(journey).sort(), [...required].sort());
   for (const key of Object.keys(journey)) assert.ok(Object.hasOwn(schema.properties, key), key);
   assert.deepEqual(Object.keys(journey.application).sort(), [...schema.properties.application.required].sort());
-  assert.equal(journey.application.tractDataRetrieved, false);
-  assert.equal(lib.buildAtpJourney({ ...source, application: { ...source.application, tractData: 'retrieved' } }).application.tractDataRetrieved, true);
-  assert.equal(JSON.stringify(journey).includes('tractData"'), false, 'the journey\'s own three-state reading stays in the run file, outside the journey');
+  assert.equal(journey.application.tractData, 'none-retrieved');
+  assert.deepEqual(schema.properties.application.properties.tractData.enum, ['retrieved', 'none-retrieved', 'not-recorded'], 'the three readings tractDataReading gives');
 });
 
 const SECRETS = ['Jr-0123456789abcdefghijklmn', 'Jr-zyxwvutsrqponmlkjihgfed', 'owner@openplan.test', 'second@openplan.test', 'http://127.0.0.1:58531/auth/v1/verify?token=pkce_0123456789abcdef&type=signup'];
@@ -544,6 +595,8 @@ test('assembler: a run that is not a finished proof run on the record\'s origin 
     ['an owner check named for another journey', onlyCity((run) => { run.crossWorkspace.ownerChecks[0].journey = 'county'; }), /holds an owner check named for the county journey/],
     ['a second account named for another journey', onlyCity((run) => { run.crossWorkspace.secondAccounts[0].journey = 'tribal-area'; }), /holds a second account entry named for the tribal-area journey/],
     ['one role twice', onlyCity((run) => { run.journey.role = 'county'; }), /Two run files are the county journey/],
+    ['one project name in two journeys', (run) => { if (run.journey.role !== 'tribal-area') run.journey.projectName = 'One project (Demonstration by an automated OpenPlan proof run)'; }, /the city and county journeys name the same project/],
+    ['one workspace name in two journeys', (run) => { if (run.journey.role !== 'county') run.journey.workspaceName = 'One demonstration workspace'; }, /the tribal-area and city journeys name the same workspace/],
   ];
   for (const [name, change, reason] of cases) assert.throws(() => assemble(exampleRunFiles(dir, change)), reason, name);
   assert.throws(() => assemble(exampleRunFiles(dir), { proofOrigin: '' }), /needs the checker's proof origin/);

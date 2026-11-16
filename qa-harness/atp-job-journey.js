@@ -117,7 +117,8 @@ async function main() {
     role: options.role,
     executor: { agent: options.executorAgent, model: options.executorModel },
     health: [],
-    projectName: inputs.projectName,
+    // Trimmed, as typed and as searched for on the second account's page: the checker hashes these two.
+    projectName: inputs.projectName.trim(),
     workspaceName: names.first,
     application: { aiDraftingUsed: false },
     pdfs: [],
@@ -271,7 +272,7 @@ async function main() {
     });
 
     await step('create-project', async () => {
-      ids.projectId = await createProject({ page, go, name: inputs.projectName, summary: inputs.projectSummary, planType: inputs.planType });
+      ids.projectId = await createProject({ page, go, name: state.projectName, summary: inputs.projectSummary, planType: inputs.planType });
       return ids.projectId;
     });
 
