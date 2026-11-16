@@ -16,7 +16,9 @@ import {
   PROJECT_DELIVERY_PHASES,
   PROJECT_DELIVERY_PHASE_LABELS,
   PROJECT_STATUSES,
+  PROJECT_PLAN_TYPE_OPTIONS,
   PROJECT_STATUS_LABELS,
+  projectPlanTypeLabel,
   type ProjectDeliveryPhase,
   type ProjectStatus,
 } from "@/lib/projects/project-record-fields";
@@ -99,12 +101,6 @@ type DeleteRefusal = {
  */
 type DeletePreflight = DeleteRefusal & { deletable: boolean };
 
-const PLAN_TYPE_SUGGESTIONS = [
-  "corridor_plan",
-  "active_transportation_plan",
-  "safety_plan",
-  "regional_plan",
-];
 
 export function ProjectIdentityEditor({
   project,
@@ -381,7 +377,7 @@ export function ProjectIdentityEditor({
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Plan type</dt>
-            <dd className="text-sm font-medium text-foreground">{project.planType}</dd>
+            <dd className="text-sm font-medium text-foreground">{projectPlanTypeLabel(project.planType)}</dd>
           </div>
           {project.summary ? (
             <div className="sm:col-span-2 xl:col-span-4">
@@ -468,8 +464,8 @@ export function ProjectIdentityEditor({
             {/* Suggestions, not a closed list: the column has no CHECK because
                 the kinds of plan an agency runs vary by agency and country. */}
             <datalist id="project-plan-type-options">
-              {PLAN_TYPE_SUGGESTIONS.map((value) => (
-                <option key={value} value={value} />
+              {PROJECT_PLAN_TYPE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value} label={option.label} />
               ))}
             </datalist>
           </div>

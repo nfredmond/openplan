@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PROJECT_PLAN_TYPE_OPTIONS } from "@/lib/projects/project-record-fields";
 import {
   GuidedFlow,
   GuidedFlowRow,
@@ -18,12 +19,7 @@ type CreateResponse = {
   workspaceId?: string;
 };
 
-const projectTypeOptions = [
-  { value: "corridor_plan", label: "Corridor Plan" },
-  { value: "active_transportation_plan", label: "Active Transportation Plan" },
-  { value: "safety_plan", label: "Safety Plan" },
-  { value: "regional_plan", label: "Regional / Program Plan" },
-];
+const projectTypeOptions = PROJECT_PLAN_TYPE_OPTIONS;
 
 const deliveryPhaseOptions = [
   { value: "scoping", label: "Scoping" },

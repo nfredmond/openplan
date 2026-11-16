@@ -63,6 +63,34 @@ export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   complete: "Complete",
 };
 
+/**
+ * The plan types the new-project form offers, as stored and as a planner
+ * reads them. Plan type is free text (the kinds of plan an agency runs vary by
+ * agency and country), so this is not the whole vocabulary.
+ */
+export const PROJECT_PLAN_TYPE_OPTIONS = [
+  { value: "corridor_plan", label: "Corridor Plan" },
+  { value: "active_transportation_plan", label: "Active Transportation Plan" },
+  { value: "safety_plan", label: "Safety Plan" },
+  { value: "regional_plan", label: "Regional / Program Plan" },
+] as const;
+
+/**
+ * A stored plan type as a planner reads it. A value the form offers prints its
+ * label; a stored code in the same lower_snake form prints as words
+ * ("capital_program" as "Capital program"); anything a planner typed prints
+ * as typed.
+ */
+export function projectPlanTypeLabel(value: string | null | undefined): string {
+  const stored = value?.trim() ?? "";
+  if (!stored) return "Not set";
+  const option = PROJECT_PLAN_TYPE_OPTIONS.find((entry) => entry.value === stored);
+  if (option) return option.label;
+  if (!/^[a-z0-9]+(_[a-z0-9]+)+$/.test(stored)) return stored;
+  const words = stored.replaceAll("_", " ");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 export const PROJECT_DELIVERY_PHASE_LABELS: Record<ProjectDeliveryPhase, string> = {
   scoping: "Scoping",
   analysis: "Analysis",
