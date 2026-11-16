@@ -166,7 +166,7 @@ describe("the definition entry follows the product", () => {
     for (const phrase of RULE.refusedPhrases.phrases) {
       for (const text of disclaimers) expect(text.toLowerCase().includes(phrase.toLowerCase()), `"${phrase}" in "${text.slice(0, 50)}"`).toBe(false);
     }
-    expect(JSON.stringify(JOB)).not.toContain("—");
+    expect(JSON.stringify(JOB)).not.toContain(String.fromCharCode(0x2014));
   });
 });
 
@@ -228,6 +228,37 @@ describe("the ATP application job's synthetic example", () => {
     editBoth(record, "city", (entry) => Object.assign(entry.place, { geoid: "0686944", label: "Yreka, CA" }));
     editBoth(record, "tribal-area", (entry) => Object.assign(entry.place, { geoid: "1490R", label: "Hoopa Valley Reservation, CA" }));
     expect(() => check(record, { censusNames: true })).not.toThrow();
+  });
+});
+
+describe("what the ATP application job's checker cannot see (KI-2026-11-16-091, -096)", () => {
+  // Each copy below is false and is accepted. They are here so the limit is a tested fact, not a guess.
+  it("accepts a score worded without a label, colon and number", () => {
+    const record = proven();
+    editPdf(record, "county", (text) => swap(text, "An agency would write its own answer here.", "The Commission gave this project 85 out of 100."));
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it("accepts row dispositions the PDF's checklist does not show, when the count is the same", () => {
+    const record = proven();
+    const rows = journey(record, "county").application.rows;
+    // The synthetic checklist prints row 1 as not applicable; the record now says row 11 instead.
+    rows[0] = { key: rows[0].key, disposition: "outstanding" };
+    rows[10] = { key: rows[10].key, disposition: "not-applicable", reason: "Synthetic example: a reason the PDF does not print." };
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it("accepts an eleventh section the template does not have, and a stored crash count the PDF does not print", () => {
+    const record = proven();
+    editPdf(record, "county", (text) => after(text, RULE.sections.end, "").replace(`\n${RULE.sections.end}\n`, `\nPart C: A section of the planner's own\n\n${SECTION_TEXT}\nagency, place or community.\n\n${RULE.sections.end}\n`));
+    journey(record, "county").crashes.storedCount = 5;
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it("accepts a workspace name that is some other words on the cover", () => {
+    const record = proven();
+    journey(record, "county").workspaceName = "Synthetic summary of the program";
+    expect(() => check(record)).not.toThrow();
   });
 });
 
