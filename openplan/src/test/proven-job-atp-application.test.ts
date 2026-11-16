@@ -564,9 +564,37 @@ describe("the ATP application job reads a PDF across its page breaks (review 78)
 });
 
 describe("the ATP application job refuses each wording its definition lists", () => {
-  it("lists 25 wordings", () => expect(RULE.refusedPhrases.phrases).toHaveLength(25));
-  // One test per listed phrase, so deleting a phrase from the definition fails its own test (review 78, mutant ME).
-  it.each(RULE.refusedPhrases.phrases as string[])("refuses \"%s\" typed into a section", (phrase) => {
+  // The list is written out here, so a phrase deleted from the definition or swapped for another fails
+  // a test by name (review 78, mutant ME).
+  const LISTED = [
+    "to be provided",
+    "is eligible for",
+    "are eligible for",
+    "project is eligible",
+    "applicant is eligible",
+    "eligible for ATP funding",
+    "meets the eligibility",
+    "qualifies as a disadvantaged community",
+    "qualifies as disadvantaged",
+    "qualify as a disadvantaged community",
+    "is a disadvantaged community",
+    "is in a disadvantaged community",
+    "is located in a disadvantaged community",
+    "is located within a disadvantaged community",
+    "benefits a disadvantaged community",
+    "meets the screening criteria",
+    "passes the screening criteria",
+    "passes the Commission's screening",
+    "meets the disadvantaged community criteria",
+    "Disadvantaged community: Yes",
+    "DAC or Low-income group: Yes",
+    "severely disadvantaged community",
+    "is a DAC",
+    "qualifies for ATP funding",
+    "satisfies all screening criteria",
+  ];
+  it("lists these 25 wordings and no other", () => expect(RULE.refusedPhrases.phrases).toEqual(LISTED));
+  it.each(LISTED)("refuses \"%s\" typed into a section", (phrase) => {
     const record = proven();
     typedIn(`It reads: ${phrase} (typed).`)(record);
     let message = "";

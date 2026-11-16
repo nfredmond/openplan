@@ -301,9 +301,10 @@ executor and date parts of rule 4, and refuses a record unless:
 
 1. It has three journeys in California: a county, a city and a tribal area.
    The county's and the city's Census ids begin 06 and their one state code
-   is 06. The tribal area's state list is exactly 06. For a record in the
-   registry, each label is the Bureau's name for its id, and the city's
-   Bureau name does not end in CDP.
+   is 06. The tribal area's state list is exactly 06. Each label ends in
+   ", CA". The three project names differ, and so do the three workspace
+   names. For a record in the registry, each label is the Bureau's name for
+   its id, and the city's Bureau name does not end in CDP.
 2. Each journey ran in proof mode from a clean harness checkout, all three
    from the same checkout, and confirmed its account by the emailed link.
    Its health readbacks report ok, the start one before the account and the
@@ -318,19 +319,31 @@ executor and date parts of rule 4, and refuses a record unless:
    definition gives each, and its 26 checklist rows, each with a disposition.
    No row is attached. A row marked not applicable is one the template asks
    for only in some cases, and it has a reason of 20 characters or more. The
-   record's count of required rows outstanding is the count its rows give,
-   and at least one.
-6. Each PDF, read with Poppler's text as one run of lines with the page
-   footers left out:
+   record's count of required rows outstanding is the count its rows give.
+   It cannot be zero, because 13 rows are required of every application. The
+   record's project name and workspace name hold neither "Study place:", the
+   applicant line nor the word DRAFT, so a typed name cannot stand in for a
+   line the product prints.
+6. Each PDF, read with Poppler's text as one run of lines. Each page's
+   footer line is left out with the blank lines above it and at the top of
+   the next page, so a title, a note or a sentence that continues on the
+   next page reads as consecutive lines (review 78: an honest PDF whose
+   title split across two pages was refused before). A fact that ends in a
+   value the record fills, such as a count, the years or the project name,
+   must be a whole line of its own, so "Crashes reported: 1" is not stated
+   by "Crashes reported: 1,234". The PDF:
    - was printed by the browser engine, not typeset by the export's fallback
      writer, whose notice is in the text;
    - prints the project name and the workspace name on the cover, and the
      project name carries the demonstration label;
    - states the study place line for the record's place on the cover and in
-     Appendix A, and every line that holds "Study place:" names that place;
+     Appendix A, and every line that holds "Study place:" is that line and
+     nothing more;
    - prints "Applicant not entered in OpenPlan" on the cover and in Appendix
      A, and the workspace's name on no line with "Applicant", "Lead agency"
-     or "Implementing agency";
+     or "Implementing agency"; no line is only one of those labels (with or
+     without "name" and a colon), and no line ends in one above the
+     workspace's name;
    - is stamped "DRAFT: N required attachment(s) outstanding" on the cover
      with the record's count, and every line holding the word DRAFT is that
      stamp;
@@ -347,17 +360,23 @@ executor and date parts of rule 4, and refuses a record unless:
      does not decide ATP eligibility. Appendix B states California's crash
      file, the record's years and the record's reported count. Appendix E
      states five Guidelines criteria as not recorded and that no row is a
-     determination. Appendices C, D and F each carry their fact or open with
-     "Missing.";
+     determination; its Tribal Lands row names the tribal area in the tribal
+     area's PDF and reads "Not recorded in OpenPlan" in the other two; and
+     it prints no other "Guidelines criterion," row. Appendices C, D and F
+     each carry their fact or open with "Missing.";
    - carries the missing-reports sentence in Appendix B and the Census tribal
      area note in Appendix E when it is the tribal area's PDF, and neither
      sentence anywhere when it is not;
-   - says in Appendix E that no tract data was retrieved exactly when the
-     record says so;
-   - prints the two required disclaimers, none of the 21 refused phrases, and
+   - prints in Appendix E a "Demographic source:" line and the sentence
+     that belongs to the record's tract data value (retrieved, none
+     retrieved, or not recorded by the run), and no other value's sentence.
+     Each of the three is a truthful record (KI-2026-11-16-097);
+   - prints the two required disclaimers, none of the 25 refused phrases
+     (also not across a page break or with two spaces between words), and
      no number after a label ending in "score" or "points" unless the label
      is one of OpenPlan's two screening score labels.
-7. Each journey's crashes come from `ccrs` with at least one stored.
+7. Each journey's crashes come from `ccrs`, with at least one reported, at
+   least one stored, and no more stored than reported.
 8. All four screens (project, safety, corridor analysis, grants application)
    were checked at both widths and modes with the pinned engine and tags, no
    serious or critical finding, no console error and no sideways scroll at
@@ -366,7 +385,9 @@ executor and date parts of rule 4, and refuses a record unless:
    data checks and the project page as a page check, each named for its
    journey. Each journey's owner received 200 for the read and the download
    in the same run. Each journey's second account was confirmed and received
-   200 for a read of its own record.
+   200 for a read of its own record. A project page that answered 200 was
+   searched for that journey's own project name and workspace name: the
+   SHA-256 of each is among the check's hashes.
 10. The record states the job's 13 limits in the definition's words, and the
     page limit when a project page answered 200.
 
@@ -378,6 +399,13 @@ one line or wrapped over up to six lines that hold nothing else.
 
 - `journeys[].statesExactly`: the states a journey's place must lie in, as a
   whole list. `statesNote` says where the list comes from.
+- `journeys[].labelSuffix`: the words a place label must end with.
+- `journeyFields[].atMostField`: a journey field that may be no greater than
+  another journey field.
+- `distinctAcrossJourneys`: dotted journey fields no two journeys may share,
+  each with its refusal ({role}, {otherRole}, {found}).
+- `crossWorkspace.searchedStringFields`: journey fields whose SHA-256 must
+  be among the hashes of a page check that answered 200.
 - `journeys[].censusNameRefused`: a pattern for the Bureau's name of the id
   and the refusal's words, applied to records in the registry.
 - `sameAcrossJourneys`: dotted journey fields every journey must share, each
@@ -396,9 +424,11 @@ one line or wrapped over up to six lines that hold nothing else.
   `sections` (`end`, `maxTitleLines`, `notFinal`, `fixedNote`, `list` of key,
   title and disposition); `rows` (`refusedDispositions`, `notApplicableFor`,
   `minReasonLength`, `countedRequirements`, `attachedLine`, `list` of key,
-  title and requirement); `draftStamp` (`required`, `phrase`,
-  `minOutstanding`); `appendices` (`end`, `missing`, `list` of item with
-  `facts` or `includedFact`, `countField`, `roleFacts`, `equity`);
+  title and requirement); `draftStamp` (`required`, `phrase`);
+  `appendices` (`end`, `missing`, `list` of item with `facts` or
+  `includedFact`, and for an appendix with rows `rowLabel` and
+  `factsByRole`; `countField`; `roleFacts`; `equity` with `field`, `label`
+  and, per value, its `meaning` and `sentences`);
   `requiredPhrases`; `scores` (`words`, `labels`); `refusedPhrases.phrases`.
   Each sub-block's `note` in the definitions file says what it means.
 
@@ -414,10 +444,15 @@ to print a score ("85 out of 100" is not caught). The PDF's checklist table
 cannot be read row by row, so the record's row dispositions are tied to the
 PDF only through the stamp's count and the absence of any "Attached for"
 line. The workspace's name is the record's statement; the checker requires
-it on the cover but cannot tie it to the workspace box. A line that holds
-only a heading's words counts as that heading, which is why each heading may
-appear once. A fact that wraps across a page break with a running header
-between its parts is not found. Which states the Bureau lists for the tribal
+it on the cover but cannot tie it to the workspace box. It refuses a box or
+a line labeled Applicant, Lead agency or Implementing agency over that
+name, and not other labels a planner could type, such as "Agency:" or
+"Submitted by". A line that holds only a heading's words counts as that
+heading, which is why each heading may appear once. Text that continues
+across a page break is read whole; a running header printed between its two
+parts would still split it, and the browser engine prints none. Two
+paragraphs that meet at a page break read as consecutive lines, which for
+refused words errs toward refusing. Which states the Bureau lists for the tribal
 area, the stored crash count, every status, every screen result, the mode
 and the harness checkout are the journey's statements. A record and PDFs
 falsified to agree are not caught. The test that accepts a real PDF needs

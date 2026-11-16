@@ -10,7 +10,8 @@ second job's note, it sits in this subfolder so the direction check does not
 read it as a direction review.
 
 **State on November 16, 2026.** The definition, the checker rules and their
-tests exist. No journey script, hosted run, record or registry entry exists
+tests exist, and review 78 (fresh context, agent-run) tried 310 false records
+against them; its nine changes are made. No journey script, hosted run, record or registry entry exists
 yet. Nothing here says the job is proven.
 
 ## The job
@@ -104,7 +105,9 @@ job's entry in `schemas/proven_job_definitions.v1.json`. "Checker" means
 6. **Crash data.** Each journey's crashes come from California's crash file
    (`ccrs`), with at least one stored. Appendix B must state "Source:
    California Crash Reporting System (CCRS)", the years requested and the
-   record's reported count. The tribal area's PDF must carry, in Appendix B,
+   record's reported count, each as a whole line, so a count is not found
+   inside a longer number. The reported count is at least one and the stored
+   count no greater. The tribal area's PDF must carry, in Appendix B,
    the sentence that crash reports on tribal land may be missing from the
    state's file. The other two PDFs may not carry it anywhere.
 7. **Scores and determinations.** Any label ending in "score" or "points"
@@ -119,10 +122,14 @@ job's entry in `schemas/proven_job_definitions.v1.json`. "Checker" means
    applicant line, the program, the ten section titles, the six appendix
    headings with facts under each, the DRAFT count and the crash source. The
    study place line must be on the cover and in Appendix A, and every line
-   that holds "Study place:" must name the record's place, so a line typed
-   into a project name or a section cannot stand in for the one OpenPlan
-   prints. The workspace's name may share no line with "Applicant", "Lead
-   agency" or "Implementing agency". The checker uses the shared phrase
+   that holds "Study place:" must be the record's place line and nothing
+   more. A project name or a workspace name may not hold "Study place:", the
+   applicant line or the word DRAFT, so a typed name cannot stand in for a
+   line OpenPlan prints. The workspace's name may share no line with
+   "Applicant", "Lead agency" or "Implementing agency"; no line may be only
+   one of those labels; and no line may end in one above the workspace's
+   name. The PDF is read across its page breaks, so a title or a sentence
+   that continues on the next page is read whole. The checker uses the shared phrase
    matcher, never whole-line equality, except for headings.
 9. **Screens.** Project, Safety, Corridor Analysis and the application
    workspace, at 1440 and 390 px, in light and dark: axe 4.11.1 with the four
@@ -134,9 +141,14 @@ job's entry in `schemas/proven_job_definitions.v1.json`. "Checker" means
     read and the PDF download (403 or 404) and the project page. In the same
     run the owner received 200 for the read and the download. Each journey's
     second account was confirmed and received 200 for a read of its own
-    record, so it was signed in.
+    record, so it was signed in. A project page that answered 200 was
+    searched for that journey's own project name and workspace name.
 11. **Equity inputs.** The job does not require Census tract data. Each
-    journey says whether its run retrieved any, and Appendix E must agree.
+    journey states one of three things: its run retrieved tract data,
+    retrieved none, or did not record which. Each is a truthful record, and
+    Appendix E must print the sentence that belongs to it (the lead's
+    decision on KI-2026-11-16-097). Whether the hosted site holds a Census
+    key is not established, so the third may be the hosted case.
 12. **Limits.** The record must state 13 limits in the definition's words: no
     PDF/UA check; no keyboard or screen-reader pass; no planner reviewed
     usefulness; a rehearsal of a closed call; attachments not produced; not a
