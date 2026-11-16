@@ -1,0 +1,268 @@
+{
+  "label": "Proof inputs for the city of Yreka, California: demonstration text and checklist dispositions for one OpenPlan third-job proof journey (a California ATP application), written from public sources read on 2026-11-16 and listed in facts. A demonstration only; not prepared, reviewed, adopted or submitted by any agency or tribe. Version 1.",
+  "role": "city",
+  "placeKind": "city",
+  "placeQuery": "Yreka, CA",
+  "placeGeoid": "0686944",
+  "organization": "OpenPlan proof run, Yreka ATP demonstration",
+  "secondOrganization": "Second account for the cross-workspace check, Yreka ATP demonstration",
+  "projectName": "Yreka ATP demonstration. Demonstration by an automated OpenPlan proof run",
+  "projectSummary": "Demonstration ATP application for a study place, the city of Yreka, California, typed by an automated OpenPlan proof run from public sources. It describes no real project and was not prepared or submitted by any agency or tribe.",
+  "applicationType": "small-infrastructure",
+  "requiredAttachmentsOutstanding": 17,
+  "requiredAttachmentsOutstandingNote": "Seventeen of the template's 25 required or required-if-applicable rows stay outstanding (13 required, 4 required if applicable); 8 required-if-applicable rows are marked not applicable. The optional row is left alone. The PDF's DRAFT stamp must say 17.",
+  "checklist": {
+    "partnering-agency-letter-of-intent": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration names no partnering agency."
+    },
+    "safe-routes-school-map-and-statements": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration is not a Safe Routes to School project."
+    },
+    "ceqa-nepa-signature-pages": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration shows no phase complete, so it shows no completed environmental phase."
+    },
+    "right-of-way-certification": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration shows no phase complete, so it shows no completed right of way phase."
+    },
+    "caltrans-need-for-atp-funds": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration is not a Caltrans-implemented project."
+    },
+    "caltrans-local-coordination": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration is not a Caltrans-implemented project."
+    },
+    "non-infrastructure-work-plan": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration fills in the infrastructure-only application, with no non-infrastructure part."
+    },
+    "state-only-funds-request": {
+      "disposition": "not-applicable",
+      "reason": "The demonstration requests no funds, so it requests no state-only funds."
+    },
+    "state-highway-project-impact-assessment-form": {
+      "disposition": "outstanding"
+    },
+    "railroad-and-agency-letters": {
+      "disposition": "outstanding"
+    },
+    "project-programming-request": {
+      "disposition": "outstanding"
+    },
+    "regional-transportation-plan-pages": {
+      "disposition": "outstanding"
+    },
+    "disadvantaged-community-map": {
+      "disposition": "outstanding"
+    },
+    "disadvantaged-community-identifier-data": {
+      "disposition": "outstanding"
+    },
+    "gap-closure-and-route-maps": {
+      "disposition": "outstanding"
+    },
+    "collision-data": {
+      "disposition": "outstanding"
+    },
+    "public-participation-documentation": {
+      "disposition": "outstanding"
+    },
+    "corps-consultation-responses": {
+      "disposition": "outstanding"
+    },
+    "signature-page": {
+      "disposition": "outstanding"
+    },
+    "engineers-checklist": {
+      "disposition": "outstanding"
+    },
+    "project-location-map": {
+      "disposition": "outstanding"
+    },
+    "project-layouts-and-plans": {
+      "disposition": "outstanding"
+    },
+    "photos-of-existing-conditions": {
+      "disposition": "outstanding"
+    },
+    "project-estimate": {
+      "disposition": "outstanding"
+    },
+    "letters-of-support": {
+      "disposition": "outstanding"
+    },
+    "additional-attachments": {
+      "disposition": "outstanding"
+    }
+  },
+  "facts": [
+    {
+      "id": "census-2020-population",
+      "statement": "The 2020 Census counted 7,807 residents in the city of Yreka, California.",
+      "source": "U.S. Census Bureau, TIGERweb, 2020 Census map service (tigerWMS_Census2020), layer 26, record GEOID 0686944, field POP100. https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/26 (saved read: reads/tigerweb-2020-yreka.json)",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a-project-information"
+      ],
+      "supports": "The Census Bureau's 2020 Census record for GEOID 0686944 gives a population of 7,807.",
+      "excerpt": "\"GEOID\": \"0686944\", \"POP100\": 7807"
+    },
+    {
+      "id": "ca-atp-small-application",
+      "statement": "The 2027 ATP Guidelines define a Small Project application as one for a project with a total project cost of $3.5 million or less.",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 13, Submittal Requirements.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a-project-information"
+      ],
+      "supports": "The Guidelines name five application types; the Small Project application is for projects with a total cost of $3.5 million or less.",
+      "excerpt": "\"3. Small Project application: projects with a total project cost of $3.5 million or less.\""
+    },
+    {
+      "id": "ca-atp-2027-applications-due",
+      "statement": "The 2027 ATP Guidelines' schedule set project applications due June 22, 2026.",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 3, Program Schedule.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a-project-information"
+      ],
+      "supports": "The 2027 ATP call for projects has closed: applications were due June 22, 2026.",
+      "excerpt": "\"Project Applications Due    June 22, 2026\""
+    },
+    {
+      "id": "ca-atp-eligible-local-agency",
+      "statement": "The 2027 ATP Guidelines list local, regional or state agencies, with cities and counties as examples, among eligible applicants.",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 10, Eligible Applicants, item 1.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a-project-information"
+      ],
+      "supports": "The 2027 ATP Guidelines list local, regional or state agencies, with cities and counties as examples, among eligible applicants.",
+      "excerpt": "\"1) Local, regional, or state agencies. Examples include cities, counties, metropolitan planning organizations, and regional transportation planning agencies.\""
+    },
+    {
+      "id": "ca-atp-no-match",
+      "statement": "The 2027 ATP Guidelines say projects funded by the ATP do not require a match.",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 6, Matching Requirement.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a5-project-funding"
+      ],
+      "supports": "The ATP requires no funding match, though a metropolitan planning organization may require one in its own component.",
+      "excerpt": "\"Projects funded by the ATP do not require a match.\""
+    },
+    {
+      "id": "ca-atp-minimum-request",
+      "statement": "The 2027 ATP Guidelines set a required minimum request for ATP funds of $250,000, with exceptions for non-infrastructure projects, safe routes to school projects, recreational trail projects and plans.",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 14, Minimum Funding Request.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a5-project-funding"
+      ],
+      "supports": "The minimum ATP request is $250,000 for an infrastructure project that is not a safe routes to school or recreational trail project.",
+      "excerpt": "\"the required minimum request for ATP funds is $250,000. This minimum does not apply to non-infrastructure projects, safe routes to school projects, recreational trail projects, and plans.\""
+    },
+    {
+      "id": "ca-atp-rtp-pages",
+      "statement": "The 2027 ATP Application Checklist lists the relevant pages of the Regional Transportation Plan showing that the project is consistent with it.",
+      "source": "California Transportation Commission, 2027 ATP Application Checklist. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-application-checklist-final-a11y.pdf (SHA-256 b14e7674553788127f5fd6953d8781b02e877f7ed7935f50113663fd7e405f89), Part A6: Screening Criteria.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-part-a6-screening-criteria"
+      ],
+      "supports": "An ATP application attaches Regional Transportation Plan pages to show consistency.",
+      "excerpt": "\"Relevant pages of the Regional Transportation Plan showing that the project is consistent\""
+    },
+    {
+      "id": "ca-atp-dac-income-criterion",
+      "statement": "The 2027 ATP Guidelines open their list of disadvantaged community criteria with median household income less than 80 percent of the statewide median, from the 2020 to 2024 American Community Survey (less than $79,297.60).",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 12.A, Disadvantaged Communities.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-b1-disadvantaged-communities"
+      ],
+      "supports": "A community qualifies as disadvantaged under the ATP when it meets at least one listed criterion; the first is median household income under 80 percent of the statewide median.",
+      "excerpt": "\"Median Household Income: (Table ID B19013) is less than 80% of the statewide median based on the most current Census Tract (ID 140) level data from the 2020-2024 American Community Survey (<$79,297.60).\""
+    },
+    {
+      "id": "ca-atp-small-rubric-q2",
+      "statement": "The 2027 Small Infrastructure scoring rubric gives Question 2, potential for increased walking, bicycling and rolling, 0 to 52 points.",
+      "source": "California Transportation Commission, 2027 ATP Small Infrastructure Application Scoring Rubric. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/3-2027-atp-small-infrastructure-application-scoring-rubric-final.pdf (SHA-256 db9255f5e00be87587cf6e1fccee80d196fc5df8e4eb0d572ccbc89265bc7323), Question 2.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-b2-walking-biking-rolling"
+      ],
+      "supports": "Question 2 of the Small application is scored from 0 to 52 points.",
+      "excerpt": "\"QUESTION #2: POTENTIAL FOR INCREASED WALKING, BICYCLING AND ROLLING (0-52 POINTS)\""
+    },
+    {
+      "id": "ca-atp-small-rubric-q3",
+      "statement": "The 2027 Small Infrastructure scoring rubric gives Question 3, potential for reducing the number and/or rate of active transportation user fatalities and injuries, 0 to 25 points.",
+      "source": "California Transportation Commission, 2027 ATP Small Infrastructure Application Scoring Rubric. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/3-2027-atp-small-infrastructure-application-scoring-rubric-final.pdf (SHA-256 db9255f5e00be87587cf6e1fccee80d196fc5df8e4eb0d572ccbc89265bc7323), Question 3.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-b3-fatalities-and-injuries"
+      ],
+      "supports": "Question 3 of the Small application is scored from 0 to 25 points.",
+      "excerpt": "\"QUESTION #3: POTENTIAL FOR REDUCING THE NUMBER AND/OR RATE OF ACTIVE TRANSPORTATION USER FATALITIES AND INJURIES (0-25 POINTS)\""
+    },
+    {
+      "id": "ca-atp-small-rubric-q4",
+      "statement": "The 2027 Small Infrastructure scoring rubric gives Question 4, public participation and planning, 0 to 10 points.",
+      "source": "California Transportation Commission, 2027 ATP Small Infrastructure Application Scoring Rubric. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/3-2027-atp-small-infrastructure-application-scoring-rubric-final.pdf (SHA-256 db9255f5e00be87587cf6e1fccee80d196fc5df8e4eb0d572ccbc89265bc7323), Question 4.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-b4-public-participation-planning"
+      ],
+      "supports": "Question 4 of the Small application is scored from 0 to 10 points.",
+      "excerpt": "\"QUESTION #4: PUBLIC PARTICIPATION and PLANNING (0-10 POINTS)\""
+    },
+    {
+      "id": "ca-atp-corps-deduction",
+      "statement": "The 2027 ATP Guidelines' scoring table gives Corps Use 0 or minus 5 points for the Small infrastructure application.",
+      "source": "California Transportation Commission, 2027 Active Transportation Program Guidelines, Resolution G-26-31, adopted March 19, 2026. https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf (SHA-256 afbd68c0aa24214e48ed2e0f2759c4da8376c2ae2de8898acc540abb63ac6ff3), section 18, Scoring Criteria, scoring table, row Corps Use, column Small Inf. and I + NI.",
+      "readOn": "2026-11-16",
+      "sections": [
+        "atp-2027-b6-conservation-corps"
+      ],
+      "supports": "A Small infrastructure application loses 5 points, or none, on the Corps question; it earns none.",
+      "excerpt": "\"(0 or -5)\" under \"Small Inf. and I + NI\" in the row \"Corps Use\""
+    }
+  ],
+  "sections": {
+    "atp-2027-part-a-project-information": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThis demonstration fills in the Small Infrastructure application of the 2027 Active Transportation Program (ATP) for a study place, the city of Yreka, California. It describes no real project, and names no project limits, scope or schedule.\n\nThe 2027 ATP Guidelines define a Small Project application as one for a project with a total project cost of $3.5 million or less. The 2027 ATP Guidelines list local, regional or state agencies, with cities and counties as examples, among eligible applicants.\n\nThe 2020 Census counted 7,807 residents in the city of Yreka, California.\n\nThe 2027 ATP Guidelines' schedule set project applications due June 22, 2026. That date has passed, so this text is a rehearsal of the form and was not submitted to the Commission."
+    },
+    "atp-2027-part-a5-project-funding": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThis demonstration enters no cost estimate and requests no amount.\n\nThe 2027 ATP Guidelines say projects funded by the ATP do not require a match. The 2027 ATP Guidelines set a required minimum request for ATP funds of $250,000, with exceptions for non-infrastructure projects, safe routes to school projects, recreational trail projects and plans."
+    },
+    "atp-2027-part-a6-screening-criteria": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThis demonstration makes no statement that a project meets any screening criterion.\n\nThe 2027 ATP Application Checklist lists the relevant pages of the Regional Transportation Plan showing that the project is consistent with it. No plan page is attached to this demonstration."
+    },
+    "atp-2027-b1-disadvantaged-communities": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThis demonstration claims no disadvantaged community status and reports no benefit to any community.\n\nThe 2027 ATP Guidelines open their list of disadvantaged community criteria with median household income less than 80 percent of the statewide median, from the 2020 to 2024 American Community Survey (less than $79,297.60). \n\nWhat OpenPlan holds for each criterion prints in this packet's own appendix on disadvantaged community inputs."
+    },
+    "atp-2027-b2-walking-biking-rolling": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThis demonstration reports no counts of people walking, bicycling or rolling and forecasts no increase.\n\nThe 2027 Small Infrastructure scoring rubric gives Question 2, potential for increased walking, bicycling and rolling, 0 to 52 points."
+    },
+    "atp-2027-b3-fatalities-and-injuries": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThis demonstration makes no claim about what any project would do for safety. The crash records OpenPlan retrieved for the study place, with their source and years, print in this packet's own crash appendix; this text repeats none of them.\n\nThe 2027 Small Infrastructure scoring rubric gives Question 3, potential for reducing the number and/or rate of active transportation user fatalities and injuries, 0 to 25 points."
+    },
+    "atp-2027-b4-public-participation-planning": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nNo public participation was carried out for this demonstration, and no person or group was consulted.\n\nThe 2027 Small Infrastructure scoring rubric gives Question 4, public participation and planning, 0 to 10 points."
+    },
+    "atp-2027-b5-scope-plan-layout-consistency": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThe application asks no question here. No layout, estimate or schedule was prepared for this demonstration."
+    },
+    "atp-2027-b6-conservation-corps": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nNo Conservation Corps was contacted for this demonstration.\n\nThe 2027 ATP Guidelines' scoring table gives Corps Use 0 or minus 5 points for the Small infrastructure application."
+    },
+    "atp-2027-b7-past-performance": {
+      "text": "Demonstration by an automated OpenPlan proof run. The City of Yreka did not prepare, review, adopt or submit this text, and it commits the City to nothing. It was written from public sources read on November 16, 2026.\n\nThe application asks no question here. This demonstration reports on no past project."
+    }
+  }
+}
