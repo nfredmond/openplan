@@ -54,9 +54,17 @@ import { seedId } from "./fixtures/grants/safety-seed";
 
 // Re-taken on November 16, 2026 (lane 75, after review 78): the section title's print rule gained
 // `break-inside: avoid`, one CSS declaration in the document's style block. No text changed, and
-// the built-in writer's PDF, which reads no CSS, kept its hash.
-const PINNED_HTML_SHA256 = "68e4d4dd9978efd38aaddfec56e68ba738fc20d41d38d640df0722bce0ebc479";
-const PINNED_PDF_SHA256 = "7a962fe8807667fc156ece49bb7d406ae7d75249bb84d1a92c00ab4a282f38e7";
+// the built-in writer's PDF, which reads no CSS, kept its hash (HTML `68e4d4dd...`, PDF `7a962fe8...`).
+//
+// Re-taken again on November 16, 2026 (lane 83, KI-2026-11-16-104), for every application's layout.
+// Three things changed in the text, so the built-in writer's PDF moved too: the opportunity summary
+// prints under the cover's boxes, not above them; a finalized time in the provenance table prints as
+// "Nov 15, 2026, 14:10 (America/Los_Angeles)", not "November 15, 2026 at 14:10 (America/Los_Angeles)";
+// and the optional row with nothing attached ("Plan consistency documentation") reads "Not attached",
+// not "Missing". The rest is the stylesheet and markup that carry the layout. No section title, no
+// attachment title, no Required or Optional word and no DRAFT count changed.
+const PINNED_HTML_SHA256 = "3eba1e6aeb6f6be2541850caee107f54d91b3a6b90251bf52fd01822ddc5eafd";
+const PINNED_PDF_SHA256 = "43af2277053834b73e79798c4b2782ffad915750f7f97b0283230b2d62f09a05";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -228,6 +236,9 @@ describe("an application seeded from the earlier ATP template", () => {
     expect(html).toContain("<p>Study place not recorded in OpenPlan</p>");
     expect(html).not.toMatch(/to be provided/i);
     expect(html).toContain("<td>Existing conditions photos</td>\n          <td>Optional</td>");
+    // An optional row with nothing attached is not "Missing"; a required one is.
+    expect(html).toContain("<td>Plan consistency documentation</td>\n          <td>Optional</td>\n          <td>Not attached</td>");
+    expect(html).toContain("<td>Engineer&#39;s cost estimate</td>\n          <td>Required</td>\n          <td>Missing</td>");
     expect(html).toContain("Appendix F. Benefit-cost summary");
     expect(html).toContain("DRAFT: 1 required attachment(s) outstanding");
     expect(body.appendices.map((appendix: { status: string }) => appendix.status)).toEqual(Array(6).fill("included"));
