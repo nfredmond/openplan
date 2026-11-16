@@ -4,11 +4,12 @@
  * workspace and linked project. A failed read becomes an "unreadable" state
  * with its reason; it never becomes an empty record.
  *
- * Only the records the selected appendices need are read.
+ * Only the records the selected appendices need are read, and the project,
+ * which is always read: the cover names its study place in every export.
  */
 
 import type { AtpEvidenceRecords, AtpProjectRecord } from "@/lib/grants/atp-evidence-appendices";
-import { ATP_PACKET_PROJECT_SELECT, type AtpPacketRun } from "@/lib/grants/atp-packet";
+import { ATP_PACKET_PROJECT_SELECT, readAtpPacketProject, type AtpPacketRun } from "@/lib/grants/atp-packet";
 import { loadProjectBcaRead, loadProjectEngagementRead, type EvidenceQueryClient } from "@/lib/grants/evidence-appendix-reads";
 import {
   latestReadyIngestByProject,
@@ -29,15 +30,10 @@ function text(value: unknown): string | null {
 }
 
 function readProject(row: Record<string, unknown>): AtpProjectRecord | null {
-  if (typeof row.id !== "string") return null;
-  const amount = row.estimated_cost_amount;
+  const project = readAtpPacketProject(row);
+  if (!project) return null;
   return {
-    id: row.id,
-    name: typeof row.name === "string" ? row.name : row.id,
-    summary: text(row.summary),
-    estimated_cost_amount: typeof amount === "string" || typeof amount === "number" ? amount : null,
-    estimated_cost_currency: text(row.estimated_cost_currency),
-    estimated_cost_basis_year: typeof row.estimated_cost_basis_year === "number" ? row.estimated_cost_basis_year : null,
+    ...project,
     estimated_cost_recorded_at: text(row.estimated_cost_recorded_at),
     estimated_cost_source_document_id: text(row.estimated_cost_source_document_id),
   };
@@ -126,11 +122,10 @@ export async function loadAtpEvidenceRecords(
       timeZone,
     };
   }
-  const needsProject = ["scoring_packet", "cost_estimate", "engagement", "equity"].some((key) => selected.has(key));
   const needsRun = selected.has("scoring_packet") || selected.has("equity");
   const skipped = { status: "absent" } as const;
   const [project, run, crash, bca, engagement] = await Promise.all([
-    needsProject ? loadProject(client, workspaceId, projectId) : Promise.resolve(skipped),
+    loadProject(client, workspaceId, projectId),
     needsRun ? loadLatestRun(client, workspaceId, projectId) : Promise.resolve(skipped),
     selected.has("crash_summary") ? loadCrash(client, workspaceId, projectId) : Promise.resolve(skipped),
     selected.has("bca") ? loadProjectBcaRead(client, projectId) : Promise.resolve(skipped),

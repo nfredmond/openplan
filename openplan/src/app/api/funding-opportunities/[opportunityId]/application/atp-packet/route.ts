@@ -11,7 +11,7 @@ import {
   ATP_PACKET_PROJECT_SELECT,
   buildAtpPacketView,
   isAtpApplication,
-  type AtpPacketProject,
+  readAtpPacketProject,
   type AtpPacketRun,
   type SeededSectionFacts,
 } from "@/lib/grants/atp-packet";
@@ -128,22 +128,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load the project's analysis runs" }, { status: 500 });
     }
 
-    const project = projectResult.data as Record<string, unknown> | null;
-    if (!project || typeof project.id !== "string") {
+    const projectRow = projectResult.data as Record<string, unknown> | null;
+    const packetProject = projectRow ? readAtpPacketProject(projectRow) : null;
+    if (!packetProject) {
       return NextResponse.json({ packet: null, missing: "project" });
     }
 
-    const amount = project.estimated_cost_amount;
-    const packetProject: AtpPacketProject = {
-      id: project.id,
-      name: typeof project.name === "string" ? project.name : project.id,
-      summary: typeof project.summary === "string" ? project.summary : null,
-      estimated_cost_amount: typeof amount === "string" || typeof amount === "number" ? amount : null,
-      estimated_cost_currency:
-        typeof project.estimated_cost_currency === "string" ? project.estimated_cost_currency : null,
-      estimated_cost_basis_year:
-        typeof project.estimated_cost_basis_year === "number" ? project.estimated_cost_basis_year : null,
-    };
     const runs = (runResult.data ?? []) as AtpPacketRun[];
     // The crash retrieval day prints on the workspace calendar; a failed read is UTC.
     const { timeZone } = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);

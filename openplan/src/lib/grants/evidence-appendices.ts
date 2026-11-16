@@ -55,6 +55,12 @@ export type EvidenceAppendix<K extends string = string> = {
   /** Why it is missing, unreadable or omitted, or what part of an included appendix is absent. */
   statusNote: string | null;
   source: EvidenceAppendixSource | null;
+  /**
+   * Each fact prints as one line of running text, "Label: value", so a text
+   * search of the PDF finds the label and its value as one string. A fact
+   * with an empty label prints its value alone, for a fact that is already a
+   * whole sentence.
+   */
   facts: Array<{ label: string; value: string }>;
   table: { headers: string[]; rows: string[][] } | null;
   figureSvg: string | null;
@@ -478,8 +484,10 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
     return `<article id="appendix-${esc(appendix.key)}" class="appendix">${heading}
       <div class="outstanding">${esc(STATUS_LABELS[appendix.status])}. ${esc(appendix.statusNote ?? "")}</div></article>`;
   }
+  // The colon is in the markup, not the stylesheet, so the built-in PDF writer,
+  // which reads the text and no styles, prints the same "Label: value" line.
   const facts = appendix.facts.length > 0
-    ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div><dt>${esc(fact.label)}</dt><dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
+    ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div>${fact.label ? `<dt>${esc(fact.label)}:</dt> ` : ""}<dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
     : "";
   const table = appendix.table
     ? `<div class="table-scroll"><table><thead><tr>${appendix.table.headers.map((header) => `<th>${cellText(header)}</th>`).join("")}</tr></thead>
@@ -496,7 +504,13 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
     </article>`;
 }
 
-/** The evidence index and every appendix, as one document section. */
+/**
+ * The evidence index and every appendix, as one document section.
+ *
+ * The index names each source record by its kind only. A record's id prints
+ * whole on the source line under its appendix heading; in the index's narrow
+ * column it wrapped mid-id, so a copied id broke (KI-2026-11-16-038).
+ */
 export function evidenceAppendicesMarkup(
   appendices: readonly EvidenceAppendix[] | undefined,
   frame: EvidenceAppendixFrame
@@ -511,7 +525,7 @@ export function evidenceAppendicesMarkup(
       <tbody>${appendices.map((appendix) => `<tr>
         <td>${esc(appendix.letter)}. ${esc(appendix.title)}</td>
         <td>${esc(STATUS_LABELS[appendix.status])}${appendix.key === "hin_map" && appendix.status === "included" && !appendix.figureSvg ? "; map not drawn" : ""}</td>
-        <td>${cellText(appendix.source ? `${appendix.source.record} ${appendix.source.id}` : appendix.statusNote ?? "")}</td>
+        <td>${cellText(appendix.source ? appendix.source.record : appendix.statusNote ?? "")}</td>
         <td>${cellText(appendix.source ? dateText(appendix.source.date) : "Not recorded")}</td>
         <td>${cellText(appendix.source?.hash ?? "None stored")}</td>
       </tr>`).join("")}</tbody>

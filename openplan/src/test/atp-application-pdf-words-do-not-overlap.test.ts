@@ -21,6 +21,12 @@ import { ATP_IDS, completeAtpRecords } from "./fixtures/grants/atp-evidence";
  * read back with Poppler's word boxes, and every pair of words on one line is
  * checked for overlap.
  *
+ * The first case's cover title wraps to two lines. At the old line spacing its
+ * first line's word boxes overlapped the second line's by more than a point
+ * ("Active" over "Program"), though the letters did not touch on the page
+ * (KI-2026-11-16-074). The earlier fixture title fit one line and could not
+ * show it.
+ *
  * Blind category: overlap with a drawn shape (a border or a map), text clipped
  * by a cell rather than drawn over its neighbor, and pages this fixture does
  * not produce. Skipped where Chrome or Poppler is not installed.
@@ -79,7 +85,8 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with Poppler's wor
   it("prints the program page address inside its cell and no word over another", async () => {
     process.env.CHROME_EXECUTABLE_PATH = CHROME;
     const html = buildGrantApplicationHtml({
-      opportunity: { id: ATP_IDS.opportunity, title: "ATP application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      // The title a tracked ATP opportunity carries. At the cover's size it wraps to two lines.
+      opportunity: { id: ATP_IDS.opportunity, title: "Active Transportation Program (ATP)", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
       programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-16T01:31:00.000Z",
       evidenceAppendices: buildAtpEvidenceAppendices(completeAtpRecords(), new Set<string>(ATP_APPENDIX_KEYS)),
       evidenceAppendixFrame: ATP_APPENDIX_FRAME,
@@ -89,6 +96,10 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with Poppler's wor
     const list = words(file);
     // The address is printed (possibly wrapped), so the check has something to find.
     expect(list.map((w) => w.text).join("")).toContain("https://catc.ca.gov/programs/active-transportation-program");
+    // The cover title did wrap, so its two lines' word boxes are under test (KI-2026-11-16-074).
+    const title = list.filter((w) => w.page === 1).slice(0, 12).filter((w) => ["Active", "Transportation", "Program", "(ATP)"].includes(w.text)).slice(0, 4);
+    expect(title.map((w) => w.text)).toEqual(["Active", "Transportation", "Program", "(ATP)"]);
+    expect(title[2].yMin).toBeGreaterThan(title[0].yMax - 1);
     expect(overlappingWords(list)).toEqual([]);
   }, 120_000);
 

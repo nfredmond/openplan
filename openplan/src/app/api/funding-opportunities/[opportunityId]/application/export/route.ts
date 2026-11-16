@@ -450,6 +450,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.warn("application_export_finalizer_roster_unread", { opportunityId: opportunity.id, userId: user.id });
     }
 
+    // The checklist names each attached Knowledge Base document by its title.
+    // A failed read leaves the map short, and the document prints as one whose
+    // title could not be read: never a guessed title, and never a refusal of
+    // an export over a label.
+    const attachedDocumentIds = [...new Set(attachments.flatMap((attachment) => (attachment.kb_document_id ? [attachment.kb_document_id] : [])))];
+    const attachmentDocumentTitles = new Map<string, string>();
+    if (attachedDocumentIds.length > 0) {
+      const titlesResult = await supabase
+        .from("kb_documents")
+        .select("id, title")
+        .eq("workspace_id", opportunity.workspace_id)
+        .in("id", attachedDocumentIds);
+      if (titlesResult.error) {
+        audit.warn("application_export_attachment_titles_unread", { opportunityId: opportunity.id, userId: user.id, message: titlesResult.error.message });
+      }
+      for (const row of (titlesResult.data ?? []) as Array<{ id?: unknown; title?: unknown }>) {
+        if (typeof row.id === "string" && typeof row.title === "string" && row.title.trim()) {
+          attachmentDocumentTitles.set(row.id, row.title.trim());
+        }
+      }
+    }
+
     const exportSections: GrantApplicationExportSection[] = sections.map((section) => ({
       section,
       provenance: resolveSectionProvenance(
@@ -477,6 +499,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       sections: exportSections,
       attachments,
       ifApplicableAttachmentKeys: ifApplicableAttachmentKeys(seededTemplate),
+      attachmentDocumentTitles,
+      coverLines: assembled?.coverLines,
       generatedAt,
       evidenceAppendices,
       evidenceAppendixFrame: assembled?.frame,

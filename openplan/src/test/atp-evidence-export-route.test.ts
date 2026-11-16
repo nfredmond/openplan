@@ -184,12 +184,12 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     }
     expect(html).not.toContain("SS4A");
     expect(html).toContain("Not recorded. Equity is withheld because required demographic inputs are unavailable.");
-    expect(html).toContain("<td>60.0</td>");
+    expect(html).toContain("<dt>Safety, OpenPlan screening score (not a CTC score):</dt> <dd>60.0</dd>");
     expect(html).toContain(ATP_VERIFY_GUIDELINES.replaceAll("'", "&#39;"));
     // The run's crash snapshot was fetched at 03:40 UTC on November 2: November 1 in Los Angeles.
-    expect(html).toContain("California Crash Reporting System (CCRS), crash years 2022–2025, retrieved 2026-11-01.");
-    expect(html).toContain("<dt>Serious-injury crashes</dt><dd>12</dd>");
-    expect(html).toContain("<dt>Crashes outside the boundary, left out</dt><dd>261</dd>");
+    expect(html).toContain("California Crash Reporting System (CCRS), crash years 2022–2025, retrieved Nov 1, 2026.");
+    expect(html).toContain("<dt>Serious-injury crashes:</dt> <dd>12</dd>");
+    expect(html).toContain("<dt>Crashes outside the boundary, left out:</dt> <dd>261</dd>");
     expect(html).toContain(EVIDENCE_IDS.bcaVersion);
     expect(html).toContain(EVIDENCE_IDS.campaign);
 
@@ -203,7 +203,7 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     // Projections, as literals: the columns the appendices print, from the
     // project's own records in the application's own workspace.
     expect(callsFor("projects", "select")).toEqual([[
-      "id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_recorded_at, estimated_cost_source_document_id",
+      "id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, place_source, place_kind, place_ref, place_label, estimated_cost_recorded_at, estimated_cost_source_document_id",
     ]]);
     expect(callsFor("projects", "eq")).toEqual([["id", ATP_IDS.project], ["workspace_id", ATP_IDS.workspace]]);
     expect(callsFor("runs", "select")).toEqual([["id, title, created_at, metrics"]]);
@@ -301,7 +301,7 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     const body = await response.json();
     expect(statuses(body)[0]).toEqual(["scoring_packet", "unreadable"]);
     expect(statuses(body)[4]).toEqual(["equity", "unreadable"]);
-    expect(renderReportPdfMock.mock.calls[0][0]).not.toContain("<td>60.0</td>");
+    expect(renderReportPdfMock.mock.calls[0][0]).not.toContain("<dd>60.0</dd>");
   });
 
   it("reads only the selected appendices and lists the rest as not selected", async () => {
