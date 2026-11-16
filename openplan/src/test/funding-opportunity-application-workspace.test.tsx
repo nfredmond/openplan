@@ -176,6 +176,50 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     expect(initCall?.body).toEqual({ catalogKey: "atp" });
   });
 
+  it("offers one ATP program in the template picker, under the program's key (KI-2026-11-16-033)", async () => {
+    await openWorkspace(
+      applicationPayload({ sections: [], attachments: [], kbDocumentOptions: [], reportArtifactOptions: [] })
+    );
+    const picker = (await screen.findByLabelText("Application template")) as HTMLSelectElement;
+    const options = [...picker.options].map((option) => ({ value: option.value, label: option.textContent }));
+    // The ATP program has two templates; the picker lists programs, so it shows one line for it.
+    expect(options.filter((option) => option.value.startsWith("atp"))).toEqual([
+      { value: "atp", label: "Active Transportation Program (ATP)" },
+    ]);
+    expect(options.filter((option) => option.label === "Active Transportation Program (ATP)")).toHaveLength(1);
+    expect(new Set(options.map((option) => option.label)).size).toBe(options.length);
+  });
+
+  it("labels a checklist item required if applicable only on an application seeded from a template that says so", async () => {
+    const stateOnly = attachmentRow({ attachment_key: "state-only-funds-request", title: "State-Only Funds Request (Exhibit 25-F)" });
+    const signature = attachmentRow({ id: "66666666-6666-4666-8666-666666666667", attachment_key: "signature-page", title: "Signature Page", sort_order: 1 });
+    const extra = attachmentRow({ id: "66666666-6666-4666-8666-666666666668", attachment_key: "additional-attachments", title: "Additional attachments", required: false, sort_order: 2 });
+    await openWorkspace(
+      applicationPayload({
+        sections: [sectionRow({ section_key: "atp-2027-b2-walking-biking-rolling", title: "Part B, Question 2: Potential to Increase Walking, Biking and Rolling" })],
+        attachments: [stateOnly, signature, extra],
+      })
+    );
+    expect(await screen.findByTestId("application-attachment-state-only-funds-request")).toHaveTextContent("Required if applicable");
+    expect(screen.getByTestId("application-attachment-signature-page")).toHaveTextContent("Required");
+    expect(screen.getByTestId("application-attachment-signature-page")).not.toHaveTextContent("if applicable");
+    expect(screen.getByTestId("application-attachment-additional-attachments")).toHaveTextContent("Optional");
+    // The ATP screening packet panel is offered for the 2027 template as it is for the earlier one.
+    expect(screen.getByTestId("atp-scoring-packet")).toBeInTheDocument();
+  });
+
+  it("keeps Required on the same checklist key when the application was seeded from the earlier ATP template", async () => {
+    await openWorkspace(
+      applicationPayload({
+        sections: [sectionRow({ section_key: "disadvantaged-communities", title: "Benefit to disadvantaged communities" })],
+        attachments: [attachmentRow({ attachment_key: "state-only-funds-request", title: "State-only funds request" })],
+      })
+    );
+    const row = await screen.findByTestId("application-attachment-state-only-funds-request");
+    expect(row).toHaveTextContent("Required");
+    expect(row).not.toHaveTextContent("if applicable");
+  });
+
   it("speaks the proposal language for a proposal pursuit and hides the grant catalog picker", async () => {
     fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
       if ((init?.method ?? "GET") === "GET") {

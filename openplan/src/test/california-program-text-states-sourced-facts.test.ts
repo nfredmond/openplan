@@ -53,6 +53,9 @@ const summaries: Array<[string, string]> = [
 ];
 
 const atp = usCaPrograms.programs.find((program) => program.key === "atp")!;
+// The seven-section template applications were seeded from before the 2027
+// template. Its sentences are still what those applications' guidance says.
+const earlierTemplate = atp.earlierApplicationTemplates!.find((template) => template.templateKey === "atp-pre-2027")!;
 
 describe("California program text", () => {
   it("reads every state and federal-administration summary", () => {
@@ -82,7 +85,7 @@ describe("California program text", () => {
   it("says leverage scores only in Large and Medium applications and asks for no benefit-cost ratio", () => {
     expect(atp.matchRequirement).toContain("No local match required");
     expect(atp.matchRequirement).toContain("only in Large and Medium project applications");
-    const cost = atp.applicationSections!.find((section) => section.key === "cost-effectiveness-leverage")!;
+    const cost = earlierTemplate.applicationSections.find((section) => section.key === "cost-effectiveness-leverage")!;
     // Review 68: the Small and Medium rubrics still ask whether cost-effectiveness was considered (Question 5 note).
     expect(cost.guidance).not.toContain("Small applications score neither");
     expect(cost.guidance).toContain("The Small and Medium scoring rubrics still ask evaluators whether the application shows that cost-effectiveness was considered.");
@@ -91,7 +94,7 @@ describe("California program text", () => {
   });
 
   it("keeps the ATP section keys saved applications are identified by", () => {
-    expect(atp.applicationSections!.map((section) => section.key)).toEqual([
+    expect(earlierTemplate.applicationSections.map((section) => section.key)).toEqual([
       "project-narrative",
       "need-and-safety",
       "disadvantaged-communities",

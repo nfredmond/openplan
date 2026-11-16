@@ -2,13 +2,15 @@
  * The California Active Transportation Program (ATP) scoring packet for one
  * grant application, built from evidence the workspace already holds.
  *
- * WHICH APPLICATIONS GET IT. Only an application seeded from the catalog's
- * `atp` template. The opportunity row records no program key, so the template
- * is read back from the seeded sections themselves: their keys must all belong
- * to exactly one catalog template, and at least one must belong to that
- * template alone. A custom scaffold, a proposal, another state's program, or a
- * remnant too small to tell apart gets no packet. ATP is a California program;
- * nothing here applies its rules anywhere else.
+ * WHICH APPLICATIONS GET IT. Only an application seeded from one of the
+ * catalog's `atp` templates: the 2027 one, or the earlier one that
+ * applications seeded before it still carry. The opportunity row records no
+ * program key, so the template is read back from the seeded sections
+ * themselves: their keys must all belong to exactly one catalog template, and
+ * at least one must belong to that template alone. A custom scaffold, a
+ * proposal, another state's program, or a remnant too small to tell apart
+ * gets no packet. ATP is a California program; nothing here applies its rules
+ * anywhere else.
  *
  * WHERE THE NUMBERS COME FROM. Safety and equity come from the project's
  * latest corridor analysis run, through the same presentation rule every
@@ -24,7 +26,7 @@
  */
 
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
-import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
+import { listGrantApplicationTemplates, type GrantApplicationTemplate } from "@/lib/grants/application-templates";
 import { computeAtpPacket } from "@/lib/planner-pack/atp";
 import type { AtpGrantResult, AtpLapmRow } from "@/lib/planner-pack/types";
 import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
@@ -42,29 +44,38 @@ export type SeededSectionFacts = {
 
 /**
  * The catalog template an application was seeded from, or null when the
- * seeded sections do not identify exactly one.
+ * seeded sections do not identify exactly one. A program's earlier templates
+ * count, so an application seeded before the program's template changed is
+ * still recognised.
  */
-export function identifySeededCatalogKey(sections: readonly SeededSectionFacts[]): string | null {
+export function identifySeededTemplate(sections: readonly SeededSectionFacts[]): GrantApplicationTemplate | null {
   const seeded = new Set(
     sections.filter((section) => section.source === "catalog").map((section) => section.section_key)
   );
   if (seeded.size === 0) return null;
 
-  const templates = GRANT_PROGRAM_CATALOG.map((entry) => ({
-    key: entry.key,
-    sectionKeys: new Set((entry.applicationSections ?? []).map((template) => template.key)),
-  })).filter((template) => template.sectionKeys.size > 0);
+  const templates = listGrantApplicationTemplates()
+    .map((template) => ({
+      template,
+      sectionKeys: new Set(template.applicationSections.map((section) => section.key)),
+    }))
+    .filter((candidate) => candidate.sectionKeys.size > 0);
 
-  const matches = templates.filter((template) =>
-    [...seeded].every((key) => template.sectionKeys.has(key))
+  const matches = templates.filter((candidate) =>
+    [...seeded].every((key) => candidate.sectionKeys.has(key))
   );
   if (matches.length !== 1) return null;
 
   const [match] = matches;
   const distinguishing = [...seeded].some((key) =>
-    templates.every((template) => template.key === match.key || !template.sectionKeys.has(key))
+    templates.every((candidate) => candidate === match || !candidate.sectionKeys.has(key))
   );
-  return distinguishing ? match.key : null;
+  return distinguishing ? match.template : null;
+}
+
+/** The catalog program an application was seeded from, whichever of its templates seeded it. */
+export function identifySeededCatalogKey(sections: readonly SeededSectionFacts[]): string | null {
+  return identifySeededTemplate(sections)?.catalogKey ?? null;
 }
 
 export function isAtpApplication(sections: readonly SeededSectionFacts[]): boolean {

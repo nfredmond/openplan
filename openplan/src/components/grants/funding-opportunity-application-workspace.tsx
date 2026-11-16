@@ -22,6 +22,7 @@ import { NarrativeGroundingSummaryLine } from "@/components/grants/narrative-gro
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import {
+  attachmentRequirementLabel,
   parseApplicationAttachmentRow,
   parseApplicationSectionRow,
   type ApplicationAttachmentRow,
@@ -30,7 +31,8 @@ import {
   type ApplicationSectionStatus,
 } from "@/lib/grants/application";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
-import { identifySeededCatalogKey, isAtpApplication } from "@/lib/grants/atp-packet";
+import { identifySeededTemplate, isAtpApplication } from "@/lib/grants/atp-packet";
+import { ifApplicableAttachmentKeys } from "@/lib/grants/application-templates";
 import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel";
 import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
 import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
@@ -502,7 +504,10 @@ export function FundingOpportunityApplicationWorkspace({
     }
   }
 
-  const seededCatalogKey = pursuitKind === "grant" ? identifySeededCatalogKey(sections) : null;
+  const seededTemplate = pursuitKind === "grant" ? identifySeededTemplate(sections) : null;
+  const seededCatalogKey = seededTemplate?.catalogKey ?? null;
+  // Items the seeded template asks for only in some cases read "Required if applicable".
+  const ifApplicableKeys = ifApplicableAttachmentKeys(seededTemplate);
   const isSs4aApplication = seededCatalogKey === "ss4a";
   const appendixProgram = evidenceAppendixProgramFor(seededCatalogKey);
 
@@ -753,6 +758,7 @@ export function FundingOpportunityApplicationWorkspace({
                   <AttachmentRowView
                     key={attachment.id}
                     attachment={attachment}
+                    requirementLabel={attachmentRequirementLabel(attachment, ifApplicableKeys)}
                     kbOptions={kbOptions}
                     artifactOptions={artifactOptions}
                     onPatch={(body) => void patchAttachment(attachment.id, body)}
@@ -1395,11 +1401,14 @@ function SectionDetailView({
 
 function AttachmentRowView({
   attachment,
+  requirementLabel,
   kbOptions,
   artifactOptions,
   onPatch,
 }: {
   attachment: ApplicationAttachmentRow;
+  /** "Required", "Required if applicable" or "Optional". */
+  requirementLabel: string;
   kbOptions: KnowledgeBaseAttachOption[];
   artifactOptions: ReportArtifactAttachOption[];
   onPatch: (body: Record<string, unknown>) => void;
@@ -1417,7 +1426,7 @@ function AttachmentRowView({
         <p className="font-semibold text-foreground">{attachment.title}</p>
         <div className="flex flex-wrap items-center gap-1.5">
           <StatusBadge tone={attachment.required ? "warning" : "neutral"}>
-            {attachment.required ? "Required" : "Optional"}
+            {requirementLabel}
           </StatusBadge>
           <StatusBadge tone={ATTACHMENT_STATUS_TONES[attachment.status]}>
             {ATTACHMENT_STATUS_LABELS[attachment.status]}
