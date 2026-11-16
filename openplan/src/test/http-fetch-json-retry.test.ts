@@ -63,6 +63,37 @@ describe("fetchJsonWithRetry", () => {
     expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
   });
 
+  it("does not keep an answer its caller refuses, so an error sent with HTTP 200 is asked for again", async () => {
+    // Review 72: the Census service reports an error inside a 200 body. The
+    // boundary cache kept it for a day. A caller can now say which answers
+    // are worth keeping.
+    const errorBody = { error: { code: 400, message: "Failed to execute query.", details: [] } };
+    const goodBody = { features: [{ properties: { GEOID: "1490R" } }] };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: true, status: 200, json: vi.fn().mockResolvedValue(errorBody) })
+      .mockResolvedValue({ ok: true, status: 200, json: vi.fn().mockResolvedValue(goodBody) });
+    vi.stubGlobal("fetch", fetchMock as typeof fetch);
+    const options = {
+      cacheTtlMs: 30_000,
+      cacheKey: "cache:refused",
+      retries: 0,
+      cacheWhen: (payload: unknown) => Array.isArray((payload as { features?: unknown } | null)?.features),
+    };
+
+    const first = await fetchJsonWithRetry<unknown>("https://example.com/boundary", undefined, options);
+    expect(first).toEqual(errorBody);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(0);
+
+    const second = await fetchJsonWithRetry<unknown>("https://example.com/boundary", undefined, options);
+    const third = await fetchJsonWithRetry<unknown>("https://example.com/boundary", undefined, options);
+    expect(second).toEqual(goodBody);
+    expect(third).toEqual(goodBody);
+    // The refused answer was asked for again; the kept one was not.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(__fetchJsonResponseCacheSizeForTests()).toBe(1);
+  });
+
   it("isolates cached object payloads from caller mutation", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

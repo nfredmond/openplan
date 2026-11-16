@@ -22,6 +22,7 @@
  */
 
 import { createGeofenceTester } from "@/lib/engagement/geofence";
+import { stateUspsFromFips } from "@/lib/geographies/state-fips";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 
 /** What the crash counts are bounded by. */
@@ -29,6 +30,21 @@ type CrashAreaBasis = "place_boundary" | "bounding_rectangle";
 
 /** Where the boundary came from, when one was applied. */
 type CrashBoundarySource = "project_place" | "picked_place" | "drawn_area";
+
+/**
+ * What an acquisition records when its study area is a tribal area.
+ *
+ * `censusStateFips` is every state the Census Bureau lists for the area, read
+ * at retrieval from the area's own record (`tribalAreaStateFips` on the
+ * resolved boundary). Null means that record could not be read then; empty
+ * means it named no state. `stateFileUsed` says whether one state's crash file
+ * answered, as opposed to the national file. Both are facts about the read,
+ * kept so the screen and every export say the same thing about it later.
+ */
+export type CrashTribalAreaCoverage = {
+  censusStateFips: string[] | null;
+  stateFileUsed: boolean;
+};
 
 /**
  * The study-area entry recorded on an acquisition.
@@ -67,6 +83,12 @@ export type CrashStudyAreaCoverage = {
    * every unretrieved crash as inside.
    */
   countsAreLowerBound: boolean;
+  /**
+   * Present only when the study area is a tribal area. Absent on every other
+   * area and on every acquisition stored before tribal areas were recorded,
+   * which reads as "not recorded", never as "not a tribal area".
+   */
+  tribalArea?: CrashTribalAreaCoverage;
 };
 
 const CRASH_STUDY_AREA_COVERAGE_KEY = "study_area";
@@ -200,15 +222,19 @@ export function readCrashStudyAreaCoverage(dimensionCoverage: unknown): CrashStu
   const entry = (dimensionCoverage as Record<string, unknown>)[CRASH_STUDY_AREA_COVERAGE_KEY];
   if (!entry || typeof entry !== "object") return RECTANGLE_ONLY;
   const raw = entry as Record<string, unknown>;
+  // The tribal-area facts do not depend on how the crashes were bounded, so
+  // they are read the same way on every basis below.
+  const tribalArea = readTribalAreaCoverage(raw.tribalArea);
+  const withTribalArea = (coverage: CrashStudyAreaCoverage) => withCrashTribalArea(coverage, tribalArea);
   const unreadable = raw.boundaryUnreadable === true;
-  if (raw.basis !== "place_boundary") return { ...RECTANGLE_ONLY, boundaryUnreadable: unreadable };
+  if (raw.basis !== "place_boundary") return withTribalArea({ ...RECTANGLE_ONLY, boundaryUnreadable: unreadable });
   const outside = raw.outsideBoundaryCount;
-  if (typeof outside !== "number" || !Number.isSafeInteger(outside) || outside < 0) return RECTANGLE_ONLY;
+  if (typeof outside !== "number" || !Number.isSafeInteger(outside) || outside < 0) return withTribalArea(RECTANGLE_ONLY);
   const source = BOUNDARY_SOURCES.find((candidate) => candidate === raw.boundarySource) ?? null;
-  if (!source) return RECTANGLE_ONLY;
+  if (!source) return withTribalArea(RECTANGLE_ONLY);
   const count = (value: unknown) =>
     typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
-  return {
+  return withTribalArea({
     basis: "place_boundary",
     boundarySource: source,
     outsideBoundaryCount: outside,
@@ -218,7 +244,33 @@ export function readCrashStudyAreaCoverage(dimensionCoverage: unknown): CrashStu
     // Anything but an explicit false is a lower bound: a count that cannot be
     // shown complete is not presented as complete.
     countsAreLowerBound: raw.countsAreLowerBound !== false,
-  };
+  });
+}
+
+/**
+ * Read a stored tribal-area entry, or null when there is none.
+ *
+ * A malformed state list reads as "could not be read" (null), and only an
+ * explicit true counts as a state file: a stored value that cannot be shown to
+ * say a state's file answered must not print the state-file sentence.
+ */
+function readTribalAreaCoverage(value: unknown): CrashTribalAreaCoverage | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  const states = raw.censusStateFips;
+  const censusStateFips =
+    Array.isArray(states) && states.every((code): code is string => typeof code === "string" && /^\d{2}$/.test(code))
+      ? [...states]
+      : null;
+  return { censusStateFips, stateFileUsed: raw.stateFileUsed === true };
+}
+
+/** The study-area entry with the tribal-area facts of this read added. */
+export function withCrashTribalArea(
+  studyArea: CrashStudyAreaCoverage,
+  tribalArea: CrashTribalAreaCoverage | null | undefined
+): CrashStudyAreaCoverage {
+  return tribalArea ? { ...studyArea, tribalArea } : studyArea;
 }
 
 /** The acquisition coverage with the study-area entry added. */
@@ -247,8 +299,69 @@ export function crashBoundaryCountLabel(studyArea: CrashStudyAreaCoverage): stri
     : "Complete for the boundary";
 }
 
-/** The sentence shown wherever the counts are shown. */
+/**
+ * Said wherever a state's crash file is read inside a tribal area.
+ *
+ * It is worded as what OpenPlan does not know, and it does not presuppose
+ * that anything is shared (review 72). The sourced part is that crash
+ * reports reach a state from a tribal agency through data-sharing agreements
+ * the tribal government controls, so a state's file cannot be assumed to hold
+ * them: NHTSA, "Tribal Crash Reporting Toolkit: Crash Reporting Facts and
+ * Fictions Tool", DOT HS 813 058, June 2022, printed pages 6 and 30
+ * (https://crashstats.nhtsa.dot.gov/Api/Public/ViewPublication/813058, read
+ * November 15, 2026). It says nothing about who has authority over a road,
+ * and it does not say any tribe reported, agreed to or withheld anything.
+ */
+export const TRIBAL_AREA_STATE_FILE_SENTENCE =
+  "Crash reports on tribal land may be missing from the state's crash file, because a tribal agency may not share its crash reports with the state, and OpenPlan does not know whether any are shared for this tribal area.";
+
+function listed(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/**
+ * What to say about the crash file read for a tribal area, or null.
+ *
+ * A state's file was read: the missing-reports sentence, and only then. The
+ * national file was read because the Census Bureau lists several states, no
+ * state, or its record could not be read: the reason, in a planner's words.
+ * One listed state with no state crash file registered says nothing extra,
+ * the same as a county in that state.
+ */
+export function describeCrashTribalArea(studyArea: CrashStudyAreaCoverage): string | null {
+  const tribalArea = studyArea.tribalArea;
+  if (!tribalArea) return null;
+  if (tribalArea.stateFileUsed) return TRIBAL_AREA_STATE_FILE_SENTENCE;
+  const states = tribalArea.censusStateFips;
+  if (states === null) {
+    return "The Census Bureau's record of the states this tribal area lies in could not be read when the crashes were retrieved, so only the national fatal-crash file was read. Retrieving again may reach a state's crash file.";
+  }
+  if (states.length === 0) {
+    return "The Census Bureau's record for this tribal area names no state, so only the national fatal-crash file was read.";
+  }
+  if (states.length > 1) {
+    const names = states.map((fips) => stateUspsFromFips(fips) ?? fips);
+    // The Bureau's list covers the whole named area, reservation and trust land
+    // together, so a reservation that lies in one state can list two (the
+    // Umatilla Reservation lists OR and WA). The sentence says what the list
+    // is and does not say no state's file covers the land (review 72).
+    return `The Census Bureau lists this tribal area, with its trust land, in more than one state (${listed(names)}), so only the national fatal-crash file was read.`;
+  }
+  return null;
+}
+
+/**
+ * The sentence shown wherever the counts are shown. For a tribal area it ends
+ * with what `describeCrashTribalArea` says, so no surface prints the counts
+ * without it.
+ */
 export function describeCrashStudyArea(studyArea: CrashStudyAreaCoverage): string {
+  const tribalArea = describeCrashTribalArea(studyArea);
+  return tribalArea ? `${describeCrashAreaBasis(studyArea)} ${tribalArea}` : describeCrashAreaBasis(studyArea);
+}
+
+function describeCrashAreaBasis(studyArea: CrashStudyAreaCoverage): string {
   if (studyArea.basis === "place_boundary") {
     const outside = studyArea.outsideBoundaryCount ?? 0;
     const counted = studyArea.boundarySource === "drawn_area"

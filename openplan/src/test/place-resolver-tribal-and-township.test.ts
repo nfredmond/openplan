@@ -156,10 +156,52 @@ describe("tribal areas: boundary", () => {
 
     expect(boundary).not.toBeNull();
     expect(boundary).toMatchObject({ kind: "aiannh", geoid: "2430R", label: "Navajo Nation Reservation, AZ-NM-UT" });
+    // The Census record's own state list travels with the boundary. The crash
+    // source resolver reads it; nothing derives a state from the label.
+    expect(boundary?.tribalAreaStateFips).toEqual(["04", "35", "49"]);
     expect(placeBoundaryResponseSchema.safeParse(boundary).success).toBe(true);
     const layers = fetchJsonWithRetryMock.mock.calls.map(([url]) => route(String(url)));
     expect(layers.map((call) => call.layer).sort()).toEqual([...AIANNH_LAYER_IDS].sort());
     expect(layers.every((call) => call.where === "GEOID='2430R'")).toBe(true);
+  });
+
+  it("carries one state, or none, exactly as the Census record lists them", async () => {
+    // The recorded Navajo answer with its state fields rewritten, so the list
+    // is shown to come from those fields and not from the fixture's label.
+    const withStates = (fields: Record<string, string | null>) => {
+      const response = structuredClone(navajoBoundary.response) as {
+        features: Array<{ properties: Record<string, unknown> }>;
+      };
+      Object.assign(response.features[0].properties, fields);
+      return response;
+    };
+
+    answerBoundary({ "36": withStates({ AIANNHFP1: "06-16819", AIANNHFP2: null, AIANNHFP3: null }) });
+    expect((await resolvePlaceBoundary("aiannh", "2430R"))?.tribalAreaStateFips).toEqual(["06"]);
+
+    answerBoundary({ "36": withStates({ AIANNHFP1: "41-99999", AIANNHFP2: null, AIANNHFP3: null }) });
+    expect((await resolvePlaceBoundary("aiannh", "2430R"))?.tribalAreaStateFips).toEqual(["41"]);
+
+    answerBoundary({ "36": withStates({ AIANNHFP1: null, AIANNHFP2: null, AIANNHFP3: null }) });
+    expect((await resolvePlaceBoundary("aiannh", "2430R"))?.tribalAreaStateFips).toEqual([]);
+  });
+
+  it("keeps a boundary answer for a day only when it has a feature list (an error sent with HTTP 200 is not kept)", async () => {
+    // Review 72. The request helper is replaced in this file, so this reads
+    // the rule the resolver hands it; http-fetch-json-retry.test.ts shows the
+    // helper obeys such a rule.
+    answerBoundary({ "36": navajoBoundary.response });
+    await resolvePlaceBoundary("aiannh", "2430R");
+    const rules = fetchJsonWithRetryMock.mock.calls.map(([, , options]) => (options as { cacheWhen?: (payload: unknown) => boolean }).cacheWhen);
+    expect(rules).toHaveLength(AIANNH_LAYER_IDS.length);
+    for (const keep of rules) {
+      expect(typeof keep).toBe("function");
+      expect(keep?.({ error: { code: 400, message: "Failed to execute query.", details: [] } })).toBe(false);
+      expect(keep?.(null)).toBe(false);
+      expect(keep?.(navajoBoundary.response)).toBe(true);
+      // No such area in this layer is a real answer, and is kept.
+      expect(keep?.(EMPTY_GEOJSON)).toBe(true);
+    }
   });
 
   it("refuses a GEOID found in two AIANNH layers instead of picking one", async () => {
@@ -320,6 +362,8 @@ describe("towns and townships", () => {
       label: "Lexington town, Middlesex County, MA",
     });
     if (!boundary) throw new Error("fixture did not resolve");
+    // Only a tribal area carries a Census state list; a town has its own state.
+    expect("tribalAreaStateFips" in boundary).toBe(false);
     const row = homeGeographyFromPlaceBoundary(boundary);
     expect(row.home_subdivision_code).toBe("MA");
     // A town is not a county, so no county's tracts are loaded for it.

@@ -4,6 +4,12 @@ type FetchJsonOptions = {
   retryDelayMs?: number;
   cacheTtlMs?: number;
   cacheKey?: string;
+  /**
+   * Keep a parsed answer in the cache only when this says so. Some services
+   * report an error inside an HTTP 200 body; without this, that body would be
+   * served as the answer until the cache entry expires.
+   */
+  cacheWhen?: (payload: unknown) => boolean;
   retryNonIdempotentMethods?: boolean;
 };
 
@@ -521,7 +527,7 @@ export async function fetchJsonWithRetry<T>(
           return null;
         }
 
-        if (shouldUseResponseCache && key) {
+        if (shouldUseResponseCache && key && (!options.cacheWhen || options.cacheWhen(payload))) {
           responseCache.set(key, {
             payload: cloneCachedPayload(payload),
             expiresAt: Date.now() + cacheTtlMs,

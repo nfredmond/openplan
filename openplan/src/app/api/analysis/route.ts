@@ -40,11 +40,14 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
 import {
+  confirmCrashStudyPlace,
   crashStatesFromMatchingPlaceOfRecord,
-  crashStatesOfConfirmedPlace,
+  crashStatesFromTribalAreaStates,
+  crashStatesOfSavedTribalArea,
+  type CrashTribalAreaStates,
 } from "@/lib/safety/study-area-states";
 import { placeOfRecordFromProject, type ProjectPlaceRow } from "@/lib/projects/project-place";
-import type { StudyAreaBbox } from "@/lib/models/study-area";
+import { studyAreaBboxesMatch, type StudyAreaBbox } from "@/lib/models/study-area";
 
 /**
  * This body is a GeoJSON body, and it is sized like one.
@@ -260,10 +263,13 @@ function generateSummary(
 
 /** Project columns that can confirm a corridor's state. Never the boundary geometry. */
 const PROJECT_PLACE_FOR_CRASH_STATE_COLUMNS =
-  "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat";
+  "id, place_source, place_kind, place_ref, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat";
 
 type ProjectPlaceForCrashState = Pick<
   ProjectPlaceRow,
+  | "place_source"
+  | "place_kind"
+  | "place_ref"
   | "place_country_code"
   | "place_subdivision_code"
   | "place_min_lon"
@@ -279,17 +285,28 @@ type ProjectPlaceForCrashState = Pick<
  * a corridor drawn inside a county project is not confirmed to be in one
  * state by the project alone. A picked place counts only when the server
  * re-resolves it to this bbox.
+ *
+ * A tribal area's states are the Census Bureau's list for it, and
+ * `tribalArea` carries that list so the crash summary can say what a state's
+ * file may be missing there, or why only the national file was read.
  */
 async function corridorCrashStates(
   bbox: StudyAreaBbox,
   projectPlace: ProjectPlaceForCrashState | null,
   pickedPlace: z.infer<typeof analysisRequestSchema>["place"],
-): Promise<string[] | null> {
+): Promise<{ stateFips: string[] | null; tribalArea: CrashTribalAreaStates | null }> {
   if (projectPlace) {
-    const fromProject = crashStatesFromMatchingPlaceOfRecord(placeOfRecordFromProject(projectPlace), bbox);
-    if (fromProject) return fromProject;
+    const place = placeOfRecordFromProject(projectPlace);
+    const fromProject = crashStatesFromMatchingPlaceOfRecord(place, bbox);
+    if (fromProject) return { stateFips: fromProject, tribalArea: null };
+    if (studyAreaBboxesMatch(bbox, place.bbox)) {
+      const tribalArea = await crashStatesOfSavedTribalArea(place);
+      if (tribalArea) return { stateFips: crashStatesFromTribalAreaStates(tribalArea.censusStateFips), tribalArea };
+    }
   }
-  return pickedPlace ? crashStatesOfConfirmedPlace(pickedPlace, bbox) : null;
+  if (!pickedPlace) return { stateFips: null, tribalArea: null };
+  const confirmed = await confirmCrashStudyPlace(pickedPlace, bbox);
+  return { stateFips: confirmed.stateFips, tribalArea: confirmed.tribalArea };
 }
 
 export async function POST(request: NextRequest) {
@@ -482,7 +499,7 @@ export async function POST(request: NextRequest) {
       // bbox is this corridor's bbox. A drawn or uploaded corridor, or a place
       // that does not match, stays null: only a national source may answer and
       // the crash summary says the state was not confirmed.
-      const crashStateFips = await corridorCrashStates(bbox, projectPlace, parsed.data.place);
+      const crashStudyPlace = await corridorCrashStates(bbox, projectPlace, parsed.data.place);
 
       // The service-role client is created BEFORE the fetches because the
       // transit registry needs one: a workspace's own ingested GTFS feeds are
@@ -506,7 +523,8 @@ export async function POST(request: NextRequest) {
         // The corridor polygon bounds the crashes, not its rectangle.
         fetchCrashesForStudyArea({
           bbox,
-          stateFips: crashStateFips,
+          stateFips: crashStudyPlace.stateFips,
+          tribalArea: crashStudyPlace.tribalArea,
           boundary: { geometry: corridorGeojson, source: parsed.data.place ? "picked_place" : "drawn_area" },
         }),
       ]);

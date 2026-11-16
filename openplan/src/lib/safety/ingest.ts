@@ -47,9 +47,12 @@ import {
   clipCrashRecordsToBoundary,
   crashCountsForStudyArea,
   withCrashStudyAreaCoverage,
+  withCrashTribalArea,
   type CrashStudyAreaCoverage,
   type CrashStudyBoundary,
+  type CrashTribalAreaCoverage,
 } from "./crash-study-area";
+import type { CrashTribalAreaStates } from "./study-area-states";
 
 /** Rows written per upsert batch — keeps each PostgREST call modest. */
 const UPSERT_BATCH_SIZE = 500;
@@ -121,6 +124,15 @@ export type IngestCrashesParams = {
    * rectangle is known, and the acquisition records that basis instead.
    */
   boundary?: CrashStudyBoundary | null;
+  /**
+   * Set when the study area is a tribal area: the Census Bureau's state list
+   * for it, as the route read it for this retrieval. It is recorded on the
+   * acquisition beside which kind of crash file answered, so the screen and
+   * every export can say what a state's file may be missing there, or why
+   * only the national file was read. It never chooses the source: `stateFips`
+   * does that.
+   */
+  tribalArea?: CrashTribalAreaStates | null;
   /**
    * Join the CCRS injured-person table to separate KABCO A (suspected serious
    * injury). Defaults to on: without it there is no KSI, which is the measure
@@ -251,6 +263,19 @@ export type IngestCrashesResult = {
 
 /** Dimension coverage plus the acquisition's study-area entry. */
 type CrashAcquisitionCoverage = CrashDimensionCoverage & { study_area: CrashStudyAreaCoverage };
+
+/**
+ * The tribal-area facts of one read, or null when the area is not a tribal
+ * area. A source that names the states it covers is one state's file; a source
+ * that names none is the national file (`coversStateFips` in `sources/types.ts`).
+ */
+function tribalAreaCoverageFor(
+  tribalArea: CrashTribalAreaStates | null | undefined,
+  adapter: CrashSourceAdapter
+): CrashTribalAreaCoverage | null {
+  if (!tribalArea) return null;
+  return { censusStateFips: tribalArea.censusStateFips, stateFileUsed: adapter.coversStateFips !== undefined };
+}
 
 function toIngestRow(params: {
   workspaceId: string;
@@ -532,10 +557,14 @@ export async function ingestCrashesForStudyArea(
         signal: params.signal,
       });
       const records = joined.records;
-      const counts = crashCountsForStudyArea(clipped, {
+      const counted = crashCountsForStudyArea(clipped, {
         ...live.fetched,
         retrievedCount: live.fetched.records.length,
       });
+      const counts = {
+        ...counted,
+        studyArea: withCrashTribalArea(counted.studyArea, tribalAreaCoverageFor(params.tribalArea, live.adapter)),
+      };
       return {
         ingestId: null,
         status: "read_only",
@@ -726,7 +755,7 @@ export async function ingestCrashesForStudyArea(
     // Counted here: the KSI join and person rows change severity and flags but
     // never which crashes are in the area.
     const counts = crashCountsForStudyArea(clipped, { ...fetched, retrievedCount: fetched.records.length });
-    const studyArea = counts.studyArea;
+    const studyArea = withCrashTribalArea(counts.studyArea, tribalAreaCoverageFor(params.tribalArea, adapter));
     let records = clipped.records;
 
     // KSI upgrade, through the adapter's own join when it has one and the
