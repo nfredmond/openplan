@@ -365,11 +365,15 @@ function InvoiceRecordComposerSession({
           ] as const) {
             if (!raw.trim()) continue;
             const parsed = Number.parseFloat(raw);
-            if (!Number.isFinite(parsed) || parsed < 0) {
+            if (!Number.isFinite(parsed)) {
               return {
                 field,
                 message: `Give the ${label} as a plain number, with no commas or currency sign.`,
               };
+            }
+            // A minus sign is a plain number too, so the refusal names the real reason (lane 84).
+            if (parsed < 0) {
+              return { field, message: `The ${label} cannot be less than zero.` };
             }
           }
           return null;
