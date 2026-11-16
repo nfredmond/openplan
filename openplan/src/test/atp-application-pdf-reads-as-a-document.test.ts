@@ -253,6 +253,25 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, printed with every hard case
     expect(squash(printed.pages[1])).toContain("Competitive California program");
   });
 
+  it("moves the cover's boxes to the next page together when a long cover leaves them no room on the first", async () => {
+    // Nineteen one-line cover lines under a one-line title put the top of the boxes about 770 px down a
+    // 960 px page: room for the first two boxes and not for the rest. Every height above the boxes is
+    // set in pixels (padding, margins, line heights), so this does not depend on the font. Without the
+    // rule, PROJECT and WORKSPACE stay on page one and the last boxes start page two.
+    const lines = Array.from({ length: 19 }, (_, index) => `Cover line ${index + 1}`);
+    const long = await print("atp-layout-long-cover", application({
+      opportunity: { id: ATP_IDS.opportunity, title: "ATP", agency_name: ATP.administeringAgency, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      coverLines: lines, sections: [], evidenceAppendices: [],
+    }));
+    const [first, second] = [squash(long.pages[0]), squash(long.pages[1])];
+    expect(first).toContain("Cover line 19");
+    expect(first).toContain("DRAFT: 25 required attachment(s) outstanding");
+    for (const label of COVER_LABELS) {
+      expect(first, `the cover box ${label} left page one with the others`).not.toContain(label);
+      expect(second, `the cover box ${label} is on page two with the others`).toContain(label);
+    }
+  }, 170_000);
+
   it("keeps a section's card whole on one page when it is shorter than a page", () => {
     const pagesOfCards = tenSections.map(({ section }, index) => {
       const titlePages = printed.pages.flatMap((page, pageIndex) => {

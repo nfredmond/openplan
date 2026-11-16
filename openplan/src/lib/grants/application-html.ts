@@ -307,8 +307,12 @@ function formatAmount(value: number | string | null | undefined): string {
  * last block of an appendix, where it would tie the appendix to the next one.
  *
  * The provenance table's columns have widths that fit what they hold: the
- * section's title gets the most room, and the day and the time each print
- * whole on a line of their own.
+ * section's title gets the most room, and a role's name, the day and the
+ * time each print whole on one line. Print has no side padding on the page's
+ * main block, which only repeated the PDF's own 48 px margin and took 48 px
+ * from every table. With both, the 2027 template's ten rows fit one page in
+ * Georgia, Verdana and Courier New (lane 83's prints); the hosted site's one
+ * font is wider than this machine's.
  *
  * The note under the provenance table carries its own space below, inside
  * the note, and does not split or leave the table's last row: the card's own
