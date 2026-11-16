@@ -27,7 +27,8 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * Appendix A states the study place and applicant in place of "to be
  * provided"; Appendix E lists the Guidelines' six criteria; the appendix
  * index names records by kind and says a hash is stored without printing
- * it; dates print one way; and the stylesheet changed with them. The seven section titles, the five attachment titles
+ * it; a record id in running text is one piece that cannot break; dates
+ * print one way; and the stylesheet changed with them. The seven section titles, the five attachment titles
  * and their Required or Optional words did not change, and the test checks
  * those by name below, apart from the hashes.
  *
@@ -43,7 +44,7 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * reads what it says.
  */
 
-const PINNED_HTML_SHA256 = "b205cd7b6b2fc5c7dcc449e4289f69eb2b6574944ea0c33511945db11e34e333";
+const PINNED_HTML_SHA256 = "c8c46fc3a14c50f32343ec653ad03e3e1a1c1a30972a65df6a5ad905bedcdf50";
 const PINNED_PDF_SHA256 = "a09c4b21c63041ed2b0c873397f516c8dbb13349d7b2cf30d2c8a4468359e020";
 
 const createClientMock = vi.fn();

@@ -370,8 +370,8 @@ describe("the cover and checklist of an ATP application", () => {
     expect(index).toContain("<td>Corridor analysis run</td>");
     expect(index).not.toContain(ATP_IDS.run);
     expect(index).not.toContain(ATP_IDS.ingest);
-    expect(html).toContain(`<strong>Source:</strong> Corridor analysis run ${ATP_IDS.run}.`);
-    expect(html).toContain(`<strong>Source:</strong> Crash acquisition ${ATP_IDS.ingest}.`);
+    expect(html).toContain(`<strong>Source:</strong> Corridor analysis run <span class="whole-id">${ATP_IDS.run}.</span>`);
+    expect(html).toContain(`<strong>Source:</strong> Crash acquisition <span class="whole-id">${ATP_IDS.ingest}.</span>`);
     // A stored content hash is treated the same way: said to be stored in the index, printed whole under its appendix.
     const hash = byKey(buildAtpEvidenceAppendices(recordsFor(COUNTY), ALL), "bca").source!.hash!;
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
@@ -379,6 +379,24 @@ describe("the cover and checklist of an ATP application", () => {
     expect(index).toContain("<td>Stored, printed under the appendix</td>");
     expect(index).toContain("<td>None stored</td>");
     expect(html.split(hash)).toHaveLength(2);
+  });
+
+  it("sets every record id and content hash in the appendices' running text as one piece that cannot break", () => {
+    const html = applicationHtml(recordsFor(COUNTY), "Demonstration Planning Consultants");
+    const appendices = html.slice(html.indexOf('<article id="appendix-scoring_packet"'), html.indexOf('<section id="provenance-appendix">'));
+    const ids = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{40,}/gi;
+    // The fixture prints several: the run, the acquisition (twice, once in its citation), the project link, a hash.
+    expect((appendices.match(ids) ?? []).length).toBeGreaterThanOrEqual(6);
+    // With each whole piece, each link address and the map's drawing taken out, no id is left loose in the text.
+    const loose = appendices
+      .replace(/<span class="whole-id">[^<]*<\/span>/g, "")
+      .replace(/href="[^"]*"/g, "")
+      .replace(/<svg[\s\S]*?<\/svg>/g, "");
+    expect(loose.match(ids) ?? []).toEqual([]);
+    // The citation's id is one piece with its full stop, so the stop cannot wrap alone.
+    expect(appendices).toContain(`Source ingest <span class="whole-id">${ATP_IDS.ingest}.</span>`);
+    // The piece has a style: a class with no rule would do nothing.
+    expect(html).toMatch(/\.whole-id \{ display: inline-block; max-width: 100%; \}/);
   });
 });
 
@@ -496,6 +514,32 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
     }
     // The attached document's title prints (in a checklist cell, which wraps beside its neighbors).
     expect(whole).toContain("vicinity map (demonstration)");
+  }, 120_000);
+
+  it("never breaks a record id at a hyphen, wherever on the line it falls", async () => {
+    // Forty facts, each a run of filler words and then the same id. The filler grows two characters at a
+    // time, so the id starts at forty different places along the line. Printed as plain text, an id that
+    // straddles the line end breaks at one of its hyphens. None may.
+    const id = "0f3c9a1e-7b42-4d58-9c61-2e8a5b7d4f90";
+    const facts = Array.from({ length: 40 }, (_, index) => ({ label: `Row ${index + 1}`, value: `${"x ".repeat(index + 20)}record ${id} follows` }));
+    const appendix: AtpAppendix = {
+      ...byKey(buildAtpEvidenceAppendices(recordsFor(COUNTY), ALL), "cost_estimate"),
+      facts, notes: [`A note that names the record ${"filler ".repeat(11)}${id}.`],
+    };
+    const html = buildGrantApplicationHtml({
+      opportunity: { id: ATP_IDS.opportunity, title: "ATP application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-16T04:00:00.000Z",
+      evidenceAppendices: [appendix], evidenceAppendixFrame: ATP_APPENDIX_FRAME,
+    });
+    const pages = await pdfPages(html, "ids-along-the-line");
+    const lines = pages.flatMap((page) => page.split(/\r?\n/));
+    const whole = lines.filter((line) => line.includes(id)).length;
+    // Every fact and the note print the id on one line.
+    expect(whole).toBe(41);
+    // No line ends partway through it.
+    expect(lines.filter((line) => /0f3c9a1e(-[0-9a-f]{0,12})*-?\s*$/.test(line) && !line.includes(id))).toEqual([]);
+    // The rows did wrap: some facts took two lines, so ids did reach the line end.
+    expect(lines.filter((line) => /^\s*record 0f3c9a1e|^\s*0f3c9a1e/.test(line)).length).toBeGreaterThan(3);
   }, 120_000);
 
   it("prints the tribal-area fact on one line in the tribal-area PDF only", async () => {

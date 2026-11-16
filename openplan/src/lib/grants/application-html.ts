@@ -212,7 +212,10 @@ function formatAmount(value: number | string | null | undefined): string {
  * facts side by side, a label could end one page and its value start the
  * next, and a text search found neither as one string (KI-2026-11-16-040). A
  * fact, an appendix note and the appendices' opening paragraphs do not split
- * across pages, so a `[VERIFY]` marker inside one stays whole.
+ * across pages, so a `[VERIFY]` marker inside one stays whole. A record id
+ * or content hash in running text is set as one piece that does not break at
+ * its hyphens (`runningText` in `evidence-appendices.ts`); a piece wider than
+ * the line still wraps inside the line, never past the page edge.
  *
  * The cover's Project and Workspace boxes take a full row each. In a narrow
  * box beside two others a long name wrapped, and extracted text read the
@@ -266,9 +269,10 @@ const DOCUMENT_STYLES = `
       .appendix-facts dt, .appendix-facts dd { display: inline; margin: 0; font: inherit; }
       .appendix-facts dt { font-weight: 700; letter-spacing: 0; text-transform: none; color: #13222b; }
       #evidence-appendices > p, .appendix-source, .appendix li, .cover-lines p { break-inside: avoid; }
-      .cover-lines { margin-top: 16px; }
+      .cover-lines { margin-top: 16px; break-inside: avoid; }
       .cover-lines p { max-width: none; margin: 4px 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
+      .whole-id { display: inline-block; max-width: 100%; }
       .table-scroll { overflow-x: auto; }
       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } }
       @media print { main, main > :last-child { padding-bottom: 0; } main > :last-child :last-child { margin-bottom: 0; } }`;

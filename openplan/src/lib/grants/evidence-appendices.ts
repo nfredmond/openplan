@@ -461,12 +461,26 @@ function dateText(value: string | null): string {
   return formatEvidenceTimestamp(value);
 }
 
+/** A word that holds a record id (a UUID) or a content hash, with whatever is joined to it ("/projects/<id>", "<id>."). */
+const WORD_WITH_ID = /(\S*(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{40,})\S*)/i;
+
+/**
+ * Running text with each record id and content hash kept whole. A line may
+ * break at a hyphen, so an id in a sentence broke across two lines and a
+ * copied id came out in two pieces (KI-2026-11-16-038). The word that holds
+ * the id moves to the next line as one piece; the text itself is unchanged.
+ */
+function runningText(text: string): string {
+  return text.split(WORD_WITH_ID).map((part, index) =>
+    index % 2 === 1 ? `<span class="whole-id">${esc(part)}</span>` : esc(part)).join("");
+}
+
 function sourceMarkup(source: EvidenceAppendixSource): string {
-  const link = source.link ? ` <a href="${esc(source.link)}">${esc(source.link)}</a>` : "";
-  return `<p class="appendix-source"><strong>Source:</strong> ${esc(source.record)} ${esc(source.id)}.${link}
+  const link = source.link ? ` <a href="${esc(source.link)}">${runningText(source.link)}</a>` : "";
+  return `<p class="appendix-source"><strong>Source:</strong> ${esc(source.record)} ${runningText(`${source.id}.`)}${link}
       ${esc(source.dateLabel)}: ${esc(dateText(source.date))}.
-      ${source.hash ? `${esc(source.hashLabel)}: ${esc(source.hash)}.` : `${esc(source.hashLabel)}.`}
-      ${source.details.map(esc).join(" ")}</p>`;
+      ${source.hash ? `${esc(source.hashLabel)}: ${runningText(`${source.hash}.`)}` : `${esc(source.hashLabel)}.`}
+      ${source.details.map(runningText).join(" ")}</p>`;
 }
 
 /**
@@ -487,7 +501,7 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
   // The colon is in the markup, not the stylesheet, so the built-in PDF writer,
   // which reads the text and no styles, prints the same "Label: value" line.
   const facts = appendix.facts.length > 0
-    ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div>${fact.label ? `<dt>${esc(fact.label)}:</dt> ` : ""}<dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
+    ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div>${fact.label ? `<dt>${esc(fact.label)}:</dt> ` : ""}<dd>${runningText(fact.value)}</dd></div>`).join("")}</dl>`
     : "";
   const table = appendix.table
     ? `<div class="table-scroll"><table><thead><tr>${appendix.table.headers.map((header) => `<th>${cellText(header)}</th>`).join("")}</tr></thead>
@@ -500,7 +514,7 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
       ${appendix.statusNote ? `<div class="outstanding">${esc(appendix.statusNote)}</div>` : ""}
       ${appendix.lead ? `<p class="appendix-lead">${esc(appendix.lead)}</p>` : ""}
       ${figure}${facts}${table}
-      ${appendix.notes.length > 0 ? `<ul>${appendix.notes.map((note) => `<li>${esc(note)}</li>`).join("")}</ul>` : ""}
+      ${appendix.notes.length > 0 ? `<ul>${appendix.notes.map((note) => `<li>${runningText(note)}</li>`).join("")}</ul>` : ""}
     </article>`;
 }
 
