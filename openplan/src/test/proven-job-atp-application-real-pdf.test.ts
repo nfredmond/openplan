@@ -43,6 +43,7 @@ import { ATP_APPENDIX_KEYS } from "@/lib/grants/evidence-appendix-keys";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { BUILTIN_PDF_NOTICE, renderHtmlToPdf, renderReportPdf } from "@/lib/reports/pdf";
 import { TRIBAL_AREA_STATE_FILE_SENTENCE } from "@/lib/safety/crash-study-area";
+import { CCRS_SOURCE_ID } from "@/lib/safety/sources/ccrs";
 import { pdftotextPages, validateProvenJobRecord } from "../../scripts/ops/capability-evidence.mjs";
 import { pdfTextHasPhrase } from "../../scripts/lib/pdf-text-match.mjs";
 import { ATP_IDS, atpCrashEvidence, atpIngestRow, atpProject, atpRun, atpRunMetrics, completeAtpRecords } from "./fixtures/grants/atp-evidence";
@@ -174,7 +175,7 @@ async function recordWithRealPdfs(engine: Engine, roles: string[], filler = 0): 
       continue;
     }
     // What the fixture's acquisition holds: 80 crashes reported and stored, 2022 to 2025.
-    entry.crashes = { sourceId: "ccrs", years: "2022–2025", reportedCount: 80, storedCount: 80 };
+    entry.crashes = { sourceId: "ccrs-ca", years: "2022–2025", reportedCount: 80, storedCount: 80 };
     const bytes = await printPdf(applicationHtml(entry, filler), engine);
     pdf.path = `real/${engine}-${entry.role}-${filler}-atp-application.pdf`;
     mkdirSync(path.dirname(path.join(root, pdf.path)), { recursive: true });
@@ -199,6 +200,14 @@ const CHROME_AND_POPPLER = POPPLER && Boolean(CHROME);
 describe("the definition's sentences are the product's", () => {
   it("names the missing-reports sentence the crash appendix prints", () => {
     expect(RULE.appendices.roleFacts[0].phrase).toBe(TRIBAL_AREA_STATE_FILE_SENTENCE);
+  });
+
+  it("asks for the crash source id the product gives California's crash file (KI-2026-11-16-100)", () => {
+    // The definition first said "ccrs". The product's id is "ccrs-ca", so no honest run could pass:
+    // the first local rehearsal of the journey found it.
+    const rule = JOB.journeyFields.find((field: Json) => field.field === "crashes.sourceId");
+    expect(rule.equals).toBe(CCRS_SOURCE_ID);
+    for (const entry of EXAMPLE.journeys) expect(entry.crashes.sourceId).toBe(CCRS_SOURCE_ID);
   });
 
   it("names the opening words of the fallback writer's notice", () => {

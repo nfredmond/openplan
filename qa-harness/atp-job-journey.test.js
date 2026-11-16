@@ -260,14 +260,14 @@ test('crashes: the record states the years as the export prints them, and the de
   assert.equal(lib.formatYears([2022, 2023, 2024, 2025]), '2022–2025');
   assert.equal(lib.formatYears([2025, 2022, 2023]), '2022, 2023, 2025');
   assert.equal(lib.formatYears([2024]), '2024');
-  const crashes = lib.crashesForRecord({ sourceId: 'ccrs', crashCount: 995, storedCount: 979 }, { years: [2022, 2023, 2024, 2025] });
-  assert.deepEqual(crashes, { sourceId: 'ccrs', years: '2022–2025', reportedCount: 995, storedCount: 979 });
+  const crashes = lib.crashesForRecord({ sourceId: 'ccrs-ca', crashCount: 995, storedCount: 979 }, { years: [2022, 2023, 2024, 2025] });
+  assert.deepEqual(crashes, { sourceId: 'ccrs-ca', years: '2022–2025', reportedCount: 995, storedCount: 979 });
   assert.match(crashes.years, /^\d{4}((–|, )\d{4})*$/, 'the schema\'s pattern for the years');
   assert.deepEqual(lib.definitionRefusals({ crashes }, job, { only: 'crashes.' }), []);
-  assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, sourceId: 'fars-national' } }, job, { only: 'crashes.' }), ['crashes come from fars-national, not ccrs, California\'s crash file']);
+  assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, sourceId: 'fars-national' } }, job, { only: 'crashes.' }), ['crashes come from fars-national, not ccrs-ca, California\'s crash file']);
   assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, storedCount: 0 } }, job, { only: 'crashes.' }), ['stored 0 crashes; every journey of this job stores at least 1']);
-  assert.throws(() => lib.crashesForRecord({ sourceId: 'ccrs', crashCount: 995, storedCount: 979 }, null), /names no years/);
-  assert.throws(() => lib.crashesForRecord({ sourceId: 'ccrs', storedCount: 979 }, { years: [2024] }), /did not report how many crashes/);
+  assert.throws(() => lib.crashesForRecord({ sourceId: 'ccrs-ca', crashCount: 995, storedCount: 979 }, null), /names no years/);
+  assert.throws(() => lib.crashesForRecord({ sourceId: 'ccrs-ca', storedCount: 979 }, { years: [2024] }), /did not report how many crashes/);
   // The rules review 78 added: at least one crash reported, and no more stored than reported.
   assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, reportedCount: 0, storedCount: 0 } }, job, { only: 'crashes.' }), [
     'stored 0 crashes; every journey of this job stores at least 1',
@@ -285,8 +285,10 @@ test('crashes: the journey\'s own stop reads the name of California\'s crash fil
   assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: null }, crashes, job), /come from "a source with no name"/);
   assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: CCRS }, { ...crashes, storedCount: 0 }, job), /stored 0 crashes/);
   assert.throws(() => lib.assertCaliforniaCrashFile({ sourceLabel: CCRS }, { ...crashes, storedCount: 996 }, job), /stored 996 crashes but reported 995/);
-  // The product's id for that file is not the one the definition asks for (KI-2026-11-16-100). The journey writes what the product says.
-  assert.deepEqual(lib.definitionRefusals({ crashes }, job, { only: 'crashes.sourceId' }), ['crashes come from ccrs-ca, not ccrs, California\'s crash file']);
+  // The definition first asked for "ccrs", an id the product never gives (KI-2026-11-16-100): the first
+  // rehearsal found it, and the definition now asks for the product's own id. The journey writes what the product says.
+  assert.deepEqual(lib.definitionRefusals({ crashes }, job, { only: 'crashes.sourceId' }), []);
+  assert.deepEqual(lib.definitionRefusals({ crashes: { ...crashes, sourceId: 'ccrs' } }, job, { only: 'crashes.sourceId' }), ['crashes come from ccrs, not ccrs-ca, California\'s crash file']);
 });
 
 test('a rehearsal journey is told what the checker would refuse: its mode, and nothing it could have met', () => {
