@@ -198,6 +198,80 @@
           "sha256": "9b08c78e0edbfc3a1158ccf93ecf444c8a3595c7086a6bbd4ef1e374d0a66375"
         }
       ]
+    },
+    {
+      "jobId": "california-atp-application-in-three-places",
+      "places": [
+        {
+          "kind": "county",
+          "geoid": "06105",
+          "stateFips": [
+            "06"
+          ]
+        },
+        {
+          "kind": "city",
+          "geoid": "0686944",
+          "stateFips": [
+            "06"
+          ]
+        },
+        {
+          "kind": "aiannh",
+          "geoid": "1490R",
+          "stateFips": [
+            "06"
+          ]
+        }
+      ],
+      "commit": "95be0369cd0ff55366d140d4b44522d18f499341",
+      "reviewedAt": "2026-11-16",
+      "evidence": [
+        {
+          "path": "docs/product/capability-evidence/third-proven-job.v1.json",
+          "sha256": "4e7730698f780204c22d6cc041db4fcf6b2a7f526c34006a71b6681b21b31dc5"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/county/journey-county.json",
+          "sha256": "a6a096be8d8f247a3abd929ae90684b1ba72a924a9354576ea8a11d8e02e1568"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/county/downloads/county-atp-application.pdf",
+          "sha256": "7d6c0f685e7d0c712399a6a92f38698f48d21a2841597ff5aad64a07298120fc"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/city/journey-city.json",
+          "sha256": "9d7a1340e1697a15b53ab0ba9c5ed9e8f4c972d989515b328f97897df22d8928"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/city/downloads/city-atp-application.pdf",
+          "sha256": "c87e88a636e59c1bbfcc1e22dd4cd04a3aa9a5d4dcf2703aa3e007424bd125e6"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/tribal-area/journey-tribal-area.json",
+          "sha256": "4711fbc87e7e9552c2b2f41028a3c2cf985487e955fc61c71b344f18fef9fd8a"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/tribal-area/downloads/tribal-area-atp-application.pdf",
+          "sha256": "1a3fca4b2bdcbfca76d969cdd60b3d11e7686ae6539b0013688d82254fe1254d"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/README.md",
+          "sha256": "b83e4d34667430ac786d3d7586012a2977bf938af8075c3beaaae0b1baa6d742"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/inputs/trinity-county-ca.inputs.json",
+          "sha256": "515f82ea7160809357495b2aea25794e392e4f823e39cc7301475c75e65c78fa"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/inputs/yreka-ca.inputs.json",
+          "sha256": "179d7b66b66200fdc24bb0b978e8626185ae377f35f5bcfcb4c619e67bb1c23e"
+        },
+        {
+          "path": "docs/product/capability-evidence/third-proven-job/inputs/hoopa-valley-reservation-ca.inputs.json",
+          "sha256": "24a40e06fc80f8a49032f27b854251207357af32d43c2e826a30dbcdeb3ba402"
+        }
+      ]
     }
   ],
   "dimensions": {
