@@ -9,10 +9,18 @@ acceptance evidence, and this note asks no person for anything. Like the
 second job's note, it sits in this subfolder so the direction check does not
 read it as a direction review.
 
-**State on November 16, 2026.** The definition, the checker rules and their
-tests exist, and review 78 (fresh context, agent-run) tried 310 false records
-against them; its nine changes are made. No journey script, hosted run, record or registry entry exists
-yet. Nothing here says the job is proven.
+**State on November 16, 2026.** Recorded. The job ran on the hosted site on
+commit `95be0369c` in Trinity County, Yreka and the Hoopa Valley
+Reservation, the checker accepts the record with the Census Bureau's names
+on, and the registry holds it
+(`docs/product/capability-evidence/third-proven-job.v1.json` and the README
+beside it; KI-2026-11-16-110). Before the run, two fresh-context reviews
+(78 and 79) tried false records against the definition and checker and one
+(80) read the journey; the first local rehearsal and review 79 each found a
+value in the definition that no honest run could meet (the crash source id
+and the city's kind word), and both were corrected before the run. It is a
+rehearsal of a closed call: nothing below or in the record says an
+application was submitted or would be funded.
 
 ## The job
 

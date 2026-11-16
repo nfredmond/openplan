@@ -44,12 +44,13 @@ describe("the recurring product-direction review", () => {
     );
     expect(registry.dimensions.state).toHaveLength(56);
     expect(registry.schemaVersion).toBe(3);
-    // Two jobs are proven, each run by an agent on the hosted site in three
-    // places: the safety action plan and SS4A application (November 14, 2026)
-    // and the engagement campaign with its review report and published
-    // response (November 15, 2026). The direction check above read each record
-    // and its files and accepted them.
-    expect(registry.provenJobs).toHaveLength(2);
+    // Three jobs are proven, each run by an agent on the hosted site in three
+    // places: the safety action plan and SS4A application (November 14, 2026),
+    // the engagement campaign with its review report and published response
+    // (November 15, 2026) and the California ATP application (November 16,
+    // 2026). The direction check above read each record and its files and
+    // accepted them.
+    expect(registry.provenJobs).toHaveLength(3);
     expect(registry.provenJobs[0]).toMatchObject({
       jobId: "safety-action-plan-and-ss4a-in-three-places",
       commit: "ccf88a9219fa58b67842a8f1dd41dbe3b371f8e5",
@@ -73,6 +74,18 @@ describe("the recurring product-direction review", () => {
     // The record, three run files, twelve review files (two PDFs and two
     // workbooks per place), the record's README and the three inputs files.
     expect(registry.provenJobs[1].evidence).toHaveLength(20);
+    expect(registry.provenJobs[2]).toMatchObject({
+      jobId: "california-atp-application-in-three-places",
+      commit: "95be0369cd0ff55366d140d4b44522d18f499341",
+      places: [
+        { kind: "county", geoid: "06105", stateFips: ["06"] },
+        { kind: "city", geoid: "0686944", stateFips: ["06"] },
+        { kind: "aiannh", geoid: "1490R", stateFips: ["06"] },
+      ],
+    });
+    // The record, three run files, three application PDFs, the record's README
+    // and the three inputs files.
+    expect(registry.provenJobs[2].evidence).toHaveLength(11);
     expect(registry.readinessRegistry).toMatchObject({
       schema: "openplan.jurisdiction-readiness.v1",
       path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
