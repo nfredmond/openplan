@@ -164,9 +164,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: existingSections, error: existingError } = await supabase
       .from("funding_opportunity_application_sections")
-      .select("id")
+      .select("id, section_key")
       .eq("opportunity_id", opportunity.id)
-      .limit(1);
+      .limit(500);
 
     if (existingError) {
       if (looksLikePendingAssemblySchema(existingError.message)) {
@@ -201,7 +201,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // the "already initialized" path first COMPLETES an interrupted init
       // idempotently: seed exactly the catalog attachments that are absent,
       // then report success. Only a fully seeded application still 409s.
-      if (attachmentSeeds.length > 0) {
+      //
+      // That completion is for the template the sections were seeded from
+      // and no other. A program can hold an earlier template (the ATP's
+      // seven sections before 2027): an application seeded from it keeps
+      // its own checklist, and a retry naming the program must not add the
+      // current template's rows to it (review 73). Catalog sections cannot
+      // be deleted, so an interrupted init of this template holds every
+      // section it seeds.
+      const existingSectionKeys = new Set(
+        ((existingSections ?? []) as Array<{ section_key?: string | null }>).map((row) => row.section_key)
+      );
+      const seededFromThisTemplate =
+        sectionSeeds.length > 0 && sectionSeeds.every((seed) => existingSectionKeys.has(seed.section_key));
+      if (attachmentSeeds.length > 0 && seededFromThisTemplate) {
         const { data: existingAttachments, error: attachmentsLookupError } = await supabase
           .from("funding_opportunity_attachments")
           .select("attachment_key")
