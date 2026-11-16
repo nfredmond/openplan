@@ -36,11 +36,14 @@ review files. The hosted document-export worker printed them. The journey
 then closed the campaign through its own settings screen.
 
 The campaigns were demonstrations and said so. Their title and public text
-opened with "Demonstration by an automated OpenPlan proof run" and named no
-county, town or tribe. Every comment said it was entered by an automated
-proof run and represents no one. The response said it speaks for no agency
-or tribe. Each campaign was public for between about eight and fifteen
-minutes and was closed by the journey that opened it.
+opened with "Demonstration by an automated OpenPlan proof run". The title,
+the invitation, the comments and the response named no county, town or
+tribe. The place was not hidden: the portal's map opened on it, and both
+review copies, the public one included, name it in their study area line
+and map the comments' real coordinates inside it. Every comment said it was
+entered by an automated proof run and represents no one. The response said
+it speaks for no agency or tribe. Each campaign was public for between eight
+and about fourteen minutes and was closed by the journey that opened it.
 
 ## What the record carries, and what the checker read again
 
@@ -108,14 +111,25 @@ The lead declared the job, the commit, the three places, the inputs' hashes
 and the pass criteria at 22:58 UTC on November 15, 2026, before the first
 hosted sign-up, after reading that the hosted site and the worker service
 that prints review files both ran the commit. The lead read both again
-after the last journey: unchanged.
+after the last journey: unchanged. The site's reading is repeated in each
+journey's health readbacks. The worker's two readings are the lead's own:
+they are noted in the lead's log with their times, and no output of either
+was kept.
 
 There was one attempt. All three journeys ran on the declared commit, one
 after another, and each reached its end health readback with its campaign
 closed. No journey was rerun and no criterion changed.
 
 Before the hosted run the journeys were rehearsed twice on a local build
-with the same strings (November 15), and four fresh-context reviews were
+(November 15), with earlier versions of the inputs, not the strings the
+hosted run typed. After the second rehearsal, and before the declaration,
+the lead added one sentence to the invitation ("The only review of comments
+on this page is by the same automated run, which approves or withholds its
+own test entries."); before that rehearsal the titles had been changed to
+read "demonstration 1 of 3". The earlier versions were not kept, so no one
+can show that those are the only differences. The inputs' own label says
+their text was typed on November 14, 2026; it was typed on November 15.
+Four fresh-context reviews were
 made of the pieces: the review PDF's wording, the journey and checker, the
 demonstration-text change, and the checker's fixes. The second of those
 tried 90 changed copies of an honest rehearsal record against the checker
@@ -146,7 +160,15 @@ copy's body; every time names its zone; the invitation on page 1 and no
 template text on any page; no email address and no DRAFT stamp; the study
 area names the project's place; each campaign closed.
 
-Result, on all six PDFs: **met.** The lead swept every page before the
+Result: **the rules for the six PDFs were met. One declared item was not
+done as declared**: the declaration said the lead would read each closed
+public address in a fresh anonymous session after each journey. The lead
+did not. The run files hide the campaign's public address, so the lead
+looked at the journey's own anonymous screenshots of the closed portal and
+about page instead, and the record states that as a limit. By the
+declaration's own rule this does not stop the job being recorded.
+
+On the six PDFs, the lead swept every page before the
 appendix (pages 1 to 9 of the internal copies, 1 to 5 of the public ones)
 for ids, hashes, stored times, JSON, stored codes, email addresses, DRAFT,
 the template's sentences and the old "Agency response" label, and found
@@ -159,14 +181,10 @@ page and the response page of a public copy and the appendix page of an
 internal copy. The 12-character snapshot hash in each page footer is a
 provenance mark and was declared as allowed.
 
-Two things the check found that are not failures of it:
-
-- Lander's study area line reads "Lander" with no state. The place search
-  showed "Lander, WY"; the saved place drops the state (known issue
-  KI-2026-11-15-015). The journey recorded this as its own finding.
-- The lead read each closed public page from the journey's anonymous
-  screenshot, not in a separate session: the run files hide the campaign's
-  public address.
+One thing the check found that is not a failure of it: Lander's study area
+line reads "Lander" with no state. The place search showed "Lander, WY";
+the saved place drops the state (known issue KI-2026-11-15-015). The journey
+recorded this as its own finding.
 
 ## Limits
 
@@ -197,7 +215,8 @@ The record states each of these as a limit:
 - No email was sent to subscribers; only account confirmation email was
   used.
 
-Also true, and not in the record: three places are not every place. The
+Also true, and not in the record: which commit the worker service ran is
+the lead's reading, with no kept output. Three places are not every place. The
 places were chosen by the lead, not sampled. Each campaign held four
 comments; nothing here shows how the review files read with four hundred.
 
@@ -208,7 +227,11 @@ Census id changed with its label kept; the keyboard-only label moved to
 another comment; console errors (recorded, but no rule reads them); another
 axe version or rule set; a limit whose text says the opposite of its id; and
 a commit replaced consistently everywhere in the record. The first, fourth
-and fifth are not inherent and can be closed.
+and fifth are not inherent and can be closed. The review of this record
+found three more (KI-2026-11-15-043): the checker does not require an
+executor to be named as an agent; it does not compare the record's date with
+the journeys' times; and it does not hold the four limits this record adds
+beyond the ten the definition requires. This record uses none of them.
 
 ## What a reader of the review files would still question
 
