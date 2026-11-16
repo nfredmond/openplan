@@ -1,0 +1,683 @@
+%PDF- text of a real ATP application PDF, not a PDF: Chrome 157 printed it from the product's export code on November 16, 2026 (review 78, filler-33-county.pdf) and Poppler 25.07 pdftotext -layout read it. Synthetic names; no real place or run.
+OPENPLAN GRANTS: APPLICATION PACKET
+
+
+
+Active Transportation
+Program (ATP)
+Competitive California program for walking, biking and rolling projects, plans and
+non-infrastructure programs, funded from federal and state sources. Under the 2027
+ATP Guidelines (Cycle 8, adopted March 19, 2026), funds are split 50 percent to the
+Statewide Component, 10 percent to the Small Urban and Rural Component (areas of
+5,001 to 200,000 people, and rural areas of 5,000 or less) and 40 percent to the MPO
+Component; each component directs at least 25 percent to projects that benefit
+disadvantaged communities.
+
+Study place: Synthetic County, CA (county, GEOID 06998)
+Applicant not entered in OpenPlan
+The study place is the area recorded for the linked project in OpenPlan. It does not state the
+project limits.
+
+
+
+   DRAFT: 15 required attachment(s) outstanding
+
+
+  PROJECT
+
+  Synthetic county walking and biking connections (Demonstration by an
+  automated OpenPlan proof run)
+
+
+  WORKSPACE
+
+  Synthetic county demonstration workspace
+
+
+  FUNDER / AGENCY                 EXPECTED AWARD                  CLOSES
+
+  California                      Not set                         Not set
+  Transportation
+  Commission /
+  Caltrans
+
+
+
+                                                                           Active Transportation Program (ATP) · Page 1 of 14
+   SECTIONS FINAL                ASSEMBLED
+
+   10 of 10                      November 20, 2026
+                                 at 10:40 (UTC, no
+                                 workspace time zone
+                                 set)
+
+
+   Standing caveats. This application cites OpenPlan-assembled evidence, and
+   the following boundaries apply verbatim:
+      This is a screening-level benefit-cost estimate for grant-readiness review, not
+      a benefit-cost analysis of record.
+      Community-input statements summarize submitted public comments only —
+      a screening-grade synthesis of who chose to comment, not a statistically
+      representative survey, a vote, or a legal-sufficiency finding.
+
+
+
+
+Part A1 to A4: Applicant and project information
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+Part A5: Project funding
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+Part A6: Screening criteria
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here. Filler sentence for layout only. Filler sentence for layout only. Filler
+
+
+                                                                        Active Transportation Program (ATP) · Page 2 of 14
+sentence for layout only. Filler sentence for layout only. Filler sentence for layout only.
+Filler sentence for layout only. Filler sentence for layout only. Filler sentence for layout
+only. Filler sentence for layout only. Filler sentence for layout only. Filler sentence for
+layout only. Filler sentence for layout only. Filler sentence for layout only. Filler
+sentence for layout only. Filler sentence for layout only. Filler sentence for layout only.
+Filler sentence for layout only. Filler sentence for layout only. Filler sentence for layout
+only. Filler sentence for layout only. Filler sentence for layout only. Filler sentence for
+layout only. Filler sentence for layout only. Filler sentence for layout only. Filler
+sentence for layout only. Filler sentence for layout only. Filler sentence for layout only.
+Filler sentence for layout only. Filler sentence for layout only. Filler sentence for layout
+only. Filler sentence for layout only. Filler sentence for layout only. Filler sentence for
+layout only.
+
+
+
+
+Part B, Question 1: Disadvantaged Communities (DAC)
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+Part B, Question 2: Potential to Increase Walking,
+Biking and Rolling
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+Part B, Question 3: Potential for Reducing the Number
+and/or Rate of Active Transportation User Fatalities
+
+
+
+                                                                          Active Transportation Program (ATP) · Page 3 of 14
+and Injuries
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+Part B, Question 4: Public Participation and Planning
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+Part B, Question 5: Scope and Plan Layout Consistency
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. The application asks no
+question here.
+
+
+
+
+Part B, Question 6: Use of California Conservation
+Corps (CCC) or Certified Local Community
+Conservation Corps (CALCC)
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. An agency would write its
+own answer here.
+
+
+
+
+                                                                  Active Transportation Program (ATP) · Page 4 of 14
+Part B, Question 7: Performance on Past ATP Projects
+Demonstration by an automated OpenPlan proof run. This text describes no real project
+and makes no claim about any agency, place or community. The application asks no
+question here.
+
+
+
+
+Attachment checklist
+ ATTACHMENT                  REQUIRED      STATUS       FULFILLMENT   NOTE
+
+
+ Letter of Intent with       Required if   Not          Nothing       Synthetic example: the
+ partnering agency           applicable    applicable   attached      demonstration names
+                                                                      no partnering agency.
+
+ School enrollment area      Required if   Not          Nothing       Synthetic example: the
+ map and statements of       applicable    applicable   attached      demonstration is not a
+ support (Safe Routes to                                              Safe Routes to School
+ School projects only)                                                project.
+
+ State Highway Project       Required if   Not          Nothing       Synthetic example: the
+ Impact Assessment Form      applicable    applicable   attached      demonstration is not
+ (projects on Caltrans                                                on Caltrans right of
+ right of way only)                                                   way.
+
+ Letters of support or       Required if   Not          Nothing       Synthetic example: the
+ neutrality from railroads   applicable    applicable   attached      demonstration crosses
+ and other governmental                                               no railroad.
+ agencies
+
+ Project Programming         Required      Missing      Nothing       None
+ Request (PPR)                                          attached
+
+ CEQA and NEPA               Required if   Not          Nothing       Synthetic example: the
+ signature pages             applicable    applicable   attached      demonstration shows
+ (applications showing                                                no environmental
+ PA&ED complete)                                                      phase complete.
+
+ Caltrans-approved Right     Required if   Not          Nothing       Synthetic example: the
+ of Way Certification        applicable    applicable   attached      demonstration shows
+ (applications showing                                                no right of way phase
+ right of way complete)                                               complete.
+
+ Regional Transportation     Required      Missing      Nothing       None
+ Plan pages showing the                                 attached
+ project is consistent
+
+ Caltrans-implemented        Required if   Not          Nothing       Synthetic example:
+ projects: need to use ATP   applicable    applicable   attached      Caltrans is not the
+ funds                                                                implementing agency.
+
+
+                                                                         Active Transportation Program (ATP) · Page 5 of 14
+ATTACHMENT                REQUIRED      STATUS       FULFILLMENT   NOTE
+
+Caltrans-implemented      Required if   Not          Nothing       Synthetic example:
+projects: coordination    applicable    applicable   attached      Caltrans is not the
+with local and regional                                            implementing agency.
+agencies
+
+Disadvantaged             Required if   Missing      Nothing       None
+community map             applicable                 attached
+
+Disadvantaged             Required if   Missing      Nothing       None
+community identifier      applicable                 attached
+data
+
+Maps of gap closures,     Required      Missing      Nothing       None
+new routes, barriers to                              attached
+mobility and other
+improvements
+
+Bicycle and pedestrian    Required      Missing      Nothing       None
+collision data or other                              attached
+safety data
+
+Documentation of public   Required      Missing      Nothing       None
+participation and                                    attached
+planning
+
+Responses from the CCC,   Required      Missing      Nothing       None
+CALCC and Tribal Corps                               attached
+(if applicable)
+
+Signature Page            Required      Missing      Nothing       None
+                                                     attached
+
+Engineer's Checklist      Required      Missing      Nothing       None
+                                                     attached
+
+Project Location Map      Required      Missing      Nothing       None
+                                                     attached
+
+Project Layouts/Plans     Required      Missing      Nothing       None
+with Existing and                                    attached
+Proposed Conditions
+
+Photos of Existing        Required      Missing      Nothing       None
+Conditions                                           attached
+
+Project Estimate          Required      Missing      Nothing       None
+                                                     attached
+
+Non-Infrastructure Work   Required if   Not          Nothing       Synthetic example: the
+Plan (Exhibit 25-R)       applicable    applicable   attached      demonstration has no
+                                                                   non-infrastructure
+                                                                   part.
+
+Letters of Support        Required      Missing      Nothing       None
+                                                     attached
+
+
+                                                                      Active Transportation Program (ATP) · Page 6 of 14
+ ATTACHMENT                 REQUIRED        STATUS         FULFILLMENT   NOTE
+
+
+ State-Only Funds           Required if     Not            Nothing       Synthetic example: the
+ Request (Exhibit 25-F)     applicable      applicable     attached      demonstration asks for
+                                                                         no state-only funds.
+
+ Additional attachments     Optional        Missing        Nothing       None
+                                                           attached
+
+
+
+
+Evidence appendices
+Each appendix restates a saved OpenPlan record for the linked project, with its source
+record and date. Missing records are listed as missing. Scores are OpenPlan screening
+scores, not CTC scores. These appendices do not establish ATP eligibility or that this
+package meets the current call for projects.
+
+[VERIFY: confirm the cycle in effect and its scoring criteria in the CTC's current ATP
+guidelines, https://catc.ca.gov/programs/active-transportation-program] Confirm the
+required attachments and scoring criteria against the current ATP guidelines.
+
+ APPENDIX                   STATUS        SOURCE RECORD         DATE              HASH
+
+
+ A. ATP screening packet    Included      Corridor analysis     Nov 2,            None stored
+                                          run                   2026, 17:00
+                                                                UTC
+
+ B. Crash summary           Included      Crash acquisition     Nov 20,           None stored
+                                                                2026, 10:10
+                                                                UTC
+
+ C. Cost estimate           Included      Project record        Nov 2,            None stored
+                                                                2026, 16:05
+                                                                UTC
+
+ D. Engagement summary      Included      Engagement            Oct 21,           None stored
+                                          campaign              2026,
+                                                                09:00 UTC
+
+ E. Disadvantaged-          Included      Corridor analysis     Nov 2,            None stored
+ community and equity                     run                   2026, 17:00
+ inputs                                                         UTC
+
+ F. Benefit-cost summary    Included      Saved benefit-cost    Oct 20,           Stored, printed
+                                          analysis version      2026,             under the
+                                                                09:00 UTC         appendix
+
+
+
+Appendix A. ATP screening packet
+Source: Corridor analysis run 00000000-0000-4000-8000-000000000700. Run saved: Nov 2, 2026,
+17:00 UTC. No content hash is stored for this record. Run title: Main Street ATP screen.
+
+                                                                              Active Transportation Program (ATP) · Page 7 of 14
+Program: Active Transportation Program (ATP)
+
+Administering agency: California Transportation Commission / Caltrans
+
+Program page: https://catc.ca.gov/programs/active-transportation-program
+
+Cycle (program registry note): The 2027 ATP is Cycle 8. The CTC adopts a program no
+later than a statutory date in each odd-numbered year. Verify the current call with the CTC.
+[VERIFY: confirm the cycle in effect and its scoring criteria in the CTC's current ATP
+guidelines, https://catc.ca.gov/programs/active-transportation-program]
+
+Local match (program registry note): No local match required; an MPO may require
+one in the MPO Component. Committed leveraged funds earn points only in Large and
+Medium project applications. Verify current guidelines. [VERIFY: confirm the cycle in effect
+and its scoring criteria in the CTC's current ATP guidelines,
+https://catc.ca.gov/programs/active-transportation-program]
+
+Date these program facts were checked: Not recorded. The program registry stores no
+check date.
+
+Project: Synthetic county walking and biking connections (Demonstration by an automated
+OpenPlan proof run)
+
+Project description: Close the sidewalk gap on Main Street between two schools.
+
+Study place: Synthetic County, CA (county, GEOID 06998)
+
+Applicant not entered in OpenPlan
+
+Safety score source: California Crash Reporting System (CCRS), crash years 2022–2025,
+retrieved Nov 20, 2026.
+
+Project readiness: Readiness not recorded: no sensitivity screen ran for this project. The
+lead agency must supply project-specific evidence before final submittal.
+
+Safety, OpenPlan screening score (not a CTC score): 60.0
+
+Equity, OpenPlan screening score (not a CTC score): Not recorded. Equity is withheld
+because required demographic inputs are unavailable.
+
+Climate, OpenPlan screening score (not a CTC score): Not recorded
+
+Feasibility, OpenPlan screening score (not a CTC score): Not recorded
+
+Total (OpenPlan weights 30/25/25/20, not CTC points), OpenPlan screening
+score (not a CTC score): Not recorded
+
+      These are OpenPlan screening scores from the project's corridor analysis. The CTC
+      scores ATP applications under its current guidelines.
+      OpenPlan does not decide ATP eligibility.
+      Climate, feasibility and the weighted total have no source in OpenPlan yet.
+      The study place is the area recorded for the linked project in OpenPlan. It does not
+      state the project limits.
+
+                                                                           Active Transportation Program (ATP) · Page 8 of 14
+Appendix B. Crash summary
+Source: Crash acquisition 00000000-0000-4000-8000-000000000701. Retrieved: Nov 20, 2026, 10:10
+UTC. No content hash is stored for this record.
+
+Source: California Crash Reporting System (CCRS)
+
+Years requested: 2022–2025
+
+Severity coverage: Serious-injury crashes are counted from the source's injured-person
+records, joined to each crash. The crash file alone does not separate them. Classification
+completeness still requires review.
+
+Crash area: Place boundary
+
+Crashes outside the boundary, left out: 261
+
+Boundary counts: Complete for the boundary
+
+Crashes reported: 80
+
+Crashes mapped: 80
+
+Retrieval truncated: No
+
+Fatal crashes: 2
+
+Serious-injury crashes: 12
+
+Other injury crashes: 63
+
+Property-damage-only crashes: 3
+
+Crashes with no casualty count from the source: 0
+
+Fatal and serious-injury crashes: 14
+
+      Crash records are reported collisions retrieved from the source agency, not
+      modeled estimates. Coverage, geocoding completeness, and severity detail vary by
+      source and year. Review the coverage summary before relying on any count.
+      Crashes are counted inside the place boundary. 261 crashes inside its bounding
+      rectangle but outside the boundary are left out.
+      Serious-injury crashes are counted from the source's injured-person records,
+      joined to each crash. The crash file alone does not separate them.
+      The source supplied no exact publication cutoff. The requested years and latest
+      returned crash are not used as substitutes.
+      This source records no person-level detail, so who was involved cannot be counted
+      from it, only whether a collision was flagged as involving a pedestrian, bicyclist or
+      motorcyclist.
+      The safety screening score in the ATP screening packet comes from the corridor
+      analysis run's own crash read. Its source and crash years print there and can differ
+      from this acquisition's.
+      California Crash Reporting System (CCRS): 80 crashes reported, 80 geocoded,
+      years 2022–2025. Source ingest 00000000-0000-4000-8000-000000000701.
+
+                                                                           Active Transportation Program (ATP) · Page 9 of 14
+Appendix C. Cost estimate
+Source: Project record 00000000-0000-4000-8000-000000000002.
+/projects/00000000-0000-4000-8000-000000000002 Estimate recorded: Nov 2, 2026, 16:05 UTC. No
+content hash is stored for this record.
+
+Planning-level estimate: USD 2,850,000.00
+
+Price year: 2026
+
+Source document: Not recorded
+
+      Planning-level estimate recorded on the project, not an engineer's estimate.
+      No phase split (PA&ED, PS&E, R/W, CON) is recorded in OpenPlan.
+
+
+Appendix D. Engagement summary
+Source: Engagement campaign 00000000-0000-4000-8000-000000000090.
+/engagement/00000000-0000-4000-8000-000000000090 Synthesis saved: Oct 21, 2026, 09:00 UTC.
+No content hash is stored for this record.
+
+Campaigns on record: 1
+
+Lead campaign: Corridor listening session (closed)
+
+Method: Map comments
+
+Comments received: 4, received from Oct 19, 2026 to Oct 20, 2026
+
+Comments approved: 2
+
+Community-input finding source: Keyword-based synthesis saved Oct 21, 2026
+
+      1 public engagement campaign(s) are on record for the Synthetic county walking
+      and biking connections (Demonstration by an automated OpenPlan proof run)
+      project; the lead campaign is "Corridor listening session" (status: closed).
+      A keyword-based synthesis (computed while AI was offline) of 12 approved public
+      comments on "Corridor listening session", generated Oct 21, 2026, found mixed
+      community sentiment. Community-input statements summarize submitted public
+      comments only — a screening-grade synthesis of who chose to comment, not a
+      statistically representative survey, a vote, or a legal-sufficiency finding.
+      Leading comment themes from that synthesis: "Crossing safety" (7 comment(s),
+      negative). Community-input statements summarize submitted public comments
+      only — a screening-grade synthesis of who chose to comment, not a statistically
+      representative survey, a vote, or a legal-sufficiency finding.
+
+
+Appendix E. Disadvantaged-community and equity inputs
+Source: Corridor analysis run 00000000-0000-4000-8000-000000000700. Run saved: Nov 2, 2026,
+17:00 UTC. No content hash is stored for this record. Run title: Main Street ATP screen.
+
+
+
+
+                                                                         Active Transportation Program (ATP) · Page 10 of 14
+Equity screening score (OpenPlan, not a CTC score): Not recorded. Equity is withheld
+because required demographic inputs are unavailable.
+
+Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run
+
+Tracts the ACS income and burden proxy flags: Not recorded
+
+Low-income tracts (ACS proxy): Not recorded
+
+ATP disadvantaged-community criteria: Not assessed. OpenPlan does not decide ATP
+eligibility; the CTC's guidelines set the criteria. [VERIFY: confirm the cycle in effect and its
+scoring criteria in the CTC's current ATP guidelines, https://catc.ca.gov/programs/active-
+transportation-program]
+
+Guidelines criterion, Median Household Income: Not recorded in OpenPlan
+
+Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan
+
+Guidelines criterion, National School Lunch Program: Not recorded in OpenPlan
+
+Guidelines criterion, Healthy Places Index: Not recorded in OpenPlan
+
+Guidelines criterion, Native American Tribal Lands: Not recorded in OpenPlan
+
+Guidelines criterion, Other: Not recorded in OpenPlan
+
+      The Guidelines criteria are the six the CTC's 2027 ATP Guidelines list in section
+      12.A, by the Guidelines' names and in their order. A community qualifies by
+      meeting at least one. The Guidelines state each criterion's threshold and data year.
+      No row above is a determination that a community is disadvantaged or that the
+      project benefits one. The applicant shows that in the application.
+      The ACS proxy is a screening measure. It is not the Guidelines' median household
+      income criterion or any other criterion above.
+
+
+Appendix F. Benefit-cost summary
+Source: Saved benefit-cost analysis version 00000000-0000-4000-8000-000000000080.
+/grants/bca/00000000-0000-4000-8000-000000000002 Saved: Oct 20, 2026, 09:00 UTC. Input SHA-
+256: be38f5264c058d1403682bdaba40008112bb995f916e59c87927ba7ddd87c944.
+
+Analysis: Synthetic example: corridor travel time
+
+Program profile: USDOT discretionary grants, 2026 method, edition USDOT December
+2025 / 2026 update
+
+Calculation status: Calculated, with checks open for review
+
+Benefit-cost ratio: 1.594
+
+Net present value: $1,188,105
+
+Present-value numerator: $3,188,105
+
+Present-value denominator: $2,000,000
+
+                                                                            Active Transportation Program (ATP) · Page 11 of 14
+Open checks: 0 blocking, 3 for review
+
+Engine: OpenPlan annual ledger, version 1
+
+ Input source         Status        Streams     Reference                             Limitation
+                                    citing it
+
+ Synthetic training   Assumption    3           OpenPlan synthetic example,           Not a real project.
+ assumptions                                    Training example, no observed data    Do not submit.
+
+
+       Calculation status: calculated, with checks open for review. Responsible analyst
+       review and program acceptance are not established by this calculation.
+       Inputs marked as an assumption, missing or model screening are not documented
+       values. Each needs a source before the analysis is relied on.
+
+
+
+
+Provenance appendix
+How each section's text came to be, disclosed per section. AI drafts are writing support
+grounded in workspace evidence; the operator who finalized a section is the authority
+for it.
+
+ SECTION               STATUS      ORIGIN       MODEL       GROUNDING     FINALIZED           FINALIZED
+                                                                          BY
+
+
+ Part A1 to A4:        Final       Operator-    No          Not           Workspace           November
+ Applicant and                     authored     model       applicable    owner               20, 2026 at
+ project                                                                                      10:40 (UTC,
+ information                                                                                  no
+                                                                                              workspace
+                                                                                              time zone
+                                                                                              set)
+
+ Part A5: Project      Final       Operator-    No          Not           Workspace           November
+ funding                           authored     model       applicable    owner               20, 2026 at
+                                                                                              10:40 (UTC,
+                                                                                              no
+                                                                                              workspace
+                                                                                              time zone
+                                                                                              set)
+
+ Part A6: Screening    Final       Operator-    No          Not           Workspace           November
+ criteria                          authored     model       applicable    owner               20, 2026 at
+                                                                                              10:40 (UTC,
+                                                                                              no
+                                                                                              workspace
+                                                                                              time zone
+                                                                                              set)
+
+
+
+
+                                                                                 Active Transportation Program (ATP) · Page 12 of 14
+SECTION               STATUS   ORIGIN      MODEL   GROUNDING    FINALIZED          FINALIZED
+                                                                BY
+
+
+Part B, Question 1:   Final    Operator-   No      Not          Workspace          November
+Disadvantaged                  authored    model   applicable   owner              20, 2026 at
+Communities                                                                        10:40 (UTC,
+(DAC)                                                                              no
+                                                                                   workspace
+                                                                                   time zone
+                                                                                   set)
+
+Part B, Question 2:   Final    Operator-   No      Not          Workspace          November
+Potential to                   authored    model   applicable   owner              20, 2026 at
+Increase Walking,                                                                  10:40 (UTC,
+Biking and Rolling                                                                 no
+                                                                                   workspace
+                                                                                   time zone
+                                                                                   set)
+
+Part B, Question 3:   Final    Operator-   No      Not          Workspace          November
+Potential for                  authored    model   applicable   owner              20, 2026 at
+Reducing the                                                                       10:40 (UTC,
+Number and/or                                                                      no
+Rate of Active                                                                     workspace
+Transportation                                                                     time zone
+User Fatalities and                                                                set)
+Injuries
+
+Part B, Question 4:   Final    Operator-   No      Not          Workspace          November
+Public                         authored    model   applicable   owner              20, 2026 at
+Participation and                                                                  10:40 (UTC,
+Planning                                                                           no
+                                                                                   workspace
+                                                                                   time zone
+                                                                                   set)
+
+Part B, Question 5:   Final    Operator-   No      Not          Workspace          November
+Scope and Plan                 authored    model   applicable   owner              20, 2026 at
+Layout                                                                             10:40 (UTC,
+Consistency                                                                        no
+                                                                                   workspace
+                                                                                   time zone
+                                                                                   set)
+
+Part B, Question 6:   Final    Operator-   No      Not          Workspace          November
+Use of California              authored    model   applicable   owner              20, 2026 at
+Conservation                                                                       10:40 (UTC,
+Corps (CCC) or                                                                     no
+Certified Local                                                                    workspace
+Community                                                                          time zone
+Conservation                                                                       set)
+Corps (CALCC)
+
+
+
+
+                                                                      Active Transportation Program (ATP) · Page 13 of 14
+SECTION               STATUS   ORIGIN      MODEL   GROUNDING    FINALIZED          FINALIZED
+                                                                BY
+
+
+Part B, Question 7:   Final    Operator-   No      Not          Workspace          November
+Performance on                 authored    model   applicable   owner              20, 2026 at
+Past ATP Projects                                                                  10:40 (UTC,
+                                                                                   no
+                                                                                   workspace
+                                                                                   time zone
+                                                                                   set)
+
+
+
+
+                                                                      Active Transportation Program (ATP) · Page 14 of 14
