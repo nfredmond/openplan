@@ -1,0 +1,142 @@
+{
+  "label": "Rehearsal inputs for the ATP application journey, not an application. Synthetic inputs for a local rehearsal of atp-job-journey.js in one place, Trinity County, California. Nothing here was read from a source, describes a real project or speaks for any agency or tribe. A proof run refuses this file.",
+  "rehearsal": true,
+  "role": "county",
+  "placeKind": "county",
+  "placeQuery": "Trinity County, CA",
+  "organization": "OpenPlan rehearsal, Trinity County ATP demonstration",
+  "secondOrganization": "Second account for the cross-workspace check, Trinity County rehearsal demonstration",
+  "projectName": "Trinity County ATP rehearsal. Demonstration by an automated OpenPlan proof run",
+  "projectSummary": "Rehearsal of a demonstration ATP application for a study place, Trinity County, California, typed by an automated run on a local build. It describes no real project and was not prepared or submitted by any agency or tribe.",
+  "applicationType": "small-infrastructure",
+  "analysisQuestion": "Demonstration by an automated OpenPlan proof run: what crash history involves people walking and bicycling in this study area?",
+  "requiredAttachmentsOutstanding": 17,
+  "checklist": {
+    "partnering-agency-letter-of-intent": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal names no partnering agency."
+    },
+    "safe-routes-school-map-and-statements": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal is not a Safe Routes to School project."
+    },
+    "state-highway-project-impact-assessment-form": {
+      "disposition": "outstanding"
+    },
+    "railroad-and-agency-letters": {
+      "disposition": "outstanding"
+    },
+    "project-programming-request": {
+      "disposition": "outstanding"
+    },
+    "ceqa-nepa-signature-pages": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal shows no phase complete, so it shows no completed environmental phase."
+    },
+    "right-of-way-certification": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal shows no phase complete, so it shows no completed right of way phase."
+    },
+    "regional-transportation-plan-pages": {
+      "disposition": "outstanding"
+    },
+    "caltrans-need-for-atp-funds": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal is not a Caltrans-implemented project."
+    },
+    "caltrans-local-coordination": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal is not a Caltrans-implemented project."
+    },
+    "disadvantaged-community-map": {
+      "disposition": "outstanding"
+    },
+    "disadvantaged-community-identifier-data": {
+      "disposition": "outstanding"
+    },
+    "gap-closure-and-route-maps": {
+      "disposition": "outstanding"
+    },
+    "collision-data": {
+      "disposition": "outstanding"
+    },
+    "public-participation-documentation": {
+      "disposition": "outstanding"
+    },
+    "corps-consultation-responses": {
+      "disposition": "outstanding"
+    },
+    "signature-page": {
+      "disposition": "outstanding"
+    },
+    "engineers-checklist": {
+      "disposition": "outstanding"
+    },
+    "project-location-map": {
+      "disposition": "outstanding"
+    },
+    "project-layouts-and-plans": {
+      "disposition": "outstanding"
+    },
+    "photos-of-existing-conditions": {
+      "disposition": "outstanding"
+    },
+    "project-estimate": {
+      "disposition": "outstanding"
+    },
+    "non-infrastructure-work-plan": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal fills in the infrastructure-only application, with no non-infrastructure part."
+    },
+    "letters-of-support": {
+      "disposition": "outstanding"
+    },
+    "state-only-funds-request": {
+      "disposition": "not-applicable",
+      "reason": "The rehearsal requests no funds, so it requests no state-only funds."
+    },
+    "additional-attachments": {
+      "disposition": "outstanding"
+    }
+  },
+  "facts": [
+    {
+      "id": "rehearsal-crash-source",
+      "statement": "The crash summary comes from the crash retrieval the journey runs on screen.",
+      "source": "Synthetic rehearsal fact; the journey's own crash retrieval, not an outside source",
+      "readOn": "2026-11-16"
+    }
+  ],
+  "sections": {
+    "atp-2027-part-a-project-information": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThis rehearsal text stands where an applicant would name itself and describe a project. It names no applicant, describes no real project and sets no limits, quantities or phases."
+    },
+    "atp-2027-part-a5-project-funding": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThis rehearsal text enters no cost estimate and requests no amount. An applicant would state its funding request by phase and year here."
+    },
+    "atp-2027-part-a6-screening-criteria": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThis rehearsal text makes no statement about any screening criterion. An applicant would answer each criterion from its own records here."
+    },
+    "atp-2027-b1-disadvantaged-communities": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThis rehearsal text claims no community status and reports no benefit to any community. An applicant would choose one identifier from the current guidelines and attach its data."
+    },
+    "atp-2027-b2-walking-biking-rolling": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThis rehearsal text reports no counts of people walking, bicycling or rolling and makes no forecast. An applicant would describe current use and the barriers a project would remove."
+    },
+    "atp-2027-b3-fatalities-and-injuries": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThis rehearsal text makes no claim about what any project would do for safety. The crash summary appendix states the source, the years and the counts OpenPlan retrieved for the study place."
+    },
+    "atp-2027-b4-public-participation-planning": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nNo public participation was carried out for this rehearsal, and no plan is cited. An applicant would describe its own outreach and attach its record."
+    },
+    "atp-2027-b5-scope-plan-layout-consistency": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThe application asks no question here. No layout, estimate or schedule was prepared for this rehearsal."
+    },
+    "atp-2027-b6-conservation-corps": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nNo Conservation Corps was contacted for this rehearsal. An applicant would report its own consultation and the responses it received."
+    },
+    "atp-2027-b7-past-performance": {
+      "text": "Demonstration by an automated OpenPlan proof run. Trinity County did not prepare, review, adopt or submit this text, and it commits the County to nothing. Rehearsal inputs for the ATP application journey, not an application.\n\nThe application asks no question here. This rehearsal reports on no past project."
+    }
+  }
+}
