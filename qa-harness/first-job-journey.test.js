@@ -305,11 +305,35 @@ test('identifying strings drop blanks and repeats, so the stated count is the co
 
 const PROOF_ORIGIN = 'https://openplan-zeta.vercel.app';
 
+/**
+ * What a run file made from lane 65 on carries for its campaign's close: the
+ * runJourney result with the close step's reading, the step that closed it,
+ * and the harness checkout the script ran from.
+ */
+const CLOSED = Object.freeze({
+  close: {
+    attempted: true,
+    closed: true,
+    problems: [],
+    error: null,
+    reading: {
+      saveStatus: 200,
+      statusAfter: 'closed',
+      addresses: [{ name: 'portal', status: 200, endedNoticeShown: true, campaignTextFound: false }, { name: 'about', status: 200, endedNoticeShown: true, campaignTextFound: false }],
+      publicReadStatusAfter: 404,
+      publicReadCampaignTextFound: false,
+    },
+  },
+  steps: [{ step: 'close-campaign', status: 'passed', startedAt: '2026-11-16T12:00:00Z', endedAt: '2026-11-16T12:01:00Z' }],
+  harness: { commit: 'c'.repeat(40), clean: true },
+});
+const closedRun = (run) => ({ ...JSON.parse(JSON.stringify(CLOSED)), ...run });
+
 test('an assembled record states the page limit only when a page answered 200', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-assemble-'));
   const write = (name, checks) => {
     const file = path.join(dir, name);
-    fs.writeFileSync(file, JSON.stringify({ mode: 'rehearsal', baseUrl: 'http://localhost:3450', expectedCommit: null, stoppedAt: null, journey: { role: name }, crossWorkspace: { checks } }));
+    fs.writeFileSync(file, JSON.stringify(closedRun({ mode: 'rehearsal', baseUrl: 'http://localhost:3450', expectedCommit: null, stoppedAt: null, journey: { role: name }, crossWorkspace: { checks } })));
     return file;
   };
   const data = { target: 'safety-action-plan', request: 'report-pdf-download', kind: 'data', status: 404, contentReturned: false };
@@ -327,7 +351,7 @@ test('assembly refuses a run that cannot go into a record for this commit and or
   assert.equal(PROOF_ORIGIN, checker.PROOF_ORIGIN, 'the tests\' proof origin is the checker\'s');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-assemble-'));
   const commit = 'a'.repeat(40);
-  const proofRun = { mode: 'proof', baseUrl: PROOF_ORIGIN, expectedCommit: commit, stoppedAt: null, journey: { role: 'california-county' }, crossWorkspace: { checks: [] } };
+  const proofRun = closedRun({ mode: 'proof', baseUrl: PROOF_ORIGIN, expectedCommit: commit, stoppedAt: null, journey: { role: 'california-county' }, crossWorkspace: { checks: [] } });
   const assembleOne = (change, baseUrl = PROOF_ORIGIN) => {
     const run = JSON.parse(JSON.stringify(proofRun));
     change(run);
@@ -342,8 +366,28 @@ test('assembly refuses a run that cannot go into a record for this commit and or
   assert.throws(() => assembleOne((run) => { run.expectedCommit = 'b'.repeat(40); }), /expected commit b{40}, not the record's a{40}/);
   assert.throws(() => assembleOne((run) => { run.stoppedAt = 'export-pdfs'; }), /stopped at export-pdfs; an unfinished run cannot go into a record/);
   assert.throws(() => assembleOne(() => {}, 'not a url'), /--base-url not a url is not a web address/);
-  const rehearsal = assembleOne((run) => { Object.assign(run, { mode: 'rehearsal', baseUrl: 'http://localhost:3450', expectedCommit: null }); }, 'http://localhost:3450');
-  assert.equal(rehearsal.baseUrl, 'http://localhost:3450', 'a rehearsal assembles under its own origin, where the checker refuses it');
+  // Lane 65: the close at the end and the harness checkout.
+  assert.throws(() => assembleOne((run) => { run.close.closed = false; }), /journey-california-county\.json did not take its campaign offline at the end, so it cannot go into a record/);
+  assert.throws(() => assembleOne((run) => { run.close.attempted = false; }), /did not take its campaign offline at the end/);
+  assert.throws(() => assembleOne((run) => { delete run.close; }), /did not take its campaign offline at the end/);
+  assert.throws(() => assembleOne((run) => { delete run.harness; }), /journey-california-county\.json names no harness checkout \(commit and clean\)/);
+  assert.throws(() => assembleOne((run) => { run.harness.commit = 'c'.repeat(12); }), /names no harness checkout/);
+  assert.throws(() => assembleOne((run) => { run.harness.clean = false; }), /ran from a harness checkout with uncommitted changes; a proof runs from a clean checkout/);
+  const rehearsal = assembleOne((run) => { Object.assign(run, { mode: 'rehearsal', baseUrl: 'http://localhost:3450', expectedCommit: null }); run.harness.clean = false; }, 'http://localhost:3450');
+  assert.equal(rehearsal.baseUrl, 'http://localhost:3450', 'a rehearsal assembles under its own origin, where the checker refuses it, from a checkout with changes');
+  const journey = assembleOne(() => {}).journeys[0];
+  assert.deepEqual(Object.keys(journey), ['role', 'mode', 'close', 'harness'], 'each journey carries its run\'s mode, close and harness checkout');
+  assert.equal(journey.mode, 'proof');
+  assert.deepEqual(journey.harness, { commit: 'c'.repeat(40), clean: true });
+  assert.deepEqual(journey.close, {
+    attempted: true,
+    closed: true,
+    saveStatus: 200,
+    statusAfter: 'closed',
+    addresses: CLOSED.close.reading.addresses,
+    publicReadAfter: { status: 404, campaignTextFound: false },
+    endedAt: '2026-11-16T12:01:00Z',
+  });
 });
 
 const rehearsalInputs = () => JSON.parse(fs.readFileSync(lib.REHEARSAL_INPUTS_PATH, 'utf8'));
@@ -376,6 +420,18 @@ test('inputs are refused when their text could not finalize honestly or a fact h
     ['a fact read on no real date', (inputs) => { inputs.facts[0].readOn = '2026-02-30'; }, /calendar date it was read/],
     ['no facts', (inputs) => { inputs.facts = []; }, /at least one fact/],
     ['a missing field', (inputs) => { delete inputs.comments; }, /missing comments/],
+    // Lane 65: the campaign reads as a demonstration and every comment says who entered it.
+    ['no campaign', (inputs) => { delete inputs.campaign; }, /missing campaign/],
+    ['a title without the label', (inputs) => { inputs.campaign.title = 'Road safety comments'; }, /campaign\.title must say "Demonstration by an automated OpenPlan proof run", in rehearsal and in proof/],
+    ['an invitation without the label', (inputs) => { inputs.campaign.invitation = 'Tell us about road safety. No agency is collecting comments here.'; }, /campaign\.invitation must say "Demonstration by an automated OpenPlan proof run"/],
+    ['an invitation the title holds', (inputs) => { inputs.campaign.invitation = 'Demonstration by an automated OpenPlan proof run.'; inputs.campaign.title = 'Demonstration by an automated OpenPlan proof run.'; }, /campaign\.invitation needs a sentence the title does not hold/],
+    ['the old campaignTitle', (inputs) => { inputs.campaignTitle = 'Road safety comments'; }, /campaignTitle is no longer read\. Put the title in campaign\.title/],
+    ['a comment that does not say who entered it', (inputs) => { inputs.comments[1] = 'The road is dark at night. It represents no one.'; }, /comments\[1\] must say it was entered by an automated proof run and represents no one \(missing "automated proof run"\)/],
+    ['a comment that does not say it represents no one', (inputs) => { inputs.comments[0] = 'Entered by an automated proof run.'; }, /comments\[0\] must say .* \(missing "represents no one"\)/],
+    ['no comments', (inputs) => { inputs.comments = []; }, /needs comments, a list of at least one comment text/],
+    ['an email address in a comment', (inputs) => { inputs.comments[0] += ' Write to planner@example.org.'; }, /comments\[0\] holds an email address/],
+    ['the word DRAFT in the invitation', (inputs) => { inputs.campaign.invitation += ' DRAFT text.'; }, /campaign\.invitation holds the word DRAFT/],
+    ['a marker in the staff review', (inputs) => { inputs.staffReview.groupSummary += ' [VERIFY]'; }, /staffReview\.groupSummary holds a \[VERIFY\] marker/],
   ];
   for (const [name, mutate, reason] of cases) {
     const inputs = rehearsalInputs();
@@ -391,6 +447,9 @@ test('inputs are refused when their text could not finalize honestly or a fact h
   assert.throws(() => lib.validateJourneyInputs(proof, 'proof', '2026-11-14'), /sourced as synthetic or rehearsal/);
   proof.facts[0].source = 'U.S. Census Bureau, 2020 Decennial Census, table P1';
   assert.doesNotThrow(() => lib.validateJourneyInputs(proof, 'proof', '2026-11-14'));
+  // The demonstration label is required in proof as in rehearsal.
+  proof.campaign.title = 'Road safety comments';
+  assert.throws(() => lib.validateJourneyInputs(proof, 'proof', '2026-11-14'), /campaign\.title must say "Demonstration by an automated OpenPlan proof run"/);
 });
 
 test('the two accounts never share a workspace name', () => {
@@ -473,4 +532,166 @@ test('the record carries the map page pixel hash the checker recomputes (KI-2026
   assert.equal(findings.mapRedPixels, pixels.analyzePpm(ppm).redPixels);
   assert.ok(findings.mapRedPixels >= pixels.MIN_RED_PIXELS);
   assert.ok(!('redPixels' in map));
+});
+
+// ---------------------------------------------------------------------------
+// Lane 65: the campaign reads as a demonstration, is closed at the end, and
+// its public address stays out of the run file and the record
+// ---------------------------------------------------------------------------
+
+const campaignLib = require('./journey-campaign-lib');
+
+const DEMO = rehearsalInputs().campaign;
+/** A public page as a participant reads it once the invitation replaced the template's text. */
+const demoPage = (name, width, extra = {}) => ({ name, width, text: `${DEMO.title}\n${DEMO.invitation}\nSend a comment`, html: `<main><h1>${DEMO.title}</h1><p>${DEMO.invitation}</p></main>`, ...extra });
+const allDemoPages = () => [demoPage('portal', 1440), demoPage('about', 1440), demoPage('portal', 390, { sheetOpened: true }), demoPage('about', 390)];
+const readPortal = (pages, createdWith = '') => lib.portalDemonstrationReadings({ pages, invitation: DEMO.invitation, title: DEMO.title, createdWith });
+
+test('portal text: the portal and about page at both widths showing the invitation read as a demonstration', () => {
+  const readings = readPortal(allDemoPages(), `${campaignLib.CAMPAIGN_TEMPLATE.publicSentence}. Your comments help the project team.`);
+  assert.equal(readings.length, 4);
+  assert.deepEqual(readings.map((reading) => `${reading.page} ${reading.width}`), ['portal 1440', 'about 1440', 'portal 390', 'about 390']);
+  assert.ok(readings.every((reading) => reading.readsAsDemonstration));
+  assert.equal(readings[2].sheetOpened, true);
+  assert.doesNotThrow(() => lib.assertPortalReadsAsDemonstration(readings));
+});
+
+test('portal text: the template\'s sentence or the created-with text on any page stops the journey', () => {
+  const template = campaignLib.CAMPAIGN_TEMPLATE.publicSentence;
+  const createdWith = `${template}. Your comments help the project team decide what to study next.`;
+  const onAbout390 = allDemoPages();
+  onAbout390[3].text += `\n${template}.`;
+  assert.throws(() => lib.assertPortalReadsAsDemonstration(readPortal(onAbout390, createdWith)), /about at 390 px shows the template's text "We are studying traffic safety in this area"/);
+  const inHtmlOnly = allDemoPages();
+  inHtmlOnly[0].html += '<meta name="description" content="Your comments help the project team decide what to study next.">';
+  assert.throws(() => lib.assertPortalReadsAsDemonstration(readPortal(inHtmlOnly, createdWith)), /portal at 1440 px shows text the campaign was created with: "Your comments help the project team decide what to study nex"/);
+  const noInvitation = allDemoPages();
+  noInvitation[2].text = DEMO.title;
+  assert.throws(() => lib.assertPortalReadsAsDemonstration(readPortal(noInvitation)), /portal at 390 px does not show the invitation's sentence/);
+});
+
+test('portal text: a page not read at a width stops the journey, so a short reading cannot pass', () => {
+  const pages = allDemoPages().filter((page) => !(page.name === 'portal' && page.width === 390));
+  assert.throws(() => lib.assertPortalReadsAsDemonstration(readPortal(pages)), /The public pages were not all read as a participant: portal at 390 px was not read\./);
+  assert.throws(() => lib.assertPortalReadsAsDemonstration([]), /portal at 1440 px, about at 1440 px, portal at 390 px, about at 390 px was not read/);
+});
+
+test('run files: the public address goes to its own file, never into the run file or the assembled record', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-address-'));
+  const token = 'abcdefghijklmnopqrstuvwx1234';
+  const portalPath = `/engage/${token}`;
+  const run = closedRun({
+    mode: 'rehearsal',
+    baseUrl: 'http://localhost:3482',
+    expectedCommit: null,
+    stoppedAt: null,
+    journey: { role: 'california-county' },
+    crossWorkspace: { checks: [] },
+    ids: { portalPath, publicRead: `/api/engage/${token}` },
+    findings: [{ id: 'note', text: `Read ${portalPath}/about as a participant.` }],
+  });
+  run.steps.push({ step: 'activate-campaign', status: 'passed', detail: `live at http://localhost:3482${portalPath}` });
+  const written = campaignLib.writeRunFiles({ outDir: dir, runFileName: 'journey-california-county.json', result: run, scrub: (text) => lib.scrubText(text), origin: 'http://localhost:3482', portalPath });
+  const runText = fs.readFileSync(written.runFile, 'utf8');
+  assert.ok(!runText.includes(token), 'the run file holds no share token');
+  assert.ok(runText.includes('/engage/<token>/about'), 'the run file names where the token was');
+  assert.equal(written.addressFile, path.join(dir, campaignLib.PUBLIC_ADDRESS_FILE));
+  assert.equal(fs.readFileSync(written.addressFile, 'utf8'), `http://localhost:3482${portalPath}\n`);
+  const record = lib.assembleRecord({ journeyFiles: [written.runFile], jobId: 'job', commit: '0'.repeat(40), baseUrl: 'http://localhost:3482', recordedOn: '2026-11-16', sourceCheck: {}, limits: [], proofOrigin: PROOF_ORIGIN });
+  assert.ok(!JSON.stringify(record).includes(token), 'the assembled record holds no share token');
+  assert.ok(!/\/engage\/[a-z0-9]{12,}/.test(JSON.stringify(record)), 'the assembled record holds no public address');
+  // A journey that stopped before it made a link writes no address file.
+  const none = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-address-'));
+  assert.equal(campaignLib.writeRunFiles({ outDir: none, runFileName: 'run.json', result: { ok: true }, scrub: (text) => text, origin: 'http://localhost:3482', portalPath: null }).addressFile, null);
+  assert.deepEqual(fs.readdirSync(none), ['run.json']);
+});
+
+test('run files: any other public address left in a run file refuses it, and nothing is written', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'journey-address-'));
+  const write = (result, portalPath = '/engage/abcdefghijklmnopqrstuvwx1234') => campaignLib.writeRunFiles({ outDir: dir, runFileName: 'run.json', result, scrub: (text) => text, origin: 'http://localhost:3482', portalPath });
+  assert.throws(() => write({ earlierLink: '/engage/zyxwvutsrqponmlkjihgfedcba98' }), /run\.json would hold a campaign's public address \(\/engage\/zyxw\.\.\.\); it was not written/);
+  assert.throws(() => write({ upper: '/engage/ABCDEFGHIJKLMNOPQRSTUVWX1234' }), /would hold a campaign's public address/);
+  assert.throws(() => write({ link: 'http://localhost:3482/engage/abcdefghijkl0000' }, null), /would hold a campaign's public address/);
+  assert.deepEqual(fs.readdirSync(dir), [], 'no run file and no address file');
+});
+
+test('harness checkout: the commit and whether a tracked file changed; git must answer', () => {
+  const answers = (head, status) => (args) => (args[0] === 'rev-parse' ? `${head}\n` : status);
+  assert.deepEqual(campaignLib.harnessCheckout('/repo', answers('A'.repeat(40), '')), { commit: 'a'.repeat(40), clean: true });
+  assert.deepEqual(campaignLib.harnessCheckout('/repo', answers('b'.repeat(40), ' M qa-harness/first-job-journey.js\n')), { commit: 'b'.repeat(40), clean: false });
+  assert.throws(() => campaignLib.harnessCheckout('/repo', answers('fatal: not a git repository', '')), /git rev-parse HEAD in \/repo gave "fatal: not a git repository", not a commit/);
+  assert.throws(() => campaignLib.harnessCheckout('/repo', () => { throw new Error('spawn git ENOENT'); }), /ENOENT/);
+  // The real checkout this test runs in answers with a commit.
+  assert.match(campaignLib.harnessCheckout(path.join(__dirname, '..')).commit, /^[0-9a-f]{40}$/);
+});
+
+// The assembler's output for a run made from lane 65 on, read by the checker
+// itself: the first synthetic example's journeys split into three run files.
+const FIRST_EXAMPLE = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'schemas', 'examples', 'proven_job_record.v1.synthetic.json'), 'utf8'));
+const EXAMPLE_HEADINGS = {
+  'safety-action-plan': ['Crash summary', 'Countermeasures', 'Benefit-cost summary', 'Engagement summary'],
+  'ss4a-application': ['Appendix B. Crash summary', 'Appendix C. Countermeasures', 'Appendix D. Benefit-cost summary', 'Appendix E. Engagement summary'],
+};
+const EXAMPLE_MAP_TEXT = { 'safety-action-plan': 'High-injury network map', 'ss4a-application': 'Source severity coverage' };
+/** The stand-in PDF text openplan/src/test/capability-evidence.test.ts writes for the example; the example's hashes are of these bytes. */
+const examplePdf = (role, kind) => {
+  const [crash, countermeasures, bca, engagement] = EXAMPLE_HEADINGS[kind];
+  return [`%PDF-1.4 synthetic test file for the proven job checker, not a real PDF\n${kind} for the ${role} journey\n${crash}\nSynthetic counts`, EXAMPLE_MAP_TEXT[kind], `${countermeasures}\n${bca}\n${engagement}`].join('\f');
+};
+const examplePdfPages = (file) => fs.readFileSync(file, 'utf8').replace(/^[^\n]*\n/, '').split('\f');
+/** A 100 by 10 PPM with 100 highlight-red pixels, as openplan/src/test/helpers/ppm.ts makes. */
+const exampleRender = () => {
+  const pixels = Buffer.alloc(100 * 10 * 3, 255);
+  for (let i = 0; i < 100; i += 1) pixels.set([200, 30, 30], i * 3);
+  return Buffer.concat([Buffer.from('P6\n100 10\n255\n', 'latin1'), pixels]);
+};
+
+function exampleFirstJobRuns() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'openplan-first-job-runs-'));
+  const files = FIRST_EXAMPLE.journeys.map((journey, index) => {
+    for (const pdf of journey.pdfs) {
+      fs.mkdirSync(path.join(root, path.dirname(pdf.path)), { recursive: true });
+      fs.writeFileSync(path.join(root, pdf.path), examplePdf(journey.role, pdf.kind));
+    }
+    const run = closedRun({
+      mode: 'proof',
+      baseUrl: PROOF_ORIGIN,
+      expectedCommit: FIRST_EXAMPLE.commit,
+      stoppedAt: null,
+      journey: JSON.parse(JSON.stringify(journey)),
+      crossWorkspace: { checks: index === 0 ? FIRST_EXAMPLE.crossWorkspace.checks : [] },
+    });
+    const file = path.join(root, `journey-${journey.role}.json`);
+    fs.writeFileSync(file, JSON.stringify(run));
+    return file;
+  });
+  return { root, files };
+}
+
+const assembleExample = (files, recordedOn = '2026-11-16') => lib.assembleRecord({
+  journeyFiles: files,
+  jobId: FIRST_EXAMPLE.jobId,
+  commit: FIRST_EXAMPLE.commit,
+  baseUrl: PROOF_ORIGIN,
+  recordedOn,
+  sourceCheck: FIRST_EXAMPLE.sourceCheck,
+  limits: FIRST_EXAMPLE.limits.filter((limit) => limit.id !== 'report-page-answers-200-with-not-found-screen'),
+  proofOrigin: PROOF_ORIGIN,
+});
+
+test('assembly: a record dated from 2026-11-16 carries mode, close and harness, and the checker accepts it', async () => {
+  const checker = await import(require('url').pathToFileURL(path.join(__dirname, '..', 'openplan', 'scripts', 'ops', 'capability-evidence.mjs')).href);
+  const { root, files } = exampleFirstJobRuns();
+  const record = assembleExample(files);
+  const check = (value) => checker.validateProvenJobRecord(value, { repoRoot: root, readPdfPages: examplePdfPages, renderPdfPage: exampleRender });
+  assert.deepEqual(record.journeys.map((journey) => [journey.mode, journey.close.closed, journey.harness.clean]), [['proof', true, true], ['proof', true, true], ['proof', true, true]]);
+  assert.doesNotThrow(() => check(record));
+  // The same journeys without the three fields: accepted before the date, refused from it.
+  const bare = JSON.parse(JSON.stringify(record));
+  for (const journey of bare.journeys) { delete journey.mode; delete journey.close; delete journey.harness; }
+  assert.doesNotThrow(() => check({ ...bare, recordedOn: '2026-11-15' }));
+  assert.throws(() => check(bare), /california-county journey ran in undefined mode; only a proof run is proof/);
+  const open = JSON.parse(JSON.stringify(record));
+  open.journeys[1].close.addresses[1].endedNoticeShown = false;
+  assert.throws(() => check(open), /nevada-county journey public about address does not show the ended notice after the close/);
 });

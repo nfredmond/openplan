@@ -7,8 +7,14 @@
 const fs = require('fs');
 const path = require('path');
 const first = require('./first-job-journey-lib');
+const campaign = require('./journey-campaign-lib');
 const { repoRoot } = require('./harness-env');
 const { findPdfPhrase, normalizePdfText, pdfTextHasPhrase } = require('../openplan/scripts/lib/pdf-text-match.mjs');
+
+// The demonstration label, the public-text reading, the close and their
+// helpers live in journey-campaign-lib.js, shared with the first job's
+// journey; they are re-exported below under the same names.
+const { CAMPAIGN_TEMPLATE, COMMENT_STATEMENTS, DEMONSTRATION_LABEL, assertReadsAsDemonstration, closeForRecord, closeVerdict, readDemonstrationText, runJourney, squash, textHolds } = campaign;
 
 const JOB_ID = 'engagement-campaign-review-and-response-in-three-places';
 const DEFINITIONS_PATH = path.join(repoRoot, 'schemas', 'proven_job_definitions.v1.json');
@@ -90,14 +96,6 @@ function parseEngagementArgs(argv, job = loadJobDefinition()) {
 const REHEARSAL_INPUTS_PATH = path.join(__dirname, 'fixtures', 'engagement-job-rehearsal-inputs.json');
 /** Carried by the rehearsal fixture. A proof refuses any inputs file that holds it. */
 const REHEARSAL_LABEL = 'Rehearsal inputs for the engagement journey, not a consultation.';
-/**
- * The campaign's title and invitation must say this, in both modes. The first
- * job's campaigns went public under their places' names with no label and had
- * to be taken offline afterward.
- */
-const DEMONSTRATION_LABEL = 'Demonstration by an automated OpenPlan proof run';
-/** Every comment must say both: who entered it, and that it speaks for no one. */
-const COMMENT_STATEMENTS = ['automated proof run', 'represents no one'];
 const COMMENT_KEYS = ['mapPoint', 'noMapPoint', 'keyboard', 'rejected'];
 const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
 
@@ -420,21 +418,6 @@ function assertCountsAgree(expected, surfaces) {
 // The rejected comment on public surfaces
 // ---------------------------------------------------------------------------
 
-function squash(value) {
-  return String(value).replace(/\s+/g, ' ').trim().toLowerCase();
-}
-
-function escapeHtml(value) {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
-}
-
-/** Whether a text surface holds the string: as typed, HTML-escaped (both apostrophe forms) or JSON-escaped, case and spacing aside. */
-function textHolds(haystack, needle) {
-  const text = squash(haystack);
-  const forms = [needle, escapeHtml(needle), escapeHtml(needle).replace(/&#x27;/g, '&#39;'), JSON.stringify(needle).slice(1, -1)];
-  return forms.some((form) => text.includes(squash(form)));
-}
-
 /**
  * Search surfaces for each rejected comment's text and its id. A surface is
  * { name, pages } for a PDF (the shared matcher, page by page, then with the
@@ -496,80 +479,6 @@ function staffFieldsIn(value, fields) {
 }
 
 // ---------------------------------------------------------------------------
-// Closing the campaign at the end
-// ---------------------------------------------------------------------------
-
-/**
- * Whether the campaign is closed and offline: the screen's save answered 200
- * with status Closed, every public address read afterward shows the ended
- * notice and none of the campaign's own strings (title, comments), and the
- * public portal data read afterward (`publicRead`, { status,
- * campaignTextFound }) did not answer 200 with those strings (review 59,
- * finding 8).
- */
-function closeVerdict({ saveStatus, statusAfter, addresses, publicRead = null, neverPublic = false }) {
-  const problems = [];
-  if (saveStatus !== 200) problems.push(`the save answered ${saveStatus}`);
-  if (statusAfter !== 'closed') problems.push(`the status reads ${statusAfter}`);
-  // A journey that stopped before it made a public link has no address to
-  // read: the campaign was never public, and closing it is the whole job.
-  if (neverPublic) return { closed: problems.length === 0, problems, neverPublic: true };
-  if (!addresses || addresses.length === 0) problems.push('no public address was read');
-  for (const address of addresses || []) {
-    if (!address.endedNoticeShown) problems.push(`${address.name} does not show the ended notice`);
-    if (address.campaignTextFound) problems.push(`${address.name} still shows the campaign's own text`);
-  }
-  if (!publicRead || publicRead.status == null) problems.push('the public portal data was not read after the close');
-  else if (publicRead.status === 200 && publicRead.campaignTextFound !== false) problems.push('the public portal data still answers 200 with the campaign\'s own text');
-  return { closed: problems.length === 0, problems };
-}
-
-/**
- * Run the journey's steps in order, then close what it opened. Steps run until
- * one throws. Whether they all passed or one stopped the run, `close` runs
- * when `campaignId()` names a campaign, so a journey that stops early still
- * takes its campaign offline; the result says whether it tried and whether
- * it worked. `after` steps (the end health readback) run only when every step
- * and the close passed.
- */
-async function runJourney({ steps, campaignId, close, after = [] }) {
-  let failure = null;
-  for (const run of steps) {
-    try {
-      await run();
-    } catch (error) {
-      failure = error;
-      break;
-    }
-  }
-  const closing = { attempted: false, closed: false, problems: [], error: null };
-  if (campaignId()) {
-    closing.attempted = true;
-    try {
-      const verdict = await close();
-      closing.closed = verdict.closed === true;
-      closing.problems = verdict.problems || [];
-    } catch (error) {
-      closing.error = error && error.message ? error.message : String(error);
-    }
-    if (!closing.closed && !failure) {
-      failure = Object.assign(new Error(`The campaign was not taken offline: ${closing.error || closing.problems.join('; ')}`), { journeyStep: 'close-campaign' });
-    }
-  }
-  if (!failure) {
-    for (const run of after) {
-      try {
-        await run();
-      } catch (error) {
-        failure = error;
-        break;
-      }
-    }
-  }
-  return { failure, close: closing };
-}
-
-// ---------------------------------------------------------------------------
 // The record
 // ---------------------------------------------------------------------------
 
@@ -613,28 +522,6 @@ function assertEngagementRunAssemblable(run, { file, commit, baseUrl, proofOrigi
   first.assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
   const close = run.close || {};
   if (!close.attempted || !close.closed) throw new Error(`${name} did not take its campaign offline at the end, so it cannot go into a record.`);
-}
-
-/**
- * The record's close for one run: what the run file says the close step did
- * and read, and when that step ended. Nothing here is computed; a field the
- * run file does not hold is left out, and the checker refuses the gap.
- */
-function closeForRecord(run) {
-  const close = run.close || {};
-  const reading = close.reading || {};
-  const step = (run.steps || []).find((entry) => entry.step === 'close-campaign');
-  const publicReadAfter = { status: reading.publicReadStatusAfter ?? null };
-  if (typeof reading.publicReadCampaignTextFound === 'boolean') publicReadAfter.campaignTextFound = reading.publicReadCampaignTextFound;
-  return {
-    attempted: close.attempted === true,
-    closed: close.closed === true,
-    saveStatus: reading.saveStatus,
-    statusAfter: reading.statusAfter,
-    addresses: (reading.addresses || []).map(({ name, status, endedNoticeShown, campaignTextFound }) => ({ name, status, endedNoticeShown, campaignTextFound })),
-    publicReadAfter,
-    endedAt: step ? step.endedAt : undefined,
-  };
 }
 
 /**
@@ -695,89 +582,6 @@ function assembleEngagementRecord({ journeyFiles, commit, baseUrl, recordedOn, p
     participantChecks: { refusals: runs.flatMap((run) => run.participantChecks.refusals), publicRead },
     limits,
   };
-}
-
-// ---------------------------------------------------------------------------
-// The demonstration's own public text
-// ---------------------------------------------------------------------------
-
-/**
- * The template the journey makes its campaign from, and the opening of the
- * public text that template applies at creation
- * (openplan/src/lib/engagement/campaign-templates.ts). A demonstration must
- * never show it: on the 2026-11-15 dress rehearsal it told residents of the
- * Hopi Reservation that "the project team" would study their comments.
- */
-const CAMPAIGN_TEMPLATE = Object.freeze({
-  id: 'corridor-safety-study',
-  publicSentence: 'We are studying traffic safety in this area',
-});
-
-function sentencesOf(text) {
-  return String(text).replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter(Boolean);
-}
-
-/**
- * The sentences that show the invitation is on a surface: its first sentence,
- * and its first sentence the campaign title does not also hold. The inputs
- * open the title and the invitation with the same sentence, so the first
- * sentence alone is found on any page that shows the title.
- */
-function invitationMarkers(invitation, title) {
-  const sentences = sentencesOf(invitation);
-  if (!sentences.length) throw new Error('The invitation has no sentence to look for.');
-  return {
-    firstSentence: sentences[0],
-    ownSentence: sentences.find((sentence) => !squash(title).includes(squash(sentence))) || null,
-  };
-}
-
-/**
- * Read one surface for the demonstration's own text. A page is { name, text,
- * html }: the invitation must be in the text a participant sees, and the
- * template's sentence must be in neither the text nor the HTML (a link
- * preview reads the HTML). A PDF is { name, pages }, read with the shared
- * PDF matcher. Returns the reading with `readsAsDemonstration` and the
- * problems that refuse it.
- */
-function readDemonstrationText({ surface, invitation, title, templateSentence = CAMPAIGN_TEMPLATE.publicSentence, createdWith = '', requireInvitation = true }) {
-  const markers = invitationMarkers(invitation, title);
-  // What the campaign was created with must be gone too, whatever template
-  // made it: every sentence of that text the invitation does not also hold.
-  const createdWithSentences = sentencesOf(createdWith)
-    .filter((sentence) => squash(sentence).length >= 12 && !squash(invitation).includes(squash(sentence)));
-  const shown = (phrase) => (surface.pages
-    ? surface.pages.some((page) => pdfTextHasPhrase(page, phrase))
-    : textHolds(surface.text || '', phrase));
-  const anywhere = (phrase) => shown(phrase) || (!surface.pages && textHolds(surface.html || '', phrase));
-  const reading = {
-    surface: surface.name,
-    invitationFirstSentence: markers.firstSentence,
-    invitationFirstSentenceFound: shown(markers.firstSentence),
-    invitationOwnSentence: markers.ownSentence,
-    invitationOwnSentenceFound: markers.ownSentence ? shown(markers.ownSentence) : false,
-    templateSentence,
-    templateSentenceFound: anywhere(templateSentence),
-    createdWithSentencesLookedFor: createdWithSentences.length,
-    createdWithSentencesFound: createdWithSentences.filter(anywhere),
-    invitationRequired: requireInvitation,
-  };
-  const problems = [];
-  if (requireInvitation) {
-    if (!reading.invitationFirstSentenceFound) problems.push(`${surface.name} does not show the invitation's first sentence`);
-    if (!markers.ownSentence) problems.push(`the invitation has no sentence the campaign title lacks, so ${surface.name} cannot show that the invitation is there`);
-    else if (!reading.invitationOwnSentenceFound) problems.push(`${surface.name} does not show the invitation's sentence "${markers.ownSentence.slice(0, 60)}"`);
-  }
-  if (reading.templateSentenceFound) problems.push(`${surface.name} shows the template's text "${templateSentence}"`);
-  for (const sentence of reading.createdWithSentencesFound) problems.push(`${surface.name} shows text the campaign was created with: "${sentence.slice(0, 60)}"`);
-  return { ...reading, readsAsDemonstration: problems.length === 0, problems };
-}
-
-/** Refuse unless every reading shows the invitation and none shows the template's text. */
-function assertReadsAsDemonstration(readings) {
-  if (!readings || readings.length === 0) throw new Error('No surface was read for the demonstration\'s text.');
-  const problems = readings.flatMap((reading) => reading.problems);
-  if (problems.length) throw new Error(`The campaign does not read as a demonstration: ${problems.join('; ')}.`);
 }
 
 module.exports = {
