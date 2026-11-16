@@ -218,6 +218,9 @@ function formatAmount(value: number | string | null | undefined): string {
  * its hyphens (`runningText` in `evidence-appendices.ts`); a piece wider than
  * the line still wraps inside the line, never past the page edge.
  *
+ * A cover box does not split across pages: on a cover that ran past one page
+ * the last box's label ended the first page and its value began the second.
+ *
  * The cover's Project and Workspace boxes take a full row each. In a narrow
  * box beside two others a long name wrapped, and extracted text read the
  * three boxes line by line across, so the name was not found whole.
@@ -243,7 +246,7 @@ const DOCUMENT_STYLES = `
       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
       .section-title { margin-bottom: 14px; font-size: 22px; break-after: avoid; }
       .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-      .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
+      .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; break-inside: avoid; }
       .facts div.wide { grid-column: 1 / -1; }
       dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       dd { margin: 6px 0 0; font-size: 17px; }

@@ -22,7 +22,8 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * changed, whichever template seeded it (KI-2026-11-16-031, -032, -034, -035,
  * -038, -040). What changed:
  * - the cover states the study place and the applicant on lines of their own
- *   above its boxes, and leaves out "Program: Not linked";
+ *   above its boxes, leaves out "Program: Not linked", and keeps each box
+ *   whole across a page break;
  * - the checklist names the attached document by its title, prints words in
  *   an empty cell, and is followed by one "Attached for" line per attached
  *   item;
@@ -51,7 +52,7 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * reads what it says.
  */
 
-const PINNED_HTML_SHA256 = "bc6b54db88087f82293bc46b25d310848b108453f5b31e599bcae3ed3616c650";
+const PINNED_HTML_SHA256 = "2ee442288fcf775fb8373f2e439b463dcf6e04f85bce015e20e795063a897179";
 const PINNED_PDF_SHA256 = "867d7fd438f45eb6c673f2670fcfff83506d276f1b377981756507f0ac1208b8";
 
 const createClientMock = vi.fn();
