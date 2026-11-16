@@ -1,0 +1,409 @@
+{
+  "schema": "openplan.proven_job_record.v1",
+  "jobId": "california-atp-application-in-three-places",
+  "commit": "0123456789abcdef0123456789abcdef01234567",
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "recordedOn": "2026-11-20",
+  "journeys": [
+    {
+      "role": "county",
+      "mode": "proof",
+      "harness": {"commit": "89abcdef0123456789abcdef0123456789abcdef", "clean": true},
+      "place": {"kind": "county", "geoid": "06998", "stateFips": ["06"], "label": "Synthetic County, CA"},
+      "executor": {"agent": "Claude Code", "model": "claude-fable-5-2"},
+      "accountCreatedAt": "2026-11-20T10:00:10Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        {"point": "start", "checkedAt": "2026-11-20T10:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.75.0", "migrationsExpected": 455, "migrationsLatest": "20261114000000"},
+        {"point": "end", "checkedAt": "2026-11-20T10:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.75.0", "migrationsExpected": 455, "migrationsLatest": "20261114000000"}
+      ],
+      "projectName": "Synthetic county walking and biking connections (Demonstration by an automated OpenPlan proof run)",
+      "workspaceName": "Synthetic county demonstration workspace",
+      "crashes": {"sourceId": "ccrs", "years": "2022–2025", "reportedCount": 1234, "storedCount": 1230},
+      "application": {
+        "catalogKey": "atp",
+        "templateKey": "atp-2027",
+        "aiDraftingUsed": false,
+        "tractData": "none-retrieved",
+        "exportedAt": "2026-11-20T10:40:00Z",
+        "sections": [
+          {"key": "atp-2027-part-a-project-information", "disposition": "text"},
+          {"key": "atp-2027-part-a5-project-funding", "disposition": "text"},
+          {"key": "atp-2027-part-a6-screening-criteria", "disposition": "text"},
+          {"key": "atp-2027-b1-disadvantaged-communities", "disposition": "text"},
+          {"key": "atp-2027-b2-walking-biking-rolling", "disposition": "text"},
+          {"key": "atp-2027-b3-fatalities-and-injuries", "disposition": "text"},
+          {"key": "atp-2027-b4-public-participation-planning", "disposition": "text"},
+          {"key": "atp-2027-b5-scope-plan-layout-consistency", "disposition": "fixed-note"},
+          {"key": "atp-2027-b6-conservation-corps", "disposition": "text"},
+          {"key": "atp-2027-b7-past-performance", "disposition": "fixed-note"}
+        ],
+        "rows": [
+          {"key": "partnering-agency-letter-of-intent", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration names no partnering agency."},
+          {"key": "safe-routes-school-map-and-statements", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration is not a Safe Routes to School project."},
+          {"key": "state-highway-project-impact-assessment-form", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration is not on Caltrans right of way."},
+          {"key": "railroad-and-agency-letters", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration crosses no railroad."},
+          {"key": "project-programming-request", "disposition": "outstanding"},
+          {"key": "ceqa-nepa-signature-pages", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration shows no environmental phase complete."},
+          {"key": "right-of-way-certification", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration shows no right of way phase complete."},
+          {"key": "regional-transportation-plan-pages", "disposition": "outstanding"},
+          {"key": "caltrans-need-for-atp-funds", "disposition": "not-applicable", "reason": "Synthetic example: Caltrans is not the implementing agency."},
+          {"key": "caltrans-local-coordination", "disposition": "not-applicable", "reason": "Synthetic example: Caltrans is not the implementing agency."},
+          {"key": "disadvantaged-community-map", "disposition": "outstanding"},
+          {"key": "disadvantaged-community-identifier-data", "disposition": "outstanding"},
+          {"key": "gap-closure-and-route-maps", "disposition": "outstanding"},
+          {"key": "collision-data", "disposition": "outstanding"},
+          {"key": "public-participation-documentation", "disposition": "outstanding"},
+          {"key": "corps-consultation-responses", "disposition": "outstanding"},
+          {"key": "signature-page", "disposition": "outstanding"},
+          {"key": "engineers-checklist", "disposition": "outstanding"},
+          {"key": "project-location-map", "disposition": "outstanding"},
+          {"key": "project-layouts-and-plans", "disposition": "outstanding"},
+          {"key": "photos-of-existing-conditions", "disposition": "outstanding"},
+          {"key": "project-estimate", "disposition": "outstanding"},
+          {"key": "non-infrastructure-work-plan", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration has no non-infrastructure part."},
+          {"key": "letters-of-support", "disposition": "outstanding"},
+          {"key": "state-only-funds-request", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration asks for no state-only funds."},
+          {"key": "additional-attachments", "disposition": "outstanding"}
+        ],
+        "outstandingRequiredCount": 15
+      },
+      "pdfs": [
+        {
+          "kind": "atp-application",
+          "path": "docs/product/capability-evidence/synthetic-example/county-atp-application.pdf",
+          "sha256": "fec92e28f0b93e5fc34a86693274cfdfa3a9eb9458cbc2f245ce4407a5dfa96f",
+          "bytes": 7979,
+          "pages": 7,
+          "draftStamp": true,
+          "items": [
+            {"item": "appendix-a", "page": 5, "method": "pdftotext", "text": "Appendix A. ATP screening packet"},
+            {"item": "appendix-b", "page": 6, "method": "pdftotext", "text": "Appendix B. Crash summary"},
+            {"item": "appendix-c", "page": 6, "method": "pdftotext", "text": "Appendix C. Cost estimate"},
+            {"item": "appendix-d", "page": 6, "method": "pdftotext", "text": "Appendix D. Engagement summary"},
+            {"item": "appendix-e", "page": 7, "method": "pdftotext", "text": "Appendix E. Disadvantaged-community and equity inputs"},
+            {"item": "appendix-f", "page": 7, "method": "pdftotext", "text": "Appendix F. Benefit-cost summary"}
+          ]
+        }
+      ],
+      "screens": [
+        {"screen": "project", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false}
+      ]
+    },
+    {
+      "role": "city",
+      "mode": "proof",
+      "harness": {"commit": "89abcdef0123456789abcdef0123456789abcdef", "clean": true},
+      "place": {"kind": "city", "geoid": "0699812", "stateFips": ["06"], "label": "Synthetic city, CA"},
+      "executor": {"agent": "Claude Code", "model": "claude-fable-5-2"},
+      "accountCreatedAt": "2026-11-20T11:00:10Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        {"point": "start", "checkedAt": "2026-11-20T11:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.75.0", "migrationsExpected": 455, "migrationsLatest": "20261114000000"},
+        {"point": "end", "checkedAt": "2026-11-20T11:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.75.0", "migrationsExpected": 455, "migrationsLatest": "20261114000000"}
+      ],
+      "projectName": "Synthetic city walking and biking connections (Demonstration by an automated OpenPlan proof run)",
+      "workspaceName": "Synthetic city demonstration workspace",
+      "crashes": {"sourceId": "ccrs", "years": "2022–2025", "reportedCount": 212, "storedCount": 212},
+      "application": {
+        "catalogKey": "atp",
+        "templateKey": "atp-2027",
+        "aiDraftingUsed": false,
+        "tractData": "none-retrieved",
+        "exportedAt": "2026-11-20T11:40:00Z",
+        "sections": [
+          {"key": "atp-2027-part-a-project-information", "disposition": "text"},
+          {"key": "atp-2027-part-a5-project-funding", "disposition": "text"},
+          {"key": "atp-2027-part-a6-screening-criteria", "disposition": "text"},
+          {"key": "atp-2027-b1-disadvantaged-communities", "disposition": "text"},
+          {"key": "atp-2027-b2-walking-biking-rolling", "disposition": "text"},
+          {"key": "atp-2027-b3-fatalities-and-injuries", "disposition": "text"},
+          {"key": "atp-2027-b4-public-participation-planning", "disposition": "text"},
+          {"key": "atp-2027-b5-scope-plan-layout-consistency", "disposition": "fixed-note"},
+          {"key": "atp-2027-b6-conservation-corps", "disposition": "text"},
+          {"key": "atp-2027-b7-past-performance", "disposition": "fixed-note"}
+        ],
+        "rows": [
+          {"key": "partnering-agency-letter-of-intent", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration names no partnering agency."},
+          {"key": "safe-routes-school-map-and-statements", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration is not a Safe Routes to School project."},
+          {"key": "state-highway-project-impact-assessment-form", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration is not on Caltrans right of way."},
+          {"key": "railroad-and-agency-letters", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration crosses no railroad."},
+          {"key": "project-programming-request", "disposition": "outstanding"},
+          {"key": "ceqa-nepa-signature-pages", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration shows no environmental phase complete."},
+          {"key": "right-of-way-certification", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration shows no right of way phase complete."},
+          {"key": "regional-transportation-plan-pages", "disposition": "outstanding"},
+          {"key": "caltrans-need-for-atp-funds", "disposition": "not-applicable", "reason": "Synthetic example: Caltrans is not the implementing agency."},
+          {"key": "caltrans-local-coordination", "disposition": "not-applicable", "reason": "Synthetic example: Caltrans is not the implementing agency."},
+          {"key": "disadvantaged-community-map", "disposition": "outstanding"},
+          {"key": "disadvantaged-community-identifier-data", "disposition": "outstanding"},
+          {"key": "gap-closure-and-route-maps", "disposition": "outstanding"},
+          {"key": "collision-data", "disposition": "outstanding"},
+          {"key": "public-participation-documentation", "disposition": "outstanding"},
+          {"key": "corps-consultation-responses", "disposition": "outstanding"},
+          {"key": "signature-page", "disposition": "outstanding"},
+          {"key": "engineers-checklist", "disposition": "outstanding"},
+          {"key": "project-location-map", "disposition": "outstanding"},
+          {"key": "project-layouts-and-plans", "disposition": "outstanding"},
+          {"key": "photos-of-existing-conditions", "disposition": "outstanding"},
+          {"key": "project-estimate", "disposition": "outstanding"},
+          {"key": "non-infrastructure-work-plan", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration has no non-infrastructure part."},
+          {"key": "letters-of-support", "disposition": "outstanding"},
+          {"key": "state-only-funds-request", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration asks for no state-only funds."},
+          {"key": "additional-attachments", "disposition": "outstanding"}
+        ],
+        "outstandingRequiredCount": 15
+      },
+      "pdfs": [
+        {
+          "kind": "atp-application",
+          "path": "docs/product/capability-evidence/synthetic-example/city-atp-application.pdf",
+          "sha256": "bf0db6ba8c43c2255d93d46a664d4b1426ed28c40adf41b885c954ddd5b8069c",
+          "bytes": 7981,
+          "pages": 7,
+          "draftStamp": true,
+          "items": [
+            {"item": "appendix-a", "page": 5, "method": "pdftotext", "text": "Appendix A. ATP screening packet"},
+            {"item": "appendix-b", "page": 6, "method": "pdftotext", "text": "Appendix B. Crash summary"},
+            {"item": "appendix-c", "page": 6, "method": "pdftotext", "text": "Appendix C. Cost estimate"},
+            {"item": "appendix-d", "page": 6, "method": "pdftotext", "text": "Appendix D. Engagement summary"},
+            {"item": "appendix-e", "page": 7, "method": "pdftotext", "text": "Appendix E. Disadvantaged-community and equity inputs"},
+            {"item": "appendix-f", "page": 7, "method": "pdftotext", "text": "Appendix F. Benefit-cost summary"}
+          ]
+        }
+      ],
+      "screens": [
+        {"screen": "project", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false}
+      ]
+    },
+    {
+      "role": "tribal-area",
+      "mode": "proof",
+      "harness": {"commit": "89abcdef0123456789abcdef0123456789abcdef", "clean": true},
+      "place": {"kind": "aiannh", "geoid": "9998R", "stateFips": ["06"], "label": "Synthetic Reservation, CA"},
+      "executor": {"agent": "Claude Code", "model": "claude-fable-5-2"},
+      "accountCreatedAt": "2026-11-20T12:00:10Z",
+      "confirmationMethod": "email_link",
+      "health": [
+        {"point": "start", "checkedAt": "2026-11-20T12:00:05Z", "status": "ok", "commit": "0123456789ab", "version": "0.75.0", "migrationsExpected": 455, "migrationsLatest": "20261114000000"},
+        {"point": "end", "checkedAt": "2026-11-20T12:45:00Z", "status": "ok", "commit": "0123456789ab", "version": "0.75.0", "migrationsExpected": 455, "migrationsLatest": "20261114000000"}
+      ],
+      "projectName": "Synthetic tribal-area walking and biking connections (Demonstration by an automated OpenPlan proof run)",
+      "workspaceName": "Synthetic tribal-area demonstration workspace",
+      "crashes": {"sourceId": "ccrs", "years": "2022–2025", "reportedCount": 37, "storedCount": 37},
+      "application": {
+        "catalogKey": "atp",
+        "templateKey": "atp-2027",
+        "aiDraftingUsed": false,
+        "tractData": "none-retrieved",
+        "exportedAt": "2026-11-20T12:40:00Z",
+        "sections": [
+          {"key": "atp-2027-part-a-project-information", "disposition": "text"},
+          {"key": "atp-2027-part-a5-project-funding", "disposition": "text"},
+          {"key": "atp-2027-part-a6-screening-criteria", "disposition": "text"},
+          {"key": "atp-2027-b1-disadvantaged-communities", "disposition": "text"},
+          {"key": "atp-2027-b2-walking-biking-rolling", "disposition": "text"},
+          {"key": "atp-2027-b3-fatalities-and-injuries", "disposition": "text"},
+          {"key": "atp-2027-b4-public-participation-planning", "disposition": "text"},
+          {"key": "atp-2027-b5-scope-plan-layout-consistency", "disposition": "fixed-note"},
+          {"key": "atp-2027-b6-conservation-corps", "disposition": "text"},
+          {"key": "atp-2027-b7-past-performance", "disposition": "fixed-note"}
+        ],
+        "rows": [
+          {"key": "partnering-agency-letter-of-intent", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration names no partnering agency."},
+          {"key": "safe-routes-school-map-and-statements", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration is not a Safe Routes to School project."},
+          {"key": "state-highway-project-impact-assessment-form", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration is not on Caltrans right of way."},
+          {"key": "railroad-and-agency-letters", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration crosses no railroad."},
+          {"key": "project-programming-request", "disposition": "outstanding"},
+          {"key": "ceqa-nepa-signature-pages", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration shows no environmental phase complete."},
+          {"key": "right-of-way-certification", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration shows no right of way phase complete."},
+          {"key": "regional-transportation-plan-pages", "disposition": "outstanding"},
+          {"key": "caltrans-need-for-atp-funds", "disposition": "not-applicable", "reason": "Synthetic example: Caltrans is not the implementing agency."},
+          {"key": "caltrans-local-coordination", "disposition": "not-applicable", "reason": "Synthetic example: Caltrans is not the implementing agency."},
+          {"key": "disadvantaged-community-map", "disposition": "outstanding"},
+          {"key": "disadvantaged-community-identifier-data", "disposition": "outstanding"},
+          {"key": "gap-closure-and-route-maps", "disposition": "outstanding"},
+          {"key": "collision-data", "disposition": "outstanding"},
+          {"key": "public-participation-documentation", "disposition": "outstanding"},
+          {"key": "corps-consultation-responses", "disposition": "outstanding"},
+          {"key": "signature-page", "disposition": "outstanding"},
+          {"key": "engineers-checklist", "disposition": "outstanding"},
+          {"key": "project-location-map", "disposition": "outstanding"},
+          {"key": "project-layouts-and-plans", "disposition": "outstanding"},
+          {"key": "photos-of-existing-conditions", "disposition": "outstanding"},
+          {"key": "project-estimate", "disposition": "outstanding"},
+          {"key": "non-infrastructure-work-plan", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration has no non-infrastructure part."},
+          {"key": "letters-of-support", "disposition": "outstanding"},
+          {"key": "state-only-funds-request", "disposition": "not-applicable", "reason": "Synthetic example: the demonstration asks for no state-only funds."},
+          {"key": "additional-attachments", "disposition": "outstanding"}
+        ],
+        "outstandingRequiredCount": 15
+      },
+      "pdfs": [
+        {
+          "kind": "atp-application",
+          "path": "docs/product/capability-evidence/synthetic-example/tribal-area-atp-application.pdf",
+          "sha256": "bebffd53152ba75bd724b98f77e1f0c7db5bc39f7454fdfac247676d41945495",
+          "bytes": 8401,
+          "pages": 7,
+          "draftStamp": true,
+          "items": [
+            {"item": "appendix-a", "page": 5, "method": "pdftotext", "text": "Appendix A. ATP screening packet"},
+            {"item": "appendix-b", "page": 6, "method": "pdftotext", "text": "Appendix B. Crash summary"},
+            {"item": "appendix-c", "page": 6, "method": "pdftotext", "text": "Appendix C. Cost estimate"},
+            {"item": "appendix-d", "page": 6, "method": "pdftotext", "text": "Appendix D. Engagement summary"},
+            {"item": "appendix-e", "page": 7, "method": "pdftotext", "text": "Appendix E. Disadvantaged-community and equity inputs"},
+            {"item": "appendix-f", "page": 7, "method": "pdftotext", "text": "Appendix F. Benefit-cost summary"}
+          ]
+        }
+      ],
+      "screens": [
+        {"screen": "project", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "project", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "safety", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "corridor-analysis", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 1440, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 1440, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 390, "mode": "light", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false},
+        {"screen": "grants-application", "width": 390, "mode": "dark", "axe": {"version": "4.11.1", "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"], "serious": 0, "critical": 0}, "consoleErrors": 0, "horizontalScroll": false}
+      ]
+    }
+  ],
+  "crossWorkspace": {
+    "checks": [
+      {"journey": "county", "target": "atp-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "county", "target": "atp-application-pdf", "request": "application-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
+      {
+        "journey": "county",
+        "target": "atp-application",
+        "request": "project-page",
+        "kind": "page",
+        "status": 200,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": ["58c3cb87c014b05e94acd79d5e2a26ba71856ebbd9dc7f4055d367570a57b7dc", "f331ec7e0b2977d3db0d0415946a3e9c5d50910014468ed53baafd8a63bc28b9", "e3aafea4fc4aab79fc5a116bcdb10b198d8559f606c7844bf4923f7d25728361"],
+        "searchedStringCount": 3
+      },
+      {"journey": "city", "target": "atp-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "city", "target": "atp-application-pdf", "request": "application-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
+      {
+        "journey": "city",
+        "target": "atp-application",
+        "request": "project-page",
+        "kind": "page",
+        "status": 200,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": ["96b58b256fab81a074e69654feed8acbae6f5dfba5260556bd2666cb2268902a", "e01743bd94716d619403e033b5adf91c30a5727825f5021f5b75854f6f23885c", "6c2c2f51c16e0c64678eec59a9113ea16d4f0c53b9a6d3144ab6fbdd6733a606"],
+        "searchedStringCount": 3
+      },
+      {"journey": "tribal-area", "target": "atp-application", "request": "application-read", "kind": "data", "status": 404, "contentReturned": false},
+      {"journey": "tribal-area", "target": "atp-application-pdf", "request": "application-pdf-download", "kind": "data", "status": 404, "contentReturned": false},
+      {
+        "journey": "tribal-area",
+        "target": "atp-application",
+        "request": "project-page",
+        "kind": "page",
+        "status": 200,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": ["2934b45d6cdf744930625655f3a58408af9214353c6a83d2f79c248e5987e867", "2a701e2d00e11f7b97235b7e5ed145d33037b800f96441438dd459e2bfc83d51", "3686d49bf11354c047aa58e44fe58bb6e188e556905b63098834dd272e3b6f51"],
+        "searchedStringCount": 3
+      }
+    ],
+    "ownerChecks": [
+      {"journey": "county", "request": "application-read", "status": 200},
+      {"journey": "county", "request": "application-pdf-download", "status": 200},
+      {"journey": "city", "request": "application-read", "status": 200},
+      {"journey": "city", "request": "application-pdf-download", "status": 200},
+      {"journey": "tribal-area", "request": "application-read", "status": 200},
+      {"journey": "tribal-area", "request": "application-pdf-download", "status": 200}
+    ],
+    "secondAccounts": [
+      {"journey": "county", "confirmed": true, "ownRequest": "own-workspace-read", "ownStatus": 200},
+      {"journey": "city", "confirmed": true, "ownRequest": "own-workspace-read", "ownStatus": 200},
+      {"journey": "tribal-area", "confirmed": true, "ownRequest": "own-workspace-read", "ownStatus": 200}
+    ]
+  },
+  "limits": [
+    {"id": "synthetic-example", "text": "Synthetic example for the checker tests. It is not evidence and names no real place, run, application or file."},
+    {"id": "no-pdf-ua-check", "text": "No PDF/UA check was run on the application PDFs."},
+    {"id": "no-keyboard-or-screen-reader-pass", "text": "No keyboard-only or screen-reader pass was made."},
+    {"id": "no-human-usefulness-review", "text": "No planner reviewed whether the application PDFs are useful. Agent-run checks are the acceptance evidence."},
+    {
+      "id": "rehearsal-of-a-closed-call",
+      "text": "The run is a rehearsal on the 2027 Small Infrastructure forms. The statewide call closed June 22, 2026 (KI-2026-11-16-075). No application was submitted to the Commission, and no agency or tribe made or submitted one."
+    },
+    {
+      "id": "attachments-not-produced",
+      "text": "No attachment was produced. An agent cannot honestly produce a signature page, an engineer's checklist or the other documents, so every checklist row is outstanding or marked not applicable with a reason, and every PDF is stamped DRAFT with the count of required attachments outstanding."
+    },
+    {"id": "not-a-commission-score", "text": "The only scores in the PDFs are OpenPlan screening scores. They are not Commission scores and forecast no ranking, award or benefit."},
+    {
+      "id": "no-eligibility-or-disadvantaged-community-determination",
+      "text": "Nothing in the PDFs or in this record is an eligibility finding, a disadvantaged community determination or a finding that an application would pass the Commission's screening."
+    },
+    {
+      "id": "section-text-is-a-labeled-demonstration",
+      "text": "Every section's text was typed by an automated proof run under a demonstration label. It describes no real project and speaks for no agency or tribe. Nothing checks that it says anything true about a place."
+    },
+    {"id": "small-application-only", "text": "Only the Small infrastructure application was run. The Medium, Large, Non-infrastructure and Plan applications were not."},
+    {"id": "applicant-name-cannot-be-entered", "text": "OpenPlan cannot yet hold an applicant's name (KI-2026-11-16-080), so every PDF prints that the applicant is not entered in OpenPlan."},
+    {
+      "id": "equity-inputs-as-each-run-found-them",
+      "text": "The job does not require Census tract data. Each journey's record says whether its run retrieved tract data, retrieved none or did not record which, and Appendix E prints the sentence for that case. Where none was retrieved, the equity score is withheld."
+    },
+    {
+      "id": "what-the-journey-leaves-on-the-hosted-site",
+      "text": "Each journey leaves its account, workspace, project, crash records, analysis run, tracked opportunity, application and exported PDF on the hosted site under the demonstration label. It publishes nothing and opens no public page."
+    },
+    {
+      "id": "read-by-the-journey",
+      "text": "The journey read or set these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, the catalog key and template key, that no AI drafting ran, how the account was confirmed, each section's and each checklist row's state on screen, whether the run retrieved tract data, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, every time, the executor, and which build, mode and harness checkout ran."
+    },
+    {
+      "id": "project-page-answers-200-with-not-found-screen",
+      "text": "Another workspace's project page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The application read and the PDF download were refused."
+    }
+  ]
+}

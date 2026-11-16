@@ -38,6 +38,37 @@
               "searchedStringCount": { "$ref": "#/$defs/count" }
             }
           }
+        },
+        "ownerChecks": {
+          "type": "array",
+          "minItems": 1,
+          "description": "The control beside the refusals, for a job whose definition sets crossWorkspace.ownerControl: what each journey's owner received, in the same run, for the requests the second account was refused.",
+          "items": {
+            "type": "object",
+            "required": ["journey", "request", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "journey": { "$ref": "#/$defs/slug" },
+              "request": { "$ref": "#/$defs/slug" },
+              "status": { "type": "integer", "minimum": 100 }
+            }
+          }
+        },
+        "secondAccounts": {
+          "type": "array",
+          "minItems": 1,
+          "description": "For a job whose definition sets crossWorkspace.secondAccount: each journey's second account, whether its sign-up was confirmed, and the status it received for a read of its own record while signed in. Never an address or a name.",
+          "items": {
+            "type": "object",
+            "required": ["journey", "confirmed", "ownRequest", "ownStatus"],
+            "additionalProperties": false,
+            "properties": {
+              "journey": { "$ref": "#/$defs/slug" },
+              "confirmed": { "type": "boolean" },
+              "ownRequest": { "$ref": "#/$defs/slug" },
+              "ownStatus": { "type": "integer", "minimum": 100 }
+            }
+          }
         }
       }
     },
@@ -122,6 +153,17 @@
           "schema": {}, "jobId": {}, "commit": {}, "baseUrl": {}, "recordedOn": {},
           "journeys": { "items": { "$ref": "#/$defs/engagementJourney" } },
           "crossWorkspace": {}, "participantChecks": {}, "limits": {}
+        }
+      }
+    },
+    {
+      "if": { "required": ["jobId"], "properties": { "jobId": { "const": "california-atp-application-in-three-places" } } },
+      "then": {
+        "additionalProperties": false,
+        "properties": {
+          "schema": {}, "jobId": {}, "commit": {}, "baseUrl": {}, "recordedOn": {},
+          "journeys": { "items": { "$ref": "#/$defs/applicationJourney" } },
+          "crossWorkspace": { "required": ["checks", "ownerChecks", "secondAccounts"] }, "limits": {}
         }
       }
     }
@@ -416,6 +458,89 @@
             }
           }
         },
+        "screens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/screen" } }
+      }
+    },
+    "applicationJourney": {
+      "type": "object",
+      "description": "One journey of the California ATP application job: an account sets a project's study place, retrieves crash data, runs the corridor analysis, tracks the program, seeds the application from the 2027 template, makes every section final with typed demonstration text, gives every checklist row a disposition and exports the application PDF.",
+      "required": [
+        "role", "mode", "harness", "place", "executor", "accountCreatedAt", "confirmationMethod", "health",
+        "projectName", "workspaceName", "crashes", "application", "pdfs", "screens"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "$ref": "#/$defs/slug" },
+        "mode": { "enum": ["rehearsal", "proof"], "description": "The mode the journey ran in, from its run file. Only proof counts." },
+        "harness": {
+          "type": "object",
+          "description": "The checkout the journey script ran from: git rev-parse HEAD, and whether any tracked file differed from it.",
+          "required": ["commit", "clean"],
+          "additionalProperties": false,
+          "properties": {
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "clean": { "type": "boolean" }
+          }
+        },
+        "place": { "$ref": "#/$defs/place" },
+        "executor": { "$ref": "#/$defs/executor" },
+        "accountCreatedAt": { "$ref": "#/$defs/dateTime" },
+        "confirmationMethod": { "$ref": "#/$defs/confirmationMethod" },
+        "health": { "$ref": "#/$defs/health" },
+        "projectName": { "type": "string", "minLength": 1, "description": "The project's name as the journey typed it. It carries the demonstration label, and the PDF prints it." },
+        "workspaceName": { "type": "string", "minLength": 1, "description": "The workspace's name as the journey typed it at sign-up: a demonstration name, never a person's or an agency's. The PDF prints it in its own box and may print it nowhere as the applicant." },
+        "crashes": {
+          "type": "object",
+          "required": ["sourceId", "years", "reportedCount", "storedCount"],
+          "additionalProperties": false,
+          "properties": {
+            "sourceId": { "$ref": "#/$defs/slug" },
+            "years": { "type": "string", "pattern": "^\\d{4}((–|, )\\d{4})*$", "description": "The years requested, as the export prints them: a range with an en dash (2022–2025), one year, or years set apart by commas." },
+            "reportedCount": { "$ref": "#/$defs/count" },
+            "storedCount": { "$ref": "#/$defs/count" }
+          }
+        },
+        "application": {
+          "type": "object",
+          "required": ["catalogKey", "templateKey", "aiDraftingUsed", "tractData", "exportedAt", "sections", "rows", "outstandingRequiredCount"],
+          "additionalProperties": false,
+          "properties": {
+            "catalogKey": { "$ref": "#/$defs/slug" },
+            "templateKey": { "$ref": "#/$defs/slug" },
+            "aiDraftingUsed": { "type": "boolean" },
+            "tractData": { "enum": ["retrieved", "none-retrieved", "not-recorded"], "description": "What the corridor analysis run did about Census tract data: retrieved some, asked and retrieved none, or did not record which (it stored no Census record, or did not say). Each is a truthful record. The checker holds Appendix E to the sentence that belongs to the value." },
+            "exportedAt": { "$ref": "#/$defs/dateTime" },
+            "sections": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["key", "disposition"],
+                "additionalProperties": false,
+                "properties": {
+                  "key": { "$ref": "#/$defs/slug" },
+                  "disposition": { "enum": ["text", "fixed-note"], "description": "text: final with typed demonstration text. fixed-note: final with the demonstration label and the fixed note that the application asks no question there." }
+                }
+              }
+            },
+            "rows": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["key", "disposition"],
+                "additionalProperties": false,
+                "properties": {
+                  "key": { "$ref": "#/$defs/slug" },
+                  "disposition": { "enum": ["outstanding", "not-applicable", "attached"] },
+                  "reason": { "type": "string", "minLength": 1, "description": "Why the row does not apply. Required with not-applicable." }
+                }
+              }
+            },
+            "outstandingRequiredCount": { "$ref": "#/$defs/count" }
+          }
+        },
+        "pdfs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pdf" } },
         "screens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/screen" } }
       }
     },

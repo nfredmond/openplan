@@ -6,6 +6,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
 import {
   ATP_APPENDIX_FRAME,
+  ATP_CENSUS_TRIBAL_AREA_NOTE,
   ATP_GUIDELINES_DAC_CRITERIA,
   atpCoverLines,
   buildAtpEvidenceAppendices,
@@ -290,6 +291,26 @@ describe("Appendix E of an ATP application", () => {
     for (const place of [COUNTY, CITY, {}]) {
       const equity = byKey(buildAtpEvidenceAppendices(recordsFor(place), ALL), "equity");
       expect(criteriaRows(equity).map((fact) => fact.value)).toEqual(Array(6).fill("Not recorded in OpenPlan"));
+    }
+  });
+
+  it("says under Appendix E, for a Census tribal area only, that the area is not a finding about federally recognized Tribal Lands", () => {
+    // Review 76: the Guidelines' criterion is a project within federally recognized
+    // Tribal Lands, and a Census tribal area is wider than that and is not the project location.
+    const note = "A Census tribal area is not a finding that the project is located within federally recognized Tribal Lands.";
+    expect(ATP_CENSUS_TRIBAL_AREA_NOTE).toBe(note);
+    const tribal = byKey(buildAtpEvidenceAppendices(recordsFor(TRIBAL_AREA), ALL), "equity");
+    expect(tribal.notes.filter((text) => text === note)).toHaveLength(1);
+    // It prints in the application document, with the appendix's other notes.
+    const html = applicationHtml(recordsFor(TRIBAL_AREA), "Demonstration Planning Consultants");
+    expect(textBlocks(html).filter((text) => text === note)).toHaveLength(1);
+
+    // A county, a city and a project with no study place state no tribal-area fact, so the note has nothing to qualify.
+    const CITY = { place_source: "tigerweb", place_kind: "city", place_ref: "0686944", place_label: "Yreka, CA" };
+    for (const place of [COUNTY, CITY, {}]) {
+      const equity = byKey(buildAtpEvidenceAppendices(recordsFor(place), ALL), "equity");
+      expect(equity.notes).not.toContain(note);
+      expect(applicationHtml(recordsFor(place), "Demonstration Planning Consultants")).not.toContain("federally recognized Tribal Lands");
     }
   });
 
