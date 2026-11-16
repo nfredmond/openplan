@@ -74,14 +74,18 @@ describe("California program text", () => {
     expect(atp.summary).toContain("at least 25 percent to projects that benefit disadvantaged communities");
     expect(atp.typicalApplicants).toContain("federally recognized tribal governments");
     expect(atp.eligibleProjectTypes).toContain("Non-infrastructure education and encouragement programs");
-    expect(atp.cycleNote).toContain("each odd-numbered year");
+    // Review 68: the guidelines say "no later than the date designated in statute of each odd-numbered year", and give the 2027 dates.
+    expect(atp.cycleNote).toContain("no later than a statutory date in each odd-numbered year");
+    expect(atp.cycleNote).not.toContain("adopts an ATP program each odd-numbered year");
   });
 
   it("says leverage scores only in Large and Medium applications and asks for no benefit-cost ratio", () => {
     expect(atp.matchRequirement).toContain("No local match required");
     expect(atp.matchRequirement).toContain("only in Large and Medium project applications");
     const cost = atp.applicationSections!.find((section) => section.key === "cost-effectiveness-leverage")!;
-    expect(cost.guidance).toContain("Small applications score neither");
+    // Review 68: the Small and Medium rubrics still ask whether cost-effectiveness was considered (Question 5 note).
+    expect(cost.guidance).not.toContain("Small applications score neither");
+    expect(cost.guidance).toContain("The Small and Medium scoring rubrics still ask evaluators whether the application shows that cost-effectiveness was considered.");
     expect(cost.guidance).toContain("the application asks for no benefit-cost ratio");
     expect(cost.guidance).not.toMatch(/relate expected benefit to cost/i);
   });

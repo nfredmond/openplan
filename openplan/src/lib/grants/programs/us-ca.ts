@@ -24,7 +24,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     administeringAgency: "California Transportation Commission / Caltrans",
     level: "state",
     typicalApplicants:
-      "Cities, counties, MPOs and RTPAs, transit agencies, schools and school districts, natural resource and public land agencies, federally recognized tribal governments",
+      "Cities, counties, MPOs and RTPAs, transit agencies, public schools or school districts, natural resource or public land agencies, federally recognized tribal governments",
     eligibleProjectTypes: [
       "Bicycle and pedestrian infrastructure",
       "Safe routes to school",
@@ -32,7 +32,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Active transportation plans",
       "Non-infrastructure education and encouragement programs",
     ],
-    cycleNote: "The CTC adopts an ATP program each odd-numbered year; the 2027 ATP is Cycle 8. Verify the current call with the CTC.",
+    cycleNote: "The 2027 ATP is Cycle 8. The CTC adopts a program no later than a statutory date in each odd-numbered year. Verify the current call with the CTC.",
     matchRequirement:
       "No local match required; an MPO may require one in the MPO Component. Committed leveraged funds earn points only in Large and Medium project applications. Verify current guidelines.",
     url: "https://catc.ca.gov/programs/active-transportation-program",
@@ -71,7 +71,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "cost-effectiveness-leverage",
         title: "Cost effectiveness and leveraging",
         guidance:
-          "Describe committed leveraged funds and how the scope uses ATP funds well. In the 2027 ATP, Large applications score cost effectiveness, Large and Medium applications score leveraging, and Small applications score neither. The Commission runs its own benefit-cost tool at the program level, so the application asks for no benefit-cost ratio. Verify the current cycle's rubric with the CTC.",
+          "Describe committed leveraged funds and how the scope uses ATP funds well. In the 2027 ATP Guidelines, cost effectiveness is a scoring topic for Large applications and leveraging for Large and Medium applications. The Small and Medium scoring rubrics still ask evaluators whether the application shows that cost-effectiveness was considered. The Commission runs its own benefit-cost tool at the program level, so the application asks for no benefit-cost ratio. Verify the current cycle's rubric with the CTC.",
         suggestedEvidence: ["funding", "bca", "kb"],
       },
       {
@@ -119,7 +119,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "plan-consistency-documentation",
         title: "Plan consistency documentation",
         guidance:
-          "Relevant pages of the adopted Regional Transportation Plan showing the project is consistent, a screening item in the 2027 ATP. Large and combination applications also attach the adopted active transportation plan page that shows the project. Verify what the current cycle accepts.",
+          "Relevant pages of the adopted Regional Transportation Plan showing the project is consistent, a screening item in the 2027 ATP. Large applications (infrastructure or combination) also attach the adopted active transportation plan page that shows the project. Verify what the current cycle accepts.",
         required: false,
       },
     ],

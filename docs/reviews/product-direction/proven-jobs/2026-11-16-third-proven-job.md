@@ -32,7 +32,7 @@ Program facts, each read on November 15, 2026 (Pacific) from the source named:
   adopted March 19, 2026),
   https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf:
   - Section 10: eligible applicants include cities, counties, MPOs and RTPAs,
-    transit agencies, schools and school districts, natural resource and
+    transit agencies, public schools or school districts, natural resource or
     public land agencies, and "Tribal governments - federally recognized
     Native American Tribes". Section 29: "There are 109 federally recognized
     tribal governments (Tribes) in California."
@@ -58,8 +58,9 @@ Program facts, each read on November 15, 2026 (Pacific) from the source named:
     Transportation Benefit-Cost Tool to provide a program-level summary of
     expected benefits."
   - Section 3: applications were due June 22, 2026; Statewide and Small Urban
-    and Rural adoption December 3-4, 2026; a program is adopted each
-    odd-numbered year, so the next is the 2029 ATP.
+    and Rural adoption December 3-4, 2026; the Commission adopts a program
+    no later than a statutory date in each odd-numbered year (and may adopt
+    one annually), so the next is expected to be the 2029 ATP.
 - CTC, 2027 ATP Staff Recommendations (November 2, 2026),
   https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-staff-recommendations-sw-sur-a11y.pdf:
   317 applications requested $2.9 billion; Small Urban and Rural: 5 projects,
@@ -207,6 +208,43 @@ application and lacks parts the current cycle requires (KI-2026-11-16-033).
 - The 2029 ATP call date (not posted on November 15, 2026). `[VERIFY]`
 - Whether the key-free map path draws on Safety and Corridor Analysis on the
   hosted build; on this local build both said the map could not be drawn.
+
+## What a fresh-context review said this draft still lacks
+
+Review 68 (November 16, 2026, agent-run) read this draft against the
+run-through's files and against the two reviews that got false records
+accepted for the second job. Before a definition and a checker are written,
+the final note must add:
+
+- **Origin and mode.** The record's origin is the hosted site, all three
+  journeys ran in proof mode on one commit, and a rehearsal or local run is
+  refused, by the assembler and by the checker.
+- **What the journey leaves behind.** The project name, the applicant field
+  and every section carry the demonstration label, and the record says what
+  remains on the hosted site after the run.
+- **Ids tied to files.** The PDF's hash is recomputed from the committed file
+  and compared with the export's stored hash; the crash acquisition and the
+  analysis run named in the appendices are the journey's own; the three PDFs
+  differ.
+- **The place.** The PDF prints the study area's name outside text the
+  journey typed, so one place cannot stand for three. The record's place
+  label is held to the Census Bureau's name for its id.
+- **The refusal has a control.** In the same run the owner gets 200 for the
+  requests the second account is refused, and the second account is signed
+  in and confirmed.
+- **Screens.** No sideways scroll at 390 px and no console errors on the
+  required screens, beside the axe rule. Corridor Analysis has an open
+  serious contrast finding in light mode (KI-2026-11-16-039) that the axe
+  rule would refuse today.
+- **Words a checker can find.** A fact in the screening packet's two-column
+  grid and a marker that crosses a page break are not one string in the
+  PDF's text. Each fact the checker reads must print as one findable line,
+  and the note must say where the checker reads a stored score from.
+- **What no file holds.** Whether a city is incorporated, its population
+  range, and which state a tribal area lies in: say which of these the job
+  requires, and from what.
+- **One more thing a proof is not:** a finding that the application would
+  pass the Commission's screening.
 
 ## Where the product cannot yet produce what the job asks
 
