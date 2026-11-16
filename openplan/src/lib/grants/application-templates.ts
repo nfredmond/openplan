@@ -50,3 +50,21 @@ export function ifApplicableAttachmentKeys(
     (template?.requiredAttachments ?? []).filter((item) => item.required && item.ifApplicable).map((item) => item.key)
   );
 }
+
+/**
+ * The catalog program an opportunity was tracked from, when its title and
+ * agency are still exactly that program's name and administering agency
+ * (tracking from a catalog card copies both). The template picker starts on
+ * it, so the planner does not have to find the program again in the list
+ * (KI-2026-11-16-035). It is a starting selection only: the planner sees it
+ * and can change it, and seeding still takes the key the planner submits.
+ * Null when nothing or more than one program matches, or the match has no
+ * template.
+ */
+export function catalogKeyTrackedAs(opportunity: { title: string | null; agencyName: string | null }): string | null {
+  const title = opportunity.title?.trim();
+  const agency = opportunity.agencyName?.trim();
+  if (!title || !agency) return null;
+  const matches = GRANT_PROGRAM_CATALOG.filter((entry) => entry.name === title && entry.administeringAgency === agency);
+  return matches.length === 1 && (matches[0].applicationSections?.length ?? 0) > 0 ? matches[0].key : null;
+}

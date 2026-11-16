@@ -5,27 +5,40 @@
  *
  *  A. The ATP screening packet (`buildAtpPacketView`): the program facts the
  *     registry holds, each cycle-dependent one with its `[VERIFY]` marker and
- *     the CTC page, and the OpenPlan screening scores from the project's latest
- *     corridor analysis run. A score the run did not record reads
- *     "Not recorded", never a number.
+ *     the CTC page, the linked project's study place and the applicant line,
+ *     and the OpenPlan screening scores from the project's latest corridor
+ *     analysis run. A score the run did not record reads "Not recorded",
+ *     never a number.
  *  B. The crash summary of the project's latest finished crash acquisition:
  *     source, years, severity coverage and the counts the Safety module reads.
  *  C. The planning-level cost estimate recorded on the project.
  *  D. The engagement summary and F. the benefit-cost summary, shared with SS4A.
- *  E. The disadvantaged-community and equity inputs the run recorded. OpenPlan
- *     holds no SB 535, AB 1550 or tribal-area source, so those stay
- *     "Not recorded", and OpenPlan does not decide ATP eligibility.
+ *  E. The disadvantaged-community and equity inputs the run recorded, then
+ *     the six disadvantaged community criteria of the CTC's 2027 ATP
+ *     Guidelines, section 12.A, by the Guidelines' names and in their order,
+ *     each with what OpenPlan holds. OpenPlan holds a fact for one of them
+ *     only: whether the study place is a Census tribal area. No row is a
+ *     determination, and OpenPlan does not decide ATP eligibility.
+ *
+ * Every fact prints as one line, "Label: value" (`evidence-appendices.ts`), so
+ * the screening scores are facts here, not a two-column table.
  *
  * Pure: no I/O. `atp-evidence-loader.ts` reads the records.
  */
 
 import { scoreWithheldReason, type HeadlineScoreKey } from "@/lib/analysis/score-presentation";
 import {
+  ATP_APPLICANT_NOT_ENTERED,
   ATP_CATALOG_KEY,
+  ATP_STUDY_PLACE_NOT_RECORDED,
+  atpStudyPlaceLine,
   buildAtpPacketView,
+  formatYears,
+  readAtpStudyPlace,
   type AtpPacketProject,
   type AtpPacketRun,
 } from "@/lib/grants/atp-packet";
+import { formatEvidenceTimestamp } from "@/lib/grants/evidence-timestamp";
 import { ATP_APPENDIX_KEYS, ATP_APPENDIX_TITLES, type AtpAppendixKey } from "@/lib/grants/evidence-appendix-keys";
 import {
   absentEvidenceAppendix,
@@ -55,6 +68,50 @@ export const ATP_APPENDIX_FRAME: EvidenceAppendixFrame = {
     "Each appendix restates a saved OpenPlan record for the linked project, with its source record and date. Missing records are listed as missing. Scores are OpenPlan screening scores, not CTC scores. These appendices do not establish ATP eligibility or that this package meets the current call for projects.",
   verify: `${ATP_VERIFY_GUIDELINES} Confirm the required attachments and scoring criteria against the current ATP guidelines.`,
 };
+
+/** Said beside the study place wherever it prints: it is not the project's limits. */
+const ATP_STUDY_PLACE_NOTE =
+  "The study place is the area recorded for the linked project in OpenPlan. It does not state the project limits.";
+
+/** What the cover says when the project read failed: a failed read is not an absence. */
+const ATP_STUDY_PLACE_UNREAD = "Study place could not be read while this package was assembled";
+
+/**
+ * The lines an ATP application's cover prints in every export, whichever
+ * appendices are selected: the linked project's study place, the applicant,
+ * and what the study place is not. None of it is text the planner typed.
+ */
+export function atpCoverLines(project: AtpEvidenceRecords["project"]): string[] {
+  const studyPlace =
+    project.status === "ready"
+      ? atpStudyPlaceLine(project.project)
+      : project.status === "unreadable"
+        ? ATP_STUDY_PLACE_UNREAD
+        : ATP_STUDY_PLACE_NOT_RECORDED;
+  return [studyPlace, ATP_APPLICANT_NOT_ENTERED, ATP_STUDY_PLACE_NOTE];
+}
+
+/**
+ * The disadvantaged community criteria of the CTC's 2027 Active Transportation
+ * Program Guidelines (Resolution G-26-31, adopted March 19, 2026), section
+ * 12.A "Disadvantaged Communities", by the names the Guidelines give them and
+ * in the Guidelines' order. The Guidelines open the list: "To qualify as a
+ * disadvantaged community, the community served by the project must meet at
+ * least one of the following criteria". Read November 15, 2026 from
+ * https://catc.ca.gov/-/media/ctc-media/documents/programs/atp/cycle8/2027-atp-guidelines-a11y.pdf.
+ * AB 1550 is not among them. The thresholds and data years are the
+ * Guidelines' to state and change by cycle; they are not repeated here.
+ */
+export const ATP_GUIDELINES_DAC_CRITERIA = [
+  "Median Household Income",
+  "CalEnviroScreen",
+  "National School Lunch Program",
+  "Healthy Places Index",
+  "Native American Tribal Lands",
+  "Other",
+] as const;
+
+const NOT_RECORDED_IN_OPENPLAN = "Not recorded in OpenPlan";
 
 /** The project record the packet and cost estimate read, as the loader found it. */
 export type AtpProjectRecord = AtpPacketProject & {
@@ -137,6 +194,11 @@ function programFacts(): Array<{ label: string; value: string }> {
   ];
 }
 
+/** The label every screening score in the packet carries. */
+export const ATP_SCREENING_SCORE_LABEL = "OpenPlan screening score (not a CTC score)";
+/** The weighted total's own name, which says the weights are OpenPlan's. */
+const ATP_TOTAL_SCORE_LABEL = "Total (OpenPlan weights 30/25/25/20, not CTC points)";
+
 function scoringPacketAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix {
   const shell = appendixShell("scoring_packet" as const, index, ATP_APPENDIX_TITLES);
   if (records.project.status !== "ready") return notReady(shell, records.project, "The linked project could not be found in this workspace.");
@@ -147,6 +209,13 @@ function scoringPacketAppendix(index: number, records: AtpEvidenceRecords): AtpA
   const view = buildAtpPacketView({ project: records.project.project, run, generatedAt: records.generatedAt, timeZone: records.timeZone });
   const app = view.packet.applications[0];
 
+  // Each score is a fact that carries its own "not a CTC score" label, so the
+  // number and what it is read as one line.
+  const score = (dimension: string, value: number | null, key: HeadlineScoreKey | null) => ({
+    label: `${dimension}, ${ATP_SCREENING_SCORE_LABEL}`,
+    value: scoreCell(value, metrics, key),
+  });
+
   return {
     ...shell,
     status: "included",
@@ -156,26 +225,24 @@ function scoringPacketAppendix(index: number, records: AtpEvidenceRecords): AtpA
       ...programFacts(),
       { label: "Project", value: app.name },
       { label: "Project description", value: app.description },
-      { label: "Lead agency", value: app.agency },
-      { label: "Location", value: app.location_note },
+      // Whole sentences, the same two the cover prints.
+      { label: "", value: app.location_note },
+      { label: "", value: app.agency },
       { label: "Safety score source", value: app.safety_source_note ?? "Not recorded in the analysis run." },
       { label: "Project readiness", value: app.readiness_note },
+      score("Safety", app.safety_score, "safetyScore"),
+      score("Equity", app.equity_score, "equityScore"),
+      score("Climate", app.climate_score, null),
+      score("Feasibility", app.feasibility_score, null),
+      score(ATP_TOTAL_SCORE_LABEL, app.total_score, null),
     ],
-    table: {
-      headers: ["Dimension", "OpenPlan screening score (not a CTC score)"],
-      rows: [
-        ["Safety", scoreCell(app.safety_score, metrics, "safetyScore")],
-        ["Equity", scoreCell(app.equity_score, metrics, "equityScore")],
-        ["Climate", scoreCell(app.climate_score, metrics, null)],
-        ["Feasibility", scoreCell(app.feasibility_score, metrics, null)],
-        ["Total (OpenPlan weights 30/25/25/20, not CTC points)", scoreCell(app.total_score, metrics, null)],
-      ],
-    },
+    table: null,
     figureSvg: null,
     notes: [
       "These are OpenPlan screening scores from the project's corridor analysis. The CTC scores ATP applications under its current guidelines.",
       "OpenPlan does not decide ATP eligibility.",
       "Climate, feasibility and the weighted total have no source in OpenPlan yet.",
+      ATP_STUDY_PLACE_NOTE,
     ],
   };
 }
@@ -210,6 +277,34 @@ function severityFacts(evidence: SafetyCrashEvidence): Array<{ label: string; va
   ];
 }
 
+/** A stored calendar day inside a sentence ("2024-12-31") printed the way the appendices' other dates are. */
+function plainDays(text: string): string {
+  return text.replace(/\b\d{4}-\d{2}-\d{2}\b(?!T)/g, (day) => formatEvidenceTimestamp(day));
+}
+
+/**
+ * The years the acquisition asked for, as one range, and, when the source
+ * states a publication cutoff, that date on a line of its own. A tribal-area
+ * export printed three year ranges with nothing saying which was which
+ * (requested 2022 to 2025, a source published through 2024, and the corridor
+ * run's own years). The requested range and the citation now print the same
+ * range; the cutoff is named as the source's; the run's years print in the
+ * screening packet as the run's.
+ */
+function crashYearFacts(evidence: SafetyCrashEvidence): Array<{ label: string; value: string }> {
+  const facts = [{ label: "Years requested", value: evidence.years.length > 0 ? formatYears(evidence.years) : "Not recorded" }];
+  const cutoff = evidence.publishedThrough?.trim();
+  if (cutoff && /^\d{4}-\d{2}-\d{2}$/.test(cutoff)) {
+    const cutoffYear = Number(cutoff.slice(0, 4));
+    const later = evidence.years.filter((year) => year > cutoffYear);
+    facts.push({
+      label: "Source published through",
+      value: `${formatEvidenceTimestamp(cutoff)}, as the source states.${later.length > 0 ? ` The source holds no published crashes for ${formatYears(later)}, which the request also covered.` : ""}`,
+    });
+  }
+  return facts;
+}
+
 function crashAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix {
   const shell = appendixShell("crash_summary" as const, index, ATP_APPENDIX_TITLES);
   if (records.crash.status !== "ready") return notReady(shell, records.crash, NO_ACQUISITION_REASON);
@@ -232,7 +327,7 @@ function crashAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix 
     },
     facts: [
       { label: "Source", value: evidence.sourceLabel ?? "Not recorded" },
-      { label: "Years requested", value: evidence.years.length > 0 ? evidence.years.join(", ") : "Not recorded" },
+      ...crashYearFacts(evidence),
       { label: "Severity coverage", value: describeSeverityCoverage(evidence.seriousInjury) },
       { label: "Crash area", value: crashAreaBasisLabel(studyArea) },
       ...(studyArea.outsideBoundaryCount !== null
@@ -247,9 +342,9 @@ function crashAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix 
     table: null,
     figureSvg: null,
     notes: [
-      ...evidence.caveats,
-      "The safety screening score in the ATP screening packet comes from the corridor analysis run's own crash read, which can differ from this acquisition.",
-      evidence.citationText,
+      ...evidence.caveats.map(plainDays),
+      "The safety screening score in the ATP screening packet comes from the corridor analysis run's own crash read. Its source and crash years print there and can differ from this acquisition's.",
+      plainDays(evidence.citationText),
     ],
   };
 }
@@ -291,14 +386,20 @@ function record(value: unknown): Record<string, unknown> | null {
 /**
  * The run's Census source line, as the run recorded it. A run whose Census
  * inputs were unavailable stores a tract count of 0; that is no data, not zero
- * tracts, so the line says no tract data was retrieved.
+ * tracts, so the line says no tract data was retrieved. A run that stored no
+ * data-quality record did not say either way, and the line says that instead
+ * of stating that none was retrieved.
  */
 function demographicSource(metrics: Record<string, unknown> | null): string {
   const census = record(record(metrics?.sourceSnapshots)?.census);
   if (!census) return "Not recorded in the analysis run";
   const dataset = typeof census.dataset === "string" ? census.dataset : "Census dataset not recorded";
   const vintage = typeof census.vintage === "number" || typeof census.vintage === "string" ? ` ${census.vintage}` : "";
-  if (record(metrics?.dataQuality)?.censusAvailable !== true) {
+  const censusAvailable = record(metrics?.dataQuality)?.censusAvailable;
+  if (typeof censusAvailable !== "boolean") {
+    return `${dataset}${vintage}: the run did not record whether tract data was retrieved`;
+  }
+  if (!censusAvailable) {
     return `${dataset}${vintage}: no tract data was retrieved for this run`;
   }
   const tracts = typeof census.tractCount === "number" ? `, ${count(census.tractCount)} tracts` : "";
@@ -313,8 +414,23 @@ function proxyTractCount(metrics: Record<string, unknown> | null, key: string): 
   return censusAvailable && typeof value === "number" && Number.isFinite(value) ? count(value) : "Not recorded";
 }
 
-function recordedFlag(recorded: boolean, value: boolean): string {
-  return recorded ? (value ? "Yes" : "No") : "Not recorded";
+/**
+ * One row per criterion of the Guidelines' section 12.A, in the Guidelines'
+ * order. OpenPlan holds a fact for one: when the study place is a Census
+ * tribal area, the Native American Tribal Lands row states that and nothing
+ * more. It does not say the project is on federally recognized Tribal Lands,
+ * that the applicant is a tribal government, or that the community qualifies.
+ */
+function guidelinesCriteriaFacts(project: AtpProjectRecord): Array<{ label: string; value: string }> {
+  const place = readAtpStudyPlace(project);
+  const tribalArea = place.recorded ? place.censusTribalAreaName : null;
+  return ATP_GUIDELINES_DAC_CRITERIA.map((criterion) => ({
+    label: `Guidelines criterion, ${criterion}`,
+    value:
+      criterion === "Native American Tribal Lands" && tribalArea
+        ? `The study place is a Census tribal area: ${tribalArea}`
+        : NOT_RECORDED_IN_OPENPLAN,
+  }));
 }
 
 function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix {
@@ -334,18 +450,18 @@ function equityAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix
       { label: "Demographic source", value: demographicSource(metrics) },
       { label: "Tracts the ACS income and burden proxy flags", value: proxyTractCount(metrics, "disadvantagedTracts") },
       { label: "Low-income tracts (ACS proxy)", value: proxyTractCount(metrics, "lowIncomeTracts") },
-      { label: "SB 535 disadvantaged community", value: recordedFlag(app.equity_recorded, app.dac_sb535) },
-      { label: "AB 1550 low-income community", value: recordedFlag(app.equity_recorded, app.low_income_ab1550) },
-      { label: "Tribal area", value: recordedFlag(app.equity_recorded, app.tribal_area) },
       {
         label: "ATP disadvantaged-community criteria",
         value: `Not assessed. OpenPlan does not decide ATP eligibility; the CTC's guidelines set the criteria. ${ATP_VERIFY_GUIDELINES}`,
       },
+      ...guidelinesCriteriaFacts(records.project.project),
     ],
     table: null,
     figureSvg: null,
     notes: [
-      "The ACS proxy is a screening measure. It is not the SB 535 designation or the ATP's disadvantaged-community test.",
+      "The Guidelines criteria are the six the CTC's 2027 ATP Guidelines list in section 12.A, by the Guidelines' names and in their order. A community qualifies by meeting at least one. The Guidelines state each criterion's threshold and data year.",
+      "No row above is a determination that a community is disadvantaged or that the project benefits one. The applicant shows that in the application.",
+      "The ACS proxy is a screening measure. It is not the Guidelines' median household income criterion or any other criterion above.",
     ],
   };
 }

@@ -184,12 +184,12 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     }
     expect(html).not.toContain("SS4A");
     expect(html).toContain("Not recorded. Equity is withheld because required demographic inputs are unavailable.");
-    expect(html).toContain("<td>60.0</td>");
+    expect(html).toContain("<dt>Safety, OpenPlan screening score (not a CTC score):</dt> <dd>60.0</dd>");
     expect(html).toContain(ATP_VERIFY_GUIDELINES.replaceAll("'", "&#39;"));
     // The run's crash snapshot was fetched at 03:40 UTC on November 2: November 1 in Los Angeles.
-    expect(html).toContain("California Crash Reporting System (CCRS), crash years 2022–2025, retrieved 2026-11-01.");
-    expect(html).toContain("<dt>Serious-injury crashes</dt><dd>12</dd>");
-    expect(html).toContain("<dt>Crashes outside the boundary, left out</dt><dd>261</dd>");
+    expect(html).toContain("California Crash Reporting System (CCRS), crash years 2022–2025, retrieved Nov 1, 2026.");
+    expect(html).toContain("<dt>Serious-injury crashes:</dt> <dd>12</dd>");
+    expect(html).toContain("<dt>Crashes outside the boundary, left out:</dt> <dd>261</dd>");
     expect(html).toContain(EVIDENCE_IDS.bcaVersion);
     expect(html).toContain(EVIDENCE_IDS.campaign);
 
@@ -203,7 +203,7 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     // Projections, as literals: the columns the appendices print, from the
     // project's own records in the application's own workspace.
     expect(callsFor("projects", "select")).toEqual([[
-      "id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_recorded_at, estimated_cost_source_document_id",
+      "id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, place_source, place_kind, place_ref, place_label, estimated_cost_recorded_at, estimated_cost_source_document_id",
     ]]);
     expect(callsFor("projects", "eq")).toEqual([["id", ATP_IDS.project], ["workspace_id", ATP_IDS.workspace]]);
     expect(callsFor("runs", "select")).toEqual([["id, title, created_at, metrics"]]);
@@ -301,7 +301,7 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     const body = await response.json();
     expect(statuses(body)[0]).toEqual(["scoring_packet", "unreadable"]);
     expect(statuses(body)[4]).toEqual(["equity", "unreadable"]);
-    expect(renderReportPdfMock.mock.calls[0][0]).not.toContain("<td>60.0</td>");
+    expect(renderReportPdfMock.mock.calls[0][0]).not.toContain("<dd>60.0</dd>");
   });
 
   it("reads only the selected appendices and lists the rest as not selected", async () => {
@@ -311,6 +311,74 @@ describe("ATP application export with evidence appendices (KI-2026-11-02-045)", 
     for (const table of ["runs", "safety_crash_ingests", "rpc:safety_crash_evidence_counts", "project_bca_versions", "engagement_campaigns"]) {
       expect(callsFor(table, "select").concat(callsFor(table, "rpc")), table).toEqual([]);
     }
+  });
+
+  it("states the linked project's study place and the applicant on the cover and in Appendix A, read from the project row (KI-2026-11-16-031)", async () => {
+    const WORKSPACE_NAME = "Demonstration Planning Consultants";
+    const exported = async (place: Record<string, unknown>, body?: unknown) => {
+      renderReportPdfMock.mockClear();
+      tables.projects = () => ({ data: atpProjectRow(place), error: null });
+      tables.workspaces = () => ({ data: { name: WORKSPACE_NAME, time_zone: "America/Los_Angeles", home_country_code: "US" }, error: null });
+      const response = await exportApplication(post(body), context);
+      expect(response.status).toBe(201);
+      return renderReportPdfMock.mock.calls[0][0] as string;
+    };
+    const coverOf = (html: string) => html.slice(html.indexOf('<header class="hero">'), html.indexOf("</header>"));
+    const COUNTY_LINE = "Study place: Trinity County, CA (county, GEOID 06105)";
+    const TRIBAL_LINE = "Study place: Hoopa Valley Reservation, CA (Census tribal area, GEOID 1490R)";
+
+    const county = await exported({ place_source: "tigerweb", place_kind: "county", place_ref: "06105", place_label: "Trinity County, CA" });
+    const tribal = await exported({ place_source: "tigerweb", place_kind: "aiannh", place_ref: "1490R", place_label: "Hoopa Valley Reservation, CA" });
+    // Two project rows give two lines. A line the route did not read from the row cannot pass both.
+    for (const [html, line, other] of [[county, COUNTY_LINE, TRIBAL_LINE], [tribal, TRIBAL_LINE, COUNTY_LINE]] as const) {
+      expect(coverOf(html)).toContain(`<p>${line}</p>`);
+      expect(coverOf(html)).toContain("<p>Applicant not entered in OpenPlan</p>");
+      expect(html).toContain(`<div><dd>${line}</dd></div>`);
+      expect(html).not.toContain(other);
+      expect(html).not.toMatch(/to be provided/i);
+      // The workspace is named once, as the workspace, and nowhere as an applicant or a lead agency.
+      expect(html.split(WORKSPACE_NAME)).toHaveLength(2);
+      expect(html).toContain(`<div class="wide"><dt>Workspace</dt><dd>${WORKSPACE_NAME}</dd></div>`);
+      expect(html).not.toMatch(/<dt>(Lead agency|Applicant):?<\/dt>/);
+    }
+    // Only the tribal-area project carries the tribal-area fact.
+    const tribalFact = "<dt>Guidelines criterion, Native American Tribal Lands:</dt> <dd>The study place is a Census tribal area: Hoopa Valley Reservation, CA</dd>";
+    expect(tribal).toContain(tribalFact);
+    expect(county).toContain("<dt>Guidelines criterion, Native American Tribal Lands:</dt> <dd>Not recorded in OpenPlan</dd>");
+
+    // The cover states the place even when the screening packet is not selected: the project is always read.
+    const costOnly = await exported({ place_source: "tigerweb", place_kind: "county", place_ref: "06105", place_label: "Trinity County, CA" }, { appendices: ["cost_estimate"] });
+    expect(coverOf(costOnly)).toContain(`<p>${COUNTY_LINE}</p>`);
+    // A project with no study place says so.
+    const none = await exported({});
+    expect(coverOf(none)).toContain("<p>Study place not recorded in OpenPlan</p>");
+  });
+
+  it("names an attached Knowledge Base document by its title, read in the application's own workspace (KI-2026-11-16-034)", async () => {
+    const DOCUMENT = seedId(830);
+    tables.funding_opportunity_attachments = () => ({ data: [{
+      id: seedId(831), workspace_id: ATP_IDS.workspace, opportunity_id: ATP_IDS.opportunity, attachment_key: "project-location-map", title: "Project Location Map",
+      guidance: null, required: true, status: "attached", kb_document_id: DOCUMENT, report_artifact_id: null, note: null, sort_order: 0,
+      updated_by: null, created_at: EVIDENCE_DATE, updated_at: EVIDENCE_DATE,
+    }], error: null });
+    tables.kb_documents = () => ({ data: [{ id: DOCUMENT, title: "Main Street location map (demonstration)" }], error: null });
+    const response = await exportApplication(post(), context);
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("<td>Knowledge Base document: Main Street location map (demonstration)</td>");
+    expect(html).toContain("<p>Attached for Project Location Map: Knowledge Base document: Main Street location map (demonstration)</p>");
+    // The titles are read by id, in this workspace only.
+    expect(callsFor("kb_documents", "select")).toEqual([["id, title"]]);
+    expect(callsFor("kb_documents", "eq")).toEqual([["workspace_id", ATP_IDS.workspace]]);
+    expect(callsFor("kb_documents", "in")).toEqual([["id", [DOCUMENT]]]);
+
+    // A failed read names no document and still exports.
+    renderReportPdfMock.mockClear();
+    tables.kb_documents = () => ({ data: null, error: { message: "permission denied for table kb_documents" } });
+    expect((await exportApplication(post(), context)).status).toBe(201);
+    const unread = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(unread).toContain("<td>Knowledge Base document (its title could not be read)</td>");
+    expect(unread).not.toContain("Main Street location map");
   });
 
   it("refuses an appendix another program declares", async () => {

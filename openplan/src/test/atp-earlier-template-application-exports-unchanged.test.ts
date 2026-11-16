@@ -13,9 +13,32 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * seven sections and five attachments they were given. This test sends one
  * fixed application of that kind through the export route, with a fake
  * database, the real HTML builder and the real built-in PDF writer, and
- * compares the SHA-256 of the HTML and of the PDF with the values the same
- * test produced on the commit before the 2027 template existed (`cd7727736`,
- * PR 498's head).
+ * compares the SHA-256 of the HTML and of the PDF with pinned values.
+ *
+ * THE PINS HAVE MOVED ONCE, ON PURPOSE. They were first taken on the commit
+ * before the 2027 template existed (`cd7727736`, PR 498's head: HTML
+ * `35cc24e6...`, PDF `a09cd7b8...`), and held through that template's
+ * arrival. They were taken again when every ATP application's document
+ * changed, whichever template seeded it (KI-2026-11-16-031, -032, -034, -035,
+ * -038, -040). What changed:
+ * - the cover states the study place and the applicant on lines of their own
+ *   above its boxes, leaves out "Program: Not linked", and keeps each box
+ *   whole across a page break;
+ * - the checklist names the attached document by its title, prints words in
+ *   an empty cell, and is followed by one "Attached for" line per attached
+ *   item;
+ * - each appendix fact is one "Label: value" line, and the screening scores
+ *   are facts, not a table;
+ * - Appendix A states the study place and the applicant in place of "to be
+ *   provided", and Appendix E lists the Guidelines' six criteria;
+ * - the appendix index names records by kind and says a hash is stored
+ *   without printing it, and a record id in running text is one piece that
+ *   cannot break;
+ * - a calendar day prints as "Nov 2, 2026", and the stylesheet changed with
+ *   all of the above.
+ * The seven section titles, the five attachment titles and their Required or
+ * Optional words did not change, and the test checks those by name below,
+ * apart from the hashes.
  *
  * The rows are written out here, not read from the catalog, because a saved
  * application holds its own copy of each title: the catalog may change and
@@ -23,12 +46,14 @@ import { seedId } from "./fixtures/grants/safety-seed";
  *
  * Blind category: the Chrome engine's PDF, which carries its own creation
  * time and so never repeats byte for byte. Chrome prints the HTML pinned
- * here, and `src/lib/reports/pdf.ts` did not change. Also blind: a real
- * database, row-level security and the screen.
+ * here. Also blind: a real database, row-level security and the screen. A
+ * pin says the document did not change since it was taken; it does not say
+ * the document is right. `atp-application-states-recorded-facts.test.ts`
+ * reads what it says.
  */
 
-const BASE_HTML_SHA256 = "35cc24e69b0eccfc7c69c5b7f67828cb20ee65baccc6e11cbf8ab8af8782f8d4";
-const BASE_PDF_SHA256 = "a09cd7b8dc72b1c2b772c35241dd5a5874ec0b2b84e3726a1a35899f03499734";
+const PINNED_HTML_SHA256 = "60f96c20dd4499ec2ba51628a27d653f30cf21a08fcbab024b50f89337555973";
+const PINNED_PDF_SHA256 = "7a962fe8807667fc156ece49bb7d406ae7d75249bb84d1a92c00ab4a282f38e7";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -134,6 +159,8 @@ const tables: Record<string, () => Result> = {
   engagement_campaigns: () => ({ data: [CAMPAIGN_ROW], error: null, count: 1 }),
   workspaces: () => ({ data: { time_zone: "America/Los_Angeles", home_country_code: "US" }, error: null }),
   funding_opportunity_application_exports: () => ({ data: { id: seedId(500), storage_path: "path" }, error: null }),
+  // The one attached checklist item's document, named on the checklist by its title.
+  kb_documents: () => ({ data: [{ id: seedId(30), title: "Main Street vicinity map (demonstration)" }], error: null }),
 };
 
 const savedChromePath = process.env.CHROME_EXECUTABLE_PATH;
@@ -183,14 +210,20 @@ function post() {
 const context = { params: Promise.resolve({ opportunityId: ATP_IDS.opportunity }) };
 
 describe("an application seeded from the earlier ATP template", () => {
-  it("exports the HTML and the PDF it exported before the 2027 template existed", async () => {
+  it("exports its seven sections and five attachments, in the HTML and the PDF the pins record", async () => {
     const response = await exportApplication(post(), context);
     expect(response.status).toBe(201);
     const body = await response.json();
 
     const [html] = captured.html;
     // The document is the ATP one: seven sections, the old checklist words, six appendices.
-    expect(html).toContain("Statement of need: safety and mobility");
+    for (const [, title] of EARLIER_SECTIONS) expect(html).toContain(`<h2 class="section-title">${title.replaceAll("'", "&#39;")}</h2>`);
+    for (const [, title] of EARLIER_ATTACHMENTS) expect(html).toContain(`<td>${title.replaceAll("'", "&#39;")}</td>`);
+    // The attached item is named by its document's title; the study place prints on the cover.
+    expect(html).toContain("<td>Knowledge Base document: Main Street vicinity map (demonstration)</td>");
+    expect(html).toContain("<p>Attached for Project location and vicinity map: Knowledge Base document: Main Street vicinity map (demonstration)</p>");
+    expect(html).toContain("<p>Study place not recorded in OpenPlan</p>");
+    expect(html).not.toMatch(/to be provided/i);
     expect(html).toContain("<td>Existing conditions photos</td>\n          <td>Optional</td>");
     expect(html).toContain("Appendix F. Benefit-cost summary");
     expect(html).toContain("DRAFT: 1 required attachment(s) outstanding");
@@ -201,7 +234,7 @@ describe("an application seeded from the earlier ATP template", () => {
     expect(Buffer.from(pdfBytes).subarray(0, 5).toString("latin1")).toBe("%PDF-");
     expect(body.sha256).toBe(sha256(pdfBytes));
 
-    expect({ html: sha256(html), pdf: sha256(pdfBytes) }).toEqual({ html: BASE_HTML_SHA256, pdf: BASE_PDF_SHA256 });
+    expect({ html: sha256(html), pdf: sha256(pdfBytes) }).toEqual({ html: PINNED_HTML_SHA256, pdf: PINNED_PDF_SHA256 });
   });
 
   it("gives the same bytes on a second export at the same moment, so the pins can hold", async () => {

@@ -114,7 +114,7 @@ function applicationPayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
-async function openWorkspace(getPayload: Record<string, unknown>) {
+async function openWorkspace(getPayload: Record<string, unknown>, props: { trackedCatalogKey?: string | null } = {}) {
   fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
     if ((init?.method ?? "GET") === "GET") {
       return jsonResponse(200, getPayload);
@@ -122,7 +122,7 @@ async function openWorkspace(getPayload: Record<string, unknown>) {
     throw new Error(`Unexpected fetch: ${init?.method} ${url}`);
   });
 
-  render(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} />);
+  render(<FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} {...props} />);
   fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
   await waitFor(() => expect(fetchMock).toHaveBeenCalled());
 }
@@ -188,6 +188,26 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     ]);
     expect(options.filter((option) => option.label === "Active Transportation Program (ATP)")).toHaveLength(1);
     expect(new Set(options.map((option) => option.label)).size).toBe(options.length);
+  });
+
+  it("starts the template picker on the program the opportunity was tracked from, and seeds that key (KI-2026-11-16-035)", async () => {
+    const empty = applicationPayload({ sections: [], attachments: [], kbDocumentOptions: [], reportArtifactOptions: [] });
+    await openWorkspace(empty, { trackedCatalogKey: "atp" });
+    const picker = (await screen.findByLabelText("Application template")) as HTMLSelectElement;
+    expect(picker.value).toBe("atp");
+    expect(picker.selectedOptions[0].textContent).toBe("Active Transportation Program (ATP)");
+
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) =>
+      init?.method === "POST" ? jsonResponse(201, { sections: [sectionRow()], attachments: [attachmentRow()] }) : jsonResponse(200, applicationPayload()));
+    fireEvent.click(screen.getByRole("button", { name: /initialize application/i }));
+    await waitFor(() => expect(recordedCalls().find((call) => call.method === "POST")?.body).toEqual({ catalogKey: "atp" }));
+  });
+
+  it("starts the template picker on the custom scaffold when no tracked program is known", async () => {
+    await openWorkspace(applicationPayload({ sections: [], attachments: [], kbDocumentOptions: [], reportArtifactOptions: [] }));
+    const picker = (await screen.findByLabelText("Application template")) as HTMLSelectElement;
+    expect(picker.value).toBe("");
+    expect(picker.selectedOptions[0].textContent).toBe("Custom scaffold (no template)");
   });
 
   it("labels a checklist item required if applicable only on an application seeded from a template that says so", async () => {

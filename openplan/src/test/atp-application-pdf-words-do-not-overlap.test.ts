@@ -21,6 +21,12 @@ import { ATP_IDS, completeAtpRecords } from "./fixtures/grants/atp-evidence";
  * read back with Poppler's word boxes, and every pair of words on one line is
  * checked for overlap.
  *
+ * The first case's cover title wraps to two lines. At the old line spacing its
+ * first line's word boxes overlapped the second line's by more than a point
+ * ("Active" over "Program"), though the letters did not touch on the page
+ * (KI-2026-11-16-074). The earlier fixture title fit one line and could not
+ * show it.
+ *
  * Blind category: overlap with a drawn shape (a border or a map), text clipped
  * by a cell rather than drawn over its neighbor, and pages this fixture does
  * not produce. Skipped where Chrome or Poppler is not installed.
@@ -79,7 +85,10 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with Poppler's wor
   it("prints the program page address inside its cell and no word over another", async () => {
     process.env.CHROME_EXECUTABLE_PATH = CHROME;
     const html = buildGrantApplicationHtml({
-      opportunity: { id: ATP_IDS.opportunity, title: "ATP application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      // The title a tracked ATP opportunity carries. Whether it wraps at the cover's size depends on the
+      // machine's fonts (two lines on Windows, one on CI's Linux), so nothing here assumes a wrap; the
+      // next test wraps a title on any font.
+      opportunity: { id: ATP_IDS.opportunity, title: "Active Transportation Program (ATP)", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
       programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-16T01:31:00.000Z",
       evidenceAppendices: buildAtpEvidenceAppendices(completeAtpRecords(), new Set<string>(ATP_APPENDIX_KEYS)),
       evidenceAppendixFrame: ATP_APPENDIX_FRAME,
@@ -89,6 +98,34 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with Poppler's wor
     const list = words(file);
     // The address is printed (possibly wrapped), so the check has something to find.
     expect(list.map((w) => w.text).join("")).toContain("https://catc.ca.gov/programs/active-transportation-program");
+    const title = list.filter((w) => w.page === 1).slice(0, 12).filter((w) => ["Active", "Transportation", "Program", "(ATP)"].includes(w.text)).slice(0, 4);
+    expect(title.map((w) => w.text)).toEqual(["Active", "Transportation", "Program", "(ATP)"]);
+    expect(overlappingWords(list)).toEqual([]);
+  }, 120_000);
+
+  it("keeps a wrapped cover title's two lines clear of each other (KI-2026-11-16-074)", async () => {
+    process.env.CHROME_EXECUTABLE_PATH = CHROME;
+    // Long enough to wrap at the cover's size on any font, so the two lines' word boxes are under test
+    // on every machine. The first version of this check used the real ATP title and failed on CI, where
+    // that title fits on one line.
+    const longTitle = "Active Transportation Program (ATP) demonstration application with a project name long enough to wrap on any font";
+    const html = buildGrantApplicationHtml({
+      opportunity: { id: ATP_IDS.opportunity, title: longTitle, agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-16T01:31:00.000Z",
+    });
+    const file = path.join(workDir, "atp-application-long-title.pdf");
+    writeFileSync(file, await renderHtmlToPdf(html, { footerLabel: "Active Transportation Program (ATP)" }));
+    const list = words(file);
+    const titleWords = longTitle.split(" ");
+    const firstPage = list.filter((w) => w.page === 1);
+    const start = firstPage.findIndex((_, index) => titleWords.every((word, offset) => firstPage[index + offset]?.text === word));
+    expect(start).toBeGreaterThanOrEqual(0);
+    const title = firstPage.slice(start, start + titleWords.length);
+    // It wrapped: the last word sits on a lower line than the first.
+    const [first, last] = [title[0], title[title.length - 1]];
+    expect(last.yMin).toBeGreaterThan(first.yMin + 2);
+    // And the lower line's boxes start below the upper line's, less a point of tolerance.
+    expect(last.yMin).toBeGreaterThan(first.yMax - 1);
     expect(overlappingWords(list)).toEqual([]);
   }, 120_000);
 

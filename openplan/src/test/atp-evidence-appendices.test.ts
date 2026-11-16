@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
-import { ATP_APPENDIX_FRAME, buildAtpEvidenceAppendices, type AtpAppendix } from "@/lib/grants/atp-evidence-appendices";
+import { ATP_APPENDIX_FRAME, ATP_GUIDELINES_DAC_CRITERIA, ATP_SCREENING_SCORE_LABEL, buildAtpEvidenceAppendices, type AtpAppendix } from "@/lib/grants/atp-evidence-appendices";
 import { ATP_APPENDIX_KEYS } from "@/lib/grants/evidence-appendix-keys";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { ATP_VERIFY_GUIDELINES } from "@/lib/planner-pack/render";
@@ -26,8 +26,9 @@ function fact(appendix: AtpAppendix, label: string): string | undefined {
   return appendix.facts.find((entry) => entry.label === label)?.value;
 }
 
+/** A screening score fact: its label starts with the dimension and carries the "not a CTC score" label. */
 function score(appendix: AtpAppendix, dimension: string): string | undefined {
-  return appendix.table?.rows.find((row) => row[0].startsWith(dimension))?.[1];
+  return appendix.facts.find((entry) => entry.label.startsWith(dimension) && entry.label.endsWith(ATP_SCREENING_SCORE_LABEL))?.value;
 }
 
 function packetText(appendices: AtpAppendix[]): string {
@@ -78,7 +79,15 @@ describe("ATP evidence appendices", () => {
 
   it("prints only the scores the run recorded and says the rest are not recorded, with the run's reason", () => {
     const packet = byKey(buildAtpEvidenceAppendices(completeAtpRecords(), ALL), "scoring_packet");
-    expect(packet.table!.headers[1]).toBe("OpenPlan screening score (not a CTC score)");
+    // The scores are facts, one line each, not a two-column table.
+    expect(packet.table).toBeNull();
+    expect(packet.facts.map((entry) => entry.label).filter((label) => label.endsWith(ATP_SCREENING_SCORE_LABEL))).toEqual([
+      "Safety, OpenPlan screening score (not a CTC score)",
+      "Equity, OpenPlan screening score (not a CTC score)",
+      "Climate, OpenPlan screening score (not a CTC score)",
+      "Feasibility, OpenPlan screening score (not a CTC score)",
+      "Total (OpenPlan weights 30/25/25/20, not CTC points), OpenPlan screening score (not a CTC score)",
+    ]);
     expect(score(packet, "Safety")).toBe("60.0");
     // The run stored a raw equity number, but its presentation record withheld it.
     expect(score(packet, "Equity")).toBe(`Not recorded. ${EQUITY_WITHHELD}`);
@@ -86,16 +95,19 @@ describe("ATP evidence appendices", () => {
     expect(score(packet, "Feasibility")).toBe("Not recorded");
     expect(score(packet, "Total")).toBe("Not recorded");
     expect(packet.source).toMatchObject({ record: "Corridor analysis run", id: ATP_IDS.run });
-    expect(fact(packet, "Safety score source")).toBe("California Crash Reporting System (CCRS), crash years 2022–2025, retrieved 2026-11-02.");
+    expect(fact(packet, "Safety score source")).toBe("California Crash Reporting System (CCRS), crash years 2022–2025, retrieved Nov 2, 2026.");
     expect(fact(packet, "Project description")).toBe(atpProject().summary);
-    expect(fact(packet, "Lead agency")).toBe("Lead agency to be provided");
+    // No "Lead agency" or "Location" row: the applicant and the study place are whole sentences.
+    expect(packet.facts.map((entry) => entry.label)).not.toContain("Lead agency");
+    expect(packet.facts.map((entry) => entry.label)).not.toContain("Location");
+    expect(packet.facts.map((entry) => entry.value)).toContain("Applicant not entered in OpenPlan");
     expect(packet.notes).toContain("OpenPlan does not decide ATP eligibility.");
   });
 
   it("names the crash retrieval day on the workspace calendar", () => {
     const records = { ...completeAtpRecords(), timeZone: "America/Los_Angeles" };
     // 03:40 UTC on November 2 is the evening of November 1 in Los Angeles.
-    expect(fact(byKey(buildAtpEvidenceAppendices(records, ALL), "scoring_packet"), "Safety score source")).toContain("retrieved 2026-11-01");
+    expect(fact(byKey(buildAtpEvidenceAppendices(records, ALL), "scoring_packet"), "Safety score source")).toContain("retrieved Nov 1, 2026");
   });
 
   it("keeps the packet with every score not recorded when no run exists, and lists equity as missing", () => {
@@ -104,7 +116,7 @@ describe("ATP evidence appendices", () => {
     const packet = byKey(appendices, "scoring_packet");
     expect(packet.status).toBe("included");
     expect(packet.statusNote).toContain("every screening score reads Not recorded");
-    expect(packet.table!.rows.map((row) => row[1])).toEqual(["Not recorded", "Not recorded", "Not recorded", "Not recorded", "Not recorded"]);
+    expect(packet.facts.filter((entry) => entry.label.endsWith(ATP_SCREENING_SCORE_LABEL)).map((entry) => entry.value)).toEqual(["Not recorded", "Not recorded", "Not recorded", "Not recorded", "Not recorded"]);
     expect(byKey(appendices, "equity")).toMatchObject({ status: "missing" });
     expect(byKey(appendices, "equity").statusNote).toContain("No corridor analysis run is saved");
   });
@@ -120,7 +132,7 @@ describe("ATP evidence appendices", () => {
     const crash = byKey(buildAtpEvidenceAppendices(completeAtpRecords(), ALL), "crash_summary");
     expect(crash.source).toMatchObject({ record: "Crash acquisition", id: ATP_IDS.ingest, date: "2026-11-02T15:00:00+00:00" });
     expect(fact(crash, "Source")).toBe("California Crash Reporting System (CCRS)");
-    expect(fact(crash, "Years requested")).toBe("2022, 2023, 2024, 2025");
+    expect(fact(crash, "Years requested")).toBe("2022–2025");
     expect(fact(crash, "Severity coverage")).toMatch(/^Serious-injury crashes are counted from the source's injured-person records/);
     expect(crash.facts.map((f) => f.label)).not.toContain("Recorded severity coverage");
     expect(fact(crash, "Crash area")).toBe("Place boundary");
@@ -182,9 +194,11 @@ describe("ATP evidence appendices", () => {
     // The run had no Census inputs, so its stored zero tract counts are not findings.
     expect(fact(equity, "Tracts the ACS income and burden proxy flags")).toBe("Not recorded");
     expect(fact(equity, "Demographic source")).toBe("Not recorded in the analysis run");
-    for (const label of ["SB 535 disadvantaged community", "AB 1550 low-income community", "Tribal area"]) {
-      expect(fact(equity, label)).toBe("Not recorded");
+    // The Guidelines' six criteria, each not recorded; AB 1550 is not an ATP criterion and has no row.
+    for (const criterion of ATP_GUIDELINES_DAC_CRITERIA) {
+      expect(fact(equity, `Guidelines criterion, ${criterion}`)).toBe("Not recorded in OpenPlan");
     }
+    expect(equity.facts.map((entry) => entry.label).join(" ")).not.toMatch(/AB 1550|SB 535/);
     expect(fact(equity, "ATP disadvantaged-community criteria")).toBe(
       `Not assessed. OpenPlan does not decide ATP eligibility; the CTC's guidelines set the criteria. ${ATP_VERIFY_GUIDELINES}`
     );
@@ -215,7 +229,7 @@ describe("ATP evidence appendices", () => {
     expect(fact(equity, "Tracts the ACS income and burden proxy flags")).toBe("3");
     expect(fact(equity, "Low-income tracts (ACS proxy)")).toBe("5");
     expect(fact(equity, "Demographic source")).toBe("ACS 5-Year 2023, 9 tracts, clipped to the corridor");
-    expect(fact(equity, "SB 535 disadvantaged community")).toBe("Not recorded");
+    expect(fact(equity, "Guidelines criterion, Median Household Income")).toBe("Not recorded in OpenPlan");
   });
 
   it("lists every appendix as missing when the application has no linked project", () => {

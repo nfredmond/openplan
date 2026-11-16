@@ -126,6 +126,20 @@ export type GrantApplicationExportData = {
   applicant?: ApplicationApplicant;
   /** Checklist keys the seeded template asks for only in some cases; they print "Required if applicable". */
   ifApplicableAttachmentKeys?: ReadonlySet<string>;
+  /**
+   * Facts a program states on the cover, each a whole sentence or "Label:
+   * value" on a line of its own above the cover's boxes, so a text search of
+   * the PDF finds each as one string on the first page. Under the boxes, a
+   * long opportunity summary pushed them to the second page. The California
+   * ATP names the linked project's study place and the applicant here.
+   */
+  coverLines?: readonly string[];
+  /**
+   * The title of each Knowledge Base document a checklist item is attached
+   * to, by document id. A document whose title was not read is named as
+   * that, never by a guessed title.
+   */
+  attachmentDocumentTitles?: ReadonlyMap<string, string>;
 };
 
 /** The document label per pursuit kind, used in the title and cover eyebrow. */
@@ -194,6 +208,28 @@ function formatAmount(value: number | string | null | undefined): string {
  * (KI-2026-11-14-117). Table rows do not split across pages, so a long URL in
  * a cell prints, and copies, whole on one page.
  *
+ * An appendix fact is one line of running text, "Label: value", in one
+ * column. The facts were a two-column grid of boxes: extracted text read two
+ * facts side by side, a label could end one page and its value start the
+ * next, and a text search found neither as one string (KI-2026-11-16-040). A
+ * fact, an appendix note and the appendices' opening paragraphs do not split
+ * across pages, so a `[VERIFY]` marker inside one stays whole. A record id
+ * or content hash in running text is set as one piece that does not break at
+ * its hyphens (`runningText` in `evidence-appendices.ts`); a piece wider than
+ * the line still wraps inside the line, never past the page edge.
+ *
+ * A cover box, and the box that says a section is not final or an appendix
+ * is missing, does not split across pages: on a cover that ran past one page
+ * the last box's label ended the first page and its value began the second.
+ *
+ * The cover's Project and Workspace boxes take a full row each. In a narrow
+ * box beside two others a long name wrapped, and extracted text read the
+ * three boxes line by line across, so the name was not found whole.
+ *
+ * The cover title's line spacing is wider than its letters are tall. At 1.08 a
+ * title that wrapped to two lines had word boxes that overlapped in the PDF's
+ * text layer (KI-2026-11-16-074).
+ *
  * Print drops the spacing under the last text. When the text ended near a
  * page end, that empty spacing spilled onto a blank last page
  * (KI-2026-11-14-116).
@@ -206,18 +242,19 @@ const DOCUMENT_STYLES = `
       .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); }
       .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; text-transform: uppercase; color: #965c2a; }
       h1, h2, h3 { margin: 0; }
-      h1 { margin-top: 12px; font-size: 38px; line-height: 1.08; }
+      h1 { margin-top: 12px; font-size: 38px; line-height: 1.25; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
-      .section-title { margin-bottom: 14px; font-size: 22px; }
+      .section-title { margin-bottom: 14px; font-size: 22px; break-after: avoid; }
       .facts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
-      .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
+      .facts div { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; break-inside: avoid; }
+      .facts div.wide { grid-column: 1 / -1; }
       dt { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #6d7479; }
       dd { margin: 6px 0 0; font-size: 17px; }
       .draft-stamp { margin-top: 20px; border: 2px solid #9a3412; border-radius: 18px; padding: 16px 18px; background: #fde2d2; color: #9a3412; font: 700 18px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.06em; }
       .warning-box { margin-top: 18px; border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
       .warning-box ul { margin: 8px 0 0; padding-left: 20px; }
-      .outstanding { border: 1px dashed rgba(150, 92, 42, 0.5); border-radius: 18px; padding: 14px 16px; background: #fff8ec; color: #6d7479; font-style: italic; }
+      .outstanding { border: 1px dashed rgba(150, 92, 42, 0.5); border-radius: 18px; padding: 14px 16px; background: #fff8ec; color: #6d7479; font-style: italic; break-inside: avoid; }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
       tr { break-inside: avoid; }
       th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(19, 34, 43, 0.12); vertical-align: top; }
@@ -225,20 +262,26 @@ const DOCUMENT_STYLES = `
       .empty { color: #6d7479; font-style: italic; }
       .section-body p { line-height: 1.65; }
       .appendix { margin-top: 20px; border-top: 1px solid rgba(19, 34, 43, 0.12); padding-top: 16px; }
-      .appendix h3 { font-size: 18px; margin-bottom: 8px; }
+      .appendix h3 { font-size: 18px; margin-bottom: 8px; break-after: avoid; }
       .appendix figure { margin: 12px 0; }
       .appendix table { table-layout: auto; font-size: 12px; }
       .appendix th, .appendix td { padding: 6px 8px; overflow-wrap: normal; word-break: normal; }
       .appendix th { font-size: 12px; letter-spacing: 0; text-transform: none; }
       .appendix-source { font-size: 13px; color: #3c4a52; overflow-wrap: anywhere; }
       .appendix li, #safety-seed-provenance li { overflow-wrap: anywhere; }
-      .appendix-facts { display: grid; grid-template-columns: minmax(130px, 28%) 1fr; gap: 6px 14px; margin: 12px 0; }
-      .appendix-facts dt, .appendix-facts dd { margin: 0; }
-      .appendix-facts > div { min-width: 0; }
-      .appendix-facts dd { font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+      .appendix-facts { margin: 12px 0; }
+      .appendix-facts > div { break-inside: avoid; padding: 4px 0; border-bottom: 1px solid rgba(19, 34, 43, 0.08); font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+      .appendix-facts dt, .appendix-facts dd { display: inline; margin: 0; font: inherit; }
+      .appendix-facts dt { font-weight: 700; letter-spacing: 0; text-transform: none; color: #13222b; }
+      #evidence-appendices > p, .appendix-source, .appendix li, .cover-lines p { break-inside: avoid; }
+      .cover-lines { margin-top: 16px; break-inside: avoid; }
+      .attached-lines { margin-top: 14px; }
+      .attached-lines p { margin: 4px 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; break-inside: avoid; }
+      .cover-lines p { max-width: none; margin: 4px 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
+      .whole-id { display: inline-block; max-width: 100%; }
       .table-scroll { overflow-x: auto; }
-      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } .appendix-facts { grid-template-columns: 1fr; } }
+      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 30px; } }
       @media print { main, main > :last-child { padding-bottom: 0; } main > :last-child :last-child { margin-bottom: 0; } }`;
 
 /**
@@ -281,8 +324,19 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
 
   const applicantFacts = data.applicant
     ? `
-      <div><dt>Project</dt><dd>${esc(applicantNameLabel(data.applicant.project))}</dd></div>
-      <div><dt>Workspace</dt><dd>${esc(applicantNameLabel(data.applicant.workspace))}</dd></div>`
+      <div class="wide"><dt>Project</dt><dd>${esc(applicantNameLabel(data.applicant.project))}</dd></div>
+      <div class="wide"><dt>Workspace</dt><dd>${esc(applicantNameLabel(data.applicant.workspace))}</dd></div>`
+    : "";
+  // The Program box names an OpenPlan program record. With none linked it is
+  // left out: "Program: Not linked" under a title that names the funding
+  // program read as a contradiction (KI-2026-11-16-035).
+  const programFact = data.programTitle
+    ? `
+      <div><dt>Program</dt><dd>${esc(data.programTitle)}</dd></div>`
+    : "";
+  const coverLines = data.coverLines?.length
+    ? `
+    <div class="cover-lines">${data.coverLines.map((line) => `<p>${esc(line)}</p>`).join("")}</div>`
     : "";
   const coverFacts = isProposal
     ? `${applicantFacts}
@@ -292,8 +346,7 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
       <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
       <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt, calendar))}</dd></div>`
     : `${applicantFacts}
-      <div><dt>Funder / agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
-      <div><dt>Program</dt><dd>${esc(data.programTitle ?? "Not linked")}</dd></div>
+      <div><dt>Funder / agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>${programFact}
       <div><dt>Expected award</dt><dd>${esc(formatAmount(opportunity.expected_award_amount))}</dd></div>
       <div><dt>Closes</dt><dd>${esc(formatDateTime(opportunity.closes_at, calendar))}</dd></div>
       <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
@@ -307,10 +360,15 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
         (isProposal
           ? "Assembled from operator-approved section texts for this solicitation response."
           : "Assembled from operator-approved section texts and the application attachment checklist.")
-    )}</p>
+    )}</p>${coverLines}
+    ${
+      // Above the boxes: the cover lines and full-width boxes had pushed the
+      // stamp to the second page, and a reader must meet DRAFT on the first
+      // (review 76).
+      draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")
+    }
     <div class="facts" style="margin-top: 18px;">${coverFacts}
     </div>
-    ${draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")}
     ${
       caveats.length > 0
         ? `<div class="warning-box">
@@ -348,7 +406,24 @@ function sectionMarkup(entry: GrantApplicationExportSection): string {
   </section>`;
 }
 
-function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[], ifApplicableKeys?: ReadonlySet<string>): string {
+/**
+ * What answers a checklist item: the attached Knowledge Base document by its
+ * title, so a reviewer can tell which file answers which requirement
+ * (KI-2026-11-16-034), or the generated report artifact.
+ */
+function attachmentFulfillment(attachment: ApplicationAttachmentRow, documentTitles?: ReadonlyMap<string, string>): string {
+  if (attachment.kb_document_id) {
+    const title = documentTitles?.get(attachment.kb_document_id)?.trim();
+    return title ? `Knowledge Base document: ${title}` : "Knowledge Base document (its title could not be read)";
+  }
+  return attachment.report_artifact_id ? "Generated report artifact" : "Nothing attached";
+}
+
+function attachmentsMarkup(
+  attachments: readonly ApplicationAttachmentRow[],
+  ifApplicableKeys?: ReadonlySet<string>,
+  documentTitles?: ReadonlyMap<string, string>
+): string {
   if (attachments.length === 0) {
     return `<section>
       <h2 class="section-title">Attachment checklist</h2>
@@ -365,23 +440,34 @@ function attachmentsMarkup(attachments: readonly ApplicationAttachmentRow[], ifA
       <tbody>
         ${attachments
           .map((attachment) => {
-            const fulfillment = attachment.kb_document_id
-              ? "Knowledge Base document"
-              : attachment.report_artifact_id
-                ? "Generated report artifact"
-                : "—";
+            const fulfillment = attachmentFulfillment(attachment, documentTitles);
             return `<tr>
           <td>${esc(attachment.title)}</td>
           <td>${attachmentRequirementLabel(attachment, ifApplicableKeys)}</td>
           <td>${esc(ATTACHMENT_STATUS_LABELS[attachment.status] ?? attachment.status)}</td>
           <td>${esc(fulfillment)}</td>
-          <td>${esc(attachment.note ?? "—")}</td>
+          <td>${esc(attachment.note?.trim() || "None")}</td>
         </tr>`;
           })
           .join("\n        ")}
       </tbody>
-    </table></div>
+    </table></div>${attachedLinesMarkup(attachments, documentTitles)}
   </section>`;
+}
+
+/**
+ * One line under the checklist for each item with something attached:
+ * "Attached for <item>: <what is attached>". In the table a document's title
+ * wraps inside its cell beside the other columns, so a text search of the PDF
+ * does not find the title as one string. Here it is.
+ */
+function attachedLinesMarkup(attachments: readonly ApplicationAttachmentRow[], documentTitles?: ReadonlyMap<string, string>): string {
+  const attached = attachments.filter((attachment) => attachment.kb_document_id || attachment.report_artifact_id);
+  if (attached.length === 0) return "";
+  return `
+    <div class="attached-lines">${attached
+      .map((attachment) => `<p>${esc(`Attached for ${attachment.title}: ${attachmentFulfillment(attachment, documentTitles)}`)}</p>`)
+      .join("")}</div>`;
 }
 
 function provenanceMarkup(sections: readonly GrantApplicationExportSection[], calendar: WorkspaceCalendar): string {
@@ -397,18 +483,21 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[], ca
         ${sections
           .map((entry) => {
             const { section, provenance } = entry;
+            // An empty cell says why it is empty, in words.
+            const fromAiDraft = provenance.origin === "ai_draft_unedited" || provenance.origin === "ai_draft_edited";
+            const isFinal = section.status === "final";
             const grounding =
               provenance.groundedSentenceCount !== null && provenance.totalSentenceCount !== null
                 ? `${provenance.groundedSentenceCount} of ${provenance.totalSentenceCount} sentences grounded`
-                : "—";
+                : fromAiDraft ? "Not recorded" : "Not applicable";
             return `<tr>
           <td>${esc(section.title)}</td>
           <td>${esc(SECTION_STATUS_LABELS[section.status] ?? section.status)}</td>
           <td>${esc(ORIGIN_LABELS[provenance.origin])}</td>
-          <td>${esc(provenance.model ?? "—")}</td>
+          <td>${esc(provenance.model ?? (fromAiDraft ? "Not recorded" : "No model"))}</td>
           <td>${esc(grounding)}</td>
-          <td>${esc(provenance.finalizedBy ?? "—")}</td>
-          <td>${esc(provenance.finalizedAt ? formatDateTime(provenance.finalizedAt, calendar) : "—")}</td>
+          <td>${esc(provenance.finalizedBy ?? (isFinal ? "Not recorded" : "Not finalized"))}</td>
+          <td>${esc(provenance.finalizedAt ? formatDateTime(provenance.finalizedAt, calendar) : isFinal ? "Not recorded" : "Not finalized")}</td>
         </tr>`;
           })
           .join("\n        ")}
@@ -439,7 +528,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
     <main>
       ${coverMarkup({ ...data, sections: orderedSections }, draftStamps)}
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
-      ${attachmentsMarkup(data.attachments, data.ifApplicableAttachmentKeys)}
+      ${attachmentsMarkup(data.attachments, data.ifApplicableAttachmentKeys, data.attachmentDocumentTitles)}
       ${evidenceAppendicesMarkup(data.evidenceAppendices, data.evidenceAppendixFrame ?? SS4A_APPENDIX_FRAME)}
       ${provenanceMarkup(orderedSections, data.calendar ?? UTC_CALENDAR)}
       ${safetySeedHistoryMarkup(data.safetySeedHistory ?? orderedSections.flatMap((entry) => entry.provenance.safetySeed ? [entry.provenance.safetySeed] : []))}

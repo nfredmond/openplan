@@ -55,6 +55,12 @@ export type EvidenceAppendix<K extends string = string> = {
   /** Why it is missing, unreadable or omitted, or what part of an included appendix is absent. */
   statusNote: string | null;
   source: EvidenceAppendixSource | null;
+  /**
+   * Each fact prints as one line of running text, "Label: value", so a text
+   * search of the PDF finds the label and its value as one string. A fact
+   * with an empty label prints its value alone, for a fact that is already a
+   * whole sentence.
+   */
   facts: Array<{ label: string; value: string }>;
   table: { headers: string[]; rows: string[][] } | null;
   figureSvg: string | null;
@@ -455,12 +461,26 @@ function dateText(value: string | null): string {
   return formatEvidenceTimestamp(value);
 }
 
+/** A word that holds a record id (a UUID) or a content hash, with whatever is joined to it ("/projects/<id>", "<id>."). */
+const WORD_WITH_ID = /(\S*(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{40,})\S*)/i;
+
+/**
+ * Running text with each record id and content hash kept whole. A line may
+ * break at a hyphen, so an id in a sentence broke across two lines and a
+ * copied id came out in two pieces (KI-2026-11-16-038). The word that holds
+ * the id moves to the next line as one piece; the text itself is unchanged.
+ */
+function runningText(text: string): string {
+  return text.split(WORD_WITH_ID).map((part, index) =>
+    index % 2 === 1 ? `<span class="whole-id">${esc(part)}</span>` : esc(part)).join("");
+}
+
 function sourceMarkup(source: EvidenceAppendixSource): string {
-  const link = source.link ? ` <a href="${esc(source.link)}">${esc(source.link)}</a>` : "";
-  return `<p class="appendix-source"><strong>Source:</strong> ${esc(source.record)} ${esc(source.id)}.${link}
+  const link = source.link ? ` <a href="${esc(source.link)}">${runningText(source.link)}</a>` : "";
+  return `<p class="appendix-source"><strong>Source:</strong> ${esc(source.record)} ${runningText(`${source.id}.`)}${link}
       ${esc(source.dateLabel)}: ${esc(dateText(source.date))}.
-      ${source.hash ? `${esc(source.hashLabel)}: ${esc(source.hash)}.` : `${esc(source.hashLabel)}.`}
-      ${source.details.map(esc).join(" ")}</p>`;
+      ${source.hash ? `${esc(source.hashLabel)}: ${runningText(`${source.hash}.`)}` : `${esc(source.hashLabel)}.`}
+      ${source.details.map(runningText).join(" ")}</p>`;
 }
 
 /**
@@ -478,8 +498,10 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
     return `<article id="appendix-${esc(appendix.key)}" class="appendix">${heading}
       <div class="outstanding">${esc(STATUS_LABELS[appendix.status])}. ${esc(appendix.statusNote ?? "")}</div></article>`;
   }
+  // The colon is in the markup, not the stylesheet, so the built-in PDF writer,
+  // which reads the text and no styles, prints the same "Label: value" line.
   const facts = appendix.facts.length > 0
-    ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div><dt>${esc(fact.label)}</dt><dd>${esc(fact.value)}</dd></div>`).join("")}</dl>`
+    ? `<dl class="appendix-facts">${appendix.facts.map((fact) => `<div>${fact.label ? `<dt>${esc(fact.label)}:</dt> ` : ""}<dd>${runningText(fact.value)}</dd></div>`).join("")}</dl>`
     : "";
   const table = appendix.table
     ? `<div class="table-scroll"><table><thead><tr>${appendix.table.headers.map((header) => `<th>${cellText(header)}</th>`).join("")}</tr></thead>
@@ -492,11 +514,18 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
       ${appendix.statusNote ? `<div class="outstanding">${esc(appendix.statusNote)}</div>` : ""}
       ${appendix.lead ? `<p class="appendix-lead">${esc(appendix.lead)}</p>` : ""}
       ${figure}${facts}${table}
-      ${appendix.notes.length > 0 ? `<ul>${appendix.notes.map((note) => `<li>${esc(note)}</li>`).join("")}</ul>` : ""}
+      ${appendix.notes.length > 0 ? `<ul>${appendix.notes.map((note) => `<li>${runningText(note)}</li>`).join("")}</ul>` : ""}
     </article>`;
 }
 
-/** The evidence index and every appendix, as one document section. */
+/**
+ * The evidence index and every appendix, as one document section.
+ *
+ * The index names each source record by its kind only and says whether a
+ * content hash is stored. A record's id and its hash print whole on the
+ * source line under its appendix heading; in the index's narrow columns each
+ * wrapped mid-string, so a copied id or hash broke (KI-2026-11-16-038).
+ */
 export function evidenceAppendicesMarkup(
   appendices: readonly EvidenceAppendix[] | undefined,
   frame: EvidenceAppendixFrame
@@ -511,9 +540,9 @@ export function evidenceAppendicesMarkup(
       <tbody>${appendices.map((appendix) => `<tr>
         <td>${esc(appendix.letter)}. ${esc(appendix.title)}</td>
         <td>${esc(STATUS_LABELS[appendix.status])}${appendix.key === "hin_map" && appendix.status === "included" && !appendix.figureSvg ? "; map not drawn" : ""}</td>
-        <td>${cellText(appendix.source ? `${appendix.source.record} ${appendix.source.id}` : appendix.statusNote ?? "")}</td>
+        <td>${cellText(appendix.source ? appendix.source.record : appendix.statusNote ?? "")}</td>
         <td>${cellText(appendix.source ? dateText(appendix.source.date) : "Not recorded")}</td>
-        <td>${cellText(appendix.source?.hash ?? "None stored")}</td>
+        <td>${appendix.source?.hash ? "Stored, printed under the appendix" : "None stored"}</td>
       </tr>`).join("")}</tbody>
     </table></div>
     ${appendices.map(appendixMarkup).join("\n    ")}

@@ -109,14 +109,14 @@ describe("loadApplicationApplicant", () => {
 describe("the cover", () => {
   it("prints the project and the workspace by name", () => {
     const html = cover(SIERRA);
-    expect(html).toContain("<div><dt>Project</dt><dd>Sierra County safety demonstration</dd></div>");
-    expect(html).toContain("<div><dt>Workspace</dt><dd>OpenPlan proof run, Sierra County demonstration</dd></div>");
+    expect(html).toContain("<div class=\"wide\"><dt>Project</dt><dd>Sierra County safety demonstration</dd></div>");
+    expect(html).toContain("<div class=\"wide\"><dt>Workspace</dt><dd>OpenPlan proof run, Sierra County demonstration</dd></div>");
   });
 
   it("states an absent project and an unread workspace in words", () => {
     const html = cover({ project: { status: "not_linked" }, workspace: { status: "unread" } });
-    expect(html).toContain("<div><dt>Project</dt><dd>No project linked</dd></div>");
-    expect(html).toContain("<div><dt>Workspace</dt><dd>Could not be read</dd></div>");
+    expect(html).toContain("<div class=\"wide\"><dt>Project</dt><dd>No project linked</dd></div>");
+    expect(html).toContain("<div class=\"wide\"><dt>Workspace</dt><dd>Could not be read</dd></div>");
   });
 
   it("prints neither for a caller that passes no applicant", () => {

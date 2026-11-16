@@ -265,12 +265,16 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export —
 
     expect(response.status).toBe(201);
     const html = renderedCoverHtml();
-    expect(html).toContain("Active Transportation Program");
+    expect(html).toContain("<div><dt>Program</dt><dd>Active Transportation Program");
     expect(html).not.toContain("Not linked");
     expectCompleteSafetyHistoryRead();
   });
 
-  it("still prints 'Not linked' for an opportunity that carries no program at all", async () => {
+  // "Program: Not linked" under a title that names the funding program read as
+  // a contradiction (KI-2026-11-16-035). The box names an OpenPlan program
+  // record, so with none linked it is left out. A failed read still refuses
+  // the export above, so a missing box never stands for a read that failed.
+  it("leaves the Program box out for an opportunity that carries no program at all", async () => {
     loadFundingOpportunityAccessMock.mockResolvedValue({
       supabase: null,
       opportunity: {
@@ -294,7 +298,10 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export —
     const response = await exportApplication(postRequest(), routeContext);
 
     expect(response.status).toBe(201);
-    expect(renderedCoverHtml()).toContain("Not linked");
+    const html = renderedCoverHtml();
+    expect(html).toContain("<dt>Funder / agency</dt><dd>State transportation commission</dd>");
+    expect(html).not.toContain("<dt>Program</dt>");
+    expect(html).not.toContain("Not linked");
     expectCompleteSafetyHistoryRead();
   });
 });

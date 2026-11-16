@@ -5,7 +5,7 @@
  * never names a program itself.
  */
 
-import { ATP_APPENDIX_FRAME, buildAtpEvidenceAppendices } from "@/lib/grants/atp-evidence-appendices";
+import { ATP_APPENDIX_FRAME, atpCoverLines, buildAtpEvidenceAppendices } from "@/lib/grants/atp-evidence-appendices";
 import { loadAtpEvidenceRecords } from "@/lib/grants/atp-evidence-loader";
 import type { EvidenceAppendix, EvidenceAppendixFrame } from "@/lib/grants/evidence-appendices";
 import type { SafetySeedProvenance } from "@/lib/grants/safety-seed-origin";
@@ -33,9 +33,11 @@ export type AssembledEvidenceAppendices = {
    * name is blank; undefined when the read did not answer.
    */
   projectName: string | null | undefined;
+  /** Facts the program prints on the cover, each on a line of its own. Absent when the program states none. */
+  coverLines?: string[];
 };
 
-type ProgramAssembler = (supabase: unknown, input: AssemblyInput) => Promise<{ appendices: EvidenceAppendix[]; projectName: string | null | undefined }>;
+type ProgramAssembler = (supabase: unknown, input: AssemblyInput) => Promise<Omit<AssembledEvidenceAppendices, "frame">>;
 
 const ASSEMBLERS: Record<string, { frame: EvidenceAppendixFrame; assemble: ProgramAssembler }> = {
   ss4a: {
@@ -55,7 +57,7 @@ const ASSEMBLERS: Record<string, { frame: EvidenceAppendixFrame; assemble: Progr
       const projectName = records.project.status === "ready"
         ? (records.project.project.name?.trim() || null)
         : records.project.status === "no_project" ? null : undefined;
-      return { appendices: buildAtpEvidenceAppendices(records, input.selected), projectName };
+      return { appendices: buildAtpEvidenceAppendices(records, input.selected), projectName, coverLines: atpCoverLines(records.project) };
     },
   },
 };

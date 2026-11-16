@@ -177,12 +177,15 @@ export function FundingOpportunityApplicationWorkspace({
   opportunityId,
   pursuitKind = "grant",
   linkedProjectId = null,
+  trackedCatalogKey = null,
 }: {
   opportunityId: string;
   /** Drives the per-kind copy; the server decides seeding independently. */
   pursuitKind?: "grant" | "proposal";
   /** The opportunity's linked project. A change reloads the ATP scores. */
   linkedProjectId?: string | null;
+  /** The catalog program the opportunity was tracked from, if known. The template picker starts on it. */
+  trackedCatalogKey?: string | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -201,7 +204,7 @@ export function FundingOpportunityApplicationWorkspace({
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const [initCatalogKey, setInitCatalogKey] = useState("");
+  const [initCatalogKey, setInitCatalogKey] = useState(trackedCatalogKey ?? "");
   const [isInitializing, setIsInitializing] = useState(false);
 
   const [newSectionTitle, setNewSectionTitle] = useState("");

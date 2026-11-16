@@ -121,7 +121,8 @@ describe("GET /api/funding-opportunities/[id]/application/atp-packet", () => {
       { method: "eq", args: ["opportunity_id", OPPORTUNITY_ID] },
     ]);
     expect(calls.projects).toEqual([
-      { method: "select", args: ["id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year"] },
+      // The place columns are read without the boundary geometry.
+      { method: "select", args: ["id, name, summary, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, place_source, place_kind, place_ref, place_label"] },
       { method: "eq", args: ["id", PROJECT_ID] },
       { method: "eq", args: ["workspace_id", WORKSPACE_ID] },
     ]);
@@ -234,7 +235,7 @@ describe("GET /api/funding-opportunities/[id]/application/atp-packet", () => {
     );
     expect(text).not.toContain("Estimated programmed cost: _to be provided");
     expect(text).toContain(
-      "- Safety score source: California Crash Reporting System (CCRS), crash years 2022–2025, retrieved 2026-11-02."
+      "- Safety score source: California Crash Reporting System (CCRS), crash years 2022–2025, retrieved Nov 2, 2026."
     );
   });
 
@@ -249,7 +250,14 @@ describe("GET /api/funding-opportunities/[id]/application/atp-packet", () => {
 
     expect(text).toContain("- Safety score source: not recorded in the analysis run.");
     expect(text).toContain("Estimated programmed cost: _to be provided by lead agency");
-    expect(text).toContain("Project description to be provided by lead agency.");
+    // A blank summary is a fact about the project record, said as one.
+    expect(text).toContain("**Project description**\n\nNot recorded in OpenPlan. The project has no summary.");
+    expect(text).not.toContain("Project description to be provided by lead agency.");
+    // No record holds an applicant or project limits; the packet says so and names the study place as that.
+    expect(text).toContain("- Lead agency: Applicant not entered in OpenPlan");
+    expect(text).toContain("- Location: Study place not recorded in OpenPlan");
+    expect(text).not.toContain("Lead agency to be provided");
+    expect(text).not.toContain("Location to be provided");
   });
 
   it("denies a caller without read access", async () => {
