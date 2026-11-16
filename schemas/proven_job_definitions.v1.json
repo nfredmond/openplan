@@ -308,6 +308,285 @@
         "ai-and-approval-flags-set-by-the-journey": "The AI flags, the staff review's approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that.",
         "campaign-page-answers-200-with-not-found-screen": "Another workspace's campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The campaign read, the campaign export, the rejected comment's history and both review downloads were refused."
       }
+    },
+    {
+      "id": "california-atp-application-in-three-places",
+      "decidedIn": "docs/reviews/product-direction/proven-jobs/2026-11-16-third-proven-job.md",
+      "journeys": [
+        { "role": "county", "placeKind": "county", "stateFips": "06" },
+        { "role": "city", "placeKind": "city", "stateFips": "06" },
+        {
+          "role": "tribal-area",
+          "placeKind": "aiannh",
+          "statesExactly": ["06"],
+          "statesNote": "The Census states the place search answer listed for the tribal area, as the journey read them. The list must be exactly California: OpenPlan reads a state's crash file inside a tribal area only when the Bureau lists the area in that one state. The Gazetteer table of tribal areas has no state column, so the checker cannot read this from a committed file. It is the journey's statement, and the crash appendix naming California's file is the second sign."
+        }
+      ],
+      "geoidPatterns": {
+        "source": "openplan/src/lib/api/place-geographies.ts (PLACE_GEOID_PATTERNS); the kind this job adds to the shared list",
+        "city": "^\\d{7}$"
+      },
+      "placeStateFromGeoid": {
+        "note": "A county or place id begins with its state's two-digit FIPS code.",
+        "kinds": ["county", "city"]
+      },
+      "journeyFields": [
+        { "field": "mode", "equals": "proof", "refusal": "ran in {found} mode; only a proof run is proof" },
+        { "field": "harness.clean", "equals": true, "refusal": "names no clean harness checkout (harness.clean is {found}); a proof runs from a checkout with no uncommitted change" },
+        { "field": "confirmationMethod", "equals": "email_link", "refusal": "confirmed its account by {found}; this job's journey confirms only by the emailed link ({expected})" },
+        { "field": "application.catalogKey", "equals": "atp", "refusal": "seeded its application from catalog key {found}, not {expected}" },
+        { "field": "application.templateKey", "equals": "atp-2027", "refusal": "application is identified as template {found}, not {expected}, the template that follows the 2027 application" },
+        { "field": "application.aiDraftingUsed", "equals": false, "refusal": "used AI drafting; every section of this job is typed demonstration text" },
+        { "field": "crashes.sourceId", "equals": "ccrs", "refusal": "crashes come from {found}, not {expected}, California's crash file" },
+        { "field": "crashes.storedCount", "atLeast": 1, "refusal": "stored {found} crashes; every journey of this job stores at least {expected}" }
+      ],
+      "sameAcrossJourneys": [
+        { "field": "harness.commit", "refusal": "the {role} journey ran from harness checkout {found}, but the {firstRole} journey ran from {expected}; a proof's journeys run from one checkout" }
+      ],
+      "health": {
+        "note": "Each journey's health readbacks: status ok, the start readback before the account was created, the account created before the application was exported (endAfter names the journey field holding that time), the end readback after the export, and the same version and migrations at the end as at the start.",
+        "status": "ok",
+        "endAfter": "application.exportedAt"
+      },
+      "pdfs": ["atp-application"],
+      "distinctPdfs": true,
+      "items": {
+        "appendix-a": "pdftotext",
+        "appendix-b": "pdftotext",
+        "appendix-c": "pdftotext",
+        "appendix-d": "pdftotext",
+        "appendix-e": "pdftotext",
+        "appendix-f": "pdftotext"
+      },
+      "itemHeadings": {
+        "source": "openplan/src/lib/grants/evidence-appendix-keys.ts (ATP_APPENDIX_TITLES), printed by application-html.ts; each is a line of its own",
+        "atp-application": {
+          "appendix-a": "Appendix A. ATP screening packet",
+          "appendix-b": "Appendix B. Crash summary",
+          "appendix-c": "Appendix C. Cost estimate",
+          "appendix-d": "Appendix D. Engagement summary",
+          "appendix-e": "Appendix E. Disadvantaged-community and equity inputs",
+          "appendix-f": "Appendix F. Benefit-cost summary"
+        }
+      },
+      "application": {
+        "note": "What this job's exported application PDF must state, read by the checker with Poppler and the shared matcher (scripts/lib/pdf-text-match.mjs). The PDF is read as one run of lines: every page's lines in order, with the page footer lines (pageFooter) left out, so a section or an appendix that crosses a page is still one passage. The cover is everything before the first section title. The sections end at the sections.end heading. Each appendix runs from its heading to the next one, and the last to the appendices.end heading. {label}, {geoid} and {kind} take the journey's place (kind through kindWords); {count} takes a number with thousands separators; {years}, {projectName} and {workspaceName} take the journey's own fields; {title} takes a checklist row's title.",
+        "pdf": "atp-application",
+        "pageFooter": "^\\s*Active Transportation Program \\(ATP\\) · Page \\d+ of \\d+\\s*$",
+        "demonstrationLabel": {
+          "note": "The same words the engagement job's journey uses (qa-harness/journey-campaign-lib.js, DEMONSTRATION_LABEL). The project name must hold them, and every section's text must begin with them.",
+          "text": "Demonstration by an automated OpenPlan proof run"
+        },
+        "cover": {
+          "note": "Each phrase must be found before the first section title. The project name and the workspace name are planner-typed; the place line and the applicant line are not.",
+          "phrases": ["{projectName}", "{workspaceName}"]
+        },
+        "placeLine": {
+          "source": "openplan/src/lib/grants/atp-packet.ts (atpStudyPlaceLine)",
+          "note": "The line must be on the cover and in Appendix A, and every line of the PDF that holds the label must hold this line. A PDF that prints another place after the label anywhere, or the notRecorded line, is refused, so a line typed into a project name or a section cannot stand in for the one OpenPlan prints from the project's recorded study place.",
+          "label": "Study place:",
+          "template": "Study place: {label} ({kind}, GEOID {geoid})",
+          "kindWords": { "county": "county", "city": "city", "aiannh": "Census tribal area" },
+          "notRecorded": "Study place not recorded in OpenPlan"
+        },
+        "applicant": {
+          "note": "KI-2026-11-16-080: nothing in OpenPlan can hold an applicant's name yet, so the line is a fixed sentence, required on the cover and in Appendix A. No line may hold one of the labels together with the workspace's name.",
+          "line": "Applicant not entered in OpenPlan",
+          "labels": ["Applicant", "Lead agency", "Implementing agency"]
+        },
+        "sections": {
+          "source": "openplan/src/lib/grants/programs/us-ca.ts (atp2027Sections), the template with applicationTemplateKey atp-2027",
+          "note": "Each title is a heading of its own, on one line or wrapped over up to maxTitleLines lines that hold nothing else, found exactly once before the end heading and in this order. A section's text runs from its title to the next. No section may print the notFinal words. Every section's text begins with the demonstration label. A section whose disposition is fixed-note also carries the fixedNote sentence. The record states each section's key and disposition, and they must be the ones given here.",
+          "end": "Attachment checklist",
+          "maxTitleLines": 4,
+          "notFinal": "Not finalized: this section is still in",
+          "fixedNote": "The application asks no question here.",
+          "list": [
+            { "key": "atp-2027-part-a-project-information", "title": "Part A1 to A4: Applicant and project information", "disposition": "text" },
+            { "key": "atp-2027-part-a5-project-funding", "title": "Part A5: Project funding", "disposition": "text" },
+            { "key": "atp-2027-part-a6-screening-criteria", "title": "Part A6: Screening criteria", "disposition": "text" },
+            { "key": "atp-2027-b1-disadvantaged-communities", "title": "Part B, Question 1: Disadvantaged Communities (DAC)", "disposition": "text" },
+            { "key": "atp-2027-b2-walking-biking-rolling", "title": "Part B, Question 2: Potential to Increase Walking, Biking and Rolling", "disposition": "text" },
+            { "key": "atp-2027-b3-fatalities-and-injuries", "title": "Part B, Question 3: Potential for Reducing the Number and/or Rate of Active Transportation User Fatalities and Injuries", "disposition": "text" },
+            { "key": "atp-2027-b4-public-participation-planning", "title": "Part B, Question 4: Public Participation and Planning", "disposition": "text" },
+            { "key": "atp-2027-b5-scope-plan-layout-consistency", "title": "Part B, Question 5: Scope and Plan Layout Consistency", "disposition": "fixed-note" },
+            { "key": "atp-2027-b6-conservation-corps", "title": "Part B, Question 6: Use of California Conservation Corps (CCC) or Certified Local Community Conservation Corps (CALCC)", "disposition": "text" },
+            { "key": "atp-2027-b7-past-performance", "title": "Part B, Question 7: Performance on Past ATP Projects", "disposition": "fixed-note" }
+          ]
+        },
+        "rows": {
+          "source": "openplan/src/lib/grants/programs/us-ca.ts (atp2027Attachments)",
+          "note": "The checklist rows the template seeds, in order. The record gives each a disposition. An agent cannot honestly produce a signature page, an engineer's checklist or any other attachment, so attached is refused (refusedDispositions). not-applicable is allowed only for a row whose requirement is listed in notApplicableFor, and needs a reason of at least minReasonLength characters. Every other row is outstanding. The count of outstanding rows whose requirement is in countedRequirements is the number the DRAFT stamp must state. The PDF prints an attachedLine for a row only when a document is attached, so none may be found.",
+          "refusedDispositions": ["attached"],
+          "notApplicableFor": ["if-applicable", "optional"],
+          "minReasonLength": 20,
+          "countedRequirements": ["required", "if-applicable"],
+          "attachedLine": "Attached for {title}:",
+          "list": [
+            { "key": "partnering-agency-letter-of-intent", "title": "Letter of Intent with partnering agency", "requirement": "if-applicable" },
+            { "key": "safe-routes-school-map-and-statements", "title": "School enrollment area map and statements of support (Safe Routes to School projects only)", "requirement": "if-applicable" },
+            { "key": "state-highway-project-impact-assessment-form", "title": "State Highway Project Impact Assessment Form (projects on Caltrans right of way only)", "requirement": "if-applicable" },
+            { "key": "railroad-and-agency-letters", "title": "Letters of support or neutrality from railroads and other governmental agencies", "requirement": "if-applicable" },
+            { "key": "project-programming-request", "title": "Project Programming Request (PPR)", "requirement": "required" },
+            { "key": "ceqa-nepa-signature-pages", "title": "CEQA and NEPA signature pages (applications showing PA&ED complete)", "requirement": "if-applicable" },
+            { "key": "right-of-way-certification", "title": "Caltrans-approved Right of Way Certification (applications showing right of way complete)", "requirement": "if-applicable" },
+            { "key": "regional-transportation-plan-pages", "title": "Regional Transportation Plan pages showing the project is consistent", "requirement": "required" },
+            { "key": "caltrans-need-for-atp-funds", "title": "Caltrans-implemented projects: need to use ATP funds", "requirement": "if-applicable" },
+            { "key": "caltrans-local-coordination", "title": "Caltrans-implemented projects: coordination with local and regional agencies", "requirement": "if-applicable" },
+            { "key": "disadvantaged-community-map", "title": "Disadvantaged community map", "requirement": "if-applicable" },
+            { "key": "disadvantaged-community-identifier-data", "title": "Disadvantaged community identifier data", "requirement": "if-applicable" },
+            { "key": "gap-closure-and-route-maps", "title": "Maps of gap closures, new routes, barriers to mobility and other improvements", "requirement": "required" },
+            { "key": "collision-data", "title": "Bicycle and pedestrian collision data or other safety data", "requirement": "required" },
+            { "key": "public-participation-documentation", "title": "Documentation of public participation and planning", "requirement": "required" },
+            { "key": "corps-consultation-responses", "title": "Responses from the CCC, CALCC and Tribal Corps (if applicable)", "requirement": "required" },
+            { "key": "signature-page", "title": "Signature Page", "requirement": "required" },
+            { "key": "engineers-checklist", "title": "Engineer's Checklist", "requirement": "required" },
+            { "key": "project-location-map", "title": "Project Location Map", "requirement": "required" },
+            { "key": "project-layouts-and-plans", "title": "Project Layouts/Plans with Existing and Proposed Conditions", "requirement": "required" },
+            { "key": "photos-of-existing-conditions", "title": "Photos of Existing Conditions", "requirement": "required" },
+            { "key": "project-estimate", "title": "Project Estimate", "requirement": "required" },
+            { "key": "non-infrastructure-work-plan", "title": "Non-Infrastructure Work Plan (Exhibit 25-R)", "requirement": "if-applicable" },
+            { "key": "letters-of-support", "title": "Letters of Support", "requirement": "required" },
+            { "key": "state-only-funds-request", "title": "State-Only Funds Request (Exhibit 25-F)", "requirement": "if-applicable" },
+            { "key": "additional-attachments", "title": "Additional attachments", "requirement": "optional" }
+          ]
+        },
+        "draftStamp": {
+          "source": "openplan/src/lib/grants/application-draft-stamps.ts (applicationDraftStamps)",
+          "note": "The stamp is required, not refused (the lead's rule 5): it shows the product says what is missing. The record's PDF entry must say draftStamp true, the stamp must be on the cover with the count of outstanding rows the record's dispositions give, at least minOutstanding, and every line of the PDF that holds the word DRAFT must be that stamp. A stamp with another count, a stamp for unverified items in section text, or no stamp refuses the record.",
+          "required": true,
+          "phrase": "DRAFT: {count} required attachment(s) outstanding",
+          "minOutstanding": 1
+        },
+        "appendices": {
+          "note": "Each heading (itemHeadings) is found exactly once as a line of its own after the sections, in order. An appendix with facts must carry every one of them between its heading and the next. Any other appendix must carry its includedFact or the missing words: a heading with neither under it is refused. countField names the journey field whose number fills {count} in that appendix. roleFacts are required in the named journey's PDF, in the named appendix, and refused anywhere in another journey's.",
+          "end": "Provenance appendix",
+          "missing": "Missing.",
+          "list": [
+            { "item": "appendix-a", "facts": ["Program: Active Transportation Program (ATP)", "Administering agency: California Transportation Commission / Caltrans", "Project: {projectName}", "Study place: {label} ({kind}, GEOID {geoid})", "Applicant not entered in OpenPlan", "OpenPlan does not decide ATP eligibility."] },
+            { "item": "appendix-b", "facts": ["Source: California Crash Reporting System (CCRS)", "Years requested: {years}", "Crashes reported: {count}"] },
+            { "item": "appendix-c", "includedFact": "Planning-level estimate:" },
+            { "item": "appendix-d", "includedFact": "Source: Engagement campaign" },
+            { "item": "appendix-e", "facts": ["Guidelines criterion, Median Household Income: Not recorded in OpenPlan", "Guidelines criterion, CalEnviroScreen: Not recorded in OpenPlan", "Guidelines criterion, National School Lunch Program: Not recorded in OpenPlan", "Guidelines criterion, Healthy Places Index: Not recorded in OpenPlan", "Guidelines criterion, Other: Not recorded in OpenPlan", "No row above is a determination that a community is disadvantaged or that the project benefits one."] },
+            { "item": "appendix-f", "includedFact": "Benefit-cost ratio" }
+          ],
+          "countField": { "appendix-b": "crashes.reportedCount" },
+          "roleFacts": [
+            {
+              "name": "the missing-reports sentence",
+              "source": "openplan/src/lib/safety/crash-study-area.ts (printed when a state's file was read inside a tribal area)",
+              "item": "appendix-b",
+              "roles": ["tribal-area"],
+              "phrase": "Crash reports on tribal land may be missing from the state's crash file, because a tribal agency may not share its crash reports with the state, and OpenPlan does not know whether any are shared for this tribal area."
+            },
+            {
+              "name": "the Census tribal area note",
+              "source": "openplan/src/lib/grants/atp-evidence-appendices.ts (ATP_CENSUS_TRIBAL_AREA_NOTE)",
+              "item": "appendix-e",
+              "roles": ["tribal-area"],
+              "phrase": "A Census tribal area is not a finding that the project is located within federally recognized Tribal Lands."
+            }
+          ],
+          "equity": {
+            "note": "The lead's rule 11: the job does not require Census tract data. The journey says whether its run retrieved any (the field), and Appendix E must agree: the noTractData words are there when it retrieved none and absent when it did.",
+            "item": "appendix-e",
+            "field": "application.tractDataRetrieved",
+            "noTractData": "no tract data was retrieved for this run"
+          }
+        },
+        "requiredPhrases": [
+          "Scores are OpenPlan screening scores, not CTC scores.",
+          "These appendices do not establish ATP eligibility or that this package meets the current call for projects."
+        ],
+        "scores": {
+          "note": "A printed score is a label that ends with one of the words, an optional closing parenthesis and a colon, followed by a number. Each must end one of the labels below, the two OpenPlan prints for its screening scores. Any other label with a number (a safety score, a CTC score, total points) refuses the record. A score worded another way, such as 85 out of 100, is not caught.",
+          "words": ["score", "scores", "points"],
+          "labels": ["OpenPlan screening score (not a CTC score)", "Equity screening score (OpenPlan, not a CTC score)"]
+        },
+        "refusedPhrases": {
+          "note": "Words that would state a placeholder for a recorded fact, or a determination OpenPlan does not make, refused on any page, in any case, wrapped or not. The list comes from what the product and a planner could plausibly print. A list cannot catch every wording, and the product's own disclaimers (does not decide ATP eligibility; no row above is a determination) are worded to stay outside it.",
+          "phrases": [
+            "to be provided",
+            "is eligible for",
+            "are eligible for",
+            "project is eligible",
+            "applicant is eligible",
+            "eligible for ATP funding",
+            "meets the eligibility",
+            "qualifies as a disadvantaged community",
+            "qualifies as disadvantaged",
+            "qualify as a disadvantaged community",
+            "is a disadvantaged community",
+            "is in a disadvantaged community",
+            "is located in a disadvantaged community",
+            "is located within a disadvantaged community",
+            "benefits a disadvantaged community",
+            "meets the screening criteria",
+            "passes the screening criteria",
+            "passes the Commission's screening",
+            "meets the disadvantaged community criteria",
+            "Disadvantaged community: Yes",
+            "DAC or Low-income group: Yes"
+          ]
+        }
+      },
+      "screens": {
+        "widths": [1440, 390],
+        "modes": ["light", "dark"],
+        "required": ["project", "safety", "corridor-analysis", "grants-application"],
+        "noSidewaysScrollWidths": [390],
+        "axe": {
+          "source": "qa-harness/first-job-journey-lib.js (AXE_VERSION, AXE_TAGS), the engine and tags the journeys run",
+          "version": "4.11.1",
+          "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+        },
+        "consoleErrorsRefused": true
+      },
+      "crossWorkspace": {
+        "note": "The same rule as the first two jobs (KI-2026-11-14-060), with a control (the lead's rule 10). A second account is refused the application read and the PDF download as data checks and the project page as a page check, each named for its journey. ownerControl: in the same run the owner received the listed status for each listed request, so a refusal is not a route that refuses everyone. secondAccount: each journey's second account was confirmed and read its own record with the listed status, so a refusal is not an account that was never signed in. The project has no read route of its own, so its page is checked under the application.",
+        "targets": ["atp-application", "atp-application-pdf"],
+        "requiredDataRequests": {
+          "atp-application": "application-read",
+          "atp-application-pdf": "application-pdf-download"
+        },
+        "requiredPageRequests": { "atp-application": "project-page" },
+        "perJourney": "role",
+        "minSearchedStrings": 3,
+        "pageAnsweredOkLimit": "project-page-answers-200-with-not-found-screen",
+        "ownerControl": { "requests": ["application-read", "application-pdf-download"], "status": 200 },
+        "secondAccount": { "ownRequest": "own-workspace-read", "status": 200 }
+      },
+      "requiredLimits": [
+        "no-pdf-ua-check",
+        "no-keyboard-or-screen-reader-pass",
+        "no-human-usefulness-review",
+        "rehearsal-of-a-closed-call",
+        "attachments-not-produced",
+        "not-a-commission-score",
+        "no-eligibility-or-disadvantaged-community-determination",
+        "section-text-is-a-labeled-demonstration",
+        "small-application-only",
+        "applicant-name-cannot-be-entered",
+        "equity-inputs-as-each-run-found-them",
+        "what-the-journey-leaves-on-the-hosted-site",
+        "read-by-the-journey"
+      ],
+      "limitTexts": {
+        "no-pdf-ua-check": "No PDF/UA check was run on the application PDFs.",
+        "no-keyboard-or-screen-reader-pass": "No keyboard-only or screen-reader pass was made.",
+        "no-human-usefulness-review": "No planner reviewed whether the application PDFs are useful. Agent-run checks are the acceptance evidence.",
+        "rehearsal-of-a-closed-call": "The run is a rehearsal on the 2027 Small Infrastructure forms. The statewide call closed June 22, 2026 (KI-2026-11-16-075). No application was submitted to the Commission, and no agency or tribe made or submitted one.",
+        "attachments-not-produced": "No attachment was produced. An agent cannot honestly produce a signature page, an engineer's checklist or the other documents, so every checklist row is outstanding or marked not applicable with a reason, and every PDF is stamped DRAFT with the count of required attachments outstanding.",
+        "not-a-commission-score": "The only scores in the PDFs are OpenPlan screening scores. They are not Commission scores and forecast no ranking, award or benefit.",
+        "no-eligibility-or-disadvantaged-community-determination": "Nothing in the PDFs or in this record is an eligibility finding, a disadvantaged community determination or a finding that an application would pass the Commission's screening.",
+        "section-text-is-a-labeled-demonstration": "Every section's text was typed by an automated proof run under a demonstration label. It describes no real project and speaks for no agency or tribe. Nothing checks that it says anything true about a place.",
+        "small-application-only": "Only the Small infrastructure application was run. The Medium, Large, Non-infrastructure and Plan applications were not.",
+        "applicant-name-cannot-be-entered": "OpenPlan cannot yet hold an applicant's name (KI-2026-11-16-080), so every PDF prints that the applicant is not entered in OpenPlan.",
+        "equity-inputs-as-each-run-found-them": "The job does not require Census tract data. Where a run retrieved none, its equity score is withheld and Appendix E says no tract data was retrieved. Each journey's record says which happened.",
+        "what-the-journey-leaves-on-the-hosted-site": "Each journey leaves its account, workspace, project, crash records, analysis run, tracked opportunity, application and exported PDF on the hosted site under the demonstration label. It publishes nothing and opens no public page.",
+        "read-by-the-journey": "The journey read these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, each section's and each checklist row's state on screen, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, and which build, mode and harness checkout ran.",
+        "project-page-answers-200-with-not-found-screen": "Another workspace's project page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The application read and the PDF download were refused."
+      }
     }
   ]
 }
