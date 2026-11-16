@@ -502,13 +502,13 @@
         },
         "application": {
           "type": "object",
-          "required": ["catalogKey", "templateKey", "aiDraftingUsed", "tractDataRetrieved", "exportedAt", "sections", "rows", "outstandingRequiredCount"],
+          "required": ["catalogKey", "templateKey", "aiDraftingUsed", "tractData", "exportedAt", "sections", "rows", "outstandingRequiredCount"],
           "additionalProperties": false,
           "properties": {
             "catalogKey": { "$ref": "#/$defs/slug" },
             "templateKey": { "$ref": "#/$defs/slug" },
             "aiDraftingUsed": { "type": "boolean" },
-            "tractDataRetrieved": { "type": "boolean", "description": "Whether the corridor analysis run retrieved Census tract data. The checker compares it with Appendix E." },
+            "tractData": { "enum": ["retrieved", "none-retrieved", "not-recorded"], "description": "What the corridor analysis run did about Census tract data: retrieved some, asked and retrieved none, or did not record which (it stored no Census record, or did not say). Each is a truthful record. The checker holds Appendix E to the sentence that belongs to the value." },
             "exportedAt": { "$ref": "#/$defs/dateTime" },
             "sections": {
               "type": "array",

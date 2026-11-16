@@ -184,9 +184,11 @@ export function syntheticApplicationPages(journey, job) {
     "Equity screening score (OpenPlan, not a CTC score): Not recorded. Equity is withheld",
     "because required demographic inputs are unavailable.",
     "",
-    application.tractDataRetrieved
-      ? "Demographic source: ACS 5-Year 2023, 4 tracts, clipped to the corridor"
-      : "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run",
+    {
+      retrieved: "Demographic source: ACS 5-Year 2023, 4 tracts, clipped to the corridor",
+      "none-retrieved": "Demographic source: ACS 5-Year 2023: no tract data was retrieved for this run",
+      "not-recorded": "Demographic source: Not recorded in the analysis run",
+    }[application.tractData],
     "",
     "ATP disadvantaged-community criteria: Not assessed. OpenPlan does not decide ATP",
     "eligibility; the CTC's guidelines set the criteria.",
