@@ -1384,13 +1384,8 @@ async function assembleMain(argv) {
     proofOrigin: await lib.loadProofOrigin(),
     recordedOn: lib.utcNow().slice(0, 10),
     sourceCheck: { status: 'not-run', checkedOn: null, url: null, note: 'Crash counts were not compared with the source query tool.' },
-    limits: [
-      { id: 'no-pdf-ua-check', text: 'No PDF/UA check was run on the exported PDFs.' },
-      { id: 'no-keyboard-or-screen-reader-pass', text: 'No keyboard-only or screen-reader pass was made.' },
-      { id: 'no-human-usefulness-review', text: 'No planner reviewed whether the PDFs are useful.' },
-      { id: 'fars-is-fatal-only', text: 'FARS records fatal crashes only, so Nevada and tribal counts omit serious injuries.' },
-      { id: 'crash-counts-not-independently-confirmed', text: 'Crash counts were not compared with the source query tool.' },
-    ],
+    // The words come from the job's definition, which the checker reads too (KI-2026-11-16-020).
+    limits: lib.definitionLimits({ sourceConfirmed: false }),
   });
   fs.writeFileSync(path.resolve(args.out), `${JSON.stringify(record, null, 2)}\n`);
   log(`wrote ${path.resolve(args.out)}; check it with validateProvenJobRecord`);

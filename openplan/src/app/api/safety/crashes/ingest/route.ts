@@ -11,7 +11,13 @@ import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { studyAreaBboxesMatch } from "@/lib/models/study-area";
 import { placeGeoidStringSchema, placeKindSchema, refinePlaceReference } from "@/lib/api/place-geographies";
-import { confirmCrashStudyPlace, crashStatesFromPlaceOfRecord } from "@/lib/safety/study-area-states";
+import {
+  confirmCrashStudyPlace,
+  crashStatesFromPlaceOfRecord,
+  crashStatesFromTribalAreaStates,
+  crashStatesOfSavedTribalArea,
+  type CrashTribalAreaStates,
+} from "@/lib/safety/study-area-states";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { bboxOfGeometry, DRAWN_PLACE_SOURCE, UPLOADED_PLACE_SOURCE } from "@/lib/geographies/place-of-record";
 import type { CrashStudyBoundary } from "@/lib/safety/crash-study-area";
@@ -30,6 +36,8 @@ type ProjectStudyAreaBounds = {
   place_max_lon: number | null;
   place_max_lat: number | null;
   place_source?: string | null;
+  place_kind?: string | null;
+  place_ref?: string | null;
   place_geometry_geojson?: unknown;
 };
 
@@ -177,11 +185,14 @@ export async function POST(request: NextRequest) {
     // The polygon the crashes are kept inside, when one is known. Null keeps
     // the rectangle, and the acquisition records that basis.
     let boundary: CrashStudyBoundary | null = null;
+    // Set only when the study area is a tribal area: the Census Bureau's state
+    // list for it. It is recorded with the acquisition; it is not a client value.
+    let tribalArea: CrashTribalAreaStates | null = null;
     if (parsed.data.projectId) {
       const { data: project, error: projectError } = await supabase
         .from("projects")
         .select(
-          "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_source, place_geometry_geojson"
+          "id, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_source, place_kind, place_ref, place_geometry_geojson"
         )
         .eq("id", parsed.data.projectId)
         .eq("workspace_id", parsed.data.workspaceId)
@@ -206,6 +217,15 @@ export async function POST(request: NextRequest) {
         countryCode: projectPlace.place_country_code,
         subdivisionCode: projectPlace.place_subdivision_code,
       });
+      // A saved tribal area carries no state of its own, so the Census Bureau
+      // is asked which states its saved id lies in. One state can reach that
+      // state's crash file; several, none or no answer keep the national file.
+      tribalArea = await crashStatesOfSavedTribalArea({
+        source: projectPlace.place_source,
+        kind: projectPlace.place_kind,
+        ref: projectPlace.place_ref,
+      });
+      if (tribalArea) stateFips = crashStatesFromTribalAreaStates(tribalArea.censusStateFips);
       if (projectPlace.place_geometry_geojson) {
         const drawn = projectPlace.place_source === DRAWN_PLACE_SOURCE || projectPlace.place_source === UPLOADED_PLACE_SOURCE;
         boundary = { geometry: projectPlace.place_geometry_geojson, source: drawn ? "drawn_area" : "project_place" };
@@ -213,6 +233,7 @@ export async function POST(request: NextRequest) {
     } else if (parsed.data.place) {
       const confirmed = await confirmCrashStudyPlace(parsed.data.place, bbox);
       stateFips = confirmed.stateFips;
+      tribalArea = confirmed.tribalArea;
       if (confirmed.geometry) boundary = { geometry: confirmed.geometry, source: "picked_place" };
     } else if (parsed.data.boundary) {
       if (!studyAreaBboxesMatch(bbox, bboxOfGeometry(parsed.data.boundary))) {
@@ -230,6 +251,7 @@ export async function POST(request: NextRequest) {
       years: parsed.data.years,
       countyCode: parsed.data.countyCode ?? null,
       stateFips,
+      tribalAreaStates: tribalArea ? tribalArea.censusStateFips : undefined,
       boundarySource: boundary?.source ?? null,
     });
 
@@ -239,6 +261,7 @@ export async function POST(request: NextRequest) {
       projectId: parsed.data.projectId ?? null,
       bbox,
       stateFips,
+      tribalArea,
       boundary,
       years: parsed.data.years,
       countyCode: parsed.data.countyCode,

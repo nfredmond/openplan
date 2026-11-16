@@ -434,14 +434,17 @@ function checkRecordedOn(record) {
 /**
  * A limit the job's definition words (its limitTexts) must carry those words
  * exactly, so a limit cannot say the opposite of its id (review 59, L2). A
- * record's own added limits have no definition text; see the
+ * definition may list more than one wording for a limit: the first is what
+ * the assembler writes, a later one is what an earlier record carries
+ * (KI-2026-11-16-020). A record's own added limits have no definition text;
+ * see the
  * capability-evidence README on why they are pinned by the record's hash.
  */
 function checkLimitTexts(limits, job) {
   if (!job.limitTexts) return;
   for (const limit of limits) {
     if (!Object.hasOwn(job.limitTexts, limit.id)) continue;
-    if (limit.text !== job.limitTexts[limit.id]) refuse(`record's ${limit.id} limit does not carry its definition's words`);
+    if (![job.limitTexts[limit.id]].flat().includes(limit.text)) refuse(`record's ${limit.id} limit does not carry its definition's words`);
   }
 }
 
