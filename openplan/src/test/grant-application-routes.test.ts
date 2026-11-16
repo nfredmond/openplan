@@ -344,15 +344,37 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
       expect(row.sort_order).toBe(index);
       expect(row.section_key).toBe(atp.applicationSections![index].key);
     });
-    // The budget section seeds as never-AI-draftable.
-    const budgetRow = insertedSections.find((row) => row.section_key === "budget-narrative");
-    expect(budgetRow?.ai_drafting_enabled).toBe(false);
+    // A new ATP application seeds from the 2027 template, not the earlier
+    // seven sections (KI-2026-11-16-033). Written out, so a route that seeded
+    // the earlier template would not pass by agreeing with the catalog.
+    expect(insertedSections.map((row) => row.section_key)).toEqual([
+      "atp-2027-part-a-project-information",
+      "atp-2027-part-a5-project-funding",
+      "atp-2027-part-a6-screening-criteria",
+      "atp-2027-b1-disadvantaged-communities",
+      "atp-2027-b2-walking-biking-rolling",
+      "atp-2027-b3-fatalities-and-injuries",
+      "atp-2027-b4-public-participation-planning",
+      "atp-2027-b5-scope-plan-layout-consistency",
+      "atp-2027-b6-conservation-corps",
+      "atp-2027-b7-past-performance",
+    ]);
+    // The funding section seeds as never-AI-draftable, and it is the only one.
+    expect(insertedSections.filter((row) => row.ai_drafting_enabled === false).map((row) => row.section_key)).toEqual([
+      "atp-2027-part-a5-project-funding",
+    ]);
 
     const insertedAttachments = attachmentInsertChain.insert.mock.calls[0][0] as Array<
       Record<string, unknown>
     >;
     expect(insertedAttachments).toHaveLength(atp.requiredAttachments!.length);
+    expect(insertedAttachments).toHaveLength(26);
     expect(insertedAttachments.every((row) => row.status === "missing")).toBe(true);
+    // The stored row holds required as yes or no: an if-applicable item is stored required.
+    const requiredByKey = Object.fromEntries(insertedAttachments.map((row) => [row.attachment_key, row.required]));
+    expect(requiredByKey["photos-of-existing-conditions"]).toBe(true);
+    expect(requiredByKey["state-only-funds-request"]).toBe(true);
+    expect(requiredByKey["additional-attachments"]).toBe(false);
   });
 
   describe("a federal program seeds in the words of the state that runs it", () => {
