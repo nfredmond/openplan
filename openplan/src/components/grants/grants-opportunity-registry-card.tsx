@@ -8,6 +8,7 @@ import {
   type FundingOpportunityNarrativeDraftRow,
 } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import { FundingOpportunityApplicationWorkspace } from "@/components/grants/funding-opportunity-application-workspace";
+import { catalogKeyTrackedAs } from "@/lib/grants/application-templates";
 import { FundingOpportunityProjectLink } from "@/components/grants/funding-opportunity-project-link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
@@ -296,6 +297,7 @@ export function GrantsOpportunityRegistryCard({
           opportunityId={opportunity.id}
           pursuitKind={pursuitKind}
           linkedProjectId={opportunity.project?.id ?? null}
+          trackedCatalogKey={catalogKeyTrackedAs({ title: opportunity.title, agencyName: opportunity.agency_name })}
         />
 
         {projectHref || programHref || projectGrantModelingEvidence || projectGrantDualDemandAgreementEvidence ? (
