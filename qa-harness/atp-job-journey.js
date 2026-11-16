@@ -235,6 +235,16 @@ async function main() {
     return body;
   };
 
+  /**
+   * The two requests the owner makes as a control and the second account is
+   * refused, sent the same way for both. The download answers its owner with
+   * a redirect to a signed Storage address, so the session is sent to the
+   * app only (journey-browser-lib.js, appFetch).
+   */
+  const SAME_ORIGIN = { credentials: 'same-origin' };
+  const readApplicationAs = (target) => appFetch(`/api/funding-opportunities/${ids.opportunityId}/application`, null, 'GET', target, SAME_ORIGIN);
+  const downloadPdfAs = (target) => appFetch(`/api/funding-opportunities/${ids.opportunityId}/application/export/${ids.exportId}/download`, null, 'GET', target, SAME_ORIGIN);
+
   /** The checklist as the application screen shows it: each row's key, status, note and whether a document is attached. */
   const readChecklistRows = () => page.$$eval('[data-testid^=application-attachment-]', (rows) => rows.map((row) => ({
     key: row.getAttribute('data-testid').replace('application-attachment-', ''),
@@ -521,13 +531,14 @@ async function main() {
 
     await step('owner-control', async () => {
       // In the same run, the owner asks for the same two addresses the second account will be refused.
-      const read = await appFetch(`/api/funding-opportunities/${ids.opportunityId}/application`, null, 'GET', page);
+      const read = await readApplicationAs(page);
       ownerChecks.push({ request: 'application-read', status: read.status });
-      const download = await appFetch(`/api/funding-opportunities/${ids.opportunityId}/application/export/${ids.exportId}/download`, null, 'GET', page);
+      const download = await downloadPdfAs(page);
       ownerChecks.push({ request: 'application-pdf-download', status: download.status });
+      ids.ownerDownload = { redirected: download.redirected === true, isPdf: download.isPdf };
       if (read.status !== 200 || !/section_key/.test(read.text)) throw new Error(`The owner's own application read answered ${read.status}; a refusal means nothing beside it.`);
       if (download.status !== 200 || !download.isPdf) throw new Error(`The owner's own PDF download answered ${download.status}; a refusal means nothing beside it.`);
-      return `application read ${read.status}, PDF download ${download.status}`;
+      return `application read ${read.status}, PDF download ${download.status}${download.redirected ? ' after the redirect to the signed file' : ''}`;
     });
 
     await step('cross-workspace', async () => {
@@ -544,11 +555,11 @@ async function main() {
       const identifying = lib.identifyingStrings({ projectName: state.projectName, workspaceName: state.workspaceName, projectSummary: inputs.projectSummary });
       const checks = [
         { target: 'atp-application', request: 'application-read', kind: 'data', run: async () => {
-          const result = await appFetch(`/api/funding-opportunities/${ids.opportunityId}/application`, null, 'GET', second);
+          const result = await readApplicationAs(second);
           return { status: result.status, contentReturned: result.status < 400 && /section_key|final_markdown/.test(result.text) };
         } },
         { target: 'atp-application-pdf', request: 'application-pdf-download', kind: 'data', run: async () => {
-          const result = await appFetch(`/api/funding-opportunities/${ids.opportunityId}/application/export/${ids.exportId}/download`, null, 'GET', second);
+          const result = await downloadPdfAs(second);
           return { status: result.status, contentReturned: result.isPdf };
         } },
         { target: 'atp-application', request: 'project-page', kind: 'page', run: async () => {
@@ -612,6 +623,7 @@ async function main() {
     steps,
     journey,
     crossWorkspace: { checks: crossChecks, ownerChecks, secondAccounts },
+    ownerDownload: ids.ownerDownload || null,
     placeStatesListed: ids.placeStatesListed || null,
     crashRetrieval: ids.crashRetrieval || null,
     corridorAnalysis: { runId: ids.analysisRunId || null, reportStyle: ids.analysisReportStyle || null, tractData: ids.tractData || null },

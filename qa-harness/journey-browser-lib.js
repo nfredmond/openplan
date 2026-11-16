@@ -131,15 +131,23 @@ async function readJson(response) {
  * planner's link. Used for the cross-workspace check, where the point is to
  * show nothing comes back, and for its control, where the owner asks for the
  * same address.
+ *
+ * `credentials` is the browser's own setting for which requests carry the
+ * session. The default sends it everywhere the request goes. A download that
+ * answers its owner with a redirect to a signed Storage address on another
+ * origin needs "same-origin": the session goes to the app, the redirected
+ * request goes to Storage without it, as a planner's own click does, and the
+ * browser lets the page read the answer. With the default the browser
+ * refuses that answer and the request fails.
  */
-async function appFetch(route, payload, method, page) {
-  return page.evaluate(async (url, verb) => {
-    const response = await fetch(url, { method: verb, redirect: 'follow', credentials: 'include' });
+async function appFetch(route, payload, method, page, { credentials = 'include' } = {}) {
+  return page.evaluate(async (url, verb, mode) => {
+    const response = await fetch(url, { method: verb, redirect: 'follow', credentials: mode });
     const buffer = new Uint8Array(await response.arrayBuffer());
     const head = String.fromCharCode(...buffer.slice(0, 5));
     const text = new TextDecoder().decode(buffer.slice(0, 200000));
-    return { status: response.status, isPdf: head === '%PDF-', text };
-  }, route, method || (payload ? 'POST' : 'GET'));
+    return { status: response.status, isPdf: head === '%PDF-', text, redirected: response.redirected };
+  }, route, method || (payload ? 'POST' : 'GET'), credentials);
 }
 
 async function waitForDownload(dir, before, timeoutMs = 120000) {
