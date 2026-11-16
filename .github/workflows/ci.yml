@@ -67,6 +67,7 @@ jobs:
           npm run check:service-key-headers
           npm run check:first-job-journey
           npm run check:engagement-job-journey
+          npm run check:atp-job-journey
 
       - name: QA gate
         run: npm run qa:gate
