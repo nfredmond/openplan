@@ -172,8 +172,8 @@
         {
           "kind": "atp-application",
           "path": "docs/product/capability-evidence/synthetic-example/city-atp-application.pdf",
-          "sha256": "5f93eba336201bccd47e06439e01e7de2ecb5fcad6cd014ba6d4a20256b0c307",
-          "bytes": 7965,
+          "sha256": "bf0db6ba8c43c2255d93d46a664d4b1426ed28c40adf41b885c954ddd5b8069c",
+          "bytes": 7981,
           "pages": 7,
           "draftStamp": true,
           "items": [
