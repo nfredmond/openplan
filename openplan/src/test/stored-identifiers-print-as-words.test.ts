@@ -157,9 +157,12 @@ describe("no stored identifier reaches a reader", () => {
       expect(text).not.toContain(network.segments[0].id);
       // The acquisition id stays: a reviewer opens that record in Safety.
       expect(text).toContain(`acquisition ${EVIDENCE_IDS.ingest}`);
-      expect(text).toMatch(/Calculation status (Calculated|Calculated, with checks open for review|Incomplete) /);
-      expect(text).not.toMatch(/Calculation status (calculated|review-required|incomplete) /);
-      expect(text).toContain("Engine OpenPlan annual ledger, version 1");
+      // The report prints a label beside its value; an application appendix prints "Label: value" on
+      // one line (KI-2026-11-16-040). Either way the value is the planner's word, not the stored code.
+      expect(text).toMatch(/Calculation status:? (Calculated|Calculated, with checks open for review|Incomplete) /);
+      expect(text).not.toMatch(/Calculation status:? (calculated|review-required|incomplete) /);
+      expect(text).not.toMatch(/review-required|annual-ledger-1/);
+      expect(text).toMatch(/Engine:? OpenPlan annual ledger, version 1/);
     }
   });
 });
