@@ -94,6 +94,17 @@ describe("ProjectIdentityEditor", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ project: {} }), { status: 200 })));
   });
 
+  it("prints the plan type as a planner's label, read from the record (KI-2026-11-16-036)", () => {
+    const { unmount } = render(<ProjectIdentityEditor project={PROJECT} canWrite />);
+    expect(screen.getByText("Corridor Plan")).toBeInTheDocument();
+    expect(screen.queryByText("corridor_plan")).not.toBeInTheDocument();
+    unmount();
+    // A different stored value gives a different label.
+    render(<ProjectIdentityEditor project={{ ...PROJECT, planType: "safety_plan" }} canWrite />);
+    expect(screen.getByText("Safety Plan")).toBeInTheDocument();
+    expect(screen.queryByText("Corridor Plan")).not.toBeInTheDocument();
+  });
+
   it("renames a project through the record PATCH", async () => {
     render(<ProjectIdentityEditor project={PROJECT} canWrite />);
 

@@ -372,6 +372,13 @@ describe("the cover and checklist of an ATP application", () => {
     expect(index).not.toContain(ATP_IDS.ingest);
     expect(html).toContain(`<strong>Source:</strong> Corridor analysis run ${ATP_IDS.run}.`);
     expect(html).toContain(`<strong>Source:</strong> Crash acquisition ${ATP_IDS.ingest}.`);
+    // A stored content hash is treated the same way: said to be stored in the index, printed whole under its appendix.
+    const hash = byKey(buildAtpEvidenceAppendices(recordsFor(COUNTY), ALL), "bca").source!.hash!;
+    expect(hash).toMatch(/^[a-f0-9]{64}$/);
+    expect(index).not.toContain(hash);
+    expect(index).toContain("<td>Stored, printed under the appendix</td>");
+    expect(index).toContain("<td>None stored</td>");
+    expect(html.split(hash)).toHaveLength(2);
   });
 });
 
@@ -477,6 +484,16 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
     expect(whole).not.toMatch(/Program\s+Not linked|Not linked/);
     // One way of writing a day in the appendices.
     expect(whole).not.toMatch(/\b\d{4}-\d{2}-\d{2}\b/);
+    // Each record id and the stored content hash print whole. With every line
+    // break and space taken out, a string broken across lines is found again;
+    // each must be found that way exactly as often as it is found on one line.
+    const allLines = pages.flatMap((page) => page.split(/\r?\n/));
+    const joined = whole.replace(/\s+/g, "");
+    for (const token of [ATP_IDS.run, ATP_IDS.ingest, byKey(appendices, "bca").source!.hash!]) {
+      const onOneLine = allLines.filter((candidate) => candidate.includes(token)).length;
+      expect(onOneLine, token).toBeGreaterThanOrEqual(1);
+      expect(joined.split(token).length - 1, token).toBe(onOneLine);
+    }
     // The attached document's title prints (in a checklist cell, which wraps beside its neighbors).
     expect(whole).toContain("vicinity map (demonstration)");
   }, 120_000);

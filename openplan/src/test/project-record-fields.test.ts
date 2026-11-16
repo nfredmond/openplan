@@ -6,10 +6,12 @@ import {
   PROJECT_DEFAULT_STATUS,
   PROJECT_DELIVERY_PHASES,
   PROJECT_DELIVERY_PHASE_LABELS,
+  PROJECT_PLAN_TYPE_OPTIONS,
   PROJECT_STATUSES,
   PROJECT_STATUS_LABELS,
   projectDeliveryPhaseSchema,
   projectNameSchema,
+  projectPlanTypeLabel,
   projectStatusSchema,
 } from "@/lib/projects/project-record-fields";
 
@@ -43,6 +45,24 @@ describe("project record fields", () => {
   it("labels every value, so a new one cannot ship unlabelled", () => {
     expect(Object.keys(PROJECT_STATUS_LABELS).sort()).toEqual([...PROJECT_STATUSES].sort());
     expect(Object.keys(PROJECT_DELIVERY_PHASE_LABELS).sort()).toEqual([...PROJECT_DELIVERY_PHASES].sort());
+  });
+
+  it("prints a stored plan type as a planner reads it, never as its stored code (KI-2026-11-16-036)", () => {
+    // Each value the new-project form offers prints the label the form shows for it.
+    expect(PROJECT_PLAN_TYPE_OPTIONS.map((option) => projectPlanTypeLabel(option.value))).toEqual([
+      "Corridor Plan",
+      "Active Transportation Plan",
+      "Safety Plan",
+      "Regional / Program Plan",
+    ]);
+    for (const option of PROJECT_PLAN_TYPE_OPTIONS) expect(projectPlanTypeLabel(option.value)).not.toContain("_");
+    // A stored code the form does not offer prints as words.
+    expect(projectPlanTypeLabel("capital_program")).toBe("Capital program");
+    // Plan type is free text: what a planner typed prints as typed.
+    expect(projectPlanTypeLabel("Plan de mobilité 2030")).toBe("Plan de mobilité 2030");
+    expect(projectPlanTypeLabel("SR2S")).toBe("SR2S");
+    expect(projectPlanTypeLabel("  ")).toBe("Not set");
+    expect(projectPlanTypeLabel(null)).toBe("Not set");
   });
 
   it("rejects a value outside the vocabulary rather than passing it to Postgres", () => {

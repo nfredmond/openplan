@@ -507,9 +507,10 @@ function appendixMarkup(appendix: EvidenceAppendix): string {
 /**
  * The evidence index and every appendix, as one document section.
  *
- * The index names each source record by its kind only. A record's id prints
- * whole on the source line under its appendix heading; in the index's narrow
- * column it wrapped mid-id, so a copied id broke (KI-2026-11-16-038).
+ * The index names each source record by its kind only and says whether a
+ * content hash is stored. A record's id and its hash print whole on the
+ * source line under its appendix heading; in the index's narrow columns each
+ * wrapped mid-string, so a copied id or hash broke (KI-2026-11-16-038).
  */
 export function evidenceAppendicesMarkup(
   appendices: readonly EvidenceAppendix[] | undefined,
@@ -527,7 +528,7 @@ export function evidenceAppendicesMarkup(
         <td>${esc(STATUS_LABELS[appendix.status])}${appendix.key === "hin_map" && appendix.status === "included" && !appendix.figureSvg ? "; map not drawn" : ""}</td>
         <td>${cellText(appendix.source ? appendix.source.record : appendix.statusNote ?? "")}</td>
         <td>${cellText(appendix.source ? dateText(appendix.source.date) : "Not recorded")}</td>
-        <td>${cellText(appendix.source?.hash ?? "None stored")}</td>
+        <td>${appendix.source?.hash ? "Stored, printed under the appendix" : "None stored"}</td>
       </tr>`).join("")}</tbody>
     </table></div>
     ${appendices.map(appendixMarkup).join("\n    ")}
