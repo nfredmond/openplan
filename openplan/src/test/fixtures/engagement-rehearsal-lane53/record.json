@@ -2393,7 +2393,7 @@
   },
   {
    "id": "build-named-by-the-journey",
-   "text": "Which build ran comes from the health readbacks the journey wrote at its start and end. Nothing in the record comes from the deployment itself."
+   "text": "Which build ran comes from the health readbacks the journey wrote at its start and end. The record's origin and each journey's mode are also the journey's own statements, carried from its run files. Nothing in the record comes from the deployment itself."
   },
   {
    "id": "contribution-input-stated-by-the-journey",

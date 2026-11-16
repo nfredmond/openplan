@@ -6,7 +6,16 @@
     "county": "^\\d{5}$",
     "aiannh": "^\\d{4}[RT]$"
   },
-  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways.",
+  "executors": {
+    "note": "A proven job is agent-run: no person drives a journey or stands in for a check. An agent executor is a coding agent named by its harness, one of agents, running a model named by the model id its provider publishes: lower-case letters and digits in at least two parts joined by hyphens or dots, such as claude-fable-5-2 (modelPattern). A person's name, a blank name, or a model of none is not an agent executor, and the checker refuses it (review 64, case 25). A new harness is added here before a record names it.",
+    "agents": ["Claude Code", "Codex"],
+    "modelPattern": "^[a-z][a-z0-9]*([.-][a-z0-9]+)+$"
+  },
+  "recordedOn": {
+    "note": "A record is written after its journeys and soon after. recordedOn may not be earlier than the last end health readback's calendar day in the westernmost time zone (UTC-12), so a record dated in any zone on the day its last journey ended is accepted, and may not be more than maxDaysAfterLastEnd days after that day in the easternmost zone (UTC+14). Fourteen days covers an assembly that waits on a review; a record dated before its runs, or weeks after them, is refused (review 64, case 31).",
+    "maxDaysAfterLastEnd": 14
+  },
+  "ruleNote":"journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways. screens.axe, when a job has it, is the accessibility engine version and rule tags every screen check must report. screens.consoleErrorsRefused true refuses a required screen with one or more console errors. limitTexts, when a job has it, gives the words of each limit it names: a record limit with one of those ids must carry that text exactly.",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -141,11 +150,22 @@
         "widths": [1440, 390],
         "modes": ["light", "dark"],
         "required": ["portal", "public-response", "staff-campaign", "staff-campaign-responses", "staff-campaign-analysis", "staff-campaign-record"],
-        "noSidewaysScrollWidths": [390]
+        "noSidewaysScrollWidths": [390],
+        "axe": {
+          "source": "qa-harness/first-job-journey-lib.js (AXE_VERSION, AXE_TAGS), the engine and tags both journeys run",
+          "version": "4.11.1",
+          "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+        },
+        "consoleErrorsRefused": true,
+        "consoleErrorsNote": "Lead decision 2026-11-15 (review 59, S6): a required screen with one or more console errors refuses the record. A third-party script's console noise would then fail a run, and that is intended: a planner's page should not log errors. The first job's definition does not set this."
       },
       "campaign": {
         "note": "Counts come from the journey's moderation outcomes and published response. The internal review PDF must carry each count as the phrase below, found on its page with the shared matcher (scripts/lib/pdf-text-match.mjs), and every count sentence (countSentences) with the journey's number and no other. The workbook is read by cell: one Contributions row per comment with its status, one Staff responses row per response with its sources, and the Summary rows, which must agree with those cells, the PDF's sentences and the journey. The public copy is read the same way (publicCopy). Each rejected comment's text, which the record holds, must be in the internal PDF and workbook and in neither public file. The public response page is read by the journey at every width and mode.",
-        "contributions": { "requiredKinds": ["map-point", "no-map-point"], "keyboardOnlyWidth": 390 },
+        "contributions": {
+          "note": "map-point means the contribution carries any location on the map: a point, a line or an area. The checker counts it as one when its internal workbook row fills latitude, longitude or geometry (pointColumns), so a line or an area is a map-point too (review 62, N6). no-map-point means none of those cells is filled.",
+          "requiredKinds": ["map-point", "no-map-point"],
+          "keyboardOnlyWidth": 390
+        },
         "moderation": { "minApproved": 1, "minRejected": 1 },
         "reviewPdf": "campaign-review",
         "scopeItem": { "item": "scope-badge", "text": "Internal review copy" },
@@ -236,7 +256,20 @@
         "build-named-by-the-journey",
         "contribution-input-stated-by-the-journey",
         "ai-and-approval-flags-set-by-the-journey"
-      ]
+      ],
+      "limitTexts": {
+        "no-pdf-ua-check": "No PDF/UA check was run on the review PDF.",
+        "no-keyboard-or-screen-reader-pass-beyond-one-contribution": "One contribution per journey was made with the keyboard only at 390 px. No other keyboard-only or screen-reader pass was made.",
+        "no-human-usefulness-review": "No planner reviewed whether the review files or the response are useful. Agent-run checks are the acceptance evidence.",
+        "test-comments-represent-no-one": "The comments were entered by an automated proof run and represent no one. A few test comments are not public opinion.",
+        "response-speaks-for-no-agency": "The published response was written by an automated proof run under a demonstration label and speaks for no agency.",
+        "no-translation-or-ai-synthesis": "No AI feature ran: translation, AI moderation, AI synthesis and AI drafting are out of scope.",
+        "live-screens-read-by-the-journey": "The journey read these on live screens and the checker cannot read them again: the public response page's counts and its search for the rejected comment, the public portal data searched for staff-only fields, the statuses an anonymous participant and a second account received, the accessibility results, console errors and sideways scroll of each screen, and the closed campaign's public addresses.",
+        "build-named-by-the-journey": "Which build ran comes from the health readbacks the journey wrote at its start and end. The record's origin and each journey's mode are also the journey's own statements, carried from its run files. Nothing in the record comes from the deployment itself.",
+        "contribution-input-stated-by-the-journey": "Which contribution was made with the keyboard only, and at which width, is the journey's statement. The record holds no keyboard trail, and the page counted no pointer events. Whether each contribution has a map point is checked against the internal review workbook.",
+        "ai-and-approval-flags-set-by-the-journey": "The AI flags, the staff review's approval and its revision number are set by the journey after the app accepted each step. The journey presses no AI control; the checker cannot see that.",
+        "campaign-page-answers-200-with-not-found-screen": "Another workspace's campaign page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The campaign read, the campaign export, the rejected comment's history and both review downloads were refused."
+      }
     }
   ]
 }
