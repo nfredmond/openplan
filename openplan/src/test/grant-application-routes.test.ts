@@ -233,9 +233,11 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
       data: atp.requiredAttachments!.map((template) => ({ attachment_key: template.key })),
       error: null,
     });
+    // The sections are this template's own, so the 409 below comes from the
+    // checklist being whole and not from the template not matching.
     installTables({
       funding_opportunity_application_sections: () =>
-        makeQuery({ data: [{ id: SECTION_ID }], error: null }),
+        makeQuery({ data: atp.applicationSections!.map((section, index) => ({ id: `section-${index}`, section_key: section.key })), error: null }),
       funding_opportunity_attachments: () => attachmentsChain,
     });
 
@@ -254,6 +256,55 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
     expect(response.status).toBe(409);
   });
 
+  it("refuses to add the current checklist to an application seeded from the program's earlier template", async () => {
+    // Review 73. The ATP entry holds two templates. An application seeded
+    // from the earlier seven sections keeps its own five attachments: a
+    // repeated set-up request naming the program answers 409 and inserts
+    // nothing, as it did before the 2027 template existed. Without the
+    // template check the route answered 200 and added 25 rows.
+    const atp = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
+    const earlier = atp.earlierApplicationTemplates![0];
+    expect(earlier.applicationSections.length).toBeGreaterThan(0);
+    // The two templates share no section key, so the earlier sections cannot pass for the current ones.
+    const currentKeys = new Set(atp.applicationSections!.map((section) => section.key));
+    expect(earlier.applicationSections.some((section) => currentKeys.has(section.key))).toBe(false);
+
+    const attachmentsChain = makeQuery({
+      data: earlier.requiredAttachments.map((template) => ({ attachment_key: template.key })),
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: earlier.applicationSections.map((section, index) => ({ id: `section-${index}`, section_key: section.key })),
+          error: null,
+        }),
+      funding_opportunity_attachments: () => attachmentsChain,
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(409);
+    expect(attachmentsChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("does not complete an init when only some of the template's sections exist", async () => {
+    // A partial set is not this template's application, whatever made it.
+    const atp = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
+    const attachmentsChain = makeQuery({ data: [], error: null });
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: atp.applicationSections!.slice(1).map((section, index) => ({ id: `section-${index}`, section_key: section.key })),
+          error: null,
+        }),
+      funding_opportunity_attachments: () => attachmentsChain,
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(409);
+    expect(attachmentsChain.insert).not.toHaveBeenCalled();
+  });
+
   it("completes an interrupted init: sections exist, catalog attachments missing → seeds them and 200s", async () => {
     // The wedge scenario: a first init seeded sections, then the attachment
     // insert failed. The retry must COMPLETE the init (seed exactly the
@@ -261,7 +312,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
     const atp = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
     const alreadySeededKey = atp.requiredAttachments![0].key;
 
-    const existingSectionsChain = makeQuery({ data: [{ id: SECTION_ID }], error: null });
+    const existingSectionsChain = makeQuery({ data: atp.applicationSections!.map((section, index) => ({ id: `section-${index}`, section_key: section.key })), error: null });
     const sectionsReloadChain = makeQuery({ data: [baseSectionRow], error: null });
     const attachmentKeysChain = makeQuery({
       data: [{ attachment_key: alreadySeededKey }],

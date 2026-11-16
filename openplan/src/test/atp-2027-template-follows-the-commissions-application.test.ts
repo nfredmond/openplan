@@ -354,6 +354,9 @@ describe("applications seeded from the earlier ATP template", () => {
   it("keep Required and Optional on their checklist: the earlier template has no if-applicable item", () => {
     expect([...ifApplicableAttachmentKeys(templateEarlier)]).toEqual([]);
     expect(attachmentRequirementLabel({ attachment_key: "letters-of-support", required: false }, ifApplicableAttachmentKeys(template2027))).toBe("Optional");
+    // Review 73: the row's own answer comes first. An if-applicable item the planner made optional reads Optional.
+    expect(ifApplicableAttachmentKeys(template2027).has("state-only-funds-request")).toBe(true);
+    expect(attachmentRequirementLabel({ attachment_key: "state-only-funds-request", required: false }, ifApplicableAttachmentKeys(template2027))).toBe("Optional");
   });
 });
 
