@@ -14,30 +14,37 @@ import type {
 } from "./types";
 
 const programs: readonly GrantProgramCatalogEntry[] = [
+  // ATP facts from the CTC's 2027 ATP Guidelines (Resolution G-26-31, adopted
+  // March 19, 2026): sections 3, 5, 6, 7, 10, 11, 18 and 38.2, and the 2027 ATP
+  // Application Checklist, read November 15, 2026. Section keys stay as they
+  // were: identifySeededCatalogKey reads saved applications by them.
   {
     key: "atp",
     name: "Active Transportation Program (ATP)",
     administeringAgency: "California Transportation Commission / Caltrans",
     level: "state",
-    typicalApplicants: "Cities, counties, RTPAs/MPOs, transit agencies, tribes, school districts",
+    typicalApplicants:
+      "Cities, counties, MPOs and RTPAs, transit agencies, schools and school districts, natural resource and public land agencies, federally recognized tribal governments",
     eligibleProjectTypes: [
       "Bicycle and pedestrian infrastructure",
       "Safe routes to school",
       "Trails",
       "Active transportation plans",
+      "Non-infrastructure education and encouragement programs",
     ],
-    cycleNote: "Biennial statewide call — verify the current cycle and application window with the CTC.",
+    cycleNote:
+      "The Commission adopts a program each odd-numbered year. The 2027 ATP (Cycle 8) call opened March 19, 2026 and applications were due June 22, 2026. Verify the next call with the CTC.",
     matchRequirement:
-      "No minimum local match required; leverage and disadvantaged-community benefit strengthen competitiveness — verify current guidelines.",
+      "No local match required; an MPO may require one in the MPO Component. Committed leveraged funds earn points only in Large and Medium project applications. Verify current guidelines.",
     url: "https://catc.ca.gov/programs/active-transportation-program",
     summary:
-      "California's flagship competitive program for walking and biking projects, consolidating federal and state active transportation funds. Strong fit for small and rural agencies pursuing safe routes to school, gap-closing bikeways, and pedestrian safety work, with a statewide component plus regional components in large MPO areas.",
+      "Competitive California program for walking, biking and rolling projects, plans and non-infrastructure programs, funded from federal and state sources. Under the 2027 ATP Guidelines (Cycle 8, adopted March 19, 2026), funds are split 50 percent to the Statewide Component, 10 percent to the Small Urban and Rural Component (areas of 5,001 to 200,000 people, and rural areas of 5,000 or less) and 40 percent to the MPO Component; each component directs at least 25 percent to projects that benefit disadvantaged communities.",
     applicationSections: [
       {
         key: "project-narrative",
         title: "Project description and scope",
         guidance:
-          "Describe what the project builds, the gap it closes, and how the elements work together for people walking and biking. Verify the current cycle's narrative prompts and scoring rubric with the CTC — question wording and point values change between cycles.",
+          "Describe what the project builds, the gap it closes, and how the elements work together for people walking and biking. Verify the current cycle's narrative prompts and scoring rubric with the CTC; question wording and point values change between cycles.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
       {
@@ -51,7 +58,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "disadvantaged-communities",
         title: "Benefit to disadvantaged communities",
         guidance:
-          "Explain which communities the project serves and how benefits reach them. Verify the current cycle's accepted disadvantaged-community definitions and mapping tools with the CTC — the qualifying criteria shift between cycles.",
+          "Explain which communities the project serves and how benefits reach them. Verify the current cycle's accepted disadvantaged-community definitions and mapping tools with the CTC; the qualifying criteria shift between cycles.",
         suggestedEvidence: ["project", "engagement", "kb"],
       },
       {
@@ -65,7 +72,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "cost-effectiveness-leverage",
         title: "Cost effectiveness and leveraging",
         guidance:
-          "Relate expected benefit to cost and describe leveraged funds. Verify how the current cycle scores cost effectiveness and whether leverage earns points with the CTC before committing figures.",
+          "Describe committed leveraged funds and how the scope uses ATP funds well. In the 2027 ATP, Large applications score cost effectiveness, Large and Medium applications score leveraging, and Small applications score neither. The Commission runs its own benefit-cost tool at the program level, so the application asks for no benefit-cost ratio. Verify the current cycle's rubric with the CTC.",
         suggestedEvidence: ["funding", "bca", "kb"],
       },
       {
@@ -112,7 +119,8 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "plan-consistency-documentation",
         title: "Plan consistency documentation",
-        guidance: "Excerpts from adopted plans (ATP plan, general plan, safe-routes plan) showing the project. Verify what the current cycle accepts as plan consistency.",
+        guidance:
+          "Relevant pages of the adopted Regional Transportation Plan showing the project is consistent, a screening item in the 2027 ATP. Large and combination applications also attach the adopted active transportation plan page that shows the project. Verify what the current cycle accepts.",
         required: false,
       },
     ],
@@ -128,11 +136,11 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Rail and transit capital",
       "Complete streets elements of capital projects",
     ],
-    cycleNote: "Biennial STIP cycle adopted in even years — verify the current fund estimate and RTIP submission schedule with the CTC and your RTPA.",
-    matchRequirement: "No fixed local match for STIP county-share programming; funding posture is project-specific — verify with your RTPA.",
+    cycleNote: "Biennial STIP cycle adopted in even years. Verify the current fund estimate and RTIP submission schedule with the CTC and your RTPA.",
+    matchRequirement: "No fixed local match for STIP county-share programming; funding posture is project-specific. Verify with your RTPA.",
     url: "https://catc.ca.gov/programs/state-transportation-improvement-program",
     summary:
-      "California's core biennial capital programming document, with 75% of funds flowing to regional shares that each county's RTPA programs through its RTIP. For small agencies this is less a grant application than a programming negotiation — getting a project into the RTIP is the essential step.",
+      "California's core biennial capital programming document, with 75% of funds flowing to regional shares that each county's RTPA programs through its RTIP. For small agencies this is less a grant application than a programming negotiation: a project must first be in the RTIP.",
     applicationSections: [
       {
         key: "project-description",
@@ -190,17 +198,17 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Transit and rail improvements",
       "Active transportation and safety projects",
     ],
-    cycleNote: "Formulaic shares plus periodic competitive cycles — verify the current programming cycle with the CTC.",
-    matchRequirement: "Generally a dollar-for-dollar (1:1) local match from the qualifying tax or fee revenue — verify current guidelines.",
+    cycleNote: "Formulaic shares plus periodic competitive cycles. Verify the current programming cycle with the CTC.",
+    matchRequirement: "Generally a dollar-for-dollar (1:1) local match from the qualifying tax or fee revenue. Verify current guidelines.",
     url: "https://catc.ca.gov/programs/sb1/local-partnership-program",
     summary:
-      "SB 1 program that rewards self-help jurisdictions — those with voter-approved transportation sales taxes, developer fees, or tolls — with matching state dollars. Only relevant if your agency or county has a qualifying revenue measure, but a dependable leverage source when it does.",
+      "SB 1 program that rewards self-help jurisdictions (those with voter-approved transportation sales taxes, developer fees, or tolls) with matching state dollars. It applies only where the agency or county has a qualifying revenue measure.",
     applicationSections: [
       {
         key: "project-narrative",
         title: "Project narrative",
         guidance:
-          "Describe the project and its transportation benefits. Verify the current programming cycle's nomination format with the CTC — the competitive and formulaic components use different paperwork.",
+          "Describe the project and its transportation benefits. Verify the current programming cycle's nomination format with the CTC; the competitive and formulaic components use different paperwork.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -252,24 +260,24 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Zero-emission bus fleets and charging",
       "Service integration and connectivity projects",
     ],
-    cycleNote: "Competitive cycles roughly every one to two years — verify the current call for projects with CalSTA.",
-    matchRequirement: "No formal minimum match; demonstrated leverage and ridership/GHG benefits drive competitiveness — verify guidelines.",
+    cycleNote: "Competitive cycles roughly every one to two years. Verify the current call for projects with CalSTA.",
+    matchRequirement: "No formal minimum match; demonstrated leverage and ridership/GHG benefits drive competitiveness. Verify guidelines.",
     url: "https://calsta.ca.gov/subject-areas/transit-intercity-rail-capital-prog",
     summary:
-      "Cap-and-trade-funded program for transformative transit and rail capital investments that reduce greenhouse gas emissions and grow ridership. Awards skew large, but rural and small-urban operators have won for fleet electrification and connectivity projects, especially via joint applications.",
+      "Cap-and-trade-funded program for transformative transit and rail capital investments that reduce greenhouse gas emissions and grow ridership. Rural and small-urban operators have won awards for fleet electrification and connectivity projects, including through joint applications.",
     applicationSections: [
       {
         key: "project-background",
         title: "Project background and description",
         guidance:
-          "Describe the service context, the capital investment, and how the elements form one transformative project. Verify the current call's narrative outline with CalSTA — the application structure changes between cycles.",
+          "Describe the service context, the capital investment, and how the elements form one transformative project. Verify the current call's narrative outline with CalSTA; the application structure changes between cycles.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "ghg-reduction-narrative",
         title: "Greenhouse gas reduction",
         guidance:
-          "Explain the mechanism for GHG reduction and summarize the quantified estimate. The controlling figures come from the program's required calculator — verify the current cycle's CARB quantification methodology with CalSTA.",
+          "Explain the mechanism for GHG reduction and summarize the quantified estimate. The controlling figures come from the program's required calculator. Verify the current cycle's CARB quantification methodology with CalSTA.",
         suggestedEvidence: ["modeling", "kb"],
       },
       {
@@ -334,11 +342,11 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Safety projects on local streets",
       "Complete streets elements within eligible projects",
     ],
-    cycleNote: "Continuous annual formula apportionments; an adopted project list is due to the CTC each year — verify the submission window.",
-    matchRequirement: "No local match required; maintenance-of-effort spending requirements apply — verify current reporting rules.",
+    cycleNote: "Continuous annual formula apportionments; an adopted project list is due to the CTC each year. Verify the submission window.",
+    matchRequirement: "No local match required; maintenance-of-effort spending requirements apply. Verify current reporting rules.",
     url: "https://catc.ca.gov/programs/sb1/local-streets-roads-program",
     summary:
-      "SB 1 formula funding — roughly $1.5B statewide per year — apportioned directly to cities and counties for basic maintenance, rehabilitation, and safety on the local network. Not competitive, but the annual CTC project-list adoption is a compliance gate worth tracking alongside discretionary pursuits.",
+      "SB 1 formula funding (roughly $1.5B statewide per year) apportioned directly to cities and counties for basic maintenance, rehabilitation, and safety on the local network. Not competitive; each city and county submits an adopted project list to the CTC every year.",
     applicationSections: [
       {
         key: "project-list-description",
@@ -376,11 +384,11 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Community placemaking near transportation facilities",
       "Public space and gateway improvements",
     ],
-    cycleNote: "Periodic cycles subject to state budget action — verify whether a current call is open with Caltrans.",
-    matchRequirement: "Little to no match historically required, with emphasis on underserved communities — verify current guidelines.",
+    cycleNote: "Periodic cycles subject to state budget action. Verify whether a current call is open with Caltrans.",
+    matchRequirement: "Little to no match historically required, with emphasis on underserved communities. Verify current guidelines.",
     url: "https://cleancalifornia.dot.ca.gov/local-grant-program",
     summary:
-      "State beautification program funding litter abatement, community gateways, and placemaking in and around the transportation right-of-way. Application lift is modest relative to capital programs, making it a practical entry point for small agencies building grant capacity.",
+      "State beautification program funding litter abatement, community gateways, and placemaking in and around the transportation right-of-way.",
     applicationSections: [
       {
         key: "community-need-narrative",
@@ -455,7 +463,7 @@ const federalProgramAdministration: readonly GrantProgramStateAdministration[] =
     cycleNote: "Local HSIP calls run roughly every one to two years. Verify the current call with Caltrans Local Assistance.",
     url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/highway-safety-improvement-program",
     summary:
-      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a Local Roadway Safety Plan or safety action plan.",
+      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A Local Roadway Safety Plan or safety action plan can document the collision patterns an application cites.",
     bcaNote:
       "Awards are scored on benefit/cost computed with the Caltrans Local Roadway Safety Manual (LRSM) method. Countermeasure crash-reduction factors and Caltrans-published crash costs control the actual score. The screening BCA is a USDOT-style screening analogue (crashes avoided by severity at USDOT crash costs), not a preview of the LRSM B/C.",
     sections: {
@@ -494,7 +502,7 @@ const federalProgramAdministration: readonly GrantProgramStateAdministration[] =
   {
     programKey: "infra",
     summary:
-      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with Caltrans or a regional agency on a goods-movement or corridor application.",
+      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. A rural agency can apply in partnership with Caltrans or a regional agency on a goods-movement or corridor application.",
     attachments: {
       "letters-of-support": {
         guidance: "Match commitments and partner support, often including Caltrans or the regional agency on partnership applications. Verify commitment-evidence requirements in the current NOFO.",
@@ -513,7 +521,7 @@ const federalProgramAdministration: readonly GrantProgramStateAdministration[] =
     administeringAgency: "FTA, administered in California by Caltrans Division of Rail and Mass Transportation",
     cycleNote: "Statewide competitive cycles roughly every two years. Verify the current call with Caltrans DRMT.",
     summary:
-      "Federal formula funds passed through Caltrans to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. The standard source for paratransit vehicle replacement and mobility management in small and rural communities.",
+      "Federal formula funds passed through Caltrans to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. Eligible uses include paratransit vehicle replacement and mobility management.",
     sections: {
       "need-for-service": {
         guidance:
@@ -550,7 +558,7 @@ const federalProgramAdministration: readonly GrantProgramStateAdministration[] =
     administeringAgency: "FTA, administered in California by Caltrans Division of Rail and Mass Transportation",
     cycleNote: "Annual apportionments programmed through Caltrans; periodic competitive 5311(f) intercity bus calls. Verify with Caltrans DRMT.",
     summary:
-      "The backbone federal funding source for public transit in areas under 50,000 population, covering both operating and capital needs. Rural California operators access it through Caltrans, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
+      "Federal formula funding for public transit in areas under 50,000 population, covering both operating and capital needs. Rural California operators access it through Caltrans, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
     sections: {
       "service-description": {
         guidance:
@@ -585,7 +593,7 @@ const federalProgramAdministration: readonly GrantProgramStateAdministration[] =
     matchRequirement: "Typically 88.53% federal / 11.47% local in California. Verify with the programming agency.",
     url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/carbon-reduction-program",
     summary:
-      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split in California between a state-programmed share and local shares programmed regionally. Eligibility overlaps heavily with active transportation, ITS, and ZEV infrastructure work small agencies already plan.",
+      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split in California between a state-programmed share and local shares programmed regionally. Eligible projects include active transportation, ITS, and ZEV infrastructure.",
     sections: {
       "project-description": {
         guidance:
@@ -598,7 +606,7 @@ const federalProgramAdministration: readonly GrantProgramStateAdministration[] =
     administeringAgency: "FHWA (formula funds via Caltrans; discretionary NOFOs direct from FHWA)",
     cycleNote: "Formula funds flow through Caltrans, and discretionary NOFOs are periodic. Verify current opportunities with FHWA and Caltrans.",
     summary:
-      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes. Directly relevant to rural California agencies managing fire-country corridors and storm-damaged roads.",
+      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes.",
     sections: {
       "resilience-need": {
         guidance:
