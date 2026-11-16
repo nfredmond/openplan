@@ -34,6 +34,10 @@ import {
   type CrashStudyAreaCoverage,
 } from "@/lib/safety/crash-study-area";
 import { fetchCrashesForStudyArea } from "@/lib/data-sources/crashes";
+import { buildGrantApplicationHtml } from "@/lib/grants/application-html";
+import { ATP_APPENDIX_FRAME, buildAtpEvidenceAppendices } from "@/lib/grants/atp-evidence-appendices";
+import { ATP_APPENDIX_KEYS } from "@/lib/grants/evidence-appendix-keys";
+import { htmlToPdfBlocks } from "@/lib/reports/pdf-text";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import { ccrsAdapter } from "@/lib/safety/sources/ccrs";
 import { farsAdapter } from "@/lib/safety/sources/fars";
@@ -46,6 +50,7 @@ import {
   crashStatesFromTribalAreaStates,
   crashStatesOfSavedTribalArea,
 } from "@/lib/safety/study-area-states";
+import { ATP_IDS, atpCrashEvidence, completeAtpRecords } from "./fixtures/grants/atp-evidence";
 
 // A rectangle inside California's coarse rectangle that also overlaps Nevada's
 // side of it, so a source picked by rectangle would be the wrong test.
@@ -477,5 +482,62 @@ describe("a corridor analysis whose corridor is a tribal area", () => {
     const summary = await fetchCrashesForStudyArea({ bbox: BBOX, stateFips: ["06"], boundary }, { now: NOW });
     expect(summary.source).toBe(ccrsAdapter.id);
     expect(summary.narrativeLine).not.toContain("tribal");
+  });
+});
+
+/**
+ * The export. The ATP application's crash appendix prints the acquisition's
+ * caveats, and the text here is what the built-in PDF tier extracts.
+ *
+ * Blind category: this reads the appendix text, not a rendered PDF page, and
+ * only the ATP application. The SS4A appendix prints the same study-area
+ * sentence from the same function and is not rendered here.
+ */
+describe("the ATP application's crash appendix for a tribal area", () => {
+  const ALL = new Set<string>(ATP_APPENDIX_KEYS);
+  const BOUNDARY_ENTRY = {
+    basis: "place_boundary",
+    boundarySource: "project_place",
+    outsideBoundaryCount: 40,
+    boundaryUnreadable: false,
+    rectangleReportedCount: 174,
+    rectangleMappableCount: 174,
+    countsAreLowerBound: false,
+  };
+
+  function appendixText(rowOverrides: Record<string, unknown>): string {
+    const records = { ...completeAtpRecords(), crash: { status: "ready" as const, evidence: atpCrashEvidence(rowOverrides), retrievedAt: "2026-11-02T15:00:00+00:00" } };
+    const appendices = buildAtpEvidenceAppendices(records, ALL);
+    const html = buildGrantApplicationHtml({
+      opportunity: { id: ATP_IDS.opportunity, title: "ATP application", agency_name: null, summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null },
+      programTitle: null, sections: [], attachments: [], generatedAt: "2026-11-02T18:30:00.000Z",
+      evidenceAppendices: appendices, evidenceAppendixFrame: ATP_APPENDIX_FRAME,
+    });
+    return htmlToPdfBlocks(html).map((block) => ("text" in block ? block.text : JSON.stringify(block))).join("\n");
+  }
+
+  it("prints the missing-reports sentence when the state's file was read inside a tribal area", () => {
+    const text = appendixText({
+      dimension_coverage: { study_area: { ...BOUNDARY_ENTRY, tribalArea: { censusStateFips: ["06"], stateFileUsed: true } } },
+    });
+    expect(text).toContain("Appendix B. Crash summary");
+    expect(text).toContain(TRIBAL_AREA_STATE_FILE_SENTENCE);
+  });
+
+  it("prints why only the national file was read for a several-state tribal area, and not the missing-reports sentence", () => {
+    const text = appendixText({
+      source_id: "fars-national",
+      source_label: "FARS (national)",
+      severity_completeness: "fatal_only",
+      dimension_coverage: { study_area: { ...BOUNDARY_ENTRY, tribalArea: { censusStateFips: ["06", "32"], stateFileUsed: false } } },
+    });
+    expect(text).toContain("The Census Bureau lists this tribal area in more than one state (CA and NV)");
+    expect(text).not.toContain(TRIBAL_AREA_STATE_FILE_SENTENCE);
+  });
+
+  it("prints neither for an acquisition with no tribal-area entry", () => {
+    const text = appendixText({ dimension_coverage: { study_area: BOUNDARY_ENTRY } });
+    expect(text).toContain("Crashes are counted inside the place boundary.");
+    expect(text).not.toContain("tribal");
   });
 });
