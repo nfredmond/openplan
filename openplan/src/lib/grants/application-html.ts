@@ -241,6 +241,19 @@ function shortDateTimeMarkup(value: string, calendar: WorkspaceCalendar): string
     : `<span class="nowrap">${esc(day)},</span> <span class="nowrap">${esc(time)}</span> ${zoneMarkup}`;
 }
 
+/** The longest "Finalized by" value that prints on one line: a role's name does, a sentence wraps. */
+const ONE_LINE_FINALIZER_LENGTH = 24;
+
+/**
+ * Who finalized a section, in its cell. A role's name ("Workspace owner") is
+ * one piece that does not wrap: in a narrow column it broke after its first
+ * word, and text read from the PDF no longer held the role as one string. A
+ * longer value, a sentence that says why nobody is named, wraps as before.
+ */
+function finalizedByMarkup(value: string): string {
+  return value.length <= ONE_LINE_FINALIZER_LENGTH ? `<span class="nowrap">${esc(value)}</span>` : esc(value);
+}
+
 function formatAmount(value: number | string | null | undefined): string {
   if (value === null || value === undefined) return "Not set";
   const numeric = Number(value);
@@ -311,7 +324,7 @@ const DOCUMENT_STYLES = `
       h1, h2, h3 { margin: 0; }
       h1 { margin-top: 12px; font-size: 38px; line-height: 1.25; }
       .hero p { max-width: 760px; font-size: 16px; line-height: 1.6; }
-      .keep-whole { break-inside: avoid; }
+      .keep-whole, #provenance-appendix { break-inside: avoid; }
       .section-title + p, #evidence-appendices > p { break-after: avoid; }
       thead { break-after: avoid; }
       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
@@ -353,12 +366,12 @@ const DOCUMENT_STYLES = `
       .nowrap { white-space: nowrap; }
       .provenance-table { font-size: 13px; }
       .provenance-table th, .provenance-table td { padding: 7px 6px; }
-      .provenance-table col:nth-child(1) { width: 36%; }
+      .provenance-table col:nth-child(1) { width: 34%; }
       .provenance-table col:nth-child(2) { width: 7%; }
-      .provenance-table col:nth-child(3) { width: 14%; }
-      .provenance-table col:nth-child(4) { width: 10%; }
+      .provenance-table col:nth-child(3) { width: 13%; }
+      .provenance-table col:nth-child(4) { width: 9%; }
       .provenance-table col:nth-child(5) { width: 11%; }
-      .provenance-table col:nth-child(6) { width: 10%; }
+      .provenance-table col:nth-child(6) { width: 14%; }
       .provenance-table col:nth-child(7) { width: 12%; }
       .table-note { margin: 10px 0 0; font-size: 13px; color: #3c4a52; }
       .whole-id { display: inline-block; max-width: 100%; }
@@ -560,7 +573,7 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[], ca
     ? `
     <p class="table-note">Finalized times are in UTC: no workspace time zone is set.</p>`
     : "";
-  return `<section id="provenance-appendix" class="keep-whole">
+  return `<section id="provenance-appendix">
     <h2 class="section-title">Provenance appendix</h2>
     <p>How each section's text came to be, disclosed per section. AI drafts are writing support
     grounded in workspace evidence; the operator who finalized a section is the authority for it.</p>
@@ -586,7 +599,7 @@ function provenanceMarkup(sections: readonly GrantApplicationExportSection[], ca
           <td>${esc(ORIGIN_LABELS[provenance.origin])}</td>
           <td>${esc(provenance.model ?? (fromAiDraft ? "Not recorded" : "No model"))}</td>
           <td>${esc(grounding)}</td>
-          <td>${esc(provenance.finalizedBy ?? (isFinal ? "Not recorded" : "Not finalized"))}</td>
+          <td>${finalizedByMarkup(provenance.finalizedBy ?? (isFinal ? "Not recorded" : "Not finalized"))}</td>
           <td>${provenance.finalizedAt ? shortDateTimeMarkup(provenance.finalizedAt, calendar) : isFinal ? "Not recorded" : "Not finalized"}</td>
         </tr>`;
           })
