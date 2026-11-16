@@ -168,6 +168,16 @@ type ProjectFundingPanelProps = {
   comparisonBackedFundingReport: ComparisonBackedFundingReport;
 };
 
+/**
+ * The award's match as a planner reads it. The column is NOT NULL DEFAULT 0, so
+ * a zero cannot be told from a match nobody entered; the worksheet's ledger
+ * reports that as "Not recorded", and this line says the same.
+ */
+function awardMatchText(amount: number | string | null | undefined, posture: string | null | undefined): string {
+  if (Number(amount ?? 0) !== 0) return fmtCurrency(amount);
+  return posture === "not_required" ? "not required" : "not recorded";
+}
+
 export function ProjectFundingPanel({
   projectId,
   workspaceId,
@@ -270,7 +280,8 @@ export function ProjectFundingPanel({
           <div className="module-summary-grid cols-6 mt-5">
             <div className="module-summary-card">
               <p className="module-summary-label">Funding need</p>
-              <p className="module-summary-value text-base leading-tight">{fmtCurrency(fundingNeedAmount)}</p>
+              {/* A need nobody entered is not a zero need (lane 84). */}
+              <p className="module-summary-value text-base leading-tight">{fundingStackSummary.comparableFunding || fundingStackSummary.hasTargetNeed ? fmtCurrency(fundingNeedAmount) : "Not recorded"}</p>
               <p className="module-summary-detail">Current project-level target need for funding stack planning.</p>
             </div>
             <div className="module-summary-card">
@@ -285,7 +296,7 @@ export function ProjectFundingPanel({
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Still unfunded</p>
-              <p className="module-summary-value text-base leading-tight">{fmtCurrency(remainingFundingGap)}</p>
+              <p className="module-summary-value text-base leading-tight">{fundingStackSummary.comparableFunding || fundingStackSummary.hasTargetNeed ? fmtCurrency(remainingFundingGap) : "Not assessed"}</p>
               <p className="module-summary-detail">Gap still remaining after committed awards and likely pursued dollars.</p>
             </div>
             <div className="module-summary-card">
@@ -463,7 +474,7 @@ export function ProjectFundingPanel({
                       </div>
 
                       {award.latest_handoff_revision_id ? <AwardFundingFacts awards={[award]}/> : <p className="mt-1.5 text-label text-muted-foreground">
-                        Awarded {fmtCurrency(award.awarded_amount)} · Match {fmtCurrency(award.match_amount)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
+                        Awarded {fmtCurrency(award.awarded_amount)} · Match {awardMatchText(award.match_amount, award.match_posture)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
                       </p>}
 
                       {/*
