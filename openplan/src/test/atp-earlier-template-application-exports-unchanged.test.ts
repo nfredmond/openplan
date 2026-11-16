@@ -52,8 +52,8 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * reads what it says.
  */
 
-const PINNED_HTML_SHA256 = "3704d0e33726376018b8c36741fa336d1420e9d269d5f7c8b726c00ae04b63d3";
-const PINNED_PDF_SHA256 = "867d7fd438f45eb6c673f2670fcfff83506d276f1b377981756507f0ac1208b8";
+const PINNED_HTML_SHA256 = "60f96c20dd4499ec2ba51628a27d653f30cf21a08fcbab024b50f89337555973";
+const PINNED_PDF_SHA256 = "7a962fe8807667fc156ece49bb7d406ae7d75249bb84d1a92c00ab4a282f38e7";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();

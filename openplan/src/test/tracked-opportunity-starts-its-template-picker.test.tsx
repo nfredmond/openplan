@@ -88,6 +88,9 @@ describe("an opportunity tracked from a catalog card", () => {
     // A title a planner typed, or the program's name under another agency, matches nothing.
     expect(trackedKey(baseOpportunity)).toBe("");
     expect(trackedKey({ ...baseOpportunity, title: atp.name, agency_name: "Caltrans" } as Opportunity)).toBe("");
+    // A proposal pursuit that happens to carry a catalog program's name and agency gets no key:
+    // it has no picker, and its set-up request refuses one (review 76).
+    expect(trackedKey({ ...baseOpportunity, title: atp.name, agency_name: atp.administeringAgency, pursuit_kind: "proposal" } as Opportunity)).toBe("");
   });
 
   it("matches a tracked opportunity to a catalog program only on its exact name and agency, and only to a program with a template", () => {

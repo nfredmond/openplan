@@ -361,9 +361,14 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
           ? "Assembled from operator-approved section texts for this solicitation response."
           : "Assembled from operator-approved section texts and the application attachment checklist.")
     )}</p>${coverLines}
+    ${
+      // Above the boxes: the cover lines and full-width boxes had pushed the
+      // stamp to the second page, and a reader must meet DRAFT on the first
+      // (review 76).
+      draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")
+    }
     <div class="facts" style="margin-top: 18px;">${coverFacts}
     </div>
-    ${draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")}
     ${
       caveats.length > 0
         ? `<div class="warning-box">

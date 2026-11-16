@@ -297,7 +297,12 @@ export function GrantsOpportunityRegistryCard({
           opportunityId={opportunity.id}
           pursuitKind={pursuitKind}
           linkedProjectId={opportunity.project?.id ?? null}
-          trackedCatalogKey={catalogKeyTrackedAs({ title: opportunity.title, agencyName: opportunity.agency_name })}
+          // A proposal has no template picker and its set-up refuses a catalog key (review 76).
+          trackedCatalogKey={
+            pursuitKind === "grant"
+              ? catalogKeyTrackedAs({ title: opportunity.title, agencyName: opportunity.agency_name })
+              : null
+          }
         />
 
         {projectHref || programHref || projectGrantModelingEvidence || projectGrantDualDemandAgreementEvidence ? (

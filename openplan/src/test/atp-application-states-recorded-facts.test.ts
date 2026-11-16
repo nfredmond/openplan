@@ -565,7 +565,9 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
     expect(lines.filter((line) => /^\s*record 0f3c9a1e|^\s*0f3c9a1e/.test(line)).length).toBeGreaterThan(3);
   }, 120_000);
 
-  it("never splits a not-final box or a cover box across a page break", async () => {
+  it("never splits a not-final box across a page break", async () => {
+    // Cover boxes are not checked here: a fresh-context review (review 76) removed the rule that
+    // keeps a cover box whole and this test still passed. Only the byte pins see that rule.
     // Forty sections under the long cover of a tracked opportunity. Every other one has no final text
     // and prints a two-line box. Between them sit final sections whose text grows by one sentence each
     // time, so the boxes fall at many different heights on their pages. With nothing holding a box
@@ -605,6 +607,16 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
     });
     expect(split).toEqual([]);
     expect(boxes).toBe(20);
+  }, 120_000);
+
+  it("prints the DRAFT stamp on the first page, above the cover boxes", async () => {
+    // Review 76: the cover lines and full-width boxes had pushed the stamp to page 2 in every export.
+    const pages = await pdfPages(applicationHtml(recordsFor(COUNTY), "Demonstration Planning Consultants"), "stamp-first-page");
+    const stamp = /DRAFT: \d+ required attachment\(s\) outstanding/;
+    expect(pages[0]).toMatch(stamp);
+    expect(pages.slice(1).some((page) => stamp.test(page))).toBe(false);
+    // Above the boxes: the stamp comes before the first box label on the page.
+    expect(pages[0].search(stamp)).toBeLessThan(pages[0].search(/FUNDER \/ AGENCY/i));
   }, 120_000);
 
   it("prints the tribal-area fact on one line in the tribal-area PDF only", async () => {
