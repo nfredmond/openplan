@@ -314,7 +314,16 @@
       "decidedIn": "docs/reviews/product-direction/proven-jobs/2026-11-16-third-proven-job.md",
       "journeys": [
         { "role": "county", "placeKind": "county", "stateFips": "06" },
-        { "role": "city", "placeKind": "city", "stateFips": "06" },
+        {
+          "role": "city",
+          "placeKind": "city",
+          "stateFips": "06",
+          "censusNameRefused": {
+            "note": "An incorporated place. OpenPlan's place search calls a Census place a city or a Census designated place, and the record carries that kind. For a record in the registry the checker also reads the Bureau's name for the id and refuses one that matches this pattern: the Gazetteer names a Census designated place with the closing word CDP. The job does not require a population range, and no committed table holds a place's population.",
+            "pattern": " CDP$",
+            "refusal": "is a Census designated place, not an incorporated place"
+          }
+        },
         {
           "role": "tribal-area",
           "placeKind": "aiannh",

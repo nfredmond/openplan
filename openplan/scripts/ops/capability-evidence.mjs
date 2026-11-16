@@ -150,7 +150,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     // Real records only: the direction check sets this for every record in the
     // registry. Synthetic examples use ids the Census Bureau does not list, on
     // purpose, so they name no real place.
-    if (censusNames) checkPlaceName(journey.place, label);
+    if (censusNames) checkPlaceName(journey.place, label, rule.censusNameRefused);
     checkExecutors(journey, job, label);
 
     const points = journey.health.map((reading) => reading.point);
@@ -783,17 +783,24 @@ function censusTable(kind) {
  * a reservation label opens the Gazetteer name and a trust land label says
  * "Trust Land" and opens with the same word.
  *
+ * A journey's definition may also refuse a kind of Bureau name
+ * (`censusNameRefused`: a pattern and the refusal's words).
+ *
  * Blind category: the Gazetteer says what an id is called, not that the
  * journey worked in that place. A label the product words another way (a
  * nickname, another language) is refused; the label must be the Bureau's.
  */
-function checkPlaceName(place, label) {
+function checkPlaceName(place, label, nameRefused) {
   const table = censusTable(place.kind);
   if (!table || typeof place.label !== "string") return;
   const year = JOB_DEFINITIONS.censusNames.year;
   const tribal = place.kind === "aiannh";
   const row = table.get(tribal ? place.geoid.slice(0, 4) : place.geoid);
   if (!row) refuse(`${label} geoid ${place.geoid} is not a ${place.kind} id in the Census Bureau's ${year} Gazetteer`);
+  // A journey's rule may refuse a kind of Bureau name (the application job's city may not be a CDP).
+  if (nameRefused && new RegExp(nameRefused.pattern).test(row.name)) {
+    refuse(`${label} geoid ${place.geoid} is "${row.name}" in the Census Bureau's ${year} Gazetteer, which ${nameRefused.refusal}`);
+  }
   const comma = place.label.lastIndexOf(", ");
   const name = (comma === -1 ? place.label : place.label.slice(0, comma)).trim();
   const state = comma === -1 ? "" : place.label.slice(comma + 2).trim();

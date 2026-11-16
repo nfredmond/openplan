@@ -265,6 +265,13 @@ describe("the ATP application job refuses the wrong places", () => {
     ["a tribal area with California listed twice", (r) => { journey(r, "tribal-area").place.stateFips = ["06", "06"]; }, /must lie in exactly 06/],
   ]);
 
+  it("refuses a Census designated place in the city journey, by the Bureau's name for its id", () => {
+    const record = proven();
+    editBoth(record, "county", (entry) => Object.assign(entry.place, { geoid: "06105", label: "Trinity County, CA" }));
+    editBoth(record, "city", (entry) => Object.assign(entry.place, { geoid: "0600156", label: "Acampo, CA" }));
+    expect(() => check(record, { censusNames: true })).toThrow(/proven job record refused: city journey geoid 0600156 is "Acampo CDP" in the Census Bureau's 2026 Gazetteer, which is a Census designated place, not an incorporated place/);
+  });
+
   it("refuses a label that is not the Bureau's name for the id, when the files agree with the record", () => {
     const record = proven();
     editBoth(record, "county", (entry) => Object.assign(entry.place, { geoid: "06105", label: "Shasta County, CA" }));
@@ -275,6 +282,17 @@ describe("the ATP application job refuses the wrong places", () => {
 describe("the ATP application job refuses PDFs that are not three committed files", () => {
   refuses([
     ["one file named by two journeys", (r) => { journey(r, "city").pdfs[0] = structuredClone(journey(r, "county").pdfs[0]); }, /journey's atp-application PDF is the same bytes as the county journey's/],
+    ["one PDF copied to a second path for another journey", (r) => {
+      const pdf = journey(r, "tribal-area").pdfs[0];
+      Object.assign(pdf, { ...structuredClone(journey(r, "county").pdfs[0]), path: pdf.path.replace(".pdf", "-copy.pdf") });
+      writeFile(pdf.path, syntheticApplicationPdfText(journey(r, "county"), JOB));
+    }, /the tribal-area journey's atp-application PDF is the same bytes as the county journey's atp-application PDF \(SHA-256 [0-9a-f]{64}\); each journey exports its own/],
+    ["one PDF copied with a byte added, so the hashes differ", (r) => {
+      const pdf = journey(r, "tribal-area").pdfs[0];
+      const text = `${syntheticApplicationPdfText(journey(r, "county"), JOB)}\n`;
+      Object.assign(pdf, { path: pdf.path.replace(".pdf", "-padded.pdf"), sha256: sha(text), bytes: Buffer.byteLength(text) });
+      writeFile(pdf.path, text);
+    }, /tribal-area journey atp-application PDF cover does not print projectName/],
     ["a changed file under a stale hash", (r) => {
       const pdf = journey(r, "county").pdfs[0];
       pdf.path = pdf.path.replace(".pdf", "-stale.pdf");
