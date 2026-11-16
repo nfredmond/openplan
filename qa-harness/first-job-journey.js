@@ -456,7 +456,9 @@ async function main() {
             });
             await reader.screenshot({ path: path.join(out, 'screens', `campaign-closed-${name}-1440.png`) });
           }
-          api = await appFetch(`/api/engage/${ids.portalPath.split('/').pop()}`, null, 'GET', reader);
+          // The share token in its own name, so the route-contract guard can read this call as /api/engage/[shareToken].
+          const shareToken = ids.portalPath.split('/').pop();
+          api = await appFetch(`/api/engage/${shareToken}`, null, 'GET', reader);
         } finally {
           await visitor.close().catch(() => {});
         }
