@@ -275,6 +275,37 @@ describe("resolvePlaceBoundary", () => {
     fetchJsonWithRetryMock.mockResolvedValue({ type: "FeatureCollection", features: [] });
     expect(await resolvePlaceBoundary("county", "06113")).toBeNull();
   });
+
+  /**
+   * KI-2026-11-16-102. The boundary's label is the one saved on a project and
+   * printed by its exports as the study place. For a city it was the base
+   * name alone ("Yreka"), while search showed "Yreka, CA" and a county or a
+   * tribal area was saved with its state. The third proven job's city PDF
+   * then printed "Study place: Yreka (city, GEOID 0686944)", which a record
+   * that names the place by its Census name and state cannot match.
+   */
+  const boundaryOf = (properties: Record<string, unknown>) => ({
+    type: "FeatureCollection",
+    features: [{ type: "Feature", geometry: DAVIS_POLYGON, properties }],
+  });
+
+  it.each([
+    ["city", "0618100", { GEOID: "0618100", NAME: "Davis city", BASENAME: "Davis" }, "Davis, CA"],
+    ["cdp", "0600156", { GEOID: "0600156", NAME: "Acampo CDP", BASENAME: "Acampo" }, "Acampo, CA"],
+    ["city", "1772000", { GEOID: "1772000", NAME: "Springfield city", BASENAME: "Springfield" }, "Springfield, IL"],
+    ["city", "2970000", { GEOID: "2970000", NAME: "Springfield city", BASENAME: "Springfield" }, "Springfield, MO"],
+  ] as const)("labels a %s boundary (%s) with its state, as search labels it", async (kind, geoid, properties, label) => {
+    fetchJsonWithRetryMock.mockResolvedValue(boundaryOf(properties));
+    expect((await resolvePlaceBoundary(kind, geoid))?.label).toBe(label);
+    // The same record through search gives the same label, so the place a planner picked is the place saved.
+    const [found] = parsePlaceSearchResponse({ features: [{ attributes: { ...properties, STATE: geoid.slice(0, 2) } }] }, kind);
+    expect(found.label).toBe(label);
+  });
+
+  it("does not invent a state for a boundary record that carries no Census id", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue(boundaryOf({ BASENAME: "Davis" }));
+    expect((await resolvePlaceBoundary("city", "0618100"))?.label).toBe("Davis");
+  });
 });
 
 const YOLO_COUNTY = {
