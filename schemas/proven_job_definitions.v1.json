@@ -6,7 +6,7 @@
     "county": "^\\d{5}$",
     "aiannh": "^\\d{4}[RT]$"
   },
-  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways.",
+  "ruleNote": "journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways. newRecordRules holds rules that apply only to records whose recordedOn is on or after its recordedOnOrAfter date: its journeyFields, and with checkClose the campaign close reading every campaign job gets.",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -91,7 +91,17 @@
         "no-keyboard-or-screen-reader-pass",
         "no-human-usefulness-review",
         "fars-is-fatal-only"
-      ]
+      ],
+      "newRecordRules": {
+        "note": "Lane 65, November 16, 2026. The first record (recorded 2026-11-14) left its public comment pages open under the places' names until they were closed by hand, and does not name its runs' mode or harness checkout. A record of this job dated on or after recordedOnOrAfter must carry, for each journey, the mode, the campaign close and the harness checkout its run file recorded, and the close must pass the same reading the engagement job's does. The first record is accepted without them.",
+        "recordedOnOrAfter": "2026-11-16",
+        "checkClose": true,
+        "journeyFields": [
+          { "field": "mode", "equals": "proof", "refusal": "ran in {found} mode; only a proof run is proof" },
+          { "field": "close.closed", "equals": true, "refusal": "did not take its campaign offline at the end (close.closed is {found})" },
+          { "field": "harness.clean", "equals": true, "refusal": "names no clean harness checkout (harness.clean is {found}); a proof runs from a checkout with no uncommitted change" }
+        ]
+      }
     },
     {
       "id": "engagement-campaign-review-and-response-in-three-places",

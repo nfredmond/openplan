@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { assertLocalTargetUrl, assertProofTargetUrl, repoRoot } = require('./harness-env');
+const campaignLib = require('./journey-campaign-lib');
 
 const MODES = ['rehearsal', 'proof'];
 const PLACE_KINDS = ['county', 'city', 'cdp', 'metro', 'micro', 'aiannh', 'cousub'];
@@ -354,11 +355,40 @@ function assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin }) {
   if (run.stoppedAt) throw new Error(`${name} stopped at ${run.stoppedAt}; an unfinished run cannot go into a record.`);
 }
 
-/** Combine three journey files into one proven job record for the checker. Each run must pass assertRunAssemblable. */
+/**
+ * The first job's rule for runs made from November 16, 2026 (lane 65), on top
+ * of assertRunAssemblable: the run took its campaign offline at the end and
+ * names the harness checkout it ran from; a run assembled under the proof
+ * origin ran from a checkout with no uncommitted change to a tracked file.
+ * The record that exists was assembled before this rule and is not
+ * re-assembled.
+ */
+function assertFirstJobRunAssemblable(run, { file, commit, baseUrl, proofOrigin }) {
+  assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
+  const name = path.basename(file);
+  const close = run.close || {};
+  if (!close.attempted || !close.closed) throw new Error(`${name} did not take its campaign offline at the end, so it cannot go into a record.`);
+  const harness = run.harness || {};
+  if (!/^[0-9a-f]{40}$/.test(String(harness.commit)) || typeof harness.clean !== 'boolean') {
+    throw new Error(`${name} names no harness checkout (commit and clean); it was made before the journey recorded one.`);
+  }
+  if (new URL(baseUrl).origin === proofOrigin && harness.clean !== true) {
+    throw new Error(`${name} ran from a harness checkout with uncommitted changes; a proof runs from a clean checkout.`);
+  }
+}
+
+/**
+ * Combine three journey files into one proven job record for the checker.
+ * Each run must pass assertFirstJobRunAssemblable. Each journey carries its
+ * run's mode, the close its run file records (journey-campaign-lib.js,
+ * closeForRecord) and the harness checkout it ran from.
+ */
 function assembleRecord({ journeyFiles, jobId, commit, baseUrl, recordedOn, sourceCheck, limits, proofOrigin }) {
   const runs = journeyFiles.map((file) => {
     const run = JSON.parse(fs.readFileSync(file, 'utf8'));
-    assertRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
+    assertFirstJobRunAssemblable(run, { file, commit, baseUrl, proofOrigin });
+    const { role, ...rest } = run.journey;
+    run.journey = { role, mode: run.mode, ...rest, close: campaignLib.closeForRecord(run), harness: { commit: run.harness.commit, clean: run.harness.clean } };
     return run;
   });
   const checks = runs.flatMap((run) => run.crossWorkspace.checks);
@@ -393,7 +423,7 @@ const REHEARSAL_LABEL = 'Rehearsal text, not an application.';
 const VERIFY_MARKER = /\[VERIFY(?:\]|:[^\]\n]*\])/g;
 const PLACEHOLDER_MARKER = /\[OPERATOR:[^\]\n]*\]/g;
 const EMAIL_PATTERN = /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/;
-const INPUT_FIELDS = ['projectSummary', 'planType', 'countermeasures', 'treatedSegments', 'bca', 'comments', 'reviewReason', 'staffReview', 'budgetTitle', 'facts', 'sections'];
+const INPUT_FIELDS = ['projectSummary', 'planType', 'countermeasures', 'treatedSegments', 'bca', 'campaign', 'comments', 'reviewReason', 'staffReview', 'budgetTitle', 'facts', 'sections'];
 
 /** `[VERIFY]` markers and `[OPERATOR: ...]` placeholders in a text, counted as the export counts them. */
 function countMarkers(text) {
@@ -404,9 +434,14 @@ function countMarkers(text) {
 /**
  * Refuse inputs a journey cannot enter honestly. Every section text must be
  * free of markers, placeholders, email addresses and the word DRAFT; every
- * fact needs a statement, a source and the date it was read. A proof refuses
- * any inputs file labeled as rehearsal text, and any fact sourced as
- * synthetic, so rehearsal text never enters a proof.
+ * fact needs a statement, a source and the date it was read. The campaign's
+ * title and invitation say "Demonstration by an automated OpenPlan proof
+ * run" in both modes, and every comment says it was entered by an automated
+ * proof run and represents no one (journey-campaign-lib.js, the second job's
+ * rule); the campaign, comments and review text hold no email address, marker
+ * or the word DRAFT, since the exports print them. A proof refuses any inputs
+ * file labeled as rehearsal text, and any fact sourced as synthetic, so
+ * rehearsal text never enters a proof.
  */
 function validateJourneyInputs(inputs, mode, today = utcNow().slice(0, 10)) {
   if (!inputs || typeof inputs !== 'object' || Array.isArray(inputs)) throw new Error('The inputs file is not a JSON object.');
@@ -415,6 +450,28 @@ function validateJourneyInputs(inputs, mode, today = utcNow().slice(0, 10)) {
   if (mode === 'proof') {
     const labeled = inputs.rehearsal === true || JSON.stringify(inputs).toLowerCase().includes(REHEARSAL_LABEL.toLowerCase());
     if (labeled) throw new Error(`The inputs file is labeled "${REHEARSAL_LABEL}" A proof needs sourced section text and facts.`);
+  }
+  if (inputs.campaignTitle !== undefined && inputs.campaignTitle !== null) {
+    throw new Error('campaignTitle is no longer read. Put the title in campaign.title, with campaign.invitation beside it.');
+  }
+  campaignLib.assertDemonstrationCampaign(inputs.campaign);
+  if (!Array.isArray(inputs.comments) || inputs.comments.length === 0 || inputs.comments.some((text) => typeof text !== 'string' || !text.trim())) {
+    throw new Error('The inputs file needs comments, a list of at least one comment text.');
+  }
+  inputs.comments.forEach((text, index) => campaignLib.assertCommentStatements(text, `comments[${index}]`));
+  const printed = [
+    ['campaign.title', inputs.campaign.title],
+    ['campaign.invitation', inputs.campaign.invitation],
+    ...inputs.comments.map((text, index) => [`comments[${index}]`, text]),
+    ['reviewReason', inputs.reviewReason],
+    ...Object.entries(inputs.staffReview || {}).map(([key, text]) => [`staffReview.${key}`, text]),
+  ];
+  for (const [at, text] of printed) {
+    if (typeof text !== 'string') continue;
+    if (EMAIL_PATTERN.test(text)) throw new Error(`${at} holds an email address.`);
+    if (/\bDRAFT\b/.test(text)) throw new Error(`${at} holds the word DRAFT, which the record checker reads as a stamp.`);
+    const markers = countMarkers(text);
+    if (markers.verify + markers.placeholders > 0) throw new Error(`${at} holds a [VERIFY] marker or an [OPERATOR] placeholder.`);
   }
   if (!Array.isArray(inputs.facts) || inputs.facts.length === 0) throw new Error('The inputs file needs at least one fact with its source and the date it was read.');
   for (const [index, fact] of inputs.facts.entries()) {
@@ -575,6 +632,46 @@ function choosePlaceResult(query, labels) {
   return matches.length === 1 ? matches[0] : -1;
 }
 
+// ---------------------------------------------------------------------------
+// The campaign's public text (lane 65)
+// ---------------------------------------------------------------------------
+
+/** The public pages a participant reads for the demonstration's text: the portal and its about page. */
+const PORTAL_PAGES = ['portal', 'about'];
+
+/**
+ * Read each public page an anonymous participant loaded for the
+ * demonstration's own text (journey-campaign-lib.js, readDemonstrationText).
+ * `pages` is [{ name, width, text, html, sheetOpened }]. Returns one reading
+ * per page; it refuses nothing, so the run file keeps every reading even when
+ * the journey then stops.
+ */
+function portalDemonstrationReadings({ pages, invitation, title, createdWith }) {
+  return pages.map((page) => ({
+    ...campaignLib.readDemonstrationText({ surface: { name: `${page.name} at ${page.width} px`, text: page.text, html: page.html }, invitation, title, createdWith }),
+    page: page.name,
+    width: page.width,
+    sheetOpened: Boolean(page.sheetOpened),
+  }));
+}
+
+/**
+ * The refusal the journey applies before any comment is sent: the portal and
+ * its about page were each read at every screen width (1440 and 390 px), and
+ * every reading shows the invitation and none shows the template's text or
+ * the text the campaign was created with.
+ */
+function assertPortalReadsAsDemonstration(readings) {
+  const missing = [];
+  for (const width of SCREEN_WIDTHS) {
+    for (const page of PORTAL_PAGES) {
+      if (!(readings || []).some((reading) => reading.page === page && reading.width === width)) missing.push(`${page} at ${width} px`);
+    }
+  }
+  if (missing.length) throw new Error(`The public pages were not all read as a participant: ${missing.join(', ')} was not read.`);
+  campaignLib.assertReadsAsDemonstration(readings);
+}
+
 /** UTC timestamp in the record's dateTime shape, without milliseconds. */
 function utcNow(date = new Date()) {
   return date.toISOString().replace(/\.\d{3}Z$/, 'Z');
@@ -588,12 +685,15 @@ module.exports = {
   MODES,
   NOT_FOUND_TITLE,
   PDF_KINDS,
+  PORTAL_PAGES,
   REHEARSAL_INPUTS_PATH,
   REHEARSAL_LABEL,
   SCREEN_MODES,
   SCREEN_WIDTHS,
   analyzePpm,
   assembleRecord,
+  assertFirstJobRunAssemblable,
+  assertPortalReadsAsDemonstration,
   assertRunAssemblable,
   buildJourney,
   checkConfirmLinkOrigin,
@@ -612,6 +712,7 @@ module.exports = {
   parseJourneyArgs,
   parseUnverifiedBadge,
   pdfPages,
+  portalDemonstrationReadings,
   readPageForRecord,
   renderPdfPage,
   scrubText,

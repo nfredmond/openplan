@@ -15,10 +15,13 @@
     "capitalCost": "1000000",
     "costYear": null
   },
-  "campaignTitle": null,
+  "campaign": {
+    "title": "Road safety comments. Demonstration by an automated OpenPlan proof run",
+    "invitation": "Demonstration by an automated OpenPlan proof run. This page tests the comment form for a local rehearsal of a safety action plan. No agency is collecting comments here, and a comment sent here reaches no planner."
+  },
   "comments": [
-    "Drivers take the curves too fast and there is no shoulder. Rehearsal comment one.",
-    "The road is dark at night near the bridge and hard to see. Rehearsal comment two."
+    "Drivers take the curves too fast and there is no shoulder. Rehearsal comment one, entered by an automated proof run; it represents no one.",
+    "The road is dark at night near the bridge and hard to see. Rehearsal comment two, entered by an automated proof run; it represents no one."
   ],
   "reviewReason": "Relevant safety comment about a place; no personal information. Rehearsal.",
   "staffReview": {

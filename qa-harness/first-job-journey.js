@@ -24,6 +24,22 @@
  * --inputs uses fixtures/first-job-rehearsal-inputs.json, labeled as
  * rehearsal text; proof mode refuses any file that carries that label.
  *
+ * The campaign is a demonstration (lane 65). The inputs file carries its
+ * title and invitation, each saying "Demonstration by an automated OpenPlan
+ * proof run", and every comment says it was entered by an automated proof run
+ * and represents no one; the validator refuses anything else, in both modes.
+ * The template applies its own public description at creation. Before the
+ * campaign goes live the journey replaces it with the invitation through the
+ * Setup tab's "Public-facing description" field, then reads the portal and
+ * its about page as an anonymous participant at 1440 and 390 px and stops
+ * unless each shows the invitation and none shows the text the campaign was
+ * created with. Whether the journey finishes or stops, it then sets the
+ * campaign to Closed through the settings form and reads the portal, the
+ * about page and the public portal data as a participant; the run file's
+ * `close` says whether it tried and whether it worked, and a close that did
+ * not work fails the run. The second job's journey does the same
+ * (journey-campaign-lib.js holds what the two share).
+ *
  * Email confirmation: the script never takes the confirmation link as an
  * argument. When sign-up asks for confirmation it waits for the file named by
  * --confirm-link-file, reads the link, opens it, and records only a SHA-256 of
@@ -31,8 +47,12 @@
  *
  * Output (in --out): journey-<role>.json (the journey in the shape of
  * schemas/proven_job_record.v1.schema.json, plus cross-workspace checks,
- * findings and the step log), screenshots, scrubbed console captures, the two
- * PDFs and the rendered map pages. Assemble three journey files into one
+ * findings, the step log, the mode, the harness checkout it ran from, the
+ * SHA-256 of the inputs and budget files and the close), screenshots,
+ * scrubbed console captures, the two PDFs and the rendered map pages. The
+ * campaign's public address is written to public-address.txt beside the run
+ * file and nowhere else; the operator reads it in a fresh session after the
+ * run, then deletes it. Assemble three journey files into one
  * record with --assemble, then run the evidence checker on it.
  *
  * See qa-harness/README.md for the exact commands.
@@ -40,8 +60,9 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { appRoot } = require('./harness-env');
+const { appRoot, repoRoot } = require('./harness-env');
 const lib = require('./first-job-journey-lib');
+const campaignLib = require('./journey-campaign-lib');
 
 const puppeteer = require(require.resolve('puppeteer-core', { paths: [appRoot] }));
 const AXE_SOURCE = path.join(appRoot, 'node_modules', 'axe-core', 'axe.min.js');
@@ -49,9 +70,10 @@ const AXE_SOURCE = path.join(appRoot, 'node_modules', 'axe-core', 'axe.min.js');
 const STEPS = [
   'health-start', 'sign-up', 'confirm-email', 'create-project', 'set-study-place', 'retrieve-crashes',
   'rank-high-injury-network', 'create-safety-report', 'save-countermeasures', 'save-bca', 'create-campaign',
-  'activate-campaign', 'submit-public-comments', 'moderate-comments', 'approve-staff-review',
-  'generate-report-pdf', 'track-ss4a', 'seed-application', 'finalize-sections', 'attach-budget',
-  'export-ss4a-pdf', 'screens', 'sign-out', 'cross-workspace', 'health-end', 'analyze-pdfs',
+  'set-public-text', 'activate-campaign', 'read-portal-text', 'submit-public-comments', 'moderate-comments',
+  'approve-staff-review', 'generate-report-pdf', 'track-ss4a', 'seed-application', 'finalize-sections',
+  'attach-budget', 'export-ss4a-pdf', 'screens', 'sign-out', 'cross-workspace', 'close-campaign', 'health-end',
+  'analyze-pdfs',
 ];
 
 function log(message) {
@@ -201,6 +223,10 @@ async function main() {
   const loadedInputs = lib.loadJourneyInputs(options.mode, options.inputsFile);
   const inputs = loadedInputs.inputs;
   log(`inputs: ${path.basename(loadedInputs.file)} (sha256 ${loadedInputs.sha256.slice(0, 12)})`);
+  // The checkout this script runs from, so a record names the harness that made it.
+  const harness = campaignLib.harnessCheckout(repoRoot);
+  log(`harness: ${harness.commit.slice(0, 12)}${harness.clean ? ', clean' : ', with uncommitted changes to tracked files'}`);
+  if (options.mode === 'proof' && !harness.clean) throw new Error('A proof runs from a harness checkout with no uncommitted change to a tracked file.');
 
   const out = options.outDir;
   for (const dir of ['', 'screens', 'console', 'downloads', 'pdf-pages']) fs.mkdirSync(path.join(out, dir), { recursive: true });
@@ -225,6 +251,8 @@ async function main() {
   secrets.push(password, secondPassword);
   const consoleErrors = [];
   const crossChecks = [];
+  const demonstrationText = { publicTextSet: null, portal: [] };
+  let closeReading = null;
 
   const browser = await puppeteer.launch({
     executablePath: chromePath(),
@@ -364,8 +392,72 @@ async function main() {
     return { createdAt, confirmationMethod: 'email_link', tokenSha256 };
   }
 
-  let failure = null;
-  try {
+  /** Close the campaign through the settings form, then read its public addresses as a participant. */
+  async function closeCampaign() {
+    const staff = await context.newPage();
+    try {
+      await staff.goto(new URL(`/engagement/${ids.campaignId}?tab=setup`, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
+      await settle(staff);
+      await staff.evaluate(() => {
+        const select = document.querySelector('#campaign-control-status');
+        for (let node = select; node; node = node.parentElement) if (node.tagName === 'DETAILS') node.open = true;
+        if (select) select.scrollIntoView({ block: 'center' });
+      });
+      await sleep(800);
+      const status = await staff.waitForSelector('#campaign-control-status', { visible: true, timeout: 30000 });
+      await status.select('closed');
+      const saved = staff.waitForResponse((r) => r.url().includes(`/api/engagement/campaigns/${ids.campaignId}`) && r.request().method() === 'PATCH', { timeout: 60000 });
+      await staff.evaluate(() => {
+        const form = document.querySelector('#campaign-control-status').closest('form');
+        const button = [...form.querySelectorAll('button[type=submit]')].find((b) => b.innerText.trim() === 'Save campaign');
+        button.click();
+      });
+      const saveStatus = (await saved).status();
+      await settle(staff, 2000);
+      await staff.goto(new URL(`/engagement/${ids.campaignId}?tab=setup`, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
+      await settle(staff);
+      const statusAfter = await staff.$eval('#campaign-control-status', (el) => el.value).catch(() => 'unreadable');
+      await staff.screenshot({ path: path.join(out, 'screens', 'campaign-closed-staff-1440.png') });
+      const campaignStrings = [inputs.campaign.title, ...inputs.comments];
+      const holdsCampaignText = (text) => campaignStrings.some((value) => campaignLib.textHolds(text, value));
+      const addresses = [];
+      // No public link was made if the journey stopped before activation.
+      const neverPublic = !ids.portalPath;
+      let api = { status: null, text: '' };
+      if (!neverPublic) {
+        const visitor = await browser.createBrowserContext();
+        try {
+          const reader = await visitor.newPage();
+          for (const [name, route] of [['portal', ids.portalPath], ['about', `${ids.portalPath}/about`]]) {
+            const response = await reader.goto(new URL(route, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
+            await settle(reader, 1500);
+            const html = await reader.content();
+            const text = await reader.evaluate(() => document.body.innerText);
+            addresses.push({
+              name,
+              status: response.status(),
+              endedNoticeShown: Boolean(await reader.$('[data-testid=closed-campaign-notice]')),
+              campaignTextFound: holdsCampaignText(`${text}\n${html}`),
+            });
+            await reader.screenshot({ path: path.join(out, 'screens', `campaign-closed-${name}-1440.png`) });
+          }
+          api = await appFetch(`/api/engage/${ids.portalPath.split('/').pop()}`, null, 'GET', reader);
+        } finally {
+          await visitor.close().catch(() => {});
+        }
+      }
+      // The public portal data after the close: a 200 that still carries the
+      // campaign's title or a comment means the campaign is not offline.
+      const publicRead = { status: api.status, campaignTextFound: holdsCampaignText(api.text) };
+      const verdict = campaignLib.closeVerdict({ saveStatus, statusAfter, addresses, publicRead, neverPublic });
+      closeReading = { saveStatus, statusAfter, addresses, publicReadStatusAfter: api.status, publicReadCampaignTextFound: publicRead.campaignTextFound, ...verdict };
+      return verdict;
+    } finally {
+      await staff.close().catch(() => {});
+    }
+  }
+
+  async function mainSteps() {
     await step('health-start', () => health('start'));
 
     await step('sign-up', async () => {
@@ -627,12 +719,13 @@ async function main() {
       await page.select('#engagement-campaign-creator-templateId', 'corridor-safety-study');
       await clickText(page, 'dialog[open] button', 'Next', { exact: true });
       await page.waitForSelector('#engagement-campaign-creator-title');
-      ids.campaignTitle = inputs.campaignTitle || `${options.placeQuery} road safety comments`;
+      ids.campaignTitle = inputs.campaign.title;
       await page.type('#engagement-campaign-creator-title', ids.campaignTitle);
       await clickText(page, 'dialog[open] button', 'Next', { exact: true });
       await page.waitForSelector('#engagement-campaign-creator-projectId');
       const linked = await page.$eval('#engagement-campaign-creator-projectId', (el) => el.value);
       if (linked !== ids.projectId) throw new Error('The new campaign is not linked to the project.');
+      await typeInto(await page.$('#engagement-campaign-creator-summary'), inputs.campaign.invitation);
       const created = page.waitForResponse((r) => r.url().includes('/api/engagement/campaigns') && r.request().method() === 'POST', { timeout: 60000 });
       await clickText(page, 'dialog[open] button', 'Create campaign', { exact: true });
       const response = await created;
@@ -641,6 +734,37 @@ async function main() {
       ids.campaignId = page.url().match(/engagement\/([0-9a-f-]{36})/)[1];
       state.engagement.campaignId = ids.campaignId;
       return ids.campaignId;
+    });
+
+    await step('set-public-text', async () => {
+      const openField = async () => {
+        await go(`/engagement/${ids.campaignId}?tab=setup`);
+        await page.evaluate(() => {
+          const field = document.querySelector('#public-description');
+          for (let node = field; node; node = node.parentElement) if (node.tagName === 'DETAILS') node.open = true;
+          if (field) field.scrollIntoView({ block: 'center' });
+        });
+        await sleep(800);
+        return page.waitForSelector('#public-description', { visible: true, timeout: 30000 });
+      };
+      const field = await openField();
+      const before = await field.evaluate((el) => el.value);
+      ids.createdWithPublicText = before;
+      await typeInto(field, inputs.campaign.invitation);
+      const saved = page.waitForResponse((r) => r.url().includes(`/api/engagement/campaigns/${ids.campaignId}`) && r.request().method() === 'PATCH', { timeout: 60000 });
+      await clickText(page, '#public-share-controls button', 'Save share settings', { exact: true });
+      const saveStatus = (await saved).status();
+      if (saveStatus !== 200) throw new Error(`Saving the public description answered ${saveStatus}.`);
+      await settle(page, 1500);
+      const after = await (await openField()).evaluate((el) => el.value);
+      demonstrationText.publicTextSet = {
+        control: 'Setup tab, Public-facing description, Save share settings',
+        saveStatus,
+        templateTextBefore: campaignLib.readDemonstrationText({ surface: { name: 'the field before', text: before }, invitation: inputs.campaign.invitation, title: inputs.campaign.title }).templateSentenceFound,
+        readsInvitationAfter: after.trim() === inputs.campaign.invitation.trim(),
+      };
+      if (!demonstrationText.publicTextSet.readsInvitationAfter) throw new Error(`After saving, the public description reads "${after.slice(0, 80)}".`);
+      return `public description replaced${demonstrationText.publicTextSet.templateTextBefore ? " (it held the template's text)" : ''}`;
     });
 
     await step('activate-campaign', async () => {
@@ -667,6 +791,39 @@ async function main() {
       const live = await page.evaluate(() => /Live · accepting submissions/.test(document.body.innerText));
       if (!live) throw new Error('The portal status does not read "Live · accepting submissions".');
       return 'live';
+    });
+
+    await step('read-portal-text', async () => {
+      const visitor = await browser.createBrowserContext();
+      const pages = [];
+      try {
+        const reader = await visitor.newPage();
+        for (const width of lib.SCREEN_WIDTHS) {
+          await reader.setViewport({ width, height: width === 390 ? 844 : 1000 });
+          for (const [name, route] of [['portal', ids.portalPath], ['about', `${ids.portalPath}/about`]]) {
+            await reader.goto(new URL(route, origin).href, { waitUntil: 'domcontentloaded', timeout: 120000 });
+            await settle(reader);
+            // At 390 px the portal's title and description sit in a bottom
+            // sheet that is shut until the participant opens it.
+            const sheet = await reader.$('#portal-sheet-toggle');
+            const handle = sheet && !(await sheet.evaluate((el) => el.checked)) ? await reader.$('label[for=portal-sheet-toggle]') : null;
+            const sheetOpened = Boolean(handle && (await handle.boundingBox()));
+            if (sheetOpened) {
+              await handle.click();
+              await sleep(800);
+            }
+            const text = await reader.evaluate(() => document.body.innerText);
+            const html = await reader.content();
+            await reader.screenshot({ path: path.join(out, 'screens', `demonstration-${name}-${width}.png`), fullPage: false });
+            pages.push({ name, width, text, html, sheetOpened });
+          }
+        }
+      } finally {
+        await visitor.close().catch(() => {});
+      }
+      demonstrationText.portal = lib.portalDemonstrationReadings({ pages, invitation: inputs.campaign.invitation, title: inputs.campaign.title, createdWith: ids.createdWithPublicText });
+      lib.assertPortalReadsAsDemonstration(demonstrationText.portal);
+      return `${demonstrationText.portal.length} readings show the invitation and not the text the campaign was created with`;
     });
 
     await step('submit-public-comments', async () => {
@@ -888,6 +1045,7 @@ async function main() {
         budgetFile = path.join(out, 'rehearsal-budget.csv');
         fs.writeFileSync(budgetFile, 'Activity,Funding source,Amount (USD)\nREHEARSAL BUDGET. NOT A COST ESTIMATE.,,\nSafety action plan,SS4A planning grant,0\n');
       }
+      ids.budgetSha256 = campaignLib.fileSha256(budgetFile);
       const started = page.waitForResponse((r) => r.url().includes('/api/knowledge-base/documents/upload/start') && r.request().method() === 'POST', { timeout: 120000 });
       const completed = page.waitForResponse((r) => r.url().includes('/api/knowledge-base/documents/upload/complete') && r.request().method() === 'POST', { timeout: 180000 });
       await (await page.$('input[type=file][aria-label="Upload a file"]')).uploadFile(budgetFile);
@@ -1080,7 +1238,9 @@ async function main() {
       }
       return detail.join('; ');
     });
+  }
 
+  async function afterSteps() {
     await step('health-end', () => health('end'));
 
     await step('analyze-pdfs', async () => {
@@ -1106,11 +1266,37 @@ async function main() {
       if (cells.roleCells < finalCount) throw new Error(`The SS4A provenance table names a workspace role in ${cells.roleCells} "Finalized by" cell(s), fewer than the ${finalCount} sections finalized.`);
       return results.map((entry) => `${entry.kind}: ${5 - entry.missingItems.length} of 5 items`).join('; ');
     });
-  } catch (error) {
-    failure = error;
-  } finally {
-    await browser.close().catch(() => {});
   }
+
+  // The steps run until one stops; then, finished or stopped, the campaign
+  // is closed if one was made, and the end readback and PDF reading run only
+  // when everything before them passed (journey-campaign-lib.js, runJourney).
+  const finished = await campaignLib.runJourney({
+    steps: [mainSteps],
+    campaignId: () => ids.campaignId,
+    close: async () => {
+      const entry = { step: 'close-campaign', startedAt: lib.utcNow(), status: 'running' };
+      steps.push(entry);
+      log('close-campaign...');
+      try {
+        const verdict = await closeCampaign();
+        entry.status = verdict.closed ? 'passed' : 'failed';
+        entry.detail = verdict.closed ? 'closed; the portal and about page show only the ended notice' : verdict.problems.join('; ');
+        log(`close-campaign: ${entry.status} (${entry.detail})`);
+        return verdict;
+      } catch (error) {
+        entry.status = 'failed';
+        entry.error = lib.scrubText(error && error.message ? error.message.split('\n')[0] : String(error), secrets);
+        log(`close-campaign: failed (${entry.error})`);
+        throw error;
+      } finally {
+        entry.endedAt = lib.utcNow();
+      }
+    },
+    after: [afterSteps],
+  });
+  await browser.close().catch(() => {});
+  const failure = finished.failure;
 
   const furthest = [...steps].reverse().find((entry) => entry.status === 'passed');
   const journey = lib.buildJourney(state);
@@ -1120,8 +1306,10 @@ async function main() {
     baseUrl: origin,
     recordedOn: lib.utcNow().slice(0, 10),
     expectedCommit: options.expectedCommit,
+    harness,
     inputsLabel: inputs.label,
     inputsSha256: loadedInputs.sha256,
+    budgetSha256: ids.budgetSha256 || null,
     inputFacts: inputs.facts.map((fact) => ({ id: fact.id, source: fact.source, readOn: fact.readOn })),
     sections: ids.sectionEntries || [],
     ss4aStamp: { beforeExport: ids.ss4aStampBefore ?? null, afterExport: ids.ss4aStampAfter || [], exportResponse: ids.ss4aDraftStamps ?? null },
@@ -1134,6 +1322,8 @@ async function main() {
     steps,
     journey,
     crossWorkspace: { checks: crossChecks },
+    close: { ...finished.close, reading: closeReading },
+    demonstrationText,
     findings,
     axeRules: ids.axeRules || [],
     consoleErrorsDuringJourney: consoleErrors.length,
@@ -1146,10 +1336,18 @@ async function main() {
       exportId: ids.exportId || null,
     },
   };
-  const serialized = lib.scrubText(JSON.stringify(result, null, 2), secrets);
-  fs.writeFileSync(path.join(out, `journey-${options.role}.json`), `${serialized}\n`);
+  const written = campaignLib.writeRunFiles({
+    outDir: out,
+    runFileName: `journey-${options.role}.json`,
+    result,
+    scrub: (text) => lib.scrubText(text, secrets),
+    origin,
+    portalPath: ids.portalPath,
+  });
   fs.writeFileSync(path.join(out, 'console', 'journey.txt'), consoleErrors.map((line) => lib.scrubText(line, secrets)).join('\n'));
-  log(`wrote ${path.join(out, `journey-${options.role}.json`)}`);
+  log(`wrote ${written.runFile}`);
+  if (written.addressFile) log(`wrote the campaign's public address to ${written.addressFile}; read it in a fresh session, then delete it`);
+  log(`campaign closed at the end: ${finished.close.attempted ? (finished.close.closed ? 'yes' : 'NO') : 'no campaign was created'}`);
   log(`furthest step passed: ${result.furthestStep}${failure ? `; ${lib.scrubText(failure.message, secrets)}` : '; journey complete'}`);
   if (failure) process.exitCode = 1;
 }

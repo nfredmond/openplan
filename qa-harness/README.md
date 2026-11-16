@@ -56,6 +56,31 @@ place of a screen step; it only reads responses the screens request, for ids.
   without `--inputs` uses `fixtures/first-job-rehearsal-inputs.json`, whose
   section texts start "Rehearsal text, not an application." Proof mode refuses
   any inputs file that carries that label.
+- The campaign is a demonstration (since November 16, 2026). The inputs carry
+  `campaign.title` and `campaign.invitation`, each saying "Demonstration by
+  an automated OpenPlan proof run", and the invitation needs a sentence the
+  title lacks. Every entry of `comments` says it was entered by an automated
+  proof run and represents no one. The campaign, comments, review reason and
+  staff review text hold no email address, DRAFT or `[VERIFY]` marker. The
+  validator refuses anything else in both modes, and refuses the old
+  `campaignTitle` field.
+- Before activation the journey replaces the template's public description
+  with the invitation (Setup tab, "Public-facing description"), then reads
+  the portal and its about page as an anonymous participant at 1440 and
+  390 px. It stops unless each shows the invitation and none shows the
+  template's "We are studying traffic safety in this area" or any other
+  sentence of the text the campaign was created with. The run file keeps the
+  readings (`demonstrationText`).
+- Close at the end: finished or stopped early, the journey sets the campaign
+  to Closed in its settings form and reads the portal, its about page and the
+  public portal data as a participant; the pages must show only the ended
+  notice and none of the campaign's title or comments. The run file's
+  `close` says whether it tried and whether it worked, and a close that did
+  not work fails the run.
+- The run file also records `mode`, `harness` (the `git rev-parse HEAD` of
+  the checkout the script ran from, and `clean`: no tracked file changed) and
+  the SHA-256 of the inputs and budget files typed (`inputsSha256`,
+  `budgetSha256`). A proof refuses to start from a checkout with changes.
 - Confirmation: the link is never an argument. When sign-up asks for
   confirmation the script waits for the file named by `--confirm-link-file`
   (and `--second-confirm-link-file` for the second account), opens the link and
@@ -76,6 +101,13 @@ place of a screen step; it only reads responses the screens request, for ids.
 - It stops at the first step whose expected state is missing and writes
   `journey-<role>.json` with the furthest step passed. A step never passes by
   skipping.
+- The campaign's public address: the run file and the record hide it (its
+  share token is a secret). The journey writes it to `public-address.txt` in
+  the run folder and nowhere else, so the operator can check the closed page
+  independently: after the run, open that address in a fresh browser session
+  (no sign-in), confirm it shows only that the comment period has ended, then
+  delete the file. Never commit it or copy it into a record. The engagement
+  journey writes the same file.
 
 ```bash
 # rehearsal, from qa-harness/ (local stack and dev server already running)
@@ -93,7 +125,11 @@ node first-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <4
   --base-url <the hosted origin> --out record.json
 # --assemble refuses a run made on another origin, a run that stopped, a run
 # that names another expected commit, and under the hosted origin a rehearsal
-# run or one with no expected commit (review 59)
+# run or one with no expected commit (review 59). Since lane 65 it also
+# refuses a run that left its campaign open or names no harness checkout, and
+# under the hosted origin one run from a checkout with changes; it carries
+# each run's mode, close and harness into the record. The checker requires
+# all three of records dated from 2026-11-16 (the job's newRecordRules).
 npm run check:first-job-journey   # unit tests; the PDF tests need Poppler
 ```
 
@@ -153,7 +189,9 @@ and no secret. Per journey:
   to Closed in its settings form and reads the portal and its about page as a
   participant; both must show only the ended notice. The run file's `close`
   says whether it tried and whether it worked, and a close that did not work
-  fails the run.
+  fails the run. The public address goes to `public-address.txt` in the run
+  folder, as for the first job: read it once in a fresh session after the
+  run, then delete it.
 - No AI feature is used, and the run file says so.
 
 Inputs: `--inputs` names a JSON file of every string typed

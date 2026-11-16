@@ -156,6 +156,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkJourneyFields(journey, rule.fields, label);
     checkJourneyFields(journey, job.journeyFields, label);
     if (job.campaign) checkClose(journey, label);
+    checkNewRecordRules(record, journey, job, label);
     if (job.health) checkHealthRule(journey, job, label);
 
     // A campaign job's own record is checked first; its rejected texts are
@@ -221,6 +222,30 @@ function checkJourneyFields(journey, rules, label) {
     }
     if (!holds) refuse(`${label} ${rule.refusal.replaceAll("{found}", String(found)).replaceAll("{expected}", String(expected))}`);
   }
+}
+
+/**
+ * A job's rules for records made from a date on (its `newRecordRules`): a
+ * record whose recordedOn is on or after `recordedOnOrAfter` must meet the
+ * block's journeyFields and, with `checkClose`, the close reading every
+ * campaign job gets. A record dated earlier is checked as it was when it was
+ * recorded. The fields are checked before the close, so a journey with no
+ * close is refused by name rather than by a missing value.
+ *
+ * Blind category: recordedOn is the assembler's statement, not a signed
+ * time. A new record given an earlier date escapes these rules; the
+ * registry's pinned bytes and its review date are what tie a record to when
+ * it was made.
+ */
+function checkNewRecordRules(record, journey, job, label) {
+  const rules = job.newRecordRules;
+  if (!rules) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(rules.recordedOnOrAfter))) {
+    throw new Error(`job definition ${job.id} newRecordRules needs recordedOnOrAfter as a date`);
+  }
+  if (record.recordedOn < rules.recordedOnOrAfter) return;
+  checkJourneyFields(journey, rules.journeyFields, label);
+  if (rules.checkClose) checkClose(journey, label);
 }
 
 /**
