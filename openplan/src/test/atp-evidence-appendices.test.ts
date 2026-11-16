@@ -190,6 +190,19 @@ describe("ATP evidence appendices", () => {
     );
   });
 
+  // Lane 67's run-through: a Trinity County, CA run with no Census key stored
+  // this snapshot, and Appendix E printed "ACS 5-Year 2023, 0 tracts".
+  it("does not print a zero tract count for a run whose Census inputs were unavailable", () => {
+    const records = completeAtpRecords();
+    records.run = { status: "ready", run: atpRun({ metrics: atpRunMetrics({
+      sourceSnapshots: { census: { dataset: "ACS 5-Year", vintage: "2023", tractCount: 0, clipScale: "county", clipStatus: "empty",
+        note: "No resolvable study-area geography or ACS data; demographic figures are empty." } },
+    }) }) };
+    const equity = byKey(buildAtpEvidenceAppendices(records, ALL), "equity");
+    expect(fact(equity, "Demographic source")).toBe("ACS 5-Year 2023: no tract data was retrieved for this run");
+    expect(packetText([equity])).not.toMatch(/\b0 tracts\b/);
+  });
+
   it("reports the proxy tract counts and Census source a run with Census inputs recorded", () => {
     const records = completeAtpRecords();
     records.run = { status: "ready", run: atpRun({ metrics: atpRunMetrics({
