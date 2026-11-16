@@ -20,17 +20,24 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * `35cc24e6...`, PDF `a09cd7b8...`), and held through that template's
  * arrival. They were taken again when every ATP application's document
  * changed, whichever template seeded it (KI-2026-11-16-031, -032, -034, -035,
- * -038, -040): the cover gained the study place and applicant lines and lost
- * "Program: Not linked"; the checklist names the attached document by its
- * title and prints words in an empty cell; each appendix fact is one
- * "Label: value" line and the screening scores are facts, not a table;
- * Appendix A states the study place and applicant in place of "to be
- * provided"; Appendix E lists the Guidelines' six criteria; the appendix
- * index names records by kind and says a hash is stored without printing
- * it; a record id in running text is one piece that cannot break; dates
- * print one way; and the stylesheet changed with them. The seven section titles, the five attachment titles
- * and their Required or Optional words did not change, and the test checks
- * those by name below, apart from the hashes.
+ * -038, -040). What changed:
+ * - the cover states the study place and the applicant on lines of their own
+ *   above its boxes, and leaves out "Program: Not linked";
+ * - the checklist names the attached document by its title, prints words in
+ *   an empty cell, and is followed by one "Attached for" line per attached
+ *   item;
+ * - each appendix fact is one "Label: value" line, and the screening scores
+ *   are facts, not a table;
+ * - Appendix A states the study place and the applicant in place of "to be
+ *   provided", and Appendix E lists the Guidelines' six criteria;
+ * - the appendix index names records by kind and says a hash is stored
+ *   without printing it, and a record id in running text is one piece that
+ *   cannot break;
+ * - a calendar day prints as "Nov 2, 2026", and the stylesheet changed with
+ *   all of the above.
+ * The seven section titles, the five attachment titles and their Required or
+ * Optional words did not change, and the test checks those by name below,
+ * apart from the hashes.
  *
  * The rows are written out here, not read from the catalog, because a saved
  * application holds its own copy of each title: the catalog may change and
@@ -44,8 +51,8 @@ import { seedId } from "./fixtures/grants/safety-seed";
  * reads what it says.
  */
 
-const PINNED_HTML_SHA256 = "c8c46fc3a14c50f32343ec653ad03e3e1a1c1a30972a65df6a5ad905bedcdf50";
-const PINNED_PDF_SHA256 = "a09c4b21c63041ed2b0c873397f516c8dbb13349d7b2cf30d2c8a4468359e020";
+const PINNED_HTML_SHA256 = "bc6b54db88087f82293bc46b25d310848b108453f5b31e599bcae3ed3616c650";
+const PINNED_PDF_SHA256 = "867d7fd438f45eb6c673f2670fcfff83506d276f1b377981756507f0ac1208b8";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -213,6 +220,7 @@ describe("an application seeded from the earlier ATP template", () => {
     for (const [, title] of EARLIER_ATTACHMENTS) expect(html).toContain(`<td>${title.replaceAll("'", "&#39;")}</td>`);
     // The attached item is named by its document's title; the study place prints on the cover.
     expect(html).toContain("<td>Knowledge Base document: Main Street vicinity map (demonstration)</td>");
+    expect(html).toContain("<p>Attached for Project location and vicinity map: Knowledge Base document: Main Street vicinity map (demonstration)</p>");
     expect(html).toContain("<p>Study place not recorded in OpenPlan</p>");
     expect(html).not.toMatch(/to be provided/i);
     expect(html).toContain("<td>Existing conditions photos</td>\n          <td>Optional</td>");

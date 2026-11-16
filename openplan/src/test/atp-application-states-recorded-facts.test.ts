@@ -14,6 +14,7 @@ import {
 } from "@/lib/grants/atp-evidence-appendices";
 import { atpStudyPlaceLine } from "@/lib/grants/atp-packet";
 import { ATP_APPENDIX_KEYS } from "@/lib/grants/evidence-appendix-keys";
+import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { ATP_VERIFY_GUIDELINES } from "@/lib/planner-pack/render";
 import { renderHtmlToPdf } from "@/lib/reports/pdf";
 import { htmlToPdfBlocks } from "@/lib/reports/pdf-text";
@@ -61,6 +62,7 @@ const TRIBAL_AREA_LINE = "Study place: Hoopa Valley Reservation, CA (Census trib
 const APPLICANT_LINE = "Applicant not entered in OpenPlan";
 const NO_PLACE_LINE = "Study place not recorded in OpenPlan";
 const ATTACHED_DOCUMENT = seedId(830);
+const TRACKED_SUMMARY = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!.summary;
 
 function recordsFor(place: Record<string, string | null>, overrides: Partial<AtpEvidenceRecords> = {}): AtpEvidenceRecords {
   return { ...completeAtpRecords(), project: { status: "ready", project: atpProject(place) }, ...overrides };
@@ -76,7 +78,9 @@ function applicationHtml(records: AtpEvidenceRecords, workspaceName: string, opt
   return buildGrantApplicationHtml({
     opportunity: {
       id: ATP_IDS.opportunity, title: "Active Transportation Program (ATP)", agency_name: "California Transportation Commission / Caltrans",
-      summary: null, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null,
+      // Tracking from the catalog card copies the program's summary, which is long. With the
+      // short default text the cover had room to spare and the lines could not leave page one.
+      summary: TRACKED_SUMMARY, expected_award_amount: null, closes_at: null, opportunity_status: null, decision_state: null,
     },
     programTitle: options.programTitle ?? null,
     sections: [{
@@ -227,7 +231,7 @@ describe("refusals in an ATP application", () => {
     // No cell is a lone dash. (The engagement caveat's own sentence holds a dash; that text is fixed.)
     expect(html).not.toMatch(/<td>\s*—\s*<\/td>/);
     // The checklist row with nothing attached and no note, and the provenance row of a section a planner wrote.
-    expect(html).toContain("<td>Nothing attached</td>\n          <td>No note</td>");
+    expect(html).toContain("<td>Nothing attached</td>\n          <td>None</td>");
     expect(html).toContain("<td>Operator-authored</td>\n          <td>No model</td>\n          <td>Not applicable</td>");
   });
 });
@@ -354,6 +358,22 @@ describe("the cover and checklist of an ATP application", () => {
     // A title that was not read is said to be unread, never guessed.
     const unread = applicationHtml(recordsFor(COUNTY), "Demonstration Planning Consultants", { documentTitles: new Map() });
     expect(unread).toContain("<td>Knowledge Base document (its title could not be read)</td>");
+    // Under the table, one line for the attached item and none for the item with nothing attached.
+    expect(textBlocks(html).filter((text) => text.startsWith("Attached for "))).toEqual([
+      "Attached for Project location and vicinity map: Knowledge Base document: Main Street vicinity map (demonstration)",
+    ]);
+    // A different title gives a different line: the title is read from the map the export passes.
+    const other = applicationHtml(recordsFor(COUNTY), "Demonstration Planning Consultants", { documentTitles: new Map([[ATTACHED_DOCUMENT, "Second vicinity map (demonstration)"]]) });
+    expect(textBlocks(other).filter((text) => text.startsWith("Attached for "))).toEqual([
+      "Attached for Project location and vicinity map: Knowledge Base document: Second vicinity map (demonstration)",
+    ]);
+  });
+
+  it("prints the study place and applicant above the cover's boxes, so a long summary cannot push them off the first page", () => {
+    const cover = coverOf(applicationHtml(recordsFor(COUNTY), "Demonstration Planning Consultants"));
+    expect(TRACKED_SUMMARY.length).toBeGreaterThan(300);
+    expect(cover.indexOf('<div class="cover-lines">')).toBeGreaterThan(cover.indexOf("</h1>"));
+    expect(cover.indexOf('<div class="cover-lines">')).toBeLessThan(cover.indexOf('<div class="facts"'));
   });
 
   it("leaves the Program box out when no program record is linked, and prints it when one is", () => {
@@ -512,8 +532,11 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
       expect(onOneLine, token).toBeGreaterThanOrEqual(1);
       expect(joined.split(token).length - 1, token).toBe(onOneLine);
     }
-    // The attached document's title prints (in a checklist cell, which wraps beside its neighbors).
-    expect(whole).toContain("vicinity map (demonstration)");
+    // The attached document's title is found whole, in the line under the checklist. In the
+    // checklist's own cell it wraps beside the other columns and is not found.
+    const attachedLine = "Attached for Project location and vicinity map: Knowledge Base document: Main Street vicinity map (demonstration)";
+    expect(pagesWith(pages, attachedLine)).toHaveLength(1);
+    expect(pagesWith(pages, "Attached Knowledge Base document: Main Street vicinity map (demonstration)")).toEqual([]);
   }, 120_000);
 
   it("never breaks a record id at a hyphen, wherever on the line it falls", async () => {

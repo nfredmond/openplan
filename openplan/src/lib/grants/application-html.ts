@@ -128,9 +128,10 @@ export type GrantApplicationExportData = {
   ifApplicableAttachmentKeys?: ReadonlySet<string>;
   /**
    * Facts a program states on the cover, each a whole sentence or "Label:
-   * value" on a line of its own under the cover's boxes, so a text search of
-   * the PDF finds each as one string. The California ATP names the linked
-   * project's study place and the applicant here.
+   * value" on a line of its own above the cover's boxes, so a text search of
+   * the PDF finds each as one string on the first page. Under the boxes, a
+   * long opportunity summary pushed them to the second page. The California
+   * ATP names the linked project's study place and the applicant here.
    */
   coverLines?: readonly string[];
   /**
@@ -270,6 +271,8 @@ const DOCUMENT_STYLES = `
       .appendix-facts dt { font-weight: 700; letter-spacing: 0; text-transform: none; color: #13222b; }
       #evidence-appendices > p, .appendix-source, .appendix li, .cover-lines p { break-inside: avoid; }
       .cover-lines { margin-top: 16px; break-inside: avoid; }
+      .attached-lines { margin-top: 14px; }
+      .attached-lines p { margin: 4px 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; break-inside: avoid; }
       .cover-lines p { max-width: none; margin: 4px 0; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
       .wrap-anywhere { overflow-wrap: anywhere; word-break: break-all; }
       .whole-id { display: inline-block; max-width: 100%; }
@@ -353,9 +356,9 @@ function coverMarkup(data: GrantApplicationExportData, draftStamps: readonly str
         (isProposal
           ? "Assembled from operator-approved section texts for this solicitation response."
           : "Assembled from operator-approved section texts and the application attachment checklist.")
-    )}</p>
+    )}</p>${coverLines}
     <div class="facts" style="margin-top: 18px;">${coverFacts}
-    </div>${coverLines}
+    </div>
     ${draftStamps.map((stamp) => `<div class="draft-stamp">${esc(stamp)}</div>`).join("\n    ")}
     ${
       caveats.length > 0
@@ -434,13 +437,28 @@ function attachmentsMarkup(
           <td>${attachmentRequirementLabel(attachment, ifApplicableKeys)}</td>
           <td>${esc(ATTACHMENT_STATUS_LABELS[attachment.status] ?? attachment.status)}</td>
           <td>${esc(fulfillment)}</td>
-          <td>${esc(attachment.note?.trim() || "No note")}</td>
+          <td>${esc(attachment.note?.trim() || "None")}</td>
         </tr>`;
           })
           .join("\n        ")}
       </tbody>
-    </table></div>
+    </table></div>${attachedLinesMarkup(attachments, documentTitles)}
   </section>`;
+}
+
+/**
+ * One line under the checklist for each item with something attached:
+ * "Attached for <item>: <what is attached>". In the table a document's title
+ * wraps inside its cell beside the other columns, so a text search of the PDF
+ * does not find the title as one string. Here it is.
+ */
+function attachedLinesMarkup(attachments: readonly ApplicationAttachmentRow[], documentTitles?: ReadonlyMap<string, string>): string {
+  const attached = attachments.filter((attachment) => attachment.kb_document_id || attachment.report_artifact_id);
+  if (attached.length === 0) return "";
+  return `
+    <div class="attached-lines">${attached
+      .map((attachment) => `<p>${esc(`Attached for ${attachment.title}: ${attachmentFulfillment(attachment, documentTitles)}`)}</p>`)
+      .join("")}</div>`;
 }
 
 function provenanceMarkup(sections: readonly GrantApplicationExportSection[], calendar: WorkspaceCalendar): string {
