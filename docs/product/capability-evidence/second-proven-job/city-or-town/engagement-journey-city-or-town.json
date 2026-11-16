@@ -1,0 +1,1399 @@
+{
+  "schema": "openplan.engagement_job_journey_run.v1",
+  "jobId": "engagement-campaign-review-and-response-in-three-places",
+  "mode": "proof",
+  "baseUrl": "https://openplan-zeta.vercel.app",
+  "recordedOn": "2026-11-15",
+  "expectedCommit": "3af5a8b35860138e2a01214702ff7016b4b6fd32",
+  "inputsLabel": "Proof inputs for the engagement journey, Lander, WY. Demonstration text typed by an automated OpenPlan proof run on November 14, 2026. It is not a consultation and speaks for no agency, tribe or resident.",
+  "inputsSha256": "dd8325036067f2be5fe300e408c34108000d56dae8bb3b7ad5793437a00585af",
+  "aiFeaturesUsed": false,
+  "aiStatement": "No AI feature was used: no translation, AI moderation, AI synthesis or AI drafting control was pressed. The staff review groups come from the app's own grouping, corrected and approved by the staff account.",
+  "confirmationTokenSha256": "a2fb7a8832e2a5d0221b83fa5294bc74356b3dd6bda27b620bb5abd4b6cc60e3",
+  "furthestStep": "health-end",
+  "stoppedAt": null,
+  "stepsDefined": [
+    "health-start",
+    "sign-up",
+    "confirm-email",
+    "create-project",
+    "set-study-place",
+    "record-decision",
+    "create-campaign",
+    "set-public-text",
+    "activate-campaign",
+    "read-portal-text",
+    "contribute-map-point",
+    "contribute-no-map-point",
+    "contribute-keyboard-390",
+    "contribute-to-reject",
+    "moderate",
+    "staff-review",
+    "publish-response",
+    "link-decision",
+    "request-review-files",
+    "download-review-files",
+    "read-review-file-text",
+    "read-counts",
+    "search-rejected-text",
+    "screens",
+    "participant-checks",
+    "cross-workspace",
+    "close-campaign",
+    "health-end"
+  ],
+  "steps": [
+    {
+      "step": "health-start",
+      "startedAt": "2026-11-15T23:16:27Z",
+      "status": "passed",
+      "detail": "ok, commit 3af5a8b35860, version 0.72.0",
+      "endedAt": "2026-11-15T23:16:28Z"
+    },
+    {
+      "step": "sign-up",
+      "startedAt": "2026-11-15T23:16:28Z",
+      "status": "passed",
+      "detail": "confirmation email_link",
+      "endedAt": "2026-11-15T23:17:02Z"
+    },
+    {
+      "step": "confirm-email",
+      "startedAt": "2026-11-15T23:17:02Z",
+      "status": "passed",
+      "detail": "token sha256 a2fb7a8832e2a5d0221b83fa5294bc74356b3dd6bda27b620bb5abd4b6cc60e3",
+      "endedAt": "2026-11-15T23:17:02Z"
+    },
+    {
+      "step": "create-project",
+      "startedAt": "2026-11-15T23:17:02Z",
+      "status": "passed",
+      "detail": "37ca5d0d-7c0f-4b9f-ba1c-6c65c28073ad",
+      "endedAt": "2026-11-15T23:17:09Z"
+    },
+    {
+      "step": "set-study-place",
+      "startedAt": "2026-11-15T23:17:09Z",
+      "status": "passed",
+      "detail": "Lander, WY (city 5644760)",
+      "endedAt": "2026-11-15T23:17:34Z"
+    },
+    {
+      "step": "record-decision",
+      "startedAt": "2026-11-15T23:17:34Z",
+      "status": "passed",
+      "detail": "proposed decision recorded",
+      "endedAt": "2026-11-15T23:17:44Z"
+    },
+    {
+      "step": "create-campaign",
+      "startedAt": "2026-11-15T23:17:44Z",
+      "status": "passed",
+      "detail": "af326227-a164-42ab-8696-f82597111a0b",
+      "endedAt": "2026-11-15T23:17:52Z"
+    },
+    {
+      "step": "set-public-text",
+      "startedAt": "2026-11-15T23:17:52Z",
+      "status": "passed",
+      "detail": "public description replaced (it held the template's text)",
+      "endedAt": "2026-11-15T23:18:09Z"
+    },
+    {
+      "step": "activate-campaign",
+      "startedAt": "2026-11-15T23:18:09Z",
+      "status": "passed",
+      "detail": "live",
+      "endedAt": "2026-11-15T23:18:25Z"
+    },
+    {
+      "step": "read-portal-text",
+      "startedAt": "2026-11-15T23:18:25Z",
+      "status": "passed",
+      "detail": "4 readings show the invitation and not the template's text",
+      "endedAt": "2026-11-15T23:18:42Z"
+    },
+    {
+      "step": "contribute-map-point",
+      "startedAt": "2026-11-15T23:18:42Z",
+      "status": "passed",
+      "detail": "map-point, pointer at 1440 px, c2570de9",
+      "endedAt": "2026-11-15T23:18:54Z"
+    },
+    {
+      "step": "contribute-no-map-point",
+      "startedAt": "2026-11-15T23:18:54Z",
+      "status": "passed",
+      "detail": "no-map-point, pointer at 1440 px, 9651222a",
+      "endedAt": "2026-11-15T23:19:05Z"
+    },
+    {
+      "step": "contribute-keyboard-390",
+      "startedAt": "2026-11-15T23:19:05Z",
+      "status": "passed",
+      "detail": "map-point, keyboard-only at 390 px, 7c495968",
+      "endedAt": "2026-11-15T23:19:20Z"
+    },
+    {
+      "step": "contribute-to-reject",
+      "startedAt": "2026-11-15T23:19:20Z",
+      "status": "passed",
+      "detail": "no-map-point, pointer at 1440 px, 3b2b2076",
+      "endedAt": "2026-11-15T23:19:31Z"
+    },
+    {
+      "step": "moderate",
+      "startedAt": "2026-11-15T23:19:31Z",
+      "status": "passed",
+      "detail": "mapPoint approved with its reason; noMapPoint approved with its reason; keyboard approved with its reason; rejected rejected with its reason",
+      "endedAt": "2026-11-15T23:19:46Z"
+    },
+    {
+      "step": "staff-review",
+      "startedAt": "2026-11-15T23:19:46Z",
+      "status": "passed",
+      "detail": "review a3cf2d65 revision 2 approved; 1 group(s)",
+      "endedAt": "2026-11-15T23:20:03Z"
+    },
+    {
+      "step": "publish-response",
+      "startedAt": "2026-11-15T23:20:03Z",
+      "status": "passed",
+      "detail": "response 2620f737 published, answering 2",
+      "endedAt": "2026-11-15T23:20:17Z"
+    },
+    {
+      "step": "link-decision",
+      "startedAt": "2026-11-15T23:20:17Z",
+      "status": "passed",
+      "detail": "decision c92a86ee; link b7d42416",
+      "endedAt": "2026-11-15T23:21:05Z"
+    },
+    {
+      "step": "request-review-files",
+      "startedAt": "2026-11-15T23:21:05Z",
+      "status": "passed",
+      "detail": "internal a2bb6caf, public 480215b2",
+      "endedAt": "2026-11-15T23:21:19Z"
+    },
+    {
+      "step": "download-review-files",
+      "startedAt": "2026-11-15T23:21:19Z",
+      "status": "passed",
+      "detail": "internal-pdf 164355 bytes; internal-xlsx 39778 bytes; public-pdf 100958 bytes; public-xlsx 18209 bytes",
+      "endedAt": "2026-11-15T23:21:29Z"
+    },
+    {
+      "step": "read-review-file-text",
+      "startedAt": "2026-11-15T23:21:29Z",
+      "status": "passed",
+      "detail": "page 1 of both review PDFs shows the invitation, and no page of either shows the text the campaign was created with",
+      "endedAt": "2026-11-15T23:21:29Z"
+    },
+    {
+      "step": "read-counts",
+      "startedAt": "2026-11-15T23:21:29Z",
+      "status": "passed",
+      "detail": "received 4, approved 3, rejected 1, published 1, answered 2: 10 surfaces agree",
+      "endedAt": "2026-11-15T23:21:51Z"
+    },
+    {
+      "step": "search-rejected-text",
+      "startedAt": "2026-11-15T23:21:51Z",
+      "status": "passed",
+      "detail": "60 public surfaces searched, none holds the rejected text or id; found in 2 internal controls",
+      "endedAt": "2026-11-15T23:22:23Z"
+    },
+    {
+      "step": "screens",
+      "startedAt": "2026-11-15T23:22:23Z",
+      "status": "passed",
+      "detail": "24 checks, 0 serious or critical axe nodes, 0 with page scroll",
+      "endedAt": "2026-11-15T23:25:16Z"
+    },
+    {
+      "step": "participant-checks",
+      "startedAt": "2026-11-15T23:25:16Z",
+      "status": "passed",
+      "detail": "campaign-read 401; campaign-export-read 401; rejected-item-history-read 401; review-pdf-download 401; review-xlsx-download 401; public read 200, staff fields none",
+      "endedAt": "2026-11-15T23:25:22Z"
+    },
+    {
+      "step": "cross-workspace",
+      "startedAt": "2026-11-15T23:25:22Z",
+      "status": "passed",
+      "detail": "review-pdf-download 404; review-xlsx-download 404; campaign-read 404; campaign-export-read 404; rejected-item-history-read 403; campaign-page 404 (not-found screen shown, 4 strings searched, none found)",
+      "endedAt": "2026-11-15T23:26:03Z"
+    },
+    {
+      "step": "close-campaign",
+      "startedAt": "2026-11-15T23:26:03Z",
+      "status": "passed",
+      "detail": "closed; the portal and about page show only the ended notice",
+      "endedAt": "2026-11-15T23:26:27Z"
+    },
+    {
+      "step": "health-end",
+      "startedAt": "2026-11-15T23:26:27Z",
+      "status": "passed",
+      "detail": "ok, commit 3af5a8b35860, version 0.72.0",
+      "endedAt": "2026-11-15T23:26:27Z"
+    }
+  ],
+  "journey": {
+    "role": "city-or-town",
+    "place": {
+      "kind": "city",
+      "geoid": "5644760",
+      "stateFips": [
+        "56"
+      ],
+      "label": "Lander, WY"
+    },
+    "executors": [
+      {
+        "role": "staff",
+        "agent": "Claude Code",
+        "model": "claude-fable-5-2"
+      },
+      {
+        "role": "public-participant",
+        "agent": "Claude Code",
+        "model": "claude-fable-5-2"
+      }
+    ],
+    "accountCreatedAt": "2026-11-15T23:16:31Z",
+    "confirmationMethod": "email_link",
+    "health": [
+      {
+        "point": "start",
+        "checkedAt": "2026-11-15T23:16:28Z",
+        "status": "ok",
+        "commit": "3af5a8b35860",
+        "version": "0.72.0",
+        "migrationsExpected": 455,
+        "migrationsLatest": "20261102140000"
+      },
+      {
+        "point": "end",
+        "checkedAt": "2026-11-15T23:26:27Z",
+        "status": "ok",
+        "commit": "3af5a8b35860",
+        "version": "0.72.0",
+        "migrationsExpected": 455,
+        "migrationsLatest": "20261102140000"
+      }
+    ],
+    "campaign": {
+      "campaignId": "af326227-a164-42ab-8696-f82597111a0b",
+      "projectId": "37ca5d0d-7c0f-4b9f-ba1c-6c65c28073ad",
+      "portalAddressKind": "share-token",
+      "aiFeaturesUsed": false,
+      "contributions": [
+        {
+          "commentId": "c2570de9-7cb6-428f-87ac-61573be33106",
+          "kind": "map-point",
+          "viewportWidth": 1440,
+          "input": "pointer"
+        },
+        {
+          "commentId": "9651222a-c051-4333-851c-01d00901fadb",
+          "kind": "no-map-point",
+          "viewportWidth": 1440,
+          "input": "pointer"
+        },
+        {
+          "commentId": "7c495968-2377-4df3-b73b-72301e5f4ec7",
+          "kind": "map-point",
+          "viewportWidth": 390,
+          "input": "keyboard-only"
+        },
+        {
+          "commentId": "3b2b2076-277b-404b-82ed-d452e503dd63",
+          "kind": "no-map-point",
+          "viewportWidth": 1440,
+          "input": "pointer"
+        }
+      ],
+      "moderation": [
+        {
+          "commentId": "c2570de9-7cb6-428f-87ac-61573be33106",
+          "outcome": "approved",
+          "reasonRecorded": true
+        },
+        {
+          "commentId": "9651222a-c051-4333-851c-01d00901fadb",
+          "outcome": "approved",
+          "reasonRecorded": true
+        },
+        {
+          "commentId": "7c495968-2377-4df3-b73b-72301e5f4ec7",
+          "outcome": "approved",
+          "reasonRecorded": true
+        },
+        {
+          "commentId": "3b2b2076-277b-404b-82ed-d452e503dd63",
+          "outcome": "rejected",
+          "reasonRecorded": true
+        }
+      ],
+      "rejectedTextSha256": [
+        "26bf43c6639f4b6146b924c164942b3e83b33634bc1c08a27a5874563265c024"
+      ],
+      "rejectedTexts": [
+        "Off-topic demonstration entry about a water meter reading. Entered by an automated proof run; it represents no one and is here to be withheld."
+      ],
+      "staffReview": {
+        "reviewId": "a3cf2d65-e5c1-4b15-8de6-0a0d20f29065",
+        "revision": 2,
+        "approved": true,
+        "themes": [
+          {
+            "groupId": "category-1",
+            "commentIds": [
+              "9651222a-c051-4333-851c-01d00901fadb",
+              "c2570de9-7cb6-428f-87ac-61573be33106"
+            ]
+          }
+        ]
+      },
+      "response": {
+        "responseId": "2620f737-d0ca-4f47-b51e-43b52caab7a9",
+        "status": "published",
+        "aiAssisted": false,
+        "sourceCommentIds": [
+          "c2570de9-7cb6-428f-87ac-61573be33106",
+          "9651222a-c051-4333-851c-01d00901fadb"
+        ],
+        "decisionLinkId": "b7d42416-4fc1-44e3-981e-26297f296dde",
+        "decisionId": "c92a86ee-04ad-411e-a388-f1d3497cdd5a",
+        "projectId": "37ca5d0d-7c0f-4b9f-ba1c-6c65c28073ad"
+      }
+    },
+    "pdfs": [
+      {
+        "kind": "campaign-review",
+        "path": "files/city-or-town-internal-campaign-review.pdf",
+        "sha256": "85f372d36d603d53e41d3cc6285896dfe32b9aff957db3b9f8530c8d1d761a9c",
+        "bytes": 164355,
+        "pages": 11,
+        "draftStamp": false,
+        "items": [
+          {
+            "item": "scope-badge",
+            "page": 1,
+            "method": "pdftotext",
+            "text": "Internal review copy"
+          },
+          {
+            "item": "approved-count",
+            "page": 2,
+            "method": "pdftotext",
+            "text": "Approved 3"
+          },
+          {
+            "item": "rejected-count",
+            "page": 2,
+            "method": "pdftotext",
+            "text": "Withheld 1"
+          },
+          {
+            "item": "responded-count",
+            "page": 2,
+            "method": "pdftotext",
+            "text": "Answered 2"
+          }
+        ]
+      },
+      {
+        "kind": "campaign-review-public",
+        "path": "files/city-or-town-public-campaign-review.pdf",
+        "sha256": "6fd4a2bab32ebc95b6eb04e3ef94c4d56b0fc175eccefceebb0224d9c3b2ffd3",
+        "bytes": 100958,
+        "pages": 6,
+        "draftStamp": false,
+        "items": [
+          {
+            "item": "scope-badge",
+            "page": 1,
+            "method": "pdftotext",
+            "text": "Public review copy"
+          }
+        ]
+      }
+    ],
+    "workbooks": [
+      {
+        "kind": "campaign-review",
+        "path": "files/city-or-town-internal-campaign-review.xlsx",
+        "sha256": "31ab64cea8d6940affc3eb75cd352e504dd9b33e6b9b1f67e5071f3af497ac0d",
+        "bytes": 39778
+      },
+      {
+        "kind": "campaign-review-public",
+        "path": "files/city-or-town-public-campaign-review.xlsx",
+        "sha256": "a156ef1bff80a0bf84a85e2441133182207e9a00357ee33838f74e0f4edde3f1",
+        "bytes": 18209
+      }
+    ],
+    "publicPage": {
+      "readings": [
+        {
+          "width": 1440,
+          "mode": "light",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        },
+        {
+          "width": 1440,
+          "mode": "dark",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        },
+        {
+          "width": 390,
+          "mode": "light",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        },
+        {
+          "width": 390,
+          "mode": "dark",
+          "approvedShown": 3,
+          "respondedShown": 2,
+          "rejectedTextSearched": 1,
+          "rejectedTextFound": false
+        }
+      ]
+    },
+    "screens": [
+      {
+        "screen": "portal",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "portal",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "portal",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "portal",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "public-response",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-responses",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-analysis",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 1440,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 1440,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 390,
+        "mode": "light",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      },
+      {
+        "screen": "staff-campaign-record",
+        "width": 390,
+        "mode": "dark",
+        "axe": {
+          "version": "4.11.1",
+          "tags": [
+            "wcag2a",
+            "wcag2aa",
+            "wcag21a",
+            "wcag21aa"
+          ],
+          "serious": 0,
+          "critical": 0
+        },
+        "consoleErrors": 0,
+        "horizontalScroll": false
+      }
+    ]
+  },
+  "crossWorkspace": {
+    "checks": [
+      {
+        "journey": "city-or-town",
+        "target": "campaign-review-pdf",
+        "request": "review-pdf-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "target": "campaign-review-workbook",
+        "request": "review-xlsx-download",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "target": "staff-campaign",
+        "request": "campaign-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "target": "campaign-export",
+        "request": "campaign-export-read",
+        "kind": "data",
+        "status": 404,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "target": "rejected-item-history",
+        "request": "rejected-item-history-read",
+        "kind": "data",
+        "status": 403,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "target": "staff-campaign",
+        "request": "campaign-page",
+        "kind": "page",
+        "status": 404,
+        "contentReturned": false,
+        "notFoundRendered": true,
+        "recordTextFound": false,
+        "searchedStringSha256": [
+          "496f20fb70bf2e33cca7aed6d2ba7b5587f912f8821e38d2bf61db2064a76098",
+          "62a3d1dbf17bd8294f5d04597641d3abbf91141a22e4316408787b2d9445e126",
+          "9a00eef9b2c5341bf05e7ac3bdac09b2961daa2846e78d1bf03bef11bf823754",
+          "b49ee2a816b7251b8fd60a1026ce4d694a9dd5efa290c1958ac6ede16febf6c4"
+        ],
+        "searchedStringCount": 4
+      }
+    ]
+  },
+  "participantChecks": {
+    "refusals": [
+      {
+        "journey": "city-or-town",
+        "request": "campaign-read",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "request": "campaign-export-read",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "request": "rejected-item-history-read",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "request": "review-pdf-download",
+        "status": 401,
+        "contentReturned": false
+      },
+      {
+        "journey": "city-or-town",
+        "request": "review-xlsx-download",
+        "status": 401,
+        "contentReturned": false
+      }
+    ],
+    "publicRead": {
+      "request": "public-portal-read",
+      "status": 200,
+      "staffFieldsSearched": [
+        "moderation_notes",
+        "review_reason",
+        "metadata_json",
+        "respondent_fingerprint"
+      ],
+      "staffFieldsFound": false
+    }
+  },
+  "close": {
+    "attempted": true,
+    "closed": true,
+    "problems": [],
+    "error": null,
+    "reading": {
+      "saveStatus": 200,
+      "statusAfter": "closed",
+      "addresses": [
+        {
+          "name": "portal",
+          "status": 200,
+          "endedNoticeShown": true,
+          "campaignTextFound": false
+        },
+        {
+          "name": "about",
+          "status": 200,
+          "endedNoticeShown": true,
+          "campaignTextFound": false
+        }
+      ],
+      "publicReadStatusAfter": 404,
+      "publicReadCampaignTextFound": false,
+      "closed": true,
+      "problems": []
+    }
+  },
+  "counts": [
+    {
+      "surface": "journey (moderation outcomes and the published response)",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "internal review PDF",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public review PDF",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "internal workbook Summary rows",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "internal workbook cells",
+      "counts": {
+        "received": 4,
+        "approved": 3,
+        "rejected": 1,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public workbook Summary rows",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public workbook cells",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      }
+    },
+    {
+      "surface": "public response page 1440 px light",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    },
+    {
+      "surface": "public response page 1440 px dark",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    },
+    {
+      "surface": "public response page 390 px light",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    },
+    {
+      "surface": "public response page 390 px dark",
+      "counts": {
+        "approved": 3,
+        "publishedResponses": 1,
+        "answered": 2
+      },
+      "labels": {
+        "commentsTab": "Comments (3)",
+        "responsesTab": "You said / We did (1)"
+      }
+    }
+  ],
+  "countPages": {
+    "internal": {
+      "received": 2,
+      "approved": 2,
+      "rejected": 2,
+      "pending": 2,
+      "flagged": 2,
+      "publishedResponses": 2,
+      "answered": 2
+    },
+    "public": {
+      "approved": 1,
+      "publishedResponses": 1,
+      "answered": 1
+    }
+  },
+  "rejectedTextSearch": {
+    "searchedSha256": [
+      "26bf43c6639f4b6146b924c164942b3e83b33634bc1c08a27a5874563265c024"
+    ],
+    "searched": [
+      "public review PDF",
+      "public review workbook (every cell)",
+      "portal page (text)",
+      "portal page (HTML)",
+      "public response page \"You said / We did\" at 1440 px light (text)",
+      "public response page \"You said / We did\" at 1440 px light (HTML)",
+      "public response page Comments at 1440 px light (text)",
+      "public response page Comments at 1440 px light (HTML)",
+      "public response page \"You said / We did\" at 1440 px dark (text)",
+      "public response page \"You said / We did\" at 1440 px dark (HTML)",
+      "public response page Comments at 1440 px dark (text)",
+      "public response page Comments at 1440 px dark (HTML)",
+      "public response page \"You said / We did\" at 390 px light (text)",
+      "public response page \"You said / We did\" at 390 px light (HTML)",
+      "public response page Comments at 390 px light (text)",
+      "public response page Comments at 390 px light (HTML)",
+      "public response page \"You said / We did\" at 390 px dark (text)",
+      "public response page \"You said / We did\" at 390 px dark (HTML)",
+      "public response page Comments at 390 px dark (text)",
+      "public response page Comments at 390 px dark (HTML)",
+      "GET 200 /engage/<token>/about",
+      "GET 200 https://openplan-zeta.vercel.app/1a3fdd66-ea0a-4635-a5ad-582f57792d6a",
+      "GET 200 https://openplan-zeta.vercel.app/1a3fdd66-ea0a-4635-a5ad-582f57792d6a",
+      "GET 200 https://openplan-zeta.vercel.app/1a3fdd66-ea0a-4635-a5ad-582f57792d6a",
+      "POST 204 /api/csp-report",
+      "GET 200 https://openplan-zeta.vercel.app/1a3fdd66-ea0a-4635-a5ad-582f57792d6a",
+      "GET 200 https://openplan-zeta.vercel.app/1a3fdd66-ea0a-4635-a5ad-582f57792d6a",
+      "GET 200 https://openplan-zeta.vercel.app/1a3fdd66-ea0a-4635-a5ad-582f57792d6a",
+      "GET 200 /engage/<token>/about",
+      "POST 204 /api/csp-report",
+      "GET 200 https://openplan-zeta.vercel.app/48353a38-4034-4284-a4aa-299f88288eca",
+      "GET 200 https://openplan-zeta.vercel.app/48353a38-4034-4284-a4aa-299f88288eca",
+      "GET 200 https://openplan-zeta.vercel.app/48353a38-4034-4284-a4aa-299f88288eca",
+      "GET 200 https://openplan-zeta.vercel.app/48353a38-4034-4284-a4aa-299f88288eca",
+      "GET 200 https://openplan-zeta.vercel.app/48353a38-4034-4284-a4aa-299f88288eca",
+      "GET 200 https://openplan-zeta.vercel.app/48353a38-4034-4284-a4aa-299f88288eca",
+      "GET 200 /engage/<token>/about",
+      "GET 200 https://openplan-zeta.vercel.app/d3504adf-3ed9-4c1d-8aaf-2449d4153566",
+      "GET 200 https://openplan-zeta.vercel.app/d3504adf-3ed9-4c1d-8aaf-2449d4153566",
+      "GET 200 https://openplan-zeta.vercel.app/d3504adf-3ed9-4c1d-8aaf-2449d4153566",
+      "POST 204 /api/csp-report",
+      "GET 200 https://openplan-zeta.vercel.app/d3504adf-3ed9-4c1d-8aaf-2449d4153566",
+      "GET 200 https://openplan-zeta.vercel.app/d3504adf-3ed9-4c1d-8aaf-2449d4153566",
+      "GET 200 https://openplan-zeta.vercel.app/d3504adf-3ed9-4c1d-8aaf-2449d4153566",
+      "GET 200 /engage/<token>/about",
+      "GET 200 https://openplan-zeta.vercel.app/b50a081f-8653-409e-952c-81ad2e28781c",
+      "GET 200 https://openplan-zeta.vercel.app/b50a081f-8653-409e-952c-81ad2e28781c",
+      "GET 200 https://openplan-zeta.vercel.app/b50a081f-8653-409e-952c-81ad2e28781c",
+      "POST 204 /api/csp-report",
+      "GET 200 https://openplan-zeta.vercel.app/b50a081f-8653-409e-952c-81ad2e28781c",
+      "GET 200 https://openplan-zeta.vercel.app/b50a081f-8653-409e-952c-81ad2e28781c",
+      "GET 200 https://openplan-zeta.vercel.app/b50a081f-8653-409e-952c-81ad2e28781c",
+      "GET 200 /engage/<token>",
+      "POST 204 /api/csp-report",
+      "GET 200 https://openplan-zeta.vercel.app/5185176c-6b72-48ca-b8af-c5597c716490",
+      "GET 200 https://openplan-zeta.vercel.app/5185176c-6b72-48ca-b8af-c5597c716490",
+      "GET 200 https://openplan-zeta.vercel.app/5185176c-6b72-48ca-b8af-c5597c716490",
+      "POST 204 /api/csp-report",
+      "GET 200 /api/engage/<token>",
+      "GET 200 /api/engage/<token>"
+    ],
+    "controls": [
+      "internal review PDF",
+      "internal review workbook (every cell)"
+    ],
+    "hits": []
+  },
+  "demonstrationText": {
+    "publicTextSet": {
+      "control": "Setup tab, Public-facing description, Save share settings",
+      "saveStatus": 200,
+      "templateTextBefore": true,
+      "readsInvitationAfter": true
+    },
+    "portal": [
+      {
+        "surface": "portal at 1440 px",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": true,
+        "readsAsDemonstration": true,
+        "problems": [],
+        "sheetOpened": false
+      },
+      {
+        "surface": "about at 1440 px",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": true,
+        "readsAsDemonstration": true,
+        "problems": [],
+        "sheetOpened": false
+      },
+      {
+        "surface": "portal at 390 px",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": true,
+        "readsAsDemonstration": true,
+        "problems": [],
+        "sheetOpened": true
+      },
+      {
+        "surface": "about at 390 px",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": true,
+        "readsAsDemonstration": true,
+        "problems": [],
+        "sheetOpened": false
+      }
+    ],
+    "reviewPdfs": [
+      {
+        "surface": "internal review PDF page 1",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": true,
+        "readsAsDemonstration": true,
+        "problems": []
+      },
+      {
+        "surface": "internal review PDF, all 11 pages",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": false,
+        "readsAsDemonstration": true,
+        "problems": []
+      },
+      {
+        "surface": "public review PDF page 1",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": true,
+        "readsAsDemonstration": true,
+        "problems": []
+      },
+      {
+        "surface": "public review PDF, all 6 pages",
+        "invitationFirstSentence": "Demonstration by an automated OpenPlan proof run.",
+        "invitationFirstSentenceFound": true,
+        "invitationOwnSentence": "This page is not a real consultation, no agency or tribe asked for it, and no one will act on what is entered here.",
+        "invitationOwnSentenceFound": true,
+        "templateSentence": "We are studying traffic safety in this area",
+        "templateSentenceFound": false,
+        "createdWithSentencesLookedFor": 3,
+        "createdWithSentencesFound": [],
+        "invitationRequired": false,
+        "readsAsDemonstration": true,
+        "problems": []
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "saved-place-label-differs",
+      "text": "The search showed \"Lander, WY\"; the saved study area reads \"Lander\"."
+    }
+  ],
+  "axeRules": [],
+  "consoleErrorsDuringJourney": 0,
+  "ids": {
+    "projectId": "37ca5d0d-7c0f-4b9f-ba1c-6c65c28073ad",
+    "decisionId": "c92a86ee-04ad-411e-a388-f1d3497cdd5a",
+    "campaignId": "af326227-a164-42ab-8696-f82597111a0b",
+    "reviewId": "a3cf2d65-e5c1-4b15-8de6-0a0d20f29065",
+    "responseId": "2620f737-d0ca-4f47-b51e-43b52caab7a9",
+    "reviewJobs": {
+      "internal": "a2bb6caf-915b-4559-9241-70deb53d0bcc",
+      "public": "480215b2-96c8-4988-9d70-4198fb4385f4"
+    },
+    "contributions": {
+      "mapPoint": "c2570de9-7cb6-428f-87ac-61573be33106",
+      "noMapPoint": "9651222a-c051-4333-851c-01d00901fadb",
+      "keyboard": "7c495968-2377-4df3-b73b-72301e5f4ec7",
+      "rejected": "3b2b2076-277b-404b-82ed-d452e503dd63"
+    }
+  }
+}

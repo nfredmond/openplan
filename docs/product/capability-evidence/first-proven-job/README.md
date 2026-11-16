@@ -215,6 +215,18 @@ place's Census id changed with its label kept is still accepted. Had this
 record failed the strengthened checker, its entry would have been withdrawn
 from the registry until a rerun passed.
 
+### A limit found while reviewing the second job's checker, November 15, 2026
+
+A review of the second proven job's checker found that a record's origin is
+a string its assembler is given, and that the assembler did not read each
+run file's mode. The same was true when this record was assembled. Its three
+journeys did run on the hosted site: each run file says `mode: proof` and
+names the hosted origin and this record's commit, and the files are kept
+with the lead's state, not in this repository. The record itself cannot show
+that, and nothing in it comes from the deployment. From November 15, 2026
+the assembler refuses a run that is not a finished proof run on the
+record's origin and commit. This record is unchanged and is still accepted.
+
 ## After the run
 
 The five public comment pages the three attempts created were taken offline

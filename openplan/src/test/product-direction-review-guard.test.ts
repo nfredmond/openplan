@@ -44,10 +44,12 @@ describe("the recurring product-direction review", () => {
     );
     expect(registry.dimensions.state).toHaveLength(56);
     expect(registry.schemaVersion).toBe(3);
-    // One job is proven (November 14, 2026): the safety action plan and SS4A
-    // application in three places, run by an agent on the hosted site. The
-    // direction check above read its record and its six PDFs and accepted them.
-    expect(registry.provenJobs).toHaveLength(1);
+    // Two jobs are proven, each run by an agent on the hosted site in three
+    // places: the safety action plan and SS4A application (November 14, 2026)
+    // and the engagement campaign with its review report and published
+    // response (November 15, 2026). The direction check above read each record
+    // and its files and accepted them.
+    expect(registry.provenJobs).toHaveLength(2);
     expect(registry.provenJobs[0]).toMatchObject({
       jobId: "safety-action-plan-and-ss4a-in-three-places",
       commit: "ccf88a9219fa58b67842a8f1dd41dbe3b371f8e5",
@@ -59,6 +61,18 @@ describe("the recurring product-direction review", () => {
     });
     // The record, six PDFs, the record's README and the four inputs files.
     expect(registry.provenJobs[0].evidence).toHaveLength(12);
+    expect(registry.provenJobs[1]).toMatchObject({
+      jobId: "engagement-campaign-review-and-response-in-three-places",
+      commit: "3af5a8b35860138e2a01214702ff7016b4b6fd32",
+      places: [
+        { kind: "county", geoid: "41011", stateFips: ["41"] },
+        { kind: "city", geoid: "5644760", stateFips: ["56"] },
+        { kind: "aiannh", geoid: "1505R", stateFips: ["04"] },
+      ],
+    });
+    // The record, three run files, twelve review files (two PDFs and two
+    // workbooks per place), the record's README and the three inputs files.
+    expect(registry.provenJobs[1].evidence).toHaveLength(20);
     expect(registry.readinessRegistry).toMatchObject({
       schema: "openplan.jurisdiction-readiness.v1",
       path: "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
