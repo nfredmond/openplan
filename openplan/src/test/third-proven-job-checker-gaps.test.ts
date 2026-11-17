@@ -198,6 +198,14 @@ describe.skipIf(!hasPoppler)("the third record against each closed gap (KI-2026-
     ["6. the county said to have prepared and submitted the text", "county", "Trinity County did not\nprepare, review, adopt or submit this text", "Trinity County has\nprepared and submitted this text", /county journey atp-application PDF prints "prepared and submitted"/],
     ["6. the city said to submit the application", "city", "The City of Yreka did not\nprepare, review, adopt or submit this text", "The City of Yreka submits this\napplication and this text", /city journey atp-application PDF prints "submits this"/],
     ["6. a line saying the application was prepared by an agency", "city", "The City of Yreka did not\n", "Prepared by the City of Yreka, which did not\n", /city journey atp-application PDF prints "prepared by"/],
+    // Review 91 (November 17, 2026) found these wordings accepted; each now has its own phrase.
+    ["6. a line saying the application was submitted by an agency", "city", "The City of Yreka did not\n", "Submitted by the City of Yreka, which did not\n", /city journey atp-application PDF prints "submitted by the"/],
+    ["6. a tribe said to have prepared the application", "tribal-area", "No tribal government\nprepared, reviewed, adopted or submitted this text.", "The Hoopa Valley Tribe\nprepared the application.", /tribal-area journey atp-application PDF prints "prepared the application"/],
+    ["6. the county said to have submitted the application", "county", "Trinity County did not\nprepare, review, adopt or submit this text", "Trinity County\nsubmitted the application with this text", /county journey atp-application PDF prints "submitted the application"/],
+    ["6. the city said to be submitting this text", "city", "The City of Yreka did not\nprepare, review, adopt or submit this text", "The City of Yreka is\nsubmitting this text", /city journey atp-application PDF prints "submitting this"/],
+    ["6. the county said to be submitting the application", "county", "Trinity County did not\nprepare, review, adopt or submit this text", "Trinity County is\nsubmitting the application with this text", /county journey atp-application PDF prints "submitting the application"/],
+    ["6. the text said to be authored by a tribe", "tribal-area", "No tribal government\nprepared,", "Authored by the Tribe. Nobody else\nprepared,", /tribal-area journey atp-application PDF prints "authored by"/],
+    ["6. the city named as the preparer", "city", "The City of Yreka did not\n", "The City of Yreka is the preparer and did not\n", /city journey atp-application PDF prints "preparer"/],
   ])("refuses a PDF with %s", (_name, role, from, to, reason) => {
     expectRefused(verdict(record(), readerChanging(role, from, to)), reason);
   }, 240_000);
