@@ -810,9 +810,25 @@ export default async function ProjectDetailPage({
     : awardInvoicesResult.count !== awardInvoiceRows.length
       ? `Reimbursement totals withheld: ${awardInvoiceRows.length} of ${awardInvoicesResult.count ?? "an unknown number of"} award invoice records loaded.`
       : null;
+  // A completed obligation milestone's date means the award's obligation is
+  // met, so the Funding scan stops counting its due date (KI-2026-11-16-140).
+  // At most one obligation milestone per award (unique index, 20260416000053).
+  const obligationMilestonesResult = fundingAwardIds.length
+    ? await supabase
+        .from("project_milestones")
+        .select("funding_award_id, status, actual_date")
+        .eq("project_id", project.id)
+        .eq("milestone_type", "obligation")
+    : { data: [], error: null };
+  collectUnlessPending(reads, "obligation milestones for this project's awards", obligationMilestonesResult);
+  const obligationCompletedOnByAwardId = new Map(
+    ((obligationMilestonesResult.error ? [] : obligationMilestonesResult.data ?? []) as Array<{ funding_award_id: string | null; status: string | null; actual_date: string | null }>)
+      .filter((row) => row.funding_award_id && row.status === "complete" && row.actual_date)
+      .map((row) => [row.funding_award_id as string, row.actual_date as string])
+  );
   const fundingStackSummary = buildProjectFundingStackSummary(
     projectFundingProfile,
-    fundingAwards,
+    fundingAwards.map((award) => ({ ...award, obligation_completed_on: obligationCompletedOnByAwardId.get(award.id) ?? null })),
     fundingOpportunities,
     awardInvoiceRows,
     { reimbursementWithheldReason: awardInvoiceTotalsWithheldReason }

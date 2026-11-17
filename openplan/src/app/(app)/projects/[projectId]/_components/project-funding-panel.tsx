@@ -216,6 +216,7 @@ export function ProjectFundingPanel({
   awardInvoiceTotalsWithheldReason = null,
   projectInvoiceTotalsWithheldReason = null,
 }: ProjectFundingPanelProps) {
+  const { obligationMetCount, latestObligationMetOn } = fundingStackSummary;
   const fundingProfileScan = buildProjectFundingProfileScan({
     summary: fundingStackSummary,
     hasComparisonEvidence: Boolean(comparisonBackedFundingReport?.comparisonDigest),
@@ -371,10 +372,12 @@ export function ProjectFundingPanel({
             </div>
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
               <p className="text-xs font-semibold text-muted-foreground">Next obligation</p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? "No obligation date recorded"}</h3>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? (obligationMetCount > 0 ? "Obligated" : "No obligation date recorded")}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 {nextObligationAward
                   ? `Obligation due ${fmtDateTime(nextObligationAward.obligation_due_at)}.`
+                  : obligationMetCount > 0
+                  ? `Obligated on ${latestObligationMetOn}. No obligation deadline is ahead.`
                   : "Add obligation dates to your awards and this will warn you before a deadline passes."}
               </p>
             </div>

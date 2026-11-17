@@ -154,7 +154,9 @@ const stageGateSelectMock = vi.fn(() => ({ eq: stageGateEqMock }));
 
 const milestonesLimitMock = vi.fn();
 const milestonesOrderMock = vi.fn(() => ({ limit: milestonesLimitMock }));
-const milestonesEqMock = vi.fn(() => ({ order: milestonesOrderMock }));
+// The obligation-milestone read (KI-2026-11-16-140) goes eq(project)→eq(type).
+const obligationMilestonesEqMock = vi.fn(async (..._args: unknown[]) => ({ data: [] as unknown[], error: null as unknown }));
+const milestonesEqMock = vi.fn(() => ({ order: milestonesOrderMock, eq: obligationMilestonesEqMock }));
 const milestonesSelectMock = vi.fn(() => ({ eq: milestonesEqMock }));
 
 const submittalsLimitMock = vi.fn();
@@ -899,6 +901,9 @@ describe("ProjectDetailPage", () => {
     projectFundingProfileMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     projectFundingProfileLimitMock.mockResolvedValue({ data: [], error: null });
     fundingAwardsLimitMock.mockResolvedValue({ data: [], error: null });
+    // Reset per test: the money and obligation tests below seed these.
+    awardInvoicesLimitMock.mockResolvedValue({ data: [], error: null });
+    obligationMilestonesEqMock.mockResolvedValue({ data: [], error: null });
     fundingOpportunitiesLimitMock.mockResolvedValue({ data: [], error: null });
     datasetsInMock.mockResolvedValue({ data: [], error: null });
     connectorsInMock.mockResolvedValue({ data: [], error: null });
@@ -2586,6 +2591,61 @@ describe("ProjectDetailPage", () => {
 
       expect(screen.getByText("Invoice totals withheld: 12 of 1200 invoice records loaded.")).toBeInTheDocument();
       expect(screen.queryByText("Outstanding $85,000.00")).toBeNull();
+    });
+  });
+
+  describe("a completed obligation milestone clears the Funding scan (KI-2026-11-16-140)", () => {
+    function seedOverdueAward() {
+      fundingAwardsLimitMock.mockResolvedValue({
+        data: [
+          {
+            id: "award-obligated",
+            project_id: "70000000-0000-4000-8000-000000000001",
+            program_id: null,
+            funding_opportunity_id: null,
+            title: "Obligation award",
+            awarded_amount: 200000,
+            match_amount: 50000,
+            match_posture: "partial",
+            obligation_due_at: "2026-03-31T17:00:00.000Z",
+            spending_status: "active",
+            risk_flag: "none",
+            notes: null,
+            updated_at: "2026-03-01T18:00:00.000Z",
+            created_at: "2026-02-01T18:00:00.000Z",
+            funding_opportunities: null,
+            programs: null,
+          },
+        ],
+        error: null,
+      });
+    }
+
+    it("reads the milestone's date and says the award is obligated", async () => {
+      seedOverdueAward();
+      obligationMilestonesEqMock.mockResolvedValue({
+        data: [{ funding_award_id: "award-obligated", status: "complete", actual_date: "2026-03-15" }],
+        error: null,
+      });
+
+      await renderPage("funding");
+
+      expect(obligationMilestonesEqMock).toHaveBeenCalledWith("milestone_type", "obligation");
+      expect(screen.getByText("Obligated on 2026-03-15.")).toBeInTheDocument();
+      expect(screen.getByText("Obligated on 2026-03-15. No obligation deadline is ahead.")).toBeInTheDocument();
+      expect(screen.queryByText(/days? overdue/)).toBeNull();
+    });
+
+    it("still says overdue when the milestone is not complete", async () => {
+      seedOverdueAward();
+      obligationMilestonesEqMock.mockResolvedValue({
+        data: [{ funding_award_id: "award-obligated", status: "in_progress", actual_date: null }],
+        error: null,
+      });
+
+      await renderPage("funding");
+
+      expect(screen.getByText(/Next obligation date is \d+ days overdue\./)).toBeInTheDocument();
     });
   });
 

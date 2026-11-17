@@ -17,9 +17,25 @@ export type FundingAwardLike = ComparableAward & {
   match_amount?: number | string | null;
   risk_flag?: string | null;
   obligation_due_at?: string | null;
+  /** The date the award was obligated, authorized or allocated (20261117000200). */
+  obligated_on?: string | null;
+  /** The actual date on the award's completed obligation milestone, when the caller read it. */
+  obligation_completed_on?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 };
+
+/**
+ * The date an award's obligation was met, or null (KI-2026-11-16-140). The
+ * completed obligation milestone's date wins; the award's own obligated-on
+ * date counts when no milestone date was recorded. An award with either no
+ * longer has an obligation deadline ahead of it.
+ */
+export function awardObligationMetOn(award: FundingAwardLike): { date: string; source: "milestone" | "award" } | null {
+  if (award.obligation_completed_on) return { date: award.obligation_completed_on, source: "milestone" };
+  if (award.obligated_on) return { date: award.obligated_on, source: "award" };
+  return null;
+}
 
 export type FundingOpportunityLike = {
   has_source_backed_issuance?: boolean;
@@ -181,7 +197,7 @@ export function buildProjectFundingStackSummary(
       likelyFundingAmount: Number.NaN, totalPotentialFundingAmount: Number.NaN, unfundedAfterLikelyAmount: Number.NaN,
       requestedReimbursementAmount: Number.NaN, paidReimbursementAmount: Number.NaN, outstandingReimbursementAmount: Number.NaN,
       draftReimbursementAmount: Number.NaN, uninvoicedAwardAmount: Number.NaN,
-      nextObligationAt: null, awardRiskCount: awards.filter((a) => a.risk_flag === "watch" || a.risk_flag === "critical").length,
+      nextObligationAt: null, obligationMetCount: 0, latestObligationMetOn: null as string | null, awardRiskCount: awards.filter((a) => a.risk_flag === "watch" || a.risk_flag === "critical").length,
       pursuedOpportunityCount: opportunities.filter((o) => o.decision_state === "pursue" && !o.has_source_backed_issuance).length,
       status: "unknown" as ProjectFundingStackStatus, label: "Recorded award ceilings; coverage unassessed",
       reason: "Use the exact version/currency snapshot. Target currency and cost basis are not established for comparison.",
@@ -221,7 +237,12 @@ export function buildProjectFundingStackSummary(
   const outstandingReimbursementAmount = reimbursementSummary.outstandingNetAmount;
   const draftReimbursementAmount = reimbursementSummary.draftNetAmount;
   const uninvoicedAwardAmount = uninvoicedCommittedAwardAmount(committedFundingAmount, reimbursementSummary);
+  const obligationMetDates = awards
+    .map((award) => awardObligationMetOn(award)?.date ?? null)
+    .filter((value): value is string => Boolean(value))
+    .sort();
   const nextObligationAt = awards
+    .filter((award) => !awardObligationMetOn(award))
     .map((award) => award.obligation_due_at)
     .filter((value): value is string => Boolean(value))
     .sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[0] ?? null;
@@ -337,6 +358,8 @@ export function buildProjectFundingStackSummary(
     draftReimbursementAmount: withheld ? Number.NaN : draftReimbursementAmount,
     uninvoicedAwardAmount: withheld ? Number.NaN : uninvoicedAwardAmount,
     nextObligationAt,
+    obligationMetCount: obligationMetDates.length,
+    latestObligationMetOn: obligationMetDates[obligationMetDates.length - 1] ?? null,
     status,
     label,
     reason,
@@ -490,6 +513,22 @@ export function buildProjectFundingProfileScan(input: {
       statusLabel: "No awards yet",
       detail: "No award records are attached, so obligation pressure cannot be computed.",
       nextAction: "Create award records when funding is committed, then add obligation dates for operations review.",
+      amount: null,
+    });
+  } else if (!summary.nextObligationAt && "obligationMetCount" in summary && summary.obligationMetCount > 0) {
+    // Every award with an obligation date has met it (KI-2026-11-16-140).
+    const metAll = summary.obligationMetCount >= summary.awardCount;
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: metAll ? "ready" : "attention",
+      statusLabel: metAll ? "Obligated" : "Date missing",
+      detail: metAll
+        ? `${summary.obligationMetCount === 1 ? "Obligated" : `All ${summary.obligationMetCount} awards obligated; latest`} on ${summary.latestObligationMetOn}.`
+        : `${summary.obligationMetCount} of ${summary.awardCount} awards obligated; the rest have no obligation date.`,
+      nextAction: metAll
+        ? "No obligation deadline is ahead."
+        : "Add the next obligation deadline before calling the award stack operations-ready.",
       amount: null,
     });
   } else if (!summary.nextObligationAt || obligationDaysUntil === null) {

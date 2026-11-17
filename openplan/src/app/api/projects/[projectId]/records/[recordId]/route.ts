@@ -161,6 +161,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       if (!manual && origin.data.handoff_origin_revision_id) return NextResponse.json({error:"Managed award outcomes require manual entry. No approved action covers this mutation."},{status:403});
     }
 
+    // KI-2026-11-16-140: completing an award's obligation milestone records the
+    // date it was obligated, so the Funding scan can stop counting its due date.
+    if (parsed.data.recordType === "milestone" && parsed.data.status === "complete" && !parsed.data.actualDate) {
+      const kind = await supabase
+        .from("project_milestones")
+        .select("milestone_type, actual_date")
+        .eq("id", parsedParams.data.recordId)
+        .eq("project_id", project.id)
+        .maybeSingle();
+      if (kind.error) return NextResponse.json({ error: "Record origin unavailable" }, { status: 503 });
+      if (kind.data?.milestone_type === "obligation" && !kind.data.actual_date) {
+        return NextResponse.json({ error: "Completing an obligation milestone needs the date the award was obligated." }, { status: 400 });
+      }
+    }
+
     // Reassignment carries the same membership rule as first assignment, and
     // for the same reason it is enforced here rather than by a CHECK: the
     // question spans projects, workspace_members and the record itself.

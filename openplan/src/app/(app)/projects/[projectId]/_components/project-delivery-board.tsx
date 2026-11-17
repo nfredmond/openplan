@@ -493,6 +493,7 @@ export function ProjectDeliveryBoard({
                         recordId={milestone.id}
                         recordType="milestone"
                         currentStatus={milestone.status}
+                        completeNeedsDate={milestone.milestone_type === "obligation" && !milestone.actual_date}
                       />
                     </div>
                     {/* Reassign or unassign — the chip above only READS. */}
