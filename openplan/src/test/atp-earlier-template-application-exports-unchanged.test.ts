@@ -54,17 +54,26 @@ import { seedId } from "./fixtures/grants/safety-seed";
 
 // Re-taken on November 16, 2026 (lane 75, after review 78): the section title's print rule gained
 // `break-inside: avoid`, one CSS declaration in the document's style block. No text changed, and
-// the built-in writer's PDF, which reads no CSS, kept its hash.
+// the built-in writer's PDF, which reads no CSS, kept its hash (HTML `68e4d4dd...`, PDF `7a962fe8...`).
 //
 // Re-taken again on November 16, 2026 (lane 82, KI-2026-11-16-111): the last note under Appendix E
 // now says the proxy uses OpenPlan's own fixed lines, that the Guidelines use their own threshold
 // and data years (section 12.A), and that a zero count or a flagged tract shows nothing about a
-// Guidelines criterion. Both hashes moved (HTML from `68e4d4dd...`, PDF from `7a962fe8...`). With
-// the earlier note put back, both earlier values returned, so that sentence is the whole change.
-// This fixture's run retrieved no tract data, so its count lines still read "Not recorded" and it
-// prints no equity score.
-const PINNED_HTML_SHA256 = "229b94c6a7c476b1d0dea24e2a074c9e06a83e740383b5f14d15a29b3511edd7";
-const PINNED_PDF_SHA256 = "bd6e3ee3f1523506eca4efa1909d215a049811a1d2ec9c9120e5c7ffb396e89e";
+// Guidelines criterion. Both hashes moved (HTML from `68e4d4dd...` to `229b94c6...`, PDF from
+// `7a962fe8...` to `bd6e3ee3...`). This fixture's run retrieved no tract data, so its count lines
+// still read "Not recorded" and it prints no equity score.
+//
+// Re-taken again on November 16, 2026 (lane 83, KI-2026-11-16-104), for every application's layout,
+// on the tree that carries lane 82's note. Three things changed in the text, so the built-in
+// writer's PDF moved too: the opportunity summary prints under the cover's boxes, not above them; a
+// finalized time in the provenance table prints as "Nov 15, 2026, 14:10 (America/Los_Angeles)", not
+// "November 15, 2026 at 14:10 (America/Los_Angeles)"; and the optional row with nothing attached
+// ("Plan consistency documentation") reads "Not attached", not "Missing". The rest is the stylesheet
+// and markup that carry the layout. No section title, no attachment title, no Required or Optional
+// word and no DRAFT count changed. HTML from `229b94c6...`, PDF from `bd6e3ee3...` (lane 83's values
+// before lane 82's note, `3eba1e6a...` and `43af2277...`, are gone with the merge).
+const PINNED_HTML_SHA256 = "e39cdf3c749decb591ea503038d0c46927cfb5d023ff45bc4b9f1af70a0dea38";
+const PINNED_PDF_SHA256 = "c1945f4dd08b9883909155fa904af3751a3bac1ce84a804915d86faf986287ce";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -236,6 +245,9 @@ describe("an application seeded from the earlier ATP template", () => {
     expect(html).toContain("<p>Study place not recorded in OpenPlan</p>");
     expect(html).not.toMatch(/to be provided/i);
     expect(html).toContain("<td>Existing conditions photos</td>\n          <td>Optional</td>");
+    // An optional row with nothing attached is not "Missing"; a required one is.
+    expect(html).toContain("<td>Plan consistency documentation</td>\n          <td>Optional</td>\n          <td>Not attached</td>");
+    expect(html).toContain("<td>Engineer&#39;s cost estimate</td>\n          <td>Required</td>\n          <td>Missing</td>");
     expect(html).toContain("Appendix F. Benefit-cost summary");
     expect(html).toContain("DRAFT: 1 required attachment(s) outstanding");
     expect(body.appendices.map((appendix: { status: string }) => appendix.status)).toEqual(Array(6).fill("included"));

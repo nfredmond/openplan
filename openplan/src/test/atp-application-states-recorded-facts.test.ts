@@ -590,9 +590,13 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
     // Cover boxes are not checked here: a fresh-context review (review 76) removed the rule that
     // keeps a cover box whole and this test still passed. Only the byte pins see that rule.
     // Forty sections under the long cover of a tracked opportunity. Every other one has no final text
-    // and prints a two-line box. Between them sit final sections whose text grows by one sentence each
-    // time, so the boxes fall at many different heights on their pages. With nothing holding a box
-    // together, some land across a page break (the mutation pair for this test shows it).
+    // and prints a not-final box. Between them sit final sections whose text grows by one sentence each
+    // time, so the boxes fall at many different heights on their pages. The product's box is two or
+    // three lines, and Chrome's default widows and orphans (two each) never split a block that short,
+    // so this check could not fail at that width (lane 83b's mutant, with every rule that holds a box
+    // whole removed, passed). Here the box is drawn narrow, about eight lines, so that with nothing
+    // holding a box together some land across a page break (lane 83b's mutation pair shows it). The
+    // narrow width is this test's only change to the product's stylesheet.
     const row = { workspace_id: ATP_IDS.workspace, opportunity_id: ATP_IDS.opportunity, updated_by: null, created_at: "", updated_at: "" };
     const records = recordsFor(COUNTY);
     const filler = "Demonstration text, typed by an agent for a layout check, long enough to fill most of one printed line.";
@@ -615,15 +619,21 @@ describe.runIf(PDF_TOOLS)("the ATP application PDF, read back with pdftotext -la
       coverLines: atpCoverLines(records.project),
       applicant: { project: { status: "named", name: "Main Street sidewalk gap closure" }, workspace: { status: "named", name: "Demonstration Planning Consultants" } },
     });
-    const pages = await pdfPages(html, "boxes-across-pages");
+    expect(html.match(/<\/style>/g)).toHaveLength(1);
+    const pages = await pdfPages(html.replace("</style>", ".outstanding { max-width: 200px; }</style>"), "boxes-across-pages");
     expect(pages.length).toBeGreaterThanOrEqual(6);
     const count = (page: string, pattern: RegExp) => (page.match(pattern) ?? []).length;
     const split: number[] = [];
     let boxes = 0;
     pages.forEach((page, index) => {
-      // Every box that starts on a page ends on it.
-      const starts = count(page, /Not finalized: this section/g);
-      if (starts !== count(page, /no approved text exists for it yet\./g)) split.push(index + 1);
+      // Every box that starts on a page ends on it. Each page's text is read with its line breaks
+      // and layout spaces collapsed: where the box's sentence wraps depends on the font, and a wrap
+      // inside "no approved text exists for it yet." is not a split. On CI's Linux fonts the line-by-
+      // line match failed on every page with boxes (PR 512's first CI run). A page break is still a
+      // split: the two phrases are counted on each page by itself.
+      const flat = page.replace(/\s+/g, " ");
+      const starts = count(flat, /Not finalized: this section/g);
+      if (starts !== count(flat, /no approved text exists for it yet\./g)) split.push(index + 1);
       boxes += starts;
     });
     expect(split).toEqual([]);
