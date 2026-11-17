@@ -167,6 +167,10 @@ describe("the worksheet", () => {
     expect(text).toContain("INV-2A resubmits INV-2 Paid 2026-04-01");
     expect(text).toContain("2026-04-20");
     expect(text).toMatch(/INV-3 Paid 2026-03-05 Not recorded Not recorded/);
+    // The rendered table, not only the helper: INV-2A sits under INV-2, above INV-3.
+    const rows = ["<td>INV-1<", "<td>INV-2<", "<td>INV-2A<", "<td>INV-3<"].map((cell) => html.indexOf(cell));
+    expect(rows.every((at) => at > -1)).toBe(true);
+    expect([...rows].sort((a, b) => a - b)).toEqual(rows);
   });
 
   it("prints the obligated date, and Not recorded when there is none", () => {
