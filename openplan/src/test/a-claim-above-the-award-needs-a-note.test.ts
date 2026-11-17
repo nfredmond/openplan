@@ -108,7 +108,7 @@ describe("a claim above the award ceiling needs a note (KI-2026-11-16-131)", () 
       amount: 15000,
       notes: "Phase 2 design",
     };
-    awardRow = { id: AWARD_ID, awarded_amount: 100000, latest_handoff_revision_id: null };
+    awardRow = { id: AWARD_ID, workspace_id: WORKSPACE_ID, project_id: null, awarded_amount: 100000, latest_handoff_revision_id: null };
     awardInvoices = { data: [...others, { id: INVOICE_ID, status: "draft", amount: 15000 }], error: null, count: 5 };
   });
 
@@ -162,8 +162,23 @@ describe("a claim above the award ceiling needs a note (KI-2026-11-16-131)", () 
     expect(updateMock).not.toHaveBeenCalled();
   });
 
-  it("refuses a note without a status change", async () => {
-    const response = await patch({ fundingAwardId: AWARD_ID, overCeilingNote: "No move here." });
+  it("refuses a note with neither a status change nor an award link", async () => {
+    const response = await patch({ overCeilingNote: "No move here." });
     expect(response.status).toBe(400);
+  });
+
+  it("checks a claimed request relinked to another award, and saves the relink with a note (review 95)", async () => {
+    invoiceRow.status = "submitted";
+    invoiceRow.funding_award_id = "66666666-6666-4666-8666-666666666666";
+    const refused = await patch({ fundingAwardId: AWARD_ID });
+    expect(refused.status).toBe(422);
+    expect(updateMock).not.toHaveBeenCalled();
+
+    const saved = await patch({ fundingAwardId: AWARD_ID, overCeilingNote: "Moved to the award that funds this phase." });
+    expect(saved.status).toBe(200);
+    expect(updateMock.mock.calls[0][0]).toMatchObject({
+      funding_award_id: AWARD_ID,
+      notes: "Phase 2 design\n\nClaimed $5,000.00 above the $100,000.00 award ceiling: Moved to the award that funds this phase.",
+    });
   });
 });

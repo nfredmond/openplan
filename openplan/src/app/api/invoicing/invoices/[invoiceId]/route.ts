@@ -63,8 +63,10 @@ const patchBillingInvoiceSchema = z
     message: "A payment date belongs to marking a request paid",
     path: ["paidDate"],
   })
-  .refine((value) => value.status !== undefined || value.overCeilingNote === undefined, {
-    message: "A note on claiming above the ceiling belongs to a status change",
+  // A relink of a claimed request to another award can pass that award's
+  // ceiling too, so the note may come with an award change (review 95).
+  .refine((value) => value.status !== undefined || value.fundingAwardId !== undefined || value.overCeilingNote === undefined, {
+    message: "A note on claiming above the ceiling belongs to a status change or an award link",
     path: ["overCeilingNote"],
   });
 

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { AwardConditionHandoff } from "@/components/grants/award-condition-handoff";
 import { HANDOFF_AWARD_SELECT } from "@/lib/grants/award-handoff";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 export const metadata = moduleMetadata("Award conditions");
 
@@ -28,12 +29,16 @@ export default async function AwardConditionsPage({ searchParams }: { searchPara
     if (looksLikePendingSchema(awards.error?.message)) return <SetupPendingNotice consequence="Award conditions are unavailable. No handoff was saved.">Apply migration 20261018000003_award_condition_handoff, then retry.</SetupPendingNotice>;
     return <main className="module-page"><p>Award conditions could not be read completely. No handoff was saved. {READ_FAILURE_PLANNER_ACTION}</p><OperatorDetail>{awards.error?.message ?? "The exact count does not match the returned award set."}</OperatorDetail></main>;
   }
+  // Recording an award as already closed is owner or admin only (awards.close).
+  // An unreadable role hides the option; the route refuses a member anyway.
+  const member = await client.from("workspace_members").select("role").eq("workspace_id", o.workspace_id).eq("user_id", user.id).maybeSingle();
+  const canRecordClosure = !member.error && canAccessWorkspaceAction("awards.close", member.data?.role);
   const available = awards.data.filter((a) => !a.funding_opportunity_id || a.funding_opportunity_id === o.id);
   return <main className="module-page space-y-6">
     <Link href="/grants?tab=awards">Back to Grants</Link>
     <header><h1 className="text-2xl font-semibold">Save award conditions</h1><p>{o.title}</p><p className="text-sm text-muted-foreground">Select the specific award. Review the application beside actual notice terms. Issuance, recipient acceptance and spending authorization remain separate.</p></header>
     {available.map((a) => <AwardConditionHandoff key={a.id} awardId={a.id} opportunityId={o.id} title={a.title} initiallyOpen={a.id === params.awardId} />)}
     {!available.length ? <p>No matching award exists yet. Add it below, then select the returned award here.</p> : null}
-    <ProjectFundingAwardCreator projectId={o.project_id} opportunityOptions={[{ id: o.id, title: o.title }]} defaultOpportunityId={o.id} defaultProgramId={o.program_id} titleLabel="Record another award" description="Multiple awards may fund the same opportunity and project. The creator remains separate from source-confirmed conditions." />
+    <ProjectFundingAwardCreator projectId={o.project_id} opportunityOptions={[{ id: o.id, title: o.title }]} defaultOpportunityId={o.id} defaultProgramId={o.program_id} titleLabel="Record another award" canRecordClosure={canRecordClosure} description="Multiple awards may fund the same opportunity and project. The creator remains separate from source-confirmed conditions." />
   </main>;
 }

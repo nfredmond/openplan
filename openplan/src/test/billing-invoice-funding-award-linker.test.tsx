@@ -64,4 +64,56 @@ describe("InvoiceFundingAwardLinker", () => {
       expect(refreshMock).toHaveBeenCalled();
     });
   });
+  it("asks why when a relink passes the new award's ceiling, then saves the link with the note (review 95)", async () => {
+    const patches: Array<Record<string, unknown>> = [];
+    const fetchMock = vi.fn(async (url: string, init?: { body?: string }) => {
+      if (url === "/api/funding-awards/award-2/handoff") return {
+        ok: true,
+        json: async () => ({ award: { current_handoff_revision_id: null, latest_handoff_revision_id: null, currency_code: null }, history: [] }),
+      };
+      if (url === "/api/invoicing/invoices/invoice-1") {
+        const body = JSON.parse(init?.body ?? "{}");
+        patches.push(body);
+        return body.overCeilingNote
+          ? { ok: true, status: 200, json: async () => ({ invoice: { id: "invoice-1" } }) }
+          : {
+              ok: false,
+              status: 422,
+              json: async () => ({
+                code: "over_award_ceiling",
+                error: "This would bring claims on the award to $105,000.00, $5,000.00 above its $100,000.00 ceiling. Add a note saying why to claim above the award.",
+              }),
+            };
+      }
+      throw new Error(`Unexpected request ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <InvoiceFundingAwardLinker
+        invoiceId="invoice-1"
+        workspaceId="workspace-1"
+        projectId="project-1"
+        currentFundingAwardId="award-1"
+        fundingAwards={[
+          { id: "award-1", title: "ATP 2026", projectId: "project-1" },
+          { id: "award-2", title: "SS4A 2026", projectId: "project-1" },
+        ]}
+        canWrite
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Funding award link"), { target: { value: "award-2" } });
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith("/api/funding-awards/award-2/handoff", { cache: "no-store" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save funding link" })).not.toBeDisabled());
+    fireEvent.click(screen.getByRole("button", { name: "Save funding link" }));
+
+    expect(await screen.findByText(/\$5,000\.00 above its \$100,000\.00 ceiling/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Why claim above the award (required)"), { target: { value: "Moved to the award that funds this phase." } });
+    fireEvent.click(screen.getByRole("button", { name: "Save link with note" }));
+
+    await waitFor(() => expect(refreshMock).toHaveBeenCalled());
+    expect(patches).toHaveLength(2);
+    expect(patches[1]).toMatchObject({ fundingAwardId: "award-2", overCeilingNote: "Moved to the award that funds this phase." });
+  });
 });

@@ -921,6 +921,7 @@ export default async function GrantsPage({
 
       <PageTabPanel tabKey="awards" active={activeTab === "awards"} className="grid gap-6">
           <GrantsAwardConversionSection
+            canRecordClosure={canAccessWorkspaceAction("awards.close", membership.role)}
             awardedOpportunitiesMissingRecords={awardedOpportunitiesMissingRecords}
             awardConversionOpportunity={awardConversionOpportunity}
             activeFocusedOpportunityId={activeFocusedOpportunityId}

@@ -20,11 +20,14 @@ export function GrantsAwardConversionSection({
   awardConversionOpportunity,
   activeFocusedOpportunityId,
   awardCommandCallout,
+  canRecordClosure = false,
 }: {
   awardedOpportunitiesMissingRecords: AwardedOpportunity[];
   awardConversionOpportunity: AwardedOpportunity | null;
   activeFocusedOpportunityId: string | null;
   awardCommandCallout: ReactNode | null;
+  /** Owner or admin (awards.close): may record an award as already closed. */
+  canRecordClosure?: boolean;
 }) {
   return (
     <article id="grants-award-conversion-lane" className="module-section-surface">
@@ -62,6 +65,7 @@ export function GrantsAwardConversionSection({
             defaultOpportunityId={awardConversionOpportunity.id}
             defaultProgramId={awardConversionOpportunity.program?.id ?? null}
             defaultTitle={`${awardConversionOpportunity.title} award`}
+            canRecordClosure={canRecordClosure}
             titleLabel="Create the lead award record now"
             description={`Convert ${awardConversionOpportunity.title} into a committed award record here so reimbursement and invoicing can start from the shared grant record.`}
           />
