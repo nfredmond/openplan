@@ -42,7 +42,7 @@ export async function managedCloseout(input: { actorId: string; awardId: string;
   return NextResponse.json(result.data);
 }
 
-export const FUNDING_AWARD_CLOSEOUT_MIGRATION = "20261117000000_award_closure_custody";
+const FUNDING_AWARD_CLOSEOUT_MIGRATION = "20261117000000_award_closure_custody";
 
 export type FundingAwardCloseoutEvent = "earned_coverage" | "reconciled_with_balance" | "recorded_on_import" | "reopen";
 

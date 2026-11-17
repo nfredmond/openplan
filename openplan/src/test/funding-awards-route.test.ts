@@ -19,6 +19,8 @@ const awardsSingleMock = vi.fn();
 const awardsInsertSelectMock = vi.fn(() => ({ single: awardsSingleMock }));
 const awardsInsertMock = vi.fn(() => ({ select: awardsInsertSelectMock }));
 const milestonesInsertMock = vi.fn();
+/** The row the create route inserted, typed for property checks. */
+const insertedAward = () => (awardsInsertMock.mock.calls as unknown as Array<[Record<string, unknown>]>)[0][0];
 const closeoutCommandMock = vi.fn();
 const awardsDeleteSelectMock = vi.fn();
 const awardsDeleteMock = vi.fn(() => ({ eq: vi.fn(() => ({ select: awardsDeleteSelectMock })) }));
@@ -388,7 +390,7 @@ describe("/api/funding-awards", () => {
     // The award is created open, then closed by the close-out command: the
     // database refuses closure columns written any other way (20261117000000).
     expect(awardsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ spending_status: "not_started" }));
-    expect(awardsInsertMock.mock.calls[0][0]).not.toHaveProperty("closure_basis");
+    expect(insertedAward()).not.toHaveProperty("closure_basis");
     expect(closeoutCommandMock).toHaveBeenCalledWith({
       actorId: "22222222-2222-4222-8222-222222222222",
       awardId: AWARD_ID,
@@ -460,7 +462,7 @@ describe("/api/funding-awards", () => {
 
     expect(awardsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ spending_status: "not_started", obligated_on: null }));
     for (const column of ["closure_basis", "closed_at", "closed_by", "closure_note"]) {
-      expect(awardsInsertMock.mock.calls[0][0]).not.toHaveProperty(column);
+      expect(insertedAward()).not.toHaveProperty(column);
     }
     expect(closeoutCommandMock).not.toHaveBeenCalled();
   });
