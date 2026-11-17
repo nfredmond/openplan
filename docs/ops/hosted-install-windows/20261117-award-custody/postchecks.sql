@@ -55,6 +55,14 @@ BEGIN
      OR pg_catalog.has_function_privilege('anon', 'public.funding_award_closeout_command(uuid,uuid,text,text,date,text)', 'EXECUTE') THEN
     RAISE EXCEPTION 'post-check close-out command privileges';
   END IF;
+  IF pg_catalog.has_function_privilege('authenticated', 'public.reimbursement_request_net(numeric,numeric,numeric)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'post-check net helper is executable by authenticated';
+  END IF;
+  -- The request guard fixes money once a request leaves draft (review 92).
+  IF pg_catalog.pg_get_functiondef('public.guard_reimbursement_request_status()'::regprocedure)
+     NOT LIKE '%NEW.amount, NEW.retention_percent, NEW.retention_amount, NEW.net_amount%' THEN
+    RAISE EXCEPTION 'post-check request guard does not fix money after draft';
+  END IF;
   IF pg_catalog.has_function_privilege('authenticated', 'public.guard_funding_award_closure()', 'EXECUTE')
      OR pg_catalog.has_function_privilege('authenticated', 'public.guard_reimbursement_request_status()', 'EXECUTE') THEN
     RAISE EXCEPTION 'post-check guard function privileges';

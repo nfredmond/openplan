@@ -111,7 +111,8 @@ AS $$
   END;
 $$;
 REVOKE ALL ON FUNCTION public.reimbursement_request_net(numeric, numeric, numeric) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.reimbursement_request_net(numeric, numeric, numeric) TO authenticated, service_role;
+-- Only the close-out command uses it, as the service role.
+GRANT EXECUTE ON FUNCTION public.reimbursement_request_net(numeric, numeric, numeric) TO service_role;
 
 -- The one writer of closure columns for awards with no handoff revision.
 --

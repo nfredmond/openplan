@@ -274,7 +274,8 @@ liveDescribe("award and request custody, live", () => {
 
   it("closes an award that finished under its ceiling with the balance released", async () => {
     const under = await award("Under", 1000);
-    await pay(await request(under, `U-${suffix}-1`, 400));
+    // Gross 500 with 20 percent retention: paid is the net 400, never the gross.
+    await pay(await request(under, `U-${suffix}-1`, 500, { retention_percent: 20, net_amount: 400 }));
     const rejected = await request(under, `U-${suffix}-2`, 100);
     await move(rejected, { status: "submitted" });
     await move(rejected, { status: "rejected", rejection_reason: "Missing timesheets" });
@@ -351,6 +352,49 @@ liveDescribe("award and request custody, live", () => {
     expect(relink.error?.code).toBe("23514");
     const unlinkOriginal = await owner.from("billing_invoice_records").update({ funding_award_id: null }).eq("id", original).select("id");
     expect(unlinkOriginal.error?.code).toBe("23514");
+  });
+
+  it("refuses a reconciled close-out when paid exactly reaches the ceiling", async () => {
+    const exact = await award("Exact", 1000);
+    await pay(await request(exact, `X-${suffix}-1`, 1000));
+    const refused = await command(exact, "reconciled_with_balance", "Nothing left to release");
+    expect(refused.error?.code).toBe("22023");
+    expect(refused.error?.message).toContain("reach the ceiling");
+    expect((await readAward(exact)).spending_status).toBe("active");
+  });
+
+  // Review 92: an owner changed a paid request's amount to 50,000 on a closed
+  // award through the Data API. The money is fixed once a request leaves draft.
+  it("fixes a request's money once it leaves draft, for the owner and the member", async () => {
+    const frozen = await award("Frozen", 5000);
+    const draft = await request(frozen, `F-${suffix}-0`, 100);
+    const editable = await owner.from("billing_invoice_records").update({ amount: 120, net_amount: 120 }).eq("id", draft).select("id");
+    expect(editable.error).toBeNull();
+    expect(editable.data).toHaveLength(1);
+
+    const steps: Array<[string, Row[]]> = [
+      ["submitted", [{ status: "submitted" }]],
+      ["approved_for_payment", [{ status: "submitted" }, { status: "approved_for_payment" }]],
+      ["paid", [{ status: "submitted" }, { status: "approved_for_payment" }, { status: "paid", paid_date: today }]],
+    ];
+    for (const [status, path] of steps) {
+      const id = await request(frozen, `F-${suffix}-${status}`, 1000);
+      for (const patch of path) expect((await move(id, patch)).error).toBeNull();
+      for (const patch of [
+        { amount: 50000 },
+        { net_amount: 50000 },
+        { retention_percent: 10 },
+        { retention_amount: 100 },
+        { amount: 50000, net_amount: 50000 },
+      ]) {
+        const byOwner = await owner.from("billing_invoice_records").update(patch).eq("id", id).select("id");
+        expect(byOwner.error?.code, `owner ${status} ${JSON.stringify(patch)}`).toBe("23514");
+        const byMember = await member.from("billing_invoice_records").update(patch).eq("id", id).select("id");
+        expect(byMember.data ?? [], `member ${status} ${JSON.stringify(patch)}`).toHaveLength(0);
+      }
+      const { data } = await service.from("billing_invoice_records").select("status, amount, net_amount, retention_percent, retention_amount").eq("id", id).single();
+      expect(data).toMatchObject({ status, amount: 1000, net_amount: 1000, retention_percent: 0, retention_amount: 0 });
+    }
   });
 
   it("refuses a second request with the same number on one award, in any case", async () => {

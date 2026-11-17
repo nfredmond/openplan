@@ -10,7 +10,8 @@
 --
 -- Reading the result:
 --   probe-complete, notices "probe 89: member and owner closing writes
---     refused", "probe 89: request rules hold" and "probe 89: close-out
+--     refused", "probe 89: request rules hold" (including the money fixed
+--     after draft) and "probe 89: close-out
 --     command closes, reconciles and reopens": the migrations behave as
 --     intended.
 --   "PROBE SETUP FAILED, probe 89": the probe could not build its rows or
@@ -69,6 +70,9 @@ BEGIN
    UPDATE public.billing_invoice_records SET status='paid',paid_date=today WHERE id=paid_request;
    BEGIN UPDATE public.billing_invoice_records SET status='draft' WHERE id=paid_request;
      RAISE EXCEPTION 'paid request moved back'; EXCEPTION WHEN check_violation THEN NULL; END;
+   -- Review 92: the money is fixed once a request leaves draft.
+   BEGIN UPDATE public.billing_invoice_records SET amount=50000,net_amount=50000 WHERE id=paid_request;
+     RAISE EXCEPTION 'owner changed a paid request''s amount'; EXCEPTION WHEN check_violation THEN NULL; END;
    INSERT INTO public.billing_invoice_records(id,workspace_id,project_id,funding_award_id,invoice_number,amount) VALUES(rejected,workspace,project,under,'R-1',100);
    UPDATE public.billing_invoice_records SET status='submitted' WHERE id=rejected;
    UPDATE public.billing_invoice_records SET status='rejected',rejection_reason='Synthetic return' WHERE id=rejected;

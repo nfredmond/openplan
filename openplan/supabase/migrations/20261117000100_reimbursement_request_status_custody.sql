@@ -29,6 +29,15 @@
 --   - A resubmission names a rejected request in the same workspace and on
 --     the same award, at creation only. Each rejected request has at most one
 --     resubmission. The two stay on that award.
+--   - The money is fixed once a request leaves draft: amount,
+--     retention_percent, retention_amount and net_amount change only while
+--     the request is a draft (and in the update that moves it out of draft).
+--     Review 92 (agent-run, local) changed a paid request on a closed award
+--     to 50,000 through the Data API as an owner. No product route, screen,
+--     Planner Agent action, seed or smoke script writes these columns after
+--     the row is created. currency_code is not frozen here: binding a legacy
+--     request to an award with conditions sets it, and the handoff guard
+--     (20261018000003) holds it once bound.
 --
 -- Existing rows keep their status, even a paid row that was never approved:
 -- the guard checks changes, not history. Rows already paid show "Not
@@ -92,6 +101,12 @@ BEGIN
 
   IF NEW.resubmits_invoice_id IS DISTINCT FROM OLD.resubmits_invoice_id THEN
     RAISE EXCEPTION 'The request a resubmission replaces is set when it is created' USING ERRCODE = '23514';
+  END IF;
+
+  IF OLD.status <> 'draft'
+     AND ROW(NEW.amount, NEW.retention_percent, NEW.retention_amount, NEW.net_amount)
+         IS DISTINCT FROM ROW(OLD.amount, OLD.retention_percent, OLD.retention_amount, OLD.net_amount) THEN
+    RAISE EXCEPTION 'A % request''s amount and retention are fixed once it leaves draft', OLD.status USING ERRCODE = '23514';
   END IF;
 
   -- A resubmission and the request it replaces stay on one award. The
