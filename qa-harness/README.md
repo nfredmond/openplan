@@ -342,6 +342,78 @@ the record checker refuses. The run folder's screenshots show the signed-in
 account's address: copy only the run file and the PDF into a record, never the
 `screens` or `console` folders.
 
+## The fourth job's journey: an award taken to a reimbursement record
+
+`award-job-journey.js` (helpers in `award-job-journey-lib.js`, unit tests in
+`award-job-journey.test.js`) runs one journey of the job
+`grant-award-to-reimbursement-record-in-three-places`. An owner signs up and
+confirms by the emailed link, sets the workspace's place and time zone, makes
+a project with its study place, tracks SS4A from the catalog, records the
+award on the Funding tab with the definition's fixed figures and its
+obligation date, and invites a member (who signs up, confirms and accepts the
+invitation). On the Invoices register's own controls it logs INV-1 and moves
+it to paid with its payment date, logs INV-2, submits it and marks it
+rejected with a reason, makes INV-2A with Resubmit and moves it to paid. It
+reads the money on the Funding tab, Grants (Awards), the Invoices register
+and the dashboard, and downloads the worksheet PDF, while INV-2A is submitted
+and again after the reconciled close-out ("Close out award", "Under the
+ceiling"). It records the member's refusals (logging, approving, paying,
+closing out), the owner's refusals (paid before approval, a claim above the
+ceiling with no note, made with an unlinked draft), the database's answers to
+the owner's and the member's direct PostgREST writes of the award's closure
+columns and of INV-1's amount (each account's own session, the public key the
+page's own sign-up request sent, never a service key), the four screens at
+1440 and 390 px light and dark read whole (`readWholeScreen`), and a second
+workspace's refusals beside the owner's 200.
+
+Three accounts, three link files: `--email` with `--confirm-link-file`,
+`--member-email` with `--member-confirm-link-file`, `--second-email` with
+`--second-confirm-link-file`. The invitation link the owner's screen shows is
+used once by the member's browser and never written.
+
+The definition's fixed paths move INV-2 and INV-2A from draft straight to
+submitted. The register's control offers only the next status, so a draft
+goes to internal review first and no journey can make that path on screen
+(`pathGaps`, tied to `invoice-status-advance-button.tsx` by a test). A proof
+stops before it touches the site; a rehearsal records the finding and follows
+the product's controls, and the checker then refuses the path (lane 94's
+report, KI-2026-11-17-090).
+
+Inputs (`fixtures/award-job-rehearsal-inputs.json` shows the shape): the
+three workspace names, the project's name (with the demonstration label) and
+summary, the award title (with the label), the consultant, `timeZone`, the
+fixed figures under `award` and `requests` (refused unless they are the
+definition's strings), the dates (obligation on or before every period, each
+invoice no earlier than its period and no later than the run day, the
+resubmission on the replaced request's period with `"invoiceDate":
+"prefilled"` for the date Resubmit fills in), `rejectionReason`,
+`closeOutNote` and `overCeilingProbe` (a number and a gross above the
+ceiling). No typed string may hold an email address, a placeholder, an
+amount, a refused phrase or a form name.
+
+```bash
+# rehearsal, from qa-harness/ (local stack, dev server and mail catcher running; Poppler on PATH)
+node award-job-journey.js --mode rehearsal --base-url http://localhost:3590 \
+  --place-query "Plumas County, CA" --place-kind county --role county \
+  --email owner-1@openplan.test --member-email member-1@openplan.test --second-email second-1@openplan.test \
+  --confirm-link-file ../../c1.link --member-confirm-link-file ../../c2.link --second-confirm-link-file ../../c3.link \
+  --out ../../award-runs/county
+# roles and place kinds: county (county), city (city), tribal-area (aiannh)
+# proof: --mode proof --base-url <the hosted origin> --inputs <inputs JSON>
+#   --expected-commit <40-character commit> --executor-agent <harness> --executor-model <model id>
+node award-job-journey.js --assemble --journeys a.json,b.json,c.json --commit <40 hex> \
+  --base-url <the hosted origin> --root <folder the record's PDF paths are relative to> --out record.json
+npm run check:award-job-journey   # unit tests
+```
+
+The run file never holds an address, a token, a key, an invitation link or a
+password; it is refused before it is written if it would. The assembler takes
+one finished run of each role, orders them as the definition does and writes
+exactly the definition's limits in its words (with the page limit when a
+Funding tab answered 200). Each journey leaves three accounts and
+workspaces, a project, a tracked opportunity, a closed award, three requests
+and one unlinked draft on the site; the worksheet downloads store nothing.
+
 ## Current scripts
 - `openplan-local-workspace-url-isolation-smoke.js` — read-only browser smoke for local synthetic workspace A vs workspace B URL isolation. It signs in synthetic users from a fixture, verifies each user can load its own workspace-scoped URL, verifies the other user is denied, verifies the denied session still loads its own workspace URL afterward, and rejects leaked page text. It refuses non-local base URLs by default and does not seed or mutate Supabase data.
 - `openplan-local-ui-ux-settle-capture.js` — read-only local Playwright capture harness for the UI/UX settle route manifest. It requires an already-authenticated local Playwright storage state, refuses production/Vercel URLs, captures desktop/mobile screenshots for populated local routes, and ledgers fixture-required routes instead of accepting empty-state proof.
