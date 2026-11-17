@@ -39,6 +39,11 @@ function wrapTitle(title, width = 54) {
   return lines;
 }
 
+/** "November 20, 2026" for an ISO time, the day as the export prints it in UTC. */
+function assembledDay(iso) {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", year: "numeric", month: "long", day: "numeric" }).format(new Date(iso));
+}
+
 /**
  * The pages of one journey's synthetic application, as page texts.
  * @param {Record<string, any>} journey one journey of the example record
@@ -84,7 +89,12 @@ export function syntheticApplicationPages(journey, job) {
     "",
     "  SECTIONS FINAL                  ASSEMBLED",
     "",
-    `  ${rule.sections.list.length} of ${rule.sections.list.length}                        November 20, 2026`,
+    // The Assembled box as the export prints it for a workspace with no time
+    // zone: the export time's day, then the minute and the zone over three lines.
+    `  ${rule.sections.list.length} of ${rule.sections.list.length}                        ${assembledDay(application.exportedAt)}`,
+    `                                  at ${application.exportedAt.slice(11, 16)} (UTC, no`,
+    "                                  workspace time",
+    "                                  zone set)",
   ];
 
   const section = ({ title, disposition }) => [

@@ -117,7 +117,8 @@ function applicationHtml(entry: Json, filler = 0): string {
         kb_document_id: null, report_artifact_id: null, note: recorded.reason ?? null, sort_order: index,
       };
     }),
-    generatedAt: GENERATED_AT,
+    // The cover's Assembled time is the journey's own export time, which the checker compares (KI-2026-11-16-112).
+    generatedAt: entry.application.exportedAt,
     evidenceAppendices: buildAtpEvidenceAppendices(records, new Set<string>(ATP_APPENDIX_KEYS)),
     evidenceAppendixFrame: ATP_APPENDIX_FRAME,
     coverLines: atpCoverLines(records.project),

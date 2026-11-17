@@ -8,7 +8,7 @@
     {
       "role": "county",
       "mode": "proof",
-      "harness": {"commit": "89abcdef0123456789abcdef0123456789abcdef", "clean": true},
+      "harness": {"commit": "0123456789abcdef0123456789abcdef01234567", "clean": true},
       "place": {"kind": "county", "geoid": "06998", "stateFips": ["06"], "label": "Synthetic County, CA"},
       "executor": {"agent": "Claude Code", "model": "claude-fable-5-2"},
       "accountCreatedAt": "2026-11-20T10:00:10Z",
@@ -72,8 +72,8 @@
         {
           "kind": "atp-application",
           "path": "docs/product/capability-evidence/synthetic-example/county-atp-application.pdf",
-          "sha256": "fec92e28f0b93e5fc34a86693274cfdfa3a9eb9458cbc2f245ce4407a5dfa96f",
-          "bytes": 7979,
+          "sha256": "2e34f7bfca96d710d286ddf394e402259747f9cf195dc662e543e135151899f8",
+          "bytes": 8124,
           "pages": 7,
           "draftStamp": true,
           "items": [
@@ -108,7 +108,7 @@
     {
       "role": "city",
       "mode": "proof",
-      "harness": {"commit": "89abcdef0123456789abcdef0123456789abcdef", "clean": true},
+      "harness": {"commit": "0123456789abcdef0123456789abcdef01234567", "clean": true},
       "place": {"kind": "city", "geoid": "0699812", "stateFips": ["06"], "label": "Synthetic city, CA"},
       "executor": {"agent": "Claude Code", "model": "claude-fable-5-2"},
       "accountCreatedAt": "2026-11-20T11:00:10Z",
@@ -172,8 +172,8 @@
         {
           "kind": "atp-application",
           "path": "docs/product/capability-evidence/synthetic-example/city-atp-application.pdf",
-          "sha256": "bf0db6ba8c43c2255d93d46a664d4b1426ed28c40adf41b885c954ddd5b8069c",
-          "bytes": 7981,
+          "sha256": "96912c2168e2290c134ce68d1206560eeb353c4a61c43057092f6a38df29deb6",
+          "bytes": 8126,
           "pages": 7,
           "draftStamp": true,
           "items": [
@@ -208,7 +208,7 @@
     {
       "role": "tribal-area",
       "mode": "proof",
-      "harness": {"commit": "89abcdef0123456789abcdef0123456789abcdef", "clean": true},
+      "harness": {"commit": "0123456789abcdef0123456789abcdef01234567", "clean": true},
       "place": {"kind": "aiannh", "geoid": "9998R", "stateFips": ["06"], "label": "Synthetic Reservation, CA"},
       "executor": {"agent": "Claude Code", "model": "claude-fable-5-2"},
       "accountCreatedAt": "2026-11-20T12:00:10Z",
@@ -272,8 +272,8 @@
         {
           "kind": "atp-application",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-atp-application.pdf",
-          "sha256": "bebffd53152ba75bd724b98f77e1f0c7db5bc39f7454fdfac247676d41945495",
-          "bytes": 8401,
+          "sha256": "b426fb7b29ef4946668d773d241cd730852d972faf903fdbad0dd9a7af06f6b7",
+          "bytes": 8546,
           "pages": 7,
           "draftStamp": true,
           "items": [

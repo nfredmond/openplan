@@ -70,6 +70,20 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
     jobIds.add(entry.jobId);
     checkReviewDate(entry.reviewedAt, registry.reviewedAt, today, label);
     const files = readEvidenceList(entry.evidence, root, label);
+    // Every JSON file a proven job pins (its record, run files and inputs) is
+    // scanned as the record is: no address, token or sign-in link in any of
+    // them (KI-2026-11-16-112).
+    for (const file of files) {
+      if (!file.path.endsWith(".json")) continue;
+      let value;
+      try {
+        value = JSON.parse(file.bytes.toString("utf8"));
+      } catch {
+        throw new Error(`${label} evidence ${file.path} is not JSON`);
+      }
+      const found = findSecret(value);
+      if (found) throw new Error(`${label} evidence ${file.path} contains ${found.kind} at ${found.path || "its top level"}`);
+    }
     const records = files.filter(({ path, bytes }) => path.endsWith(".json") && parsedSchema(bytes) === RECORD_SCHEMA_ID);
     if (records.length !== 1) {
       throw new Error(`${label} needs exactly one ${RECORD_SCHEMA_ID} record among its evidence, found ${records.length}`);
@@ -100,7 +114,8 @@ export function validateCapabilityEvidence(registry, repoRoot, today, options = 
  * refusal; returns nothing.
  *
  * Rules that hold for every job live in this file: the hosted origin, one
- * commit read back at the start and end of each journey, the place rules,
+ * commit read back at the start and end of each journey, one version and
+ * migration count read back across all the journeys, the place rules,
  * agent executors (the definitions' executors block), a record date that
  * fits its journeys (recordedOn block), artifact custody, no DRAFT stamp
  * (unless the job's definition requires one, as the application job's does),
@@ -183,8 +198,10 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     if (job.application) checkApplication(journey, job, label, pages);
   }
   if (job.campaign) checkDistinctCampaigns(record.journeys);
-  checkSameAcrossJourneys(record.journeys, job);
+  checkSameAcrossJourneys(record, job);
   checkDistinctAcrossJourneys(record.journeys, job);
+  checkOneBuild(record.journeys);
+  if (job.sequentialJourneys) checkSequentialJourneys(record.journeys, job);
   checkRecordedOn(record);
 
   const pageAnsweredOk = checkCrossWorkspace(record.crossWorkspace.checks, job.crossWorkspace, roles);
@@ -254,9 +271,13 @@ function journeyField(journey, field) {
 /**
  * Fields the definition says every journey of a record must share
  * (`sameAcrossJourneys`): one harness checkout for the application job. The
- * refusal takes {role}, {found}, {firstRole} and {expected}.
+ * refusal takes {role}, {found}, {firstRole} and {expected}. A rule with a
+ * `recordField` also holds every journey's value to that field of the record
+ * (the harness checkout to the record's commit, KI-2026-11-16-112), refused
+ * with its `recordRefusal`, which takes {role}, {found} and {expected}.
  */
-function checkSameAcrossJourneys(journeys, job) {
+function checkSameAcrossJourneys(record, job) {
+  const { journeys } = record;
   for (const rule of job.sameAcrossJourneys ?? []) {
     const first = journeys[0];
     const expected = journeyField(first, rule.field);
@@ -269,6 +290,66 @@ function checkSameAcrossJourneys(journeys, job) {
           .replaceAll("{firstRole}", first.role)
           .replaceAll("{found}", String(found))
           .replaceAll("{expected}", String(expected)),
+      );
+    }
+    // The journeys agree; now the one value they share must be the record's.
+    if (rule.recordField && expected !== record[rule.recordField]) {
+      refuse(rule.recordRefusal.replaceAll("{role}", first.role).replaceAll("{found}", String(expected)).replaceAll("{expected}", String(record[rule.recordField])));
+    }
+  }
+}
+
+/**
+ * One build for the whole record, for every job: every health readback of
+ * every journey reports the same version and migrations (KI-2026-11-16-112,
+ * review 81 copy B7). The commit is already held to the record's in every
+ * readback, and checkHealthRule holds the end to the start within a journey;
+ * this holds the journeys to each other, so one journey run on another
+ * release with the same commit name is refused.
+ *
+ * Blind category: the readbacks are the journey's own statements.
+ */
+function checkOneBuild(journeys) {
+  const first = journeys[0];
+  const reference = first.health[0];
+  for (const journey of journeys) {
+    for (const reading of journey.health) {
+      for (const field of ["version", "migrationsExpected", "migrationsLatest"]) {
+        if (reading[field] !== reference[field]) {
+          refuse(`the ${journey.role} journey's ${reading.point} health readback reports ${field} ${reading[field]}, but the ${first.role} journey's ${reference.point} readback reports ${reference[field]}; a record's journeys run on one build`);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * The journeys ran one at a time, in the order the job's definition lists
+ * them (`sequentialJourneys`): each journey's start health readback is no
+ * earlier than the end readback of the journey listed before it
+ * (KI-2026-11-16-112, review 81 copies F1 and F2). The record's own order
+ * does not matter; the definition's does.
+ *
+ * Blind category: the times are the journey's own. A record whose times were
+ * all moved together, or one journey dated a week before the others
+ * (KI-2026-11-16-099), is still in order and is not caught.
+ */
+function checkSequentialJourneys(journeys, job) {
+  const at = (journey, point) => {
+    const reading = journey.health.find((candidate) => candidate.point === point);
+    const time = Date.parse(reading.checkedAt);
+    if (Number.isNaN(time)) refuse(`the ${journey.role} journey's ${point} health readback holds a time that cannot be read: ${JSON.stringify(reading.checkedAt)}`);
+    return { time, text: reading.checkedAt };
+  };
+  const ordered = job.journeys.map((rule) => journeys.find((journey) => journey.role === rule.role));
+  for (let index = 1; index < ordered.length; index += 1) {
+    const before = ordered[index - 1];
+    const journey = ordered[index];
+    const ended = at(before, "end");
+    const started = at(journey, "start");
+    if (started.time < ended.time) {
+      refuse(
+        `the ${journey.role} journey started (${started.text}) before the ${before.role} journey ended (${ended.text}); this job's journeys run one at a time in the order ${job.journeys.map((rule) => rule.role).join(", ")}`,
       );
     }
   }
@@ -2057,6 +2138,15 @@ function checkApplication(journey, job, label, pagesByKind) {
   for (const phrase of rule.refusedPhrases.phrases) {
     if (printsRefused(phrase)) refuse(`${pdfLabel} prints "${phrase}", which this job refuses anywhere in the PDF`);
   }
+  // Typed text may not say a tribe or an agency prepared, adopted or submitted the application (KI-2026-11-16-112).
+  for (const phrase of rule.authorshipPhrases?.phrases ?? []) {
+    if (printsRefused(phrase)) {
+      refuse(`${pdfLabel} prints "${phrase}", words that say someone prepared, adopted or submitted the application; no tribe or agency did, and this job refuses them anywhere in the PDF`);
+    }
+  }
+
+  // The cover's Assembled time agrees with the journey's export time (KI-2026-11-16-112).
+  if (rule.exportTime) checkExportTime(journey, rule.exportTime, pdfLabel, cover);
 
   // Scores: a label ending in score or points, a colon and a number must end one of the definition's labels.
   const flat = normalizePdfText(everywhere).replace(/-\n/g, "").replace(/\s+/g, " ");
@@ -2067,6 +2157,49 @@ function checkApplication(journey, job, label, pagesByKind) {
     if (!labels.some((scoreLabel) => before.endsWith(scoreLabel))) {
       refuse(`${pdfLabel} prints a score that is not labeled an OpenPlan screening score: "${flat.slice(Math.max(0, match.index - 60), match.index + match[0].length + 8).trim()}"`);
     }
+  }
+}
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/**
+ * How far after the Assembled label its time may begin, in characters of the
+ * cover's flattened text: the box beside it ("10 of 10") reads in between.
+ */
+const LABEL_TO_TIME = 40;
+
+/**
+ * The application's export time agrees with what its PDF prints (the
+ * definition's `exportTime` block, KI-2026-11-16-112, review 81 copy A3). The
+ * cover's Assembled box prints the assembly time to the minute in the zone
+ * the block names ("November 16, 2026 at 15:38 (UTC, no workspace time zone
+ * set)"). The printed time is the first one in that form that begins within
+ * LABEL_TO_TIME characters after an Assembled label on the cover (a cover
+ * paragraph can say "OpenPlan-assembled evidence" after the box). The
+ * journey's export time must fall inside that minute, widened by the block's
+ * clock difference on each side. checkHealthRule already holds the export
+ * time inside its journey.
+ *
+ * Blind category: a PDF and a record falsified together are not caught, and
+ * neither is a typed name that holds the label and a time, if the box itself
+ * is missing.
+ */
+function checkExportTime(journey, rule, pdfLabel, cover) {
+  const flat = normalizePdfText(cover).replace(/\s+/g, " ");
+  const escape = (words) => words.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const printed = flat.match(
+    new RegExp(`\\b${escape(rule.label)}\\b.{0,${LABEL_TO_TIME}}?\\b(${MONTHS.join("|")}) (\\d{1,2}), (\\d{4}) at (\\d{2}):(\\d{2}) \\(${escape(rule.zone)}\\)`, "i"),
+  );
+  if (!printed) refuse(`${pdfLabel} cover prints no "${rule.label}" time in the form "Month D, YYYY at HH:MM (${rule.zone})"`);
+  const [, monthName, day, year, hour, minute] = printed;
+  const month = MONTHS.findIndex((name) => name.toLowerCase() === monthName.toLowerCase());
+  const minuteStart = Date.UTC(Number(year), month, Number(day), Number(hour), Number(minute));
+  const exported = journeyField(journey, rule.field);
+  const time = Date.parse(exported);
+  if (Number.isNaN(time)) refuse(`${pdfLabel} cannot be compared with ${rule.field}, a time that cannot be read: ${JSON.stringify(exported)}`);
+  const slack = rule.maxClockDifferenceSeconds * 1000;
+  if (time < minuteStart - slack || time >= minuteStart + 60_000 + slack) {
+    refuse(`${pdfLabel} cover says it was assembled ${MONTHS[month]} ${Number(day)}, ${year} at ${hour}:${minute} (${rule.zone}), but the journey's ${rule.field} is ${exported}; they differ by more than ${rule.maxClockDifferenceSeconds} seconds`);
   }
 }
 
@@ -2163,6 +2296,12 @@ const SECRET_PATTERNS = [
   ["a token", /\bBearer\s+[A-Za-z0-9._~+/-]{16,}/],
   ["a token or sign-in link", /(?:access_token|refresh_token|provider_token|token_hash|api_?key)\s*[=:]/i],
   ["a token or sign-in link", /\/auth\/v1\/(?:verify|callback|token)/i],
+  // A link's query that carries a one-time token or code, or a bare `token=`
+  // or `code=` (KI-2026-11-16-112, review 81 copy I15), and a PKCE verifier's
+  // name: the family the third job's run-file test and the lead's finalize
+  // tool refused before the checker did.
+  ["a token or sign-in link", /(?:^|[^A-Za-z0-9_])(?:token|code)\s*=/i],
+  ["a token or sign-in link", /\bpkce_[0-9a-f]{8}/i],
   ["a password", /\b(?:password|passwd|pwd)\s*[:=]\s*\S/i],
   ["a cookie", /\bsb-[a-z0-9]+-auth-token\b|\b(?:set-)?cookie\s*:/i],
 ];
@@ -2174,14 +2313,26 @@ function secretIn(text) {
 }
 
 function scanStrings(value, path) {
+  const found = findSecret(value, path);
+  if (found) refuse(`${found.path} contains ${found.kind}`);
+}
+
+/** The first string value in a JSON value that holds a secret: its path and kind, never the value. */
+function findSecret(value, path = "") {
   if (typeof value === "string") {
-    const found = secretIn(value);
-    if (found) refuse(`${path} contains ${found}`);
-  } else if (Array.isArray(value)) {
-    value.forEach((item, index) => scanStrings(item, `${path}[${index}]`));
-  } else if (value && typeof value === "object") {
-    for (const [key, item] of Object.entries(value)) scanStrings(item, `${path}.${key}`);
+    const kind = secretIn(value);
+    return kind ? { path, kind } : null;
   }
+  const entries = Array.isArray(value)
+    ? value.map((item, index) => [`${path}[${index}]`, item])
+    : value && typeof value === "object"
+      ? Object.entries(value).map(([key, item]) => [`${path}.${key}`, item])
+      : [];
+  for (const [itemPath, item] of entries) {
+    const found = findSecret(item, itemPath);
+    if (found) return found;
+  }
+  return null;
 }
 
 const SCHEMA_ANNOTATIONS = new Set(["$schema", "$id", "title", "description", "$defs", "$comment"]);
