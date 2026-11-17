@@ -32,8 +32,9 @@ does and does not show.
   Places are rules (a place kind and a state), never a named place. The record
   names the places a run used.
 - `schemas/examples/proven_job_record.v1.synthetic.json`,
-  `proven_job_record.v1.engagement.synthetic.json` and
-  `proven_job_record.v1.atp-application.synthetic.json`: complete synthetic
+  `proven_job_record.v1.engagement.synthetic.json`,
+  `proven_job_record.v1.atp-application.synthetic.json` and
+  `proven_job_record.v1.award.synthetic.json`: complete synthetic
   records, one per job. The checker tests accept them against synthetic
   files. They are not evidence. The third job's synthetic files are text
   files written by `openplan/src/test/fixtures/proven-job-atp-application.mjs`
@@ -472,6 +473,122 @@ falsified to agree are not caught. The test that accepts a real PDF needs
 Chrome and Poppler. It ran on Windows fonts on the lane's machine and on
 Linux fonts in CI's QA gate (November 16, 2026), and is skipped where either
 is missing. Wrap points on the hosted site's own Chrome are unseen.
+
+## The fourth job: a grant award taken to a reimbursement record
+
+For the job `grant-award-to-reimbursement-record-in-three-places`, decided
+in the [fourth proven job note](../../reviews/product-direction/proven-jobs/2026-11-16-fourth-proven-job.md)
+on November 17, 2026, the checker applies rules 2, 3 and 10 of the first job
+above, the executor and date parts of rule 4, the third job's one checkout,
+one build, journey order and distinct names, and refuses a record unless the
+lead's eleven rules hold. No record of this job exists yet
+(KI-2026-11-17-050). In short:
+
+1. A California county on the Caltrans LAPM profile, an incorporated city
+   and a tribal area listed in at least two states, both on the generic
+   federal-aid profile, each bound to the workspace's own place.
+2. The fixed demonstration amounts: a $200,000.00 ceiling, a $50,000.00
+   partial match, INV-1 $60,000.00 paid, INV-2 $45,000.00 rejected, INV-2A
+   $45,000.00 resubmitted and paid, each request on its fixed path, no
+   retention, an obligation date on or before every request's period, and a
+   close with $95,000.00 released.
+3. Money recomputed from the record's requests at the moment each figure was
+   read, with the product's status partition, and compared to the cent with
+   both worksheet downloads (before and after the close-out) and every screen
+   reading. A fact the record holds no entry for reads "Not recorded", never
+   $0.00.
+4. Each request's history: every status the route answered, in order, with
+   the product's control for each move, the reason on the rejection, the date
+   on each payment and the link on the resubmission. The close-out made with
+   the product's control, after every request is paid or rejected, releasing
+   the ceiling minus net paid.
+5. The refusals: a signed-in member refused logging, approving, paying and
+   closing out; a second workspace refused the award history read, the
+   worksheet and the Funding tab beside the owner's 200; each direct PostgREST
+   write refused by the database; a paid move before approval and a claim
+   above the ceiling without a note refused by the route.
+6. The worksheet's words: the not-a-funder's-form note on page 1 and in every
+   page footer, no form name unless "not" comes right before it, no refused
+   phrase, the demonstration label on the award and project lines, the role's
+   process, and no fallback writer.
+7. The four screens at both widths and modes, each read whole, and the
+   job's limits in the definition's words.
+
+Every worksheet rule reads words, never a fixed line. A figure row runs from
+its label to the next row's label and must hold one amount; a request row runs
+from the line that opens with its number and carries an amount to the next
+such line. The synthetic example's worksheets are built by the product's own
+code (`openplan/src/test/fixtures/proven-job-award.ts`), and
+`proven-job-award-real-pdf.test.ts` prints all six with Chrome and reads them
+back with Poppler.
+
+### Definition fields the fourth job added
+
+- `journeys[].minStates`: the fewest Census states a journey's place must
+  be listed in. `statesNote` says where the list comes from.
+- `screens.paneUnrolledRequired`: true requires every screen row to carry
+  `paneUnrolled: true`, the journey's statement that it read the whole screen
+  before the accessibility check, as `readWholeScreen` does (KI-2026-11-17-032). The
+  record's screen rows gained the optional `paneUnrolled` field for it.
+- `award`: the block the award rules read. `demonstrationLabel.text`;
+  `profiles` (`byRole` profile id and name, `selection`); `statuses` (`all`,
+  `claimed`, `paid`, `draft`, `rejected`, `drawn`, `order`, `rejectedFrom`,
+  `paidFrom`, `labels`); `controls` (`create`, `resubmit`, `moves`,
+  `closeOut`, `createStatus`, `moveStatus`); `fixed` (`ceiling`, `match`,
+  `matchPosture`, `requests` with key, number, gross, retention, path and
+  `resubmits`, `closeBasis`, `handTotals`); `downloads` (`list` of PDF kind,
+  `closed` and `minOutstandingCount`, `status`, `engine`); `worksheet`
+  (`title`, `preparedNote`, `pageFooter`, `fallbackNotice`, `headerLines`,
+  `currencyNote`, `notRecorded`, `sections`, `positionRows` with figure,
+  label, kind, count, countNote and whenClosed, `closeBasisLabels`,
+  `resubmitsNote`, `costsNone`, `processLine`, `interimNotice`);
+  `refusedPhrases.phrases`; `formNames.names`; `screenFigures` (`byScreen`,
+  `points`); `member` (`refusedActions`, `statuses`, `control`);
+  `productRefusals.list`; `custody` (`checks`, `refusals` as status and code
+  pairs, `noRow`).
+- `journeys[].stateFipsNotIn`: states a journey's place may not lie in (the
+  city: states the profile registry gives a profile of its own, tied to the
+  registry by the pin test).
+  Each sub-block's `note` says what it means, and
+  `award-to-reimbursement-definition-pins.test.ts` ties each fixed value to
+  the product's own constant, worksheet output or source text.
+
+- `limitIdsClosed`: true refuses a record limit under an id the job's
+  `limitTexts` does not word (review 99, X04).
+
+The record's fields for this job are the `awardJourney` sub-schema. Money is
+a string of dollars and cents, or null for a fact not entered; the checker
+reads it in whole cents. Its limits are exactly the definition's: a record
+states each required limit in the definition's words and no other, so a
+rehearsal record or run file written before November 17, 2026 needs the
+`who-acted-is-the-journeys-word` limit added, and the journey's assembler
+must write it (lane 94).
+
+### What the checker cannot see for this job
+
+Every status, control, time, screen reading, refusal status and database
+answer is the journey's statement. The checker recomputes the money from them
+and holds the worksheets and readings to it, so a record and worksheets
+falsified together to agree are not caught. The record names no actor, so who
+made each move and the close-out is the journey's word (a required limit says
+so). A request row is read by its own columns, anchored on its first line's
+cells, and every word must be its number, note, status, reason, a date or an
+amount. On every honest Chrome worksheet the reviews printed, a reason word
+started at least 5 columns left of its row's invoice date; the checker reads a
+word into the date from 1 column left. Poppler can drop the spaces between very
+short words, and such a reason refuses an honest record. A bare number with no
+sign, cents or currency word is not counted as an amount (KI-2026-11-17-053).
+Reviews 97, 99 and 100 (agent-run, fresh context) found the copies the earlier versions
+accepted; amounts outside the read rows (with or without a sign or cents),
+unpaired custody answers, early payment dates, dates in the wrong cell,
+invented dates, a California city, form titles and dashes, nine wordings, a
+phrase across a page break, reading times, amounts in typed text and limits
+under unworded ids are now refused. The tribal area's states are the journey's reading; the
+Gazetteer table of tribal areas has no state column. Under the fixed amounts
+(no retention, every claim paid at close) the ceiling minus net paid, minus
+gross paid and minus claimed gross are the same number, so only a changed copy
+with retention shows which rule the checker applies; the tests make that copy.
+KI-2026-11-17-051 lists these.
 
 ### The place label and its Census id
 

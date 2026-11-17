@@ -693,6 +693,320 @@
         "read-by-the-journey": "The journey read or set these and the checker cannot read them again: which states the Census Bureau lists for the tribal area, the crash counts stored, the catalog key and template key, that no AI drafting ran, how the account was confirmed, each section's and each checklist row's state on screen, whether the run retrieved tract data, the statuses the owner and the second account received, the accessibility results, console errors and sideways scroll of each screen, every time, the executor, and which build, mode and harness checkout ran.",
         "project-page-answers-200-with-not-found-screen": "Another workspace's project page answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The application read and the PDF download were refused."
       }
+    },
+    {
+      "id": "grant-award-to-reimbursement-record-in-three-places",
+      "decidedIn": "docs/reviews/product-direction/proven-jobs/2026-11-16-fourth-proven-job.md",
+      "journeys": [
+        { "role": "county", "placeKind": "county", "stateFips": "06", "labelSuffix": ", CA" },
+        {
+          "role": "city",
+          "placeKind": "city",
+          "censusNameRefused": {
+            "note": "An incorporated place, as for the third job: the Gazetteer names a Census designated place with the closing word CDP.",
+            "pattern": " CDP$",
+            "refusal": "is a Census designated place, not an incorporated place"
+          },
+          "stateFipsNotIn": ["06"],
+          "stateFipsNotInNote": "The lead's rule 1: a city in a state with no reimbursement profile of its own. These are the states the product's profile registry names a profile for (California, the Caltrans LAPM profile), tied to the registry by award-to-reimbursement-definition-pins.test.ts (review 97, L03 and L13)."
+        },
+        {
+          "role": "tribal-area",
+          "placeKind": "aiannh",
+          "minStates": 2,
+          "statesNote": "The lead's rule 1: a Census tribal area that crosses two states. The list is the Census states the place search answer listed for the area, as the journey read them; the Gazetteer table of tribal areas has no state column, so this is the journey's statement."
+        }
+      ],
+      "geoidPatterns": {
+        "source": "openplan/src/lib/api/place-geographies.ts (PLACE_GEOID_PATTERNS); the kind this job adds to the shared list",
+        "city": "^\\d{7}$"
+      },
+      "placeStateFromGeoid": {
+        "note": "A county or place id begins with its state's two-digit FIPS code.",
+        "kinds": ["county", "city"]
+      },
+      "journeyFields": [
+        { "field": "mode", "equals": "proof", "refusal": "ran in {found} mode; only a proof run is proof" },
+        { "field": "harness.clean", "equals": true, "refusal": "names no clean harness checkout (harness.clean is {found}); a proof runs from a checkout with no uncommitted change" },
+        { "field": "confirmationMethod", "equals": "email_link", "refusal": "confirmed its account by {found}; this job's journey confirms only by the emailed link ({expected})" },
+        { "field": "award.catalogKey", "equals": "ss4a", "refusal": "recorded its award against an opportunity tracked from catalog key {found}, not {expected}; SS4A is open to counties, cities and tribes" },
+        { "field": "award.createStatus", "equals": 201, "refusal": "recorded its award with status {found}, not {expected}" },
+        { "field": "costEntryCount", "equals": 0, "refusal": "entered {found} project cost rows; this job enters none, so the worksheet's cost section must say none are recorded" }
+      ],
+      "sameAcrossJourneys": [
+        { "field": "harness.commit", "refusal": "the {role} journey ran from harness checkout {found}, but the {firstRole} journey ran from {expected}; a proof's journeys run from one checkout", "recordField": "commit", "recordRefusal": "the {role} journey ran from harness checkout {found}, not the record's commit {expected}; a proof runs from the commit it records" }
+      ],
+      "sequentialJourneys": {
+        "note": "The lead's rule 2: the journeys run one at a time in this definition's order (county, city, tribal area), each journey's start health readback no earlier than the end readback of the journey before it. The readback times are the journey's own."
+      },
+      "distinctAcrossJourneys": [
+        { "field": "projectName", "refusal": "the {role} and {otherRole} journeys name the same project (\"{found}\"); each journey makes its own" },
+        { "field": "workspaceName", "refusal": "the {role} and {otherRole} journeys name the same workspace (\"{found}\"); each journey signs up its own" },
+        { "field": "award.title", "refusal": "the {role} and {otherRole} journeys name the same award (\"{found}\"); each journey records its own" }
+      ],
+      "health": {
+        "note": "Each journey's health readbacks: status ok, the start readback before the account was created, the account created before the award was closed out (endAfter), the end readback after the close-out, and the same version and migrations at the end as at the start.",
+        "status": "ok",
+        "endAfter": "closeOut.closedAt"
+      },
+      "pdfs": ["worksheet-open", "worksheet-closed"],
+      "distinctPdfs": true,
+      "items": {
+        "award-position": "pdftotext",
+        "invoice-records": "pdftotext"
+      },
+      "itemHeadings": {
+        "source": "openplan/src/lib/invoicing/reimbursement-worksheet.ts (the section headings ledgerSection and invoiceSection print; the browser prints them in capitals, and the checker compares letters without case)",
+        "worksheet-open": { "award-position": "Award position", "invoice-records": "Invoice records on this award" },
+        "worksheet-closed": { "award-position": "Award position", "invoice-records": "Invoice records on this award" }
+      },
+      "award": {
+        "note": "The lead's rules of November 17, 2026, 06:55Z (PLAN_PJ4_2026-11-16.md), read by checkAward in openplan/scripts/ops/capability-evidence.mjs. Money in the record is a string of dollars and cents (\"60000.00\") or null for a fact the journey did not enter; the checker reads it in whole cents and never as a binary fraction. Every figure is recomputed from the record's own requests at the time it was read: each request's status at a time is the last status its history holds at or before that time, and a request that did not exist yet is not counted. Each figure is then compared to the cent with what both worksheet downloads print and what each screen reading says.",
+        "demonstrationLabel": {
+          "note": "The same words the other jobs' journeys use (qa-harness/journey-campaign-lib.js, DEMONSTRATION_LABEL). The award title and the project name must hold them; the worksheet prints both on its header lines.",
+          "text": "Demonstration by an automated OpenPlan proof run"
+        },
+        "profiles": {
+          "note": "The lead's rule 1: the reimbursement profile each role's workspace resolves, as the journey read it (the request's reimbursement_profile_id) and as the worksheet prints it (\"Process:\" and the profile's name). A California county resolves the Caltrans LAPM profile; a city in a state with no profile of its own and a tribal area that crosses two states resolve the generic federal-aid profile by country. selection is the product's binding word for a profile matched to the workspace's own place; an interim default means the workspace's place was not set. Tied to the product's descriptors by award-to-reimbursement-definition-pins.test.ts.",
+          "source": "openplan/src/lib/invoicing/profiles/us-ca-lapm.ts and us-federal-generic.ts (profileId, profileName)",
+          "byRole": {
+            "county": { "profileId": "us_ca_lapm_reimbursement_v1", "profileName": "Caltrans LAPM reimbursement" },
+            "city": { "profileId": "us_federal_generic_reimbursement_v1", "profileName": "US federal-aid reimbursement (generic)" },
+            "tribal-area": { "profileId": "us_federal_generic_reimbursement_v1", "profileName": "US federal-aid reimbursement (generic)" }
+          },
+          "selection": "jurisdiction_matched"
+        },
+        "statuses": {
+          "note": "The product's partition of request statuses (openplan/src/lib/invoicing/invoice-records.ts, BILLING_INVOICE_STATUSES and CLAIMED_INVOICE_STATUSES; openplan/src/lib/invoicing/drawdown-ledger.ts). order is the forward order the request trigger ranks (20261117000100); rejectedFrom and paidFrom are the statuses it allows those moves from. drawn is the dashboard's list (openplan/src/lib/dashboard/chart-series.ts, DRAWN_INVOICE_STATUSES), which leaves out internal review. labels are what the worksheet prints for each status.",
+          "all": ["draft", "internal_review", "submitted", "approved_for_payment", "paid", "rejected"],
+          "claimed": ["internal_review", "submitted", "approved_for_payment", "paid"],
+          "paid": ["paid"],
+          "draft": ["draft"],
+          "rejected": ["rejected"],
+          "drawn": ["submitted", "approved_for_payment", "paid"],
+          "order": ["draft", "internal_review", "submitted", "approved_for_payment", "paid"],
+          "rejectedFrom": ["submitted", "approved_for_payment"],
+          "paidFrom": ["approved_for_payment"],
+          "labels": { "draft": "Draft", "internal_review": "Internal review", "submitted": "Submitted", "approved_for_payment": "Approved for payment", "paid": "Paid", "rejected": "Rejected" }
+        },
+        "controls": {
+          "note": "The lead's rule 6: the path is the product's. Each status move names the on-screen control that made it, and each control is the one the product shows for that move (openplan/src/components/invoicing/invoice-status-advance-button.tsx). A request is logged with the register's composer (invoice-record-composer.tsx, its data-testid) and a resubmission with Resubmit, which opens the composer prefilled and linked. The close-out opens with Close out award (funding-award-closeout-control.tsx).",
+          "create": "invoice-record-composer",
+          "resubmit": "Resubmit",
+          "moves": { "internal_review": "Move to internal review", "submitted": "Mark submitted", "approved_for_payment": "Mark approved for payment", "paid": "Mark paid", "rejected": "Mark rejected" },
+          "closeOut": "Close out award",
+          "createStatus": 201,
+          "moveStatus": 200
+        },
+        "fixed": {
+          "note": "The lead's rule 3: the demonstration amounts, chosen before any run, with no retention. A reconciled close today releases the ceiling minus net paid and would count held retention as released (KI-2026-11-17-031), so the proof does not exercise retention. Each request's path is every status the route answered for it, in order. The obligation date must fall on or before every request's period start. handTotals are the figures at close, worked by hand: claimed gross 60,000 + 45,000 = 105,000 (INV-2 rejected, in no claim); paid net the same, with no retention; nothing outstanding; rejected gross 45,000; remaining 200,000 - 105,000 = 95,000, which is also the balance released.",
+          "ceiling": "200000.00",
+          "match": "50000.00",
+          "matchPosture": "partial",
+          "requests": [
+            { "key": "first", "number": "INV-1", "gross": "60000.00", "retention": "0.00", "path": ["draft", "internal_review", "submitted", "approved_for_payment", "paid"] },
+            { "key": "rejected", "number": "INV-2", "gross": "45000.00", "retention": "0.00", "path": ["draft", "submitted", "rejected"] },
+            { "key": "resubmission", "number": "INV-2A", "gross": "45000.00", "retention": "0.00", "resubmits": "rejected", "path": ["draft", "submitted", "approved_for_payment", "paid"] }
+          ],
+          "closeBasis": "reconciled_with_balance",
+          "handTotals": { "claimedGross": "105000.00", "paidNet": "105000.00", "outstandingNet": "0.00", "rejectedGross": "45000.00", "remaining": "95000.00", "released": "95000.00" }
+        },
+        "downloads": {
+          "note": "The lead's rule 4: two worksheet downloads, read from each PDF's text. worksheet-open is downloaded while a request is claimed and not yet paid, before the close-out; worksheet-closed after the close-out. Each download names the time the route answered and its status, and the engine the route's x-openplan-pdf-engine header named: the built-in writer is the export's fallback, not the PDF a planner gets.",
+          "list": [
+            { "pdf": "worksheet-open", "closed": false, "minOutstandingCount": 1 },
+            { "pdf": "worksheet-closed", "closed": true }
+          ],
+          "status": 200,
+          "engine": "chrome"
+        },
+        "worksheet": {
+          "note": "What each worksheet must print, read by the checker with Poppler's text (pdftotext -layout) and the shared matcher. No rule reads a value from a fixed line: a figure row runs from its label to the next row's label, wherever the browser wrapped the label, its note or its amount, and the row must hold exactly one amount, the recomputed one, or the notRecorded words and no amount when the record holds no entry. A request row runs from the line that opens with its number and carries an amount to the next such line, and must hold its gross, retention and net and no other amount; it is read by its own columns: the cells of its first line, set apart by two or more spaces, give where its number, status, three dates and amounts begin, and every word of every line of the row is placed in the area it starts in (a date area from one column left of the row's own date), so a wrapped cell reads whole. The number area must hold the number and, for the resubmission, its note; the status area the status and, for a rejected request, the reason; the invoice-date area the record's invoice date, the due area its due date or the notRecorded words, the paid area its payment date or the notRecorded words for a request not paid at the download; and the amount area the three amounts on the first line and nothing else. Any other word in the row refuses the record (review 97, P14, P15, Z07; review 99, D1 to D3; review 100, CR1 to CR3). On every honest Chrome worksheet the reviews printed, a status-cell word started at least 5 columns left of its row's invoice date (review 100). A row that splits across a page is read whole: the repeated header and the page's fixed note inside it are left out, and the last row ends at the first line set at the margin under the table. The whole worksheet must print exactly as many amounts as the money rows due at the download (closed rows only when closed, a row with no entry none) plus three per request row, counted twice with full-width characters made plain: currency signs before a digit, and numbers with cents, so an amount with no sign, a spaced or full-width sign, or no cents is still counted, and no amount may be written with comma cents or beside a currency word (review 97, M16 to M20; review 99, A1 to A4; review 100, AC2, AC3; every honest Chrome worksheet printed 19 of each before the close-out and 20 after). A journey's typed text (the workspace and project names, the award title, the rejection reason, the close-out note) may hold no amount, and the checker refuses one at the record. Every page carries the footer line with its own page number. The source is openplan/src/lib/invoicing/reimbursement-worksheet.ts (WORKSHEET_DOCUMENT_TITLE, WORKSHEET_PREPARED_NOTE, WORKSHEET_FOOTER_NOTE, ledgerSection, invoiceSection, costSection, profileSection) and openplan/src/lib/reports/pdf.ts (the footer template, BUILTIN_PDF_NOTICE).",
+          "title": "Reimbursement worksheet",
+          "preparedNote": "Prepared by OpenPlan from records this workspace entered. It is not a funder's form and carries no form or revision number. Check it against the exhibit your funding agreement currently requires before you submit.",
+          "pageFooter": "^\\s*Reimbursement worksheet prepared by OpenPlan - not a funder's form · Page (\\d+) of (\\d+)\\s*$",
+          "fallbackNotice": "Typeset by OpenPlan's built-in PDF writer",
+          "headerLines": ["Award: {awardTitle}", "Project: {projectName}", "Period: Award to date (no period selected)"],
+          "currencyNote": "All amounts on this worksheet are in USD.",
+          "notRecorded": "Not recorded",
+          "sections": { "position": "Award position", "invoices": "Invoice records on this award", "costs": "Recorded project costs in this period", "process": "Reimbursement process" },
+          "positionRows": [
+            { "figure": "ceiling", "label": "Recorded award ceiling" },
+            { "figure": "obligatedOn", "label": "Obligated, authorized or allocated on", "kind": "date" },
+            { "figure": "claimedGross", "label": "Claimed to date (gross)", "count": "claimedCount", "countNote": "{count} invoice record{s}" },
+            { "figure": "paidNet", "label": "Paid to date (net of retention)", "count": "paidCount", "countNote": "{count} invoice record{s}" },
+            { "figure": "outstandingNet", "label": "Claimed and not yet paid (net)", "count": "outstandingCount", "countNote": "{count} invoice record{s}" },
+            { "figure": "retentionHeld", "label": "Retention withheld on paid invoices" },
+            { "figure": "retentionPending", "label": "Retention proposed on unpaid claims" },
+            { "figure": "remaining", "label": "Remaining against recorded award ceiling" },
+            { "figure": "draftedNet", "label": "Drafted, not yet claimed (net)", "count": "draftedCount", "countNote": "{count} draft{s}" },
+            { "figure": "rejectedGross", "label": "Rejected by the funder (gross)", "count": "rejectedCount", "countNote": "{count} record{s}" },
+            { "figure": "match", "label": "Local match recorded on the award", "countNote": "posture recorded as \"{matchPosture}\"" },
+            { "figure": "closeBasis", "label": "Award close-out", "kind": "text", "whenClosed": true, "countNote": "closed {closedOn}: {closeNote}" },
+            { "figure": "released", "label": "Balance released at close-out", "whenClosed": true }
+          ],
+          "closeBasisLabels": { "reconciled_with_balance": "Closed with balance released" },
+          "resubmitsNote": "resubmits {number}",
+          "costsNone": "No cost entries recorded for this period.",
+          "processLine": "Process: {profileName}",
+          "interimNotice": "This process was not chosen for this workspace."
+        },
+        "refusedPhrases": {
+          "note": "The lead's rule 8: words that would say a cost is allowable, eligible or reimbursable, that a balance is deobligated, that a payment was received, or that the worksheet is a payment request, refused anywhere in either PDF the way the third job refuses its phrases (any case, wrapped, or with more than one space between two words). A phrase that continues on the next page is read whole: each page's footer line, the fixed note above it and the blank lines around them are left out first (review 97, W25). Review 97 added the last seven wordings. The product's own honest text stays outside the list: \"costs before this date are generally not reimbursable\", \"Approved for payment is a funder's promise, not a deposit\", and the generic profile's checklist line \"costs claimed are true, eligible under the award\". A list cannot catch every wording.",
+          "phrases": [
+            "is allowable",
+            "are allowable",
+            "allowable cost",
+            "allowable costs",
+            "is an eligible cost",
+            "are eligible costs",
+            "costs are eligible",
+            "cost is eligible",
+            "eligible for reimbursement",
+            "is reimbursable",
+            "are reimbursable",
+            "fully reimbursable",
+            "deobligated",
+            "deobligation",
+            "deobligate",
+            "payment was received",
+            "payment received",
+            "received payment",
+            "payment has been received",
+            "funds were received",
+            "funds received",
+            "was deposited",
+            "were deposited",
+            "approved by",
+            "certified by",
+            "submitted by",
+            "signed by",
+            "on behalf of",
+            "hereby",
+            "official form",
+            "official payment request",
+            "payment request",
+            "eligible costs",
+            "allowable under",
+            "the funder paid",
+            "disbursed",
+            "qualify for reimbursement",
+            "deposited"
+          ]
+        },
+        "formNames": {
+          "note": "The lead's rule 8: the worksheet names no form it does not implement. Each name is found in any case, with or without its hyphen or space and across a line break (SF-270, SF 270, SF270). A printing is allowed only right after the word not, with an optional a, an or the (\"not an SF-270\"), so a sentence saying the worksheet is not that form passes and every other printing refuses the record. 2 CFR 200.305(b) names the government-wide payment request forms; Caltrans accepts LAPM Exhibit 5-A (LAPM 5.5, January 2026).",
+          "names": [
+            "SF-270",
+            "SF-271",
+            "SF-425",
+            "Standard Form 270",
+            "Standard Form 271",
+            "Standard Form 425",
+            "Request for Advance or Reimbursement",
+            "Outlay Report and Request for Reimbursement for Construction Programs",
+            "Federal Financial Report",
+            "LAPM 5-A",
+            "Exhibit 5-A"
+          ]
+        },
+        "screenFigures": {
+          "note": "The lead's rule 9: what each required screen's reading must hold, each compared with the figure recomputed at the reading's time. Money to the cent reads as the product prints it (\"$105,000.00\"); awardedWhole is the dashboard's whole-dollar award (\"$200,000\"); drawnPercent is the dashboard's share drawn, whole percent (\"53%\"), from the drawn statuses' gross over the ceiling. A figure the record holds no entry for must read notRecorded, never $0.00. Each screen must be read while a request is outstanding and again after the close-out.",
+          "byScreen": {
+            "funding-tab": ["ceiling", "match", "claimedGross", "paidNet", "outstandingNet", "rejectedGross", "remaining"],
+            "grants-awards": ["ceiling", "match", "claimedGross", "paidNet", "outstandingNet"],
+            "invoices-register": ["claimedGross", "paidNet", "outstandingNet", "rejectedGross"],
+            "dashboard": ["awardedWhole", "drawnPercent"]
+          },
+          "points": ["open", "closed"]
+        },
+        "member": {
+          "note": "The lead's rule 7, decided 06:55Z: only an owner or admin logs, approves, pays or closes out. Each journey's member account (a member of the journey's own workspace) tries each action and must be refused with one of the statuses. control: the member was confirmed and signed in, and received the listed status for the listed read of the award's worksheet, so a refusal is not an account that was never signed in.",
+          "refusedActions": ["log-request", "approve-request", "mark-paid", "close-out"],
+          "statuses": [403],
+          "control": { "ownRequest": "worksheet-download", "status": 200 }
+        },
+        "productRefusals": {
+          "note": "The lead's rule 7: the owner is refused a move the product's rules forbid. paid-before-approval is a request marked paid from submitted, which the request trigger refuses and the route answers 422. over-ceiling-claim-without-note is a claim that would pass the award's ceiling, made with no note; the route answers 422 with the code over_award_ceiling. The journey makes it with a request that is not on the award (a draft linked to the award in the same move), so nothing is saved and the award's figures do not change.",
+          "list": [
+            { "action": "paid-before-approval", "statuses": [422] },
+            { "action": "over-ceiling-claim-without-note", "statuses": [422], "code": "over_award_ceiling" }
+          ]
+        },
+        "custody": {
+          "note": "The lead's rule 7: the database holds the award's facts against a direct write. Each journey's owner and member each send a PostgREST PATCH of the award's closure columns and of a paid request's amount. A check counts with one of the refusals, its status and code together: 400 with 23514, the check-violation code the custody triggers of 20261117000000 and 20261117000100 raise, or 403 with 42501, a refused privilege. A 401 is a request with no session, never the database's refusal, and a status paired with another error's code is not counted (review 97, F10 and F11). Only for an account and target listed in noRow does a check also count with 200 or 204 and no row changed, because row security hides the row from that account (a member cannot write requests). Every check must also say no row changed and that the row read back unchanged.",
+          "checks": [
+            { "account": "owner", "target": "award-closure-columns" },
+            { "account": "member", "target": "award-closure-columns" },
+            { "account": "owner", "target": "paid-request-amount" },
+            { "account": "member", "target": "paid-request-amount" }
+          ],
+          "refusals": [
+            { "status": 400, "code": "23514" },
+            { "status": 403, "code": "42501" }
+          ],
+          "noRow": [{ "account": "member", "target": "paid-request-amount", "statuses": [200, 204] }]
+        }
+      },
+      "screens": {
+        "widths": [1440, 390],
+        "modes": ["light", "dark"],
+        "required": ["funding-tab", "grants-awards", "invoices-register", "dashboard"],
+        "noSidewaysScrollWidths": [390],
+        "axe": {
+          "source": "qa-harness/first-job-journey-lib.js (AXE_VERSION, AXE_TAGS), the engine and tags the journeys run",
+          "version": "4.11.1",
+          "tags": ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+        },
+        "consoleErrorsRefused": true,
+        "paneUnrolledRequired": true,
+        "paneNote": "KI-2026-11-17-032: OpenPlan scrolls an inner pane, so an accessibility check of the first view measures colour contrast on the first screen only. Each screen row of this job must say the journey read the whole screen before the check (paneUnrolled true): the journeys' readWholeScreen (qa-harness/journey-browser-lib.js, lane 96) grows the window until nothing scrolls, then runs axe and the screenshot."
+      },
+      "crossWorkspace": {
+        "note": "The same rule as the other jobs (KI-2026-11-14-060), with the controls of the third. A second workspace's signed-in account is refused the award's history read and the worksheet download as data checks and the project's Funding tab as a page check, each named for its journey, beside the owner's 200 for the same two reads in the same run. The award history read is GET /api/funding-awards/<id>/closure-history; the worksheet download is GET /api/funding-awards/<id>/drawdown-worksheet.",
+        "targets": ["award", "worksheet"],
+        "requiredDataRequests": { "award": "award-history-read", "worksheet": "worksheet-download" },
+        "requiredPageRequests": { "award": "funding-tab-page" },
+        "perJourney": "role",
+        "minSearchedStrings": 3,
+        "searchedStringFields": ["projectName", "workspaceName"],
+        "pageAnsweredOkLimit": "funding-tab-answers-200-with-not-found-screen",
+        "ownerControl": { "requests": ["award-history-read", "worksheet-download"], "status": 200 },
+        "secondAccount": { "ownRequest": "own-workspace-read", "status": 200 }
+      },
+      "requiredLimits": [
+        "no-pdf-ua-check",
+        "no-keyboard-or-screen-reader-pass",
+        "no-human-usefulness-review",
+        "not-a-payment-request",
+        "no-allowability-statement",
+        "not-an-accounting-or-audit-record",
+        "demonstration-figures-only",
+        "paid-is-what-the-workspace-typed",
+        "no-funder-reference",
+        "retention-not-exercised",
+        "who-acted-is-the-journeys-word",
+        "what-the-journey-leaves-on-the-hosted-site",
+        "read-by-the-journey"
+      ],
+      "limitIdsClosed": true,
+      "limitIdsClosedNote": "Review 99, X04: a record of this job states only the limits worded below. A limit under another id could say what a worded one may not (that the worksheets are payment requests), and no definition can word a limit before a run finds it, so this job takes none.",
+      "limitTexts": {
+        "no-pdf-ua-check": "No PDF/UA check was run on the worksheet PDFs.",
+        "no-keyboard-or-screen-reader-pass": "No keyboard-only or screen-reader pass was made.",
+        "no-human-usefulness-review": "No planner or finance officer reviewed whether the worksheets are useful. Agent-run checks are the acceptance evidence.",
+        "not-a-payment-request": "The worksheets are not payment requests and no request was sent to a funder. A recipient requests payment on the form its funder requires; no SF-270, SF-271 or LAPM Exhibit 5-A was made.",
+        "no-allowability-statement": "Nothing in this record or the worksheets states that any cost is allowable, eligible or reimbursable, or that any balance was deobligated.",
+        "not-an-accounting-or-audit-record": "This record and the worksheets are not an accounting record or an audit trail, and no agency may rely on them for a single audit.",
+        "demonstration-figures-only": "The award, its amounts and its requests are demonstration figures typed by an automated proof run under a demonstration label. No real award was made, and no agency, tribe, funder or program officer took part.",
+        "paid-is-what-the-workspace-typed": "Paid, and each payment date, is what the workspace typed. No funder confirmed a payment.",
+        "no-funder-reference": "No funder reference, such as a voucher or payment number, is recorded for any request.",
+        "retention-not-exercised": "No retention was entered. A reconciled close-out today releases the ceiling minus net paid, which would count retention the funder holds as released (KI-2026-11-17-031), so the proof does not exercise retention.",
+        "who-acted-is-the-journeys-word": "The record cannot show which account made each status change or the close-out beyond the journey's own statement. It names no actor for any move, and the checker reads none.",
+        "what-the-journey-leaves-on-the-hosted-site": "Each journey leaves its accounts, workspace, project, tracked opportunity, award, requests and close-out on the hosted site under the demonstration label, with one unlinked draft request from the refused claim above the ceiling. It publishes nothing and opens no public page.",
+        "read-by-the-journey": "The journey read or set these and the checker cannot read them again: each status the routes answered and the control that sent it, every time, the screen readings, the profile each request carried, the statuses the owner, the member and the second account received, the database's answers to each direct write, the accessibility results, console errors and sideways scroll of each screen, how the account was confirmed, the executor, and which build, mode and harness checkout ran.",
+        "funding-tab-answers-200-with-not-found-screen": "Another workspace's Funding tab answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The award history read and the worksheet download were refused."
+      }
     }
   ]
 }

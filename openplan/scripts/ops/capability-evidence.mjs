@@ -196,6 +196,7 @@ export function validateProvenJobRecord(record, { repoRoot, readPdfPages = pdfto
     checkScreens(journey, job, label);
     if (job.campaign) checkCampaign(journey, job, label, workbooks, pages, campaignRecord);
     if (job.application) checkApplication(journey, job, label, pages);
+    if (job.award) checkAward(journey, job, label, pages);
   }
   if (job.campaign) checkDistinctCampaigns(record.journeys);
   checkSameAcrossJourneys(record, job);
@@ -621,6 +622,8 @@ function checkRecordedOn(record) {
 function checkLimitTexts(limits, job) {
   if (!job.limitTexts) return;
   for (const limit of limits) {
+    // A job whose limits are closed takes no limit under an id its definition does not word (review 99, X04).
+    if (job.limitIdsClosed && !Object.hasOwn(job.limitTexts, limit.id)) refuse(`record states a ${limit.id} limit, which this job's definition does not word; its limits are the definition's own`);
     if (!Object.hasOwn(job.limitTexts, limit.id)) continue;
     if (![job.limitTexts[limit.id]].flat().includes(limit.text)) refuse(`record's ${limit.id} limit does not carry its definition's words`);
   }
@@ -877,6 +880,15 @@ function checkPlace(place, rule, job, label) {
       refuse(`${label} states the Census states with FIPS ${place.stateFips.join(", ")} for its place; this journey's place must lie in exactly ${rule.statesExactly.join(", ")}`);
     }
   }
+  // A journey whose place may not lie in the listed states (the award job's
+  // city: no state with a reimbursement profile of its own, review 97 L03).
+  const barred = place.stateFips.filter((state) => rule.stateFipsNotIn?.includes(state));
+  if (barred.length > 0) refuse(`${label} is in the state with FIPS ${barred.join(", ")}; this journey's place may not lie in ${rule.stateFipsNotIn.join(", ")}`);
+  // A journey whose place must cross states (the award job's tribal area): at
+  // least this many different Census states, as the journey read them.
+  if (rule.minStates !== undefined && new Set(place.stateFips).size < rule.minStates) {
+    refuse(`${label} states ${new Set(place.stateFips).size} Census state(s) for its place (FIPS ${place.stateFips.join(", ")}); this journey's place must cross at least ${rule.minStates}`);
+  }
   // A county, place or county subdivision id begins with its state's code (review 59, P6).
   if (job.placeStateFromGeoid?.kinds.includes(place.kind)) {
     const state = place.geoid.slice(0, 2);
@@ -974,7 +986,7 @@ function checkPdfs(journey, job, label, root, readPdfPages, renderPdfPage, pdfPa
     const pdfLabel = `${label} ${pdf.kind} PDF`;
     // The campaign job refuses a changed file in the checker's own form; the
     // first job keeps the plain error its record has always been checked with.
-    const { source, bytes } = readEvidenceFile(pdf, root, pdfLabel, job.campaign || job.application ? refuse : undefined);
+    const { source, bytes } = readEvidenceFile(pdf, root, pdfLabel, job.campaign || job.application || job.award ? refuse : undefined);
     if (pdfPaths.has(source)) refuse(`${pdfLabel} reuses another journey's file: ${pdf.path}`);
     pdfPaths.add(source);
     if (bytes.subarray(0, 5).toString("latin1") !== "%PDF-") refuse(`${pdfLabel} is not a PDF: ${pdf.path}`);
@@ -2203,6 +2215,902 @@ function checkExportTime(journey, rule, pdfLabel, cover) {
   }
 }
 
+/**
+ * Whole cents from the record's dollars and cents ("60000.00"), or null for a
+ * fact the journey did not enter. Money is never read as a binary fraction.
+ */
+function moneyCents(value, what) {
+  if (value === null || value === undefined) return null;
+  const match = /^(-?)(\d{1,12})\.(\d{2})$/.exec(String(value));
+  if (!match) refuse(`${what} is not an amount in dollars and cents: ${JSON.stringify(value)}`);
+  const amount = Number(match[2]) * 100 + Number(match[3]);
+  return match[1] ? -amount : amount;
+}
+
+/** Cents as the product prints money to the cent: "$105,000.00", "-$5,000.00". */
+function printedDollars(amount) {
+  const whole = Math.floor(Math.abs(amount) / 100).toLocaleString("en-US");
+  return `${amount < 0 ? "-" : ""}$${whole}.${String(Math.abs(amount) % 100).padStart(2, "0")}`;
+}
+
+/** Every amount printed to the cent in a text, in whole cents, in order. */
+function printedAmounts(text) {
+  const found = [];
+  for (const match of normalizePdfText(text).matchAll(/(?<![\w.$])(-?)\$(\d{1,3}(?:,\d{3})*|\d+)\.(\d{2})(?!\d)/g)) {
+    const amount = Number(match[2].replaceAll(",", "")) * 100 + Number(match[3]);
+    found.push(match[1] ? -amount : amount);
+  }
+  return found;
+}
+
+/**
+ * The marks of a printed amount, counted in a text read with full-width
+ * characters made plain (NFKC): currency signs before a digit, numbers with
+ * cents ("150,000.00"), and two marks the product never prints, a number with
+ * comma cents ("150.000,00") and a number beside a currency word ("USD
+ * 150000", "150000 dollars") (reviews 99 and 100, A1 to A4, AC2, AC3, TT2,
+ * TT3).
+ *
+ * Blind category: a bare number with no sign, no cents and no currency word
+ * ("paid 150000") is not an amount here (KI-2026-11-17-053).
+ */
+function amountMarks(text) {
+  const plain = String(text).normalize("NFKC");
+  const signs = (plain.match(/\$\s*-?\d/g) ?? []).length;
+  const numbers = (plain.match(/(?<![\d.])\d[\d,]*\.\d{2}(?!\d)/g) ?? []).length;
+  const commaCents = (plain.match(/(?<![\d,])\d[\d.]*,\d{2}(?![\d,])/g) ?? []).length;
+  const currencyWords = (plain.match(/\b(?:USD|US\$|dollars?)\s*-?\d|\d[\d,.]*\s*(?:USD|dollars?)\b/gi) ?? []).length;
+  return [signs, numbers, commaCents, currencyWords];
+}
+
+/** A text's words in order, lower case, each hyphenated word split at its hyphens, so a wrapped date still reads. */
+function wordsOf(text) {
+  return normalizePdfText(text)
+    .split(/\s+/)
+    .flatMap((word) => word.split("-"))
+    .map((word) => word.replace(/^[("']+|[)"'.,:;]+$/g, ""))
+    .filter(Boolean);
+}
+
+/** Whether every word of `phrase` appears in `text`'s words in the same order (other columns' words may sit between). */
+function wordsInOrder(text, phrase) {
+  const want = wordsOf(phrase);
+  let at = 0;
+  for (const word of wordsOf(text)) {
+    if (at < want.length && word === want[at]) at += 1;
+  }
+  return want.length > 0 && at === want.length;
+}
+
+/** A time the record holds, in milliseconds; a time that cannot be read refuses the record. */
+function recordTime(value, what) {
+  const time = Date.parse(value);
+  if (Number.isNaN(time)) refuse(`${what} holds a time that cannot be read: ${JSON.stringify(value)}`);
+  return time;
+}
+
+/** Whether a YYYY-MM-DD string names a real calendar day ("2026-02-30" does not). */
+function isCalendarDate(value) {
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value)) && !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
+}
+
+/** The calendar days a moment falls on somewhere on Earth (UTC-12 to UTC+14), for a date typed on a workspace's calendar. */
+function daysOfMoment(time) {
+  const day = (offsetHours) => new Date(time + offsetHours * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return { earliest: day(-12), latest: day(14) };
+}
+
+/**
+ * The award's position at one moment, recomputed from the record's own
+ * requests the way the product's drawdown ledger partitions them
+ * (openplan/src/lib/invoicing/drawdown-ledger.ts): claimed is gross over the
+ * claimed statuses, paid is net over paid, outstanding is net over claimed and
+ * not paid, retention held is over paid, drafted is net over draft, rejected
+ * is gross over rejected, and remaining is the ceiling minus claimed gross,
+ * not clamped. Each request counts in the status its history holds at the
+ * moment; a request created later is not counted. A ceiling or match of zero
+ * is null, as the ledger reads a column that cannot tell zero from unentered.
+ * `drawnGross` is the dashboard's figure, gross over its own drawn statuses.
+ */
+function awardPositionAt(journey, rule, time) {
+  const statuses = rule.statuses;
+  const recorded = (value, what) => {
+    const amount = moneyCents(value, what);
+    return amount === 0 ? null : amount;
+  };
+  const position = {
+    ceiling: recorded(journey.award.ceiling, "the award's ceiling"),
+    match: recorded(journey.award.match, "the award's match"),
+    obligatedOn: journey.award.obligatedOn,
+    claimedGross: 0, claimedCount: 0,
+    paidNet: 0, paidCount: 0,
+    outstandingNet: 0, outstandingCount: 0,
+    retentionHeld: 0, retentionPending: 0,
+    draftedNet: 0, draftedCount: 0,
+    rejectedGross: 0, rejectedCount: 0,
+    drawnGross: 0,
+    requests: [],
+  };
+  for (const request of journey.requests) {
+    const state = request.history.filter((entry) => recordTime(entry.at, `request ${request.number}'s history`) <= time).at(-1);
+    if (!state) continue;
+    const { status } = state;
+    const gross = moneyCents(request.gross, `request ${request.number}'s gross`);
+    const retention = moneyCents(request.retention, `request ${request.number}'s retention`);
+    const net = gross - retention;
+    position.requests.push({ request, status, gross, retention, net });
+    const claimed = statuses.claimed.includes(status);
+    if (claimed) {
+      position.claimedCount += 1;
+      position.claimedGross += gross;
+    }
+    if (statuses.paid.includes(status)) {
+      position.paidCount += 1;
+      position.paidNet += net;
+      position.retentionHeld += retention;
+    } else if (claimed) {
+      position.outstandingCount += 1;
+      position.outstandingNet += net;
+      position.retentionPending += retention;
+    }
+    if (statuses.draft.includes(status)) {
+      position.draftedCount += 1;
+      position.draftedNet += net;
+    }
+    if (statuses.rejected.includes(status)) {
+      position.rejectedCount += 1;
+      position.rejectedGross += gross;
+    }
+    if (statuses.drawn.includes(status)) position.drawnGross += gross;
+  }
+  position.remaining = position.ceiling === null ? null : position.ceiling - position.claimedGross;
+  const closedAt = recordTime(journey.closeOut.closedAt, "the close-out");
+  position.closed = closedAt <= time;
+  position.released = position.closed ? moneyCents(journey.closeOut.releasedAmount, "the close-out's released amount") : null;
+  return position;
+}
+
+/**
+ * The award job's rules (the lead's rules of November 17, 2026, 06:55Z), for a
+ * job whose definition has an `award` block. The record's own rules come
+ * first (the product's path, the close-out, the downloads, the screens, the
+ * refusals and the database's custody), then each worksheet's text, then the
+ * fixed demonstration amounts, so a changed amount is refused for the rule it
+ * breaks before it is refused for not being the fixed one.
+ *
+ * Blind category: every status, time, screen reading and refusal is the
+ * journey's own statement; the checker cannot ask the hosted site again. It
+ * recomputes money from the record's requests and holds the PDFs and the
+ * screens to that, so a record and PDFs falsified together to agree with each
+ * other are not caught.
+ */
+function checkAward(journey, job, label, pagesByKind) {
+  const rule = job.award;
+  checkAwardRequests(journey, rule, label);
+  checkAwardCloseOut(journey, rule, label);
+  checkAwardDownloads(journey, rule, label);
+  checkAwardScreenReadings(journey, rule, label);
+  checkAwardRefusals(journey, rule, label);
+  checkAwardCustody(journey, rule, label);
+  for (const download of journey.downloads) {
+    const time = recordTime(download.at, `${label} ${download.pdf} download`);
+    checkWorksheetText(journey, rule, `${label} ${download.pdf} PDF`, pagesByKind.get(download.pdf), awardPositionAt(journey, rule, time));
+  }
+  checkAwardFixedAmounts(journey, rule, label);
+}
+
+/**
+ * The product's path (the lead's rule 6): each request's history starts with
+ * its create (201, the composer, or Resubmit for the resubmission) and moves
+ * only as the request trigger allows (forward, rejected only from submitted or
+ * approved, paid only from approved), each move answered 200 by the control
+ * the product shows for it, in time order inside the journey. A rejected
+ * request carries its reason, a paid request its payment date (no later than
+ * the day it was marked paid), and the resubmission the rejected request's id,
+ * created after the rejection. The award title and the project name carry the
+ * demonstration label, and every request carries the role's profile.
+ */
+function checkAwardRequests(journey, rule, label) {
+  const demonstration = squashPdfText(rule.demonstrationLabel.text);
+  for (const [what, name] of [["award title", journey.award.title], ["project name", journey.projectName]]) {
+    if (!squashPdfText(name).includes(demonstration)) refuse(`${label} ${what} does not carry the demonstration label "${rule.demonstrationLabel.text}"`);
+  }
+  // Typed text the worksheet prints holds no amount, so every amount on it is one a rule reads (review 99).
+  const typed = [
+    ["workspace name", journey.workspaceName],
+    ["project name", journey.projectName],
+    ["award title", journey.award.title],
+    ["close-out note", journey.closeOut.note],
+    ...journey.requests.map((request) => [`request ${request.number} rejection reason`, request.rejectionReason ?? ""]),
+  ];
+  for (const [what, text] of typed) {
+    if (amountMarks(text).some((count) => count > 0)) refuse(`${label} ${what} holds a dollar amount; typed text the worksheet prints may hold none, so every amount on it is one the checker reads`);
+  }
+  const profile = rule.profiles.byRole[journey.role];
+  if (!profile) throw new Error(`job definition award.profiles names no profile for the ${journey.role} journey`);
+  if (journey.reimbursementProfile.profileId !== profile.profileId) {
+    refuse(`${label} workspace resolved the reimbursement profile ${journey.reimbursementProfile.profileId}, not ${profile.profileId}`);
+  }
+  if (journey.reimbursementProfile.selection !== rule.profiles.selection) {
+    refuse(`${label} reimbursement profile was bound as ${journey.reimbursementProfile.selection}, not ${rule.profiles.selection}; the workspace's own place must choose it`);
+  }
+
+  const fixed = rule.fixed.requests;
+  const keys = journey.requests.map((request) => request.key);
+  if (JSON.stringify(keys) !== JSON.stringify(fixed.map((request) => request.key))) {
+    refuse(`${label} records the requests ${keys.join(", ")}; this job's are ${fixed.map((request) => request.key).join(", ")}, in that order`);
+  }
+  for (const field of ["invoiceId", "number"]) {
+    const values = journey.requests.map((request) => request[field]);
+    if (new Set(values).size !== values.length) refuse(`${label} names one request ${field} twice`);
+  }
+
+  const { statuses, controls } = rule;
+  const created = recordTime(journey.accountCreatedAt, `${label} account`);
+  const ended = recordTime(journey.health.find((reading) => reading.point === "end").checkedAt, `${label} end health readback`);
+  const rejected = journey.requests.find((request, index) => fixed[index].key === fixed.find((entry) => entry.resubmits)?.resubmits);
+  journey.requests.forEach((request, index) => {
+    const definition = fixed[index];
+    const requestLabel = `${label} request ${request.number}`;
+    // Every date is a real calendar date (review 97 sweeps: "2026-13-45").
+    for (const field of ["periodStart", "periodEnd", "invoiceDate", "dueDate", "paidDate"]) {
+      if (request[field] !== null && !isCalendarDate(request[field])) refuse(`${requestLabel} ${field} ${request[field]} is not a calendar date`);
+    }
+    if (request.periodEnd < request.periodStart) refuse(`${requestLabel} period ends (${request.periodEnd}) before it starts (${request.periodStart})`);
+    // Review 99, C2 and C4: a request is invoiced no earlier than its period starts, and is due no earlier than it is invoiced.
+    if (request.invoiceDate < request.periodStart) refuse(`${requestLabel} invoice date ${request.invoiceDate} is before its period starts (${request.periodStart})`);
+    if (request.dueDate !== null && request.dueDate < request.invoiceDate) refuse(`${requestLabel} due date ${request.dueDate} is before its invoice date ${request.invoiceDate}`);
+    if (request.paidDate !== null && request.paidDate < request.invoiceDate) {
+      refuse(`${requestLabel} payment date ${request.paidDate} is before its invoice date ${request.invoiceDate}; a request is not paid before it is invoiced`);
+    }
+    if (request.profileId !== profile.profileId) refuse(`${requestLabel} carries the reimbursement profile ${request.profileId}, not the workspace's ${profile.profileId}`);
+    let before = created;
+    let previous;
+    request.history.forEach((entry, step) => {
+      const at = recordTime(entry.at, `${requestLabel} history`);
+      if (at < before || (step > 0 && at === before)) refuse(`${requestLabel} history entry ${step + 1} (${entry.at}) is out of time order`);
+      if (at > ended) refuse(`${requestLabel} history entry ${step + 1} (${entry.at}) comes after the journey's end health readback`);
+      before = at;
+      if (!statuses.all.includes(entry.status)) refuse(`${requestLabel} history holds the status ${entry.status}, which the product does not have`);
+      if (step === 0) {
+        const create = definition.resubmits ? controls.resubmit : controls.create;
+        if (entry.status !== statuses.order[0]) refuse(`${requestLabel} was created as ${entry.status}; the product creates a request as ${statuses.order[0]}`);
+        if (entry.control !== create) refuse(`${requestLabel} was created with ${JSON.stringify(entry.control)}, not the product's ${JSON.stringify(create)}`);
+        if (entry.responseStatus !== controls.createStatus) refuse(`${requestLabel} was created with status ${entry.responseStatus}, not ${controls.createStatus}`);
+      } else {
+        const from = previous.status;
+        let allowed;
+        if (entry.status === "rejected") allowed = statuses.rejectedFrom.includes(from);
+        else if (entry.status === "paid") allowed = statuses.paidFrom.includes(from);
+        else allowed = statuses.order.includes(from) && !statuses.paid.includes(from) && statuses.order.indexOf(entry.status) > statuses.order.indexOf(from);
+        if (!allowed) refuse(`${requestLabel} moved from ${from} to ${entry.status}, a move the product's request rules refuse`);
+        if (entry.control !== controls.moves[entry.status]) {
+          refuse(`${requestLabel} moved to ${entry.status} with ${JSON.stringify(entry.control)}, not the product's ${JSON.stringify(controls.moves[entry.status])} control`);
+        }
+        if (entry.responseStatus !== controls.moveStatus) refuse(`${requestLabel} move to ${entry.status} was answered ${entry.responseStatus}, not ${controls.moveStatus}`);
+      }
+      previous = entry;
+    });
+    const final = request.history.at(-1).status;
+    if (statuses.rejected.includes(final)) {
+      if (!request.rejectionReason?.trim()) refuse(`${requestLabel} is rejected with no reason recorded; the product's Mark rejected asks for the funder's reason`);
+    } else if (request.rejectionReason !== null) {
+      refuse(`${requestLabel} carries a rejection reason but was not rejected`);
+    }
+    const paidEntry = request.history.find((entry) => statuses.paid.includes(entry.status));
+    if (paidEntry) {
+      if (request.paidDate === null) refuse(`${requestLabel} is paid with no payment date; the product's Mark paid asks for the date`);
+      if (request.paidDate > daysOfMoment(recordTime(paidEntry.at, requestLabel)).latest) refuse(`${requestLabel} payment date ${request.paidDate} is after the day it was marked paid (${paidEntry.at})`);
+    } else if (request.paidDate !== null) {
+      refuse(`${requestLabel} carries a payment date but was not marked paid`);
+    }
+    if (definition.resubmits) {
+      if (!rejected || request.resubmitsInvoiceId !== rejected.invoiceId) {
+        refuse(`${requestLabel} does not carry the link to the rejected request ${rejected?.number ?? ""} it resubmits; the product's Resubmit sets it`);
+      }
+      const rejection = rejected.history.find((entry) => statuses.rejected.includes(entry.status));
+      if (!rejection || recordTime(request.history[0].at, requestLabel) <= recordTime(rejection.at, requestLabel)) {
+        refuse(`${requestLabel} was created before the request it resubmits was rejected`);
+      }
+      // Review 99, C3 and H4: a resubmission claims the same period, invoiced no earlier than the request it replaces.
+      if (request.periodStart !== rejected.periodStart || request.periodEnd !== rejected.periodEnd) {
+        refuse(`${requestLabel} claims the period ${request.periodStart} to ${request.periodEnd}, but the request it resubmits claimed ${rejected.periodStart} to ${rejected.periodEnd}`);
+      }
+      if (request.invoiceDate < rejected.invoiceDate) refuse(`${requestLabel} invoice date ${request.invoiceDate} is before that of the request it resubmits (${rejected.invoiceDate})`);
+    } else if (request.resubmitsInvoiceId !== null) {
+      refuse(`${requestLabel} carries a resubmission link, but this job's ${definition.key} request resubmits nothing`);
+    }
+  });
+}
+
+/**
+ * The close-out (the lead's rules 3 and 6): made with the product's control
+ * and answered 200, after every request reached paid or rejected, dated on the
+ * close-out's calendar day, with a note, and a released amount the record
+ * states. The released amount must be the product's rule recomputed: the
+ * ceiling minus net paid at the close-out (funding_award_closeout_command,
+ * 20261117000000). A missing released amount is never read as zero.
+ */
+function checkAwardCloseOut(journey, rule, label) {
+  const { closeOut } = journey;
+  const closeLabel = `${label} close-out`;
+  if (closeOut.control !== rule.controls.closeOut) refuse(`${closeLabel} was made with ${JSON.stringify(closeOut.control)}, not the product's ${JSON.stringify(rule.controls.closeOut)}`);
+  if (closeOut.responseStatus !== 200) refuse(`${closeLabel} was answered ${closeOut.responseStatus}, not 200`);
+  if (!closeOut.note.trim()) refuse(`${closeLabel} has no note; a close with the balance released needs one`);
+  const closedAt = recordTime(closeOut.closedAt, closeLabel);
+  if (!isCalendarDate(closeOut.closedOn)) refuse(`${closeLabel} day ${closeOut.closedOn} is not a calendar date`);
+  if (journey.award.obligatedOn !== null && !isCalendarDate(journey.award.obligatedOn)) refuse(`${label} award obligation date ${journey.award.obligatedOn} is not a calendar date`);
+  const { earliest, latest } = daysOfMoment(closedAt);
+  if (closeOut.closedOn < earliest || closeOut.closedOn > latest) refuse(`${closeLabel} is dated ${closeOut.closedOn}, not the day it was made (${closeOut.closedAt})`);
+  for (const request of journey.requests) {
+    const last = request.history.at(-1);
+    if (recordTime(last.at, closeLabel) > closedAt) refuse(`${closeLabel} came before request ${request.number}'s last status (${last.at})`);
+  }
+  const position = awardPositionAt(journey, rule, closedAt);
+  const open = position.requests.filter(({ status }) => !rule.statuses.paid.includes(status) && !rule.statuses.rejected.includes(status));
+  if (open.length > 0) refuse(`${closeLabel} was made with request ${open[0].request.number} still ${open[0].status}; the product closes an award only when every request is paid or rejected`);
+  if (closeOut.releasedAmount === null) refuse(`${closeLabel} states no released amount; a missing amount is not read as zero`);
+  if (position.ceiling === null) refuse(`${closeLabel} has no recorded ceiling to release a balance from`);
+  const expected = position.ceiling - position.paidNet;
+  const stated = moneyCents(closeOut.releasedAmount, closeLabel);
+  if (stated !== expected) {
+    refuse(`${closeLabel} released ${printedDollars(stated)}, but the ceiling minus net paid at the close-out is ${printedDollars(expected)} (${printedDollars(position.ceiling)} - ${printedDollars(position.paidNet)})`);
+  }
+}
+
+/**
+ * The two worksheet downloads (the lead's rule 4): one per PDF the job
+ * defines, each answered 200 by the browser engine, inside the journey; the
+ * open one before the close-out with a request claimed and not yet paid, the
+ * closed one after it.
+ */
+function checkAwardDownloads(journey, rule, label) {
+  const { downloads } = rule;
+  const created = recordTime(journey.accountCreatedAt, `${label} account`);
+  const ended = recordTime(journey.health.find((reading) => reading.point === "end").checkedAt, `${label} end health readback`);
+  for (const expected of downloads.list) {
+    const found = journey.downloads.filter((download) => download.pdf === expected.pdf);
+    if (found.length !== 1) refuse(`${label} needs exactly one ${expected.pdf} download, found ${found.length}`);
+    const [download] = found;
+    const downloadLabel = `${label} ${expected.pdf} download`;
+    if (download.status !== downloads.status) refuse(`${downloadLabel} was answered ${download.status}, not ${downloads.status}`);
+    if (download.engine !== downloads.engine) {
+      refuse(`${downloadLabel} was printed by the ${download.engine} engine, not ${downloads.engine}; the export fell back, and a proof needs the PDF a planner gets`);
+    }
+    const at = recordTime(download.at, downloadLabel);
+    if (at < created || at > ended) refuse(`${downloadLabel} (${download.at}) is outside the journey`);
+    const position = awardPositionAt(journey, rule, at);
+    if (position.closed !== expected.closed) refuse(`${downloadLabel} was made ${position.closed ? "after" : "before"} the close-out; this job's ${expected.pdf} is downloaded ${expected.closed ? "after" : "before"} it`);
+    if (expected.minOutstandingCount !== undefined && position.outstandingCount < expected.minOutstandingCount) {
+      refuse(`${downloadLabel} was made with ${position.outstandingCount} request(s) claimed and not yet paid; this job's ${expected.pdf} needs at least ${expected.minOutstandingCount}`);
+    }
+  }
+  if (journey.downloads.length !== downloads.list.length) refuse(`${label} records downloads this job does not define`);
+}
+
+/** A screen reading's value: null for the definition's not-recorded words, else what it states. */
+function readScreenValue(value, kind) {
+  const text = String(value).trim();
+  if (kind === "cents") {
+    const amounts = printedAmounts(text);
+    return amounts.length === 1 && /^-?\$[\d,]+\.\d{2}$/.test(text) ? amounts[0] : undefined;
+  }
+  if (kind === "whole") {
+    const match = /^(-?)\$(\d{1,3}(?:,\d{3})*|\d+)$/.exec(text);
+    return match ? (match[1] ? -1 : 1) * Number(match[2].replaceAll(",", "")) * 100 : undefined;
+  }
+  const match = /^(\d+)%$/.exec(text);
+  return match ? Number(match[1]) : undefined;
+}
+
+/**
+ * The screens' money (the lead's rules 5 and 9): each required screen is read
+ * while a request is outstanding and again after the close-out, each reading
+ * holds the figures the definition lists for its screen, and each figure is
+ * the one recomputed from the record at the reading's time. A figure with no
+ * entry behind it must read "Not recorded", never $0.00.
+ */
+function checkAwardScreenReadings(journey, rule, label) {
+  const { byScreen, points } = rule.screenFigures;
+  const notRecorded = rule.worksheet.notRecorded;
+  const kindOf = (figure) => (figure === "awardedWhole" ? "whole" : figure === "drawnPercent" ? "percent" : "cents");
+  const seen = new Set();
+  const created = recordTime(journey.accountCreatedAt, `${label} account`);
+  const ended = recordTime(journey.health.find((entry) => entry.point === "end").checkedAt, `${label} end health readback`);
+  for (const reading of journey.screenReadings) {
+    const readingLabel = `${label} ${reading.screen} screen reading at ${reading.at}`;
+    const required = byScreen[reading.screen];
+    if (!required) refuse(`${readingLabel} is of a screen this job does not read`);
+    const time = recordTime(reading.at, readingLabel);
+    // Inside the journey (review 97, S09).
+    if (time < created || time > ended) refuse(`${readingLabel} is outside the journey`);
+    const position = awardPositionAt(journey, rule, time);
+    if (position.closed) seen.add(`${reading.screen}|closed`);
+    else if (position.outstandingCount > 0) seen.add(`${reading.screen}|open`);
+    for (const figure of required) {
+      if (!Object.hasOwn(reading.figures, figure)) refuse(`${readingLabel} does not hold the ${figure} figure`);
+    }
+    for (const [figure, value] of Object.entries(reading.figures)) {
+      const kind = kindOf(figure);
+      let expected;
+      if (figure === "awardedWhole") expected = position.ceiling === null ? null : Math.round(position.ceiling / 100) * 100;
+      else if (figure === "drawnPercent") expected = position.ceiling === null ? null : Math.round((position.drawnGross * 100) / position.ceiling);
+      else expected = position[figure];
+      if (expected === undefined) throw new Error(`job definition award.screenFigures names the unknown figure ${figure}`);
+      const read = String(value).trim() === notRecorded ? null : readScreenValue(value, kind);
+      if (read === undefined) refuse(`${readingLabel} ${figure} reads ${JSON.stringify(value)}, which is not a figure in the product's form`);
+      if (expected === null && read !== null) {
+        refuse(`${readingLabel} ${figure} reads ${JSON.stringify(value)}, but the record holds no entry for it; a fact not entered reads "${notRecorded}", never ${read === 0 ? "zero" : "an amount"}`);
+      }
+      if (expected !== null && read !== expected) {
+        const shown = kind === "cents" ? printedDollars(expected) : kind === "whole" ? printedDollars(expected).replace(/\.\d{2}$/, "") : `${expected}%`;
+        refuse(`${readingLabel} ${figure} reads ${JSON.stringify(value)}, but the figure recomputed from the record at that time is ${shown}`);
+      }
+    }
+  }
+  for (const screen of Object.keys(byScreen)) {
+    for (const point of points) {
+      if (!seen.has(`${screen}|${point}`)) refuse(`${label} has no reading of the ${screen} screen ${point === "open" ? "while a request was outstanding" : "after the close-out"}`);
+    }
+  }
+}
+
+/**
+ * Who may not do what (the lead's rule 7): the journey's member account,
+ * confirmed and signed in (its own worksheet read answered 200), was refused
+ * each owner-only action with a listed status; the owner was refused each move
+ * the product's rules forbid, with its status and, where the definition names
+ * one, the route's code. A refusal of an action the job does not define is
+ * refused too, so the table holds only what the definition asks.
+ */
+function checkAwardRefusals(journey, rule, label) {
+  const { member, productRefusals } = rule;
+  const account = journey.memberAccount;
+  if (account.confirmed !== true) refuse(`${label} member account was not confirmed; an unconfirmed account is refused everything`);
+  if (account.ownRequest !== member.control.ownRequest || account.ownStatus !== member.control.status) {
+    refuse(`${label} member account received status ${account.ownStatus} for its own ${account.ownRequest}, not ${member.control.status} for ${member.control.ownRequest}; a refusal counts only from a member who was signed in`);
+  }
+  for (const action of member.refusedActions) {
+    const found = journey.refusals.filter((refusal) => refusal.account === "member" && refusal.action === action);
+    if (found.length !== 1) refuse(`${label} needs exactly one member ${action} refusal, found ${found.length}`);
+    if (!member.statuses.includes(found[0].status)) refuse(`${label} member ${action} answered ${found[0].status}; only ${member.statuses.join(" or ")} shows the product refused a member`);
+  }
+  for (const expected of productRefusals.list) {
+    const found = journey.refusals.filter((refusal) => refusal.account === "owner" && refusal.action === expected.action);
+    if (found.length !== 1) refuse(`${label} needs exactly one owner ${expected.action} refusal, found ${found.length}`);
+    if (!expected.statuses.includes(found[0].status)) refuse(`${label} owner ${expected.action} answered ${found[0].status}; only ${expected.statuses.join(" or ")} shows the product refused it`);
+    if (expected.code !== undefined && found[0].code !== expected.code) refuse(`${label} owner ${expected.action} carried the code ${found[0].code}, not the product's ${expected.code}`);
+  }
+  for (const refusal of journey.refusals) {
+    const known = refusal.account === "member" ? member.refusedActions.includes(refusal.action) : productRefusals.list.some((entry) => entry.action === refusal.action);
+    if (!known) refuse(`${label} records a ${refusal.account} ${refusal.action} refusal this job does not define`);
+  }
+}
+
+/**
+ * The database's custody (the lead's rule 7): each direct PostgREST PATCH the
+ * definition lists was refused by the database (a listed status with one of
+ * its codes) or, for an account the definition names, matched no row because
+ * row security hides it; either way no row changed and the row read back
+ * unchanged. A PATCH answered 200 by an account that can see the row is a
+ * write that went through, whatever the record calls it.
+ */
+function checkAwardCustody(journey, rule, label) {
+  const { custody } = rule;
+  for (const expected of custody.checks) {
+    const found = journey.custody.filter((check) => check.account === expected.account && check.target === expected.target);
+    const checkLabel = `${label} ${expected.account} direct write of ${expected.target}`;
+    if (found.length !== 1) refuse(`${label} needs exactly one ${expected.account} direct write of ${expected.target}, found ${found.length}`);
+    const [check] = found;
+    if (check.rowsChanged !== 0 || check.unchangedOnReadBack !== true) refuse(`${checkLabel} changed a row; the database must hold the award's facts`);
+    // A status and its code together (review 97, F10 and F11): a 401 is a request with no session.
+    const refusedByDatabase = custody.refusals.some((pair) => pair.status === check.status && pair.code === check.code);
+    const hidden = custody.noRow.find((entry) => entry.account === check.account && entry.target === check.target);
+    const noRow = Boolean(hidden) && hidden.statuses.includes(check.status) && check.code === null;
+    if (!refusedByDatabase && !noRow) {
+      const pairs = custody.refusals.map((pair) => `${pair.status} with ${pair.code}`).join(" or ");
+      refuse(`${checkLabel} answered ${check.status}${check.code ? ` with code ${check.code}` : ""}, which does not show the database refused it; only ${pairs} counts${hidden ? `, or ${hidden.statuses.join(" or ")} with no row changed for this account` : ""}`);
+    }
+  }
+  if (journey.custody.length !== custody.checks.length) refuse(`${label} records direct writes this job does not define`);
+}
+
+/** Where a label stands as the left cell of one line, or of up to three lines it wraps over. */
+function labelBlocks(lines, label) {
+  const target = bareLine(label);
+  const left = (line) => line.trim().split(/\s{2,}/)[0] ?? "";
+  const blocks = [];
+  for (let start = 0; start < lines.length; start += 1) {
+    let joined = "";
+    for (let end = start; end < lines.length && end < start + 3; end += 1) {
+      const bare = bareLine(left(lines[end]));
+      if (!bare) break;
+      joined += bare;
+      if (!target.startsWith(joined)) break;
+      if (joined === target) {
+        blocks.push(start);
+        break;
+      }
+    }
+  }
+  return blocks;
+}
+
+/**
+ * One worksheet's text against the position recomputed at its download (the
+ * lead's rules 4, 5 and 8). The PDF is read as one run of lines with each
+ * page's footer line left out. Every rule reads words, never a fixed line, so
+ * a label, note or amount the browser wrapped still reads (see the
+ * definition's worksheet note).
+ */
+function checkWorksheetText(journey, rule, pdfLabel, pages, position) {
+  const sheet = rule.worksheet;
+  const footer = new RegExp(sheet.pageFooter);
+  const everywhere = pages.join("\n");
+  const printsAnywhere = (phrase) => pdfTextHasPhrase(everywhere, phrase) || pages.some((page) => pdfTextHasPhrase(page, phrase));
+
+  if (printsAnywhere(sheet.fallbackNotice)) {
+    refuse(`${pdfLabel} was typeset by OpenPlan's built-in writer, not the browser engine ("${sheet.fallbackNotice}"); the export fell back, and a proof needs the PDF a planner gets`);
+  }
+  // Each page says what the document is not: the footer line, with its own page number.
+  pages.forEach((page, index) => {
+    const found = page.split(/\r?\n/).map((line) => footer.exec(line)).filter(Boolean);
+    if (found.length !== 1 || Number(found[0][1]) !== index + 1 || Number(found[0][2]) !== pages.length) {
+      refuse(`${pdfLabel} page ${index + 1} does not carry the footer that says it is not a funder's form, with page ${index + 1} of ${pages.length}`);
+    }
+  });
+  if (!hasHeadingLine(pages[0], sheet.title)) refuse(`${pdfLabel} page 1 does not open with the title "${sheet.title}"`);
+  if (!pdfTextHasPhrase(pages[0], sheet.preparedNote)) refuse(`${pdfLabel} page 1 does not say it is not a funder's form ("${sheet.preparedNote.slice(0, 60)}...")`);
+  const values = { awardTitle: journey.award.title, projectName: journey.projectName };
+  for (const template of sheet.headerLines) {
+    const line = template.replace(/\{(\w+)\}/g, (whole, name) => {
+      if (!Object.hasOwn(values, name)) throw new Error(`job definition award.worksheet uses the unknown placeholder ${whole}`);
+      return values[name];
+    });
+    if (!pdfTextHasPhrase(pages[0], line)) refuse(`${pdfLabel} page 1 does not print "${line}"`);
+  }
+  if (!pdfTextHasPhrase(pages[0], journey.workspaceName)) refuse(`${pdfLabel} page 1 does not print the workspace's name`);
+  if (!printsAnywhere(sheet.currencyNote)) refuse(`${pdfLabel} does not say "${sheet.currencyNote}"`);
+
+  const lines = pages.flatMap((page) => page.split(/\r?\n/).filter((line) => !footer.test(line)));
+  const sectionAt = (name) => {
+    const found = headingBlocks(lines, sheet.sections[name]);
+    if (found.length !== 1) refuse(`${pdfLabel} must print the heading "${sheet.sections[name]}" exactly once as a line of its own, found ${found.length}`);
+    return found[0];
+  };
+  const order = ["position", "invoices", "costs", "process"].map((name) => ({ name, ...sectionAt(name) }));
+  order.forEach((section, index) => {
+    if (index > 0 && section.start < order[index - 1].end) refuse(`${pdfLabel} prints "${sheet.sections[section.name]}" before "${sheet.sections[order[index - 1].name]}"`);
+  });
+  const body = (name) => {
+    const index = order.findIndex((section) => section.name === name);
+    return lines.slice(order[index].end, index + 1 < order.length ? order[index + 1].start : lines.length);
+  };
+
+  checkWorksheetPosition(journey, rule, pdfLabel, body("position"), position);
+  checkWorksheetRequests(rule, pdfLabel, body("invoices"), position);
+
+  // No cost entries were made, so the section says so and prints no amount, with or without cents.
+  const costs = body("costs").join("\n");
+  if (!pdfTextHasPhrase(costs, sheet.costsNone)) refuse(`${pdfLabel} "${sheet.sections.costs}" does not say "${sheet.costsNone}"`);
+  if (amountMarks(costs).some((count) => count > 0)) refuse(`${pdfLabel} "${sheet.sections.costs}" prints an amount, but the record enters no cost`);
+
+  // Every amount in the worksheet is one a rule read (review 97, M16 to M20; review 99,
+  // A1 to A4): the money rows due at the download that hold an entry, and three per
+  // request row. Both marks of an amount are counted, a currency sign before a digit
+  // and a number with cents, so an amount with no sign, a spaced or full-width sign, or
+  // no cents is still counted.
+  const moneyRows = sheet.positionRows.filter((row) => !row.kind && (!row.whenClosed || position.closed) && position[row.figure] !== null).length;
+  const expectedAmounts = moneyRows + 3 * position.requests.length;
+  const [signs, numbers, commaCents, currencyWords] = amountMarks(lines.join("\n"));
+  if (signs !== expectedAmounts || numbers !== expectedAmounts || commaCents > 0 || currencyWords > 0) {
+    refuse(`${pdfLabel} prints ${signs} currency signs and ${numbers} amounts with cents${commaCents + currencyWords > 0 ? `, and ${commaCents + currencyWords} amounts written with comma cents or a currency word` : ""}; the ${moneyRows} money rows due at the download and its ${position.requests.length} request rows hold ${expectedAmounts} of each and no other, so an amount no rule read is on the worksheet`);
+  }
+
+  // The process is the role's profile, chosen by the workspace's place.
+  const processLine = sheet.processLine.replace("{profileName}", rule.profiles.byRole[journey.role].profileName);
+  if (!pdfTextHasPhrase(body("process").join("\n"), processLine)) refuse(`${pdfLabel} does not print "${processLine}"`);
+  if (printsAnywhere(sheet.interimNotice)) refuse(`${pdfLabel} says "${sheet.interimNotice}"; the workspace's own place must choose its profile`);
+
+  // What the worksheet must not say (the lead's rule 8), also read as one flow with each
+  // page's footer, the fixed note above it and the blank lines around them left out, so a
+  // phrase that continues on the next page reads whole (review 97, W25).
+  const preparedNote = bareLine(sheet.preparedNote);
+  const flow = pages
+    .flatMap((page) => {
+      const kept = page.split(/\r?\n/).filter((line) => !footer.test(line));
+      const trimEnd = () => {
+        while (kept.length > 0 && kept[kept.length - 1].trim() === "") kept.pop();
+      };
+      trimEnd();
+      for (let count = 1; count <= 3 && count <= kept.length; count += 1) {
+        if (kept.slice(-count).map(bareLine).join("") === preparedNote) {
+          kept.splice(-count);
+          break;
+        }
+      }
+      trimEnd();
+      while (kept.length > 0 && kept[0].trim() === "") kept.shift();
+      return kept;
+    })
+    .join("\n");
+  const singleSpaced = (text) => text.replace(/[ \t]{2,}/g, " ");
+  const printsRefused = (phrase) => printsAnywhere(phrase) || [singleSpaced(everywhere), flow, singleSpaced(flow)].some((text) => pdfTextHasPhrase(text, phrase));
+  for (const phrase of rule.refusedPhrases.phrases) {
+    if (printsRefused(phrase)) refuse(`${pdfLabel} prints "${phrase}", which this job refuses anywhere in the worksheet`);
+  }
+  checkWorksheetFormNames(rule, pdfLabel, `${everywhere}\n\n${flow}`);
+}
+
+/**
+ * The award position against the recomputed figures. A row runs from its
+ * label to the next printed row's label (or the section's end): the browser
+ * may set the amount beside the label, below it or below its note, so a row
+ * is read as everything between two labels. Each row is printed once and in
+ * the product's order; the close-out rows are printed only on a closed award.
+ * A money row must hold exactly one amount, the recomputed one, or, where the
+ * record holds no entry, the not-recorded words and no amount: $0.00 for a
+ * fact nobody entered is refused (the lead's rule 5).
+ */
+function checkWorksheetPosition(journey, rule, pdfLabel, lines, position) {
+  const sheet = rule.worksheet;
+  const rows = sheet.positionRows.map((row) => ({ ...row, blocks: labelBlocks(lines, row.label) }));
+  const printed = [];
+  for (const row of rows) {
+    const expectedHere = !row.whenClosed || position.closed;
+    if (!expectedHere) {
+      if (row.blocks.length > 0) refuse(`${pdfLabel} prints "${row.label}", but the award was not closed when it was downloaded`);
+      continue;
+    }
+    if (row.blocks.length !== 1) refuse(`${pdfLabel} must print the row "${row.label}" exactly once under "${sheet.sections.position}", found ${row.blocks.length}`);
+    if (printed.length > 0 && row.blocks[0] < printed.at(-1).start) refuse(`${pdfLabel} prints "${row.label}" before "${printed.at(-1).label}"`);
+    printed.push({ ...row, start: row.blocks[0] });
+  }
+  printed.forEach((row, index) => {
+    const text = lines.slice(row.start, index + 1 < printed.length ? printed[index + 1].start : lines.length).join("\n");
+    const rowLabel = `${pdfLabel} "${row.label}"`;
+    const amounts = printedAmounts(text);
+    const notRecordedShown = pdfTextHasPhrase(text, sheet.notRecorded);
+    if (row.kind === "date" || row.kind === "text") {
+      if (row.kind === "date") {
+        const date = position[row.figure];
+        if (date === null) {
+          if (!notRecordedShown) refuse(`${rowLabel} does not read "${sheet.notRecorded}", but the record holds no date for it`);
+        } else if (!pdfTextHasPhrase(text, date)) {
+          refuse(`${rowLabel} does not print the record's date ${date}`);
+        }
+        if (amounts.length > 0) refuse(`${rowLabel} prints an amount where a date belongs`);
+      } else {
+        const basis = sheet.closeBasisLabels[journey.closeOut.basis];
+        if (!basis || !wordsInOrder(text, basis)) refuse(`${rowLabel} does not say "${basis ?? journey.closeOut.basis}", the close-out's basis`);
+      }
+    } else {
+      const expected = position[row.figure];
+      if (expected === undefined) throw new Error(`job definition award.worksheet names the unknown figure ${row.figure}`);
+      if (expected === null) {
+        if (amounts.length > 0) {
+          refuse(`${rowLabel} prints ${printedDollars(amounts[0])}, but the record holds no entry for it; a fact not entered reads "${sheet.notRecorded}", never ${amounts[0] === 0 ? "zero" : "an amount"}`);
+        }
+        if (!notRecordedShown) refuse(`${rowLabel} does not read "${sheet.notRecorded}", but the record holds no entry for it`);
+      } else if (amounts.length !== 1 || amounts[0] !== expected) {
+        refuse(`${rowLabel} prints ${amounts.length === 0 ? "no amount" : amounts.map(printedDollars).join(" and ")}, but the figure recomputed from the record at the download is ${printedDollars(expected)}`);
+      }
+    }
+    if (row.countNote) {
+      const count = row.count === undefined ? undefined : position[row.count];
+      const fill = {
+        count: count === undefined ? "" : String(count),
+        s: count === 1 ? "" : "s",
+        matchPosture: journey.award.matchPosture ?? "",
+        closedOn: journey.closeOut.closedOn,
+        closeNote: journey.closeOut.note,
+      };
+      const note = row.countNote.replace(/\{(\w+)\}/g, (whole, name) => {
+        if (!Object.hasOwn(fill, name)) throw new Error(`job definition award.worksheet uses the unknown placeholder ${whole}`);
+        return fill[name];
+      });
+      // Read as words in order: the browser sets a row's value beside its note's first line,
+      // so another column's words can sit inside the note (a real close-out row does this).
+      if (!wordsInOrder(text, note)) refuse(`${rowLabel} does not say "${note}"`);
+    }
+  });
+}
+
+/**
+ * The request rows. A row opens on the line whose first word is the request's
+ * number and which carries an amount (each cell is set at the row's top, and
+ * an amount never wraps); the number repeated under a resubmission's note
+ * carries none. The row runs to the next such line, and the last row to the
+ * first line set at the margin under the table. A row that splits across a
+ * page carries the repeated header and the page's fixed note; they are left
+ * out.
+ *
+ * Each row is read by its own columns (readRequestRow): the cells of its
+ * first line, set apart by two or more spaces, give where its number, status,
+ * invoice date, due date, payment date and amounts begin, and every word of
+ * every line of the row is placed in the area it starts in. The number area
+ * must hold the number and, for a resubmission, its note; the status area the
+ * status and, for a rejected request, the reason; each date area the record's
+ * date or the not-recorded words; the amount area the row's three amounts on
+ * its first line and nothing else. Any other word anywhere in the row refuses
+ * the record (review 100, CR1 to CR3), so a date cannot sit in another cell,
+ * under the number, under the status or after the amounts.
+ *
+ * Blind category: a date area begins one column left of the row's own date,
+ * and the status cell ends at least two columns before it in the browser's
+ * layout (its padding), so a status word is read into a date area only when
+ * Poppler sets it three or more columns right of where the browser drew it.
+ * The margin on every honest Chrome worksheet the reviews printed is in the
+ * PR. Poppler can drop the spaces between very short words; such a reason
+ * reads as other words and refuses an honest record rather than accepting a
+ * false one.
+ */
+const HEADER_WORDS = new Set(["invoice", "status", "date", "due", "paid", "gross", "retention", "net"]);
+
+/** A line Chrome prints inside a row that splits across a page: the repeated header, or the page's fixed note. */
+function interruptsRow(line, preparedNote) {
+  const bare = bareLine(line);
+  if (!bare) return false;
+  const lineWords = line.trim().toLowerCase().split(/\s+/);
+  if (lineWords.every((word) => HEADER_WORDS.has(word))) return true;
+  return bare.length >= 20 && preparedNote.includes(bare);
+}
+
+/**
+ * One request row read by its own columns: the first line's cells (runs set
+ * apart by two or more spaces) are number, status, the three dates and the
+ * amounts; each word of each line goes to the area it starts in. Returns null
+ * when the first line does not hold five cells before its first amount.
+ */
+function readRequestRow(rowLines) {
+  const first = [...rowLines[0].matchAll(/\S+(?: \S+)*/g)].map((match) => ({ x: match.index, text: match[0] }));
+  const amountAt = first.findIndex((cell) => printedAmounts(cell.text).length > 0);
+  if (amountAt < 5) return null;
+  const [invoiceCell, dueCell, paidCell] = first.slice(amountAt - 3, amountAt);
+  const starts = { status: first[1].x, invoiceDate: invoiceCell.x, dueDate: dueCell.x, paidDate: paidCell.x, amounts: first[amountAt].x };
+  const areaOf = (x) =>
+    x < starts.status - 1 ? "number"
+      : x < starts.invoiceDate - 1 ? "status"
+        : x < starts.dueDate - 1 ? "invoiceDate"
+          : x < starts.paidDate - 1 ? "dueDate"
+            : x < starts.amounts - 1 ? "paidDate"
+              : "amounts";
+  const areas = { number: [], status: [], invoiceDate: [], dueDate: [], paidDate: [], amounts: [] };
+  rowLines.forEach((line, lineIndex) => {
+    for (const match of line.matchAll(/\S+/g)) areas[areaOf(match.index)].push({ text: match[0], x: match.index, line: lineIndex });
+  });
+  return { starts, areas };
+}
+
+function checkWorksheetRequests(rule, pdfLabel, sectionLines, position) {
+  const sheet = rule.worksheet;
+  const preparedNote = bareLine(sheet.preparedNote);
+  // A row that splits across a page carries the repeated header and the page's fixed note; they are not the row's.
+  const lines = sectionLines.filter((line) => !interruptsRow(line, preparedNote));
+  const numbers = new Map(position.requests.map((entry) => [entry.request.number, entry]));
+  const anchors = [];
+  lines.forEach((line, index) => {
+    const first = line.trim().split(/\s+/)[0];
+    if (printedAmounts(line).length === 0) return;
+    if (numbers.has(first)) anchors.push({ index, number: first });
+  });
+  for (const [number] of numbers) {
+    const count = anchors.filter((anchor) => anchor.number === number).length;
+    if (count !== 1) refuse(`${pdfLabel} must print request ${number}'s row exactly once under "${sheet.sections.invoices}", found ${count}`);
+  }
+  const total = printedAmounts(lines.join("\n")).length;
+  if (total !== numbers.size * 3) {
+    refuse(`${pdfLabel} prints ${total} amounts under "${sheet.sections.invoices}"; its ${numbers.size} request rows hold ${numbers.size * 3} (gross, retention and net each)`);
+  }
+  const byId = new Map(position.requests.map((entry) => [entry.request.invoiceId, entry.request]));
+  anchors.forEach((anchor, index) => {
+    const { request, status, gross, retention, net } = numbers.get(anchor.number);
+    // The last row ends where the table does: the first line after it set at the margin
+    // (the note under the table); every row line is indented.
+    const rowEnd = index + 1 < anchors.length ? anchors[index + 1].index : (() => {
+      const after = lines.findIndex((line, at) => at > anchor.index && /^\S/.test(line));
+      return after === -1 ? lines.length : after;
+    })();
+    const rowLines = lines.slice(anchor.index, rowEnd);
+    const rowLabel = `${pdfLabel} request ${request.number}`;
+    const found = printedAmounts(rowLines.join("\n")).sort((a, b) => a - b);
+    const expected = [gross, retention, net].sort((a, b) => a - b);
+    if (JSON.stringify(found) !== JSON.stringify(expected)) {
+      refuse(`${rowLabel} prints ${found.map(printedDollars).join(", ")}; the record's gross, retention and net are ${[gross, retention, net].map(printedDollars).join(", ")}`);
+    }
+    const row = readRequestRow(rowLines);
+    if (!row) refuse(`${rowLabel} first line does not hold its number, status, three dates and amounts as cells`);
+    const { areas } = row;
+    const words = (area) => wordsOf(areas[area].map((word) => word.text).join(" "));
+    const same = (found, wanted) => JSON.stringify(found) === JSON.stringify(wanted);
+    const paid = rule.statuses.paid.includes(status);
+    const rejected = rule.statuses.rejected.includes(status);
+    const note = request.resubmitsInvoiceId ? sheet.resubmitsNote.replace("{number}", byId.get(request.resubmitsInvoiceId)?.number ?? "") : "";
+    const wanted = {
+      number: wordsOf(`${request.number} ${note}`),
+      status: wordsOf(`${rule.statuses.labels[status]} ${rejected ? request.rejectionReason : ""}`),
+      invoiceDate: wordsOf(request.invoiceDate),
+      dueDate: wordsOf(request.dueDate ?? sheet.notRecorded),
+      paidDate: wordsOf(paid ? request.paidDate : sheet.notRecorded),
+    };
+    const describe = {
+      number: `its number${note ? ` and "${note}"` : ""}`,
+      status: `"${rule.statuses.labels[status]}", its status when the worksheet was downloaded${rejected ? ", and the rejection reason the record holds" : ""}`,
+      invoiceDate: `its invoice date ${request.invoiceDate}`,
+      dueDate: request.dueDate === null ? `"${sheet.notRecorded}" for its due date` : `its due date ${request.dueDate}`,
+      paidDate: paid ? `its payment date ${request.paidDate}` : `"${sheet.notRecorded}" for its payment date`,
+    };
+    const names = { number: "number", status: "status", invoiceDate: "invoice date", dueDate: "due date", paidDate: "payment date" };
+    for (const [area, value] of Object.entries(wanted)) {
+      if (!same(words(area), value)) refuse(`${rowLabel} ${names[area]} cell reads "${words(area).join(" ")}"; it must hold ${describe[area]} and nothing else`);
+    }
+    // The amount area holds the three amounts on the row's first line and no other word.
+    const amountWords = areas.amounts;
+    if (amountWords.length !== 3 || amountWords.some((word) => word.line !== 0 || !/^-?\$[\d,]+\.\d{2}$/.test(word.text))) {
+      refuse(`${rowLabel} amount cells read "${amountWords.map((word) => word.text).join(" ")}"; they must hold its gross, retention and net on its first line and nothing else`);
+    }
+  });
+}
+
+/**
+ * Form names the worksheet does not implement (the lead's rule 8), found in
+ * any case, with or without a hyphen, any dash or a space, and across a line
+ * break, including a word split by a hyphen at a line's end (review 99, F2 and
+ * F6). A printing counts as a refusal unless the word before it is "not", with
+ * an optional "a", "an" or "the".
+ */
+function checkWorksheetFormNames(rule, pdfLabel, text) {
+  const flat = normalizePdfText(text).replace(/[\u2010-\u2015\u2212]/g, "-");
+  const unwrapped = flat.replace(/-[ \t]*\n\s*/g, "");
+  for (const name of rule.formNames.names) {
+    const chunks = name.split(/[\s-]+/).map((chunk) => chunk.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").toLowerCase());
+    const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${chunks.join("[\\s-]*")}(?![\\p{L}\\p{N}])`, "gu");
+    for (const reading of [flat, unwrapped]) {
+      for (const match of reading.matchAll(pattern)) {
+        if (/\bnot\s+(?:(?:a|an|the)\s+)?$/.test(reading.slice(0, match.index))) continue;
+        refuse(`${pdfLabel} names the form "${name}", which the worksheet does not implement; only a sentence saying it is not that form may name it`);
+      }
+    }
+  }
+}
+
+/**
+ * The fixed demonstration amounts (the lead's rule 3), checked last so that a
+ * changed amount is refused first for the rule it breaks: the ceiling, the
+ * match and its posture, the obligation date on or before every request's
+ * period, each request's number, gross, retention and path, the close-out's
+ * basis, and the hand totals at the close-out.
+ */
+function checkAwardFixedAmounts(journey, rule, label) {
+  const { fixed } = rule;
+  const { award } = journey;
+  for (const [field, value] of [["ceiling", fixed.ceiling], ["match", fixed.match], ["matchPosture", fixed.matchPosture]]) {
+    if (award[field] !== value) refuse(`${label} award ${field} is ${JSON.stringify(award[field])}; this job's fixed demonstration figure is ${JSON.stringify(value)}`);
+  }
+  if (award.obligatedOn === null) refuse(`${label} award has no obligation date; this job states one before every request's period`);
+  journey.requests.forEach((request, index) => {
+    const definition = fixed.requests[index];
+    const requestLabel = `${label} request ${request.number}`;
+    for (const field of ["number", "gross", "retention"]) {
+      if (request[field] !== definition[field]) refuse(`${requestLabel} ${field} is ${JSON.stringify(request[field])}; this job's fixed ${definition.key} request has ${JSON.stringify(definition[field])}`);
+    }
+    const path = request.history.map((entry) => entry.status);
+    if (JSON.stringify(path) !== JSON.stringify(definition.path)) {
+      refuse(`${requestLabel} went ${path.join(", ")}; this job's ${definition.key} request goes ${definition.path.join(", ")}`);
+    }
+    if (award.obligatedOn > request.periodStart) refuse(`${requestLabel} period starts ${request.periodStart}, before the award was obligated on ${award.obligatedOn}`);
+  });
+  if (journey.closeOut.basis !== fixed.closeBasis) refuse(`${label} close-out basis is ${journey.closeOut.basis}; this job closes with ${fixed.closeBasis}`);
+  const position = awardPositionAt(journey, rule, recordTime(journey.closeOut.closedAt, `${label} close-out`));
+  for (const [figure, value] of Object.entries(fixed.handTotals)) {
+    const expected = moneyCents(value, `the definition's ${figure} hand total`);
+    if (position[figure] !== expected) {
+      refuse(`${label} ${figure} at the close-out is ${position[figure] === null ? "not recorded" : printedDollars(position[figure])}; the hand total is ${printedDollars(expected)}`);
+    }
+  }
+}
+
 function checkScreens(journey, job, label) {
   const { widths, modes } = job.screens;
   const seen = new Set();
@@ -2229,6 +3137,11 @@ function checkScreens(journey, job, label) {
     // A required screen that scrolls sideways at phone width (review 59, S5).
     if (row.horizontalScroll && job.screens.noSidewaysScrollWidths?.includes(row.width) && job.screens.required?.includes(row.screen)) {
       refuse(`${rowLabel} scrolls sideways`);
+    }
+    // The accessibility check measured the whole screen, not the first view of
+    // an inner scrolling pane (KI-2026-11-17-032), when the definition says so.
+    if (job.screens.paneUnrolledRequired && row.paneUnrolled !== true) {
+      refuse(`${rowLabel} was checked without reading the whole screen, so colour contrast below the first view was not measured`);
     }
   }
   for (const screen of new Set(journey.screens.map((row) => row.screen))) {
