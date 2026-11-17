@@ -138,15 +138,17 @@ From the record's own invoice entries, never from the product's totals:
 | Record an award | 201 | 201 | 404 "Project not found" |
 | Log a request | 201 | 403 | 403 |
 | Approve or mark paid | 200 | 403 | 403 |
-| Close out (route) | 422 coverage | 422 coverage (authorized) | 404 |
+| Close out, reconcile, record a closure on import, or reopen (route) | 200 when the rules hold | 403 (owner or admin only, decided November 17, 2026) | 404 |
 | Download the worksheet | 200 | 200 | 404 |
 | Write the invoice table directly (PostgREST) | not tried | 0 rows | 0 rows |
 | Write `funding_awards` closure columns directly (awards with no handoff revision; a trigger guards awards that have one) | **accepted** (KI-2026-11-16-134) | **accepted** | 0 rows |
 
-The lead decides whether a member may close out an award. Today the route
-allows it by design (`programs.write`, the comment in
-`funding-awards/[awardId]/route.ts` explains why), while only owners and admins
-may write requests.
+The lead decided on November 17, 2026 that only an owner or admin may close
+out, reconcile, record a closure on import, or reopen an award, because closing
+an award ends the funder's record and only owners and admins may write
+requests. The routes check a new role action, `awards.close`; the database
+close-out command stays service-role only. A member sees the close-out control
+withheld with that sentence (lane 90).
 
 ## What a proof is not
 

@@ -1413,6 +1413,7 @@ export default async function ProjectDetailPage({
             projectId={project.id}
             workspaceId={project.workspace_id}
             canWriteAwards={canAccessWorkspaceAction("programs.write", projectRole)}
+            canCloseAwards={canAccessWorkspaceAction("awards.close", projectRole)}
             projectFundingProfile={projectFundingProfile}
             projectFundingProfilePending={projectFundingProfilePending}
             fundingAwardsPending={fundingAwardsPending}

@@ -793,21 +793,15 @@ export function FundingAwardCloseoutPanel({
       </p>
       <p className="mt-1 text-sm text-muted-foreground">
         {/*
-          The withheld-control sentence describes THIS VIEW, never the reader's
-          standing. `canClose` is only as good as whatever signal the caller had
-          to hand, and a caller can hold a narrower one than the route uses: for
-          a while /grants gated this on `invoices.write` (owner/admin) against a
-          close-out route that authorizes `programs.write` (owner/admin/member),
-          so every member saw the control withheld for a close-out the server
-          would have accepted. Telling that member "this is read-only for you"
-          would have stated as fact something the component cannot know and the
-          server would have contradicted. So it says what is true — the control
-          is not offered here — and leaves the permission question with the
-          route, which settles it per project.
+          The withheld-control sentence states the rule: close-out, reconciled
+          close-out, reopen and a closure recorded on import are `awards.close`
+          (owner and admin), the lead's November 17, 2026 decision. The caller
+          passes that same action, and every closure route checks it, so the
+          sentence and the server agree.
         */}
         {canClose
           ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and updates how this project's funding is counted in the long-range plan. A closed award can be re-opened with a written reason, and each closed award shows how it was closed: earned against invoices, or recorded on import."
-          : "Close-out marks an award fully spent once its paid invoices cover the awarded amount. Recording one is a write action and this view is not offering it; the server decides per project who may record a close-out."}
+          : "Only a workspace owner or admin can close out, reconcile or reopen an award."}
       </p>
       <ul className="mt-3 space-y-3">
         {awards.map((award) => (

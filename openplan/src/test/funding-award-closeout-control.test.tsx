@@ -284,22 +284,16 @@ describe("FundingAwardCloseoutPanel", () => {
     expect(screen.queryByRole("button", { name: "Close out award" })).not.toBeInTheDocument();
   });
 
-  it("withholds the close-out control without claiming the reader is barred from close-out", () => {
+  it("withholds the close-out control and states who may close an award", () => {
     renderPanel({ canClose: false });
 
     expect(screen.getByText("Open")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Close out award" })).not.toBeInTheDocument();
 
-    // `canClose` may be a narrower signal than the route's own check — /grants
-    // once gated this on invoices.write (owner/admin) while the route authorizes
-    // programs.write (owner/admin/member). So the copy may say the control is
-    // withheld here, and may NOT tell the reader they personally cannot close an
-    // award, which for a member would be simply false.
-    const panel = screen.getByText(/Close-out marks an award fully spent/);
-    const panelText = normalizedTextOf(panel);
-    expect(panelText).toContain("this view is not offering it");
-    expect(panelText).toContain("the server decides per project who may record a close-out");
-    expect(panelText).not.toMatch(/read-only for you|you (?:cannot|can't|may not)/i);
+    // `canClose` is now the route's own action, awards.close (owner and admin,
+    // the lead's November 17, 2026 decision), so the panel can state the rule
+    // plainly instead of hedging about what the server might allow.
+    expect(screen.getByText("Only a workspace owner or admin can close out, reconcile or reopen an award.")).toBeInTheDocument();
   });
 
   it("says the breakdown is missing rather than rendering absent counts as three zeroes", async () => {

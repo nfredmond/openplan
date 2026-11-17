@@ -1,3 +1,4 @@
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { managedCloseout } from "@/lib/grants/award-handoff-server";
 import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { NextRequest, NextResponse } from "next/server";
@@ -122,6 +123,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!access.membership || !access.allowed) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    // Closing an award ends the funder's record: owner or admin only, as
+    // reimbursement requests already are. The database command stays
+    // service-role only; this is the role gate in front of it.
+    if (!canAccessWorkspaceAction("awards.close", access.membership.role)) {
+      audit.warn("funding_award_closure_role_refused", { awardId: closeableAward.id, userId: user.id, role: access.membership.role });
+      return NextResponse.json({ error: "Only a workspace owner or admin can close out, reconcile, record a closure for, or reopen an award." }, { status: 403 });
     }
 
     const basis = parsedPayload.data?.basis ?? "earned_coverage";

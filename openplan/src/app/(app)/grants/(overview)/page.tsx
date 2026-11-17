@@ -931,12 +931,10 @@ export default async function GrantsPage({
             }
           />
           {/*
-            Two permissions, deliberately not one. Writing invoices is
-            owner/admin (`invoices.write`); recording an award close-out is
-            whatever `programs.write` allows, which includes members. Handing
-            this section only `canWriteInvoices` hid the close-out control from
-            every member on the workspace, for an action the close-out route
-            would have accepted from them.
+            Two permissions, each the route's own. Writing invoices is
+            `invoices.write`; closing, reconciling and reopening an award is
+            `awards.close`. Both are owner and admin today, but they are
+            separate actions in the role matrix and the section takes each.
           */}
           <GrantsAwardsReimbursementSection
             fundingAwardsCount={fundingAwards.length}
@@ -956,7 +954,7 @@ export default async function GrantsPage({
             activeFocusedProjectId={activeFocusedProjectId}
             workspaceId={membership.workspace_id}
             canWriteInvoices={canWriteInvoices}
-            canCloseOutAwards={canWritePrograms}
+            canCloseOutAwards={canAccessWorkspaceAction("awards.close", membership.role)}
           />
           <GrantsReimbursementTriageSection
             reimbursementPriorityQueue={reimbursementPriorityQueue}

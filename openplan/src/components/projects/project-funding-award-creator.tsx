@@ -65,6 +65,7 @@ export function ProjectFundingAwardCreator({
   defaultTitle,
   titleLabel = "Record a funding award",
   description,
+  canRecordClosure = true,
 }: {
   projectId: string;
   opportunityOptions: Array<{ id: string; title: string }>;
@@ -73,6 +74,8 @@ export function ProjectFundingAwardCreator({
   defaultTitle?: string;
   titleLabel?: string;
   description?: string;
+  /** False for a member: recording an award as already closed is owner or admin only (awards.close). */
+  canRecordClosure?: boolean;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -201,16 +204,20 @@ export function ProjectFundingAwardCreator({
             </GuidedFlowRow>
 
             <GuidedFlowRow flow={flow} name="isAlreadyClosed" label="Already closed?">
-              <label className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  {...flow.fieldProps("isAlreadyClosed")}
-                  checked={flow.values.isAlreadyClosed}
-                  onChange={(event) => flow.setValue("isAlreadyClosed", event.target.checked)}
-                />
-                <span>This award closed before it was recorded here</span>
-              </label>
+              {canRecordClosure ? (
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    {...flow.fieldProps("isAlreadyClosed")}
+                    checked={flow.values.isAlreadyClosed}
+                    onChange={(event) => flow.setValue("isAlreadyClosed", event.target.checked)}
+                  />
+                  <span>This award closed before it was recorded here</span>
+                </label>
+              ) : (
+                <p className="text-sm text-muted-foreground">Only a workspace owner or admin can record an award as already closed.</p>
+              )}
             </GuidedFlowRow>
 
             <GuidedFlowRow flow={flow} name="riskFlag" label="Risk flag">

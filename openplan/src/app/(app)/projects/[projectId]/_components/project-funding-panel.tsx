@@ -169,6 +169,8 @@ type ProjectFundingPanelProps = {
   comparisonBackedFundingReport: ComparisonBackedFundingReport;
   /** Set when the award invoice read failed or its length differs from its exact count: every award reimbursement figure is withheld with this reason. */
   awardInvoiceTotalsWithheldReason?: string | null;
+  /** Owner or admin (awards.close): may record an award as already closed. */
+  canCloseAwards?: boolean;
   /** Set when the project invoice read failed or came back short: the unlinked total is withheld with this reason. */
   projectInvoiceTotalsWithheldReason?: string | null;
 };
@@ -215,6 +217,7 @@ export function ProjectFundingPanel({
   comparisonBackedFundingReport,
   awardInvoiceTotalsWithheldReason = null,
   projectInvoiceTotalsWithheldReason = null,
+  canCloseAwards = false,
 }: ProjectFundingPanelProps) {
   const { obligationMetCount, latestObligationMetOn } = fundingStackSummary;
   const fundingProfileScan = buildProjectFundingProfileScan({
@@ -425,6 +428,7 @@ export function ProjectFundingPanel({
             <ProjectFundingAwardCreator
               projectId={projectId}
               opportunityOptions={fundingOpportunities.map((opportunity) => ({ id: opportunity.id, title: opportunity.title }))}
+              canRecordClosure={canCloseAwards}
             />
           </div>
 
