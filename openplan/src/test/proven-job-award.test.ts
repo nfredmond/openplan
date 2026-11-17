@@ -44,7 +44,6 @@ const JOB_ID = "grant-award-to-reimbursement-record-in-three-places";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- a record under test is deliberately untyped JSON
 type Json = any;
 const JOB: Json = DEFINITIONS.jobs.find((job: Json) => job.id === JOB_ID);
-const RULE = JOB.award;
 const REFUSED = "proven job record refused: ";
 const ROLES = ["county", "city", "tribal-area"];
 
