@@ -5,6 +5,7 @@ import { FileSpreadsheet } from "lucide-react";
 import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-link-copy";
 import { InvoiceFundingAwardLinker } from "@/components/invoicing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
+import { InvoiceStatusAdvanceButton } from "@/components/invoicing/invoice-status-advance-button";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -57,6 +58,7 @@ import {
   toneForSupportingDocs,
   type FundingAwardListRow,
   type InvoiceRegisterRow,
+  resubmissionInvoiceNumber,
 } from "./invoicing-page-helpers";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 
@@ -131,7 +133,7 @@ export async function ReimbursementLane({
     "id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
   const invoiceRegisterSelect = invoiceRegisterSelectLegacy.replace(
     "caltrans_posture,",
-    "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection,"
+    "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection, paid_date, rejection_reason, resubmits_invoice_id,"
   );
 
   // Cast to one loose shape: the two select strings would otherwise infer
@@ -241,6 +243,21 @@ export async function ReimbursementLane({
     delivery_phase: string | null;
   }>;
   const projectNameById = new Map(workspaceProjects.map((project) => [project.id, project.name]));
+  // "Resubmit" on a rejected request opens this page's composer prefilled with
+  // the next number and linked to the request it replaces. Only a rejected
+  // request on an award with no resubmission yet qualifies; anything else
+  // leaves the composer empty.
+  const resubmittedIds = new Set(invoiceRecords.map((invoice) => invoice.resubmits_invoice_id).filter(Boolean));
+  const requestedResubmitId = typeof resolvedParams.resubmit === "string" ? resolvedParams.resubmit : null;
+  const resubmitSource =
+    invoiceRecords.find(
+      (invoice) =>
+        invoice.id === requestedResubmitId &&
+        invoice.status === "rejected" &&
+        invoice.funding_award_id &&
+        !resubmittedIds.has(invoice.id)
+    ) ?? null;
+  const invoiceNumberById = new Map(invoiceRecords.map((invoice) => [invoice.id, invoice.invoice_number]));
   const activeProjectFilterId = requestedProjectFilterId && projectNameById.has(requestedProjectFilterId) ? requestedProjectFilterId : null;
   const activeProjectFilterName = activeProjectFilterId ? projectNameById.get(activeProjectFilterId) ?? activeProjectFilterId : null;
   const registerScopedInvoiceRecords = activeProjectFilterId
@@ -421,6 +438,15 @@ export async function ReimbursementLane({
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <div id="record-invoice">
         <InvoiceRecordComposer
+          {...(resubmitSource
+            ? {
+                defaultProjectId: resubmitSource.project_id ?? undefined,
+                defaultFundingAwardId: resubmitSource.funding_award_id ?? undefined,
+                defaultInvoiceNumber: resubmissionInvoiceNumber(resubmitSource.invoice_number),
+                defaultAmount: resubmitSource.amount === null ? undefined : String(resubmitSource.amount),
+                resubmits: { invoiceId: resubmitSource.id, invoiceNumber: resubmitSource.invoice_number },
+              }
+            : {})}
           workspaceId={workspaceId}
           projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))}
           fundingAwards={workspaceFundingAwards.map((award) => ({ id: award.id, title: award.title, projectId: award.project_id }))}
@@ -834,6 +860,10 @@ export async function ReimbursementLane({
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border/50 pt-3 text-xs text-muted-foreground">
                     {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}
                     {invoice.due_date ? <span>Due {invoice.due_date}</span> : null}
+                    {invoice.status === "paid" ? <span>Paid {invoice.paid_date ?? "date not recorded"}</span> : null}
+                    {invoice.resubmits_invoice_id ? (
+                      <span>Resubmits {invoiceNumberById.get(invoice.resubmits_invoice_id) ?? "a rejected request"}</span>
+                    ) : null}
                     {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
                     {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
                   </div>
@@ -863,6 +893,22 @@ export async function ReimbursementLane({
                       </span>
                     </div>
                   ) : null}
+
+                  {invoice.status === "rejected" && invoice.rejection_reason ? (
+                    <p className="mt-3 text-xs text-muted-foreground">Rejected: {invoice.rejection_reason}</p>
+                  ) : null}
+
+                  {invoice.award_handoff_revision_id ? null : (
+                    <div className="mt-3">
+                      <InvoiceStatusAdvanceButton
+                        invoiceId={invoice.id}
+                        workspaceId={workspaceId}
+                        currentStatus={invoice.status}
+                        canWrite={canWriteInvoices}
+                        canResubmit={Boolean(invoice.funding_award_id) && !resubmittedIds.has(invoice.id)}
+                      />
+                    </div>
+                  )}
 
                   <InvoiceFundingAwardLinker
                     invoiceId={invoice.id}

@@ -210,6 +210,10 @@ export type InvoiceRegisterRow = import("@/lib/grants/award-handoff").ManagedInv
   reimbursement_profile_id?: string | null;
   reimbursement_posture?: string | null;
   reimbursement_profile_selection?: string | null;
+  /** Request custody columns (20261117000100); absent on the legacy select. */
+  paid_date?: string | null;
+  rejection_reason?: string | null;
+  resubmits_invoice_id?: string | null;
   notes: string | null;
   created_at: string | null;
   funding_awards:
@@ -277,6 +281,18 @@ export function normalizeProjectFilterId(value: string | string[] | undefined): 
 
 export function normalizeFocusedInvoiceId(value: string | string[] | undefined): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+/**
+ * The number a resubmission takes: the rejected number plus "A", or the next
+ * letter when it already ends in one after a digit (1 becomes 1A, 1A becomes
+ * 1B), following LAPM 5.5.1(8). A planner can still edit it.
+ */
+export function resubmissionInvoiceNumber(rejectedNumber: string): string {
+  const trimmed = rejectedNumber.trim();
+  const match = /^(.*\d)([A-Y])$/.exec(trimmed);
+  if (match) return `${match[1]}${String.fromCharCode(match[2].charCodeAt(0) + 1)}`;
+  return `${trimmed}A`;
 }
 
 export function normalizeRelinkedInvoiceId(value: string | string[] | undefined): string | null {

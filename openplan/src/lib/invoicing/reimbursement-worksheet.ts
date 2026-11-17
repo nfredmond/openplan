@@ -117,6 +117,28 @@ export type WorksheetAward = {
   title?: string | null;
   /** The project the award funds, for the header line. Never a money figure. */
   projectName?: string | null;
+  /**
+   * When the award was obligated, authorized or allocated (YYYY-MM-DD), as the
+   * planner recorded it. Missing prints "Not recorded", never a guessed date.
+   */
+  obligatedOn?: string | null;
+  /** The close-out, when the award is closed; null or absent when open. */
+  closure?: WorksheetAwardClosure | null;
+};
+
+export type WorksheetAwardClosure = {
+  basis: string | null;
+  closedAt: string | null;
+  note: string | null;
+  /** On a close with the balance released: the ceiling minus paid requests. */
+  releasedAmount: number | null;
+};
+
+const CLOSURE_BASIS_LABELS: Record<string, string> = {
+  earned_coverage: "Closed on paid coverage",
+  reconciled_with_balance: "Closed with balance released",
+  recorded_on_import: "Recorded as closed on import",
+  unrecorded_legacy: "Closed, basis not recorded",
 };
 
 /** One `project_spend_entries` row, in the shape the worksheet needs it. */
@@ -365,8 +387,35 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
   const currency = resolvedCurrency.code;
   const overClaimed = ledger.remainingAgainstCeiling !== null && ledger.remainingAgainstCeiling < 0;
 
+  const obligatedOn = data.award.obligatedOn?.trim();
+  const closure = data.award.closure ?? null;
+  const closedOn = closure?.closedAt ? `${closure.closedAt.slice(0, 10)} (UTC)` : "date not recorded";
+  const closureRows = closure
+    ? [
+        figureRow(
+          "Award close-out",
+          esc(CLOSURE_BASIS_LABELS[closure.basis ?? ""] ?? "Closed, basis not recorded"),
+          `closed ${closedOn}${closure.note ? `: ${closure.note}` : ""}`
+        ),
+        ...(closure.basis === "reconciled_with_balance"
+          ? [
+              figureRow(
+                "Balance released at close-out",
+                formatNullableAmount(closure.releasedAmount, currency),
+                "the recorded ceiling minus paid requests when the award closed"
+              ),
+            ]
+          : []),
+      ]
+    : [];
+
   const rows = [
     figureRow("Recorded award ceiling", formatNullableAmount(ledger.recordedAwardCeiling, currency)),
+    figureRow(
+      "Obligated, authorized or allocated on",
+      obligatedOn ? esc(obligatedOn) : "Not recorded",
+      "costs before this date are generally not reimbursable"
+    ),
     figureRow(
       "Claimed to date (gross)",
       formatAmount(ledger.claimedGrossToDate, currency),
@@ -404,6 +453,7 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
       formatNullableAmount(ledger.matchAmount, currency),
       ledger.matchPosture ? `posture recorded as "${ledger.matchPosture}"` : "no match posture recorded"
     ),
+    ...closureRows,
   ].join("\n");
 
   const overClaimNotice = overClaimed
@@ -429,6 +479,35 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
     </section>`;
 }
 
+/**
+ * List each resubmission right after the request it replaces (LAPM 5.5.1(8):
+ * invoice 1 becomes 1A), keeping every other line in its order. A resubmission
+ * whose original is not in this selection stays where it was.
+ */
+export function orderResubmissionsAfterOriginals(lines: readonly LedgerInvoiceLine[]): LedgerInvoiceLine[] {
+  const present = new Set(lines.map((line) => line.invoiceId).filter(Boolean));
+  const byOriginal = new Map<string, LedgerInvoiceLine[]>();
+  for (const line of lines) {
+    if (line.resubmitsInvoiceId && present.has(line.resubmitsInvoiceId)) {
+      byOriginal.set(line.resubmitsInvoiceId, [...(byOriginal.get(line.resubmitsInvoiceId) ?? []), line]);
+    }
+  }
+  const ordered: LedgerInvoiceLine[] = [];
+  const placed = new Set<LedgerInvoiceLine>();
+  const place = (line: LedgerInvoiceLine) => {
+    if (placed.has(line)) return;
+    placed.add(line);
+    ordered.push(line);
+    for (const next of (line.invoiceId ? byOriginal.get(line.invoiceId) : undefined) ?? []) place(next);
+  };
+  for (const line of lines) {
+    if (line.resubmitsInvoiceId && present.has(line.resubmitsInvoiceId)) continue;
+    place(line);
+  }
+  for (const line of lines) place(line);
+  return ordered;
+}
+
 function invoiceSection(data: ReimbursementWorksheetData, selection: WorksheetInvoiceSelection): string {
   const currency = resolveWorksheetCurrency(data).code;
 
@@ -445,11 +524,20 @@ function invoiceSection(data: ReimbursementWorksheetData, selection: WorksheetIn
     </section>`;
   }
 
-  const rows = selection.lines
+  const numberById = new Map(
+    data.ledger.lines.filter((line) => line.invoiceId).map((line) => [line.invoiceId as string, line.invoiceNumber])
+  );
+  const rows = orderResubmissionsAfterOriginals(selection.lines)
     .map(
       (line) => `<tr>
-        <td>${textOr(line.invoiceNumber, "<span class=\"empty\">Not numbered</span>")}</td>
-        <td>${esc(statusLabel(line.status))}</td>
+        <td>${textOr(line.invoiceNumber, "<span class=\"empty\">Not numbered</span>")}${
+          line.resubmitsInvoiceId
+            ? `<span class="row-note">resubmits ${textOr(numberById.get(line.resubmitsInvoiceId) ?? null, "a rejected request")}</span>`
+            : ""
+        }</td>
+        <td>${esc(statusLabel(line.status))}${
+          line.rejectionReason ? `<span class="row-note">${esc(line.rejectionReason)}</span>` : ""
+        }</td>
         <td>${textOr(line.invoiceDate, "<span class=\"empty\">Not recorded</span>")}</td>
         <td>${textOr(line.dueDate, "<span class=\"empty\">Not recorded</span>")}</td>
         <td>${textOr(line.paidDate, "<span class=\"empty\">Not recorded</span>")}</td>

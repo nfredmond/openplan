@@ -70,6 +70,8 @@ export type DrawdownInvoiceLike = BillingInvoiceRecordLike & ManagedInvoice & {
   invoice_number?: string | null;
   invoice_date?: string | null;
   paid_date?: string | null;
+  rejection_reason?: string | null;
+  resubmits_invoice_id?: string | null;
 };
 
 /**
@@ -87,6 +89,10 @@ export type LedgerInvoiceLine = {
   invoiceDate: string | null;
   dueDate: string | null;
   paidDate: string | null;
+  /** Why the funder returned it, on a rejected request (20261117000100). */
+  rejectionReason: string | null;
+  /** The rejected request this one replaces, on a resubmission. */
+  resubmitsInvoiceId: string | null;
   /**
    * The amount claimed before retention, from `amount`.
    *
@@ -226,7 +232,7 @@ export function toDrawdownInvoiceRead(result: {
 
 /** The columns a read feeding this ledger must select. */
 export const DRAWDOWN_INVOICE_COLUMNS =
-  "id, funding_award_id, invoice_number, status, amount, retention_percent, retention_amount, net_amount, invoice_date, due_date, paid_date";
+  "id, funding_award_id, invoice_number, status, amount, retention_percent, retention_amount, net_amount, invoice_date, due_date, paid_date, rejection_reason, resubmits_invoice_id";
 
 /** Nullable award money: the column cannot tell 0 from "nobody entered it". */
 function recordedAwardAmount(value: number | string | null | undefined): number | null {
@@ -306,6 +312,8 @@ export function buildAwardDrawdownLedger({
       invoiceDate: typeof invoice.invoice_date === "string" && invoice.invoice_date ? invoice.invoice_date : null,
       dueDate: typeof invoice.due_date === "string" && invoice.due_date ? invoice.due_date : null,
       paidDate,
+      rejectionReason: typeof invoice.rejection_reason === "string" && invoice.rejection_reason.trim() ? invoice.rejection_reason.trim() : null,
+      resubmitsInvoiceId: typeof invoice.resubmits_invoice_id === "string" && invoice.resubmits_invoice_id ? invoice.resubmits_invoice_id : null,
       grossAmount,
       retentionWithheld,
       netAmount,
