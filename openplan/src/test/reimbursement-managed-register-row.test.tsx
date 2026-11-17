@@ -66,6 +66,13 @@ describe("actual reimbursement register row, prepared and unrun",()=>{
     expect(item.getByText(/Gross Unassessed.*Retention EUR\s*0\.00/)).toBeInTheDocument();
     expect(item.getByText(/Current applicability unassessed/)).toBeInTheDocument();
   });
+  it("offers the status control on a row bound to award conditions (KI-2026-11-16-141)",async()=>{
+    sources.rows=[invoice({status:"submitted"})];
+    render(await ReimbursementLane({workspaceId:"w1",canWriteInvoices:true,resolvedParams:{focusInvoiceId:"i1"}}));
+    const item=within(document.getElementById("invoice-record-i1")!);
+    expect(item.getByRole("button",{name:"Mark approved for payment"})).toBeInTheDocument();
+    expect(item.getByRole("button",{name:"Mark rejected"})).toBeInTheDocument();
+  });
   it("leaves ordinary unmanaged USD rows available",async()=>{
     sources.awards=[{id:"a1",project_id:"p1",title:"Synthetic legacy award",current_handoff_revision_id:null,latest_handoff_revision_id:null,currency_code:null}];
     const item=await row({award_handoff_revision_id:null,handoff_applicable_revision_id:null,currency_code:null});
