@@ -519,18 +519,22 @@ function wordsOffPage(file: string): string[] {
 }
 
 /**
- * Words past the right edge of a section's text column, footer excluded. Both
- * exports print on Letter with a 48 px PDF margin, 24 px main padding, a 1 px
+ * Words past the right edge of a section's text column, footer excluded. The
+ * report prints on Letter with a 48 px PDF margin, 24 px main padding, a 1 px
  * section border and 24 px section padding: 97 CSS px, or 72.75 pt, from the
+ * page edge. The application's print layout has no main side padding since
+ * KI-2026-11-16-104, so its column ends 73 CSS px, or 54.75 pt, from the
  * page edge. A word past it runs into or over the card's border.
  */
-function wordsPastCard(file: string): string[] {
+const REPORT_CARD_INSET_PT = 72.75;
+const APPLICATION_CARD_INSET_PT = 54.75;
+function wordsPastCard(file: string, insetPt: number): string[] {
   const xml = execFileSync(tool("pdftotext"), ["-bbox", file, "-"]).toString();
   const past: string[] = [];
   for (const pageMatch of xml.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)) {
     const [width, height] = [Number(pageMatch[1]), Number(pageMatch[2])];
     for (const word of pageMatch[3].matchAll(/<word xMin="[\d.]+" yMin="[\d.]+" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)<\/word>/g)) {
-      if (Number(word[2]) < height - 36 && Number(word[1]) > width - 72.75 + 1) past.push(word[3]);
+      if (Number(word[2]) < height - 36 && Number(word[1]) > width - insetPt + 1) past.push(word[3]);
     }
   }
   return past;
@@ -632,7 +636,7 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
     expect(html).toContain('<span class="list-status">Not on FHWA');
     const report = await pdf("safety-report-off-list", html);
     expect(report.pageText.join("").replace(/\s+/g, "")).toContain(getSafetyCountermeasure("bicycle-lanes")!.sourceUrl.slice(0, 40));
-    expect(wordsPastCard(report.file)).toEqual([]);
+    expect(wordsPastCard(report.file, REPORT_CARD_INSET_PT)).toEqual([]);
     // The status line runs from after "Bicycle Lanes." to the "Addresses:"
     // that opens the item's body text; it must print smaller than that body.
     const words = wordBoxes(report.file);
@@ -654,7 +658,7 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext and pd
         snapshotHash: "a".repeat(64), caveat: SAFETY_SEED_CAVEAT, sourceCaveats: [sourceLine] }],
     }));
     expect(application.pageText.join("").replace(/\s+/g, "")).toContain("https://web.archive.org/web/");
-    expect(wordsPastCard(application.file)).toEqual([]);
+    expect(wordsPastCard(application.file, APPLICATION_CARD_INSET_PT)).toEqual([]);
   }, 120_000);
 
   it("keeps the countermeasure table inside the page (D17)", async () => {

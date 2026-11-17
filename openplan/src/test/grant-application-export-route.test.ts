@@ -667,7 +667,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const html = renderReportPdfMock.mock.calls[0][0] as string;
     // The finalizer's workspace role, not an id (KI-2026-11-02-044) and not an
     // email address (KI-2026-11-14-100): the PDF goes to a funder.
-    expect(html).toContain("<td>Workspace admin</td>");
+    expect(html).toContain('<td><span class="nowrap">Workspace admin</span></td>');
     expect(html).not.toContain(USER_ID);
     expect(html).not.toContain("finalizer@example.gov");
     expect(html).not.toContain("teammate@example.gov");
@@ -736,7 +736,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     expect(workspaceQuery.eq).toHaveBeenCalledWith("id", WORKSPACE_ID);
     // 00:00 UTC on September 30 is the evening of September 29 in Los Angeles.
     expect(html).toContain("<dt>Closes</dt><dd>September 29, 2026 at 17:00 (America/Los_Angeles)</dd>");
-    expect(html).toContain("<td>July 26, 2026 at 19:00 (America/Los_Angeles)</td>");
+    expect(html).toContain('<td><span class="nowrap">Jul 26, 2026,</span> <span class="nowrap">19:00</span> (America/<wbr>Los_Angeles)</td>');
   });
 
   it("discloses an unrecorded finalizer honestly instead of falling back to updated_by", async () => {

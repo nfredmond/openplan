@@ -149,7 +149,7 @@ describe("both exports name no member by email", () => {
     const { html, getUserById } = await ss4aPacket();
     const text = visibleText(html);
     expect(text.match(EMAIL)?.[0] ?? null).toBeNull();
-    for (const label of ["Workspace owner", "Workspace admin", "Workspace member"]) expect(html).toContain(`<td>${label}</td>`);
+    for (const label of ["Workspace owner", "Workspace admin", "Workspace member"]) expect(html).toContain(`<td><span class="nowrap">${label}</span></td>`);
     expect(getUserById).not.toHaveBeenCalled();
   });
 
