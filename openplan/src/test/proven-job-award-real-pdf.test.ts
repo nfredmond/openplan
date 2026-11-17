@@ -37,6 +37,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import { WORKSHEET_FOOTER_NOTE } from "@/lib/invoicing/reimbursement-worksheet";
 import { renderHtmlToPdf, renderReportPdf } from "@/lib/reports/pdf";
 import { pdftotextPages, validateProvenJobRecord } from "../../scripts/ops/capability-evidence.mjs";
+import { pdfTextHasPhrase } from "../../scripts/lib/pdf-text-match.mjs";
 import { SYNTHETIC_PDF_HEADER, screenFiguresAt, syntheticPdfPages, syntheticWorksheetPdfText, worksheetHtmlAt } from "./fixtures/proven-job-award";
 
 const read = (file: string) => JSON.parse(readFileSync(fileURLToPath(new URL(file, import.meta.url)), "utf8"));
@@ -165,7 +166,8 @@ describe.skipIf(!POPPLER || !CHROME)("real worksheets printed by Chrome", () => 
       const printed = await recordWithRealPdfs("chrome", ["county"]);
       const text = pdftotextPages(path.join(root, printed.journeys[0].pdfs[1].path));
       // The row really splits: INV-2's reason runs on past a page footer.
-      const reasonPage = text.findIndex((page) => page.includes("30 of the backup"));
+      // Read with the shared matcher, so the sentence is found however the fonts wrap it.
+      const reasonPage = text.findIndex((page) => pdfTextHasPhrase(page, "Item 30 of the backup was missing"));
       expect(reasonPage).toBeGreaterThan(text.findIndex((page) => /INV-2 +Rejected/.test(page)));
       expect(() => check(printed)).not.toThrow();
       // The split row's due column is read: a due date the record holds and the PDF does not print is refused.
