@@ -76,9 +76,6 @@ const STEPS = [
   'screens', 'owner-control', 'cross-workspace', 'health-end',
 ];
 
-/** The catalog entry the award is recorded against, by its key, and the name its card shows (openplan/src/lib/grants/programs/us-federal.ts). */
-const CATALOG_NAMES = { ss4a: 'Safe Streets and Roads for All (SS4A)' };
-
 function log(message) {
   process.stdout.write(`[journey] ${message}\n`);
 }
@@ -645,7 +642,7 @@ async function main() {
 
     await step('track-ss4a', async () => {
       const catalogKey = (job.journeyFields.find((entry) => entry.field === 'award.catalogKey') || {}).equals;
-      const name = CATALOG_NAMES[catalogKey];
+      const name = lib.CATALOG_NAMES[catalogKey];
       await go(`/grants?focusProjectId=${ids.projectId}&tab=opportunities`);
       await (await B.controlByLabel(page, 'Search program catalog')).type('Safe Streets');
       await B.sleep(1500);
@@ -686,7 +683,7 @@ async function main() {
       await page.click('[data-testid="funding-award-creator-open"]');
       await page.waitForSelector('#record-funding-award-title', { visible: true });
       await page.type('#record-funding-award-title', inputs.awardTitle);
-      await B.selectByText(await page.$('#record-funding-award-opportunityId'), CATALOG_NAMES[ids.catalogKey]);
+      await B.selectByText(await page.$('#record-funding-award-opportunityId'), lib.CATALOG_NAMES[ids.catalogKey]);
       await page.type('#record-funding-award-awardedAmount', inputs.award.ceiling);
       await page.type('#record-funding-award-matchAmount', inputs.award.match);
       await page.select('#record-funding-award-matchPosture', inputs.award.matchPosture);

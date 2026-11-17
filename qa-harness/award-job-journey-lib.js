@@ -23,6 +23,12 @@ const { repoRoot } = require('./harness-env');
 const { pdfTextHasPhrase } = require('../openplan/scripts/lib/pdf-text-match.mjs');
 
 const JOB_ID = 'grant-award-to-reimbursement-record-in-three-places';
+/**
+ * The catalog entry the award is recorded against, by its key, and the name
+ * its card shows and the track request sends (openplan/src/lib/grants/
+ * programs/us-federal.ts; a test ties the two).
+ */
+const CATALOG_NAMES = Object.freeze({ ss4a: 'Safe Streets and Roads for All (SS4A)' });
 const DEFINITIONS_PATH = path.join(repoRoot, 'schemas', 'proven_job_definitions.v1.json');
 
 /** This job's entry in schemas/proven_job_definitions.v1.json. */
@@ -775,6 +781,7 @@ function assembleAwardRecord({ journeyFiles, commit, baseUrl, recordedOn, proofO
 }
 
 module.exports = {
+  CATALOG_NAMES,
   FIPS_BY_USPS,
   JOB_ID,
   LEFT_ON_SITE,
