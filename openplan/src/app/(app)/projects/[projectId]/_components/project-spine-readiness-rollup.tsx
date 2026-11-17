@@ -100,7 +100,7 @@ export function ProjectSpineReadinessRollup({
                 <div className="text-sm leading-relaxed">
                   <p className="font-medium text-foreground/90">{lane.headline}</p>
                   <p className="mt-1 text-muted-foreground">{lane.detail}</p>
-                  <p className="mt-1 text-label text-muted-foreground/85">
+                  <p className="mt-1 text-label text-muted-foreground">
                     Source {lane.latestSourceUpdatedAt ? fmtDateTime(lane.latestSourceUpdatedAt) : "not recorded"}
                     {lane.reviewedAgainstAt ? ` · Baseline ${fmtDateTime(lane.reviewedAgainstAt)}` : " · No packet baseline"}
                   </p>

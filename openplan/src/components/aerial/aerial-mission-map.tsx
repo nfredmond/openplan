@@ -518,12 +518,12 @@ export function AerialMissionMap({
             />
             Orthomosaic preview
             {preview?.pixelSizeM ? (
-              <span className="text-muted-foreground/80">
+              <span className="text-muted-foreground">
                 (~{preview.pixelSizeM < 0.01 ? preview.pixelSizeM.toFixed(4) : preview.pixelSizeM.toFixed(2)}{" "}
                 m/px{preview.crs ? `, source ${preview.crs}` : ""})
               </span>
             ) : preview?.crs ? (
-              <span className="text-muted-foreground/80">(source {preview.crs})</span>
+              <span className="text-muted-foreground">(source {preview.crs})</span>
             ) : null}
           </label>
         ) : null}
@@ -551,7 +551,7 @@ export function AerialMissionMap({
           Photo locations
           {photoState.status === "ready" ? ` (${photoPoints.length})` : ""}
         </label>
-        <span className="flex items-center gap-1.5 text-muted-foreground/80">
+        <span className="flex items-center gap-1.5 text-muted-foreground">
           <MapIcon className="h-3.5 w-3.5" aria-hidden="true" />
           Measurement is not available on this map yet. For measuring, download the GeoTIFF
           orthomosaic from the processing jobs list and open it in GIS.

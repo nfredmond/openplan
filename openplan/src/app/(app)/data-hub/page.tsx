@@ -650,7 +650,7 @@ export default async function DataHubPage() {
                   </div>
 
                   {connector.endpoint_url ? (
-                    <p className="text-xs text-muted-foreground/85">Endpoint: {connector.endpoint_url}</p>
+                    <p className="text-xs text-muted-foreground">Endpoint: {connector.endpoint_url}</p>
                   ) : null}
                 </div>
               ))}
