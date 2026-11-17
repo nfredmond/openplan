@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -18,6 +19,11 @@ const awardsSingleMock = vi.fn();
 const awardsInsertSelectMock = vi.fn(() => ({ single: awardsSingleMock }));
 const awardsInsertMock = vi.fn(() => ({ select: awardsInsertSelectMock }));
 const milestonesInsertMock = vi.fn();
+/** The row the create route inserted, typed for property checks. */
+const insertedAward = () => (awardsInsertMock.mock.calls as unknown as Array<[Record<string, unknown>]>)[0][0];
+const closeoutCommandMock = vi.fn();
+const awardsDeleteSelectMock = vi.fn();
+const awardsDeleteMock = vi.fn(() => ({ eq: vi.fn(() => ({ select: awardsDeleteSelectMock })) }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -35,6 +41,11 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("@/lib/programs/api", () => ({
   loadProjectAccess: (...args: unknown[]) => loadProjectAccessMock(...args),
+}));
+
+// The one writer of closure columns (20261117000000), called with the service role.
+vi.mock("@/lib/grants/award-handoff-server", () => ({
+  runFundingAwardCloseoutCommand: (...args: unknown[]) => closeoutCommandMock(...args),
 }));
 
 vi.mock("@/lib/projects/rtp-posture-writeback", () => ({
@@ -107,6 +118,11 @@ describe("/api/funding-awards", () => {
     });
 
     milestonesInsertMock.mockResolvedValue({ error: null });
+    closeoutCommandMock.mockResolvedValue({
+      outcome: "done",
+      result: { status: "closed", closureBasis: "recorded_on_import", closedAt: "2026-11-17T03:00:00.000Z", milestoneFiled: false },
+    });
+    awardsDeleteSelectMock.mockResolvedValue({ data: [{ id: AWARD_ID }], error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -115,6 +131,7 @@ describe("/api/funding-awards", () => {
           return {
             select: awardsSelectMock,
             insert: awardsInsertMock,
+            delete: awardsDeleteMock,
           };
         }
         if (table === "project_milestones") {
@@ -370,20 +387,42 @@ describe("/api/funding-awards", () => {
     expect(json.closureBasis).toBe("recorded_on_import");
     expect(json.details).toContain("No invoice coverage was checked");
 
-    // The status and its provenance are written in ONE insert: the schema's
-    // coherence CHECK refuses `fully_spent` with no basis, so an asserted
-    // closure carries its own account or the write fails loudly.
-    expect(awardsInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        spending_status: "fully_spent",
-        closure_basis: "recorded_on_import",
-        closure_note: "Closed by the county in FY22; final invoice held by the sponsor.",
-      })
-    );
+    // The award is created open, then closed by the close-out command: the
+    // database refuses closure columns written any other way (20261117000000).
+    expect(awardsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ spending_status: "not_started" }));
+    expect(insertedAward()).not.toHaveProperty("closure_basis");
+    expect(closeoutCommandMock).toHaveBeenCalledWith({
+      actorId: "22222222-2222-4222-8222-222222222222",
+      awardId: AWARD_ID,
+      event: "recorded_on_import",
+      note: "Closed by the county in FY22; final invoice held by the sponsor.",
+      calendarDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      reopenSpendingStatus: null,
+    });
+    expect(json.award).toMatchObject({ spending_status: "fully_spent", closure_basis: "recorded_on_import", closed_at: "2026-11-17T03:00:00.000Z" });
     expect(mockAudit.info).toHaveBeenCalledWith(
       "funding_award_recorded_closed_on_import",
       expect.objectContaining({ awardId: AWARD_ID, closureBasis: "recorded_on_import" })
     );
+    expect(awardsDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("removes the new award when the close-out command refuses the imported closure", async () => {
+    closeoutCommandMock.mockResolvedValueOnce({ outcome: "refused", status: 422, message: "A closure recorded on import needs a written basis", detail: null });
+    const response = await postFundingAwards(
+      jsonRequest({ projectId: PROJECT_ID, title: "Historic ATP award", awardedAmount: 500000, recordClosedOnImport: { note: "Closed in FY22." } })
+    );
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: "A closure recorded on import needs a written basis", details: "The award was not created." });
+    expect(awardsDeleteMock).toHaveBeenCalledTimes(1);
+    expect(milestonesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("stores the date the award was obligated, as a calendar day", async () => {
+    await postFundingAwards(jsonRequest({ projectId: PROJECT_ID, title: "ATP award", awardedAmount: 1000, obligatedOn: "2026-02-12" }));
+    expect(awardsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ obligated_on: "2026-02-12" }));
+    const bad = await postFundingAwards(jsonRequest({ projectId: PROJECT_ID, title: "ATP award", awardedAmount: 1000, obligatedOn: "2026-02-12T00:00:00Z" }));
+    expect(bad.status).toBe(400);
   });
 
   it("never records an imported closure without a stated basis", async () => {
@@ -421,15 +460,11 @@ describe("/api/funding-awards", () => {
       jsonRequest({ projectId: PROJECT_ID, title: "ATP award", awardedAmount: 1750000 })
     );
 
-    expect(awardsInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        spending_status: "not_started",
-        closure_basis: null,
-        closed_at: null,
-        closed_by: null,
-        closure_note: null,
-      })
-    );
+    expect(awardsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ spending_status: "not_started", obligated_on: null }));
+    for (const column of ["closure_basis", "closed_at", "closed_by", "closure_note"]) {
+      expect(insertedAward()).not.toHaveProperty(column);
+    }
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
   });
 
   it("dates the obligation milestone on the workspace's calendar day", async () => {

@@ -84,7 +84,7 @@ type CloseoutCoverage = {
 };
 
 type CloseoutOutcome =
-  | { kind: "closed"; coverage: CloseoutCoverage | null; closedAt: string | null }
+  | { kind: "closed"; coverage: CloseoutCoverage | null; closedAt: string | null; releasedAmount: number | null }
   | { kind: "already_closed" }
   | { kind: "reopened"; priorClosureBasis: string | null; details: string | null }
   | { kind: "refused_coverage"; coverage: CloseoutCoverage }
@@ -284,6 +284,9 @@ function FundingAwardCloseoutRow({
   const [isConfirming, setIsConfirming] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [note, setNote] = useState("");
+  // Paid in full, or finished under the ceiling with the rest released
+  // (closure basis reconciled_with_balance, 20261117000000). Asked, not guessed.
+  const [closeBasis, setCloseBasis] = useState<"earned_coverage" | "reconciled_with_balance">("earned_coverage");
   const [outcome, setOutcome] = useState<CloseoutOutcome | null>(null);
   const [isReopening, setIsReopening] = useState(false);
   const [historyRefresh, setHistoryRefresh] = useState(0);
@@ -304,7 +307,7 @@ function FundingAwardCloseoutRow({
       const response = await fetch(`/api/funding-awards/${award.id}/closeout`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ notes:note.trim()||undefined,expectedCurrentRevisionId:award.currentRevisionId??undefined }),
+        body: JSON.stringify({ notes:note.trim()||undefined,expectedCurrentRevisionId:award.currentRevisionId??undefined,...(closeBasis==="reconciled_with_balance"?{basis:closeBasis}:{}) }),
       });
 
       // A gateway or a crash can answer with something that is not JSON at all;
@@ -333,6 +336,7 @@ function FundingAwardCloseoutRow({
           kind: "closed",
           coverage: parseCloseoutCoverage(payload?.coverage),
           closedAt: typeof payload?.closedAt === "string" ? payload.closedAt : null,
+          releasedAmount: typeof payload?.releasedAmount === "number" ? payload.releasedAmount : null,
         });
         router.refresh();
         return;
@@ -341,7 +345,15 @@ function FundingAwardCloseoutRow({
       if (response.status === 422) {
         const coverage = parseCloseoutCoverage(payload?.coverage);
         setIsConfirming(false);
-        if (coverage) {
+        // Only a shortfall reads as "coverage is short". An open request, a
+        // missing note or an over-ceiling claim is its own refusal, in the
+        // server's words.
+        const shortfall =
+          coverage !== null &&
+          typeof payload?.openCount !== "number" &&
+          closeBasis === "earned_coverage" &&
+          (coverage.awardedAmount <= 0 || coverage.paidAmount < coverage.awardedAmount);
+        if (coverage && shortfall) {
           setOutcome({ kind: "refused_coverage", coverage });
           return;
         }
@@ -351,9 +363,8 @@ function FundingAwardCloseoutRow({
       setOutcome({
         kind: "refused",
         message:
-          typeof payload?.error === "string" && payload.error.trim()
-            ? payload.error
-            : `Close-out was refused with HTTP ${response.status} and no reason given.`,
+          [payload?.error, payload?.details].filter((part) => typeof part === "string" && part.trim()).join(" ") ||
+          `Close-out was refused with HTTP ${response.status} and no reason given.`,
       });
     } catch (requestError) {
       setIsConfirming(false);
@@ -604,17 +615,41 @@ function FundingAwardCloseoutRow({
               close-out and the re-opening stay on the record.
             </li>
             <li>
-              The server refuses unless paid invoices cover the full awarded amount, and will name any
-              shortfall.
+              The server refuses while any linked request is a draft, in review, submitted or approved
+              for payment.
             </li>
           </ul>
+
+          {award.currentRevisionId ? null : (
+            <fieldset className="mt-3 space-y-1.5 text-xs">
+              <legend className="text-label font-semibold text-muted-foreground">How did it finish?</legend>
+              <label className="flex items-start gap-2">
+                <input
+                  type="radio"
+                  name={`closeout-basis-${award.id}`}
+                  checked={closeBasis === "earned_coverage"}
+                  onChange={() => setCloseBasis("earned_coverage")}
+                />
+                <span>Paid in full: paid requests cover the awarded amount.</span>
+              </label>
+              <label className="flex items-start gap-2">
+                <input
+                  type="radio"
+                  name={`closeout-basis-${award.id}`}
+                  checked={closeBasis === "reconciled_with_balance"}
+                  onChange={() => setCloseBasis("reconciled_with_balance")}
+                />
+                <span>Under the ceiling: mark the unclaimed balance as released. A note is required.</span>
+              </label>
+            </fieldset>
+          )}
 
           <div className="mt-3 space-y-1.5">
             <label
               className="text-label font-semibold text-muted-foreground"
               htmlFor={`closeout-note-${award.id}`}
             >
-              Close-out note (optional)
+              {closeBasis === "reconciled_with_balance" ? "Close-out note (required)" : "Close-out note (optional)"}
             </label>
             <Textarea
               id={`closeout-note-${award.id}`}
@@ -667,6 +702,9 @@ function FundingAwardCloseoutRow({
             </p>
           ) : null}
           {outcome.closedAt ? <p className="mt-1">Recorded {formatDateTime(outcome.closedAt)}.</p> : null}
+          {outcome.releasedAmount !== null ? (
+            <p className="mt-1">{formatCurrency(outcome.releasedAmount)} recorded as released.</p>
+          ) : null}
           {/*
             The route also files the close-out milestone and rebuilds the RTP
             posture, but it logs a warning and still answers 200 when either of

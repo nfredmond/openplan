@@ -23,7 +23,7 @@ const INVOICE_SELECT_LEGACY =
 // caltrans_posture stays selected as the legacy read fallback for rows that
 // predate the reimbursement-profile backfill (20260727000009).
 const INVOICE_SELECT =
-  `${INVOICE_SELECT_LEGACY}, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection`;
+  `${INVOICE_SELECT_LEGACY}, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection, rejection_reason, resubmits_invoice_id, paid_date`;
 
 /** PostgREST's shapes for "this deployment has not applied the profile-columns migration yet". */
 function looksLikePendingProfileSchema(message: string | null | undefined): boolean {
@@ -37,11 +37,31 @@ const patchBillingInvoiceSchema = z
     currencyCode: z.string().regex(/^[A-Z]{3}$/).optional(),
     fundingAwardId: z.union([z.string().uuid(), z.null()]).optional(),
     status: z.enum(["draft", "internal_review", "submitted", "approved_for_payment", "paid", "rejected"]).optional(),
+    /** Required with `status: "rejected"`: why the funder returned the request. */
+    rejectionReason: z.string().trim().min(1).max(2000).optional(),
+    /** Required with `status: "paid"`: the date the funder paid, YYYY-MM-DD. */
+    paidDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   })
   .refine((value) => value.fundingAwardId !== undefined || value.status !== undefined, {
     message: "At least one invoice patch field is required",
     path: ["fundingAwardId"],
+  })
+  .refine((value) => value.status === "rejected" || value.rejectionReason === undefined, {
+    message: "A rejection reason belongs to marking a request rejected",
+    path: ["rejectionReason"],
+  })
+  .refine((value) => value.status === "paid" || value.paidDate === undefined, {
+    message: "A payment date belongs to marking a request paid",
+    path: ["paidDate"],
   });
+
+/** A refusal from the database's request rules (20261117000100), answered as the planner's mistake. */
+class InvoiceUpdateRefusedError extends Error {
+  constructor(message: string, readonly status: 409 | 422) {
+    super(message);
+    this.name = "InvoiceUpdateRefusedError";
+  }
+}
 
 /**
  * The update changed nothing — carried out of the update body as its own error
@@ -93,6 +113,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });
       return NextResponse.json({ error: "Invalid invoice patch payload" }, { status: 400 });
+    }
+    if (parsed.data.status === "rejected" && !parsed.data.rejectionReason) {
+      return NextResponse.json({ error: "Marking a request rejected needs the reason the funder gave." }, { status: 400 });
+    }
+    if (parsed.data.status === "paid" && !parsed.data.paidDate) {
+      return NextResponse.json({ error: "Marking a request paid needs the payment date." }, { status: 400 });
     }
 
     if (executionSource !== "manual" && !parsed.data.fundingAwardId) {
@@ -190,6 +216,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         project_id: effectiveProjectId,
         funding_award_id: effectiveFundingAwardId,
         status: parsed.data.status ?? undefined,
+        rejection_reason: parsed.data.rejectionReason ?? undefined,
+        paid_date: parsed.data.paidDate ?? undefined,
       };
       let { data, error } = await supabase
         .from("billing_invoice_records")
@@ -206,6 +234,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           .eq("id", invoice.id)
           .select(INVOICE_SELECT_LEGACY)
           .single());
+      }
+      if (error?.code === "23514") throw new InvoiceUpdateRefusedError(error.message, 422);
+      if (error?.code === "23505") {
+        throw new InvoiceUpdateRefusedError("Another request on that award already uses this number.", 409);
       }
       if (isWriteFailure(error)) {
         throw new Error(error?.message ?? "billing_invoice_update_failed");
@@ -261,6 +293,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           )
         : await runUpdate();
     } catch (updateErr) {
+      if (updateErr instanceof InvoiceUpdateRefusedError) {
+        audit.warn("billing_invoice_update_refused", { invoiceId: invoice.id, message: updateErr.message });
+        return NextResponse.json({ error: updateErr.message }, { status: updateErr.status });
+      }
       if (updateErr instanceof InvoiceUpdateMatchedNoRowsError) {
         // The invoice row was read back through the caller's own client above
         // and cleared the membership and role checks, so an update that changes

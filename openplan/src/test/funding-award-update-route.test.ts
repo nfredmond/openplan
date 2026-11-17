@@ -41,6 +41,7 @@ const milestonesEqSecondMock = vi.fn(() => ({ eq: milestonesEqThirdMock }));
 const milestonesEqFirstMock = vi.fn(() => ({ eq: milestonesEqSecondMock }));
 const milestonesSelectMock = vi.fn(() => ({ eq: milestonesEqFirstMock }));
 const milestonesInsertMock = vi.fn();
+const closeoutCommandMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -58,6 +59,13 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("@/lib/programs/api", () => ({
   loadProjectAccess: (...args: unknown[]) => loadProjectAccessMock(...args),
+}));
+
+// The SQL close-out command (20261117000000) is the only writer of closure
+// columns: these tests check what the route sends it.
+vi.mock("@/lib/grants/award-handoff-server", () => ({
+  runFundingAwardCloseoutCommand: (...args: unknown[]) => closeoutCommandMock(...args),
+  managedCloseout: vi.fn(),
 }));
 
 vi.mock("@/lib/projects/rtp-posture-writeback", () => ({
@@ -128,6 +136,7 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     invoicesEqSecondMock.mockResolvedValue({ data: [], error: null });
     milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     milestonesInsertMock.mockResolvedValue({ error: null });
+    closeoutCommandMock.mockResolvedValue({ outcome: "done", result: { status: "closed", closedAt: "2026-11-17T03:00:00.000Z", reopenedAt: "2026-11-17T03:00:00.000Z" } });
     rebuildProjectRtpPostureMock.mockResolvedValue({
       posture: { status: "funded", pipelineStatus: "funded" },
       updatedAt: "2026-07-29T12:00:00.000Z",
@@ -281,25 +290,13 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     const json = await response.json();
     expect(json.closureBasis).toBe("earned_coverage");
 
-    const patch = lastUpdatePatch();
-    expect(patch.spending_status).toBe("fully_spent");
-    expect(patch.closure_basis).toBe("earned_coverage");
-    expect(patch.closed_by).toBe(USER_ID);
-
-    // Not just the status: the milestone and the posture rebuild are the rest of
-    // the contract, and a second way to close an award that skipped them would
-    // put the product back where it started.
-    expect(milestonesInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        milestone_type: "closeout",
-        status: "complete",
-        // `closeoutNote`, not `notes`: one becomes the milestone's summary, the
-        // other is a column on the award. They were briefly the same field,
-        // which meant editing an award's notes while closing it wrote a
-        // compliance sign-off the planner never composed.
-        summary: "Final invoice package signed.",
-      })
+    // The command closes the award and files the milestone in one transaction.
+    // `closeoutNote`, not `notes`, becomes the milestone's summary.
+    expect(closeoutCommandMock).toHaveBeenCalledWith(
+      expect.objectContaining({ actorId: USER_ID, awardId: AWARD_ID, event: "earned_coverage", note: "Final invoice package signed." })
     );
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+    expect(milestonesInsertMock).not.toHaveBeenCalled();
     expect(rebuildProjectRtpPostureMock).toHaveBeenCalledTimes(1);
   });
 
@@ -371,10 +368,10 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     const json = await response.json();
     expect(json.closureBasis).toBe("recorded_on_import");
 
-    const patch = lastUpdatePatch();
-    expect(patch.spending_status).toBe("fully_spent");
-    expect(patch.closure_basis).toBe("recorded_on_import");
-    expect(patch.closure_note).toContain("Closed by the county");
+    expect(closeoutCommandMock).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "recorded_on_import", note: expect.stringContaining("Closed by the county") })
+    );
+    expect(awardUpdateMock).not.toHaveBeenCalled();
 
     // A "Closeout / complete" milestone is a compliance sign-off on the
     // project's timeline, and nobody performed one — the workspace stated that
@@ -449,18 +446,17 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     expect(json.status).toBe("reopened");
     expect(json.priorClosureBasis).toBe("recorded_on_import");
 
-    const patch = lastUpdatePatch();
-    expect(patch.spending_status).toBe("delayed");
-    // Cleared, because the award is no longer closed and the schema's coherence
-    // CHECK requires these to move together.
-    expect(patch.closure_basis).toBeNull();
-    expect(patch.closed_at).toBeNull();
-    expect(patch.closed_by).toBeNull();
-    expect(patch.closure_note).toBeNull();
-    // Kept, because a re-open that erased the fact a close-out happened would be
-    // the same falsification pointing the other way.
-    expect(patch.reopened_by).toBe(USER_ID);
-    expect(patch.reopen_reason).toContain("de-obligated");
+    // The command clears the closure and keeps the reopen's reason, author and
+    // date (proved on a live stack in award-reimbursement-custody-rls.test.ts).
+    expect(closeoutCommandMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: USER_ID,
+        event: "reopen",
+        note: "Funder de-obligated the final $200k.",
+        reopenSpendingStatus: "delayed",
+      })
+    );
+    expect(awardUpdateMock).not.toHaveBeenCalled();
 
     expect(mockAudit.info).toHaveBeenCalledWith(
       "funding_award_reopened",

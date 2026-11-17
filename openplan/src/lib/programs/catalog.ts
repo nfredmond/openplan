@@ -103,6 +103,7 @@ export const FUNDING_AWARD_SPENDING_STATUS_OPTIONS = [
  */
 export const FUNDING_AWARD_CLOSURE_BASIS_OPTIONS = [
   { value: "earned_coverage", label: "Closed out on invoice coverage" },
+  { value: "reconciled_with_balance", label: "Closed with balance released" },
   { value: "recorded_on_import", label: "Recorded as closed on import" },
   { value: "unrecorded_legacy", label: "Closure basis not recorded" },
 ] as const;
@@ -249,14 +250,16 @@ export function formatFundingAwardClosureBasisLabel(value: string | null | undef
 export function describeFundingAwardClosureBasis(value: string | null | undefined): string {
   if (value === "earned_coverage") {
     // The milestone is deliberately NOT claimed here. `closure_basis` records
-    // one thing — that coverage was verified — and the close-out's milestone
-    // insert is a separate write that `recordEarnedFundingAwardCloseout` logs a
-    // warning for and carries on from, so an `earned_coverage` row can exist
-    // with no milestone behind it. Asserting the milestone from the basis alone
-    // would state, as fact, a write nobody heard back about — and would
-    // contradict the close-out confirmation in the same panel, which says in so
-    // many words that it does not report on that write.
+    // one thing, that coverage was verified. Awards closed before 20261117000000
+    // filed the milestone as a separate write that could fail after the close,
+    // and a close after a reopen keeps the first milestone rather than filing a
+    // new one, so an `earned_coverage` row can exist with no milestone behind
+    // it from this close-out.
     return "Paid invoices covered the full awarded amount when this award was closed out: a finding from the reimbursement register rather than an assertion.";
+  }
+
+  if (value === "reconciled_with_balance") {
+    return "The award finished under its ceiling. Every linked request was paid or rejected, and the unclaimed balance was recorded as released with a written note.";
   }
 
   if (value === "recorded_on_import") {
@@ -280,6 +283,7 @@ export function fundingAwardClosureBasisTone(
   value: string | null | undefined
 ): "info" | "success" | "warning" | "danger" | "neutral" {
   if (value === "earned_coverage") return "success";
+  if (value === "reconciled_with_balance") return "success";
   if (value === "recorded_on_import") return "info";
   if (value === "unrecorded_legacy") return "warning";
   return "neutral";

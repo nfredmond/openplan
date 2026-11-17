@@ -244,7 +244,6 @@ async function main() {
       invoiceNumber,
       consultantName: 'Nat Ford Planning',
       billingBasis: 'time_and_materials',
-      status: 'submitted',
       invoiceDate: new Date().toISOString().slice(0, 10),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       amount: 140000,
@@ -257,6 +256,14 @@ async function main() {
       throw new Error(`RTP funding invoice creation failed: ${invoiceResult.status} ${JSON.stringify(invoiceResult.data)}`);
     }
     ids.invoiceId = invoiceResult.data.invoice?.id ?? null;
+    // Saved as a draft (migration 20261117000100), then submitted.
+    const submitResult = await appFetch(`/api/invoicing/invoices/${ids.invoiceId}`, {
+      workspaceId: ids.workspaceId,
+      status: 'submitted',
+    }, 'PATCH');
+    if (submitResult.status !== 200) {
+      throw new Error(`RTP funding invoice submission failed: ${submitResult.status} ${JSON.stringify(submitResult.data)}`);
+    }
     notes.push('Seeded funding profile, opportunity, award, and reimbursement packet for the linked RTP project.');
 
     const reportResult = await appFetch('/api/reports', {
@@ -463,9 +470,18 @@ async function main() {
     notes.push('Production registry current-packet link landed on the packet release-review anchor in report detail.');
     await screenshot('prod-rtp-release-review-03-report-detail');
 
+    // Paid comes only after approval, with the payment date (20261117000100).
+    const approveResult = await appFetch(`/api/invoicing/invoices/${ids.invoiceId}`, {
+      workspaceId: ids.workspaceId,
+      status: 'approved_for_payment',
+    }, 'PATCH');
+    if (approveResult.status !== 200) {
+      throw new Error(`RTP funding invoice approval failed: ${approveResult.status} ${JSON.stringify(approveResult.data)}`);
+    }
     const invoicePatchResult = await appFetch(`/api/invoicing/invoices/${ids.invoiceId}`, {
       workspaceId: ids.workspaceId,
       status: 'paid',
+      paidDate: new Date().toISOString().slice(0, 10),
     }, 'PATCH');
     if (invoicePatchResult.status !== 200) {
       throw new Error(`RTP funding invoice patch failed: ${invoicePatchResult.status} ${JSON.stringify(invoicePatchResult.data)}`);

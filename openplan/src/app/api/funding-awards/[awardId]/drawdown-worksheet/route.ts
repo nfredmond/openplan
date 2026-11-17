@@ -23,6 +23,7 @@ import { loadProjectAccess } from "@/lib/programs/api";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { calendarDayOf, loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 
 /**
@@ -67,13 +68,19 @@ type RouteContext = {
   params: Promise<{ awardId: string }>;
 };
 
-const AWARD_SELECT = "id, workspace_id, project_id, title, awarded_amount, match_amount, match_posture, latest_handoff_revision_id, current_handoff_revision_id, currency_code";
+const AWARD_SELECT = "id, workspace_id, project_id, title, awarded_amount, match_amount, match_posture, latest_handoff_revision_id, current_handoff_revision_id, currency_code, obligated_on, spending_status, closure_basis, closed_at, closure_note, closure_released_amount";
 
 type AwardRow = DrawdownAwardLike & {
   id: string;
   workspace_id: string;
   project_id: string;
   title: string | null;
+  obligated_on?: string | null;
+  spending_status?: string | null;
+  closure_basis?: string | null;
+  closed_at?: string | null;
+  closure_note?: string | null;
+  closure_released_amount?: number | string | null;
 };
 
 /** The award title as a safe download filename: `reimbursement-worksheet-corridor-study.pdf`. */
@@ -197,7 +204,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     let invoiceResult = await readInvoices(DRAWDOWN_INVOICE_COLUMNS);
 
     if (invoiceResult.error && looksLikePendingSchema(invoiceResult.error.message ?? "")) {
-      const retry = await readInvoices(DRAWDOWN_INVOICE_COLUMNS.replace(", paid_date", ""));
+      const retry = await readInvoices(DRAWDOWN_INVOICE_COLUMNS.replace(", paid_date, rejection_reason, resubmits_invoice_id", ""));
 
       if (!retry.error) {
         invoiceResult = retry;
@@ -306,9 +313,30 @@ export async function GET(request: NextRequest, context: RouteContext) {
       if (current.error || !current.data) return NextResponse.json({error:"Current award terms unavailable"},{status:503});
       assemblyNotices.push(`Recorded award ceiling, not authorization. Actual authorization: ${JSON.stringify(current.data.terms.authorization)}. Recipient acceptance: ${current.data.terms.acceptance}. Profile shown is guidance, not established applicability.`);
     }
+    // The close-out date on the workspace's calendar, not the server's UTC day.
+    const closedOn =
+      award.spending_status === "fully_spent" && award.closed_at
+        ? calendarDayOf(award.closed_at, (await loadWorkspaceCalendar(supabase, award.workspace_id)).timeZone)
+        : null;
     const html = buildReimbursementWorksheetHtml({
       workspace: { name: workspaceRow?.name ?? null },
-      award: { title: award.title, projectName: access.project.name },
+      award: {
+        title: award.title,
+        projectName: access.project.name,
+        obligatedOn: award.obligated_on ?? null,
+        closure:
+          award.spending_status === "fully_spent"
+            ? {
+                basis: award.closure_basis ?? null,
+                closedOn,
+                note: award.closure_note ?? null,
+                releasedAmount:
+                  award.closure_released_amount === null || award.closure_released_amount === undefined
+                    ? null
+                    : Number(award.closure_released_amount),
+              }
+            : null,
+      },
       period: periodStart || periodEnd ? { start: periodStart ?? null, end: periodEnd ?? null } : null,
       ledger: ledgerResult.ledger,
       profile: profileResolution.binding,

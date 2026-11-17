@@ -632,7 +632,7 @@ export default async function ProjectDetailPage({
   const fundingAwardsResult = await supabase
     .from("funding_awards")
     .select(
-      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance", {count:"exact"}
+      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, obligated_on, spending_status, closure_basis, closed_at, closure_note, closure_released_amount, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance", {count:"exact"}
     )
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false });

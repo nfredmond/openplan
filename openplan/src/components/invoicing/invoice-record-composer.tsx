@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/guided-flow";
 import type { ReimbursementProfileBinding } from "@/lib/invoicing/reimbursement-profile-binding";
 import { formatMoney } from "@/lib/money/format";
+import { browserToday } from "@/lib/time/workspace-calendar";
 
 type ProjectOption = {
   id: string;
@@ -37,6 +38,12 @@ type InvoiceRecordComposerProps = {
   defaultFundingAwardId?: string | null;
   defaultInvoiceNumber?: string;
   defaultAmount?: string;
+  /**
+   * A resubmission of a rejected request on the same award (20261117000100).
+   * The composer opens on its own, dated today, and links the new request to
+   * the one it replaces.
+   */
+  resubmits?: { invoiceId: string; invoiceNumber: string } | null;
   titleLabel?: string;
   description?: string;
   /**
@@ -61,7 +68,6 @@ type InvoiceValues = {
   invoiceNumber: string;
   consultantName: string;
   billingBasis: string;
-  status: string;
   projectId: string;
   fundingAwardId: string;
   submittedTo: string;
@@ -84,15 +90,6 @@ const BILLING_BASIS_OPTIONS = [
   { value: "cost_plus", label: "Cost plus" },
   { value: "milestone", label: "Milestone" },
   { value: "progress_payment", label: "Progress payment" },
-];
-
-const INVOICE_STATUS_OPTIONS = [
-  { value: "draft", label: "Draft" },
-  { value: "internal_review", label: "Internal review" },
-  { value: "submitted", label: "Submitted" },
-  { value: "approved_for_payment", label: "Approved for payment" },
-  { value: "paid", label: "Paid" },
-  { value: "rejected", label: "Rejected" },
 ];
 
 const SUPPORTING_DOCS_OPTIONS = [
@@ -128,7 +125,7 @@ function readInvoiceAwardTerms(value:unknown, workspaceId:string, selection:Pick
 
 /** Changed defaults and scope start a new form with no inherited review. */
 export function InvoiceRecordComposer(props:InvoiceRecordComposerProps) {
-  const scope=JSON.stringify([props.workspaceId,props.canWrite,props.defaultProjectId??"",props.defaultFundingAwardId??"",props.defaultInvoiceNumber??"",props.defaultAmount??"",props.reimbursementProfile?.defaultPostureId??"",props.projects.map((project)=>project.id),props.fundingAwards?.map((award)=>[award.id,award.projectId])??[]]);
+  const scope=JSON.stringify([props.workspaceId,props.canWrite,props.defaultProjectId??"",props.defaultFundingAwardId??"",props.defaultInvoiceNumber??"",props.defaultAmount??"",props.resubmits?.invoiceId??"",props.reimbursementProfile?.defaultPostureId??"",props.projects.map((project)=>project.id),props.fundingAwards?.map((award)=>[award.id,award.projectId])??[]]);
   return <InvoiceRecordComposerSession key={scope} {...props}/>;
 }
 
@@ -167,6 +164,7 @@ function InvoiceRecordComposerSession({
   defaultFundingAwardId,
   defaultInvoiceNumber,
   defaultAmount,
+  resubmits = null,
   titleLabel = "Log a consulting invoice record",
   description = "Capture consulting invoice records with retention, backup posture, and workspace or project linkage.",
   reimbursementProfile = null,
@@ -242,7 +240,6 @@ function InvoiceRecordComposerSession({
           },
           { name: "consultantName", label: "a consultant" },
           { name: "billingBasis", label: "a billing basis" },
-          { name: "status", label: "a status" },
         ],
         render: (flow) => (
           <>
@@ -264,15 +261,12 @@ function InvoiceRecordComposerSession({
               </select>
             </GuidedFlowRow>
 
-            <GuidedFlowRow flow={flow} name="status" label="Where is it up to?">
-              <select className={selectClassName} {...flow.text("status")}>
-                {INVOICE_STATUS_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </GuidedFlowRow>
+            {resubmits ? (
+              <p className="text-xs text-muted-foreground">
+                Resubmits {resubmits.invoiceNumber}, which the funder rejected. A returned request goes back with a revised date and a new number.
+              </p>
+            ) : null}
+            <p className="text-xs text-muted-foreground">Saved as a draft. Move it forward from the register.</p>
           </>
         ),
       },
@@ -557,7 +551,7 @@ function InvoiceRecordComposerSession({
         ),
       },
     ],
-    [fundingAwards, projects, reimbursementProfile, invalidateSelection, moneyFor, renderAwardTermsReview]
+    [fundingAwards, projects, reimbursementProfile, invalidateSelection, moneyFor, renderAwardTermsReview, resubmits]
   );
 
   const flow = useGuidedFlow<InvoiceValues>({
@@ -568,7 +562,6 @@ function InvoiceRecordComposerSession({
       invoiceNumber: defaultInvoiceNumber ?? "",
       consultantName: "",
       billingBasis: "time_and_materials",
-      status: "draft",
       projectId: defaultProjectId ?? "",
       fundingAwardId: defaultFundingAwardId ?? "",
       submittedTo: "",
@@ -578,7 +571,7 @@ function InvoiceRecordComposerSession({
       reimbursementPosture: reimbursementProfile?.defaultPostureId ?? "",
       periodStart: "",
       periodEnd: "",
-      invoiceDate: "",
+      invoiceDate: resubmits ? browserToday() : "",
       dueDate: "",
       notes: "",
     },
@@ -617,7 +610,9 @@ function InvoiceRecordComposerSession({
           invoiceNumber: values.invoiceNumber,
           consultantName: values.consultantName,
           billingBasis: values.billingBasis,
-          status: values.status,
+          // Always a draft: the database creates no request in a later status.
+          status: "draft",
+          resubmitsInvoiceId: resubmits?.invoiceId,
           periodStart: values.periodStart || undefined,
           periodEnd: values.periodEnd || undefined,
           invoiceDate: values.invoiceDate || undefined,
@@ -638,7 +633,7 @@ function InvoiceRecordComposerSession({
       });
 
       const payload = (await response.json().catch(() => null)) as
-        | { error?: string; details?: string }
+        | { error?: string; details?: string; warnings?: Array<{ message?: string }> }
         | null;
       if (!response.ok) {
         throw new Error(
@@ -647,10 +642,20 @@ function InvoiceRecordComposerSession({
       }
 
       if(!active.current)return;
-      setMessage("Invoice record saved.");
+      const warnings = (payload?.warnings ?? []).map((warning) => warning.message).filter(Boolean);
+      setMessage(["Invoice record saved.", ...warnings].join(" "));
       router.refresh();
     },
   });
+
+  // "Resubmit" lands here with the composer prefilled; open it once.
+  const openedForResubmit = useRef(false);
+  useEffect(() => {
+    if (!resubmits || !canWrite || openedForResubmit.current) return;
+    openedForResubmit.current = true;
+    invalidateSelection();
+    flow.open();
+  }, [resubmits, canWrite, flow, invalidateSelection]);
 
   const selectedAwardId=flow.values.fundingAwardId; const selectedProjectId=flow.values.projectId;
   const requestKey=selectionKey(flow.values); const flowOpen=flow.isOpen;

@@ -50,6 +50,7 @@ type AwardValues = {
   isAlreadyClosed: boolean;
   closureNote: string;
   obligationDueAt: string;
+  obligatedOn: string;
   expenditureDeadlineAt: string;
   notes: string;
 };
@@ -256,6 +257,7 @@ export function ProjectFundingAwardCreator({
         hint: "All optional.",
         fields: [
           { name: "obligationDueAt", label: "an obligation date" },
+          { name: "obligatedOn", label: "the date it was obligated" },
           { name: "expenditureDeadlineAt", label: "an expenditure deadline" },
           { name: "notes", label: "notes" },
         ],
@@ -263,6 +265,15 @@ export function ProjectFundingAwardCreator({
           <>
             <GuidedFlowRow flow={flow} name="obligationDueAt" label="Obligation due">
               <Input {...flow.text("obligationDueAt")} type="datetime-local" />
+            </GuidedFlowRow>
+
+            <GuidedFlowRow
+              flow={flow}
+              name="obligatedOn"
+              label="Obligated on"
+              hint="The date of the executed agreement, E-76 authorization or allocation, as your program uses. Costs before it are generally not reimbursable."
+            >
+              <Input {...flow.text("obligatedOn")} type="date" />
             </GuidedFlowRow>
 
             {/*
@@ -308,6 +319,7 @@ export function ProjectFundingAwardCreator({
       isAlreadyClosed: false,
       closureNote: "",
       obligationDueAt: "",
+      obligatedOn: "",
       expenditureDeadlineAt: "",
       notes: "",
     },
@@ -326,6 +338,7 @@ export function ProjectFundingAwardCreator({
           matchAmount: values.matchAmount ? Number(values.matchAmount) : 0,
           matchPosture: values.matchPosture,
           obligationDueAt: toIsoDateTime(values.obligationDueAt),
+          obligatedOn: values.obligatedOn || undefined,
           expenditureDeadlineAt: toIsoDateTime(values.expenditureDeadlineAt),
           // The two are mutually exclusive at the API — sending both is a 400,
           // because they are two statements about the same field.

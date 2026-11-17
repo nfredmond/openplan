@@ -12,6 +12,7 @@ import {
   FUNDING_AWARD_RISK_FLAG_OPTIONS,
 } from "@/lib/programs/catalog";
 import { calendarDayOf, loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
+import { actOnFundingAwardClosure, type CloseableFundingAward } from "./[awardId]/award-closure";
 
 const FUNDING_AWARD_MATCH_POSTURES = FUNDING_AWARD_MATCH_POSTURE_OPTIONS.map((option) => option.value) as [
   string,
@@ -84,6 +85,8 @@ const createFundingAwardSchema = z.object({
    * on a planner's list twice.
    */
   expenditureDeadlineAt: z.string().datetime().optional(),
+  /** The date the award was obligated, authorized or allocated. Never derived. */
+  obligatedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   spendingStatus: z.enum(FUNDING_AWARD_OPEN_SPENDING_STATUSES).optional(),
   riskFlag: z.enum(FUNDING_AWARD_RISK_FLAGS).optional(),
   notes: z.string().trim().max(4000).optional(),
@@ -92,7 +95,7 @@ const createFundingAwardSchema = z.object({
 
 /** The columns every award response echoes back. */
 const FUNDING_AWARD_COLUMNS =
-  "id, workspace_id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, risk_flag, notes, closure_basis, closed_at, closed_by, closure_note, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
+  "id, workspace_id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, obligated_on, spending_status, risk_flag, notes, closure_basis, closed_at, closed_by, closure_note, closure_released_amount, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("funding-awards.list", request);
@@ -229,7 +232,6 @@ export async function POST(request: NextRequest) {
     }
 
     const importedClosure = parsed.data.recordClosedOnImport ?? null;
-    const importedClosureAtIso = importedClosure ? new Date().toISOString() : null;
 
     const { data: award, error } = await supabase
       .from("funding_awards")
@@ -248,13 +250,8 @@ export async function POST(request: NextRequest) {
         // apart: the schema's coherence CHECK refuses `fully_spent` with no
         // basis, so an asserted closure carries its own account or the insert
         // fails loudly instead of producing a closure nobody can explain.
-        spending_status: importedClosure
-          ? FUNDING_AWARD_CLOSED_SPENDING_STATUS
-          : parsed.data.spendingStatus ?? "not_started",
-        closure_basis: importedClosure ? "recorded_on_import" : null,
-        closed_at: importedClosureAtIso,
-        closed_by: importedClosure ? user.id : null,
-        closure_note: importedClosure ? importedClosure.note : null,
+        obligated_on: parsed.data.obligatedOn ?? null,
+        spending_status: parsed.data.spendingStatus ?? "not_started",
         risk_flag: parsed.data.riskFlag ?? "none",
         notes: parsed.data.notes?.trim() || null,
         created_by: user.id,
@@ -280,12 +277,39 @@ export async function POST(request: NextRequest) {
       durationMs: Date.now() - startedAt,
     });
 
+    // An award closed outside OpenPlan is created open and then closed by the
+    // close-out command, the only writer of closure columns (20261117000000).
+    // If the command refuses, the new award is removed so the planner is not
+    // left with an open record they never asked for. The imported closure
+    // keeps its own audit event: an award closed on someone's word is a
+    // different thing from one closed on verified coverage.
+    let importedClosedAt: unknown = null;
     if (importedClosure) {
-      // Its own event, distinct from creation and from
-      // `funding_award_closeout_completed`. An award that was born closed on
-      // someone's word is a materially different thing from one this product
-      // closed on verified coverage, and an audit trail that logs them under the
-      // same code loses exactly the distinction the row was just given.
+      const act = await actOnFundingAwardClosure({
+        supabase,
+        award: award as unknown as CloseableFundingAward,
+        userId: user.id,
+        event: "recorded_on_import",
+        note: importedClosure.note,
+        audit,
+      });
+      if (act.outcome === "refused") {
+        const removal = await supabase.from("funding_awards").delete().eq("id", award.id).select("id");
+        const removed = !removal.error && (removal.data?.length ?? 0) === 1;
+        if (!removed) {
+          audit.error("funding_award_import_closure_cleanup_failed", { awardId: award.id, message: removal.error?.message ?? "no row deleted" });
+        }
+        return NextResponse.json(
+          {
+            error: act.message,
+            details: !removed
+              ? "The award was created open and could not be removed; close it again or delete it."
+              : "The award was not created.",
+          },
+          { status: act.status }
+        );
+      }
+      importedClosedAt = act.result.closedAt ?? null;
       audit.info("funding_award_recorded_closed_on_import", {
         awardId: award.id,
         projectId: access.project.id,
@@ -293,7 +317,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         closureBasis: "recorded_on_import",
         closureNote: importedClosure.note,
-        closedAt: importedClosureAtIso,
+        closedAt: importedClosedAt,
       });
     }
 
@@ -361,7 +385,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         awardId: award.id,
-        award,
+        award: importedClosure
+          ? {
+              ...award,
+              spending_status: FUNDING_AWARD_CLOSED_SPENDING_STATUS,
+              closure_basis: "recorded_on_import",
+              closed_at: importedClosedAt,
+              closed_by: user.id,
+              closure_note: importedClosure.note,
+            }
+          : award,
         closureBasis: importedClosure ? "recorded_on_import" : null,
         // Said in the response, not only stored on the row, so a client cannot
         // report this outcome in the words it uses for an earned close-out.
