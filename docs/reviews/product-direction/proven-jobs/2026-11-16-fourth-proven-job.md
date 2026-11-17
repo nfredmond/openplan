@@ -141,7 +141,7 @@ From the record's own invoice entries, never from the product's totals:
 | Close out (route) | 422 coverage | 422 coverage (authorized) | 404 |
 | Download the worksheet | 200 | 200 | 404 |
 | Write the invoice table directly (PostgREST) | not tried | 0 rows | 0 rows |
-| Write `funding_awards` closure columns directly | **accepted** (KI-2026-11-16-134) | **accepted** | 0 rows |
+| Write `funding_awards` closure columns directly (awards with no handoff revision; a trigger guards awards that have one) | **accepted** (KI-2026-11-16-134) | **accepted** | 0 rows |
 
 The lead decides whether a member may close out an award. Today the route
 allows it by design (`programs.write`, the comment in

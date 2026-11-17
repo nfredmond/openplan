@@ -29,9 +29,9 @@ import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
  * for the same award printed "Not recorded". Both columns are NOT NULL
  * DEFAULT 0, so a zero cannot be told from an empty field.
  *
- * Blind category: a need deliberately saved as 0 also reads "Not recorded";
- * that is the same rule the worksheet's ledger applies to the award ceiling.
- * Managed (version-bound) awards keep their own unassessed rendering and are
+ * A need saved as 0 is a fact a planner typed and prints as $0.00 (review 88).
+ * The match column cannot tell a typed $0 from a blank one, so the award line
+ * says "$0.00 or not entered" instead of claiming either. Managed (version-bound) awards keep their own unassessed rendering and are
  * not exercised here.
  */
 
@@ -131,10 +131,16 @@ describe("the Funding tab says Not recorded for money nobody entered", () => {
     expect(cardValue("Still unfunded")).toBe("$100,000.00");
   });
 
-  it("prints a match nobody entered as not recorded, and a recorded match as money", () => {
+  it("prints a need saved as zero as $0.00, not as Not recorded", () => {
+    renderPanel({ need: 0 });
+    expect(cardValue("Funding need")).toBe("$0.00");
+    expect(cardValue("Still unfunded")).not.toBe("Not assessed");
+  });
+
+  it("says a zero match may be a typed $0 or a blank field, never only not recorded", () => {
     renderPanel({ need: null, matchAmount: "0.00", matchPosture: "partial" });
-    expect(awardLine()).toContain("Match not recorded");
-    expect(awardLine()).not.toContain("Match $0.00");
+    expect(awardLine()).toContain("Match $0.00 or not entered");
+    expect(awardLine()).not.toContain("not recorded");
   });
 
   it("says not required when the posture records that no match is needed", () => {

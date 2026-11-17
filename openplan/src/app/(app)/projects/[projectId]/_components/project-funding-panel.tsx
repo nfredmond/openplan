@@ -170,12 +170,12 @@ type ProjectFundingPanelProps = {
 
 /**
  * The award's match as a planner reads it. The column is NOT NULL DEFAULT 0, so
- * a zero cannot be told from a match nobody entered; the worksheet's ledger
- * reports that as "Not recorded", and this line says the same.
+ * a typed $0 match cannot be told from a match nobody entered, and this line
+ * says both are possible rather than calling a typed zero "not recorded".
  */
 function awardMatchText(amount: number | string | null | undefined, posture: string | null | undefined): string {
   if (Number(amount ?? 0) !== 0) return fmtCurrency(amount);
-  return posture === "not_required" ? "not required" : "not recorded";
+  return posture === "not_required" ? "not required" : "$0.00 or not entered";
 }
 
 export function ProjectFundingPanel({
@@ -281,7 +281,7 @@ export function ProjectFundingPanel({
             <div className="module-summary-card">
               <p className="module-summary-label">Funding need</p>
               {/* A need nobody entered is not a zero need (lane 84). */}
-              <p className="module-summary-value text-base leading-tight">{fundingStackSummary.comparableFunding || fundingStackSummary.hasTargetNeed ? fmtCurrency(fundingNeedAmount) : "Not recorded"}</p>
+              <p className="module-summary-value text-base leading-tight">{fundingStackSummary.comparableFunding || projectFundingProfile?.funding_need_amount != null ? fmtCurrency(fundingNeedAmount) : "Not recorded"}</p>
               <p className="module-summary-detail">Current project-level target need for funding stack planning.</p>
             </div>
             <div className="module-summary-card">
@@ -296,7 +296,7 @@ export function ProjectFundingPanel({
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Still unfunded</p>
-              <p className="module-summary-value text-base leading-tight">{fundingStackSummary.comparableFunding || fundingStackSummary.hasTargetNeed ? fmtCurrency(remainingFundingGap) : "Not assessed"}</p>
+              <p className="module-summary-value text-base leading-tight">{fundingStackSummary.comparableFunding || projectFundingProfile?.funding_need_amount != null ? fmtCurrency(remainingFundingGap) : "Not assessed"}</p>
               <p className="module-summary-detail">Gap still remaining after committed awards and likely pursued dollars.</p>
             </div>
             <div className="module-summary-card">
