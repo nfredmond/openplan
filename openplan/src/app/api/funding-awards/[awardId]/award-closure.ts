@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import {
+  runFundingAwardCloseoutCommand,
+  type FundingAwardCloseoutEvent,
+} from "@/lib/grants/award-handoff-server";
 import {
   summarizeBillingInvoiceRecords,
   type BillingInvoiceSummary,
 } from "@/lib/invoicing/invoice-records";
-import { FUNDING_AWARD_CLOSED_SPENDING_STATUS } from "@/lib/programs/catalog";
 import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
 import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
@@ -25,14 +27,13 @@ import { todayInWorkspace } from "@/lib/time/workspace-calendar";
  * the two functions below instead, so there is exactly one answer to "is this
  * covered" and exactly one act of closing.
  *
- * WHAT IS DELIBERATELY NOT HERE. The asserted, import-time closure — the
- * "recorded as closed on import" path — does not pass through
- * `recordEarnedFundingAwardCloseout`. It is a different act with a different
- * meaning, and giving it the earned function's side effects would file a
- * close-out milestone claiming a compliance sign-off that nobody performed.
- * Those writes live in the routes that own the intent, and they set
- * `closure_basis = 'recorded_on_import'` so the row itself carries the
- * difference.
+ * WHERE THE ACT HAPPENS. Since 20261117000000 the database refuses any change
+ * to an award's closure columns except inside `funding_award_closeout_command`
+ * (or the managed command for awards with conditions). The coverage numbers
+ * below explain a refusal before the command is called; the command repeats
+ * the arithmetic in SQL, inside the transaction that writes the close-out, and
+ * its answer is the one that counts. The asserted closure recorded on import
+ * runs through the same command and files no milestone.
  */
 
 /**
@@ -68,7 +69,7 @@ export type CloseableFundingAward = {
 
 /** The columns every read of an award-for-closure must select. */
 export const CLOSEABLE_FUNDING_AWARD_COLUMNS =
-  "id, workspace_id, project_id, title, latest_handoff_revision_id, current_handoff_revision_id, currency_code, awarded_amount, match_amount, match_posture, risk_flag, notes, spending_status, obligation_due_at, expenditure_deadline_at, closure_basis, closed_at, closed_by, closure_note, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
+  "id, workspace_id, project_id, title, latest_handoff_revision_id, current_handoff_revision_id, currency_code, awarded_amount, match_amount, match_posture, risk_flag, notes, spending_status, obligation_due_at, expenditure_deadline_at, closure_basis, closed_at, closed_by, closure_note, closure_released_amount, obligated_on, reopened_at, reopened_by, reopen_reason, created_at, updated_at";
 
 export type FundingAwardAuditLogger = {
   info: (event: string, context?: Record<string, unknown>) => void;
@@ -150,7 +151,15 @@ function buildCloseoutInvoiceCoverageBreakdown(
 
 export type FundingAwardCoverageEvaluation =
   | { outcome: "read_failed"; message: string; code: string | null }
-  | { outcome: "evaluated"; earned: boolean; coverage: FundingAwardCloseoutCoverage };
+  | {
+      outcome: "evaluated";
+      /** Paid covers a positive ceiling and no linked request is still open. */
+      earned: boolean;
+      /** Paid is below a positive ceiling and no linked request is still open. */
+      reconcilable: boolean;
+      openCount: number;
+      coverage: FundingAwardCloseoutCoverage;
+    };
 
 /**
  * Whether this award's paid invoices have earned it a close-out, and the numbers
@@ -192,9 +201,15 @@ export async function evaluateFundingAwardCloseoutCoverage({
   const awardedAmount = toFundingAwardNumber(award.awarded_amount);
   const paidAmount = invoiceSummary.paidNetAmount;
 
+  // Draft, in internal review, submitted or approved for payment: the SQL
+  // command refuses every close while any of these is linked.
+  const openCount = invoiceSummary.draftCount + invoiceSummary.submittedCount;
+
   return {
     outcome: "evaluated",
-    earned: awardedAmount > 0 && paidAmount >= awardedAmount,
+    earned: awardedAmount > 0 && paidAmount >= awardedAmount && openCount === 0,
+    reconcilable: awardedAmount > 0 && paidAmount < awardedAmount && openCount === 0,
+    openCount,
     coverage: {
       awardedAmount,
       paidAmount,
@@ -205,172 +220,67 @@ export async function evaluateFundingAwardCloseoutCoverage({
   };
 }
 
-export type EarnedCloseoutResult =
-  | { outcome: "write_failed"; message: string; code: string | null }
-  | { outcome: "no_rows_matched" }
-  | { outcome: "closed"; closedAt: string };
+export type FundingAwardClosureActResult =
+  | { outcome: "done"; result: Record<string, unknown> }
+  | { outcome: "refused"; status: 403 | 404 | 409 | 422 | 503; message: string; detail: string | null };
 
 /**
- * Perform the close-out an award has earned: mark it fully spent with the
- * earned basis, file the close-out milestone, rebuild the project's RTP posture.
- *
- * Callers must have evaluated coverage first — this function does not re-check
- * it, because doing so would read the invoices twice per request and invite the
- * two reads to disagree across the gap between them. The coverage numbers are
- * passed in so the audit record states the figures the decision was actually
- * made on.
- *
- * The status write records WHO closed it and WHEN alongside the basis, in one
- * statement. That is not bookkeeping for its own sake: the schema's coherence
- * CHECK refuses `fully_spent` with no basis, so a future writer that sets the
- * status and forgets the provenance fails loudly at the database instead of
- * quietly producing a closure nobody can account for.
- *
- * The milestone and the posture rebuild are reported as warnings rather than
- * failures, and the returned result deliberately says nothing about them: both
- * happen AFTER the award is already closed, and answering "close-out failed"
- * because a milestone insert failed would tell the caller to retry an act that
- * has already happened. The routes disclose that gap to the planner rather than
- * claiming two writes they did not hear back about.
+ * Close, reconcile, record as closed on import, or reopen an award with no
+ * handoff revision. Every one of these acts runs in the SQL command
+ * `funding_award_closeout_command` (20261117000000): the database refuses a
+ * change to the closure columns from anywhere else, so this is the only path.
+ * The command re-reads the requests inside its transaction, refuses while any
+ * is open, checks paid coverage, files the close-out milestone on the
+ * workspace's calendar day and writes the closure receipt. The posture rebuild
+ * stays here because it reads through the caller's session.
  */
-export async function recordEarnedFundingAwardCloseout({
+export async function actOnFundingAwardClosure({
   supabase,
   award,
   userId,
-  notes,
-  coverage,
+  event,
+  note,
+  reopenSpendingStatus,
   audit,
   now = () => new Date(),
 }: {
   supabase: FundingAwardClosureSupabaseLike;
   award: CloseableFundingAward;
   userId: string;
-  notes: string | null;
-  coverage: FundingAwardCloseoutCoverage;
+  event: FundingAwardCloseoutEvent;
+  note: string | null;
+  reopenSpendingStatus?: string | null;
   audit: FundingAwardAuditLogger;
   now?: () => Date;
-}): Promise<EarnedCloseoutResult> {
-  const closedAt = now();
-  const closedAtIso = closedAt.toISOString();
-
-  const updateResult = await supabase
-    .from("funding_awards")
-    .update({
-      spending_status: FUNDING_AWARD_CLOSED_SPENDING_STATUS,
-      closure_basis: "earned_coverage",
-      closed_at: closedAtIso,
-      closed_by: userId,
-      closure_note: notes,
-    })
-    .eq("id", award.id)
-    .eq("workspace_id", award.workspace_id)
-    .select("id")
-    .maybeSingle();
-
-  if (isWriteFailure(updateResult.error)) {
-    audit.error("funding_award_closeout_update_failed", {
-      awardId: award.id,
-      message: updateResult.error?.message ?? "unknown",
-      code: updateResult.error?.code ?? null,
-    });
-    return {
-      outcome: "write_failed",
-      message: updateResult.error?.message ?? "unknown",
-      code: updateResult.error?.code ?? null,
-    };
+}): Promise<FundingAwardClosureActResult> {
+  const calendar = await todayInWorkspace(supabase, award.workspace_id, now());
+  if (calendar.readError) {
+    audit.warn("funding_award_closeout_calendar_unreadable", { awardId: award.id, message: calendar.readError });
   }
-
-  // The caller read this exact row through its own client and passed every
-  // membership and role check before getting here, so zero matched rows is not
-  // "no such award" — it is the database refusing a write the application
-  // believed was allowed. The routes answer it as the disclosed 500 that
-  // write-outcome.ts defines for `targetWasVerified: true`.
-  if (writeMatchedNoRows(updateResult)) {
-    audit.error("funding_award_closeout_update_matched_no_rows", {
-      awardId: award.id,
-      workspaceId: award.workspace_id,
-    });
-    return { outcome: "no_rows_matched" };
+  const command = await runFundingAwardCloseoutCommand({
+    actorId: userId,
+    awardId: award.id,
+    event,
+    note,
+    calendarDate: calendar.today,
+    reopenSpendingStatus: reopenSpendingStatus ?? null,
+  });
+  if (command.outcome === "refused") {
+    audit.warn("funding_award_closure_refused", { awardId: award.id, event, status: command.status, message: command.message });
+    return command;
   }
-
-  const { data: existingCloseoutMilestones, error: milestoneLookupError } = await supabase
-    .from("project_milestones")
-    .select("id")
-    .eq("project_id", award.project_id)
-    .eq("funding_award_id", award.id)
-    .eq("milestone_type", "closeout")
-    .limit(1);
-
-  if (milestoneLookupError) {
-    audit.warn("funding_award_closeout_milestone_lookup_failed", {
-      awardId: award.id,
-      projectId: award.project_id,
-      message: milestoneLookupError.message,
-      code: milestoneLookupError.code ?? null,
-    });
+  if (command.result.status !== "already_closed") {
+    await rebuildFundingAwardProjectPosture({ supabase, award, audit });
   }
-
-  const hasExistingCloseoutMilestone = (existingCloseoutMilestones?.length ?? 0) > 0;
-
-  if (hasExistingCloseoutMilestone) {
-    // An award that was closed, re-opened, and closed again already carries the
-    // milestone from the first close-out. It is NOT re-filed and NOT rewritten:
-    // it records that a close-out happened on a date, which is still true, and
-    // editing it to today's date would erase that. The re-open columns on the
-    // award are what carry the fuller story.
-    audit.info("funding_award_closeout_milestone_already_exists", {
-      awardId: award.id,
-      projectId: award.project_id,
-      closedAt: closedAtIso,
-    });
-  } else {
-    // The milestone is dated on the workspace's calendar day, not the server's.
-    const calendar = await todayInWorkspace(supabase, award.workspace_id, closedAt);
-    if (calendar.readError) {
-      audit.warn("funding_award_closeout_calendar_unreadable", { awardId: award.id, message: calendar.readError });
-    }
-    const closedAtDate = calendar.today;
-    const { error: milestoneError } = await supabase.from("project_milestones").insert({
-      project_id: award.project_id,
-      funding_award_id: award.id,
-      title: `Closeout: ${award.title}`,
-      summary: notes ?? "Auto-generated compliance sign-off on 100% invoice coverage.",
-      milestone_type: "closeout",
-      phase_code: "closeout",
-      status: "complete",
-      target_date: closedAtDate,
-      actual_date: closedAtDate,
-      created_by: userId,
-    });
-
-    if (milestoneError) {
-      audit.warn("funding_award_closeout_milestone_failed", {
-        awardId: award.id,
-        projectId: award.project_id,
-        message: milestoneError.message,
-        code: milestoneError.code ?? null,
-      });
-    } else {
-      audit.info("funding_award_closeout_milestone_created", {
-        awardId: award.id,
-        projectId: award.project_id,
-        closedAt: closedAtIso,
-      });
-    }
-  }
-
-  await rebuildFundingAwardProjectPosture({ supabase, award, audit });
-
-  audit.info("funding_award_closeout_completed", {
+  audit.info("funding_award_closure_recorded", {
     awardId: award.id,
     projectId: award.project_id,
     userId,
-    closureBasis: "earned_coverage",
-    awardedAmount: coverage.awardedAmount,
-    paidAmount: coverage.paidAmount,
+    event,
+    status: command.result.status ?? null,
+    closureReceiptId: command.result.closureReceiptId ?? null,
   });
-
-  return { outcome: "closed", closedAt: closedAtIso };
+  return command;
 }
 
 /**

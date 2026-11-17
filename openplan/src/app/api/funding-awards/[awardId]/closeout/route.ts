@@ -6,24 +6,26 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import { noRowsMatchedResponse } from "@/lib/http/write-outcome";
 import { FUNDING_AWARD_CLOSED_SPENDING_STATUS } from "@/lib/programs/catalog";
 import {
   CLOSEABLE_FUNDING_AWARD_COLUMNS,
+  actOnFundingAwardClosure,
   evaluateFundingAwardCloseoutCoverage,
-  recordEarnedFundingAwardCloseout,
   type CloseableFundingAward,
 } from "../award-closure";
 
 /**
- * The EARNED close-out: an award becomes fully spent because its paid invoices
- * cover the awarded amount, verified here rather than asserted by the caller.
+ * The close-out an award reaches through its requests: EARNED, when paid
+ * requests cover the awarded amount, or RECONCILED, when the award finished
+ * under its ceiling and the rest is released with a written note. Either way
+ * every linked request must be paid or rejected first.
  *
  * The coverage arithmetic and the act of closing both live in `../award-closure`
  * so that this route and the PATCH on the award itself cannot drift into two
  * different answers to "is this covered" or two different ideas of what closing
- * does. The asserted, import-time closure is a different act and is NOT reachable
- * from here — see the PATCH route.
+ * does. The SQL command repeats the checks inside its transaction. The asserted,
+ * import-time closure is a different act and is NOT reachable from here; see the
+ * PATCH route.
  */
 
 const awardIdSchema = z.object({
@@ -34,6 +36,10 @@ const closeoutPayloadSchema = z
   .object({
     expectedCurrentRevisionId:z.string().uuid().optional(),
     notes: z.string().trim().max(4000).optional(),
+    // earned_coverage (default): paid requests cover the ceiling.
+    // reconciled_with_balance: the award finished under its ceiling; the rest
+    // is released. Needs a note.
+    basis: z.enum(["earned_coverage", "reconciled_with_balance"]).optional(),
   })
   .optional();
 
@@ -118,7 +124,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    const basis = parsedPayload.data?.basis ?? "earned_coverage";
+
     if (closeableAward.latest_handoff_revision_id) {
+      if (basis !== "earned_coverage") return NextResponse.json({error:"An award with award conditions closes on paid coverage through its version-bound close-out."},{status:422});
       if (readAssistantExecutionSource(request)!=="manual") return NextResponse.json({error:"Managed closeout requires a manual operation; no registered agent action covers it."},{status:403});
       return managedCloseout({actorId:user.id,awardId:closeableAward.id,expectedRevisionId:parsedPayload.data?.expectedCurrentRevisionId,event:"earned_coverage",note:notes});
     }
@@ -171,7 +180,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    if (!evaluation.earned) {
+    if (evaluation.openCount > 0) {
+      audit.warn("funding_award_closeout_blocked_open_requests", {
+        awardId: closeableAward.id,
+        openCount: evaluation.openCount,
+      });
+      return NextResponse.json(
+        {
+          error: "Close-out needs every linked request paid or rejected",
+          details: `${evaluation.openCount} linked ${evaluation.openCount === 1 ? "request is" : "requests are"} still a draft, in review, submitted or approved for payment. Mark each one paid or rejected, or unlink a draft that will not be sent.`,
+          openCount: evaluation.openCount,
+          coverage,
+        },
+        { status: 422 }
+      );
+    }
+
+    if (basis === "earned_coverage" && !evaluation.earned) {
       audit.warn("funding_award_closeout_blocked", {
         awardId: closeableAward.id,
         projectId: closeableAward.project_id,
@@ -188,36 +213,73 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const closeout = await recordEarnedFundingAwardCloseout({
+    if (basis === "reconciled_with_balance" && !evaluation.reconcilable) {
+      return NextResponse.json(
+        {
+          error:
+            coverage.awardedAmount > 0
+              ? "Paid requests reach the award ceiling; use the ordinary close-out"
+              : "Record a positive award ceiling before closing with a balance released",
+          coverage,
+        },
+        { status: 422 }
+      );
+    }
+
+    if (basis === "reconciled_with_balance" && !notes) {
+      return NextResponse.json(
+        { error: "Closing with a balance released needs a note saying why the rest is not claimed", coverage },
+        { status: 422 }
+      );
+    }
+
+    if (basis === "earned_coverage" && coverage.paidAmount > coverage.awardedAmount && !notes) {
+      return NextResponse.json(
+        {
+          error: "Paid requests exceed the award ceiling; state the basis (for example, an amendment) in the close-out note",
+          coverage,
+        },
+        { status: 422 }
+      );
+    }
+
+    const act = await actOnFundingAwardClosure({
       supabase,
       award: closeableAward,
       userId: user.id,
-      notes,
-      coverage,
+      event: basis,
+      note: notes,
       audit,
     });
 
-    if (closeout.outcome === "write_failed") {
-      return NextResponse.json({ error: "Failed to update funding award" }, { status: 500 });
+    if (act.outcome === "refused") {
+      return NextResponse.json({ error: act.message, details: act.detail ?? undefined, coverage }, { status: act.status });
     }
 
-    if (closeout.outcome === "no_rows_matched") {
-      return noRowsMatchedResponse({ subject: "funding award", targetWasVerified: true });
+    if (act.result.status === "already_closed") {
+      return NextResponse.json(
+        { awardId: closeableAward.id, status: "already_closed", closureBasis: act.result.closureBasis ?? null, coverage },
+        { status: 200 }
+      );
     }
 
     audit.info("funding_award_closeout_route_completed", {
       awardId: closeableAward.id,
       projectId: closeableAward.project_id,
       userId: user.id,
+      closureBasis: basis,
       durationMs: Date.now() - startedAt,
     });
 
     return NextResponse.json(
       {
         awardId: closeableAward.id,
-        closureBasis: "earned_coverage",
+        closureBasis: basis,
         coverage,
-        closedAt: closeout.closedAt,
+        closedAt: act.result.closedAt ?? null,
+        releasedAmount: typeof act.result.released === "string" ? Number(act.result.released) : null,
+        milestoneFiled: act.result.milestoneFiled === true,
+        closureReceiptId: act.result.closureReceiptId ?? null,
       },
       { status: 200 }
     );

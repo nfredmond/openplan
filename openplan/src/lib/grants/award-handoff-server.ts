@@ -41,3 +41,44 @@ export async function managedCloseout(input: { actorId: string; awardId: string;
   if (result.error) return handoffFailure(result.error, MANAGED_AWARD_CLOSEOUT_MIGRATION);
   return NextResponse.json(result.data);
 }
+
+export const FUNDING_AWARD_CLOSEOUT_MIGRATION = "20261117000000_award_closure_custody";
+
+export type FundingAwardCloseoutEvent = "earned_coverage" | "reconciled_with_balance" | "recorded_on_import" | "reopen";
+
+export type FundingAwardCloseoutCommandOutcome =
+  | { outcome: "done"; result: Record<string, unknown> }
+  | { outcome: "refused"; status: 403 | 404 | 409 | 422 | 503; message: string; detail: string | null };
+
+/**
+ * The one writer of an unmanaged award's closure columns (20261117000000).
+ * The caller has already read the award through the caller's own session and
+ * checked `programs.write`; the SQL command checks the actor's membership
+ * again inside the transaction and evaluates the close-out there.
+ */
+export async function runFundingAwardCloseoutCommand(input: {
+  actorId: string;
+  awardId: string;
+  event: FundingAwardCloseoutEvent;
+  note: string | null;
+  calendarDate: string;
+  reopenSpendingStatus?: string | null;
+}): Promise<FundingAwardCloseoutCommandOutcome> {
+  const result = await createServiceRoleClient().rpc("funding_award_closeout_command", {
+    p_actor: input.actorId,
+    p_award: input.awardId,
+    p_event: input.event,
+    p_note: input.note,
+    p_calendar_date: input.calendarDate,
+    p_reopen_spending_status: input.reopenSpendingStatus ?? null,
+  });
+  if (!result.error) return { outcome: "done", result: (result.data ?? {}) as Record<string, unknown> };
+  const code = result.error.code ?? "";
+  if (looksLikePendingSchema(result.error.message) || code === "PGRST202") {
+    return { outcome: "refused", status: 503, message: `Award close-out requires migration ${FUNDING_AWARD_CLOSEOUT_MIGRATION}.`, detail: null };
+  }
+  const status = code === "PT409" ? 409 : code === "42501" ? 403 : code === "P0002" ? 404 : ["22023", "23514"].includes(code) ? 422 : null;
+  if (status === null) throw new Error(result.error.message || "funding_award_closeout_command_failed");
+  const detail = (result.error as { details?: string | null }).details ?? null;
+  return { outcome: "refused", status, message: result.error.message, detail };
+}

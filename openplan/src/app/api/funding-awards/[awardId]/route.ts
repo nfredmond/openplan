@@ -17,9 +17,9 @@ import {
 } from "@/lib/programs/catalog";
 import {
   CLOSEABLE_FUNDING_AWARD_COLUMNS,
+  actOnFundingAwardClosure,
   evaluateFundingAwardCloseoutCoverage,
   rebuildFundingAwardProjectPosture,
-  recordEarnedFundingAwardCloseout,
   type CloseableFundingAward,
 } from "./award-closure";
 
@@ -44,7 +44,7 @@ import {
  *   2. `spendingStatus: "fully_spent"`. The earned close-out, and it runs
  *      through exactly the gate `POST .../closeout` runs through, because both
  *      call `evaluateFundingAwardCloseoutCoverage` and then
- *      `recordEarnedFundingAwardCloseout`. There is no second definition of
+ *      `actOnFundingAwardClosure`. There is no second definition of
  *      "covered" and no second, lighter way to close an award: a PATCH that set
  *      the status without filing the close-out milestone would be the original
  *      defect wearing a different verb.
@@ -159,6 +159,8 @@ const patchFundingAwardSchema = z
      * stay distinguishable from `null` (there is none).
      */
     expenditureDeadlineAt: z.string().datetime().nullable().optional(),
+    /** The date the award was obligated, authorized or allocated (20261117000200). */
+    obligatedOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
     expectedCurrentRevisionId:z.string().uuid().optional(),
     spendingStatus: z.enum(FUNDING_AWARD_SPENDING_STATUSES).optional(),
     riskFlag: z.enum(FUNDING_AWARD_RISK_FLAGS).optional(),
@@ -183,6 +185,7 @@ const FIELD_EDIT_KEYS = [
   "matchPosture",
   "obligationDueAt",
   "expenditureDeadlineAt",
+  "obligatedOn",
   "riskFlag",
   "notes",
 ] as const;
@@ -328,6 +331,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     const isClosed = award.spending_status === FUNDING_AWARD_CLOSED_SPENDING_STATUS;
 
+    if (payload.reopen || payload.recordClosedOnImport) {
+      const alsoEditing = FIELD_EDIT_KEYS.filter((key) => payload[key] !== undefined);
+      if (alsoEditing.length > 0) {
+        return NextResponse.json(
+          {
+            error: "Closing or re-opening an award is its own act",
+            details: `This request also edits ${alsoEditing.join(", ")}. Send those edits first, then the closure change.`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     if (payload.reopen) {
       return await handleReopen({ supabase, audit, award, isClosed, user, payload, startedAt });
     }
@@ -346,8 +362,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (payload.spendingStatus === FUNDING_AWARD_CLOSED_SPENDING_STATUS) {
       // Field edits are refused ALONGSIDE an earned close-out rather than merged
-      // into it. The close-out writes through the shared
-      // `recordEarnedFundingAwardCloseout`, which owns its own UPDATE, so
+      // into it. The close-out writes through the SQL close-out command,
+      // which owns its own UPDATE, so
       // carrying edits into it would mean either a second write (two statements,
       // one of which can fail after the other landed) or edits quietly dropped.
       // A refusal that names the two requests is better than either.
@@ -423,6 +439,7 @@ function buildFieldPatch(payload: z.infer<typeof patchFundingAwardSchema>): Reco
   if (payload.matchPosture !== undefined) patch.match_posture = payload.matchPosture;
   if (payload.obligationDueAt !== undefined) patch.obligation_due_at = payload.obligationDueAt;
   if (payload.expenditureDeadlineAt !== undefined) patch.expenditure_deadline_at = payload.expenditureDeadlineAt;
+  if (payload.obligatedOn !== undefined) patch.obligated_on = payload.obligatedOn;
   if (payload.riskFlag !== undefined) patch.risk_flag = payload.riskFlag;
   if (payload.notes !== undefined) patch.notes = payload.notes ? payload.notes.trim() : null;
 
@@ -591,6 +608,17 @@ async function handleEarnedCloseout({
     );
   }
 
+  if (evaluation.openCount > 0) {
+    return NextResponse.json(
+      {
+        error: "Close-out needs every linked request paid or rejected",
+        openCount: evaluation.openCount,
+        coverage,
+      },
+      { status: 422 }
+    );
+  }
+
   if (!evaluation.earned) {
     audit.warn("funding_award_closeout_blocked", {
       awardId: award.id,
@@ -599,39 +627,31 @@ async function handleEarnedCloseout({
       paidAmount: coverage.paidAmount,
       outstandingAmount: coverage.outstandingAmount,
     });
-    // The refusal names the one legitimate alternative rather than leaving the
-    // planner to conclude the product cannot record their situation. It does NOT
-    // suggest it as a way around the gate: the sentence says what the import
-    // path actually records, so choosing it is choosing to be marked as an
-    // assertion.
     return NextResponse.json(
       {
         error: "Closeout requires 100% paid invoice coverage against the awarded amount",
         details:
-          "If this award closed outside OpenPlan and its invoices were never recorded here, send a " +
-          "`recordClosedOnImport` intent with a written basis instead. That marks the award closed on " +
-          "your statement rather than on verified coverage, and says so permanently on the record.",
+          "If the award finished under its ceiling, close it with the balance released on the close-out " +
+          "route. If it closed outside OpenPlan and its requests were never recorded here, send a " +
+          "`recordClosedOnImport` intent with a written basis instead.",
         coverage,
       },
       { status: 422 }
     );
   }
 
-  const closeout = await recordEarnedFundingAwardCloseout({
+  const note = payload.closeoutNote?.trim() || null;
+  const act = await actOnFundingAwardClosure({
     supabase,
     award,
     userId: user.id,
-    notes: payload.closeoutNote?.trim() || null,
-    coverage,
+    event: "earned_coverage",
+    note,
     audit,
   });
 
-  if (closeout.outcome === "write_failed") {
-    return NextResponse.json({ error: "Failed to update funding award" }, { status: 500 });
-  }
-
-  if (closeout.outcome === "no_rows_matched") {
-    return noRowsMatchedResponse({ subject: "funding award", targetWasVerified: true });
+  if (act.outcome === "refused") {
+    return NextResponse.json({ error: act.message, details: act.detail ?? undefined, coverage }, { status: act.status });
   }
 
   audit.info("funding_award_closed_via_patch", {
@@ -647,7 +667,7 @@ async function handleEarnedCloseout({
       awardId: award.id,
       closureBasis: "earned_coverage",
       coverage,
-      closedAt: closeout.closedAt,
+      closedAt: act.result.closedAt ?? null,
     },
     { status: 200 }
   );
@@ -664,8 +684,6 @@ async function handleRecordClosedOnImport({
 }: HandlerInput): Promise<NextResponse> {
   const intent = payload.recordClosedOnImport;
   if (!intent) {
-    // Unreachable through PATCH, which only routes here when the intent is
-    // present; kept as a total function rather than a non-null assertion.
     return NextResponse.json({ error: "Missing import-closure intent" }, { status: 400 });
   }
 
@@ -686,59 +704,39 @@ async function handleRecordClosedOnImport({
     );
   }
 
-  const closedAtIso = new Date().toISOString();
-  const patch: Record<string, unknown> = {
-    ...buildFieldPatch(payload),
-    spending_status: FUNDING_AWARD_CLOSED_SPENDING_STATUS,
-    closure_basis: "recorded_on_import",
-    closed_at: closedAtIso,
-    closed_by: user.id,
-    closure_note: intent.note,
-  };
-
-  const result = await applyFundingAwardPatch({
+  const act = await actOnFundingAwardClosure({
     supabase,
-    audit,
     award,
-    patch,
-    // Its own event, distinct from `funding_award_closeout_completed`. An
-    // asserted closure and an earned one must not share an audit code, or the
-    // log loses the distinction the row was just given.
-    auditEvent: "funding_award_recorded_closed_on_import",
-    auditContext: {
-      awardId: award.id,
-      projectId: award.project_id,
-      workspaceId: award.workspace_id,
-      userId: user.id,
-      closureBasis: "recorded_on_import",
-      closureNote: intent.note,
-      closedAt: closedAtIso,
-      durationMs: Date.now() - startedAt,
-    },
+    userId: user.id,
+    event: "recorded_on_import",
+    note: intent.note,
+    audit,
   });
 
-  if (result.outcome === "failed") return result.response;
+  if (act.outcome === "refused") {
+    return NextResponse.json({ error: act.message, details: act.detail ?? undefined }, { status: act.status });
+  }
 
-  // The posture rebuild runs; the close-out MILESTONE deliberately does not. A
-  // milestone titled "Closeout" with status complete is a compliance sign-off on
-  // this project's timeline, and nobody performed one — the workspace stated that
-  // one happened elsewhere, before OpenPlan. Filing it anyway would put a
-  // manufactured record on the project, which is the exact failure this whole
-  // change exists to prevent.
-  await rebuildFundingAwardProjectPosture({ supabase, award, audit });
+  audit.info("funding_award_recorded_closed_on_import", {
+    awardId: award.id,
+    projectId: award.project_id,
+    workspaceId: award.workspace_id,
+    userId: user.id,
+    closureBasis: "recorded_on_import",
+    closureNote: intent.note,
+    closedAt: act.result.closedAt ?? null,
+    durationMs: Date.now() - startedAt,
+  });
 
   return NextResponse.json(
     {
       awardId: award.id,
       closureBasis: "recorded_on_import",
-      closedAt: closedAtIso,
+      closedAt: act.result.closedAt ?? null,
       closureNote: intent.note,
-      // Said plainly in the response, not only in the row, so a client cannot
-      // render this outcome with the same words it uses for an earned close-out.
       details:
         "Recorded as closed on your statement. No invoice coverage was checked and no close-out " +
         "milestone was filed, and this award will read as an imported closure wherever it is shown.",
-      award: result.award,
     },
     { status: 200 }
   );
@@ -771,66 +769,44 @@ async function handleReopen({
     );
   }
 
-  const reopenedAtIso = new Date().toISOString();
   const priorClosureBasis = award.closure_basis ?? null;
-
-  // The closure columns are cleared because the award is no longer closed and
-  // the schema's coherence CHECK requires them to move together. What is NOT
-  // cleared is the re-open trio: it survives a later re-close, so the fact that
-  // this award was once closed and then re-opened stays legible on the row for
-  // good. The prior basis is carried into the audit event, since the row can no
-  // longer hold it.
-  const patch: Record<string, unknown> = {
-    ...buildFieldPatch(payload),
-    spending_status: intent.spendingStatus,
-    closure_basis: null,
-    closed_at: null,
-    closed_by: null,
-    closure_note: null,
-    reopened_at: reopenedAtIso,
-    reopened_by: user.id,
-    reopen_reason: intent.reason,
-  };
-
-  const result = await applyFundingAwardPatch({
+  const act = await actOnFundingAwardClosure({
     supabase,
-    audit,
     award,
-    patch,
-    auditEvent: "funding_award_reopened",
-    auditContext: {
-      awardId: award.id,
-      projectId: award.project_id,
-      workspaceId: award.workspace_id,
-      userId: user.id,
-      priorClosureBasis,
-      priorClosedAt: award.closed_at ?? null,
-      reopenReason: intent.reason,
-      reopenedAt: reopenedAtIso,
-      spendingStatus: intent.spendingStatus,
-      durationMs: Date.now() - startedAt,
-    },
+    userId: user.id,
+    event: "reopen",
+    note: intent.reason,
+    reopenSpendingStatus: intent.spendingStatus,
+    audit,
   });
 
-  if (result.outcome === "failed") return result.response;
+  if (act.outcome === "refused") {
+    return NextResponse.json({ error: act.message, details: act.detail ?? undefined }, { status: act.status });
+  }
 
-  await rebuildFundingAwardProjectPosture({ supabase, award, audit });
+  audit.info("funding_award_reopened", {
+    awardId: award.id,
+    projectId: award.project_id,
+    workspaceId: award.workspace_id,
+    userId: user.id,
+    priorClosureBasis,
+    priorClosedAt: award.closed_at ?? null,
+    reopenReason: intent.reason,
+    reopenedAt: act.result.reopenedAt ?? null,
+    spendingStatus: intent.spendingStatus,
+    durationMs: Date.now() - startedAt,
+  });
 
   return NextResponse.json(
     {
       awardId: award.id,
       status: "reopened",
       priorClosureBasis,
-      reopenedAt: reopenedAtIso,
+      reopenedAt: act.result.reopenedAt ?? null,
       spendingStatus: intent.spendingStatus,
-      // Disclosed rather than quietly true: any close-out milestone already
-      // filed on the project stays filed. It records that a close-out happened
-      // on a date, which is still a fact; deleting it would erase history to
-      // make the project timeline tidier.
       details:
         "Re-opened. Any close-out milestone already filed on this project is left in place. It records " +
         "that a close-out happened, which re-opening does not undo.",
-      award: result.award,
     },
     { status: 200 }
   );

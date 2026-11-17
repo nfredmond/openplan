@@ -9,7 +9,7 @@ export const awardClosureReceiptSchema = z.object({
   award_id: z.string().uuid(),
   workspace_id: z.string().uuid(),
   revision_id: z.string().uuid().nullable(),
-  event: z.enum(["earned_coverage", "recorded_on_import", "reopen"]),
+  event: z.enum(["earned_coverage", "reconciled_with_balance", "recorded_on_import", "reopen"]),
   // The database permits any JSON shape. Do not turn legacy payloads into facts.
   basis: z.unknown().refine((value) => value !== undefined, "Retained basis required"),
   actor_id: z.string().uuid(),
@@ -58,17 +58,38 @@ const coverageBasisSchema = commonBasisSchema.extend({
   invoices: z.array(z.unknown()),
 });
 
-/** Interpret only the shapes written by the retained managed-closeout functions. */
+// Written by funding_award_closeout_command (20261117000000) for awards with no
+// handoff revision: no revision, no currency, and the open-request count the
+// close-out was checked against.
+const unmanagedCloseBasisSchema = commonBasisSchema.extend({
+  ceiling: z.string().regex(/^-?\d+(?:\.\d+)?$/),
+  paid: z.string().regex(/^\d+(?:\.\d+)?$/),
+  openRequests: z.number().int().min(0),
+  released: z.string().regex(/^\d+(?:\.\d+)?$/).optional(),
+});
+
+/** Interpret only the shapes written by the retained close-out functions. */
 export function readClosureBasis(receipt: AwardClosureReceipt) {
   if (receipt.event === "reopen") {
     const parsed = reopenBasisSchema.safeParse(receipt.basis);
     return parsed.success && parsed.data.expectedCurrent === receipt.revision_id
       ? { kind: "reopen" as const, ...parsed.data } : { kind: "unassessed" as const };
   }
-  if (receipt.event === "earned_coverage") {
+  if (receipt.event === "earned_coverage" && receipt.revision_id !== null) {
     const parsed = coverageBasisSchema.safeParse(receipt.basis);
     return parsed.success && parsed.data.expectedCurrent === receipt.revision_id
-      ? { kind: "earned_coverage" as const, ...parsed.data } : { kind: "unassessed" as const };
+      ? { kind: "earned_coverage" as const, ...parsed.data, released: null } : { kind: "unassessed" as const };
+  }
+  if (receipt.revision_id === null) {
+    const parsed = unmanagedCloseBasisSchema.safeParse(receipt.basis);
+    if (!parsed.success || parsed.data.expectedCurrent !== null) return { kind: "unassessed" as const };
+    if (receipt.event === "recorded_on_import") return { kind: "imported" as const, ...parsed.data };
+    if (receipt.event === "reconciled_with_balance") {
+      return parsed.data.released
+        ? { kind: "reconciled" as const, ...parsed.data, currency: null, released: parsed.data.released }
+        : { kind: "unassessed" as const };
+    }
+    return { kind: "earned_coverage" as const, ...parsed.data, currency: null, released: null };
   }
   return { kind: "unassessed" as const };
 }
