@@ -72,6 +72,8 @@ export type ProjectFundingProfileScanLane = {
   detail: string;
   nextAction: string;
   amount: number | null;
+  /** What the amount is, printed beside it (KI-2026-11-16-143). */
+  amountLabel?: string;
 };
 
 export type ProjectFundingProfileScan = {
@@ -460,6 +462,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.committedFundingAmount)} committed and ${formatScanCurrency(summary.likelyFundingAmount)} likely against a ${formatScanCurrency(summary.fundingNeedAmount)} target.`,
       nextAction: `Resolve the remaining ${formatScanCurrency(summary.unfundedAfterLikelyAmount)} funding gap or keep it explicit in RTP/grant packet language.`,
       amount: summary.unfundedAfterLikelyAmount,
+      amountLabel: "still unfunded",
     });
   } else {
     lanes.push({
@@ -470,6 +473,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.committedFundingAmount)} committed plus ${formatScanCurrency(summary.likelyFundingAmount)} likely covers the current target need.`,
       nextAction: "Keep the funding basis current when award, scope, or estimate records change.",
       amount: summary.totalPotentialFundingAmount,
+      amountLabel: "committed and likely",
     });
   }
 
@@ -492,6 +496,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.committedMatchAmount)} committed against a ${formatScanCurrency(summary.localMatchNeedAmount)} match need.`,
       nextAction: "Preserve match source notes for reimbursement and board packet review.",
       amount: summary.committedMatchAmount,
+      amountLabel: "match committed",
     });
   } else {
     lanes.push({
@@ -502,6 +507,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.remainingMatchGap)} still missing against the current match need.`,
       nextAction: "Identify eligible match sources or mark the gap plainly before using the profile in a funding package.",
       amount: summary.remainingMatchGap,
+      amountLabel: "match still missing",
     });
   }
 
@@ -597,6 +603,9 @@ export function buildProjectFundingProfileScan(input: {
       input.unlinkedInvoiceAmount && input.unlinkedInvoiceAmount > 0
         ? input.unlinkedInvoiceAmount
         : summary.outstandingReimbursementAmount + summary.uninvoicedAwardAmount,
+    // KI-2026-11-16-143: outstanding plus not yet invoiced is what the funder
+    // has not yet paid; the figure printed bare before.
+    amountLabel: input.unlinkedInvoiceAmount && input.unlinkedInvoiceAmount > 0 ? "on unlinked invoices" : "not yet paid",
   });
 
   if (summary.awardRiskCount > 0) {
@@ -618,6 +627,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: "Committed award dollars are fully paid in linked reimbursement records, with no award risk flags.",
       nextAction: "Attach final evidence and operator review notes before any formal closeout claim.",
       amount: summary.paidReimbursementAmount,
+      amountLabel: "paid",
     });
   } else if (summary.awardCount > 0) {
     lanes.push({
@@ -628,6 +638,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.uninvoicedAwardAmount)} remains uninvoiced and ${formatScanCurrency(summary.outstandingReimbursementAmount)} remains outstanding.`,
       nextAction: "Finish invoice/reimbursement follow-through before using this record as closeout support.",
       amount: summary.uninvoicedAwardAmount + summary.outstandingReimbursementAmount,
+      amountLabel: "not yet paid",
     });
   } else {
     lanes.push({

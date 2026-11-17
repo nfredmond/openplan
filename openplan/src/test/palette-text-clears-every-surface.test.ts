@@ -146,6 +146,15 @@ const TEXT_INKS = ["--muted-foreground", "--ink-2", "--foreground"];
 /** The accent as link text: the page and a panel only. See the header. */
 const LINK_SURFACES = SURFACES.slice(0, 2);
 
+/**
+ * StatusBadge tones: each `--status-*` ink as text on its own 12 percent tint
+ * (`bg-status-warn/12 text-status-warn`), with the badge on the page or a
+ * panel. Axe found the warning pair at 4.47:1 on the Funding tab
+ * (KI-2026-11-16-142); this measures every tone, which the pairs above missed.
+ */
+const STATUS_TONES = ["--status-info", "--status-ok", "--status-warn", "--status-urgent"];
+const STATUS_TINT_ALPHA = 0.12;
+
 type Measurement = { label: string; ratio: number };
 
 function measure({ palette, mode, tokens }: Combination): Measurement[] {
@@ -164,6 +173,14 @@ function measure({ palette, mode, tokens }: Combination): Measurement[] {
       label: `${where}: --primary as link text on ${surface.name}`,
       ratio: contrast(resolve("--primary", tokens), surface.colour(tokens)),
     });
+  }
+  for (const tone of STATUS_TONES) {
+    for (const surface of LINK_SURFACES) {
+      rows.push({
+        label: `${where}: ${tone} badge text on its 12% tint on ${surface.name}`,
+        ratio: contrast(resolve(tone, tokens), over(resolve(tone, tokens), STATUS_TINT_ALPHA, surface.colour(tokens))),
+      });
+    }
   }
   rows.push({
     label: `${where}: --primary-foreground on --primary`,
@@ -194,7 +211,9 @@ describe("small text clears 4.5:1 on every surface, in every palette", () => {
         }
       }
     }
-    expect(all.flatMap(measure)).toHaveLength(12 * (TEXT_INKS.length * SURFACES.length + LINK_SURFACES.length + 1));
+    expect(all.flatMap(measure)).toHaveLength(
+      12 * (TEXT_INKS.length * SURFACES.length + LINK_SURFACES.length + STATUS_TONES.length * LINK_SURFACES.length + 1),
+    );
   });
 
   it.each(all.map((combination) => [`${combination.palette} ${combination.mode}`, combination] as const))(

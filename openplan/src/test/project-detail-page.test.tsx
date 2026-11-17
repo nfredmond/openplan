@@ -2566,6 +2566,9 @@ describe("ProjectDetailPage", () => {
       expect(screen.getByText(/Reimbursed \$170,000\.00 · Outstanding \$85,000\.00/)).toBeInTheDocument();
       expect(screen.getByText("Outstanding $85,000.00")).toBeInTheDocument();
       expect(screen.queryByText(/\$150,000\.00 requested/)).toBeNull();
+      // KI-2026-11-16-143: the scan's reimbursement and closeout figures say
+      // what they are. 85,000 outstanding + 145,000 not yet invoiced = 230,000.
+      expect(screen.getAllByText("$230,000.00 not yet paid")).toHaveLength(2);
     });
 
     it("withholds every reimbursement total when the award read's count and length differ", async () => {
