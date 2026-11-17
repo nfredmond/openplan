@@ -36,6 +36,13 @@ describe("the Funding scan reads a met obligation", () => {
     });
   });
 
+  it("reads the award's obligated-on date when both dates are set and differ (review 95)", () => {
+    expect(obligationLane({ ...overdueAward, obligated_on: "2026-03-10", obligation_completed_on: "2026-03-15" })).toMatchObject({
+      status: "ready",
+      detail: "Obligated on 2026-03-10.",
+    });
+  });
+
   it("reads obligated from the award's own obligated-on date", () => {
     expect(obligationLane({ ...overdueAward, obligated_on: "2026-03-10" })).toMatchObject({
       status: "ready",
@@ -63,7 +70,10 @@ describe("the Funding scan reads a met obligation", () => {
 
 const createClientMock = vi.fn();
 const updateMock = vi.fn();
+const awardUpdateMock = vi.fn();
 let milestoneKind: { milestone_type: string; actual_date: string | null };
+/** The award row the route may write; the fake applies the route's filters as PostgREST would. */
+let awardRow: { id: string; project_id: string; obligated_on: string | null };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
@@ -101,7 +111,28 @@ function from(table: string) {
           eq: () => chain,
           is: () => chain,
           select: () => chain,
-          maybeSingle: async () => ({ data: { id: MILESTONE_ID, ...payload }, error: null }),
+          maybeSingle: async () => ({
+            data: { id: MILESTONE_ID, milestone_type: milestoneKind.milestone_type, actual_date: milestoneKind.actual_date, ...payload },
+            error: null,
+          }),
+        };
+        return chain;
+      },
+    };
+  }
+  if (table === "funding_awards") {
+    return {
+      update: (payload: { obligated_on: string }) => {
+        const filters: Array<(row: typeof awardRow) => boolean> = [];
+        const chain = {
+          eq: (column: "id" | "project_id", value: string) => { filters.push((row) => row[column] === value); return chain; },
+          is: (column: "obligated_on", value: null) => { filters.push((row) => row[column] === value); return chain; },
+          select: async () => {
+            awardUpdateMock(payload);
+            const matched = filters.every((test) => test(awardRow));
+            if (matched) awardRow = { ...awardRow, ...payload };
+            return { data: matched ? [{ id: awardRow.id }] : [], error: null };
+          },
         };
         return chain;
       },
@@ -129,6 +160,30 @@ describe("completing an obligation milestone records the date", () => {
       from,
     });
     milestoneKind = { milestone_type: "obligation", actual_date: null };
+    awardRow = { id: "award-1", project_id: PROJECT_ID, obligated_on: null };
+  });
+
+  it("writes the milestone's date to an award with no obligated-on date (review 95)", async () => {
+    const response = await patch({ recordType: "milestone", status: "complete", actualDate: "2026-03-15" });
+    expect(response.status).toBe(200);
+    expect(awardRow.obligated_on).toBe("2026-03-15");
+    expect((await response.json()).awardObligatedOn).toEqual({ saved: true, date: "2026-03-15" });
+  });
+
+  it("never overwrites an obligated-on date the award already holds", async () => {
+    awardRow = { id: "award-1", project_id: PROJECT_ID, obligated_on: "2026-03-10" };
+    const response = await patch({ recordType: "milestone", status: "complete", actualDate: "2026-03-15" });
+    expect(response.status).toBe(200);
+    expect(awardRow.obligated_on).toBe("2026-03-10");
+    expect((await response.json()).awardObligatedOn).toEqual({ saved: false, date: "2026-03-15" });
+  });
+
+  it("writes no award date for other milestones", async () => {
+    milestoneKind = { milestone_type: "authorization", actual_date: null };
+    const response = await patch({ recordType: "milestone", status: "complete", actualDate: "2026-03-15" });
+    expect(response.status).toBe(200);
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+    expect(awardRow.obligated_on).toBeNull();
   });
 
   it("refuses to complete an obligation milestone with no date and saves nothing", async () => {

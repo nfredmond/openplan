@@ -27,13 +27,15 @@ export type FundingAwardLike = ComparableAward & {
 
 /**
  * The date an award's obligation was met, or null (KI-2026-11-16-140). The
- * completed obligation milestone's date wins; the award's own obligated-on
- * date counts when no milestone date was recorded. An award with either no
- * longer has an obligation deadline ahead of it.
+ * award's own obligated-on date wins, because the award row, the worksheet and
+ * the pre-obligation warning read only that date (review 95); the completed
+ * obligation milestone's date counts when the award has none. Completing the
+ * milestone writes its date to an empty `obligated_on`, so the two agree. An
+ * award with either no longer has an obligation deadline ahead of it.
  */
 export function awardObligationMetOn(award: FundingAwardLike): { date: string; source: "milestone" | "award" } | null {
-  if (award.obligation_completed_on) return { date: award.obligation_completed_on, source: "milestone" };
   if (award.obligated_on) return { date: award.obligated_on, source: "award" };
+  if (award.obligation_completed_on) return { date: award.obligation_completed_on, source: "milestone" };
   return null;
 }
 

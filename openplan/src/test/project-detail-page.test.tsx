@@ -2639,6 +2639,23 @@ describe("ProjectDetailPage", () => {
       expect(screen.queryByText(/days? overdue/)).toBeNull();
     });
 
+    it("reads the award's obligated-on date on the card, the scan and the award row when the two dates differ (review 95)", async () => {
+      seedOverdueAward();
+      const [awardFixture] = (await fundingAwardsLimitMock()).data as Array<Record<string, unknown>>;
+      fundingAwardsLimitMock.mockResolvedValue({ data: [{ ...awardFixture, obligated_on: "2026-03-10" }], error: null });
+      obligationMilestonesEqMock.mockResolvedValue({
+        data: [{ funding_award_id: "award-obligated", status: "complete", actual_date: "2026-03-15" }],
+        error: null,
+      });
+
+      await renderPage("funding");
+
+      expect(screen.getByText("Obligated on 2026-03-10. No obligation deadline is ahead.")).toBeInTheDocument();
+      expect(screen.getByText("Obligated on 2026-03-10.")).toBeInTheDocument();
+      expect(screen.getByLabelText("Date the award was obligated, authorized or allocated")).toHaveValue("2026-03-10");
+      expect(screen.queryByText(/2026-03-15/)).toBeNull();
+    });
+
     it("still says overdue when the milestone is not complete", async () => {
       seedOverdueAward();
       obligationMilestonesEqMock.mockResolvedValue({
