@@ -120,7 +120,7 @@ describe("buildGrantApplicationHtml", () => {
     expect(html).toContain("Provenance appendix");
     expect(html).toContain("Operator-authored");
     // The finalizer prints as the role the route resolved, never the stored user id.
-    expect(html).toContain("<td>Workspace admin</td>");
+    expect(html).toContain('<td><span class="nowrap">Workspace admin</span></td>');
     expect(html).not.toContain("22222222-2222-4222-8222-222222222222");
     // No external assets — a strict offline document.
     expect(html).not.toMatch(/src="http/);
@@ -135,7 +135,8 @@ describe("buildGrantApplicationHtml", () => {
     // 00:00 UTC on September 30 is the evening of September 29 in Los Angeles.
     expect(html).toContain("<dt>Closes</dt><dd>September 29, 2026 at 17:00 (America/Los_Angeles)</dd>");
     expect(html).toContain("<dt>Assembled</dt><dd>July 26, 2026 at 20:00 (America/Los_Angeles)</dd>");
-    expect(html).toContain("<td>July 26, 2026 at 19:00 (America/Los_Angeles)</td>");
+    // The provenance table's short form: the same day and time, the zone still named in the cell.
+    expect(html).toContain('<td><span class="nowrap">Jul 26, 2026,</span> <span class="nowrap">19:00</span> (America/<wbr>Los_Angeles)</td>');
     // No server-locale shape survives anywhere.
     expect(html).not.toMatch(/\d{1,2}\/\d{1,2}\/2026/);
   });

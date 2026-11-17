@@ -247,17 +247,21 @@ async function pdf(name: string, html: string) {
 }
 
 /**
- * Words past the right edge of a section's text column, footer excluded. Both
- * exports print on Letter with 72.75 pt from the page edge to the column's
- * right side (48 px margin, 24 px padding, 1 px border, 24 px padding).
+ * Words past the right edge of a section's text column, footer excluded. The
+ * report prints on Letter with 72.75 pt from the page edge to the column's
+ * right side (48 px margin, 24 px padding, 1 px border, 24 px padding). The
+ * application's print layout has no main side padding since
+ * KI-2026-11-16-104, so its column ends 54.75 pt from the page edge.
  */
-function wordsPastCard(file: string): string[] {
+const REPORT_CARD_INSET_PT = 72.75;
+const APPLICATION_CARD_INSET_PT = 54.75;
+function wordsPastCard(file: string, insetPt: number): string[] {
   const xml = execFileSync(tool("pdftotext"), ["-bbox", file, "-"]).toString();
   const past: string[] = [];
   for (const pageMatch of xml.matchAll(/<page width="([\d.]+)" height="([\d.]+)">([\s\S]*?)<\/page>/g)) {
     const [width, height] = [Number(pageMatch[1]), Number(pageMatch[2])];
     for (const word of pageMatch[3].matchAll(/<word xMin="[\d.]+" yMin="[\d.]+" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)<\/word>/g)) {
-      if (Number(word[2]) < height - 36 && Number(word[1]) > width - 72.75 + 1) past.push(word[3]);
+      if (Number(word[2]) < height - 36 && Number(word[1]) > width - insetPt + 1) past.push(word[3]);
     }
   }
   return past;
@@ -306,7 +310,7 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext", () =
     const doc = await pdf("report-cmf-notes", reportHtml(IDS));
     for (const phrase of PHRASES) expect(findPdfPhrase(doc.pageText, phrase), phrase).not.toEqual([]);
     expect(doc.pageText.join(" ")).not.toContain("No CMF Clearinghouse entry read");
-    expect(wordsPastCard(doc.file)).toEqual([]);
+    expect(wordsPastCard(doc.file, REPORT_CARD_INSET_PT)).toEqual([]);
   }, 120_000);
 
   it("the SS4A PDF prints the read notes in Appendix C inside the card", async () => {
@@ -314,6 +318,6 @@ describe.runIf(PDF_TOOLS)("both exports as PDFs, read back with pdftotext", () =
     expect(findPdfPhrase(doc.pageText, "Appendix C. Countermeasures")).not.toEqual([]);
     for (const phrase of PHRASES) expect(findPdfPhrase(doc.pageText, phrase), phrase).not.toEqual([]);
     expect(doc.pageText.join(" ")).not.toContain("No CMF Clearinghouse entry read");
-    expect(wordsPastCard(doc.file)).toEqual([]);
+    expect(wordsPastCard(doc.file, APPLICATION_CARD_INSET_PT)).toEqual([]);
   }, 120_000);
 });
