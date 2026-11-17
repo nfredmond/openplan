@@ -273,7 +273,6 @@ async function main() {
       invoiceNumber,
       consultantName: 'Nat Ford Planning QA',
       billingBasis: 'progress_payment',
-      status: 'paid',
       invoiceDate,
       dueDate: isoDaysFromNow(20).slice(0, 10),
       amount: 500000,
@@ -289,6 +288,18 @@ async function main() {
     ids.invoiceId = invoiceResult.data.invoice?.id ?? null;
     if (!ids.invoiceId) {
       throw new Error(`Billing invoice creation returned no invoice id: ${JSON.stringify(invoiceResult.data)}`);
+    }
+    // Requests are saved as drafts and move forward one approval at a time
+    // (migration 20261117000100); paid needs approval first and a payment date.
+    for (const step of [
+      { status: 'submitted' },
+      { status: 'approved_for_payment' },
+      { status: 'paid', paidDate: new Date().toISOString().slice(0, 10) },
+    ]) {
+      const moved = await appFetch(`/api/invoicing/invoices/${ids.invoiceId}`, { workspaceId: ids.workspaceId, ...step }, 'PATCH');
+      if (moved.status !== 200) {
+        throw new Error(`Billing invoice move to ${step.status} failed: ${moved.status} ${JSON.stringify(moved.data)}`);
+      }
     }
     notes.push('Created a paid, award-linked reimbursement invoice covering the full award.');
 

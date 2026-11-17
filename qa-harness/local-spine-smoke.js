@@ -319,7 +319,6 @@ async function main() {
         invoiceNumber,
         consultantName: 'Example Planning Consultants',
         billingBasis: 'progress_payment',
-        status: 'submitted',
         invoiceDate: new Date().toISOString().slice(0, 10),
         dueDate: isoDaysFromNow(20).slice(0, 10),
         amount: 125000,
@@ -333,6 +332,14 @@ async function main() {
     );
     ids.invoiceId = invoicePayload.invoice?.id ?? null;
     assertOk(ids.invoiceId, `Invoice creation returned no id: ${JSON.stringify(invoicePayload)}`);
+    // Saved as a draft (migration 20261117000100), then submitted.
+    await expectAppFetch(
+      `/api/invoicing/invoices/${ids.invoiceId}`,
+      { workspaceId: ids.workspaceId, status: 'submitted' },
+      200,
+      'Reimbursement invoice submission',
+      'PATCH'
+    );
     notes.push('Created the grants chain — funding profile, program, two opportunities, award, and reimbursement invoice.');
 
     // ---------------------------------------------------------------------
