@@ -12,6 +12,9 @@ import {
 } from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { checkClaimAgainstAwardCeiling } from "@/lib/invoicing/award-ceiling";
+import { isClaimedInvoiceStatus } from "@/lib/invoicing/invoice-records";
+import { formatMoney } from "@/lib/money/format";
 
 const paramsSchema = z.object({
   invoiceId: z.string().uuid(),
@@ -41,6 +44,12 @@ const patchBillingInvoiceSchema = z
     rejectionReason: z.string().trim().min(1).max(2000).optional(),
     /** Required with `status: "paid"`: the date the funder paid, YYYY-MM-DD. */
     paidDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    /**
+     * Why this request is claimed above the award's ceiling. Required only when
+     * the move would take the award's claimed gross above its awarded amount
+     * (KI-2026-11-16-131); saved to the request's notes.
+     */
+    overCeilingNote: z.string().trim().min(1).max(2000).optional(),
   })
   .refine((value) => value.fundingAwardId !== undefined || value.status !== undefined, {
     message: "At least one invoice patch field is required",
@@ -53,6 +62,10 @@ const patchBillingInvoiceSchema = z
   .refine((value) => value.status === "paid" || value.paidDate === undefined, {
     message: "A payment date belongs to marking a request paid",
     path: ["paidDate"],
+  })
+  .refine((value) => value.status !== undefined || value.overCeilingNote === undefined, {
+    message: "A note on claiming above the ceiling belongs to a status change",
+    path: ["overCeilingNote"],
   });
 
 /** A refusal from the database's request rules (20261117000100), answered as the planner's mistake. */
@@ -162,7 +175,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { data: invoice, error: invoiceError } = await supabase
       .from("billing_invoice_records")
-      .select("id, workspace_id, project_id, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id")
+      .select("id, workspace_id, project_id, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, status, amount, notes")
       .eq("id", parsedParams.data.invoiceId)
       .single();
 
@@ -210,8 +223,73 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       effectiveFundingAwardId = fundingAward.id;
     }
 
+    // KI-2026-11-16-131: a move that newly counts this request as claimed on an
+    // award (into a claimed status, or a claimed request linked to a new award)
+    // is refused when it would take the award's claimed gross above its
+    // ceiling, unless the planner says why. Managed awards keep their own
+    // version-bound ledger and are not checked here.
+    const nextStatus = parsed.data.status ?? invoice.status ?? "draft";
+    const newlyClaimedOnAward =
+      Boolean(effectiveFundingAwardId) &&
+      isClaimedInvoiceStatus(nextStatus) &&
+      (!isClaimedInvoiceStatus(invoice.status ?? "") || invoice.funding_award_id !== effectiveFundingAwardId);
+    let overCeilingNoteLine: string | null = null;
+    if (newlyClaimedOnAward && effectiveFundingAwardId) {
+      const { data: ceilingAward, error: ceilingAwardError } = await supabase
+        .from("funding_awards")
+        .select("id, awarded_amount, latest_handoff_revision_id")
+        .eq("id", effectiveFundingAwardId)
+        .single();
+      if (ceilingAwardError || !ceilingAward) {
+        audit.warn("award_ceiling_read_failed", { invoiceId: invoice.id, message: ceilingAwardError?.message ?? null });
+        return NextResponse.json({ error: "The award could not be read to check its ceiling. Try again." }, { status: 503 });
+      }
+      if (!ceilingAward.latest_handoff_revision_id) {
+        const awardInvoices = await supabase
+          .from("billing_invoice_records")
+          .select("id, status, amount", { count: "exact" })
+          .eq("funding_award_id", effectiveFundingAwardId)
+          .limit(1000);
+        if (awardInvoices.error || awardInvoices.count !== (awardInvoices.data ?? []).length) {
+          audit.warn("award_ceiling_claims_read_incomplete", {
+            invoiceId: invoice.id,
+            count: awardInvoices.count ?? null,
+            loaded: (awardInvoices.data ?? []).length,
+            message: awardInvoices.error?.message ?? null,
+          });
+          return NextResponse.json(
+            { error: "The award's other requests could not all be read, so its ceiling was not checked. Try again." },
+            { status: 503 }
+          );
+        }
+        const over = checkClaimAgainstAwardCeiling({
+          awardedAmount: ceilingAward.awarded_amount,
+          invoiceId: invoice.id,
+          invoiceAmount: invoice.amount,
+          otherInvoices: awardInvoices.data ?? [],
+        });
+        if (over && !parsed.data.overCeilingNote) {
+          audit.warn("award_ceiling_exceeded", { invoiceId: invoice.id, fundingAwardId: effectiveFundingAwardId, ...over });
+          return NextResponse.json(
+            {
+              error: `This would bring claims on the award to ${formatMoney(over.claimedAfter, { precision: "cents" })}, ${formatMoney(over.excess, { precision: "cents" })} above its ${formatMoney(over.ceiling, { precision: "cents" })} ceiling. Add a note saying why to claim above the award.`,
+              code: "over_award_ceiling",
+              overCeiling: over,
+            },
+            { status: 422 }
+          );
+        }
+        if (over && parsed.data.overCeilingNote) {
+          overCeilingNoteLine = `Claimed ${formatMoney(over.excess, { precision: "cents" })} above the ${formatMoney(over.ceiling, { precision: "cents" })} award ceiling: ${parsed.data.overCeilingNote}`;
+        }
+      }
+    }
+
     const runUpdate = async () => {
       const updatePayload = {
+        ...(overCeilingNoteLine
+          ? { notes: invoice.notes ? `${invoice.notes}\n\n${overCeilingNoteLine}` : overCeilingNoteLine }
+          : {}),
         ...handoffBinding,
         project_id: effectiveProjectId,
         funding_award_id: effectiveFundingAwardId,
