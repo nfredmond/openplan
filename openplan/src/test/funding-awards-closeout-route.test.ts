@@ -30,6 +30,7 @@ const milestonesEqSecondMock = vi.fn(() => ({ eq: milestonesEqThirdMock }));
 const milestonesEqFirstMock = vi.fn(() => ({ eq: milestonesEqSecondMock }));
 const milestonesSelectMock = vi.fn(() => ({ eq: milestonesEqFirstMock }));
 const milestonesInsertMock = vi.fn();
+const closeoutCommandMock = vi.fn();
 
 let workspaceTimeZone: string | null = null;
 let workspaceReads: string[] = [];
@@ -50,6 +51,13 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("@/lib/programs/api", () => ({
   loadProjectAccess: (...args: unknown[]) => loadProjectAccessMock(...args),
+}));
+
+// The SQL close-out command (20261117000000) is the only writer of closure
+// columns; these tests check what the route sends it and how it answers.
+vi.mock("@/lib/grants/award-handoff-server", () => ({
+  runFundingAwardCloseoutCommand: (...args: unknown[]) => closeoutCommandMock(...args),
+  managedCloseout: vi.fn(),
 }));
 
 vi.mock("@/lib/projects/rtp-posture-writeback", () => ({
@@ -119,6 +127,10 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     awardUpdateMaybeSingleMock.mockResolvedValue({ data: { id: AWARD_ID }, error: null });
     milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     milestonesInsertMock.mockResolvedValue({ error: null });
+    closeoutCommandMock.mockResolvedValue({
+      outcome: "done",
+      result: { status: "closed", closureBasis: "earned_coverage", closedAt: "2026-11-17T03:00:00.000Z", paid: "1000000.00", released: null, milestoneFiled: true },
+    });
     rebuildProjectRtpPostureMock.mockResolvedValue({
       posture: { status: "funded", pipelineStatus: "funded" },
       updatedAt: "2026-04-16T12:00:00.000Z",
@@ -185,57 +197,35 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         },
       })
     );
-    // The status and the closure provenance are written in ONE statement: the
-    // schema's coherence CHECK refuses `fully_spent` with no basis, so a writer
-    // that set the status alone would fail loudly rather than leave a closure
-    // nobody can account for.
-    expect(awardUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        spending_status: "fully_spent",
-        closure_basis: "earned_coverage",
-        closed_by: "22222222-2222-4222-8222-222222222222",
-      })
-    );
-    expect(milestonesSelectMock).toHaveBeenCalledWith("id");
-    expect(milestonesEqFirstMock).toHaveBeenCalledWith("project_id", PROJECT_ID);
-    expect(milestonesEqSecondMock).toHaveBeenCalledWith("funding_award_id", AWARD_ID);
-    expect(milestonesEqThirdMock).toHaveBeenCalledWith("milestone_type", "closeout");
-    expect(milestonesInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        project_id: PROJECT_ID,
-        funding_award_id: AWARD_ID,
-        milestone_type: "closeout",
-        phase_code: "closeout",
-        status: "complete",
-      })
-    );
+    // The route writes nothing itself: the command closes the award, files the
+    // milestone and checks coverage again inside its transaction.
+    expect(closeoutCommandMock).toHaveBeenCalledWith({
+      actorId: "22222222-2222-4222-8222-222222222222",
+      awardId: AWARD_ID,
+      event: "earned_coverage",
+      note: null,
+      calendarDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+      reopenSpendingStatus: null,
+    });
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+    expect(milestonesInsertMock).not.toHaveBeenCalled();
+    expect(json).toMatchObject({ closedAt: "2026-11-17T03:00:00.000Z", milestoneFiled: true, releasedAmount: null });
     expect(rebuildProjectRtpPostureMock).toHaveBeenCalledTimes(1);
     expect(mockAudit.info).toHaveBeenCalledWith(
-      "funding_award_closeout_completed",
-      expect.objectContaining({
-        awardId: AWARD_ID,
-        awardedAmount: 1_000_000,
-        paidAmount: 1_000_000,
-      })
+      "funding_award_closure_recorded",
+      expect.objectContaining({ awardId: AWARD_ID, event: "earned_coverage", status: "closed" })
     );
   });
 
-  it("does not duplicate a closeout milestone when one already exists", async () => {
-    milestonesLimitMock.mockResolvedValue({ data: [{ id: "99999999-9999-4999-8999-999999999999" }], error: null });
-
+  it("reports the command's answer when a milestone already existed", async () => {
+    closeoutCommandMock.mockResolvedValueOnce({
+      outcome: "done",
+      result: { status: "closed", closureBasis: "earned_coverage", closedAt: "2026-11-17T03:00:00.000Z", milestoneFiled: false },
+    });
     const response = await postCloseout(closeoutRequest({ notes: "Final invoice package signed" }), context());
     expect(response.status).toBe(200);
-    const json = await response.json();
-    expect(json.awardId).toBe(AWARD_ID);
-    expect(awardUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ spending_status: "fully_spent", closure_basis: "earned_coverage" })
-    );
-    expect(milestonesInsertMock).not.toHaveBeenCalled();
-    expect(mockAudit.info).toHaveBeenCalledWith(
-      "funding_award_closeout_milestone_already_exists",
-      expect.objectContaining({ awardId: AWARD_ID, projectId: PROJECT_ID })
-    );
-    expect(rebuildProjectRtpPostureMock).toHaveBeenCalledTimes(1);
+    expect(await response.json()).toMatchObject({ milestoneFiled: false });
+    expect(closeoutCommandMock).toHaveBeenCalledWith(expect.objectContaining({ note: "Final invoice package signed" }));
   });
 
   it("treats repeated closeout on a fully spent award as an idempotent no-op", async () => {
@@ -300,25 +290,15 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
           invoice_date: "2026-04-01",
         },
         {
-          // The real enum value. This fixture said "approved", a status
-          // `billing_invoice_records` has never allowed, which is why the route
-          // could bucket on it and still look tested.
-          status: "approved_for_payment",
+          // Rejected: in no bucket, so the shortfall is what refuses here. The
+          // open-request refusal has its own case below.
+          status: "rejected",
           amount: 200_000,
           retention_percent: 0,
           retention_amount: 0,
           net_amount: 200_000,
           due_date: null,
           invoice_date: "2026-04-15",
-        },
-        {
-          status: "draft",
-          amount: 50_000,
-          retention_percent: 0,
-          retention_amount: 0,
-          net_amount: 50_000,
-          due_date: null,
-          invoice_date: "2026-04-20",
         },
       ],
       error: null,
@@ -336,16 +316,74 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         invoiceStatusBreakdown: {
           paidCount: 1,
           paidAmount: 400_000,
-          activeCount: 1,
-          activeAmount: 200_000,
-          draftCount: 1,
-          draftAmount: 50_000,
+          activeCount: 0,
+          activeAmount: 0,
+          draftCount: 0,
+          draftAmount: 0,
         },
       })
     );
-    expect(awardUpdateMock).not.toHaveBeenCalled();
-    expect(milestonesInsertMock).not.toHaveBeenCalled();
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
     expect(rebuildProjectRtpPostureMock).not.toHaveBeenCalled();
+  });
+
+  // KI-2026-11-16-130: lane 84 closed an over-claimed award with one request
+  // submitted and four drafts.
+  it("refuses close-out while any linked request is open, even when paid covers the ceiling", async () => {
+    invoicesEqSecondMock.mockResolvedValue({
+      data: [
+        { status: "paid", amount: 1_000_000, retention_percent: 0, retention_amount: 0, net_amount: 1_000_000, due_date: null, invoice_date: "2026-04-01" },
+        { status: "draft", amount: 50, retention_percent: 0, retention_amount: 0, net_amount: 50, due_date: null, invoice_date: "2026-04-20" },
+      ],
+      error: null,
+    });
+    const response = await postCloseout(closeoutRequest(), context());
+    expect(response.status).toBe(422);
+    const json = await response.json();
+    expect(json).toMatchObject({ error: "Close-out needs every linked request paid or rejected", openCount: 1 });
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
+  });
+
+  it("asks for a stated basis when paid requests exceed the ceiling", async () => {
+    invoicesEqSecondMock.mockResolvedValue({
+      data: [{ status: "paid", amount: 1_200_000, retention_percent: 0, retention_amount: 0, net_amount: 1_200_000, due_date: null, invoice_date: "2026-04-01" }],
+      error: null,
+    });
+    const silent = await postCloseout(closeoutRequest(), context());
+    expect(silent.status).toBe(422);
+    expect((await silent.json()).error).toContain("exceed the award ceiling");
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
+    const stated = await postCloseout(closeoutRequest({ notes: "Amendment 2 raised the ceiling" }), context());
+    expect(stated.status).toBe(200);
+    expect(closeoutCommandMock).toHaveBeenCalledWith(expect.objectContaining({ event: "earned_coverage", note: "Amendment 2 raised the ceiling" }));
+  });
+
+  // KL-2026-09-04-024: an award that finished under its ceiling can close with
+  // the rest released, and only with a note.
+  it("closes an award under its ceiling with the balance released, and only with a note", async () => {
+    invoicesEqSecondMock.mockResolvedValue({
+      data: [{ status: "paid", amount: 400_000, retention_percent: 0, retention_amount: 0, net_amount: 400_000, due_date: null, invoice_date: "2026-04-01" }],
+      error: null,
+    });
+    const noNote = await postCloseout(closeoutRequest({ basis: "reconciled_with_balance" }), context());
+    expect(noNote.status).toBe(422);
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
+
+    closeoutCommandMock.mockResolvedValueOnce({
+      outcome: "done",
+      result: { status: "closed", closureBasis: "reconciled_with_balance", closedAt: "2026-11-17T03:00:00.000Z", paid: "400000.00", released: "600000.00", milestoneFiled: true },
+    });
+    const response = await postCloseout(closeoutRequest({ basis: "reconciled_with_balance", notes: "Finished under budget" }), context());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ closureBasis: "reconciled_with_balance", releasedAmount: 600000 });
+    expect(closeoutCommandMock).toHaveBeenCalledWith(expect.objectContaining({ event: "reconciled_with_balance", note: "Finished under budget" }));
+  });
+
+  it("sends a reconciled close-out of a fully paid award back to the ordinary close-out", async () => {
+    const response = await postCloseout(closeoutRequest({ basis: "reconciled_with_balance", notes: "Done" }), context());
+    expect(response.status).toBe(422);
+    expect((await response.json()).error).toContain("use the ordinary close-out");
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
   });
 
   it("counts an approved-for-payment invoice as money in flight, not as an unsubmitted draft", async () => {
@@ -467,19 +505,12 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     expect(await response.json()).toMatchObject({ closureBasis: "earned_coverage" });
   });
 
-  it("answers a close-out write that matched no rows as a disclosed policy failure", async () => {
-    // This route read the award through the caller's own client and passed the
-    // membership and role checks, so zero matched rows is the database refusing
-    // a write the application believed was allowed — not a missing award, and
-    // certainly not a close-out that succeeded.
-    awardUpdateMaybeSingleMock.mockResolvedValue({ data: null, error: null });
-
+  it("answers the command's refusal with its status and reason, and rebuilds nothing", async () => {
+    closeoutCommandMock.mockResolvedValueOnce({ outcome: "refused", status: 422, message: "Close-out needs every linked request paid or rejected; 1 still open", detail: null });
     const response = await postCloseout(closeoutRequest(), context());
-
-    expect(response.status).toBe(500);
-    const json = await response.json();
-    expect(json.error).toBe("The funding award was not saved");
-    expect(json.details).toContain("row-level security policy");
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({ error: "Close-out needs every linked request paid or rejected; 1 still open" });
+    expect(rebuildProjectRtpPostureMock).not.toHaveBeenCalled();
   });
 
   it("returns 403 when the user is not a workspace member", async () => {
@@ -510,15 +541,13 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     it("is the workspace's calendar day, read for the award's own workspace", async () => {
       workspaceTimeZone = "America/Los_Angeles";
       expect((await postCloseout(closeoutRequest(), context())).status).toBe(200);
-      expect(milestonesInsertMock).toHaveBeenCalledWith(
-        expect.objectContaining({ target_date: "2026-10-12", actual_date: "2026-10-12" })
-      );
+      expect(closeoutCommandMock).toHaveBeenCalledWith(expect.objectContaining({ calendarDate: "2026-10-12" }));
       expect(workspaceReads).toEqual([`time_zone, home_country_code|id=${WORKSPACE_ID}`]);
     });
 
     it("is the UTC day when no zone is recorded", async () => {
       expect((await postCloseout(closeoutRequest(), context())).status).toBe(200);
-      expect(milestonesInsertMock).toHaveBeenCalledWith(expect.objectContaining({ actual_date: "2026-10-13" }));
+      expect(closeoutCommandMock).toHaveBeenCalledWith(expect.objectContaining({ calendarDate: "2026-10-13" }));
     });
   });
 });
