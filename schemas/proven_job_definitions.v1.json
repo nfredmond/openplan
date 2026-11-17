@@ -26,7 +26,7 @@
     "note": "A record is written after its journeys and soon after. recordedOn may not be earlier than the last end health readback's calendar day in the westernmost time zone (UTC-12), so a record dated in any zone on the day its last journey ended is accepted, and may not be more than maxDaysAfterLastEnd days after that day in the easternmost zone (UTC+14). Fourteen days covers an assembly that waits on a review; a record dated before its runs, or weeks after them, is refused (review 64, case 31).",
     "maxDaysAfterLastEnd": 14
   },
-  "ruleNote":"journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways. screens.axe, when a job has it, is the accessibility engine version and rule tags every screen check must report. screens.consoleErrorsRefused true refuses a required screen with one or more console errors. limitTexts, when a job has it, gives the words of each limit it names: a record limit with one of those ids must carry that text exactly. newRecordRules holds rules that apply only to records whose recordedOn is on or after its recordedOnOrAfter date: its journeyFields, and with checkClose the campaign close reading every campaign job gets.",
+  "ruleNote":"journeyFields (every journey) and a journey's fields (that journey only) name a dotted journey field and what it must hold: equals a value, atLeast a number, or minItems entries in a list. The refusal is given with {found} and {expected} filled in. sourceCheck names the subject of an independent count check, the limit to state when it did not match, and what a matched check must name (an https address on one of the listed hosts and a note of at least minNoteLength characters). itemHeadings names, per PDF, the heading each text item must name: the item's text must be that heading, and the heading must be a line of its own on the recorded page. mapPageText names, per PDF, words the export prints on the page with its map; the map item's page must carry them. crossWorkspace.perJourney is count (each required request is checked as many times as the record has journeys) or role (each check names the journey that made it, and each journey has each required request once); participantChecks.perJourney role means the same for the participant refusals. placeStateFromGeoid lists the place kinds whose stateFips must be the geoid's first two digits. health.status is the status every health readback must report; a job with a health block also needs the start readback no later than the account's creation, the account made before the campaign's close, the end readback no earlier than that close, and the end readback's version and migrations equal to the start's. screens.noSidewaysScrollWidths lists the widths at which a required screen may not scroll sideways. screens.axe, when a job has it, is the accessibility engine version and rule tags every screen check must report. screens.consoleErrorsRefused true refuses a required screen with one or more console errors. limitTexts, when a job has it, gives the words of each limit it names: a record limit with one of those ids must carry that text exactly. newRecordRules holds rules that apply only to records whose recordedOn is on or after its recordedOnOrAfter date: its journeyFields, and with checkClose the campaign close reading every campaign job gets. sameAcrossJourneys names journey fields every journey must share; a rule with recordField also holds each journey's value to that field of the record. sequentialJourneys, when a job has it, requires each journey's start health readback to be no earlier than the end readback of the journey listed before it in the definition.",
   "jobs": [
     {
       "id": "safety-action-plan-and-ss4a-in-three-places",
@@ -354,8 +354,11 @@
         { "field": "crashes.storedCount", "atMostField": "crashes.reportedCount", "refusal": "stored {found} crashes, more than the {expected} the source reported" }
       ],
       "sameAcrossJourneys": [
-        { "field": "harness.commit", "refusal": "the {role} journey ran from harness checkout {found}, but the {firstRole} journey ran from {expected}; a proof's journeys run from one checkout" }
+        { "field": "harness.commit", "refusal": "the {role} journey ran from harness checkout {found}, but the {firstRole} journey ran from {expected}; a proof's journeys run from one checkout", "recordField": "commit", "recordRefusal": "the {role} journey ran from harness checkout {found}, not the record's commit {expected}; a proof runs from the commit it records" }
       ],
+      "sequentialJourneys": {
+        "note": "The journeys ran one at a time, in the order this definition lists them (county, city, tribal area): each journey's start health readback is no earlier than the end readback of the journey before it. The proof declared on November 16, 2026 ran the county alone first and the other two after it, and its record does so. A record whose journeys overlap or share times was not run as declared (review 81, copies F1 and F2). The readback times are the journey's own, so a record whose times were all moved together is not caught."
+      },
       "distinctAcrossJourneys": [
         { "field": "projectName", "refusal": "the {role} and {otherRole} journeys name the same project (\"{found}\"); each journey makes its own" },
         { "field": "workspaceName", "refusal": "the {role} and {otherRole} journeys name the same workspace (\"{found}\"); each journey signs up its own" }
@@ -570,6 +573,59 @@
             "qualifies for ATP funding",
             "satisfies all screening criteria"
           ]
+        },
+        "authorshipPhrases": {
+          "note": "Words that would say a tribe, a tribal government or a named agency prepared, reviewed, adopted, approved or submitted the application, refused anywhere in the PDF the way refusedPhrases are (review 81, copy H9). Every section of this job's PDF opens with the demonstration label and a sentence saying the opposite, worded as an honest record prints it: \"Trinity County did not prepare, review, adopt or submit this text\" for a county or city, and \"No tribal government prepared, reviewed, adopted or submitted this text\" for a tribal area. The list is worded to stay outside those sentences and outside the program facts an honest record states (\"adopted March 19, 2026\"; \"projects submitted by tribal governments\"), so it holds no bare \"submitted by\", \"submitted this\" or \"tribal government prepared\". A list cannot catch every wording of a claim; a later record's honest wording that one of these phrases refuses needs this list changed, not a looser record.",
+          "phrases": [
+            "prepared by",
+            "reviewed by",
+            "adopted by",
+            "approved by",
+            "authorized by",
+            "endorsed by",
+            "signed by",
+            "on behalf of",
+            "hereby",
+            "prepared this",
+            "reviewed this",
+            "adopted this",
+            "approved this",
+            "submits this",
+            "submit this application",
+            "submitted this application",
+            "prepared and adopted",
+            "prepared and approved",
+            "prepared and submitted",
+            "reviewed and adopted",
+            "reviewed and approved",
+            "approved and adopted",
+            "approved and submitted",
+            "adopted and submitted",
+            "has prepared",
+            "has reviewed",
+            "has adopted",
+            "has approved",
+            "has submitted",
+            "have prepared",
+            "have reviewed",
+            "have adopted",
+            "have approved",
+            "have submitted",
+            "tribal council",
+            "council resolution",
+            "by resolution",
+            "adopted a resolution",
+            "governing body",
+            "authorized representative"
+          ]
+        },
+        "exportTime": {
+          "source": "openplan/src/lib/grants/application-html.ts (the cover's Assembled box, formatDateTime) and openplan/src/lib/time/workspace-calendar.ts (formatRecordedMoment, timeZoneInputLabel)",
+          "note": "The cover's Assembled box prints the time the application was assembled, to the minute, on the workspace's calendar; a new proof workspace has no time zone set, so it prints in UTC and says so. The checker reads the first such time that begins within 40 characters after an Assembled label on the cover (the box beside it reads in between) and requires the journey's export time (field) to fall in that printed minute, widened by maxClockDifferenceSeconds on each side: the journey's clock and the hosted site's differ by seconds (review 81 measured about 9). The journey's health rule already holds the export time inside its journey, after the account was made and before the end readback. A cover with no Assembled time in this form refuses the record. Blind category: a PDF and a record falsified together to agree are not caught.",
+          "label": "Assembled",
+          "zone": "UTC, no workspace time zone set",
+          "field": "application.exportedAt",
+          "maxClockDifferenceSeconds": 60
         }
       },
       "screens": {
