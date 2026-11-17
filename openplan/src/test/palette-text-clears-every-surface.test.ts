@@ -148,12 +148,61 @@ const LINK_SURFACES = SURFACES.slice(0, 2);
 
 /**
  * StatusBadge tones: each `--status-*` ink as text on its own 12 percent tint
- * (`bg-status-warn/12 text-status-warn`), with the badge on the page or a
- * panel. Axe found the warning pair at 4.47:1 on the Funding tab
+ * (`bg-status-warn/12 text-status-warn`), with the badge on the page, a panel
+ * or `--secondary`. Axe found the warning pair at 4.47:1 on the Funding tab
  * (KI-2026-11-16-142); this measures every tone, which the pairs above missed.
+ * `--secondary` joined on November 17: the award rows on the Funding tab put
+ * badges on a tinted box, and `bg-muted` tints now paint `--secondary`
+ * (KI-2026-11-17-032).
  */
 const STATUS_TONES = ["--status-info", "--status-ok", "--status-warn", "--status-urgent"];
 const STATUS_TINT_ALPHA = 0.12;
+const STATUS_SURFACES = SURFACES.slice(0, 3);
+
+/** Every .tsx file under src/components and src/app, as repo-relative paths with their code. */
+function componentSources(): { file: string; code: string }[] {
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((entry) => {
+      const full = path.join(dir, entry);
+      if (statSync(full).isDirectory()) return walk(full);
+      return /\.tsx$/.test(entry) ? [full] : [];
+    });
+  return ["src/components", "src/app"].flatMap((root) =>
+    walk(path.join(process.cwd(), root)).map((full) => ({
+      file: path.relative(process.cwd(), full).split(path.sep).join("/"),
+      code: stripSourceComments(readFileSync(full, "utf8")),
+    })),
+  );
+}
+
+/** `/20` and `/[0.2]` as 0.2; no suffix as 1. */
+function alphaOf(suffix: string | undefined): number {
+  if (!suffix) return 1;
+  const value = suffix.replace(/^\/\[?|\]$/g, "");
+  return value.includes(".") ? Number(value) : Number(value) / 100;
+}
+
+/** What a Tailwind colour utility paints: its `--color-*` mapping in the `@theme` block. */
+function themeMapping(name: string): string {
+  let value: string | undefined;
+  sheet.walkAtRules("theme", (rule) => {
+    rule.walkDecls(name, (decl) => {
+      value = decl.value.trim();
+    });
+  });
+  if (!value) throw new Error(`${name} is not mapped in the @theme block`);
+  return value;
+}
+
+/**
+ * Every strength of `bg-muted` the components use, hover states included,
+ * since a hovered row still holds its text. Full strength is listed as 1.
+ */
+const MUTED_FILL = /(?<![\w-])bg-muted(\/\[?[\d.]+\]?)?(?![\w-])/g;
+const SOURCES = componentSources();
+const MUTED_ALPHAS = [
+  ...new Set(SOURCES.flatMap(({ code }) => [...code.matchAll(MUTED_FILL)].map((match) => alphaOf(match[1])))),
+].sort((a, b) => a - b);
 
 type Measurement = { label: string; ratio: number };
 
@@ -175,7 +224,7 @@ function measure({ palette, mode, tokens }: Combination): Measurement[] {
     });
   }
   for (const tone of STATUS_TONES) {
-    for (const surface of LINK_SURFACES) {
+    for (const surface of STATUS_SURFACES) {
       rows.push({
         label: `${where}: ${tone} badge text on its 12% tint on ${surface.name}`,
         ratio: contrast(resolve(tone, tokens), over(resolve(tone, tokens), STATUS_TINT_ALPHA, surface.colour(tokens))),
@@ -212,7 +261,7 @@ describe("small text clears 4.5:1 on every surface, in every palette", () => {
       }
     }
     expect(all.flatMap(measure)).toHaveLength(
-      12 * (TEXT_INKS.length * SURFACES.length + LINK_SURFACES.length + STATUS_TONES.length * LINK_SURFACES.length + 1),
+      12 * (TEXT_INKS.length * SURFACES.length + LINK_SURFACES.length + STATUS_TONES.length * STATUS_SURFACES.length + 1),
     );
   });
 
@@ -229,6 +278,106 @@ describe("small text clears 4.5:1 on every surface, in every palette", () => {
       ).toEqual([]);
     },
   );
+});
+
+/**
+ * TEXT ON A `bg-muted` TINT CLEARS 4.5:1 AT EVERY STRENGTH THE APP USES.
+ *
+ * `bg-muted/20` and its siblings hold text in about 190 places: invoice rows,
+ * award boxes, the close-out box, report cards. While `--color-muted` pointed
+ * at the muted TEXT grey, each tint darkened the surface toward that grey and
+ * muted text on it measured 4.20:1 to 4.36:1 (axe with the pane unrolled,
+ * KI-2026-11-17-032 and KI-2026-11-14-111). The mapping now points at
+ * `--secondary`. This measures every ink and every status badge on that tint,
+ * at every strength found in the components, over the page and over a panel.
+ *
+ * Blind category: a tint laid over a status tint or an image, and a strength
+ * written another way (an inline style, a CSS rule) are not measured here.
+ */
+describe("text on a bg-muted tint clears 4.5:1 at every strength used", () => {
+  const all = combinations();
+  const mapping = themeMapping("--color-muted");
+  const BASES = SURFACES.slice(0, 2);
+
+  it("finds the tints in the components (negative control)", () => {
+    expect(SOURCES.length).toBeGreaterThan(500);
+    expect(MUTED_ALPHAS).toContain(0.2);
+    expect(MUTED_ALPHAS).toContain(1);
+    expect(Math.max(...MUTED_ALPHAS.filter((alpha) => alpha < 1))).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it.each(all.map((combination) => [`${combination.palette} ${combination.mode}`, combination] as const))(
+    "%s",
+    (_name, { palette, mode, tokens }) => {
+      const fill = resolve("--color-muted", { ...tokens, "--color-muted": mapping });
+      const failures: string[] = [];
+      for (const alpha of MUTED_ALPHAS) {
+        for (const base of BASES) {
+          const surface = over(fill, alpha, base.colour(tokens));
+          const where = `${palette} ${mode}: bg-muted at ${Math.round(alpha * 100)}% on ${base.name}`;
+          for (const ink of TEXT_INKS) {
+            const ratio = contrast(resolve(ink, tokens), surface);
+            if (ratio < SMALL_TEXT_FLOOR) failures.push(`${where}, ${ink} measures ${ratio.toFixed(2)}:1`);
+          }
+          for (const tone of STATUS_TONES) {
+            const ratio = contrast(resolve(tone, tokens), over(resolve(tone, tokens), STATUS_TINT_ALPHA, surface));
+            if (ratio < SMALL_TEXT_FLOOR) failures.push(`${where}, ${tone} badge measures ${ratio.toFixed(2)}:1`);
+          }
+        }
+      }
+      expect(
+        failures,
+        "bg-muted must paint a surface text can sit on. Point --color-muted at a measured surface; do not lower the floor.",
+      ).toEqual([]);
+    },
+  );
+});
+
+/**
+ * DIMMED TEXT STILL CLEARS 4.5:1.
+ *
+ * `text-muted-foreground/85` painted "Source not recorded" on the project
+ * overview at 4.25:1 (#7f7a73 on white), and `text-foreground/60` measures
+ * 4.19:1 on `--secondary`. The muted ink sits near the floor by design, so it
+ * is never dimmed. The foreground ink may be, at a strength that clears the
+ * floor on the page, a panel and `--secondary` in every palette.
+ *
+ * Blind category: dimming through a parent's `opacity`, or a colour written
+ * as an arbitrary value, is not seen here.
+ */
+describe("dimmed text still clears 4.5:1", () => {
+  const all = combinations();
+  const DIMMED = /(?<![\w-])text-(muted-foreground|foreground)(\/\[?[\d.]+\]?)(?![\w-])/g;
+  const found = SOURCES.flatMap(({ file, code }) =>
+    [...code.matchAll(DIMMED)].map((match) => ({ file, ink: match[1], alpha: alphaOf(match[2]), text: match[0] })),
+  );
+
+  it("never dims the muted ink", () => {
+    expect(found.filter(({ ink }) => ink === "muted-foreground").map(({ file, text }) => `${file}: ${text}`)).toEqual([]);
+  });
+
+  it("dims the foreground ink only to a strength that clears the floor", () => {
+    expect(found.filter(({ ink }) => ink === "foreground").length, "the scan finds the dimmed foreground").toBeGreaterThan(50);
+    const failures: string[] = [];
+    for (const { file, alpha, text } of found.filter(({ ink }) => ink === "foreground")) {
+      for (const { palette, mode, tokens } of all) {
+        for (const surface of SURFACES.slice(0, 3)) {
+          const under = surface.colour(tokens);
+          const ratio = contrast(over(resolve("--foreground", tokens), alpha, under), under);
+          if (ratio < SMALL_TEXT_FLOOR) failures.push(`${file}: ${text} on ${surface.name} in ${palette} ${mode} measures ${ratio.toFixed(2)}:1`);
+        }
+      }
+    }
+    expect([...new Set(failures)]).toEqual([]);
+  });
+
+  it("recognises dimmed text, hover states included, and leaves other utilities alone", () => {
+    const hits = (line: string) => [...line.matchAll(DIMMED)].map((match) => match[0]);
+    expect(hits('"text-muted-foreground/85 text-xs"')).toEqual(["text-muted-foreground/85"]);
+    expect(hits('"text-foreground/[0.6]"')).toEqual(["text-foreground/[0.6]"]);
+    expect(hits('"hover:text-foreground/80"')).toEqual(["text-foreground/80"]);
+    expect(hits('"bg-foreground/10 text-muted-foreground border-foreground/20"')).toEqual([]);
+  });
 });
 
 /**
@@ -256,9 +405,9 @@ describe("tab labels use a token ink", () => {
   });
 
   /**
-   * `--color-muted` is the muted TEXT seed in this token system, so `bg-muted`
-   * paints a mid-grey block. The default tab list sits on `--secondary`, a
-   * surface the test above measures.
+   * The default tab list names `--secondary`, a surface the test above
+   * measures, rather than `bg-muted`, whose mapping has moved once already
+   * (it painted the muted TEXT grey until November 17).
    */
   it("puts the default tab list on a measured surface", () => {
     const code = stripSourceComments(readFileSync(path.join(process.cwd(), files[0]), "utf8"));
@@ -268,21 +417,19 @@ describe("tab labels use a token ink", () => {
 });
 
 /**
- * `bg-muted` IS THE MUTED TEXT COLOUR, SO IT HOLDS NO TEXT.
+ * A FULL-STRENGTH `bg-muted` HOLDS NO TEXT; A TEXT SURFACE NAMES `bg-secondary`.
  *
- * shadcn's `bg-muted` is a soft surface. Here `--color-muted` maps to the seed
- * `--muted`, the grey that secondary text is drawn in. At full strength it is
- * a mid-grey block: ink on it measures about 2.9:1 in Cartographic, and
- * `text-muted-foreground` on it is the same colour as its background. Found
- * 2026-11-14 on the public portal's "closed for comments" chip, the team
- * panel's role badge, the integration keys panel and the published plan pages.
+ * Until November 17 `--color-muted` mapped to the seed `--muted`, the grey
+ * that secondary text is drawn in. At full strength that was a mid-grey
+ * block: ink on it measured about 2.9:1 in Cartographic. Found 2026-11-14 on
+ * the public portal's "closed for comments" chip, the team panel's role
+ * badge, the integration keys panel and the published plan pages.
  *
- * A text surface is `bg-secondary`, which the palette test above measures.
- * Full-strength `bg-muted` stays only where nothing is read: loading
- * skeletons and the empty track of a bar.
- *
- * Blind spot, stated: tints such as `bg-muted/20` are not checked here. Muted
- * text on one measures 4.10:1 on the Cartographic page. See KI-2026-11-14-111.
+ * `bg-muted` now paints `--secondary` (KI-2026-11-17-032), so a full fill is
+ * legible, but a surface that holds text still names `bg-secondary`: the
+ * palette test measures that name, and full-strength `bg-muted` stays where
+ * nothing is read, loading skeletons and the empty track of a bar. Tints are
+ * measured by "text on a bg-muted tint clears 4.5:1" above.
  */
 describe("a full-strength bg-muted holds no text", () => {
   const ROOTS = ["src/components", "src/app"];
@@ -329,7 +476,7 @@ describe("a full-strength bg-muted holds no text", () => {
     const unexpected = filesWithTheFill().filter((file) => !DECORATIVE_ONLY.has(file) && !STILL_OPEN.has(file));
     expect(
       unexpected,
-      "bg-muted is the muted text colour in this token system. Put text on bg-secondary.",
+      "A full-strength bg-muted is for skeletons and bar tracks. Put text on bg-secondary.",
     ).toEqual([]);
   });
 

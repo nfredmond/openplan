@@ -63,6 +63,7 @@ const { appRoot } = require('./harness-env');
 const first = require('./first-job-journey-lib');
 const lib = require('./engagement-job-journey-lib');
 const campaign = require('./journey-campaign-lib');
+const { readWholeScreen } = require('./journey-browser-lib');
 
 const puppeteer = require(require.resolve('puppeteer-core', { paths: [appRoot] }));
 const XLSX = require(require.resolve('xlsx', { paths: [appRoot] }));
@@ -1272,12 +1273,9 @@ async function main() {
             await sleep(1500);
             const applied = await tab.evaluate(() => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'));
             if (applied !== mode) throw new Error(`${screen.slug} at ${width} px rendered ${applied}, not ${mode}.`);
-            await tab.evaluate(axeSource);
-            const results = await tab.evaluate((tags) => window.axe.run(document, { runOnly: { type: 'tag', values: tags }, resultTypes: ['violations'] }), first.AXE_TAGS);
-            const summary = first.summarizeAxe(results);
-            const horizontalScroll = await tab.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
             const name = `${screen.slug}-${width}-${mode}`;
-            await tab.screenshot({ path: path.join(out, 'screens', `${name}.png`), fullPage: true });
+            const { results, horizontalScroll } = await readWholeScreen(tab, { width, height: 900, axeSource, tags: first.AXE_TAGS, screenshotPath: path.join(out, 'screens', `${name}.png`) });
+            const summary = first.summarizeAxe(results);
             fs.writeFileSync(path.join(out, 'console', `${name}.txt`), errors.map((line) => first.scrubText(hideToken(line), secrets)).join('\n'));
             state.screens.push({ screen: screen.slug, width, mode, axe: summary.axe, consoleErrors: errors.length, horizontalScroll });
             if (summary.rules.length) rules.push({ screen: screen.slug, width, mode, rules: summary.rules });

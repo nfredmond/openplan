@@ -53,7 +53,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
+  /* bg-muted paints --secondary, a surface every ink is measured on. It pointed at
+     --muted, the muted TEXT grey, so each bg-muted tint darkened toward that grey
+     and muted text on it fell to 4.1:1 (KI-2026-11-14-111, KI-2026-11-17-032). */
+  --color-muted: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
@@ -126,13 +129,16 @@
     STATUS COLOURS. Fixed in both modes and never overridden by a palette, so
     "done" is green and "needs attention" is amber whichever palette is chosen.
     Each passes 4.5:1 as text on its own 12 percent tint, on every light
-    palette's page and panel. Warn was #8a5a00 (4.48:1 on the Cartographic
-    page, 4.32:1 on Signal) and urgent #b3301a (4.46:1 on Signal), KI-2026-11-16-142.
+    palette's page, panel and --secondary. Warn was #8a5a00 (4.48:1 on the
+    Cartographic page, 4.32:1 on Signal) and urgent #b3301a (4.46:1 on Signal),
+    KI-2026-11-16-142. On November 17 each was darkened by about 7 percent to
+    clear --secondary too (was ok #1f6a2a, warn #845600, urgent #af2f19, info
+    #1d5fa8; 4.08:1 to 4.42:1 there), KI-2026-11-17-032.
   */
-  --status-ok: #1f6a2a;
-  --status-warn: #845600;
-  --status-urgent: #af2f19;
-  --status-info: #1d5fa8;
+  --status-ok: #1d6528;
+  --status-warn: #7b5000;
+  --status-urgent: #a32c17;
+  --status-info: #1b589c;
   /* Was #b78018, 3.05:1 as text on the page background. */
   --warn: #8a5a00;
   --ok: #2e7d32;

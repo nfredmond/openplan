@@ -557,7 +557,7 @@ export function ProjectPostureHeader({
                           {report.summary || "No summary provided yet."}
                         </p>
                       </div>
-                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60" />
+                      <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       <StatusBadge tone={reportStatusTone(report.status)}>

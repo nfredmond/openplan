@@ -469,7 +469,7 @@ export default async function EngagementPage({
           {hasActiveFilters ? (
             // The one deliberate way to widen. Every tab above narrows within
             // the scope the page was opened for; only this leaves it.
-            <Link href="/engagement" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+            <Link href="/engagement" className="ml-auto rounded px-2 py-0.5 text-muted-foreground hover:text-foreground">
               Clear filters ×
             </Link>
           ) : null}
