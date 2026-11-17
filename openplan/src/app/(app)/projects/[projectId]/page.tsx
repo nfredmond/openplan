@@ -40,6 +40,7 @@ import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
 import { buildProjectTabs } from "./_components/_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
+import { countedReadWithheldReason, loadObligationCompletedOnByAwardId } from "./_components/_funding-reads";
 import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
 import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, submittalPriority } from "./_components/_ordering";
 import { isDeadlinePast } from "@/lib/work/deadlines";
@@ -600,13 +601,7 @@ export default async function ProjectDetailPage({
         ...invoice,
         fundingAward: Array.isArray(invoice.funding_awards) ? (invoice.funding_awards[0] ?? null) : invoice.funding_awards ?? null,
       }));
-  const projectInvoiceTotalsWithheldReason = projectInvoicesPending
-    ? null
-    : invoiceResult.error
-      ? "Invoice records could not be read, so no invoice totals are shown."
-      : invoiceResult.count !== projectInvoicesAll.length
-        ? `Invoice totals withheld: ${projectInvoicesAll.length} of ${invoiceResult.count ?? "an unknown number of"} invoice records loaded.`
-        : null;
+  const projectInvoiceTotalsWithheldReason = projectInvoicesPending ? null : countedReadWithheldReason(invoiceResult, projectInvoicesAll.length, { failed: "Invoice records could not be read, so no invoice totals are shown.", withheld: "Invoice totals withheld", records: "invoice records" });
   // The display list: the six newest records, as before.
   const projectInvoices = projectInvoicesAll.slice(0, 6);
 
@@ -805,27 +800,8 @@ export default async function ProjectDetailPage({
           ? (invoice.funding_awards[0] ?? null)
           : invoice.funding_awards ?? null,
       }));
-  const awardInvoiceTotalsWithheldReason = awardInvoicesResult.error
-    ? "Award invoice records could not be read, so no reimbursement totals are shown."
-    : awardInvoicesResult.count !== awardInvoiceRows.length
-      ? `Reimbursement totals withheld: ${awardInvoiceRows.length} of ${awardInvoicesResult.count ?? "an unknown number of"} award invoice records loaded.`
-      : null;
-  // A completed obligation milestone's date means the award's obligation is
-  // met, so the Funding scan stops counting its due date (KI-2026-11-16-140).
-  // At most one obligation milestone per award (unique index, 20260416000053).
-  const obligationMilestonesResult = fundingAwardIds.length
-    ? await supabase
-        .from("project_milestones")
-        .select("funding_award_id, status, actual_date")
-        .eq("project_id", project.id)
-        .eq("milestone_type", "obligation")
-    : { data: [], error: null };
-  collectUnlessPending(reads, "obligation milestones for this project's awards", obligationMilestonesResult);
-  const obligationCompletedOnByAwardId = new Map(
-    ((obligationMilestonesResult.error ? [] : obligationMilestonesResult.data ?? []) as Array<{ funding_award_id: string | null; status: string | null; actual_date: string | null }>)
-      .filter((row) => row.funding_award_id && row.status === "complete" && row.actual_date)
-      .map((row) => [row.funding_award_id as string, row.actual_date as string])
-  );
+  const awardInvoiceTotalsWithheldReason = countedReadWithheldReason(awardInvoicesResult, awardInvoiceRows.length, { failed: "Award invoice records could not be read, so no reimbursement totals are shown.", withheld: "Reimbursement totals withheld", records: "award invoice records" });
+  const obligationCompletedOnByAwardId = await loadObligationCompletedOnByAwardId(supabase, project.id, fundingAwardIds.length > 0, reads);
   const fundingStackSummary = buildProjectFundingStackSummary(
     projectFundingProfile,
     fundingAwards.map((award) => ({ ...award, obligation_completed_on: obligationCompletedOnByAwardId.get(award.id) ?? null })),

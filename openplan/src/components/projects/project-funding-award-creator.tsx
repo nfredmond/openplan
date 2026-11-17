@@ -308,7 +308,7 @@ export function ProjectFundingAwardCreator({
         ),
       },
     ],
-    [opportunityOptions]
+    [opportunityOptions, canRecordClosure]
   );
 
   const flow = useGuidedFlow<AwardValues>({
