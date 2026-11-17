@@ -19,7 +19,7 @@ const createBillingInvoiceSchema = z.object({
   billingBasis: z.enum(["lump_sum", "time_and_materials", "cost_plus", "milestone", "progress_payment"]).optional(),
   // Kept wide so an older client gets the refusal below, not a bare 400.
   status: z.enum(["draft", "internal_review", "submitted", "approved_for_payment", "paid", "rejected"]).optional(),
-  /** The rejected request on the same award that this one replaces (LAPM 5.5.1(8)). */
+  /** The rejected request on the same award that this one replaces (20261117000100). */
   resubmitsInvoiceId: z.string().uuid().optional(),
   periodStart: z.string().trim().max(30).optional(),
   periodEnd: z.string().trim().max(30).optional(),

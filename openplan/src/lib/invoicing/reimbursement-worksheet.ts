@@ -480,8 +480,8 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
 }
 
 /**
- * List each resubmission right after the request it replaces (LAPM 5.5.1(8):
- * invoice 1 becomes 1A), keeping every other line in its order. A resubmission
+ * List each resubmission right after the request it replaces (invoice 1
+ * becomes 1A), keeping every other line in its order. A resubmission
  * whose original is not in this selection stays where it was.
  */
 export function orderResubmissionsAfterOriginals(lines: readonly LedgerInvoiceLine[]): LedgerInvoiceLine[] {

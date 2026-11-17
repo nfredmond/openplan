@@ -286,7 +286,8 @@ export function normalizeFocusedInvoiceId(value: string | string[] | undefined):
 /**
  * The number a resubmission takes: the rejected number plus "A", or the next
  * letter when it already ends in one after a digit (1 becomes 1A, 1A becomes
- * 1B), following LAPM 5.5.1(8). A planner can still edit it.
+ * 1B), the usual numbering for a returned request (KI-2026-11-16-135 cites
+ * the source). A planner can still edit it.
  */
 export function resubmissionInvoiceNumber(rejectedNumber: string): string {
   const trimmed = rejectedNumber.trim();

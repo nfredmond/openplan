@@ -352,7 +352,7 @@ function FundingAwardCloseoutRow({
           coverage !== null &&
           typeof payload?.openCount !== "number" &&
           closeBasis === "earned_coverage" &&
-          coverage.paidAmount < coverage.awardedAmount;
+          (coverage.awardedAmount <= 0 || coverage.paidAmount < coverage.awardedAmount);
         if (coverage && shortfall) {
           setOutcome({ kind: "refused_coverage", coverage });
           return;

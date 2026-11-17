@@ -205,7 +205,7 @@ describe("POST /api/invoicing/invoices", () => {
         invoiceNumber: "OP-2026-001",
         consultantName: "Jordan Rivera Consulting",
         billingBasis: "time_and_materials",
-        status: "submitted",
+        status: "draft",
         periodStart: "2026-03-01",
         periodEnd: "2026-03-15",
         invoiceDate: "2026-03-15",
@@ -458,5 +458,68 @@ describe("POST /api/invoicing/invoices", () => {
         funding_award_id: "77777777-7777-4777-8777-777777777777",
       })
     );
+  });
+
+  // Request custody (20261117000100, KI-2026-11-16-137 and -138).
+  const base = {
+    workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    projectId: "11111111-1111-4111-8111-111111111111",
+    invoiceNumber: "E-DUP",
+    amount: 700,
+  };
+
+  it("refuses a request created in any status but draft, before any write", async () => {
+    for (const status of ["submitted", "approved_for_payment", "paid"]) {
+      const response = await postInvoice(jsonRequest({ ...base, status }));
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({ error: expect.stringContaining("saved as a draft") });
+    }
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a zero gross amount", async () => {
+    const response = await postInvoice(jsonRequest({ ...base, amount: 0 }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Give a gross amount above zero." });
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("answers a second request with the same number on the award as a conflict", async () => {
+    billingInvoicesSingleMock.mockResolvedValueOnce({ data: null, error: { code: "23505", message: "duplicate key" } });
+    const response = await postInvoice(jsonRequest({ ...base, fundingAwardId: "77777777-7777-4777-8777-777777777777" }));
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toContain("E-DUP is already logged on this award");
+  });
+
+  it("writes a draft and warns when the request's costs start before the award was obligated", async () => {
+    fundingAwardsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "77777777-7777-4777-8777-777777777777",
+        workspace_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        project_id: "11111111-1111-4111-8111-111111111111",
+        obligated_on: "2026-06-30",
+      },
+      error: null,
+    });
+    const response = await postInvoice(
+      jsonRequest({ ...base, fundingAwardId: "77777777-7777-4777-8777-777777777777", periodStart: "2026-01-15", invoiceDate: "2026-07-15" })
+    );
+    expect(response.status).toBe(201);
+    expect(fundingAwardsSelectMock).toHaveBeenCalledWith(expect.stringContaining("obligated_on"));
+    expect(billingInvoicesInsertMock).toHaveBeenCalledWith(expect.objectContaining({ status: "draft" }));
+    const body = await response.json();
+    expect(body.warnings).toEqual([
+      {
+        code: "costs_before_obligation",
+        message:
+          "This request's period starts 2026-01-15, before the award was obligated on 2026-06-30. Costs before that date are generally not reimbursable unless the agreement allows them.",
+      },
+    ]);
+  });
+
+  it("refuses a resubmission that names no award", async () => {
+    const response = await postInvoice(jsonRequest({ ...base, resubmitsInvoiceId: "88888888-8888-4888-8888-888888888888" }));
+    expect(response.status).toBe(400);
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
   });
 });

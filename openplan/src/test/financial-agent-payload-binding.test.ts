@@ -156,7 +156,7 @@ describe("financial routes bind the complete agent write to the registered actio
     ["profile", { fundingNeedAmount: 500, localMatchNeedAmount: 70, notes: "Human" }, { funding_need_amount: 500, local_match_need_amount: 70 }],
     ["opportunity", { ...bodies.opportunity, expectedAwardAmount: 500, decisionState: "pursue", pursuitKind: "proposal" }, { expected_award_amount: 500, decision_state: "pursue", pursuit_kind: "proposal" }],
     ["decision", { expectedAwardAmount: 500, status: "upcoming" }, { expected_award_amount: 500, opportunity_status: "upcoming" }],
-    ["invoice", { workspaceId, fundingAwardId: null, status: "paid" }, { funding_award_id: null, status: "paid" }],
+    ["invoice", { workspaceId, fundingAwardId: null, status: "paid", paidDate: "2026-11-01" }, { funding_award_id: null, status: "paid", paid_date: "2026-11-01" }],
   ] as [Lane, Record<string, unknown>, Record<string, unknown>][])("preserves manual %s fields", async (lane, body, value) => {
     const f = fixture(actions[lane], true);
     expect((await route(lane, request(body, f.inputHash, true))).status).toBe(lane === "opportunity" ? 201 : 200);

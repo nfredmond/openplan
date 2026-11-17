@@ -263,7 +263,7 @@ function InvoiceRecordComposerSession({
 
             {resubmits ? (
               <p className="text-xs text-muted-foreground">
-                Resubmits {resubmits.invoiceNumber}, which the funder rejected. A returned invoice is resubmitted with a revised date and number (LAPM 5.5.1(8)).
+                Resubmits {resubmits.invoiceNumber}, which the funder rejected. A returned request goes back with a revised date and a new number.
               </p>
             ) : null}
             <p className="text-xs text-muted-foreground">Saved as a draft. Move it forward from the register.</p>
@@ -610,6 +610,8 @@ function InvoiceRecordComposerSession({
           invoiceNumber: values.invoiceNumber,
           consultantName: values.consultantName,
           billingBasis: values.billingBasis,
+          // Always a draft: the database creates no request in a later status.
+          status: "draft",
           resubmitsInvoiceId: resubmits?.invoiceId,
           periodStart: values.periodStart || undefined,
           periodEnd: values.periodEnd || undefined,
@@ -641,7 +643,7 @@ function InvoiceRecordComposerSession({
 
       if(!active.current)return;
       const warnings = (payload?.warnings ?? []).map((warning) => warning.message).filter(Boolean);
-      setMessage(["Invoice record saved as a draft.", ...warnings].join(" "));
+      setMessage(["Invoice record saved.", ...warnings].join(" "));
       router.refresh();
     },
   });

@@ -294,14 +294,15 @@ export async function POST(request: NextRequest) {
         audit,
       });
       if (act.outcome === "refused") {
-        const removal = await supabase.from("funding_awards").delete().eq("id", award.id);
-        if (removal.error) {
-          audit.error("funding_award_import_closure_cleanup_failed", { awardId: award.id, message: removal.error.message });
+        const removal = await supabase.from("funding_awards").delete().eq("id", award.id).select("id");
+        const removed = !removal.error && (removal.data?.length ?? 0) === 1;
+        if (!removed) {
+          audit.error("funding_award_import_closure_cleanup_failed", { awardId: award.id, message: removal.error?.message ?? "no row deleted" });
         }
         return NextResponse.json(
           {
             error: act.message,
-            details: removal.error
+            details: !removed
               ? "The award was created open and could not be removed; record its closure again or delete it."
               : "The award was not created.",
           },

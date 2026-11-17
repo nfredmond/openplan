@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import { describe, expect, it } from "vitest";
 
 import { evaluateFundingAwardCloseoutCoverage } from "@/app/api/funding-awards/[awardId]/award-closure";
