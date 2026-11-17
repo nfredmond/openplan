@@ -230,8 +230,9 @@ export type FundingAwardClosureActResult =
  * `funding_award_closeout_command` (20261117000000): the database refuses a
  * change to the closure columns from anywhere else, so this is the only path.
  * The command re-reads the requests inside its transaction, refuses while any
- * is open, checks paid coverage, files the close-out milestone on the
- * workspace's calendar day and writes the closure receipt. The posture rebuild
+ * is open, checks paid coverage and files the close-out milestone on the
+ * workspace's calendar day. The audit event below records the figures it
+ * returns, because ordinary awards keep no closure receipt row. The posture rebuild
  * stays here because it reads through the caller's session.
  */
 export async function actOnFundingAwardClosure({
@@ -278,7 +279,7 @@ export async function actOnFundingAwardClosure({
     userId,
     event,
     status: command.result.status ?? null,
-    closureReceiptId: command.result.closureReceiptId ?? null,
+    basis: command.result.basis ?? null,
   });
   return command;
 }

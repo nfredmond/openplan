@@ -8,6 +8,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
+import { requestCostsBeforeObligation } from "@/lib/invoicing/request-dates";
 
 const createBillingInvoiceSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -16,7 +17,10 @@ const createBillingInvoiceSchema = z.object({
   invoiceNumber: z.string().trim().min(1).max(120),
   consultantName: z.string().trim().max(160).optional(),
   billingBasis: z.enum(["lump_sum", "time_and_materials", "cost_plus", "milestone", "progress_payment"]).optional(),
+  // Kept wide so an older client gets the refusal below, not a bare 400.
   status: z.enum(["draft", "internal_review", "submitted", "approved_for_payment", "paid", "rejected"]).optional(),
+  /** The rejected request on the same award that this one replaces (LAPM 5.5.1(8)). */
+  resubmitsInvoiceId: z.string().uuid().optional(),
   periodStart: z.string().trim().max(30).optional(),
   periodEnd: z.string().trim().max(30).optional(),
   invoiceDate: z.string().trim().max(30).optional(),
@@ -41,7 +45,7 @@ const INVOICE_SELECT_LEGACY =
 // caltrans_posture stays selected as the legacy read fallback for rows that
 // predate the profile backfill.
 const INVOICE_SELECT =
-  `${INVOICE_SELECT_LEGACY}, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection`;
+  `${INVOICE_SELECT_LEGACY}, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection, rejection_reason, resubmits_invoice_id, paid_date`;
 
 /** PostgREST's shapes for "this deployment has not applied the profile-columns migration yet". */
 function looksLikePendingProfileSchema(message: string | null | undefined): boolean {
@@ -76,6 +80,21 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });
       return NextResponse.json({ error: "Invalid invoice payload" }, { status: 400 });
+    }
+
+    // The database creates every request as a draft (20261117000100) and moves
+    // it forward from the register, so a request cannot be born paid.
+    if (parsed.data.status && parsed.data.status !== "draft") {
+      return NextResponse.json(
+        { error: "A reimbursement request is saved as a draft. Move it forward from the register." },
+        { status: 400 }
+      );
+    }
+    if (Number(parsed.data.amount) <= 0) {
+      return NextResponse.json({ error: "Give a gross amount above zero." }, { status: 400 });
+    }
+    if (parsed.data.resubmitsInvoiceId && !parsed.data.fundingAwardId) {
+      return NextResponse.json({ error: "A resubmission goes on the same award as the request it replaces." }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -133,11 +152,12 @@ export async function POST(request: NextRequest) {
     }
 
     let managedAward = false;
+    let awardObligatedOn: string | null = null;
     let effectiveProjectId = parsed.data.projectId ?? null;
     if (parsed.data.fundingAwardId) {
       const { data: fundingAward, error: fundingAwardError } = await supabase
         .from("funding_awards")
-        .select("id, workspace_id, project_id, current_handoff_revision_id, latest_handoff_revision_id, currency_code")
+        .select("id, workspace_id, project_id, current_handoff_revision_id, latest_handoff_revision_id, currency_code, obligated_on")
         .eq("id", parsed.data.fundingAwardId)
         .single();
 
@@ -160,6 +180,21 @@ export async function POST(request: NextRequest) {
         if (!fundingAward.current_handoff_revision_id || parsed.data.awardHandoffRevisionId !== fundingAward.current_handoff_revision_id || parsed.data.currencyCode !== fundingAward.currency_code) return NextResponse.json({error:"Review current award terms and currency before saving reimbursement."},{status:409});
       }
       effectiveProjectId = effectiveProjectId ?? fundingAward.project_id ?? null;
+      awardObligatedOn = typeof fundingAward.obligated_on === "string" ? fundingAward.obligated_on : null;
+    }
+
+    if (parsed.data.resubmitsInvoiceId) {
+      const { data: replaced, error: replacedError } = await supabase
+        .from("billing_invoice_records")
+        .select("id, workspace_id, funding_award_id, status")
+        .eq("id", parsed.data.resubmitsInvoiceId)
+        .maybeSingle();
+      if (replacedError || !replaced || replaced.workspace_id !== parsed.data.workspaceId || replaced.funding_award_id !== parsed.data.fundingAwardId) {
+        return NextResponse.json({ error: "The request being resubmitted is not on this award." }, { status: 400 });
+      }
+      if (replaced.status !== "rejected") {
+        return NextResponse.json({ error: "Only a rejected request can be resubmitted." }, { status: 409 });
+      }
     }
 
     // Which reimbursement profile governs this record: an explicit request
@@ -233,7 +268,8 @@ export async function POST(request: NextRequest) {
       invoice_number: parsed.data.invoiceNumber,
       consultant_name: parsed.data.consultantName?.trim() || null,
       billing_basis: parsed.data.billingBasis ?? "time_and_materials",
-      status: parsed.data.status ?? "draft",
+      status: "draft",
+      ...(parsed.data.resubmitsInvoiceId ? { resubmits_invoice_id: parsed.data.resubmitsInvoiceId } : {}),
       period_start: parsed.data.periodStart?.trim() || null,
       period_end: parsed.data.periodEnd?.trim() || null,
       invoice_date: parsed.data.invoiceDate?.trim() || null,
@@ -291,6 +327,15 @@ export async function POST(request: NextRequest) {
         .single());
     }
 
+    if (error?.code === "23505") {
+      return NextResponse.json(
+        { error: `Request number ${parsed.data.invoiceNumber} is already logged on this award. Use a new number; a resubmission adds a letter, as in 1A.` },
+        { status: 409 }
+      );
+    }
+    if (error?.code === "23514") {
+      return NextResponse.json({ error: error.message }, { status: 422 });
+    }
     if (error) {
       audit.error("billing_invoice_insert_failed", {
         message: error.message,
@@ -307,7 +352,13 @@ export async function POST(request: NextRequest) {
       durationMs: Date.now() - startedAt,
     });
 
-    return NextResponse.json({ invoice: data }, { status: 201 });
+    const warnings = requestCostsBeforeObligation({
+      obligatedOn: awardObligatedOn,
+      periodStart: parsed.data.periodStart?.trim() || null,
+      invoiceDate: parsed.data.invoiceDate?.trim() || null,
+    });
+
+    return NextResponse.json({ invoice: data, ...(warnings.length ? { warnings } : {}) }, { status: 201 });
   } catch (error) {
     audit.error("billing_invoice_create_unhandled_error", {
       durationMs: Date.now() - startedAt,

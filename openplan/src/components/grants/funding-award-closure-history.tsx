@@ -12,7 +12,6 @@ import {
 
 const eventLabels: Record<AwardClosureReceipt["event"], string> = {
   earned_coverage: "Closed on recorded paid coverage",
-  reconciled_with_balance: "Closed with balance released",
   recorded_on_import: "Closure recorded on import",
   reopen: "Reopened",
 };
@@ -36,14 +35,11 @@ function Receipt({ receipt }: { receipt: AwardClosureReceipt }) {
           <p><strong>{basis.kind === "reopen" ? "Reopen reason" : "Stated close-out basis"}: </strong>{basis.note ?? "Not recorded"}</p>
           {basis.kind === "reopen" ? (
             <p><strong>Selected destination: </strong>{basis.reopenSpendingStatus ? destinationLabels[basis.reopenSpendingStatus] : "Not recorded"}</p>
-          ) : basis.kind === "earned_coverage" || basis.kind === "reconciled" ? (
-            <>
-              <p><strong>Retained ceiling: </strong>{[basis.currency, basis.ceiling].filter(Boolean).join(" ")}</p>
-              <p><strong>Retained paid amount: </strong>{[basis.currency, basis.paid].filter(Boolean).join(" ")}</p>
-              {basis.released ? <p><strong>Released balance: </strong>{[basis.currency, basis.released].filter(Boolean).join(" ")}</p> : null}
-            </>
           ) : (
-            <p>No paid coverage was checked for a closure recorded on import.</p>
+            <>
+              <p><strong>Retained ceiling: </strong>{basis.currency} {basis.ceiling}</p>
+              <p><strong>Retained paid amount: </strong>{basis.currency} {basis.paid}</p>
+            </>
           )}
           <p><strong>Previous closure type: </strong>{basis.previousClosure.basis ?? "Not recorded"}</p>
           <p><strong>Previous closure timestamp: </strong>{basis.previousClosure.closedAt ?? "Not recorded"}</p>

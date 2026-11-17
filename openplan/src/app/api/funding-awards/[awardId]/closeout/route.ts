@@ -279,7 +279,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         closedAt: act.result.closedAt ?? null,
         releasedAmount: typeof act.result.released === "string" ? Number(act.result.released) : null,
         milestoneFiled: act.result.milestoneFiled === true,
-        closureReceiptId: act.result.closureReceiptId ?? null,
       },
       { status: 200 }
     );

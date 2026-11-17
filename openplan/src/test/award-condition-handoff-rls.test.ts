@@ -118,7 +118,10 @@ const COMPOSED_ENTRY=composedEntryFunctions(readFileSync('supabase/migrations/20
    r:=pg_temp.handoff_apply(p);
    PERFORM pg_temp.assert_handoff(pg_temp.handoff_apply(p)=r,'Narrow grants changed exact handoff replay');
    INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,retention_amount,net_amount,award_handoff_revision_id,currency_code)
-   SELECT w,'__PROJECT__','__AWARD__','Synthetic narrow-grant paid coverage','paid',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic narrow-grant paid coverage','draft',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   -- Requests are created as drafts and move to paid only after approval (20261117000100).
+   UPDATE public.billing_invoice_records SET status='approved_for_payment' WHERE invoice_number='Synthetic narrow-grant paid coverage' AND funding_award_id='__AWARD__';
+   UPDATE public.billing_invoice_records SET status='paid',paid_date=current_date WHERE invoice_number='Synthetic narrow-grant paid coverage' AND funding_award_id='__AWARD__';
    closed:=public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage',NULL);
    PERFORM pg_temp.assert_handoff(closed->>'status'='closed' AND closed->>'paid'='100.01','Narrow grants broke managed closure receipt');
    INSERT INTO public.funding_awards(workspace_id,project_id,title) SELECT w,'__PROJECT__','Synthetic legacy calendar read' FROM handoff_fixture;
@@ -197,7 +200,10 @@ const COMPOSED_ENTRY=composedEntryFunctions(readFileSync('supabase/migrations/20
   DO $$ DECLARE p jsonb:=pg_temp.handoff_preview(); r jsonb; other uuid:=gen_random_uuid(); t jsonb; second jsonb; BEGIN
    -- Legacy paid row before handoff remains unbound and cannot earn managed closure.
    INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,net_amount)
-   SELECT w,'__PROJECT__','__AWARD__','Synthetic legacy paid','paid',100.01,100.01 FROM handoff_fixture;
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic legacy paid','draft',100.01,100.01 FROM handoff_fixture;
+   -- Requests are created as drafts and move to paid only after approval (20261117000100).
+   UPDATE public.billing_invoice_records SET status='approved_for_payment' WHERE invoice_number='Synthetic legacy paid' AND funding_award_id='__AWARD__';
+   UPDATE public.billing_invoice_records SET status='paid',paid_date=current_date WHERE invoice_number='Synthetic legacy paid' AND funding_award_id='__AWARD__';
    p:=pg_temp.handoff_preview();r:=pg_temp.handoff_apply(p);
    BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage',NULL);RAISE EXCEPTION 'Unbound paid row earned closure';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
    BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',gen_random_uuid(),'earned_coverage',NULL);RAISE EXCEPTION 'Stale closure accepted';EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;END;
@@ -220,7 +226,10 @@ const COMPOSED_ENTRY=composedEntryFunctions(readFileSync('supabase/migrations/20
   DO $$ DECLARE p jsonb:=pg_temp.handoff_preview(); r jsonb; closed jsonb; reopened jsonb; old_receipt jsonb; target text:=${target === null ? 'NULL' : `'${target}'`}; BEGIN
    r:=pg_temp.handoff_apply(p);
    INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,retention_amount,net_amount,award_handoff_revision_id,currency_code)
-   SELECT w,'__PROJECT__','__AWARD__','Synthetic exact paid coverage','paid',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic exact paid coverage','draft',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   -- Requests are created as drafts and move to paid only after approval (20261117000100).
+   UPDATE public.billing_invoice_records SET status='approved_for_payment' WHERE invoice_number='Synthetic exact paid coverage' AND funding_award_id='__AWARD__';
+   UPDATE public.billing_invoice_records SET status='paid',paid_date=current_date WHERE invoice_number='Synthetic exact paid coverage' AND funding_award_id='__AWARD__';
    closed:=public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage','Synthetic reviewed paid coverage');
    PERFORM pg_temp.assert_handoff(closed->>'status'='closed' AND closed->>'paid'='100.01','Exact earned coverage changed');
    SELECT to_jsonb(c) INTO STRICT old_receipt FROM public.funding_award_closure_receipts c WHERE id=(closed->>'closureReceiptId')::uuid;
@@ -237,7 +246,10 @@ const COMPOSED_ENTRY=composedEntryFunctions(readFileSync('supabase/migrations/20
  it('refuses invalid reopen destinations, stale revisions and denied actors without writing state or receipts',()=>exercise(`
   DO $$ DECLARE r jsonb:=pg_temp.handoff_apply(pg_temp.handoff_preview()); target text; before_award jsonb; before_receipts jsonb; BEGIN
    INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,retention_amount,net_amount,award_handoff_revision_id,currency_code)
-   SELECT w,'__PROJECT__','__AWARD__','Synthetic exact paid coverage','paid',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic exact paid coverage','draft',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   -- Requests are created as drafts and move to paid only after approval (20261117000100).
+   UPDATE public.billing_invoice_records SET status='approved_for_payment' WHERE invoice_number='Synthetic exact paid coverage' AND funding_award_id='__AWARD__';
+   UPDATE public.billing_invoice_records SET status='paid',paid_date=current_date WHERE invoice_number='Synthetic exact paid coverage' AND funding_award_id='__AWARD__';
    PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage',NULL,NULL);
    SELECT to_jsonb(a) INTO STRICT before_award FROM public.funding_awards a WHERE id='__AWARD__';
    SELECT jsonb_agg(to_jsonb(c) ORDER BY id) INTO before_receipts FROM public.funding_award_closure_receipts c WHERE award_id='__AWARD__';

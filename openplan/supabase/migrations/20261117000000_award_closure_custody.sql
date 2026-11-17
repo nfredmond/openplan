@@ -39,6 +39,13 @@
 --                   The one writer of closure columns for awards with no
 --                   handoff revision: earned close-out, reconciled close-out,
 --                   closure recorded on import, and reopen. Service role only.
+--                   It writes no row to funding_award_closure_receipts: that
+--                   table is immutable and its award and workspace keys have
+--                   no ON DELETE action, so a receipt would stop a planner
+--                   deleting a project or workspace that holds an ordinary
+--                   closed award. The award row keeps who closed it, when, on
+--                   what basis and what was released, and the route's audit
+--                   log records the figures the command returns.
 --   funding_award_closure_custody (trigger)
 --                   Refuses any change to the closure columns, on any award,
 --                   unless the command above (or the managed command) set the
@@ -47,7 +54,7 @@
 --                   review, submitted or approved for payment, for managed and
 --                   unmanaged awards alike.
 --
--- Additive. Two CHECK constraints are widened by dropping and adding them back
+-- Additive. One CHECK constraint is widened by dropping and adding it back
 -- with one more allowed value; no row changes. No policy, grant or existing
 -- function is dropped or replaced, and no row is rewritten. Existing closed
 -- awards keep their basis; the trigger checks only changes.
@@ -85,12 +92,6 @@ ALTER TABLE public.funding_awards
   ADD CONSTRAINT funding_awards_reconciled_closure_states_its_basis CHECK (
     closure_basis IS DISTINCT FROM 'reconciled_with_balance'
     OR (closure_note IS NOT NULL AND length(btrim(closure_note)) > 0)
-  );
-
-ALTER TABLE public.funding_award_closure_receipts
-  DROP CONSTRAINT funding_award_closure_receipts_event_check,
-  ADD CONSTRAINT funding_award_closure_receipts_event_check CHECK (
-    event IN ('earned_coverage', 'reconciled_with_balance', 'recorded_on_import', 'reopen')
   );
 
 -- What one request is worth to the award, in the same arithmetic as
@@ -151,7 +152,6 @@ DECLARE
   open_count integer := 0;
   open_statuses jsonb;
   released numeric;
-  receipt_id uuid := gen_random_uuid();
   basis jsonb;
   milestone_filed boolean := false;
   stamp timestamptz;
@@ -254,9 +254,6 @@ BEGIN
     END IF;
   END IF;
 
-  INSERT INTO public.funding_award_closure_receipts(id, award_id, workspace_id, revision_id, event, basis, actor_id)
-  VALUES (receipt_id, a.id, a.workspace_id, NULL, p_event, basis, p_actor);
-
   PERFORM set_config('openplan.award_closure_command', a.id::text, true);
   stamp := clock_timestamp();
 
@@ -300,7 +297,7 @@ BEGIN
     'ceiling', a.awarded_amount::text,
     'paid', paid::text,
     'released', released::text,
-    'closureReceiptId', receipt_id,
+    'basis', basis,
     'milestoneFiled', milestone_filed
   );
 END $$;
