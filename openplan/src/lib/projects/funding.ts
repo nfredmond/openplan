@@ -17,9 +17,27 @@ export type FundingAwardLike = ComparableAward & {
   match_amount?: number | string | null;
   risk_flag?: string | null;
   obligation_due_at?: string | null;
+  /** The date the award was obligated, authorized or allocated (20261117000200). */
+  obligated_on?: string | null;
+  /** The actual date on the award's completed obligation milestone, when the caller read it. */
+  obligation_completed_on?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
 };
+
+/**
+ * The date an award's obligation was met, or null (KI-2026-11-16-140). The
+ * award's own obligated-on date wins, because the award row, the worksheet and
+ * the pre-obligation warning read only that date (review 95); the completed
+ * obligation milestone's date counts when the award has none. Completing the
+ * milestone writes its date to an empty `obligated_on`, so the two agree. An
+ * award with either no longer has an obligation deadline ahead of it.
+ */
+export function awardObligationMetOn(award: FundingAwardLike): { date: string; source: "milestone" | "award" } | null {
+  if (award.obligated_on) return { date: award.obligated_on, source: "award" };
+  if (award.obligation_completed_on) return { date: award.obligation_completed_on, source: "milestone" };
+  return null;
+}
 
 export type FundingOpportunityLike = {
   has_source_backed_issuance?: boolean;
@@ -56,6 +74,8 @@ export type ProjectFundingProfileScanLane = {
   detail: string;
   nextAction: string;
   amount: number | null;
+  /** What the amount is, printed beside it (KI-2026-11-16-143). */
+  amountLabel?: string;
 };
 
 export type ProjectFundingProfileScan = {
@@ -168,7 +188,8 @@ export function buildProjectFundingStackSummary(
   profile: ProjectFundingProfileLike | null | undefined,
   awards: FundingAwardLike[],
   opportunities: FundingOpportunityLike[] = [],
-  invoices: FundingInvoiceLike[] = []
+  invoices: FundingInvoiceLike[] = [],
+  options: { reimbursementWithheldReason?: string | null } = {}
 ) {
   const managed = awards.some((a) => a.latest_handoff_revision_id || a.current_handoff_revision_id);
   if (managed) {
@@ -180,7 +201,7 @@ export function buildProjectFundingStackSummary(
       likelyFundingAmount: Number.NaN, totalPotentialFundingAmount: Number.NaN, unfundedAfterLikelyAmount: Number.NaN,
       requestedReimbursementAmount: Number.NaN, paidReimbursementAmount: Number.NaN, outstandingReimbursementAmount: Number.NaN,
       draftReimbursementAmount: Number.NaN, uninvoicedAwardAmount: Number.NaN,
-      nextObligationAt: null, awardRiskCount: awards.filter((a) => a.risk_flag === "watch" || a.risk_flag === "critical").length,
+      nextObligationAt: null, obligationMetCount: 0, latestObligationMetOn: null as string | null, awardRiskCount: awards.filter((a) => a.risk_flag === "watch" || a.risk_flag === "critical").length,
       pursuedOpportunityCount: opportunities.filter((o) => o.decision_state === "pursue" && !o.has_source_backed_issuance).length,
       status: "unknown" as ProjectFundingStackStatus, label: "Recorded award ceilings; coverage unassessed",
       reason: "Use the exact version/currency snapshot. Target currency and cost basis are not established for comparison.",
@@ -220,7 +241,12 @@ export function buildProjectFundingStackSummary(
   const outstandingReimbursementAmount = reimbursementSummary.outstandingNetAmount;
   const draftReimbursementAmount = reimbursementSummary.draftNetAmount;
   const uninvoicedAwardAmount = uninvoicedCommittedAwardAmount(committedFundingAmount, reimbursementSummary);
+  const obligationMetDates = awards
+    .map((award) => awardObligationMetOn(award)?.date ?? null)
+    .filter((value): value is string => Boolean(value))
+    .sort();
   const nextObligationAt = awards
+    .filter((award) => !awardObligationMetOn(award))
     .map((award) => award.obligation_due_at)
     .filter((value): value is string => Boolean(value))
     .sort((left, right) => new Date(left).getTime() - new Date(right).getTime())[0] ?? null;
@@ -307,6 +333,15 @@ export function buildProjectFundingStackSummary(
     reimbursementReason = "Linked invoice requests exist, but no committed award total is available to classify reimbursement posture.";
   }
 
+  // A reimbursement total summed from an incomplete read is a wrong number
+  // shown as fact (KI-2026-11-16-132). Withhold every reimbursement figure and
+  // say why; the award ceilings above still stand on their own read.
+  const withheld = options.reimbursementWithheldReason ?? null;
+  if (withheld) {
+    reimbursementStatus = "unknown";
+    reimbursementLabel = "Reimbursement totals withheld";
+    reimbursementReason = withheld;
+  }
   return {
     fundingNeedAmount,
     localMatchNeedAmount,
@@ -321,12 +356,14 @@ export function buildProjectFundingStackSummary(
     opportunityCount: opportunities.length,
     reimbursementPacketCount: invoices.length,
     awardRiskCount,
-    requestedReimbursementAmount,
-    paidReimbursementAmount,
-    outstandingReimbursementAmount,
-    draftReimbursementAmount,
-    uninvoicedAwardAmount,
+    requestedReimbursementAmount: withheld ? Number.NaN : requestedReimbursementAmount,
+    paidReimbursementAmount: withheld ? Number.NaN : paidReimbursementAmount,
+    outstandingReimbursementAmount: withheld ? Number.NaN : outstandingReimbursementAmount,
+    draftReimbursementAmount: withheld ? Number.NaN : draftReimbursementAmount,
+    uninvoicedAwardAmount: withheld ? Number.NaN : uninvoicedAwardAmount,
     nextObligationAt,
+    obligationMetCount: obligationMetDates.length,
+    latestObligationMetOn: obligationMetDates[obligationMetDates.length - 1] ?? null,
     status,
     label,
     reason,
@@ -341,9 +378,9 @@ export function buildProjectFundingStackSummary(
     coverageRatio: fundingNeedAmount > 0 ? Math.min(committedFundingAmount / fundingNeedAmount, 1) : null,
     pipelineCoverageRatio: fundingNeedAmount > 0 ? Math.min(totalPotentialFundingAmount / fundingNeedAmount, 1) : null,
     reimbursementCoverageRatio:
-      committedFundingAmount > 0 ? Math.min(requestedReimbursementAmount / committedFundingAmount, 1) : null,
+      !withheld && committedFundingAmount > 0 ? Math.min(requestedReimbursementAmount / committedFundingAmount, 1) : null,
     paidReimbursementCoverageRatio:
-      committedFundingAmount > 0 ? Math.min(paidReimbursementAmount / committedFundingAmount, 1) : null,
+      !withheld && committedFundingAmount > 0 ? Math.min(paidReimbursementAmount / committedFundingAmount, 1) : null,
   };
 }
 
@@ -427,6 +464,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.committedFundingAmount)} committed and ${formatScanCurrency(summary.likelyFundingAmount)} likely against a ${formatScanCurrency(summary.fundingNeedAmount)} target.`,
       nextAction: `Resolve the remaining ${formatScanCurrency(summary.unfundedAfterLikelyAmount)} funding gap or keep it explicit in RTP/grant packet language.`,
       amount: summary.unfundedAfterLikelyAmount,
+      amountLabel: "still unfunded",
     });
   } else {
     lanes.push({
@@ -437,6 +475,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.committedFundingAmount)} committed plus ${formatScanCurrency(summary.likelyFundingAmount)} likely covers the current target need.`,
       nextAction: "Keep the funding basis current when award, scope, or estimate records change.",
       amount: summary.totalPotentialFundingAmount,
+      amountLabel: "committed and likely",
     });
   }
 
@@ -459,6 +498,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.committedMatchAmount)} committed against a ${formatScanCurrency(summary.localMatchNeedAmount)} match need.`,
       nextAction: "Preserve match source notes for reimbursement and board packet review.",
       amount: summary.committedMatchAmount,
+      amountLabel: "match committed",
     });
   } else {
     lanes.push({
@@ -469,6 +509,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.remainingMatchGap)} still missing against the current match need.`,
       nextAction: "Identify eligible match sources or mark the gap plainly before using the profile in a funding package.",
       amount: summary.remainingMatchGap,
+      amountLabel: "match still missing",
     });
   }
 
@@ -480,6 +521,22 @@ export function buildProjectFundingProfileScan(input: {
       statusLabel: "No awards yet",
       detail: "No award records are attached, so obligation pressure cannot be computed.",
       nextAction: "Create award records when funding is committed, then add obligation dates for operations review.",
+      amount: null,
+    });
+  } else if (!summary.nextObligationAt && "obligationMetCount" in summary && summary.obligationMetCount > 0) {
+    // Every award with an obligation date has met it (KI-2026-11-16-140).
+    const metAll = summary.obligationMetCount >= summary.awardCount;
+    lanes.push({
+      id: "obligation",
+      label: "Obligation timing",
+      status: metAll ? "ready" : "attention",
+      statusLabel: metAll ? "Obligated" : "Date missing",
+      detail: metAll
+        ? `${summary.obligationMetCount === 1 ? "Obligated" : `All ${summary.obligationMetCount} awards obligated; latest`} on ${summary.latestObligationMetOn}.`
+        : `${summary.obligationMetCount} of ${summary.awardCount} awards obligated; the rest have no obligation date.`,
+      nextAction: metAll
+        ? "No obligation deadline is ahead."
+        : "Add the next obligation deadline before calling the award stack operations-ready.",
       amount: null,
     });
   } else if (!summary.nextObligationAt || obligationDaysUntil === null) {
@@ -548,6 +605,9 @@ export function buildProjectFundingProfileScan(input: {
       input.unlinkedInvoiceAmount && input.unlinkedInvoiceAmount > 0
         ? input.unlinkedInvoiceAmount
         : summary.outstandingReimbursementAmount + summary.uninvoicedAwardAmount,
+    // KI-2026-11-16-143: outstanding plus not yet invoiced is what the funder
+    // has not yet paid; the figure printed bare before.
+    amountLabel: input.unlinkedInvoiceAmount && input.unlinkedInvoiceAmount > 0 ? "on unlinked invoices" : "not yet paid",
   });
 
   if (summary.awardRiskCount > 0) {
@@ -569,6 +629,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: "Committed award dollars are fully paid in linked reimbursement records, with no award risk flags.",
       nextAction: "Attach final evidence and operator review notes before any formal closeout claim.",
       amount: summary.paidReimbursementAmount,
+      amountLabel: "paid",
     });
   } else if (summary.awardCount > 0) {
     lanes.push({
@@ -579,6 +640,7 @@ export function buildProjectFundingProfileScan(input: {
       detail: `${formatScanCurrency(summary.uninvoicedAwardAmount)} remains uninvoiced and ${formatScanCurrency(summary.outstandingReimbursementAmount)} remains outstanding.`,
       nextAction: "Finish invoice/reimbursement follow-through before using this record as closeout support.",
       amount: summary.uninvoicedAwardAmount + summary.outstandingReimbursementAmount,
+      amountLabel: "not yet paid",
     });
   } else {
     lanes.push({

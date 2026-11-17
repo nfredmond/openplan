@@ -40,6 +40,7 @@ import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
 import { buildProjectTabs } from "./_components/_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
+import { countedReadWithheldReason, loadObligationCompletedOnByAwardId } from "./_components/_funding-reads";
 import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
 import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, submittalPriority } from "./_components/_ordering";
 import { isDeadlinePast } from "@/lib/work/deadlines";
@@ -572,13 +573,17 @@ export default async function ProjectDetailPage({
 
   // Cast to one loose shape: the two select strings would otherwise infer
   // different structural types (Supabase clients are untyped by convention).
+  // One complete, count-checked read (KI-2026-11-16-132). The register lists
+  // the six newest rows, but every total on the page sums the whole set, and a
+  // set whose length differs from its exact count is withheld, never summed.
+  // 1,000 is the PostgREST row cap: a longer history fails the count check.
   const selectProjectInvoices = async (columns: string) =>
     (await supabase
       .from("billing_invoice_records")
-      .select(columns)
+      .select(columns, { count: "exact" })
       .eq("project_id", project.id)
       .order("created_at", { ascending: false })
-      .limit(6)) as { data: unknown[] | null; error: { message?: string } | null };
+      .limit(1000)) as { count: number | null; data: unknown[] | null; error: { message?: string } | null };
 
   let invoiceResult = await selectProjectInvoices(projectInvoiceSelect);
   if (invoiceResult.error && looksLikePendingSchema(invoiceResult.error.message)) {
@@ -590,12 +595,15 @@ export default async function ProjectDetailPage({
   const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
   const invoiceLabel = "reimbursement invoices for this project";
   const projectInvoicesReadFailed = projectInvoicesPending ? false : reads.check(invoiceLabel, invoiceResult);
-  const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message)
+  const projectInvoicesAll = looksLikePendingSchema(invoiceResult.error?.message)
     ? []
     : ((invoiceResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({
         ...invoice,
         fundingAward: Array.isArray(invoice.funding_awards) ? (invoice.funding_awards[0] ?? null) : invoice.funding_awards ?? null,
       }));
+  const projectInvoiceTotalsWithheldReason = projectInvoicesPending ? null : countedReadWithheldReason(invoiceResult, projectInvoicesAll.length, { failed: "Invoice records could not be read, so no invoice totals are shown.", withheld: "Invoice totals withheld", records: "invoice records" });
+  // The display list: the six newest records, as before.
+  const projectInvoices = projectInvoicesAll.slice(0, 6);
 
   // Claim-progress math must not run on the display-capped recent-6 query
   // above — an award with a longer history would show an understated
@@ -772,12 +780,34 @@ export default async function ProjectDetailPage({
     prioritizedProjectInvoices.find(
       (invoice) => !["paid", "rejected"].includes(invoice.status) && isDeadlinePast(invoice.due_date, now)
     ) ?? null;
-  const awardLinkedProjectInvoices = projectInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
+  const fundingAwardIds = fundingAwards.map((award) => award.id);
+  let awardInvoicesResult = fundingAwardIds.length
+    ? await selectAwardInvoices(projectInvoiceSelect, fundingAwardIds)
+    : { data: [], error: null, count:0 };
+  if (awardInvoicesResult.error && looksLikePendingSchema(awardInvoicesResult.error.message)) {
+    awardInvoicesResult = await selectAwardInvoices(projectInvoiceSelectLegacy, fundingAwardIds);
+  }
+  if(fundingAwards.some((a)=>a.latest_handoff_revision_id) && (awardInvoicesResult.error || awardInvoicesResult.count!==awardInvoicesResult.data?.length))return <p>Complete managed award invoice history is unavailable. Claim coverage remains unassessed.</p>;
+  // Every award total on the Funding tab sums this read, never the six-row
+  // display list (KI-2026-11-16-132). A failed read or a length that differs
+  // from the exact count withholds the totals with the reason; nothing falls
+  // back to the six newest rows.
+  const awardInvoiceRows = awardInvoicesResult.error
+    ? []
+    : ((awardInvoicesResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({
+        ...invoice,
+        fundingAward: Array.isArray(invoice.funding_awards)
+          ? (invoice.funding_awards[0] ?? null)
+          : invoice.funding_awards ?? null,
+      }));
+  const awardInvoiceTotalsWithheldReason = countedReadWithheldReason(awardInvoicesResult, awardInvoiceRows.length, { failed: "Award invoice records could not be read, so no reimbursement totals are shown.", withheld: "Reimbursement totals withheld", records: "award invoice records" });
+  const obligationCompletedOnByAwardId = await loadObligationCompletedOnByAwardId(supabase, project.id, fundingAwardIds.length > 0, reads);
   const fundingStackSummary = buildProjectFundingStackSummary(
     projectFundingProfile,
-    fundingAwards,
+    fundingAwards.map((award) => ({ ...award, obligation_completed_on: obligationCompletedOnByAwardId.get(award.id) ?? null })),
     fundingOpportunities,
-    awardLinkedProjectInvoices
+    awardInvoiceRows,
+    { reimbursementWithheldReason: awardInvoiceTotalsWithheldReason }
   );
   // One destructure of one object, rather than six aliasing assignments. Two of
   // them rename (`unfundedAfterLikelyAmount` is the gap the panel calls
@@ -799,25 +829,7 @@ export default async function ProjectDetailPage({
   const constrainedRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "constrained").length;
   const illustrativeRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "illustrative").length;
   const candidateRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "candidate").length;
-  const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
-  const fundingAwardIds = fundingAwards.map((award) => award.id);
-  let awardInvoicesResult = fundingAwardIds.length
-    ? await selectAwardInvoices(projectInvoiceSelect, fundingAwardIds)
-    : { data: [], error: null, count:0 };
-  if (awardInvoicesResult.error && looksLikePendingSchema(awardInvoicesResult.error.message)) {
-    awardInvoicesResult = await selectAwardInvoices(projectInvoiceSelectLegacy, fundingAwardIds);
-  }
-  if(fundingAwards.some((a)=>a.latest_handoff_revision_id) && (awardInvoicesResult.error || awardInvoicesResult.count!==awardInvoicesResult.data?.length))return <p>Complete managed award invoice history is unavailable. Claim coverage remains unassessed.</p>;
-  // On any residual error, fall back to the display-capped rows rather than
-  // rendering an empty claim history for awards that have one.
-  const awardInvoiceRows = awardInvoicesResult.error
-    ? projectInvoices
-    : ((awardInvoicesResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({
-        ...invoice,
-        fundingAward: Array.isArray(invoice.funding_awards)
-          ? (invoice.funding_awards[0] ?? null)
-          : invoice.funding_awards ?? null,
-      }));
+  const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoiceTotalsWithheldReason ? [] : projectInvoicesAll);
   const invoiceSummaryByFundingAwardId = new Map(
     fundingAwards.map((award) => [
       award.id,
@@ -827,7 +839,7 @@ export default async function ProjectDetailPage({
   const invoiceRecordsByFundingAwardId = new Map(
     fundingAwards.map((award) => [award.id, awardInvoiceRows.filter((invoice) => invoice.funding_award_id === award.id)])
   );
-  const unlinkedProjectInvoices = projectInvoices.filter((invoice) => !invoice.funding_award_id);
+  const unlinkedProjectInvoices = projectInvoicesAll.filter((invoice) => !invoice.funding_award_id);
   const unlinkedProjectInvoiceSummary = summarizeBillingInvoiceRecords(unlinkedProjectInvoices);
   const projectReportIds = ((projectReportData ?? []) as ProjectReportRow[]).map(
     (report) => report.id
@@ -1347,6 +1359,7 @@ export default async function ProjectDetailPage({
             project={project}
             projectControlsSummary={projectControlsSummary}
             invoiceSummary={invoiceSummary}
+            invoiceTotalsWithheldReason={projectInvoiceTotalsWithheldReason}
             recommendedReport={recommendedReport}
             firstBlockedMilestone={firstBlockedMilestone}
             firstOverdueMilestone={firstOverdueMilestone}
@@ -1376,6 +1389,7 @@ export default async function ProjectDetailPage({
             projectId={project.id}
             workspaceId={project.workspace_id}
             canWriteAwards={canAccessWorkspaceAction("programs.write", projectRole)}
+            canCloseAwards={canAccessWorkspaceAction("awards.close", projectRole)}
             projectFundingProfile={projectFundingProfile}
             projectFundingProfilePending={projectFundingProfilePending}
             fundingAwardsPending={fundingAwardsPending}
@@ -1385,6 +1399,8 @@ export default async function ProjectDetailPage({
             fundingOpportunities={fundingOpportunities}
             fundingOpportunitiesReadFailed={fundingOpportunitiesReadFailed}
             fundingStackSummary={fundingStackSummary}
+            awardInvoiceTotalsWithheldReason={awardInvoiceTotalsWithheldReason}
+            projectInvoiceTotalsWithheldReason={projectInvoiceTotalsWithheldReason}
             fundingNeedAmount={fundingNeedAmount}
             committedFundingAmount={committedFundingAmount}
             committedMatchAmount={committedMatchAmount}
@@ -1410,6 +1426,7 @@ export default async function ProjectDetailPage({
             projectInvoices={projectInvoices}
             invoicesReadFailed={projectInvoicesReadFailed}
             prioritizedProjectInvoices={prioritizedProjectInvoices}
+            totalsWithheldReason={projectInvoiceTotalsWithheldReason}
           />
 
           <ProjectBudgetPanel

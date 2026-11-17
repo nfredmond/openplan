@@ -447,6 +447,7 @@ export async function ReimbursementLane({
                 resubmits: { invoiceId: resubmitSource.id, invoiceNumber: resubmitSource.invoice_number },
               }
             : {})}
+          titleLabel="Log a reimbursement request"
           workspaceId={workspaceId}
           projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))}
           fundingAwards={workspaceFundingAwards.map((award) => ({ id: award.id, title: award.title, projectId: award.project_id }))}
@@ -898,17 +899,21 @@ export async function ReimbursementLane({
                     <p className="mt-3 text-xs text-muted-foreground">Rejected: {invoice.rejection_reason}</p>
                   ) : null}
 
-                  {invoice.award_handoff_revision_id ? null : (
-                    <div className="mt-3">
-                      <InvoiceStatusAdvanceButton
-                        invoiceId={invoice.id}
-                        workspaceId={workspaceId}
-                        currentStatus={invoice.status}
-                        canWrite={canWriteInvoices}
-                        canResubmit={Boolean(invoice.funding_award_id) && !resubmittedIds.has(invoice.id)}
-                      />
-                    </div>
-                  )}
+                  {/*
+                    Every row, including rows bound to award conditions
+                    (KI-2026-11-16-141): the handoff guard keeps their terms
+                    fixed but allows a manual status move, as Grants' queue
+                    already offers.
+                  */}
+                  <div className="mt-3">
+                    <InvoiceStatusAdvanceButton
+                      invoiceId={invoice.id}
+                      workspaceId={workspaceId}
+                      currentStatus={invoice.status}
+                      canWrite={canWriteInvoices}
+                      canResubmit={Boolean(invoice.funding_award_id) && !resubmittedIds.has(invoice.id)}
+                    />
+                  </div>
 
                   <InvoiceFundingAwardLinker
                     invoiceId={invoice.id}

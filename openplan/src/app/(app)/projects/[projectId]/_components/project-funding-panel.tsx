@@ -167,6 +167,12 @@ type ProjectFundingPanelProps = {
   unlinkedProjectInvoices: BillingInvoice[];
   unlinkedProjectInvoiceSummary: BillingInvoiceSummary;
   comparisonBackedFundingReport: ComparisonBackedFundingReport;
+  /** Set when the award invoice read failed or its length differs from its exact count: every award reimbursement figure is withheld with this reason. */
+  awardInvoiceTotalsWithheldReason?: string | null;
+  /** Owner or admin (awards.close): may record an award as already closed. */
+  canCloseAwards?: boolean;
+  /** Set when the project invoice read failed or came back short: the unlinked total is withheld with this reason. */
+  projectInvoiceTotalsWithheldReason?: string | null;
 };
 
 /**
@@ -209,12 +215,16 @@ export function ProjectFundingPanel({
   unlinkedProjectInvoices,
   unlinkedProjectInvoiceSummary,
   comparisonBackedFundingReport,
+  awardInvoiceTotalsWithheldReason = null,
+  projectInvoiceTotalsWithheldReason = null,
+  canCloseAwards = false,
 }: ProjectFundingPanelProps) {
+  const { obligationMetCount, latestObligationMetOn } = fundingStackSummary;
   const fundingProfileScan = buildProjectFundingProfileScan({
     summary: fundingStackSummary,
     hasComparisonEvidence: Boolean(comparisonBackedFundingReport?.comparisonDigest),
     unlinkedInvoiceCount: unlinkedProjectInvoices.length,
-    unlinkedInvoiceAmount: unlinkedProjectInvoiceSummary.totalNetAmount,
+    unlinkedInvoiceAmount: projectInvoiceTotalsWithheldReason ? undefined : unlinkedProjectInvoiceSummary.totalNetAmount,
   });
   /**
    * Per-award claim posture from the linked reimbursement invoices only —
@@ -241,7 +251,9 @@ export function ProjectFundingPanel({
           match_amount: award.match_amount,
           match_posture: award.match_posture,
         },
-        invoiceRead: { ok: true, invoices: invoiceRecordsByFundingAwardId.get(award.id) ?? [] },
+        invoiceRead: awardInvoiceTotalsWithheldReason
+          ? { ok: false, pending: false, message: awardInvoiceTotalsWithheldReason }
+          : { ok: true, invoices: invoiceRecordsByFundingAwardId.get(award.id) ?? [] },
       });
       return built.ok ? [[award.id, built.ledger] as const] : [];
     })
@@ -342,27 +354,33 @@ export function ProjectFundingPanel({
                 </StatusBadge>
               </div>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
-                {committedFundingAmount > 0
+                {awardInvoiceTotalsWithheldReason
+                  ? "Totals withheld"
+                  : committedFundingAmount > 0
                   ? `${Math.round((fundingStackSummary.reimbursementCoverageRatio ?? 0) * 100)}% of committed awards invoiced`
                   : "No committed awards yet"}
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                {committedFundingAmount > 0
+                {awardInvoiceTotalsWithheldReason
+                  ? awardInvoiceTotalsWithheldReason
+                  : committedFundingAmount > 0
                   ? `${fmtCurrency(fundingStackSummary.requestedReimbursementAmount)} requested on linked award invoices, ${fmtCurrency(fundingStackSummary.paidReimbursementAmount)} paid, ${fmtCurrency(fundingStackSummary.outstandingReimbursementAmount)} outstanding, and ${fmtCurrency(fundingStackSummary.uninvoicedAwardAmount)} still not yet invoiced.`
                   : fundingStackSummary.reimbursementReason}
               </p>
               {unlinkedProjectInvoices.length > 0 ? (
                 <div className="module-note mt-3 text-sm">
-                  {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award, totaling {fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}. Until they are linked in the register below, they do not count toward the figures above.
+                  {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award{projectInvoiceTotalsWithheldReason ? "" : `, totaling ${fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}`}. Until they are linked in the register below, they do not count toward the figures above.
                 </div>
               ) : null}
             </div>
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
               <p className="text-xs font-semibold text-muted-foreground">Next obligation</p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? "No obligation date recorded"}</h3>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">{nextObligationAward?.title ?? (obligationMetCount > 0 ? "Obligated" : "No obligation date recorded")}</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 {nextObligationAward
                   ? `Obligation due ${fmtDateTime(nextObligationAward.obligation_due_at)}.`
+                  : obligationMetCount > 0
+                  ? `Obligated on ${latestObligationMetOn}. No obligation deadline is ahead.`
                   : "Add obligation dates to your awards and this will warn you before a deadline passes."}
               </p>
             </div>
@@ -387,7 +405,7 @@ export function ProjectFundingPanel({
                 <div key={lane.id} className="grid gap-3 px-5 py-4 md:grid-cols-[0.95fr_0.75fr_1.45fr_1.45fr] md:items-start">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{lane.label}</p>
-                    <p className="mt-1 text-label text-muted-foreground">{lane.amount !== null ? fmtCurrency(lane.amount) : "No amount"}</p>
+                    <p className="mt-1 text-label text-muted-foreground">{lane.amount !== null ? [fmtCurrency(lane.amount), lane.amountLabel].filter(Boolean).join(" ") : "No amount"}</p>
                   </div>
                   <div>
                     <StatusBadge tone={projectFundingProfileScanTone(lane.status)}>{lane.statusLabel}</StatusBadge>
@@ -410,6 +428,7 @@ export function ProjectFundingPanel({
             <ProjectFundingAwardCreator
               projectId={projectId}
               opportunityOptions={fundingOpportunities.map((opportunity) => ({ id: opportunity.id, title: opportunity.title }))}
+              canRecordClosure={canCloseAwards}
             />
           </div>
 
@@ -475,7 +494,7 @@ export function ProjectFundingPanel({
                       </div>
 
                       {award.latest_handoff_revision_id ? <AwardFundingFacts awards={[award]}/> : <p className="mt-1.5 text-label text-muted-foreground">
-                        Awarded {fmtCurrency(award.awarded_amount)} · Match {awardMatchText(award.match_amount, award.match_posture)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
+                        Awarded {fmtCurrency(award.awarded_amount)} · Match {awardMatchText(award.match_amount, award.match_posture)} · {awardInvoiceTotalsWithheldReason ? "Reimbursed and outstanding withheld" : `Reimbursed ${fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding ${fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)}`} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
                       </p>}
 
                       {/*
@@ -534,7 +553,9 @@ export function ProjectFundingPanel({
                               Linked invoice chain
                             </p>
                             <p className="mt-1 text-sm text-muted-foreground">
-                              {awardInvoices.length > 0
+                              {awardInvoiceTotalsWithheldReason
+                                ? awardInvoiceTotalsWithheldReason
+                                : awardInvoices.length > 0
                                 ? `${awardInvoices.length} linked invoice record${awardInvoices.length === 1 ? "" : "s"} totaling ${fmtCurrency(awardInvoiceSummary?.claimedNetAmount ?? 0)} net requested.${(awardInvoiceSummary?.rejectedCount ?? 0) > 0 ? ` ${fmtCurrency(awardInvoiceSummary?.rejectedNetAmount ?? 0)} rejected, not counted.` : ""}`
                                 : "No invoice records are linked to this award yet."}
                             </p>

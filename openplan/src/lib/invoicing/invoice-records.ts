@@ -392,6 +392,43 @@ export function uninvoicedCommittedAwardAmount(
   return Math.max(roundCurrency(committedAwardAmount - summary.claimedGrossAmount), 0);
 }
 
+/**
+ * Uninvoiced and over-claimed dollars summed award by award (KI-2026-11-16-133).
+ *
+ * `uninvoicedCommittedAwardAmount` nets one total against another, so one
+ * award's over-claim hid another award's unclaimed balance: a $200,000 award
+ * with $95,000 unclaimed beside a $10,000 award over-claimed by $241,300 read
+ * "Uninvoiced $0.00". Here each award contributes `max(0, ceiling - claimed)`
+ * to the uninvoiced figure and `max(0, claimed - ceiling)` to its own
+ * over-claimed figure, with claimed meaning gross over the claimed statuses,
+ * the drawdown ledger's definition. A request is counted only on the award it
+ * is linked to; requests on awards outside `awards` are ignored.
+ */
+export function awardBalancesByAward(
+  awards: Array<{ id: string; awarded_amount?: number | string | null }>,
+  invoices: Array<Pick<BillingInvoiceLinkageRecordLike, "funding_award_id" | "status" | "amount">>
+): { uninvoicedAmount: number; overClaimedAmount: number; overClaimedAwardCount: number } {
+  const claimedByAward = new Map<string, number>();
+  for (const invoice of invoices) {
+    if (!invoice.funding_award_id || !isClaimedInvoiceStatus(typeof invoice.status === "string" ? invoice.status : "draft")) continue;
+    const gross = roundCurrency(Math.max(0, parseCurrencyAmount(invoice.amount)));
+    claimedByAward.set(invoice.funding_award_id, roundCurrency((claimedByAward.get(invoice.funding_award_id) ?? 0) + gross));
+  }
+  let uninvoicedAmount = 0;
+  let overClaimedAmount = 0;
+  let overClaimedAwardCount = 0;
+  for (const award of awards) {
+    const remaining = roundCurrency(parseCurrencyAmount(award.awarded_amount) - (claimedByAward.get(award.id) ?? 0));
+    if (remaining >= 0) {
+      uninvoicedAmount = roundCurrency(uninvoicedAmount + remaining);
+    } else {
+      overClaimedAmount = roundCurrency(overClaimedAmount - remaining);
+      overClaimedAwardCount += 1;
+    }
+  }
+  return { uninvoicedAmount, overClaimedAmount, overClaimedAwardCount };
+}
+
 export function summarizeBillingInvoiceLinkage(
   records: BillingInvoiceLinkageRecordLike[] | null | undefined,
   nowInput: Date | string = new Date()

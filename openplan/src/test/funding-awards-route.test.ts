@@ -101,7 +101,7 @@ describe("/api/funding-awards", () => {
     loadProjectAccessMock.mockResolvedValue({
       supabase: null,
       project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
-      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      membership: { workspace_id: WORKSPACE_ID, role: "admin" },
       error: null,
       allowed: true,
     });
@@ -481,5 +481,25 @@ describe("/api/funding-awards", () => {
     } finally {
       workspaceTimeZone = null;
     }
+  });
+  it("refuses a member who asks to create an award already closed on import (awards.close)", async () => {
+    loadProjectAccessMock.mockResolvedValue({
+      supabase: null,
+      project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "Historic ATP award",
+        awardedAmount: 500000,
+        recordClosedOnImport: { note: "Closed by the county in FY22." },
+      })
+    );
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ error: "Only a workspace owner or admin can close out, reconcile, record a closure for, or reopen an award." });
+    expect(closeoutCommandMock).not.toHaveBeenCalled();
   });
 });

@@ -53,6 +53,7 @@ export const WORKSPACE_ACTIONS = [
   "stage_gates.decisions.read",
   "stage_gates.decisions.write",
   "decision_packages.approve",
+  "awards.close",
 ] as const;
 
 export type WorkspaceAction = (typeof WORKSPACE_ACTIONS)[number];
@@ -82,6 +83,10 @@ export const WORKSPACE_ACTION_ROLE_MATRIX: Record<WorkspaceAction, readonly Work
   "stage_gates.decisions.read": ["owner", "admin", "member", "viewer"],
   "stage_gates.decisions.write": ["owner", "admin", "member"],
   "decision_packages.approve": ["owner", "admin"],
+  // Closing an award ends the funder's record: close-out, reconciled close-out,
+  // a closure recorded on import, and reopen. Owner and admin, as reimbursement
+  // requests already are (the lead's decision, November 17, 2026).
+  "awards.close": ["owner", "admin"],
 };
 
 export function normalizeWorkspaceRole(role: string | null | undefined): WorkspaceRole | null {

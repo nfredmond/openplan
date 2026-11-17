@@ -23,7 +23,7 @@ import {
   buildBillingInvoicePriorityQueue,
   resolveExactBillingInvoiceAwardMatch,
   summarizeBillingInvoiceRecords,
-  uninvoicedCommittedAwardAmount,
+  awardBalancesByAward,
 } from "@/lib/invoicing/invoice-records";
 import { resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
@@ -509,12 +509,20 @@ export default async function GrantsPage({
       const awards = fundingAwardsByProjectId.get(project.id) ?? [];
       if (awards.length === 0) return null;
 
-      const summary = buildProjectFundingStackSummary(
+      const stackSummary = buildProjectFundingStackSummary(
         projectFundingProfileByProjectId.get(project.id),
         awards,
         opportunitiesByProjectId.get(project.id) ?? [],
         awardLinkedInvoicesByProjectId.get(project.id) ?? []
       );
+      // The chip's "Uninvoiced" sums award by award, as the portfolio card does
+      // (KI-2026-11-16-133); the shared summary still nets within a project.
+      const summary = awards.some((award) => award.latest_handoff_revision_id)
+        ? stackSummary
+        : {
+            ...stackSummary,
+            uninvoicedAwardAmount: awardBalancesByAward(awards, awardLinkedInvoicesByProjectId.get(project.id) ?? []).uninvoicedAmount,
+          };
       const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoicesByProjectId.get(project.id) ?? []);
       const nextObligationAward = awards.find((award) => award.obligation_due_at === summary.nextObligationAt) ?? null;
       const latestAwardUpdatedAt = awards.reduce<string | null>((latest, award) => {
@@ -558,7 +566,10 @@ export default async function GrantsPage({
   const trackedMatchAmount = hasManagedAwards ? Number.NaN : fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
   const awardLinkedInvoices = fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoices);
-  const uninvoicedCommittedAmount = uninvoicedCommittedAwardAmount(committedAwardAmount, linkedInvoiceSummary);
+  // Per award, never netted across awards (KI-2026-11-16-133): one award's
+  // over-claim may not hide another award's unclaimed balance.
+  const awardBalances = hasManagedAwards ? null : awardBalancesByAward(fundingAwards, awardLinkedInvoices);
+  const uninvoicedCommittedAmount = awardBalances ? awardBalances.uninvoicedAmount : Number.NaN;
   const awardWatchCount = fundingAwards.filter((award) => award.risk_flag === "watch" || award.risk_flag === "critical").length;
   const fundingNeedAnchorProjects = projectOptions
     .map((project) => {
@@ -910,6 +921,7 @@ export default async function GrantsPage({
 
       <PageTabPanel tabKey="awards" active={activeTab === "awards"} className="grid gap-6">
           <GrantsAwardConversionSection
+            canRecordClosure={canAccessWorkspaceAction("awards.close", membership.role)}
             awardedOpportunitiesMissingRecords={awardedOpportunitiesMissingRecords}
             awardConversionOpportunity={awardConversionOpportunity}
             activeFocusedOpportunityId={activeFocusedOpportunityId}
@@ -920,12 +932,10 @@ export default async function GrantsPage({
             }
           />
           {/*
-            Two permissions, deliberately not one. Writing invoices is
-            owner/admin (`invoices.write`); recording an award close-out is
-            whatever `programs.write` allows, which includes members. Handing
-            this section only `canWriteInvoices` hid the close-out control from
-            every member on the workspace, for an action the close-out route
-            would have accepted from them.
+            Two permissions, each the route's own. Writing invoices is
+            `invoices.write`; closing, reconciling and reopening an award is
+            `awards.close`. Both are owner and admin today, but they are
+            separate actions in the role matrix and the section takes each.
           */}
           <GrantsAwardsReimbursementSection
             fundingAwardsCount={fundingAwards.length}
@@ -933,6 +943,8 @@ export default async function GrantsPage({
             committedAwardAmount={committedAwardAmount}
             trackedMatchAmount={trackedMatchAmount}
             uninvoicedCommittedAmount={uninvoicedCommittedAmount}
+            overClaimedAwardAmount={awardBalances?.overClaimedAmount ?? 0}
+            overClaimedAwardCount={awardBalances?.overClaimedAwardCount ?? 0}
             awardWatchCount={awardWatchCount}
             linkedInvoiceSummary={linkedInvoiceSummary}
             reimbursementNotStartedCount={reimbursementNotStartedCount}
@@ -943,7 +955,7 @@ export default async function GrantsPage({
             activeFocusedProjectId={activeFocusedProjectId}
             workspaceId={membership.workspace_id}
             canWriteInvoices={canWriteInvoices}
-            canCloseOutAwards={canWritePrograms}
+            canCloseOutAwards={canAccessWorkspaceAction("awards.close", membership.role)}
           />
           <GrantsReimbursementTriageSection
             reimbursementPriorityQueue={reimbursementPriorityQueue}

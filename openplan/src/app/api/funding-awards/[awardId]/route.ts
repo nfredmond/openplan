@@ -1,3 +1,4 @@
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { managedCloseout } from "@/lib/grants/award-handoff-server";
 import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { NextRequest, NextResponse } from "next/server";
@@ -62,16 +63,13 @@ import {
  *
  *   4. `reopen`. Discussed at `reopenIntentSchema` below.
  *
- * ROLE GATING is `programs.write` — owner, admin, member — the same action the
- * create and close-out routes use, through the same `loadProjectAccess` loader
- * the write-role guard recognises. Gating the corrective paths (re-open,
- * import-closure) behind a NARROWER role was considered and rejected: a member
- * can close an award, so a member who mis-closes one must be able to correct it,
- * or the trap this route exists to remove is simply re-set for most of the
- * workspace. What makes an undo safe is that it is named, reasoned and audited,
- * not that few people can reach it. If a future change wants a distinct action
- * for it, that belongs in `src/lib/auth/role-matrix.ts`, not in an ad-hoc role
- * comparison here.
+ * ROLE GATING is `programs.write` (owner, admin, member) for field edits,
+ * through the same `loadProjectAccess` loader the write-role guard recognises.
+ * Close-out, import-closure and re-open are `awards.close` (owner and admin),
+ * the lead's November 17, 2026 decision: closing an award ends the funder's
+ * record, and reimbursement requests are already owner-and-admin only. The
+ * earlier reason for one role (a member who mis-closes must be able to undo
+ * it) no longer applies, because a member can no longer close.
  */
 
 const awardIdSchema = z.object({
@@ -318,6 +316,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!access.membership || !access.allowed) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    // Close-out, a closure recorded on import, and reopen are closure acts:
+    // owner or admin only (awards.close). Other field edits stay programs.write.
+    const closureAct =
+      Boolean(payload.reopen) ||
+      Boolean(payload.recordClosedOnImport) ||
+      payload.spendingStatus === FUNDING_AWARD_CLOSED_SPENDING_STATUS;
+    if (closureAct && !canAccessWorkspaceAction("awards.close", access.membership.role)) {
+      audit.warn("funding_award_closure_role_refused", { awardId: award.id, userId: user.id, role: access.membership.role });
+      return NextResponse.json({ error: "Only a workspace owner or admin can close out, reconcile, record a closure for, or reopen an award." }, { status: 403 });
     }
 
     if (award.latest_handoff_revision_id) {

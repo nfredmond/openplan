@@ -41,6 +41,7 @@ const ACTION_CLASSIFICATION: Record<WorkspaceAction, "read" | "write"> = {
   "stage_gates.decisions.read": "read",
   "stage_gates.decisions.write": "write",
   "decision_packages.approve": "write",
+  "awards.close": "write",
 };
 
 describe("viewer role in the workspace action matrix", () => {
@@ -74,9 +75,11 @@ describe("viewer role in the workspace action matrix", () => {
       const allowed = WORKSPACE_ACTION_ROLE_MATRIX[action];
       expect(allowed).toContain("owner");
       expect(allowed).toContain("admin");
-      // member lost nothing: the only member-excluded actions predate viewer.
+      // member lost nothing to the viewer tier. The member-excluded actions are
+      // named decisions: three predate viewer, and awards.close is the lead's
+      // November 17, 2026 decision that only owners and admins close an award.
       if (!allowed.includes("member")) {
-        expect(["workspace.configure", "invoices.write", "decision_packages.approve"]).toContain(action);
+        expect(["workspace.configure", "invoices.write", "decision_packages.approve", "awards.close"]).toContain(action);
       }
     }
   });

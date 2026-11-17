@@ -153,12 +153,29 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!writeAccess.ok) return writeAccess.response;
 
     const manual = readAssistantExecutionSource(request) === "manual";
+    let recordFundingAwardId: string | null = null;
     if (parsed.data.recordType === "milestone" || parsed.data.recordType === "submittal") {
       const table = parsed.data.recordType === "milestone" ? "project_milestones" : "project_submittals";
       const origin = await supabase.from(table).select("id, project_id, funding_award_id, handoff_origin_revision_id").eq("id",parsedParams.data.recordId).eq("project_id",project.id).maybeSingle();
       if (origin.error) return NextResponse.json({error:"Record origin unavailable"},{status:503});
       if (!origin.data) return NextResponse.json({error:"Record not found"},{status:404});
       if (!manual && origin.data.handoff_origin_revision_id) return NextResponse.json({error:"Managed award outcomes require manual entry. No approved action covers this mutation."},{status:403});
+      recordFundingAwardId = origin.data.funding_award_id ?? null;
+    }
+
+    // KI-2026-11-16-140: completing an award's obligation milestone records the
+    // date it was obligated, so the Funding scan can stop counting its due date.
+    if (parsed.data.recordType === "milestone" && parsed.data.status === "complete" && !parsed.data.actualDate) {
+      const kind = await supabase
+        .from("project_milestones")
+        .select("milestone_type, actual_date")
+        .eq("id", parsedParams.data.recordId)
+        .eq("project_id", project.id)
+        .maybeSingle();
+      if (kind.error) return NextResponse.json({ error: "Record origin unavailable" }, { status: 503 });
+      if (kind.data?.milestone_type === "obligation" && !kind.data.actual_date) {
+        return NextResponse.json({ error: "Completing an obligation milestone needs the date the award was obligated." }, { status: 400 });
+      }
     }
 
     // Reassignment carries the same membership rule as first assignment, and
@@ -252,6 +269,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         return noRowsMatchedResponse({ subject: "milestone", targetWasVerified: false });
       }
 
+      // Review 95: a completed obligation milestone writes its date to the
+      // award's `obligated_on` when that is empty, so the Funding tab, the award
+      // row, the worksheet and the pre-obligation warning read one date. A date
+      // already on the award is never overwritten.
+      let awardObligatedOn: { saved: boolean; date: string } | null = null;
+      if (data.milestone_type === "obligation" && data.status === "complete" && data.actual_date && recordFundingAwardId) {
+        const awardWrite = await supabase
+          .from("funding_awards")
+          .update({ obligated_on: data.actual_date })
+          .eq("id", recordFundingAwardId)
+          .eq("project_id", project.id)
+          .is("obligated_on", null)
+          .select("id");
+        if (awardWrite.error) {
+          audit.warn("obligation_date_award_write_failed", { projectId: project.id, recordId: data.id, message: awardWrite.error.message });
+        }
+        awardObligatedOn = { saved: !awardWrite.error && (awardWrite.data ?? []).length > 0, date: data.actual_date };
+      }
+
       audit.info("project_record_updated", {
         projectId: project.id,
         recordId: data.id,
@@ -260,7 +296,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         durationMs: Date.now() - startedAt,
       });
 
-      return NextResponse.json({ recordType: "milestone", record: data });
+      return NextResponse.json({ recordType: "milestone", record: data, ...(awardObligatedOn ? { awardObligatedOn } : {}) });
     }
 
     if (parsed.data.recordType === "deliverable") {

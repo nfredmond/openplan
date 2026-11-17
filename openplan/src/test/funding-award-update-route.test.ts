@@ -126,7 +126,7 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
     loadProjectAccessMock.mockResolvedValue({
       supabase: null,
       project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
-      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      membership: { workspace_id: WORKSPACE_ID, role: "admin" },
       error: null,
       allowed: true,
     });
@@ -550,5 +550,38 @@ describe("PATCH /api/funding-awards/[awardId]", () => {
 
     expect(response.status).toBe(400);
     expect(awardUpdateMock).not.toHaveBeenCalled();
+  });
+  describe("closure acts need awards.close (owner or admin)", () => {
+    function asMember() {
+      loadProjectAccessMock.mockResolvedValue({
+        supabase: null,
+        project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
+        membership: { workspace_id: WORKSPACE_ID, role: "member" },
+        error: null,
+        allowed: true,
+      });
+    }
+
+    it.each([
+      ["a reopen", { reopen: { reason: "Funder de-obligated the final $200k.", spendingStatus: "delayed" } }],
+      ["an imported closure", { recordClosedOnImport: { note: "Closed by the county in FY22." } }],
+      ["a close-out by status", { spendingStatus: "fully_spent" }],
+    ])("refuses %s from a member", async (_label, body) => {
+      asMember();
+      awardMaybeSingleMock.mockResolvedValue({
+        data: awardRow({ spending_status: "fully_spent", closure_basis: "recorded_on_import", closed_at: "2026-07-01T00:00:00.000Z" }),
+        error: null,
+      });
+      const response = await patchFundingAward(patchRequest(body), context());
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: "Only a workspace owner or admin can close out, reconcile, record a closure for, or reopen an award." });
+      expect(closeoutCommandMock).not.toHaveBeenCalled();
+    });
+
+    it("still lets a member edit an award's fields", async () => {
+      asMember();
+      const response = await patchFundingAward(patchRequest({ notes: "Updated by a member." }), context());
+      expect(response.status).toBe(200);
+    });
   });
 });

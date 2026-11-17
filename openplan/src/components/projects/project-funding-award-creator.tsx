@@ -65,6 +65,7 @@ export function ProjectFundingAwardCreator({
   defaultTitle,
   titleLabel = "Record a funding award",
   description,
+  canRecordClosure = false,
 }: {
   projectId: string;
   opportunityOptions: Array<{ id: string; title: string }>;
@@ -73,6 +74,12 @@ export function ProjectFundingAwardCreator({
   defaultTitle?: string;
   titleLabel?: string;
   description?: string;
+  /**
+   * True only for an owner or admin (awards.close). Hidden unless the caller
+   * passes it, so a creator added later cannot offer a member a closure the
+   * route refuses (review 95).
+   */
+  canRecordClosure?: boolean;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -175,7 +182,9 @@ export function ProjectFundingAwardCreator({
         hint: "A new award has not been spent yet, unless you are recording one that closed before OpenPlan saw it.",
         fields: [
           { name: "spendingStatus", label: "a spending status" },
-          { name: "isAlreadyClosed", label: "whether it closed already" },
+          // Only declared when the control renders: the guided flow refuses a
+          // declared field with no control (review 95).
+          ...(canRecordClosure ? [{ name: "isAlreadyClosed" as const, label: "whether it closed already" }] : []),
           { name: "riskFlag", label: "a risk flag" },
         ],
         render: (flow) => (
@@ -200,18 +209,22 @@ export function ProjectFundingAwardCreator({
               ) : null}
             </GuidedFlowRow>
 
-            <GuidedFlowRow flow={flow} name="isAlreadyClosed" label="Already closed?">
-              <label className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  {...flow.fieldProps("isAlreadyClosed")}
-                  checked={flow.values.isAlreadyClosed}
-                  onChange={(event) => flow.setValue("isAlreadyClosed", event.target.checked)}
-                />
-                <span>This award closed before it was recorded here</span>
-              </label>
-            </GuidedFlowRow>
+            {canRecordClosure ? (
+              <GuidedFlowRow flow={flow} name="isAlreadyClosed" label="Already closed?">
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    {...flow.fieldProps("isAlreadyClosed")}
+                    checked={flow.values.isAlreadyClosed}
+                    onChange={(event) => flow.setValue("isAlreadyClosed", event.target.checked)}
+                  />
+                  <span>This award closed before it was recorded here</span>
+                </label>
+              </GuidedFlowRow>
+            ) : (
+              <p className="text-sm text-muted-foreground">Only an owner or admin can mark an award as already closed.</p>
+            )}
 
             <GuidedFlowRow flow={flow} name="riskFlag" label="Risk flag">
               <select className={selectClassName} {...flow.text("riskFlag")}>
@@ -301,7 +314,7 @@ export function ProjectFundingAwardCreator({
         ),
       },
     ],
-    [opportunityOptions]
+    [opportunityOptions, canRecordClosure]
   );
 
   const flow = useGuidedFlow<AwardValues>({

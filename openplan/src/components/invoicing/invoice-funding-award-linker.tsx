@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 type FundingAwardOption = {
   id: string;
@@ -39,6 +40,10 @@ export function InvoiceFundingAwardLinker({
   const [terms,setTerms]=useState<{award:{current_handoff_revision_id:string|null;latest_handoff_revision_id:string|null;currency_code:string|null};history:unknown}|null>(null);
   const [reviewed,setReviewed]=useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Review 95: relinking a claimed request can pass the new award's ceiling.
+  // The route then asks why (422 over_award_ceiling); the reason waits here.
+  const [ceilingWhy, setCeilingWhy] = useState<string | null>(null);
+  const [overCeilingNote, setOverCeilingNote] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [lastSavedFundingAwardId, setLastSavedFundingAwardId] = useState<string | null>(null);
   const [lastSavedFundingAwardTitle, setLastSavedFundingAwardTitle] = useState<string | null>(null);
@@ -83,7 +88,7 @@ export function InvoiceFundingAwardLinker({
   }, [autoSelectExactMatch, currentFundingAwardId, exactMatchAward, selectedFundingAwardId]);
 
   useEffect(()=>{let cancelled=false;setTerms(null);setReviewed(false);if(selectedFundingAwardId)void fetch(`/api/funding-awards/${selectedFundingAwardId}/handoff`,{cache:"no-store"}).then(async(r)=>{const data=await r.json();if(!r.ok)throw new Error(data.error);if(!cancelled)setTerms(data);}).catch((e)=>{if(!cancelled)setError(String(e));});return()=>{cancelled=true;};},[selectedFundingAwardId]);
-  async function handleSave() {
+  async function handleSave(note?: string) {
     if (!canWrite || !hasChanges) return;
 
     setError(null);
@@ -102,10 +107,16 @@ export function InvoiceFundingAwardLinker({
           fundingAwardId: selectedFundingAwardId || null,
           awardHandoffRevisionId:terms?.award.current_handoff_revision_id ?? undefined,
           currencyCode:terms?.award.currency_code ?? undefined,
+          ...(note ? { overCeilingNote: note } : {}),
         }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; code?: string };
+      if (response.status === 422 && payload.code === "over_award_ceiling") {
+        setCeilingWhy(payload.error ?? "This would bring claims above the award ceiling.");
+        return;
+      }
+      setCeilingWhy(null);
       if (!response.ok) {
         throw new Error(payload.error || "Failed to update invoice funding award link");
       }
@@ -162,7 +173,7 @@ export function InvoiceFundingAwardLinker({
               ))}
             </select>
 
-            <Button type="button" variant="outline" size="sm" onClick={() => void handleSave()} disabled={!hasChanges || isSaving}>
+            <Button type="button" variant="outline" size="sm" onClick={() => void handleSave()} disabled={!hasChanges || isSaving || Boolean(ceilingWhy)}>
               {isSaving ? (
                 <span className="inline-flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -204,6 +215,27 @@ export function InvoiceFundingAwardLinker({
 
           {visibleFundingAwards.length === 0 ? (
             <p className="text-xs text-muted-foreground">No funding awards are available for this invoice’s project yet.</p>
+          ) : null}
+
+          {ceilingWhy ? (
+            <form
+              className="flex flex-col gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (!overCeilingNote.trim()) return setError("Enter why this request is claimed above the award.");
+                void handleSave(overCeilingNote.trim());
+              }}
+            >
+              <p role="alert" className="text-xs text-foreground">{ceilingWhy}</p>
+              <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground" htmlFor={`link-over-ceiling-note-${invoiceId}`}>
+                Why claim above the award (required)
+                <Textarea id={`link-over-ceiling-note-${invoiceId}`} rows={2} maxLength={2000} required value={overCeilingNote} onChange={(event) => setOverCeilingNote(event.target.value)} />
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <Button type="submit" size="sm" disabled={isSaving}>Save link with note</Button>
+                <Button type="button" variant="ghost" size="sm" disabled={isSaving} onClick={() => setCeilingWhy(null)}>Cancel</Button>
+              </div>
+            </form>
           ) : null}
 
           {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}

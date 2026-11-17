@@ -57,7 +57,7 @@ function resubmitInvoiceHref(invoiceId: string): string {
   return `/invoicing?resubmit=${encodeURIComponent(invoiceId)}#record-invoice`;
 }
 
-type Mode = "idle" | "paid" | "rejected";
+type Mode = "idle" | "paid" | "rejected" | "overCeiling";
 
 export function InvoiceStatusAdvanceButton({
   invoiceId,
@@ -80,6 +80,10 @@ export function InvoiceStatusAdvanceButton({
   const [mode, setMode] = useState<Mode>("idle");
   const [paidDate, setPaidDate] = useState("");
   const [reason, setReason] = useState("");
+  // KI-2026-11-16-131: the route refuses a claim above the award ceiling
+  // without a note. The refused move waits here while the planner writes one.
+  const [pendingMove, setPendingMove] = useState<{ body: Record<string, unknown>; done: string; why: string } | null>(null);
+  const [overCeilingNote, setOverCeilingNote] = useState("");
 
   const nextStatus = nextStatusForInvoice(currentStatus);
   const actionLabel = actionLabelForInvoice(currentStatus);
@@ -95,9 +99,16 @@ export function InvoiceStatusAdvanceButton({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ workspaceId, ...body }),
       });
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      const payload = (await response.json().catch(() => ({}))) as { error?: string; code?: string };
+      if (response.status === 422 && payload.code === "over_award_ceiling") {
+        setPendingMove({ body, done, why: payload.error ?? "This would bring claims above the award ceiling." });
+        setOverCeilingNote("");
+        setMode("overCeiling");
+        return;
+      }
       if (!response.ok) throw new Error(payload.error || "Failed to update the request");
       setMessage(done);
+      setPendingMove(null);
       setMode("idle");
       router.refresh();
     } catch (submitError) {
@@ -188,6 +199,27 @@ export function InvoiceStatusAdvanceButton({
           <div className="flex flex-wrap gap-2">
             <Button type="submit" size="sm" variant="destructive" disabled={isSaving}>{isSaving ? spinner : "Mark rejected"}</Button>
             <Button type="button" variant="ghost" size="sm" disabled={isSaving} onClick={() => setMode("idle")}>Cancel</Button>
+          </div>
+        </form>
+      ) : null}
+
+      {mode === "overCeiling" && pendingMove ? (
+        <form
+          className="flex flex-col gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!overCeilingNote.trim()) return setError("Enter why this request is claimed above the award.");
+            void send({ ...pendingMove.body, overCeilingNote: overCeilingNote.trim() }, pendingMove.done);
+          }}
+        >
+          <p role="alert" className="text-xs text-foreground">{pendingMove.why}</p>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground" htmlFor={`over-ceiling-note-${invoiceId}`}>
+            Why claim above the award (required)
+            <Textarea id={`over-ceiling-note-${invoiceId}`} rows={2} maxLength={2000} required value={overCeilingNote} onChange={(event) => setOverCeilingNote(event.target.value)} />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" size="sm" disabled={isSaving}>{isSaving ? spinner : "Save with note"}</Button>
+            <Button type="button" variant="ghost" size="sm" disabled={isSaving} onClick={() => { setPendingMove(null); setMode("idle"); }}>Cancel</Button>
           </div>
         </form>
       ) : null}

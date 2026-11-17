@@ -104,7 +104,7 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     loadProjectAccessMock.mockResolvedValue({
       supabase: null,
       project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
-      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      membership: { workspace_id: WORKSPACE_ID, role: "admin" },
       error: null,
       allowed: true,
     });
@@ -548,6 +548,50 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     it("is the UTC day when no zone is recorded", async () => {
       expect((await postCloseout(closeoutRequest(), context())).status).toBe(200);
       expect(closeoutCommandMock).toHaveBeenCalledWith(expect.objectContaining({ calendarDate: "2026-10-13" }));
+    });
+  });
+  describe("only an owner or admin closes an award (awards.close, the lead's November 17, 2026 decision)", () => {
+    function as(role: string) {
+      loadProjectAccessMock.mockResolvedValue({
+        supabase: null,
+        project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
+        membership: { workspace_id: WORKSPACE_ID, role },
+        error: null,
+        // programs.write, which a member holds: the refusal must come from awards.close.
+        allowed: true,
+      });
+    }
+
+    it.each(["owner", "admin"])("closes for an %s", async (role) => {
+      as(role);
+      const response = await postCloseout(closeoutRequest(), context());
+      expect(response.status).toBe(200);
+      expect(closeoutCommandMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("refuses a member with 403 and a plain reason, before the command runs", async () => {
+      as("member");
+      const response = await postCloseout(closeoutRequest(), context());
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({
+        error: "Only a workspace owner or admin can close out, reconcile, record a closure for, or reopen an award.",
+      });
+      expect(closeoutCommandMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses a member's reconciled close-out the same way", async () => {
+      as("member");
+      const response = await postCloseout(closeoutRequest({ basis: "reconciled_with_balance", notes: "Finished under budget." }), context());
+      expect(response.status).toBe(403);
+      expect(closeoutCommandMock).not.toHaveBeenCalled();
+    });
+
+    it("answers 404 to a second workspace, whose session cannot read the award", async () => {
+      as("owner");
+      awardMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+      const response = await postCloseout(closeoutRequest(), context());
+      expect(response.status).toBe(404);
+      expect(closeoutCommandMock).not.toHaveBeenCalled();
     });
   });
 });

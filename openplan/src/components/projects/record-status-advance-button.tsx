@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { browserToday } from "@/lib/time/workspace-calendar";
 import {
   nextProjectRecordStatus,
   projectRecordAdvanceLabel,
@@ -41,24 +43,37 @@ export function RecordStatusAdvanceButton({
   recordId,
   recordType,
   currentStatus,
+  completeNeedsDate = false,
 }: {
   projectId: string;
   recordId: string;
   recordType: RecordType;
   currentStatus: string;
+  /**
+   * An award's obligation milestone: moving it to complete asks for the date
+   * the award was obligated (KI-2026-11-16-140), which the Funding scan reads.
+   */
+  completeNeedsDate?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [askingDate, setAskingDate] = useState(false);
+  const [actualDate, setActualDate] = useState("");
 
   const nextStatus = nextProjectRecordStatus(recordType, currentStatus);
   const actionLabel = projectRecordAdvanceLabel(recordType, currentStatus);
   const statuses = projectRecordStatuses(recordType);
   const recordLabel = projectRecordLabel(recordType);
 
-  async function applyStatus(status: string) {
+  async function applyStatus(status: string, date?: string) {
     if (status === currentStatus) return;
+    if (completeNeedsDate && status === "complete" && !date) {
+      setActualDate(browserToday());
+      setAskingDate(true);
+      return;
+    }
 
     setError(null);
     setMessage(null);
@@ -73,6 +88,7 @@ export function RecordStatusAdvanceButton({
         body: JSON.stringify({
           recordType,
           status,
+          ...(date ? { actualDate: date } : {}),
         }),
       });
 
@@ -82,6 +98,7 @@ export function RecordStatusAdvanceButton({
       }
 
       setMessage(`${recordLabel} moved to ${status.replace(/[_-]+/g, " ")}.`);
+      setAskingDate(false);
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : `Failed to update ${recordType} status`);
@@ -119,6 +136,26 @@ export function RecordStatusAdvanceButton({
           ))}
         </select>
       </div>
+      {askingDate ? (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!actualDate) return setError("Enter the date the award was obligated.");
+            void applyStatus("complete", actualDate);
+          }}
+        >
+          <label className="flex flex-col gap-1 text-xs font-semibold text-muted-foreground" htmlFor={`obligated-date-${recordId}`}>
+            Date obligated
+            <Input id={`obligated-date-${recordId}`} type="date" required value={actualDate} max={browserToday()} onChange={(event) => setActualDate(event.target.value)} />
+          </label>
+          <Button type="submit" size="sm" disabled={isSaving}>Save date and complete</Button>
+          <Button type="button" variant="ghost" size="sm" disabled={isSaving} onClick={() => setAskingDate(false)}>Cancel</Button>
+          <p className="basis-full text-xs text-muted-foreground">
+            The date the funder obligated the award. The award&apos;s &quot;Obligated on&quot; date on the Funding tab marks when eligible costs start; it is usually the same day.
+          </p>
+        </form>
+      ) : null}
       {message ? <p role="status" className="text-xs text-emerald-700 dark:text-emerald-300">{message}</p> : null}
       {error ? <p role="alert" className="text-xs text-destructive">{error}</p> : null}
     </div>

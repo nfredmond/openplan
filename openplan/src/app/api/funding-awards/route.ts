@@ -1,3 +1,4 @@
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -229,6 +230,12 @@ export async function POST(request: NextRequest) {
 
     if (!access.membership || !access.allowed) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    // Recording an award as already closed is a closure act: owner or admin.
+    if (parsed.data.recordClosedOnImport && !canAccessWorkspaceAction("awards.close", access.membership.role)) {
+      audit.warn("funding_award_closure_role_refused", { projectId: parsed.data.projectId, userId: user.id, role: access.membership.role });
+      return NextResponse.json({ error: "Only a workspace owner or admin can close out, reconcile, record a closure for, or reopen an award." }, { status: 403 });
     }
 
     const importedClosure = parsed.data.recordClosedOnImport ?? null;

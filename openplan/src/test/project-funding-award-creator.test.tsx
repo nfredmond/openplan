@@ -28,13 +28,20 @@ import { ProjectFundingAwardCreator } from "@/components/projects/project-fundin
  * ticked. Nothing was weakened to make it pass.
  */
 
-function renderCreator() {
+/** As an owner or admin by default; `false` is a member (awards.close). */
+function renderCreator(canRecordClosure = true) {
   return render(
     <ProjectFundingAwardCreator
       projectId="44444444-4444-4444-8444-444444444444"
       opportunityOptions={[]}
+      canRecordClosure={canRecordClosure}
     />
   );
+}
+
+/** A caller that passes no permission at all. */
+function renderCreatorWithNoPermissionProp() {
+  return render(<ProjectFundingAwardCreator projectId="44444444-4444-4444-8444-444444444444" opportunityOptions={[]} />);
 }
 
 function next() {
@@ -65,6 +72,16 @@ describe("ProjectFundingAwardCreator", () => {
   beforeEach(() => {
     refreshMock.mockReset();
     vi.restoreAllMocks();
+  });
+
+  it.each([
+    ["a member", () => renderCreator(false)],
+    ["a caller that passes no permission", renderCreatorWithNoPermissionProp],
+  ] as const)("hides the already-closed option from %s and says who may use it (review 95)", (_who, renderIt) => {
+    renderIt();
+    openToSpending();
+    expect(screen.queryByLabelText(/This award closed before it was recorded here/)).toBeNull();
+    expect(screen.getByText("Only an owner or admin can mark an award as already closed.")).toBeInTheDocument();
   });
 
   it("offers no way to create an award already closed from the status dropdown", () => {
