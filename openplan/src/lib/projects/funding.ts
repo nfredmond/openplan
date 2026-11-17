@@ -168,7 +168,8 @@ export function buildProjectFundingStackSummary(
   profile: ProjectFundingProfileLike | null | undefined,
   awards: FundingAwardLike[],
   opportunities: FundingOpportunityLike[] = [],
-  invoices: FundingInvoiceLike[] = []
+  invoices: FundingInvoiceLike[] = [],
+  options: { reimbursementWithheldReason?: string | null } = {}
 ) {
   const managed = awards.some((a) => a.latest_handoff_revision_id || a.current_handoff_revision_id);
   if (managed) {
@@ -307,6 +308,15 @@ export function buildProjectFundingStackSummary(
     reimbursementReason = "Linked invoice requests exist, but no committed award total is available to classify reimbursement posture.";
   }
 
+  // A reimbursement total summed from an incomplete read is a wrong number
+  // shown as fact (KI-2026-11-16-132). Withhold every reimbursement figure and
+  // say why; the award ceilings above still stand on their own read.
+  const withheld = options.reimbursementWithheldReason ?? null;
+  if (withheld) {
+    reimbursementStatus = "unknown";
+    reimbursementLabel = "Reimbursement totals withheld";
+    reimbursementReason = withheld;
+  }
   return {
     fundingNeedAmount,
     localMatchNeedAmount,
@@ -321,11 +331,11 @@ export function buildProjectFundingStackSummary(
     opportunityCount: opportunities.length,
     reimbursementPacketCount: invoices.length,
     awardRiskCount,
-    requestedReimbursementAmount,
-    paidReimbursementAmount,
-    outstandingReimbursementAmount,
-    draftReimbursementAmount,
-    uninvoicedAwardAmount,
+    requestedReimbursementAmount: withheld ? Number.NaN : requestedReimbursementAmount,
+    paidReimbursementAmount: withheld ? Number.NaN : paidReimbursementAmount,
+    outstandingReimbursementAmount: withheld ? Number.NaN : outstandingReimbursementAmount,
+    draftReimbursementAmount: withheld ? Number.NaN : draftReimbursementAmount,
+    uninvoicedAwardAmount: withheld ? Number.NaN : uninvoicedAwardAmount,
     nextObligationAt,
     status,
     label,
@@ -341,9 +351,9 @@ export function buildProjectFundingStackSummary(
     coverageRatio: fundingNeedAmount > 0 ? Math.min(committedFundingAmount / fundingNeedAmount, 1) : null,
     pipelineCoverageRatio: fundingNeedAmount > 0 ? Math.min(totalPotentialFundingAmount / fundingNeedAmount, 1) : null,
     reimbursementCoverageRatio:
-      committedFundingAmount > 0 ? Math.min(requestedReimbursementAmount / committedFundingAmount, 1) : null,
+      !withheld && committedFundingAmount > 0 ? Math.min(requestedReimbursementAmount / committedFundingAmount, 1) : null,
     paidReimbursementCoverageRatio:
-      committedFundingAmount > 0 ? Math.min(paidReimbursementAmount / committedFundingAmount, 1) : null,
+      !withheld && committedFundingAmount > 0 ? Math.min(paidReimbursementAmount / committedFundingAmount, 1) : null,
   };
 }
 

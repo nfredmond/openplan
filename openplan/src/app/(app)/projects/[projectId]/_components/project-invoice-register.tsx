@@ -40,12 +40,15 @@ export function ProjectInvoiceRegister({
   projectInvoices,
   invoicesReadFailed = false,
   prioritizedProjectInvoices,
+  totalsWithheldReason = null,
 }: {
   invoiceSummary: BillingInvoiceSummary;
   projectInvoicesPending: boolean;
   projectInvoices: BillingInvoice[];
   invoicesReadFailed?: boolean;
   prioritizedProjectInvoices: BillingInvoice[];
+  /** Set when the complete invoice read came back short: the badges' totals are withheld with this reason. */
+  totalsWithheldReason?: string | null;
 }) {
   return (
     <article id="project-invoices" className="module-section-surface scroll-mt-24">
@@ -59,11 +62,15 @@ export function ProjectInvoiceRegister({
           </div>
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <StatusBadge tone={invoiceSummary.overdueCount > 0 ? "danger" : "info"}>{invoiceSummary.overdueCount} overdue</StatusBadge>
-        <StatusBadge tone="neutral">{invoiceSummary.submittedCount} in review/payment</StatusBadge>
-        <StatusBadge tone="info">Outstanding {fmtCurrency(invoiceSummary.outstandingNetAmount)}</StatusBadge>
-      </div>
+      {totalsWithheldReason ? (
+        <p className="mt-4 text-sm text-muted-foreground">{totalsWithheldReason}</p>
+      ) : (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <StatusBadge tone={invoiceSummary.overdueCount > 0 ? "danger" : "info"}>{invoiceSummary.overdueCount} overdue</StatusBadge>
+          <StatusBadge tone="neutral">{invoiceSummary.submittedCount} in review/payment</StatusBadge>
+          <StatusBadge tone="info">Outstanding {fmtCurrency(invoiceSummary.outstandingNetAmount)}</StatusBadge>
+        </div>
+      )}
       {projectInvoicesPending ? (
         <div className="module-alert mt-5 text-sm">Invoices appear after a database update on this installation.</div>
       ) : projectInvoices.length === 0 ? (

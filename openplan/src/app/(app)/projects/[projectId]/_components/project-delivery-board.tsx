@@ -60,6 +60,8 @@ type ProjectDeliveryBoardProps = {
   submittalsReadFailed?: boolean;
   /** True when the reimbursement-invoice read FAILED — money, so it must not read as zero. */
   invoicesReadFailed?: boolean;
+  /** Set when the complete invoice read came back short: invoice totals are withheld with this reason. */
+  invoiceTotalsWithheldReason?: string | null;
   /**
    * ACCEPTED AND IGNORED. The invoice register moved to `ProjectInvoiceRegister`
    * so it sits with this project's funding; the summary tile above still reports
@@ -114,6 +116,7 @@ export function ProjectDeliveryBoard({
   submittals,
   submittalsReadFailed = false,
   invoicesReadFailed = false,
+  invoiceTotalsWithheldReason = null,
   prioritizedSubmittals,
   deliverables,
   budgetSummaryByDeliverableId,
@@ -162,8 +165,8 @@ export function ProjectDeliveryBoard({
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Outstanding invoices</p>
-            <p className="module-summary-value text-base leading-tight">{fmtCurrency(invoiceSummary.outstandingNetAmount)}</p>
-            <p className="module-summary-detail">{invoiceSummary.submittedCount} invoice record(s) still in review or payment flow.</p>
+            <p className="module-summary-value text-base leading-tight">{invoiceTotalsWithheldReason ? "Withheld" : fmtCurrency(invoiceSummary.outstandingNetAmount)}</p>
+            <p className="module-summary-detail">{invoiceTotalsWithheldReason ?? `${invoiceSummary.submittedCount} invoice record(s) still in review or payment flow.`}</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Control deadlines</p>
@@ -234,9 +237,11 @@ export function ProjectDeliveryBoard({
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold text-muted-foreground">Invoices</p>
-            <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : invoicesReadFailed ? "Invoice records unavailable" : "No invoice records yet"}</h3>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceTotalsWithheldReason ? "Invoice totals withheld" : invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : invoicesReadFailed ? "Invoice records unavailable" : "No invoice records yet"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              {invoiceSummary.totalCount
+              {invoiceTotalsWithheldReason
+                ? invoiceTotalsWithheldReason
+                : invoiceSummary.totalCount
                 ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.claimedNetAmount)}.${invoiceSummary.rejectedCount > 0 ? ` ${fmtCurrency(invoiceSummary.rejectedNetAmount)} rejected, not counted.` : ""}`
                 : "Add invoices here as you bill for project work, and this will track what is paid and what is late."}
             </p>

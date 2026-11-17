@@ -167,6 +167,10 @@ type ProjectFundingPanelProps = {
   unlinkedProjectInvoices: BillingInvoice[];
   unlinkedProjectInvoiceSummary: BillingInvoiceSummary;
   comparisonBackedFundingReport: ComparisonBackedFundingReport;
+  /** Set when the award invoice read failed or its length differs from its exact count: every award reimbursement figure is withheld with this reason. */
+  awardInvoiceTotalsWithheldReason?: string | null;
+  /** Set when the project invoice read failed or came back short: the unlinked total is withheld with this reason. */
+  projectInvoiceTotalsWithheldReason?: string | null;
 };
 
 /**
@@ -209,12 +213,14 @@ export function ProjectFundingPanel({
   unlinkedProjectInvoices,
   unlinkedProjectInvoiceSummary,
   comparisonBackedFundingReport,
+  awardInvoiceTotalsWithheldReason = null,
+  projectInvoiceTotalsWithheldReason = null,
 }: ProjectFundingPanelProps) {
   const fundingProfileScan = buildProjectFundingProfileScan({
     summary: fundingStackSummary,
     hasComparisonEvidence: Boolean(comparisonBackedFundingReport?.comparisonDigest),
     unlinkedInvoiceCount: unlinkedProjectInvoices.length,
-    unlinkedInvoiceAmount: unlinkedProjectInvoiceSummary.totalNetAmount,
+    unlinkedInvoiceAmount: projectInvoiceTotalsWithheldReason ? undefined : unlinkedProjectInvoiceSummary.totalNetAmount,
   });
   /**
    * Per-award claim posture from the linked reimbursement invoices only —
@@ -241,7 +247,9 @@ export function ProjectFundingPanel({
           match_amount: award.match_amount,
           match_posture: award.match_posture,
         },
-        invoiceRead: { ok: true, invoices: invoiceRecordsByFundingAwardId.get(award.id) ?? [] },
+        invoiceRead: awardInvoiceTotalsWithheldReason
+          ? { ok: false, pending: false, message: awardInvoiceTotalsWithheldReason }
+          : { ok: true, invoices: invoiceRecordsByFundingAwardId.get(award.id) ?? [] },
       });
       return built.ok ? [[award.id, built.ledger] as const] : [];
     })
@@ -342,18 +350,22 @@ export function ProjectFundingPanel({
                 </StatusBadge>
               </div>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
-                {committedFundingAmount > 0
+                {awardInvoiceTotalsWithheldReason
+                  ? "Totals withheld"
+                  : committedFundingAmount > 0
                   ? `${Math.round((fundingStackSummary.reimbursementCoverageRatio ?? 0) * 100)}% of committed awards invoiced`
                   : "No committed awards yet"}
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                {committedFundingAmount > 0
+                {awardInvoiceTotalsWithheldReason
+                  ? awardInvoiceTotalsWithheldReason
+                  : committedFundingAmount > 0
                   ? `${fmtCurrency(fundingStackSummary.requestedReimbursementAmount)} requested on linked award invoices, ${fmtCurrency(fundingStackSummary.paidReimbursementAmount)} paid, ${fmtCurrency(fundingStackSummary.outstandingReimbursementAmount)} outstanding, and ${fmtCurrency(fundingStackSummary.uninvoicedAwardAmount)} still not yet invoiced.`
                   : fundingStackSummary.reimbursementReason}
               </p>
               {unlinkedProjectInvoices.length > 0 ? (
                 <div className="module-note mt-3 text-sm">
-                  {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award, totaling {fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}. Until they are linked in the register below, they do not count toward the figures above.
+                  {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award{projectInvoiceTotalsWithheldReason ? "" : `, totaling ${fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}`}. Until they are linked in the register below, they do not count toward the figures above.
                 </div>
               ) : null}
             </div>
@@ -475,7 +487,7 @@ export function ProjectFundingPanel({
                       </div>
 
                       {award.latest_handoff_revision_id ? <AwardFundingFacts awards={[award]}/> : <p className="mt-1.5 text-label text-muted-foreground">
-                        Awarded {fmtCurrency(award.awarded_amount)} · Match {awardMatchText(award.match_amount, award.match_posture)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
+                        Awarded {fmtCurrency(award.awarded_amount)} · Match {awardMatchText(award.match_amount, award.match_posture)} · {awardInvoiceTotalsWithheldReason ? "Reimbursed and outstanding withheld" : `Reimbursed ${fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding ${fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)}`} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
                       </p>}
 
                       {/*
@@ -534,7 +546,9 @@ export function ProjectFundingPanel({
                               Linked invoice chain
                             </p>
                             <p className="mt-1 text-sm text-muted-foreground">
-                              {awardInvoices.length > 0
+                              {awardInvoiceTotalsWithheldReason
+                                ? awardInvoiceTotalsWithheldReason
+                                : awardInvoices.length > 0
                                 ? `${awardInvoices.length} linked invoice record${awardInvoices.length === 1 ? "" : "s"} totaling ${fmtCurrency(awardInvoiceSummary?.claimedNetAmount ?? 0)} net requested.${(awardInvoiceSummary?.rejectedCount ?? 0) > 0 ? ` ${fmtCurrency(awardInvoiceSummary?.rejectedNetAmount ?? 0)} rejected, not counted.` : ""}`
                                 : "No invoice records are linked to this award yet."}
                             </p>

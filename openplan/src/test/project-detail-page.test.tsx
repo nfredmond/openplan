@@ -238,7 +238,17 @@ const awardInvoicesLimitMock = vi.fn(async () => ({ data: [], error: null }));
 const awardInvoicesOrderMock = vi.fn((..._args: unknown[]) => awardInvoicesLimitMock());
 const awardInvoicesInMock = vi.fn((..._args: unknown[]) => ({ order: awardInvoicesOrderMock }));
 const invoicesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
-  eq: invoicesEqMock,
+  // The project read is count-checked too (KI-2026-11-16-132): its limit()
+  // answers with the exact count when the page asks for one.
+  eq: (...eqArgs: unknown[]) => {
+    const query = (invoicesEqMock as unknown as (...a: unknown[]) => { order: (...o: unknown[]) => { limit: (...l: unknown[]) => Promise<FundingReadResult> } })(...eqArgs);
+    return {
+      order: (...orderArgs: unknown[]) => {
+        const ordered = query.order(...orderArgs);
+        return { limit: (...limitArgs: unknown[]) => countedFundingRead(ordered.limit(...limitArgs), options) };
+      },
+    };
+  },
   in: (...args: unknown[]) => {
     const query = awardInvoicesInMock(...args);
     return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
@@ -2465,6 +2475,120 @@ describe("ProjectDetailPage", () => {
    * date $0", "Direct spend $0" and "Actual to date $0". The loader now returns
    * its failures and the page discloses them by name.
    */
+  describe("Funding tab money sums the complete invoice read (KI-2026-11-16-132)", () => {
+    // Twelve requests on one award, created oldest first. The six newest are
+    // INV-07 to INV-12, so a total summed from the six-row display list reads
+    // $150,000.00 requested, $65,000.00 paid and $250,000.00 not yet invoiced.
+    // Hand totals over all twelve (retention 0):
+    //   paid      10,000 + 12,500 + 15,000 + 20,000 + 22,500 + 25,000 + 30,000 + 35,000 = 170,000
+    //   in flight 40,000 (submitted) + 45,000 (approved for payment)                 =  85,000
+    //   claimed   170,000 + 85,000                                                    = 255,000
+    //   not yet invoiced 400,000 - 255,000                                            = 145,000
+    //   draft 5,000 and rejected 7,500 count in none of the above.
+    const AWARD_ID = "award-twelve";
+    const plan: Array<[string, number]> = [
+      ["paid", 10000], ["paid", 12500], ["paid", 15000], ["paid", 20000], ["paid", 22500], ["paid", 25000],
+      ["paid", 30000], ["paid", 35000], ["submitted", 40000], ["approved_for_payment", 45000], ["draft", 5000], ["rejected", 7500],
+    ];
+    const twelve = plan
+      .map(([status, amount], index) => ({
+        id: `invoice-${index + 1}`,
+        funding_award_id: AWARD_ID,
+        invoice_number: `INV-${String(index + 1).padStart(2, "0")}`,
+        consultant_name: null,
+        billing_basis: "time_and_materials",
+        status,
+        invoice_date: "2026-03-01",
+        due_date: null,
+        amount,
+        retention_percent: 0,
+        retention_amount: 0,
+        net_amount: amount,
+        supporting_docs_status: "complete",
+        submitted_to: null,
+        caltrans_posture: null,
+        notes: null,
+        created_at: `2026-03-${String(index + 1).padStart(2, "0")}T18:00:00.000Z`,
+        funding_awards: { id: AWARD_ID, title: "Twelve-request award" },
+      }))
+      .reverse();
+
+    beforeEach(async () => {
+      // The file mocks the summarizer; money tests need the real arithmetic.
+      const actual = await vi.importActual<typeof import("@/lib/invoicing/invoice-records")>("@/lib/invoicing/invoice-records");
+      summarizeBillingInvoiceRecordsMock.mockImplementation(actual.summarizeBillingInvoiceRecords);
+    });
+
+    function seedAward() {
+      fundingAwardsLimitMock.mockResolvedValue({
+        data: [
+          {
+            id: AWARD_ID,
+            project_id: "70000000-0000-4000-8000-000000000001",
+            program_id: null,
+            funding_opportunity_id: null,
+            title: "Twelve-request award",
+            awarded_amount: 400000,
+            match_amount: 0,
+            match_posture: "not_required",
+            obligation_due_at: null,
+            spending_status: "active",
+            risk_flag: "none",
+            notes: null,
+            updated_at: "2026-03-01T18:00:00.000Z",
+            created_at: "2026-02-01T18:00:00.000Z",
+            funding_opportunities: null,
+            programs: null,
+          },
+        ],
+        error: null,
+      });
+      // The fake honours the page's own limit, as PostgREST does.
+      invoicesLimitMock.mockImplementation(async (n: number) => ({ data: twelve.slice(0, n), error: null }));
+    }
+
+    it("sums all twelve requests to the hand totals", async () => {
+      seedAward();
+      awardInvoicesLimitMock.mockResolvedValue({ data: twelve, error: null });
+
+      await renderPage("funding");
+
+      expect(
+        screen.getByText(
+          "$255,000.00 requested on linked award invoices, $170,000.00 paid, $85,000.00 outstanding, and $145,000.00 still not yet invoiced."
+        )
+      ).toBeInTheDocument();
+      expect(screen.getByText(/Reimbursed \$170,000\.00 · Outstanding \$85,000\.00/)).toBeInTheDocument();
+      expect(screen.getByText("Outstanding $85,000.00")).toBeInTheDocument();
+      expect(screen.queryByText(/\$150,000\.00 requested/)).toBeNull();
+    });
+
+    it("withholds every reimbursement total when the award read's count and length differ", async () => {
+      seedAward();
+      awardInvoicesLimitMock.mockResolvedValue({ data: twelve, error: null, count: 13 } as never);
+
+      await renderPage("funding");
+
+      expect(screen.getByText("Totals withheld")).toBeInTheDocument();
+      expect(
+        screen.getAllByText("Reimbursement totals withheld: 12 of 13 award invoice records loaded.").length
+      ).toBeGreaterThan(0);
+      expect(screen.getByText(/Reimbursed and outstanding withheld/)).toBeInTheDocument();
+      expect(screen.queryByText(/requested on linked award invoices/)).toBeNull();
+    });
+
+    it("withholds the register totals when the project read comes back short", async () => {
+      seedAward();
+      awardInvoicesLimitMock.mockResolvedValue({ data: twelve, error: null });
+      invoicesLimitMock.mockImplementation(async (n: number) => ({ data: twelve.slice(0, n), error: null, count: 1200 }));
+
+      await renderPage("funding");
+
+      expect(screen.getByText("Invoice totals withheld: 12 of 1200 invoice records loaded.")).toBeInTheDocument();
+      expect(screen.queryByText("Outstanding $85,000.00")).toBeNull();
+    });
+  });
+
   describe("budget reads are disclosed rather than totalled to zero", () => {
     it("names a failed client-invoice read instead of leaving the billed total unexplained", async () => {
       clientInvoicesLimitMock.mockResolvedValue({
