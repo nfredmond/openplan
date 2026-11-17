@@ -296,6 +296,26 @@ careless journey; they are listed by kind in KI-2026-11-16-099.
   state's file. OpenPlan does not know how many crashes on tribal land
   that file lacks, and says so.
 
+## A limit found after this record was made: colour contrast below the first screen
+
+Added November 17, 2026 (agent-run). This record says each screen it used
+had no serious or critical axe-core findings. That reading covered only
+what was on the first screen. OpenPlan scrolls an inner pane, not the
+page, so the journey's screen check ran axe on a page one screen tall,
+and axe-core treats anything below that screen as not applicable for
+colour contrast (KI-2026-11-17-032). The record, its files and its other
+findings are unchanged, and the checker still accepts it.
+
+On November 17, 2026 an agent read the same screens on a local build
+with the whole screen measured, in one stand-in workspace (not this
+record's workspaces or commit). Before the colour fixes in PR 520 these
+screens held 43 serious colour-contrast nodes: on the project page, 8 in light mode and 11 in dark at each width; on the Safety page, 1 in dark at 1440 px and 1 in each mode at 390 px; on Corridor Analysis at 390 px, 1 in each mode. After the
+fixes they held none. The journeys now measure the whole screen
+(`readWholeScreen` in `qa-harness/journey-browser-lib.js`, PR 520). The
+screen states that stand-in workspace did not reach are listed in
+KI-2026-11-17-071, and a table that scrolls sideways at 390 px is still
+not read whole (KI-2026-11-17-072).
+
 ## What this does not change
 
 The first and second proven job records, their files and their registry

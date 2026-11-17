@@ -69,7 +69,7 @@
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/README.md",
-          "sha256": "c1bc01d1ac1d0de2bec90dd493529cc82d6af88aec8ced43d2ca36f8f35dae40"
+          "sha256": "91cac9bf4e52136d0c9a2630c531673066b526419eb03e5565ff85b4df60a425"
         },
         {
           "path": "docs/product/capability-evidence/first-proven-job/inputs/sierra-county-ca.inputs.json",
@@ -183,7 +183,7 @@
         },
         {
           "path": "docs/product/capability-evidence/second-proven-job/README.md",
-          "sha256": "455fc7ad107ec1496633391ef767b1cabe6ddb4392cd491261d5d5cb2a3ddddd"
+          "sha256": "e28cf22ad5e7ab92a17f1ebdee4cc2ecec9a768bd3f46f53ad35fc535a7c6b2d"
         },
         {
           "path": "docs/product/capability-evidence/second-proven-job/inputs/coos-county.inputs.json",
@@ -257,7 +257,7 @@
         },
         {
           "path": "docs/product/capability-evidence/third-proven-job/README.md",
-          "sha256": "9017ddb3132ab5d473b0a419bdfca7ab581edbc8f3a2e1a98f95b409bc9cf69f"
+          "sha256": "a7dc1951947ef756fb3754295762b9f8b306ae65fd1042813fbb129348d1de3a"
         },
         {
           "path": "docs/product/capability-evidence/third-proven-job/inputs/trinity-county-ca.inputs.json",

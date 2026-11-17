@@ -252,6 +252,26 @@ this record's criteria:
   (KI-2026-11-15-013), and at 390 px the portal's first screen shows no
   campaign title until the sheet is opened (KI-2026-11-15-014).
 
+## A limit found after this record was made: colour contrast below the first screen
+
+Added November 17, 2026 (agent-run). This record says each screen it used
+had no serious or critical axe-core findings. That reading covered only
+what was on the first screen. OpenPlan scrolls an inner pane, not the
+page, so the journey's screen check ran axe on a page one screen tall,
+and axe-core treats anything below that screen as not applicable for
+colour contrast (KI-2026-11-17-032). The record, its files and its other
+findings are unchanged, and the checker still accepts it.
+
+On November 17, 2026 an agent read the same screens on a local build
+with the whole screen measured, in one stand-in workspace (not this
+record's workspaces or commit). Before the colour fixes in PR 520 these
+screens held 12 serious colour-contrast nodes: on the campaign's analysis tab, 1 at each width and mode; on its record tab, 2 at each width and mode. After the
+fixes they held none. The journeys now measure the whole screen
+(`readWholeScreen` in `qa-harness/journey-browser-lib.js`, PR 520). The
+screen states that stand-in workspace did not reach are listed in
+KI-2026-11-17-071, and a table that scrolls sideways at 390 px is still
+not read whole (KI-2026-11-17-072).
+
 ## What this does not change
 
 This record adds one job to the list of proven jobs. It raises no readiness
