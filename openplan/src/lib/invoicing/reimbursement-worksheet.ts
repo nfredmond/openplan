@@ -128,7 +128,8 @@ export type WorksheetAward = {
 
 export type WorksheetAwardClosure = {
   basis: string | null;
-  closedAt: string | null;
+  /** The workspace calendar day the award closed, computed by the route. */
+  closedOn: string | null;
   note: string | null;
   /** On a close with the balance released: the ceiling minus paid requests. */
   releasedAmount: number | null;
@@ -389,7 +390,7 @@ function ledgerSection(data: ReimbursementWorksheetData): string {
 
   const obligatedOn = data.award.obligatedOn?.trim();
   const closure = data.award.closure ?? null;
-  const closedOn = closure?.closedAt ? `${closure.closedAt.slice(0, 10)} (UTC)` : "date not recorded";
+  const closedOn = closure?.closedOn ?? "date not recorded";
   const closureRows = closure
     ? [
         figureRow(

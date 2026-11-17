@@ -269,4 +269,57 @@ describe("PATCH /api/invoicing/invoices/[invoiceId]", () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Funding award must match the linked invoice project" });
   });
+
+  // Request custody (20261117000100, KI-2026-11-16-135, -136, -137).
+  const invoiceParams = { params: Promise.resolve({ invoiceId: "99999999-9999-4999-8999-999999999999" }) };
+  const workspace = { workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" };
+
+  it("asks for the funder's reason before marking a request rejected", async () => {
+    const response = await patchInvoice(jsonRequest({ ...workspace, status: "rejected" }), invoiceParams);
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toContain("needs the reason");
+    expect(billingInvoicesUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("asks for the payment date before marking a request paid", async () => {
+    const response = await patchInvoice(jsonRequest({ ...workspace, status: "paid" }), invoiceParams);
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toContain("payment date");
+    expect(billingInvoicesUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a reason or a payment date sent without the move it belongs to", async () => {
+    for (const body of [{ ...workspace, status: "submitted", rejectionReason: "Returned" }, { ...workspace, status: "submitted", paidDate: "2026-11-01" }]) {
+      expect((await patchInvoice(jsonRequest(body), invoiceParams)).status).toBe(400);
+    }
+    expect(billingInvoicesUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("writes the reason and the payment date with their moves", async () => {
+    await patchInvoice(jsonRequest({ ...workspace, status: "rejected", rejectionReason: "Revise the invoice date" }), invoiceParams);
+    expect(billingInvoicesUpdateMock).toHaveBeenLastCalledWith(expect.objectContaining({ status: "rejected", rejection_reason: "Revise the invoice date" }));
+    await patchInvoice(jsonRequest({ ...workspace, status: "paid", paidDate: "2026-11-01" }), invoiceParams);
+    expect(billingInvoicesUpdateMock).toHaveBeenLastCalledWith(expect.objectContaining({ status: "paid", paid_date: "2026-11-01" }));
+  });
+
+  it("answers the database's request rule as the planner's mistake, not a server failure", async () => {
+    billingInvoicesUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "23514", message: "A request is marked paid only after it is approved for payment" },
+    });
+    const response = await patchInvoice(jsonRequest({ ...workspace, status: "paid", paidDate: "2026-11-01" }), invoiceParams);
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: "A request is marked paid only after it is approved for payment" });
+    expect(billingInvoicesUpdateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("answers a relink onto an award that already uses the number as a conflict", async () => {
+    billingInvoicesUpdateSingleMock.mockResolvedValueOnce({ data: null, error: { code: "23505", message: "duplicate key" } });
+    const response = await patchInvoice(
+      jsonRequest({ ...workspace, fundingAwardId: "77777777-7777-4777-8777-777777777777" }),
+      invoiceParams
+    );
+    expect(response.status).toBe(409);
+    expect((await response.json()).error).toContain("already uses this number");
+  });
 });

@@ -23,6 +23,7 @@ import { loadProjectAccess } from "@/lib/programs/api";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { calendarDayOf, loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 
 /**
@@ -312,6 +313,11 @@ export async function GET(request: NextRequest, context: RouteContext) {
       if (current.error || !current.data) return NextResponse.json({error:"Current award terms unavailable"},{status:503});
       assemblyNotices.push(`Recorded award ceiling, not authorization. Actual authorization: ${JSON.stringify(current.data.terms.authorization)}. Recipient acceptance: ${current.data.terms.acceptance}. Profile shown is guidance, not established applicability.`);
     }
+    // The close-out date on the workspace's calendar, not the server's UTC day.
+    const closedOn =
+      award.spending_status === "fully_spent" && award.closed_at
+        ? calendarDayOf(award.closed_at, (await loadWorkspaceCalendar(supabase, award.workspace_id)).timeZone)
+        : null;
     const html = buildReimbursementWorksheetHtml({
       workspace: { name: workspaceRow?.name ?? null },
       award: {
@@ -322,7 +328,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
           award.spending_status === "fully_spent"
             ? {
                 basis: award.closure_basis ?? null,
-                closedAt: award.closed_at ?? null,
+                closedOn,
                 note: award.closure_note ?? null,
                 releasedAmount:
                   award.closure_released_amount === null || award.closure_released_amount === undefined
