@@ -8,6 +8,7 @@ import { ProjectFundingAwardCreator } from "@/components/projects/project-fundin
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
 import { ReimbursementWorksheetDownload } from "@/components/invoicing/reimbursement-worksheet-download";
 import { AwardExpenditureDeadlineControl } from "@/components/projects/award-expenditure-deadline-control";
+import { AwardObligatedOnControl } from "@/components/projects/award-obligated-on-control";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import {
@@ -492,6 +493,7 @@ export function ProjectFundingPanel({
                         expenditureDeadlineAt={award.expenditure_deadline_at}
                         canWrite={canWriteAwards}
                       />}
+                      <AwardObligatedOnControl awardId={award.id} obligatedOn={award.obligated_on} canWrite={canWriteAwards} />
 
                       {/*
                         Gross claimed beside net paid, each labelled, because

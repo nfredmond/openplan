@@ -255,6 +255,8 @@ export type FundingAwardRow = import("@/lib/grants/award-handoff").ComparableAwa
    * that did not ask, `null` is an award with no lapse date recorded.
    */
   expenditure_deadline_at?: string | null;
+  /** When the award was obligated, authorized or allocated (20261117000200); undefined when not selected. */
+  obligated_on?: string | null;
   spending_status: string;
   risk_flag: string;
   notes: string | null;
