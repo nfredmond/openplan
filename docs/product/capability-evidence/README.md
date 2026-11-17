@@ -553,9 +553,16 @@ back with Poppler.
   `award-to-reimbursement-definition-pins.test.ts` ties each fixed value to
   the product's own constant, worksheet output or source text.
 
+- `limitIdsClosed`: true refuses a record limit under an id the job's
+  `limitTexts` does not word (review 99, X04).
+
 The record's fields for this job are the `awardJourney` sub-schema. Money is
 a string of dollars and cents, or null for a fact not entered; the checker
-reads it in whole cents.
+reads it in whole cents. Its limits are exactly the definition's: a record
+states each required limit in the definition's words and no other, so a
+rehearsal record or run file written before November 17, 2026 needs the
+`who-acted-is-the-journeys-word` limit added, and the journey's assembler
+must write it (lane 94).
 
 ### What the checker cannot see for this job
 
@@ -564,13 +571,17 @@ answer is the journey's statement. The checker recomputes the money from them
 and holds the worksheets and readings to it, so a record and worksheets
 falsified together to agree are not caught. The record names no actor, so who
 made each move and the close-out is the journey's word (a required limit says
-so). Dates in a request row are read as words, held in place by the count of
-"Not recorded" for the dates the record leaves blank; two of the row's own
-dates exchanged between their cells are not caught. Review 97 (agent-run,
-fresh context) found the copies the first version accepted; amounts outside
-the read rows, unpaired custody answers, early payment dates, invented dates,
-a California city, form titles, seven wordings, a phrase across a page break
-and reading times are now refused. The tribal area's states are the journey's reading; the
+so). A request row's dates are read by column, each word placed in the column
+whose header it starts under (less four characters of slack); a one- or
+two-letter word of a long rejection reason that Chrome set within those few
+characters of the invoice-date column would be read as part of that column,
+which refuses an honest record rather than accepting a false one. Reviews 97
+and 99 (agent-run, fresh context) found the copies the earlier versions
+accepted; amounts outside the read rows (with or without a sign or cents),
+unpaired custody answers, early payment dates, dates in the wrong cell,
+invented dates, a California city, form titles and dashes, nine wordings, a
+phrase across a page break, reading times, amounts in typed text and limits
+under unworded ids are now refused. The tribal area's states are the journey's reading; the
 Gazetteer table of tribal areas has no state column. Under the fixed amounts
 (no retention, every claim paid at close) the ceiling minus net paid, minus
 gross paid and minus claimed gross are the same number, so only a changed copy

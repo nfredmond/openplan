@@ -139,8 +139,23 @@ export function worksheetPagesFromHtml(html: string): string[] {
   });
   // Request rows: each cell's first line on the row's first line, the cells' notes below.
   body = body.replace(/<tr>\s*((?:<td[\s\S]*?<\/td>\s*){8})<\/tr>/g, (_whole, cells: string) => {
-    const columns = [...cells.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((match) => cellLines(match[1]));
     const widths = [17, 24, 14, 16, 16, 18, 14, 14];
+    // Each cell wraps inside its own column, as the browser sets it.
+    const wrap = (text: string, width: number) => {
+      const wrapped: string[] = [];
+      let line = "";
+      for (const word of text.split(" ")) {
+        if (line && `${line} ${word}`.length > width) {
+          wrapped.push(line);
+          line = word;
+        } else {
+          line = line ? `${line} ${word}` : word;
+        }
+      }
+      if (line) wrapped.push(line);
+      return wrapped;
+    };
+    const columns = [...cells.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((match, index) => cellLines(match[1]).flatMap((line) => wrap(line, widths[index] - 1)));
     const height = Math.max(...columns.map((column) => column.length));
     const lines = Array.from({ length: height }, (_, row) => `  ${columns.map((column, index) => (column[row] ?? "").padEnd(widths[index])).join(" ")}`.trimEnd());
     return `\n${lines.map((line) => KEEP + line).join("\n")}\n`;

@@ -155,6 +155,34 @@ describe.skipIf(!POPPLER || !CHROME)("real worksheets printed by Chrome", () => 
     }
   }, 240_000);
 
+  it("reads a request row that splits across a page, with the header repeated and the page's note inside it", async () => {
+    // Review 99 left this untested. A 30-sentence rejection reason makes INV-2's row longer than a page.
+    const record = structuredClone(EXAMPLE);
+    const county = record.journeys[0];
+    county.requests[1].rejectionReason = Array.from({ length: 30 }, (_, index) => `Item ${index + 1} of the backup was missing from the request package.`).join(" ");
+    EXAMPLE_OVERRIDE = record;
+    try {
+      const printed = await recordWithRealPdfs("chrome", ["county"]);
+      const text = pdftotextPages(path.join(root, printed.journeys[0].pdfs[1].path));
+      // The row really splits: INV-2's reason runs on past a page footer.
+      const reasonPage = text.findIndex((page) => page.includes("30 of the backup"));
+      expect(reasonPage).toBeGreaterThan(text.findIndex((page) => /INV-2 +Rejected/.test(page)));
+      expect(() => check(printed)).not.toThrow();
+      // The split row's due column is read: a due date the record holds and the PDF does not print is refused.
+      const moved = structuredClone(printed);
+      moved.journeys[0].requests[1].dueDate = "2026-10-20";
+      let message = "";
+      try {
+        check(moved);
+      } catch (error) {
+        message = (error as Error).message;
+      }
+      expect(message).toBe(`proven job record refused: county journey worksheet-open PDF request INV-2 due date column reads "not recorded"; the record's is "2026-10-20"`);
+    } finally {
+      EXAMPLE_OVERRIDE = null;
+    }
+  }, 240_000);
+
   it("refuses a real worksheet whose record says another amount was claimed", async () => {
     // The record and its screen readings say 61,000; the printed worksheets say 60,000.
     const record = await recordWithRealPdfs("chrome", ["county"]);

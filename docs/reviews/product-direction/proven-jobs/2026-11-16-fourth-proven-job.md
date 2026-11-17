@@ -98,9 +98,12 @@ The lead's eleven rules, as the definition and checker hold them.
    the request trigger: forward only, rejected only from submitted or
    approved, paid only from approved. A payment date is no earlier than the
    request's invoice date and no later than the day it was marked paid; every
-   date is a calendar date and every period ends on or after it starts. Each
-   worksheet row prints the record's invoice, due and payment dates, and says
-   "Not recorded" once for each date the record leaves blank, so a date the
+   date is a calendar date and every period ends on or after it starts. A
+   request is invoiced no earlier than its period starts and due no earlier
+   than it is invoiced, and the resubmission claims the period of the request
+   it replaces, invoiced no earlier. Each worksheet row's invoice-date, due and
+   paid columns, read by the table header's positions, hold the record's
+   dates, or "Not recorded" for a date the record leaves blank, so a date the
    record does not hold, or a date in another date's cell, is refused.
 7. **Refusals, each with its status.** The journey's member account, signed in
    and able to download the worksheet, is refused logging, approving, paying
@@ -117,13 +120,15 @@ The lead's eleven rules, as the definition and checker hold them.
 8. **The worksheet's words.** Page 1 carries the note that it is not a
    funder's form, and every page carries the footer that says so with its own
    page number. It names no SF-270, SF-271, SF-425 or LAPM Exhibit 5-A, by
-   number or by title, unless the word "not" comes right before the name. No
+   number or by title, with any dash or split at a line's end, unless the
+   word "not" comes right before the name. No
    sentence says a cost is allowable, eligible or reimbursable, that a balance
    was deobligated, that a payment was received, or that the worksheet is a
    payment request, including a phrase that continues on the next page. It
-   prints exactly as many dollar amounts as the rows the checker reads (19
-   before the close-out and 20 after, under the fixed amounts), so no other
-   figure can stand on it, and the journey's typed text holds no amount. The
+   prints exactly as many amounts as the rows the checker reads (19 before
+   the close-out and 20 after, under the fixed amounts), counted both by
+   currency sign and by number with cents, so no other figure can stand on it,
+   and the record's typed text holds no amount. The
    award line and the project line carry the demonstration label. A PDF the
    built-in writer typeset is refused.
 9. **Screens.** The Funding tab, Grants (Awards), the Invoices register and
@@ -139,7 +144,8 @@ The lead's eleven rules, as the definition and checker hold them.
     retention not exercised; who made each status change and the close-out
     is the journey's word (the record names no actor); what the journey
     leaves on the hosted site; what stays on the journey's word; and the three
-    limits every job states.
+    limits every job states. A record states these and no limit under another
+    id; a record written before the who-acted limit existed needs it added.
 11. **Review before any hosted run.** A fresh-context false-record review that
     also prints honest outputs in every role, and three local rehearsals of the
     journey, come before the declaration. Lane 93's own tests do the first
@@ -205,10 +211,11 @@ and it recomputes the money from them, so a record and worksheets falsified
 together to agree are not caught. The record names no actor, so who made each
 move and the close-out is the journey's word, and the record says so. The
 tribal area's states are the journey's reading, because the Gazetteer table of
-tribal areas has no state column. Dates in a request row are read as words in
-order, held in place by the count of "Not recorded" for the dates the record
-leaves blank; two of the row's own dates exchanged between their cells are not
-caught.
+tribal areas has no state column. A request row's dates are read by the
+columns of the table's header, so a date in another date's cell is refused,
+including in a row that splits across a page; a very short word of a long
+rejection reason set at the edge of the invoice-date column would be misread,
+which refuses rather than accepts.
 
 ## History: the hand run-through and what followed
 
