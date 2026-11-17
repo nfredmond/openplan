@@ -27,7 +27,7 @@ beforeEach(() => {
   mock.select.mockReturnValue({ eq: mock.eq });
   mock.from.mockReturnValue({ select: mock.select, update: mock.update });
   mock.client.mockResolvedValue({ auth: { getUser: async () => ({ data: { user: { id: id(5) } } }) }, from: mock.from });
-  mock.access.mockResolvedValue({ project: { id: id(2), workspace_id: id(3) }, membership: { role: "member" }, allowed: true, error: null });
+  mock.access.mockResolvedValue({ project: { id: id(2), workspace_id: id(3) }, membership: { role: "admin" }, allowed: true, error: null });
   mock.service.mockReturnValue({ rpc: mock.rpc });
   mock.rpc.mockResolvedValue({ data: { status: "reopened" }, error: null });
 });

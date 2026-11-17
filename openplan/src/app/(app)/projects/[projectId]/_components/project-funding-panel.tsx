@@ -405,7 +405,7 @@ export function ProjectFundingPanel({
                 <div key={lane.id} className="grid gap-3 px-5 py-4 md:grid-cols-[0.95fr_0.75fr_1.45fr_1.45fr] md:items-start">
                   <div>
                     <p className="text-sm font-semibold text-foreground">{lane.label}</p>
-                    <p className="mt-1 text-label text-muted-foreground">{lane.amount !== null ? `${fmtCurrency(lane.amount)}${lane.amountLabel ? ` ${lane.amountLabel}` : ""}` : "No amount"}</p>
+                    <p className="mt-1 text-label text-muted-foreground">{lane.amount !== null ? [fmtCurrency(lane.amount), lane.amountLabel].filter(Boolean).join(" ") : "No amount"}</p>
                   </div>
                   <div>
                     <StatusBadge tone={projectFundingProfileScanTone(lane.status)}>{lane.statusLabel}</StatusBadge>
