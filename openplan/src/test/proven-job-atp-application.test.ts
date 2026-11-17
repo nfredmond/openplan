@@ -287,7 +287,7 @@ describe("the ATP application job refuses a run that is not one hosted proof on 
     ["an end health readback on another commit", (r) => { journey(r, "city").health[1].commit = "fedcba987654"; }, /city journey end health readback reports commit fedcba987654/],
     ["a rehearsal run", (r) => { journey(r, "county").mode = "rehearsal"; }, /county journey ran in rehearsal mode; only a proof run is proof/],
     ["a harness checkout with uncommitted changes", (r) => { journey(r, "tribal-area").harness.clean = false; }, /tribal-area journey names no clean harness checkout/],
-    ["journeys run from two harness checkouts", (r) => { journey(r, "city").harness.commit = "f".repeat(40); }, /the city journey ran from harness checkout f{40}, but the county journey ran from 89abcdef.*one checkout/],
+    ["journeys run from two harness checkouts", (r) => { journey(r, "city").harness.commit = "f".repeat(40); }, /the city journey ran from harness checkout f{40}, but the county journey ran from 0123456789ab.*one checkout/],
     ["a health readback that is not ok", (r) => { journey(r, "county").health[1].status = "degraded"; }, /county journey end health readback reports status degraded, not ok/],
     ["a start readback after the account was created", (r) => { journey(r, "county").health[0].checkedAt = "2026-11-20T10:00:30Z"; }, /start health readback .* comes after the account was created/],
     ["an end readback before the export", (r) => { journey(r, "county").health[1].checkedAt = "2026-11-20T10:30:00Z"; }, /end health readback \(2026-11-20T10:30:00Z\) comes before its application\.exportedAt time/],
