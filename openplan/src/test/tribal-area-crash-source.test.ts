@@ -454,11 +454,8 @@ describe("a corridor analysis whose corridor is a tribal area", () => {
   // past the 20-second limit on CI once (main 532ea062d, November 16, 2026).
   // Any network call from here now fails the test instead of waiting on it.
   beforeEach(() => {
-    vi.spyOn(ccrsAdapter, "enrichSeriousInjury" as never).mockImplementation((async ({
-      records,
-    }: {
-      records: CrashRecord[];
-    }) => ({ records, upgraded: 0 })) as never);
+    const joinable = ccrsAdapter as Required<Pick<typeof ccrsAdapter, "enrichSeriousInjury">>;
+    vi.spyOn(joinable, "enrichSeriousInjury").mockImplementation(async ({ records }) => ({ records, upgraded: 0 }));
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
