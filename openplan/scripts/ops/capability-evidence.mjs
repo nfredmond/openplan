@@ -2782,7 +2782,7 @@ function checkWorksheetPosition(journey, rule, pdfLabel, lines, position) {
         if (amounts.length > 0) refuse(`${rowLabel} prints an amount where a date belongs`);
       } else {
         const basis = sheet.closeBasisLabels[journey.closeOut.basis];
-        if (!basis || !pdfTextHasPhrase(text, basis)) refuse(`${rowLabel} does not say "${basis ?? journey.closeOut.basis}", the close-out's basis`);
+        if (!basis || !wordsInOrder(text, basis)) refuse(`${rowLabel} does not say "${basis ?? journey.closeOut.basis}", the close-out's basis`);
       }
     } else {
       const expected = position[row.figure];
@@ -2809,7 +2809,9 @@ function checkWorksheetPosition(journey, rule, pdfLabel, lines, position) {
         if (!Object.hasOwn(fill, name)) throw new Error(`job definition award.worksheet uses the unknown placeholder ${whole}`);
         return fill[name];
       });
-      if (!pdfTextHasPhrase(text, note)) refuse(`${rowLabel} does not say "${note}"`);
+      // Read as words in order: the browser sets a row's value beside its note's first line,
+      // so another column's words can sit inside the note (a real close-out row does this).
+      if (!wordsInOrder(text, note)) refuse(`${rowLabel} does not say "${note}"`);
     }
   });
 }
