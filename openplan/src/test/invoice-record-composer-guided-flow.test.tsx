@@ -183,7 +183,8 @@ describe("logging a consulting invoice record", () => {
   it("refuses an amount that is not a plain number", () => {
     openToLinks();
     next();
-    fireEvent.change(screen.getByLabelText("Gross amount"), { target: { value: "-5" } });
+    // A negative number gets its own refusal (a-negative-amount-is-refused-for-the-right-reason.test.tsx).
+    fireEvent.change(screen.getByLabelText("Gross amount"), { target: { value: "five" } });
     next();
 
     expect(

@@ -637,9 +637,9 @@ describe("the packet's honesty furniture", () => {
 
   it("renders an assembly notice verbatim — a degradation nobody sees is the defect", () => {
     const html = renderFixture({
-      assemblyNotices: ["Payment dates are not available on this deployment yet, so no invoice shows one."],
+      assemblyNotices: ["OpenPlan does not record a payment date on reimbursement invoice records, so no invoice shows one."],
     });
-    expect(html).toContain("Payment dates are not available on this deployment yet");
+    expect(html).toContain("OpenPlan does not record a payment date on reimbursement invoice records");
   });
 
   it("escapes user-entered text so markup arrives as characters", () => {
