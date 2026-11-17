@@ -236,7 +236,7 @@ const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
 // query, so an award with a long history cannot show an understated
 // claimed-to-date. It only runs when the project HAS awards, which is why the
 // harness needed this branch the moment an award was seeded.
-const awardInvoicesLimitMock = vi.fn(async () => ({ data: [], error: null }));
+const awardInvoicesLimitMock = vi.fn(async (): Promise<FundingReadResult> => ({ data: [], error: null }));
 const awardInvoicesOrderMock = vi.fn((..._args: unknown[]) => awardInvoicesLimitMock());
 const awardInvoicesInMock = vi.fn((..._args: unknown[]) => ({ order: awardInvoicesOrderMock }));
 const invoicesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
@@ -2573,7 +2573,7 @@ describe("ProjectDetailPage", () => {
 
     it("withholds every reimbursement total when the award read's count and length differ", async () => {
       seedAward();
-      awardInvoicesLimitMock.mockResolvedValue({ data: twelve, error: null, count: 13 } as never);
+      awardInvoicesLimitMock.mockResolvedValue({ data: twelve, error: null, count: 13 });
 
       await renderPage("funding");
 
