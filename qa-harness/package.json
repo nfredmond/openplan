@@ -12,7 +12,7 @@
     "check:first-week-evidence": "node first-week-evidence.test.js",
     "check:first-week-discovery": "node first-week-discovery.test.js && node --test first-week-browser-compat.test.js",
     "check:first-week-model-downloads": "node verify-first-week-model-downloads.test.js",
-    "check:first-job-journey": "node --test first-job-journey.test.js",
+    "check:first-job-journey": "node --test first-job-journey.test.js journey-browser-lib.test.js",
     "check:engagement-job-journey": "node --test engagement-job-journey.test.js engagement-job-review-59.test.js",
     "check:atp-job-journey": "node --test atp-job-journey.test.js",
     "check:first-week-regression-outcomes": "node first-week-regression.test.js",

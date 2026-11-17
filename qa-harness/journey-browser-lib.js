@@ -338,6 +338,71 @@ async function retrieveCrashes({ page, go, projectId, placeLabel, findings }) {
   return { body, request };
 }
 
+/** The tallest viewport the unroll will set before it refuses the screen. */
+const UNROLL_MAX_HEIGHT = 30000;
+
+/**
+ * Grow the screen until nothing on it scrolls vertically, so the document
+ * holds all of it. OpenPlan scrolls an inner pane (main.op-cart-surface__body
+ * inside a fixed .op-cart-surface), so the document is one screen tall:
+ * axe-core marks every element below that screen "inapplicable" for colour
+ * contrast, and a full-page screenshot holds one screen (KI-2026-11-17-032).
+ * The pane is fixed to the viewport, so a taller viewport is a taller pane:
+ * the viewport grows by whatever any scroller still hides. A scroller whose
+ * height does not follow the viewport (a list with its own max-height) is
+ * set to grow with its content instead. Throws when the screen will not fit
+ * in UNROLL_MAX_HEIGHT, so a partial reading is never recorded as whole.
+ * Returns the viewport height it settled on.
+ */
+async function unrollScreen(tab, { width, height }) {
+  let current = height;
+  for (let round = 0; round < 12; round += 1) {
+    const hidden = await tab.evaluate(() => {
+      const seen = window.__openplanUnrollSeen || (window.__openplanUnrollSeen = new WeakMap());
+      let most = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      for (const el of document.querySelectorAll('*')) {
+        const style = getComputedStyle(el);
+        if (!/(auto|scroll)/.test(style.overflowY)) continue;
+        const below = el.scrollHeight - el.clientHeight;
+        if (below <= 1) continue;
+        const before = seen.get(el);
+        if (before && before.clientHeight >= el.clientHeight) {
+          // The viewport grew and this scroller did not: let it grow with its content.
+          el.style.setProperty('height', 'auto', 'important');
+          el.style.setProperty('max-height', 'none', 'important');
+          el.style.setProperty(before.unrolled ? 'overflow' : 'overflow-y', 'visible', 'important');
+          seen.set(el, { clientHeight: el.clientHeight, unrolled: true });
+        } else {
+          seen.set(el, { clientHeight: el.clientHeight, unrolled: Boolean(before && before.unrolled) });
+        }
+        most = Math.max(most, below);
+      }
+      return most;
+    });
+    if (hidden <= 1) return current;
+    current += hidden;
+    if (current > UNROLL_MAX_HEIGHT) throw new Error(`The screen at ${width} px needs a viewport over ${UNROLL_MAX_HEIGHT} px to show whole; axe would miss what lies below.`);
+    await tab.setViewport({ width, height: current });
+    await sleep(600);
+  }
+  throw new Error(`The screen at ${width} px still scrolls after twelve rounds of unrolling.`);
+}
+
+/**
+ * Read one open screen the way every proven job records it: whether the page
+ * scrolls sideways (at the planner's own viewport, before the unroll), then
+ * unroll it (unrollScreen), run axe on the whole screen and take the
+ * full-page screenshot. Returns axe's results and horizontalScroll.
+ */
+async function readWholeScreen(tab, { width, height, axeSource, tags, screenshotPath }) {
+  const horizontalScroll = await tab.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  await unrollScreen(tab, { width, height });
+  await tab.evaluate(axeSource);
+  const results = await tab.evaluate((wanted) => window.axe.run(document, { runOnly: { type: 'tag', values: wanted }, resultTypes: ['violations'] }), tags);
+  if (screenshotPath) await tab.screenshot({ path: screenshotPath, fullPage: true });
+  return { results, horizontalScroll };
+}
+
 /**
  * Read each screen at every width and colour mode with axe, and add one row
  * per reading to `rows` (a journey's screens list): serious and critical
@@ -367,12 +432,9 @@ async function scanScreens({ browser, context, origin, screens, out, secrets, ax
         }
         const applied = await tab.evaluate(() => (document.documentElement.classList.contains('dark') ? 'dark' : 'light'));
         if (applied !== mode) throw new Error(`${screen.slug} at ${width} px rendered ${applied}, not ${mode}.`);
-        await tab.evaluate(axeSource);
-        const results = await tab.evaluate((tags) => window.axe.run(document, { runOnly: { type: 'tag', values: tags }, resultTypes: ['violations'] }), lib.AXE_TAGS);
-        const summary = lib.summarizeAxe(results);
-        const horizontalScroll = await tab.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
         const name = `${screen.slug}-${width}-${mode}`;
-        await tab.screenshot({ path: path.join(out, 'screens', `${name}.png`), fullPage: true });
+        const { results, horizontalScroll } = await readWholeScreen(tab, { width, height: 900, axeSource, tags: lib.AXE_TAGS, screenshotPath: path.join(out, 'screens', `${name}.png`) });
+        const summary = lib.summarizeAxe(results);
         fs.writeFileSync(path.join(out, 'console', `${name}.txt`), errors.map((line) => lib.scrubText(line, secrets)).join('\n'));
         rows.push({ screen: screen.slug, width, mode, axe: summary.axe, consoleErrors: errors.length, horizontalScroll });
         if (summary.rules.length) rules.push({ screen: screen.slug, width, mode, rules: summary.rules });
@@ -395,6 +457,7 @@ module.exports = {
   pickStudyPlace,
   readHealth,
   readJson,
+  readWholeScreen,
   retrieveCrashes,
   scanScreens,
   selectByText,
@@ -402,5 +465,6 @@ module.exports = {
   signUpAndConfirm,
   sleep,
   typeInto,
+  unrollScreen,
   waitForDownload,
 };
