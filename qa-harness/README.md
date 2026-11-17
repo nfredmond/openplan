@@ -37,6 +37,15 @@ from `openplan/node_modules` (axe-core is not a declared dependency). It never
 uses a service-role key, never writes to the database and never calls an API in
 place of a screen step; it only reads responses the screens request, for ids.
 
+Every journey reads its screens with `readWholeScreen` in
+`journey-browser-lib.js`. OpenPlan scrolls an inner pane, so the document is
+one screen tall and axe would mark everything below it out of scope for colour
+contrast. The function reads sideways scroll first, then grows the viewport
+until nothing on the screen scrolls, runs axe and takes the full-page
+screenshot. A screen that needs more than 30,000 px is refused rather than
+read in part. `journey-browser-lib.test.js` proves it in Chrome on a fixture
+page with low-contrast text below the first screen (KI-2026-11-17-032).
+
 - `--mode rehearsal` runs on a local origin only (the local guard in
   `harness-env.js`). `--mode proof` runs on the hosted proof origin only
   (`PROOF_ORIGIN` in `openplan/scripts/ops/capability-evidence.mjs`) and also
