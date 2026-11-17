@@ -1,0 +1,30 @@
+{
+  "label": "Rehearsal inputs for the award to reimbursement journey, not an award.",
+  "rehearsal": true,
+  "note": "Rehearsal text for a local run of qa-harness/award-job-journey.js. The figures and dates are the fourth job's fixed demonstration figures; the names carry the demonstration label. No agency, tribe, funder or program officer took part. A proof refuses this file.",
+  "role": "county",
+  "placeKind": "county",
+  "placeQuery": "Plumas County, CA",
+  "timeZone": "America/Los_Angeles",
+  "organization": "Plumas County reimbursement demonstration workspace",
+  "memberOrganization": "Plumas County member demonstration workspace",
+  "secondOrganization": "Second account demonstration workspace for the county rehearsal",
+  "projectName": "Plumas County safety and walking improvements (Demonstration by an automated OpenPlan proof run)",
+  "projectSummary": "Rehearsal text. A demonstration project typed by an automated OpenPlan proof run to test the award and reimbursement screens. It describes no real project and speaks for no agency.",
+  "awardTitle": "Plumas County SS4A planning award (Demonstration by an automated OpenPlan proof run)",
+  "consultantName": "Demonstration consultant (automated proof run)",
+  "award": {
+    "ceiling": "200000.00",
+    "match": "50000.00",
+    "matchPosture": "partial",
+    "obligatedOn": "2026-03-31"
+  },
+  "requests": [
+    { "key": "first", "number": "INV-1", "gross": "60000.00", "retention": "0.00", "periodStart": "2026-04-01", "periodEnd": "2026-06-30", "invoiceDate": "2026-07-15", "dueDate": null },
+    { "key": "rejected", "number": "INV-2", "gross": "45000.00", "retention": "0.00", "periodStart": "2026-07-01", "periodEnd": "2026-09-30", "invoiceDate": "2026-10-15", "dueDate": null },
+    { "key": "resubmission", "number": "INV-2A", "gross": "45000.00", "retention": "0.00", "periodStart": "2026-07-01", "periodEnd": "2026-09-30", "invoiceDate": "prefilled", "dueDate": null }
+  ],
+  "rejectionReason": "Missing the progress report for the billing period.",
+  "closeOutNote": "Demonstration by an automated OpenPlan proof run. The work finished under the ceiling, so the rest is not claimed.",
+  "overCeilingProbe": { "number": "PROBE-OVER-CEILING", "gross": "250000.00" }
+}

@@ -150,6 +150,64 @@ async function appFetch(route, payload, method, page, { credentials = 'include' 
   }, route, method || (payload ? 'POST' : 'GET'), credentials);
 }
 
+/**
+ * A request with a JSON body sent from the signed-in page, as the product's
+ * own screens send theirs: the session's cookie goes with it (or, for a
+ * request to another origin such as the database's API, only the headers
+ * given). Used for the refusals a planner's screen does not offer: a member's
+ * write, a move the product forbids and a direct database write. Returns the
+ * status and up to 200,000 characters of the answer's text.
+ */
+async function appRequest(page, url, { method = 'GET', body, headers = {}, credentials = 'same-origin' } = {}) {
+  return page.evaluate(async (target, verb, payload, extra, mode) => {
+    const init = { method: verb, credentials: mode, headers: { ...extra } };
+    if (payload !== undefined) {
+      init.body = JSON.stringify(payload);
+      init.headers['content-type'] = 'application/json';
+    }
+    const response = await fetch(target, init);
+    const text = (await response.text()).slice(0, 200000);
+    return { status: response.status, text };
+  }, url, method, body, headers, credentials);
+}
+
+/**
+ * The signed-in session's access token, read from the page's own auth cookie
+ * (sb-<ref>-auth-token, split into numbered parts, base64- prefixed). Never
+ * written anywhere; the caller adds it to the run's secrets at once.
+ */
+function sessionTokenFromCookies(cookies) {
+  const parts = cookies
+    .filter((cookie) => /^sb-.+-auth-token(\.\d+)?$/.test(cookie.name))
+    .sort((a, b) => Number((a.name.match(/\.(\d+)$/) || [0, -1])[1]) - Number((b.name.match(/\.(\d+)$/) || [0, -1])[1]));
+  if (!parts.length) return null;
+  let raw = decodeURIComponent(parts.map((cookie) => cookie.value).join(''));
+  if (raw.startsWith('base64-')) raw = Buffer.from(raw.slice(7), 'base64').toString('utf8');
+  try {
+    const session = JSON.parse(raw);
+    return typeof session.access_token === 'string' ? session.access_token : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Whether a key the page sent to the database's API is the public one: a
+ * publishable key, or a JWT whose role is anon. A service or secret key is
+ * refused, so a direct write never runs with more than the planner's rights.
+ */
+function isPublicApiKey(key) {
+  const value = String(key || '');
+  if (/^sb_publishable_/.test(value)) return true;
+  const parts = value.split('.');
+  if (parts.length !== 3) return false;
+  try {
+    return JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')).role === 'anon';
+  } catch {
+    return false;
+  }
+}
+
 async function waitForDownload(dir, before, timeoutMs = 120000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -411,7 +469,7 @@ async function readWholeScreen(tab, { width, height, axeSource, tags, screenshot
  * to press first. Screenshots go to <out>/screens and scrubbed console text
  * to <out>/console. Returns the serious and critical rules found.
  */
-async function scanScreens({ browser, context, origin, screens, out, secrets, axeSource, rows }) {
+async function scanScreens({ browser, context, origin, screens, out, secrets, axeSource, rows, markPaneUnrolled = false }) {
   const anonymous = await browser.createBrowserContext();
   const rules = [];
   for (const screen of screens) {
@@ -436,7 +494,9 @@ async function scanScreens({ browser, context, origin, screens, out, secrets, ax
         const { results, horizontalScroll } = await readWholeScreen(tab, { width, height: 900, axeSource, tags: lib.AXE_TAGS, screenshotPath: path.join(out, 'screens', `${name}.png`) });
         const summary = lib.summarizeAxe(results);
         fs.writeFileSync(path.join(out, 'console', `${name}.txt`), errors.map((line) => lib.scrubText(line, secrets)).join('\n'));
-        rows.push({ screen: screen.slug, width, mode, axe: summary.axe, consoleErrors: errors.length, horizontalScroll });
+        // readWholeScreen unrolled the screen before axe ran; a job whose definition
+        // requires the statement (paneUnrolledRequired) asks for it in the row.
+        rows.push({ screen: screen.slug, width, mode, axe: summary.axe, consoleErrors: errors.length, horizontalScroll, ...(markPaneUnrolled ? { paneUnrolled: true } : {}) });
         if (summary.rules.length) rules.push({ screen: screen.slug, width, mode, rules: summary.rules });
         await tab.close();
       }
@@ -450,7 +510,10 @@ module.exports = {
   IDLE_TIMEOUT_MS,
   PLACE_KIND_LABELS,
   appFetch,
+  appRequest,
   chromePath,
+  isPublicApiKey,
+  sessionTokenFromCookies,
   clickText,
   controlByLabel,
   createProject,
