@@ -354,7 +354,7 @@ export default async function ScenariosPage({
           {hasActiveFilters ? (
             // The one deliberate way to widen. Every tab above narrows within
             // the scope the page was opened for; only this leaves it.
-            <Link href="/scenarios" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+            <Link href="/scenarios" className="ml-auto rounded px-2 py-0.5 text-muted-foreground hover:text-foreground">
               Clear filters ×
             </Link>
           ) : null}

@@ -511,7 +511,7 @@ lead's eleven rules hold. No record of this job exists yet
    page footer, no form name unless "not" comes right before it, no refused
    phrase, the demonstration label on the award and project lines, the role's
    process, and no fallback writer.
-7. The four screens at both widths and modes with the pane unrolled, and the
+7. The four screens at both widths and modes, each read whole, and the
    job's limits in the definition's words.
 
 Every worksheet rule reads words, never a fixed line. A figure row runs from
@@ -527,8 +527,8 @@ back with Poppler.
 - `journeys[].minStates`: the fewest Census states a journey's place must
   be listed in. `statesNote` says where the list comes from.
 - `screens.paneUnrolledRequired`: true requires every screen row to carry
-  `paneUnrolled: true`, the journey's statement that it unrolled the page's
-  inner scrolling pane before the accessibility check (KI-2026-11-17-032). The
+  `paneUnrolled: true`, the journey's statement that it read the whole screen
+  before the accessibility check, as `readWholeScreen` does (KI-2026-11-17-032). The
   record's screen rows gained the optional `paneUnrolled` field for it.
 - `award`: the block the award rules read. `demonstrationLabel.text`;
   `profiles` (`byRole` profile id and name, `selection`); `statuses` (`all`,

@@ -809,7 +809,7 @@
         },
         "consoleErrors": { "$ref": "#/$defs/count" },
         "horizontalScroll": { "type": "boolean" },
-        "paneUnrolled": { "type": "boolean", "description": "Whether the journey unrolled OpenPlan's inner scrolling pane before the accessibility check, so colour contrast was measured below the first screen (KI-2026-11-17-032). Optional: earlier records predate it. Required true by a job whose definition sets screens.paneUnrolledRequired." }
+        "paneUnrolled": { "type": "boolean", "description": "Whether the journey read the whole screen before the accessibility check (readWholeScreen in qa-harness/journey-browser-lib.js grows the window until nothing scrolls), so colour contrast was measured below the first view (KI-2026-11-17-032). Optional: earlier records predate it. Required true by a job whose definition sets screens.paneUnrolledRequired." }
       }
     }
   }

@@ -323,7 +323,7 @@ export default async function PlansPage({
         {/* Filter rows */}
         <div className="mt-4 space-y-2 border-b border-border/60 pb-3 text-compact">
           <div className="flex flex-wrap items-center gap-1">
-            <span className="mr-1 text-muted-foreground/70">Status:</span>
+            <span className="mr-1 text-muted-foreground">Status:</span>
             <Link
               href={buildFilterHref({ ...filters, status: undefined })}
               className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
@@ -341,7 +341,7 @@ export default async function PlansPage({
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-1">
-            <span className="mr-1 text-muted-foreground/70">Type:</span>
+            <span className="mr-1 text-muted-foreground">Type:</span>
             <Link
               href={buildFilterHref({ ...filters, planType: undefined })}
               className={cn("rounded px-2 py-0.5 transition-colors", !filters.planType ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}

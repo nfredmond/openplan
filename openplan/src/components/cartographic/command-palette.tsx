@@ -138,7 +138,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                 onClick={() => go(item)}
                 onMouseEnter={() => setActiveIndex(index)}
                 className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm ${
-                  index === active ? "bg-muted/60 text-foreground" : "text-foreground/90"
+                  index === active ? "bg-secondary text-foreground shadow-[inset_3px_0_0_var(--accent)]" : "text-foreground/90"
                 }`}
               >
                 <span className="font-medium">{item.label}</span>

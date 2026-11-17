@@ -3130,7 +3130,7 @@ function checkScreens(journey, job, label) {
     // The accessibility check measured the whole screen, not the first view of
     // an inner scrolling pane (KI-2026-11-17-032), when the definition says so.
     if (job.screens.paneUnrolledRequired && row.paneUnrolled !== true) {
-      refuse(`${rowLabel} was checked without unrolling the page's scrolling pane, so colour contrast below the first view was not measured`);
+      refuse(`${rowLabel} was checked without reading the whole screen, so colour contrast below the first view was not measured`);
     }
   }
   for (const screen of new Set(journey.screens.map((row) => row.screen))) {

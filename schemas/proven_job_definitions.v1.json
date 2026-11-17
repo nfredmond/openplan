@@ -960,7 +960,7 @@
         },
         "consoleErrorsRefused": true,
         "paneUnrolledRequired": true,
-        "paneNote": "KI-2026-11-17-032: OpenPlan scrolls an inner pane, so an accessibility check of the document alone measures colour contrast on the first screen only. Each screen row of this job must say the journey unrolled the pane before the check (paneUnrolled true)."
+        "paneNote": "KI-2026-11-17-032: OpenPlan scrolls an inner pane, so an accessibility check of the first view measures colour contrast on the first screen only. Each screen row of this job must say the journey read the whole screen before the check (paneUnrolled true): the journeys' readWholeScreen (qa-harness/journey-browser-lib.js, lane 96) grows the window until nothing scrolls, then runs axe and the screenshot."
       },
       "crossWorkspace": {
         "note": "The same rule as the other jobs (KI-2026-11-14-060), with the controls of the third. A second workspace's signed-in account is refused the award's history read and the worksheet download as data checks and the project's Funding tab as a page check, each named for its journey, beside the owner's 200 for the same two reads in the same run. The award history read is GET /api/funding-awards/<id>/closure-history; the worksheet download is GET /api/funding-awards/<id>/drawdown-worksheet.",

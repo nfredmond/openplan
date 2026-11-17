@@ -20,9 +20,9 @@ rule refuses a copy changed against it. A fresh-context false-record review
 (amounts outside the read rows, custody status and code pairs, payment and
 blank dates, a California city, form titles and seven wordings, phrases
 across a page break, reading times) and added the who-acted limit. No journey
-script, hosted run or record exists. One known defect would refuse an honest record today: with the
-inner pane unrolled, the Funding tab shows serious colour-contrast findings
-(KI-2026-11-17-032), and this job's screen rule counts them.
+script, hosted run or record exists. The colour-contrast findings below the
+first view that would have refused an honest record (KI-2026-11-17-032) are
+marked fixed by lane 96 (PR 520); lane 93 did not measure the screens.
 
 ## The job
 
@@ -134,7 +134,7 @@ The lead's eleven rules, as the definition and checker hold them.
 9. **Screens.** The Funding tab, Grants (Awards), the Invoices register and
    the dashboard, each read while a request is outstanding and again after the
    close-out and inside the journey, with axe-core 4.11.1 (wcag2a, wcag2aa, wcag21a, wcag21aa) light
-   and dark at 1440 and 390 px, the inner pane unrolled, no serious or critical
+   and dark at 1440 and 390 px, each screen read whole, no serious or critical
    finding, no console error and no sideways scroll at 390 px. Each reading's
    money equals the recomputed figure; the dashboard's award reads in whole
    dollars and its share drawn in whole percent.
@@ -266,8 +266,8 @@ Lane 89's custody migrations (PR 517, installed on hosted in window
 
 1. A fresh-context false-record review of this definition and checker that
    also prints honest outputs in every role.
-2. A fix for the Funding tab's contrast findings (KI-2026-11-17-032) before
-   any hosted run, or the screen rule refuses the record.
+2. Lane 96's contrast fixes and whole-screen reading (KI-2026-11-17-032, PR
+   520) are on main; the journey uses `readWholeScreen` for every screen.
 3. Lane 94: the journey script, written to this definition, rehearsed three
    times locally.
 4. Sourced inputs, the declaration, the hosted run, the record, a

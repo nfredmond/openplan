@@ -579,10 +579,10 @@ describe("rule 9: screens", () => {
     refused(record, "county journey funding-tab screen reading at 2026-11-20T10:20:00Z does not hold the remaining figure");
   });
 
-  it("refuses an accessibility check made without unrolling the pane", () => {
+  it("refuses an accessibility check made without reading the whole screen", () => {
     const record = proven();
     journey(record, "county").screens[3].paneUnrolled = false;
-    refused(record, "county journey screen funding-tab at 390 px dark was checked without unrolling the page's scrolling pane");
+    refused(record, "county journey screen funding-tab at 390 px dark was checked without reading the whole screen");
   });
 
   it("refuses a serious accessibility violation", () => {
