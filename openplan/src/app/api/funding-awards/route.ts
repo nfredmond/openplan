@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
           {
             error: act.message,
             details: !removed
-              ? "The award was created open and could not be removed; record its closure again or delete it."
+              ? "The award was created open and could not be removed; close it again or delete it."
               : "The award was not created.",
           },
           { status: act.status }

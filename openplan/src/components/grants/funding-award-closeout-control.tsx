@@ -639,7 +639,7 @@ function FundingAwardCloseoutRow({
                   checked={closeBasis === "reconciled_with_balance"}
                   onChange={() => setCloseBasis("reconciled_with_balance")}
                 />
-                <span>Under the ceiling: record the unclaimed balance as released. A note is required.</span>
+                <span>Under the ceiling: mark the unclaimed balance as released. A note is required.</span>
               </label>
             </fieldset>
           )}
