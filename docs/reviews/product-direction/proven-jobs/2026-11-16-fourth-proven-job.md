@@ -211,11 +211,14 @@ and it recomputes the money from them, so a record and worksheets falsified
 together to agree are not caught. The record names no actor, so who made each
 move and the close-out is the journey's word, and the record says so. The
 tribal area's states are the journey's reading, because the Gazetteer table of
-tribal areas has no state column. A request row's dates are read by the
-columns of the table's header, so a date in another date's cell is refused,
-including in a row that splits across a page; a very short word of a long
-rejection reason set at the edge of the invoice-date column would be misread,
-which refuses rather than accepts.
+tribal areas has no state column. A request row is read by its own columns,
+anchored on its first line, so a date in another date's cell, under the status
+or the number, or after the amounts is refused, including in a row that splits
+across a page. On every honest Chrome worksheet the reviews printed, a reason
+word started at least 5 columns left of its row's invoice date, against the
+checker's 1. A reason of very short words that Poppler runs together refuses an
+honest record, and a bare number with no sign, cents or currency word is not
+read as an amount (KI-2026-11-17-053).
 
 ## History: the hand run-through and what followed
 

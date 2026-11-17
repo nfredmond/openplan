@@ -571,12 +571,14 @@ answer is the journey's statement. The checker recomputes the money from them
 and holds the worksheets and readings to it, so a record and worksheets
 falsified together to agree are not caught. The record names no actor, so who
 made each move and the close-out is the journey's word (a required limit says
-so). A request row's dates are read by column, each word placed in the column
-whose header it starts under (less four characters of slack); a one- or
-two-letter word of a long rejection reason that Chrome set within those few
-characters of the invoice-date column would be read as part of that column,
-which refuses an honest record rather than accepting a false one. Reviews 97
-and 99 (agent-run, fresh context) found the copies the earlier versions
+so). A request row is read by its own columns, anchored on its first line's
+cells, and every word must be its number, note, status, reason, a date or an
+amount. On every honest Chrome worksheet the reviews printed, a reason word
+started at least 5 columns left of its row's invoice date; the checker reads a
+word into the date from 1 column left. Poppler can drop the spaces between very
+short words, and such a reason refuses an honest record. A bare number with no
+sign, cents or currency word is not counted as an amount (KI-2026-11-17-053).
+Reviews 97, 99 and 100 (agent-run, fresh context) found the copies the earlier versions
 accepted; amounts outside the read rows (with or without a sign or cents),
 unpaired custody answers, early payment dates, dates in the wrong cell,
 invented dates, a California city, form titles and dashes, nine wordings, a

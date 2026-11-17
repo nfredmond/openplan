@@ -2244,14 +2244,23 @@ function printedAmounts(text) {
 }
 
 /**
- * The two marks of a printed amount, counted in a text: currency signs (the
- * dollar sign or its full-width form) before a digit, and numbers with cents
- * ("150,000.00"), each with or without the other (review 99, A1 to A4).
+ * The marks of a printed amount, counted in a text read with full-width
+ * characters made plain (NFKC): currency signs before a digit, numbers with
+ * cents ("150,000.00"), and two marks the product never prints, a number with
+ * comma cents ("150.000,00") and a number beside a currency word ("USD
+ * 150000", "150000 dollars") (reviews 99 and 100, A1 to A4, AC2, AC3, TT2,
+ * TT3).
+ *
+ * Blind category: a bare number with no sign, no cents and no currency word
+ * ("paid 150000") is not an amount here (KI-2026-11-17-053).
  */
 function amountMarks(text) {
-  const signs = (String(text).match(/[$\uFF04]\s*-?\d/g) ?? []).length;
-  const numbers = (String(text).match(/(?<![\d.])\d[\d,]*\.\d{2}(?!\d)/g) ?? []).length;
-  return [signs, numbers];
+  const plain = String(text).normalize("NFKC");
+  const signs = (plain.match(/\$\s*-?\d/g) ?? []).length;
+  const numbers = (plain.match(/(?<![\d.])\d[\d,]*\.\d{2}(?!\d)/g) ?? []).length;
+  const commaCents = (plain.match(/(?<![\d,])\d[\d.]*,\d{2}(?![\d,])/g) ?? []).length;
+  const currencyWords = (plain.match(/\b(?:USD|US\$|dollars?)\s*-?\d|\d[\d,.]*\s*(?:USD|dollars?)\b/gi) ?? []).length;
+  return [signs, numbers, commaCents, currencyWords];
 }
 
 /** A text's words in order, lower case, each hyphenated word split at its hyphens, so a wrapped date still reads. */
@@ -2794,9 +2803,9 @@ function checkWorksheetText(journey, rule, pdfLabel, pages, position) {
   // no cents is still counted.
   const moneyRows = sheet.positionRows.filter((row) => !row.kind && (!row.whenClosed || position.closed) && position[row.figure] !== null).length;
   const expectedAmounts = moneyRows + 3 * position.requests.length;
-  const [signs, numbers] = amountMarks(lines.join("\n"));
-  if (signs !== expectedAmounts || numbers !== expectedAmounts) {
-    refuse(`${pdfLabel} prints ${signs} currency signs and ${numbers} amounts with cents; the ${moneyRows} money rows due at the download and its ${position.requests.length} request rows hold ${expectedAmounts} of each, so an amount no rule read is on the worksheet`);
+  const [signs, numbers, commaCents, currencyWords] = amountMarks(lines.join("\n"));
+  if (signs !== expectedAmounts || numbers !== expectedAmounts || commaCents > 0 || currencyWords > 0) {
+    refuse(`${pdfLabel} prints ${signs} currency signs and ${numbers} amounts with cents${commaCents + currencyWords > 0 ? `, and ${commaCents + currencyWords} amounts written with comma cents or a currency word` : ""}; the ${moneyRows} money rows due at the download and its ${position.requests.length} request rows hold ${expectedAmounts} of each and no other, so an amount no rule read is on the worksheet`);
   }
 
   // The process is the role's profile, chosen by the workspace's place.
@@ -2912,54 +2921,32 @@ function checkWorksheetPosition(journey, rule, pdfLabel, lines, position) {
  * The request rows. A row opens on the line whose first word is the request's
  * number and which carries an amount (each cell is set at the row's top, and
  * an amount never wraps); the number repeated under a resubmission's note
- * carries none. The row runs to the next such line. It must hold the
- * request's gross, retention and net and no other amount, and, read as words
- * in order (so a wrapped column still reads), its status, its rejection
- * reason and the resubmission note. Its invoice-date, due and paid columns are
- * read by the header's positions (requestTableColumns) and must hold the
- * record's dates, or the not-recorded words for a blank one. A request created
- * after the download has no row, and the section holds no amount outside the
- * rows.
+ * carries none. The row runs to the next such line, and the last row to the
+ * first line set at the margin under the table. A row that splits across a
+ * page carries the repeated header and the page's fixed note; they are left
+ * out.
  *
- * Blind category: a one- or two-letter word of a long reason set within
- * COLUMN_SLACK characters of the invoice-date column is read as that column's,
- * which refuses an honest row rather than accepting a false one.
+ * Each row is read by its own columns (readRequestRow): the cells of its
+ * first line, set apart by two or more spaces, give where its number, status,
+ * invoice date, due date, payment date and amounts begin, and every word of
+ * every line of the row is placed in the area it starts in. The number area
+ * must hold the number and, for a resubmission, its note; the status area the
+ * status and, for a rejected request, the reason; each date area the record's
+ * date or the not-recorded words; the amount area the row's three amounts on
+ * its first line and nothing else. Any other word anywhere in the row refuses
+ * the record (review 100, CR1 to CR3), so a date cannot sit in another cell,
+ * under the number, under the status or after the amounts.
+ *
+ * Blind category: a date area begins one column left of the row's own date,
+ * and the status cell ends at least two columns before it in the browser's
+ * layout (its padding), so a status word is read into a date area only when
+ * Poppler sets it three or more columns right of where the browser drew it.
+ * The margin on every honest Chrome worksheet the reviews printed is in the
+ * PR. Poppler can drop the spaces between very short words; such a reason
+ * reads as other words and refuses an honest record rather than accepting a
+ * false one.
  */
-/** How far left of its header a cell's text may begin, in characters: the header's smaller capitals sit a little right of the cell. */
-const COLUMN_SLACK = 4;
 const HEADER_WORDS = new Set(["invoice", "status", "date", "due", "paid", "gross", "retention", "net"]);
-
-/**
- * The request table's date columns, read from its header line (the line with
- * Status, Due, Paid and Gross). The invoice-date column is headed by Invoice
- * and Date, which Chrome sets on the lines above and below the header line and
- * the fixture on the line itself; it is the leftmost such word right of
- * Status. Each column runs from its header's position, less COLUMN_SLACK, to
- * the next column's. Returns null when the table has no header.
- */
-function requestTableColumns(lines) {
-  const words = (line) => [...line.matchAll(/\S+/g)].map((match) => ({ word: match[0].toLowerCase(), x: match.index }));
-  const header = lines.findIndex((line) => ["status", "due", "paid", "gross"].every((name) => words(line).some((entry) => entry.word === name)));
-  if (header === -1) return null;
-  const at = (name) => words(lines[header]).find((entry) => entry.word === name).x;
-  const status = at("status");
-  const invoiceDate = Math.min(
-    ...lines
-      .slice(Math.max(0, header - 1), header + 2)
-      .flatMap(words)
-      .filter((entry) => (entry.word === "invoice" || entry.word === "date") && entry.x > status && entry.x < at("due"))
-      .map((entry) => entry.x),
-  );
-  if (!Number.isFinite(invoiceDate)) return null;
-  const columns = [
-    ["status", status],
-    ["invoiceDate", invoiceDate],
-    ["dueDate", at("due")],
-    ["paidDate", at("paid")],
-    ["gross", at("gross")],
-  ];
-  return { header, columns };
-}
 
 /** A line Chrome prints inside a row that splits across a page: the repeated header, or the page's fixed note. */
 function interruptsRow(line, preparedNote) {
@@ -2970,26 +2957,37 @@ function interruptsRow(line, preparedNote) {
   return bare.length >= 20 && preparedNote.includes(bare);
 }
 
-/** The words each date column holds in a request row, in reading order, from every line of the row. */
-function requestDateCells(lines, table) {
-  const cells = { invoiceDate: [], dueDate: [], paidDate: [] };
-  for (const line of lines) {
-    for (const match of line.matchAll(/\S+/g)) {
-      let column = null;
-      for (const [name, start] of table.columns) if (match.index >= start - COLUMN_SLACK) column = name;
-      if (column && Object.hasOwn(cells, column)) cells[column].push(match[0]);
-    }
-  }
-  return Object.fromEntries(Object.entries(cells).map(([name, parts]) => [name, wordsOf(parts.join(" "))]));
+/**
+ * One request row read by its own columns: the first line's cells (runs set
+ * apart by two or more spaces) are number, status, the three dates and the
+ * amounts; each word of each line goes to the area it starts in. Returns null
+ * when the first line does not hold five cells before its first amount.
+ */
+function readRequestRow(rowLines) {
+  const first = [...rowLines[0].matchAll(/\S+(?: \S+)*/g)].map((match) => ({ x: match.index, text: match[0] }));
+  const amountAt = first.findIndex((cell) => printedAmounts(cell.text).length > 0);
+  if (amountAt < 5) return null;
+  const [invoiceCell, dueCell, paidCell] = first.slice(amountAt - 3, amountAt);
+  const starts = { status: first[1].x, invoiceDate: invoiceCell.x, dueDate: dueCell.x, paidDate: paidCell.x, amounts: first[amountAt].x };
+  const areaOf = (x) =>
+    x < starts.status - 1 ? "number"
+      : x < starts.invoiceDate - 1 ? "status"
+        : x < starts.dueDate - 1 ? "invoiceDate"
+          : x < starts.paidDate - 1 ? "dueDate"
+            : x < starts.amounts - 1 ? "paidDate"
+              : "amounts";
+  const areas = { number: [], status: [], invoiceDate: [], dueDate: [], paidDate: [], amounts: [] };
+  rowLines.forEach((line, lineIndex) => {
+    for (const match of line.matchAll(/\S+/g)) areas[areaOf(match.index)].push({ text: match[0], x: match.index, line: lineIndex });
+  });
+  return { starts, areas };
 }
 
 function checkWorksheetRequests(rule, pdfLabel, sectionLines, position) {
   const sheet = rule.worksheet;
-  const table = requestTableColumns(sectionLines);
-  if (!table) refuse(`${pdfLabel} "${sheet.sections.invoices}" prints no table header with Invoice date, Due and Paid columns`);
   const preparedNote = bareLine(sheet.preparedNote);
   // A row that splits across a page carries the repeated header and the page's fixed note; they are not the row's.
-  const lines = sectionLines.filter((line, index) => index <= table.header + 1 || !interruptsRow(line, preparedNote));
+  const lines = sectionLines.filter((line) => !interruptsRow(line, preparedNote));
   const numbers = new Map(position.requests.map((entry) => [entry.request.number, entry]));
   const anchors = [];
   lines.forEach((line, index) => {
@@ -3008,36 +3006,49 @@ function checkWorksheetRequests(rule, pdfLabel, sectionLines, position) {
   const byId = new Map(position.requests.map((entry) => [entry.request.invoiceId, entry.request]));
   anchors.forEach((anchor, index) => {
     const { request, status, gross, retention, net } = numbers.get(anchor.number);
-    const text = lines.slice(anchor.index, index + 1 < anchors.length ? anchors[index + 1].index : lines.length).join("\n");
-    const rowLabel = `${pdfLabel} request ${request.number}`;
-    const found = printedAmounts(text).sort((a, b) => a - b);
-    const expected = [gross, retention, net].sort((a, b) => a - b);
-    if (JSON.stringify(found) !== JSON.stringify(expected)) {
-      refuse(`${rowLabel} prints ${found.map(printedDollars).join(", ")}; the record's gross, retention and net are ${[gross, retention, net].map(printedDollars).join(", ")}`);
-    }
-    const statusLabel = rule.statuses.labels[status];
-    if (!wordsInOrder(text, statusLabel)) refuse(`${rowLabel} does not say "${statusLabel}", its status when the worksheet was downloaded`);
-    if (rule.statuses.rejected.includes(status) && !wordsInOrder(text, request.rejectionReason)) refuse(`${rowLabel} does not print the rejection reason the record holds`);
-    if (request.resubmitsInvoiceId) {
-      const note = sheet.resubmitsNote.replace("{number}", byId.get(request.resubmitsInvoiceId)?.number ?? "");
-      if (!wordsInOrder(text, note)) refuse(`${rowLabel} does not say "${note}"`);
-    }
-    const paid = rule.statuses.paid.includes(status);
-    // Each date in its own column, read by the header's positions (review 99, D1 to D3):
-    // a date moved to another date's cell, or a blank and a date exchanged, is refused.
     // The last row ends where the table does: the first line after it set at the margin
     // (the note under the table); every row line is indented.
     const rowEnd = index + 1 < anchors.length ? anchors[index + 1].index : (() => {
       const after = lines.findIndex((line, at) => at > anchor.index && /^\S/.test(line));
       return after === -1 ? lines.length : after;
     })();
-    const cells = requestDateCells(lines.slice(anchor.index, rowEnd), table);
-    const expectedCells = { invoiceDate: request.invoiceDate, dueDate: request.dueDate ?? sheet.notRecorded, paidDate: paid ? request.paidDate : sheet.notRecorded };
-    const columnNames = { invoiceDate: "invoice date", dueDate: "due date", paidDate: "payment date" };
-    for (const [column, value] of Object.entries(expectedCells)) {
-      if (JSON.stringify(cells[column]) !== JSON.stringify(wordsOf(value))) {
-        refuse(`${rowLabel} ${columnNames[column]} column reads "${cells[column].join(" ")}"; the record's is "${value}"`);
-      }
+    const rowLines = lines.slice(anchor.index, rowEnd);
+    const rowLabel = `${pdfLabel} request ${request.number}`;
+    const found = printedAmounts(rowLines.join("\n")).sort((a, b) => a - b);
+    const expected = [gross, retention, net].sort((a, b) => a - b);
+    if (JSON.stringify(found) !== JSON.stringify(expected)) {
+      refuse(`${rowLabel} prints ${found.map(printedDollars).join(", ")}; the record's gross, retention and net are ${[gross, retention, net].map(printedDollars).join(", ")}`);
+    }
+    const row = readRequestRow(rowLines);
+    if (!row) refuse(`${rowLabel} first line does not hold its number, status, three dates and amounts as cells`);
+    const { areas } = row;
+    const words = (area) => wordsOf(areas[area].map((word) => word.text).join(" "));
+    const same = (found, wanted) => JSON.stringify(found) === JSON.stringify(wanted);
+    const paid = rule.statuses.paid.includes(status);
+    const rejected = rule.statuses.rejected.includes(status);
+    const note = request.resubmitsInvoiceId ? sheet.resubmitsNote.replace("{number}", byId.get(request.resubmitsInvoiceId)?.number ?? "") : "";
+    const wanted = {
+      number: wordsOf(`${request.number} ${note}`),
+      status: wordsOf(`${rule.statuses.labels[status]} ${rejected ? request.rejectionReason : ""}`),
+      invoiceDate: wordsOf(request.invoiceDate),
+      dueDate: wordsOf(request.dueDate ?? sheet.notRecorded),
+      paidDate: wordsOf(paid ? request.paidDate : sheet.notRecorded),
+    };
+    const describe = {
+      number: `its number${note ? ` and "${note}"` : ""}`,
+      status: `"${rule.statuses.labels[status]}", its status when the worksheet was downloaded${rejected ? ", and the rejection reason the record holds" : ""}`,
+      invoiceDate: `its invoice date ${request.invoiceDate}`,
+      dueDate: request.dueDate === null ? `"${sheet.notRecorded}" for its due date` : `its due date ${request.dueDate}`,
+      paidDate: paid ? `its payment date ${request.paidDate}` : `"${sheet.notRecorded}" for its payment date`,
+    };
+    const names = { number: "number", status: "status", invoiceDate: "invoice date", dueDate: "due date", paidDate: "payment date" };
+    for (const [area, value] of Object.entries(wanted)) {
+      if (!same(words(area), value)) refuse(`${rowLabel} ${names[area]} cell reads "${words(area).join(" ")}"; it must hold ${describe[area]} and nothing else`);
+    }
+    // The amount area holds the three amounts on the row's first line and no other word.
+    const amountWords = areas.amounts;
+    if (amountWords.length !== 3 || amountWords.some((word) => word.line !== 0 || !/^-?\$[\d,]+\.\d{2}$/.test(word.text))) {
+      refuse(`${rowLabel} amount cells read "${amountWords.map((word) => word.text).join(" ")}"; they must hold its gross, retention and net on its first line and nothing else`);
     }
   });
 }

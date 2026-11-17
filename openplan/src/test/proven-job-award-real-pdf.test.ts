@@ -179,7 +179,7 @@ describe.skipIf(!POPPLER || !CHROME)("real worksheets printed by Chrome", () => 
       } catch (error) {
         message = (error as Error).message;
       }
-      expect(message).toBe(`proven job record refused: county journey worksheet-open PDF request INV-2 due date column reads "not recorded"; the record's is "2026-10-20"`);
+      expect(message).toBe(`proven job record refused: county journey worksheet-open PDF request INV-2 due date cell reads "not recorded"; it must hold its due date 2026-10-20 and nothing else`);
     } finally {
       EXAMPLE_OVERRIDE = null;
     }

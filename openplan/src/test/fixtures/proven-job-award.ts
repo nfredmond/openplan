@@ -155,7 +155,10 @@ export function worksheetPagesFromHtml(html: string): string[] {
       if (line) wrapped.push(line);
       return wrapped;
     };
-    const columns = [...cells.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((match, index) => cellLines(match[1]).flatMap((line) => wrap(line, widths[index] - 1)));
+    // The status cell wraps well short of the next column, as the browser's cell padding keeps
+    // a reason's last word clear of the invoice date (review 100: the fixture had sat at the edge).
+    const wrapWidths = widths.map((width, index) => (index === 1 ? width - 6 : width - 1));
+    const columns = [...cells.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((match, index) => cellLines(match[1]).flatMap((line) => wrap(line, wrapWidths[index])));
     const height = Math.max(...columns.map((column) => column.length));
     const lines = Array.from({ length: height }, (_, row) => `  ${columns.map((column, index) => (column[row] ?? "").padEnd(widths[index])).join(" ")}`.trimEnd());
     return `\n${lines.map((line) => KEEP + line).join("\n")}\n`;

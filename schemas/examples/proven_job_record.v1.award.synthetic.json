@@ -379,8 +379,8 @@
         {
           "kind": "worksheet-open",
           "path": "docs/product/capability-evidence/synthetic-example/county-worksheet-open.pdf",
-          "sha256": "9be6e3c92f72c6ebc75a74ae0ab56630a0e0add7e5bee8936b45c5c14eb2b389",
-          "bytes": 5090,
+          "sha256": "da410ab800e376c1440d1b05677ccbc57a1a0c8882e6a1eca632498bab8916c1",
+          "bytes": 5110,
           "pages": 2,
           "draftStamp": false,
           "items": [
@@ -401,8 +401,8 @@
         {
           "kind": "worksheet-closed",
           "path": "docs/product/capability-evidence/synthetic-example/county-worksheet-closed.pdf",
-          "sha256": "d01513320a48b57023a269e76000871c25e91d4bc9ae3a1a29618f45c0c345b1",
-          "bytes": 5587,
+          "sha256": "efa0355d3a6fd52e072de7753797365f3b8afa026b11fd3527b42f0f4b17f22e",
+          "bytes": 5607,
           "pages": 2,
           "draftStamp": false,
           "items": [
@@ -1102,8 +1102,8 @@
         {
           "kind": "worksheet-open",
           "path": "docs/product/capability-evidence/synthetic-example/city-worksheet-open.pdf",
-          "sha256": "f2873a19258ff60b917e638fc1dcb5cafe8be81dbe0681f3554351867dc3956f",
-          "bytes": 6126,
+          "sha256": "7a0dc29c62ed997a582e0d1d92f5893aeadac7831533bfd0abfb387f24cbe632",
+          "bytes": 6146,
           "pages": 2,
           "draftStamp": false,
           "items": [
@@ -1124,8 +1124,8 @@
         {
           "kind": "worksheet-closed",
           "path": "docs/product/capability-evidence/synthetic-example/city-worksheet-closed.pdf",
-          "sha256": "01e78ecfd82bf74cbaa527b0a868c7994a48ff826247490464f42bec9ba2069c",
-          "bytes": 6623,
+          "sha256": "a608689c29dde047e8d65a455d0bdab0b6ee063d55194f604644d1c50c8525ab",
+          "bytes": 6643,
           "pages": 2,
           "draftStamp": false,
           "items": [
@@ -1826,8 +1826,8 @@
         {
           "kind": "worksheet-open",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-worksheet-open.pdf",
-          "sha256": "851ceaf214498c4ca5e823f084ce4787797eaff85aa788c6d7380ecce666dcfb",
-          "bytes": 6147,
+          "sha256": "677bc085b735df9e983212c6a787ace0e610550505d5a83aac42fda944d9a8fb",
+          "bytes": 6167,
           "pages": 2,
           "draftStamp": false,
           "items": [
@@ -1848,8 +1848,8 @@
         {
           "kind": "worksheet-closed",
           "path": "docs/product/capability-evidence/synthetic-example/tribal-area-worksheet-closed.pdf",
-          "sha256": "44242fbf591c7574399897aed5e10b8b5c8c6f05790cb0e6162d502a6ea9c773",
-          "bytes": 6644,
+          "sha256": "d73aabe7ef75025b3800328acc144326460c723ada6c22f6f83cf67054897cd1",
+          "bytes": 6664,
           "pages": 2,
           "draftStamp": false,
           "items": [

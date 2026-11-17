@@ -777,13 +777,13 @@ describe("review 97: the copies its first version accepted", () => {
     // INV-2A was invoiced and paid the same day, so a blank paid cell still leaves the date in the row once.
     const record = proven();
     editPdf(record, "county", "worksheet-closed", (text) => swap(text, /(INV-2A {12}Paid {21}2026-11-20 {5}Not recorded {5})2026-11-20/, "Not recorded", true));
-    refused(record, `county journey worksheet-closed PDF request INV-2A payment date column reads "not recorded"; the record's is "2026-11-20"`);
+    refused(record, `county journey worksheet-closed PDF request INV-2A payment date cell reads "not recorded"; it must hold its payment date 2026-11-20`);
   });
 
   it("refuses a due date the record does not hold (Z07)", () => {
     const record = proven();
     editPdf(record, "county", "worksheet-closed", (text) => swap(text, /(INV-2 {13}Rejected {17}2026-10-15 {5})Not recorded/, "2026-12-01  ", true));
-    refused(record, `county journey worksheet-closed PDF request INV-2 due date column reads "2026 12 01"; the record's is "Not recorded"`);
+    refused(record, `county journey worksheet-closed PDF request INV-2 due date cell reads "2026 12 01"; it must hold "Not recorded" for its due date`);
   });
 
   it("refuses a period that ends before it starts, and a date that is not on the calendar", () => {
@@ -849,7 +849,7 @@ describe("review 97: the copies its first version accepted", () => {
   it("refuses a request row whose payment date is not the record's (kills mutant MB)", () => {
     const record = proven();
     editPdf(record, "county", "worksheet-closed", (text) => swap(text, /(INV-1 {13}Paid {21}2026-07-15 {5}Not recorded {5})2026-11-20/, "2026-11-19", true));
-    refused(record, `county journey worksheet-closed PDF request INV-1 payment date column reads "2026 11 19"; the record's is "2026-11-20"`);
+    refused(record, `county journey worksheet-closed PDF request INV-1 payment date cell reads "2026 11 19"; it must hold its payment date 2026-11-20`);
   });
 
   it("refuses a first page that names another workspace (kills mutant MD)", () => {
@@ -861,7 +861,7 @@ describe("review 97: the copies its first version accepted", () => {
   it("refuses a request row whose status is not the record's (kills mutant ME)", () => {
     const record = proven();
     editPdf(record, "city", "worksheet-closed", (text) => swap(text, /(INV-2 {13})Rejected/, "Approved", true));
-    refused(record, 'city journey worksheet-closed PDF request INV-2 does not say "Rejected", its status when the worksheet was downloaded');
+    refused(record, 'city journey worksheet-closed PDF request INV-2 status cell reads "approved missing the progress report for the billing period"');
   });
 
   it("refuses a record that does not say who acted is the journey's word", () => {
@@ -875,11 +875,11 @@ describe("review 99: the copies its recheck found accepted", () => {
   it("refuses dates moved between a row's cells (D1 to D3)", () => {
     const cases: [RegExp, string, string][] = [
       // D1: INV-1's invoice and paid dates exchanged.
-      [/(INV-1 {13}Paid {21})2026-07-15( {5}Not recorded {5})2026-11-20/, "2026-11-20     Not recorded     2026-07-15", 'request INV-1 invoice date column reads "2026 11 20"; the record\'s is "2026-07-15"'],
+      [/(INV-1 {13}Paid {21})2026-07-15( {5}Not recorded {5})2026-11-20/, "2026-11-20     Not recorded     2026-07-15", 'request INV-1 invoice date cell reads "2026 11 20"; it must hold its invoice date 2026-07-15'],
       // D2: INV-1's paid date in the due cell, "Not recorded" in the paid cell.
-      [/(INV-1 {13}Paid {21})2026-07-15 {5}Not recorded {5}2026-11-20/, "2026-07-15     2026-11-20       Not recorded", 'request INV-1 due date column reads "2026 11 20"; the record\'s is "Not recorded"'],
+      [/(INV-1 {13}Paid {21})2026-07-15 {5}Not recorded {5}2026-11-20/, "2026-07-15     2026-11-20       Not recorded", 'request INV-1 due date cell reads "2026 11 20"; it must hold "Not recorded" for its due date'],
       // D3: INV-2A's due cell holds the date its paid cell should, the same date string.
-      [/(INV-2A {12}Paid {21})2026-11-20 {5}Not recorded {5}2026-11-20/, "2026-11-20     2026-11-20       Not recorded", 'request INV-2A due date column reads "2026 11 20"; the record\'s is "Not recorded"'],
+      [/(INV-2A {12}Paid {21})2026-11-20 {5}Not recorded {5}2026-11-20/, "2026-11-20     2026-11-20       Not recorded", 'request INV-2A due date cell reads "2026 11 20"; it must hold "Not recorded" for its due date'],
     ];
     for (const [pattern, row, message] of cases) {
       const record = proven();
@@ -942,5 +942,70 @@ describe("review 99: the copies its recheck found accepted", () => {
     const record = proven();
     record.limits.push({ id: "worksheets-are-payment-requests", text: "The worksheets are the payment requests sent to the funder." });
     refused(record, "record states a worksheets-are-payment-requests limit, which this job's definition does not word");
+  });
+});
+
+describe("review 100: short reason words, dates outside the date cells, and amounts in other forms", () => {
+  it("accepts honest reasons of short words, read beside the invoice date (F0, F1)", () => {
+    const reasons = [
+      "If it is filed, I will fill it in, list it, and tell Jill if I still will. It is ill timed; I fill it if I file it.",
+      "We do not pay a claim if it is not in a form we can use. Fix it, add a W-9 and an I-9, and send it to us by mail or by fax if you can.",
+    ];
+    for (const reason of reasons) {
+      const record = proven();
+      request(record, "county", "INV-2").rejectionReason = reason;
+      rebuild(record, "county");
+      expect(() => check(record), reason).not.toThrow();
+    }
+  });
+
+  it("accepts a reason word set 4 columns left of the row's invoice date (Chrome set one 5 columns left in review 100's NV6)", () => {
+    const record = proven();
+    editPdf(record, "county", "worksheet-closed", (text) => {
+      const lines = text.split("\n");
+      const row = lines.findIndex((line) => /^ {2}INV-2 {13}Rejected/.test(line));
+      const invoiceX = lines[row].indexOf("2026-10-15");
+      const reasonEnd = lines.findIndex((line, index) => index > row && line.trim() === "period.");
+      expect(reasonEnd, "the reason's last line").toBeGreaterThan(row);
+      lines[reasonEnd] = `${" ".repeat(invoiceX - 4)}period.`;
+      return lines.join("\n");
+    });
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it("refuses a date under the status, after the amounts or under the number (CR1 to CR3)", () => {
+    const inv1 = /(\n {2}INV-1 {13}Paid[^\n]*\n)/;
+    const cases: [(text: string) => string, string][] = [
+      [(text) => swap(text, inv1, `${" ".repeat(20)}2026-08-01\n`, true), 'request INV-1 status cell reads "paid 2026 08 01"'],
+      [(text) => swap(text, /(\n {2}INV-1 {13}Paid[^\n]*\$60,000\.00)/, "   paid 2026-08-01", true), 'request INV-1 amount cells read "$60,000.00 $0.00 $60,000.00 paid 2026-08-01"'],
+      [(text) => swap(text, inv1, "  due 2026-08-15\n", true), 'request INV-1 number cell reads "inv 1 due 2026 08 15"'],
+    ];
+    for (const [change, message] of cases) {
+      const record = proven();
+      editPdf(record, "county", "worksheet-closed", change);
+      refused(record, `county journey worksheet-closed PDF ${message}`);
+    }
+  });
+
+  it("refuses an amount with a currency word, full-width digits or comma cents (AC1 to AC3)", () => {
+    const cases: [string, string][] = [
+      ["USD 150000 has been paid on this award.", "prints 19 currency signs and 19 amounts with cents, and 1 amounts written with comma cents or a currency word"],
+      ["＄１５０,０００.００ paid to date.", "prints 20 currency signs and 20 amounts with cents"],
+      ["150.000,00 EUR paid to date.", "prints 19 currency signs and 19 amounts with cents, and 1 amounts written with comma cents or a currency word"],
+    ];
+    for (const [line, message] of cases) {
+      const record = proven();
+      editPdf(record, "city", "worksheet-open", afterLine("All amounts on this worksheet are in USD.", line));
+      refused(record, `city journey worksheet-open PDF ${message}`);
+    }
+  });
+
+  it("refuses typed text that names an amount with a currency word or full-width digits (TT2, TT3)", () => {
+    const note = proven();
+    journey(note, "county").closeOut.note += " Paid USD 150000 in full.";
+    refused(note, "county journey close-out note holds a dollar amount");
+    const reason = proven();
+    request(reason, "county", "INV-2").rejectionReason = "Missing the progress report; only ＄１５０,０００ was shown.";
+    refused(reason, "county journey request INV-2 rejection reason holds a dollar amount");
   });
 });
