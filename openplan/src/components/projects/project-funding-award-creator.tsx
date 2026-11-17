@@ -216,7 +216,7 @@ export function ProjectFundingAwardCreator({
                   <span>This award closed before it was recorded here</span>
                 </label>
               ) : (
-                <p className="text-sm text-muted-foreground">Only a workspace owner or admin can record an award as already closed.</p>
+                <p className="text-sm text-muted-foreground">Only an owner or admin can mark an award as already closed.</p>
               )}
             </GuidedFlowRow>
 

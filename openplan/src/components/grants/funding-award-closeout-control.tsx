@@ -801,7 +801,7 @@ export function FundingAwardCloseoutPanel({
         */}
         {canClose
           ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and updates how this project's funding is counted in the long-range plan. A closed award can be re-opened with a written reason, and each closed award shows how it was closed: earned against invoices, or recorded on import."
-          : "Only a workspace owner or admin can close out, reconcile or reopen an award."}
+          : "Only an owner or admin can close out, reconcile or reopen an award."}
       </p>
       <ul className="mt-3 space-y-3">
         {awards.map((award) => (

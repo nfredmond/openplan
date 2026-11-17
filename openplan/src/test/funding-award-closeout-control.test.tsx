@@ -293,7 +293,7 @@ describe("FundingAwardCloseoutPanel", () => {
     // `canClose` is now the route's own action, awards.close (owner and admin,
     // the lead's November 17, 2026 decision), so the panel can state the rule
     // plainly instead of hedging about what the server might allow.
-    expect(screen.getByText("Only a workspace owner or admin can close out, reconcile or reopen an award.")).toBeInTheDocument();
+    expect(screen.getByText("Only an owner or admin can close out, reconcile or reopen an award.")).toBeInTheDocument();
   });
 
   it("says the breakdown is missing rather than rendering absent counts as three zeroes", async () => {

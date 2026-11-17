@@ -684,7 +684,7 @@ describe("GrantsPage", () => {
 
       expect(screen.queryByRole("button", { name: "Close out award" })).toBeNull();
       expect(
-        screen.getByText("Only a workspace owner or admin can close out, reconcile or reopen an award.")
+        screen.getByText("Only an owner or admin can close out, reconcile or reopen an award.")
       ).toBeInTheDocument();
     }
   );
