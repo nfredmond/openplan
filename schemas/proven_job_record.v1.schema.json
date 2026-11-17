@@ -166,6 +166,17 @@
           "crossWorkspace": { "required": ["checks", "ownerChecks", "secondAccounts"] }, "limits": {}
         }
       }
+    },
+    {
+      "if": { "required": ["jobId"], "properties": { "jobId": { "const": "grant-award-to-reimbursement-record-in-three-places" } } },
+      "then": {
+        "additionalProperties": false,
+        "properties": {
+          "schema": {}, "jobId": {}, "commit": {}, "baseUrl": {}, "recordedOn": {},
+          "journeys": { "items": { "$ref": "#/$defs/awardJourney" } },
+          "crossWorkspace": { "required": ["checks", "ownerChecks", "secondAccounts"] }, "limits": {}
+        }
+      }
     }
   ],
   "$defs": {
@@ -544,6 +555,209 @@
         "screens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/screen" } }
       }
     },
+    "money": { "type": "string", "pattern": "^-?\\d{1,12}\\.\\d{2}$", "description": "Dollars and cents as the journey typed them or the product answered them, for example 60000.00. Read by the checker in whole cents." },
+    "optionalMoney": { "type": ["string", "null"], "pattern": "^-?\\d{1,12}\\.\\d{2}$", "description": "Dollars and cents, or null when the journey did not enter the fact. Null is never zero." },
+    "optionalDate": { "type": ["string", "null"], "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "awardJourney": {
+      "type": "object",
+      "description": "One journey of the award job: an account records an award against an opportunity tracked from the catalog, logs reimbursement requests and moves them through review, payment and a rejection with its resubmission, downloads the reimbursement worksheet before and after a reconciled close-out, reads each screen's figures, and records what a member, a second workspace and a direct database write were refused.",
+      "required": [
+        "role", "mode", "harness", "place", "executor", "accountCreatedAt", "confirmationMethod", "health",
+        "projectName", "workspaceName", "reimbursementProfile", "award", "requests", "closeOut", "downloads",
+        "costEntryCount", "screenReadings", "memberAccount", "refusals", "custody", "pdfs", "screens"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "role": { "$ref": "#/$defs/slug" },
+        "mode": { "enum": ["rehearsal", "proof"], "description": "The mode the journey ran in, from its run file. Only proof counts." },
+        "harness": {
+          "type": "object",
+          "description": "The checkout the journey script ran from: git rev-parse HEAD, and whether any tracked file differed from it.",
+          "required": ["commit", "clean"],
+          "additionalProperties": false,
+          "properties": {
+            "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "clean": { "type": "boolean" }
+          }
+        },
+        "place": { "$ref": "#/$defs/place" },
+        "executor": { "$ref": "#/$defs/executor" },
+        "accountCreatedAt": { "$ref": "#/$defs/dateTime" },
+        "confirmationMethod": { "$ref": "#/$defs/confirmationMethod" },
+        "health": { "$ref": "#/$defs/health" },
+        "projectName": { "type": "string", "minLength": 1, "description": "The project's name as the journey typed it. It carries the demonstration label." },
+        "workspaceName": { "type": "string", "minLength": 1, "description": "The workspace's name as the journey typed it at sign-up: a demonstration name, never a person's or an agency's." },
+        "reimbursementProfile": {
+          "type": "object",
+          "description": "The reimbursement profile the workspace resolved, as each request carried it (reimbursement_profile_id and reimbursement_profile_selection).",
+          "required": ["profileId", "selection"],
+          "additionalProperties": false,
+          "properties": {
+            "profileId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+            "selection": { "type": "string", "pattern": "^[a-z_]+$" }
+          }
+        },
+        "award": {
+          "type": "object",
+          "required": ["awardId", "projectId", "catalogKey", "title", "createStatus", "ceiling", "match", "matchPosture", "obligatedOn"],
+          "additionalProperties": false,
+          "properties": {
+            "awardId": { "$ref": "#/$defs/uuid" },
+            "projectId": { "$ref": "#/$defs/uuid" },
+            "catalogKey": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "The catalog key of the opportunity the award was recorded against." },
+            "title": { "type": "string", "minLength": 1, "description": "The award's title as the product echoed it. It carries the demonstration label." },
+            "createStatus": { "type": "integer", "minimum": 100 },
+            "ceiling": { "$ref": "#/$defs/optionalMoney" },
+            "match": { "$ref": "#/$defs/optionalMoney" },
+            "matchPosture": { "type": ["string", "null"], "pattern": "^[a-z_]+$" },
+            "obligatedOn": { "$ref": "#/$defs/optionalDate" }
+          }
+        },
+        "requests": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["key", "invoiceId", "number", "gross", "retention", "periodStart", "periodEnd", "invoiceDate", "dueDate", "paidDate", "rejectionReason", "resubmitsInvoiceId", "profileId", "history"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "description": "Which of the definition's fixed requests this is: first, rejected or resubmission." },
+              "invoiceId": { "$ref": "#/$defs/uuid" },
+              "number": { "type": "string", "minLength": 1 },
+              "gross": { "$ref": "#/$defs/money" },
+              "retention": { "$ref": "#/$defs/money" },
+              "periodStart": { "$ref": "#/$defs/date" },
+              "periodEnd": { "$ref": "#/$defs/date" },
+              "invoiceDate": { "$ref": "#/$defs/date" },
+              "dueDate": { "$ref": "#/$defs/optionalDate" },
+              "paidDate": { "$ref": "#/$defs/optionalDate" },
+              "rejectionReason": { "type": ["string", "null"], "minLength": 1 },
+              "resubmitsInvoiceId": { "type": ["string", "null"], "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
+              "profileId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+              "history": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Every status the route answered for this request, in order: the create (201), then each move (200), each with the control that sent it and the time the route answered.",
+                "items": {
+                  "type": "object",
+                  "required": ["status", "control", "responseStatus", "at"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "status": { "type": "string", "pattern": "^[a-z_]+$" },
+                    "control": { "type": "string", "minLength": 1 },
+                    "responseStatus": { "type": "integer", "minimum": 100 },
+                    "at": { "$ref": "#/$defs/dateTime" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "closeOut": {
+          "type": "object",
+          "required": ["control", "basis", "note", "responseStatus", "releasedAmount", "closedAt", "closedOn"],
+          "additionalProperties": false,
+          "properties": {
+            "control": { "type": "string", "minLength": 1 },
+            "basis": { "type": "string", "pattern": "^[a-z_]+$" },
+            "note": { "type": "string", "minLength": 1 },
+            "responseStatus": { "type": "integer", "minimum": 100 },
+            "releasedAmount": { "$ref": "#/$defs/optionalMoney" },
+            "closedAt": { "$ref": "#/$defs/dateTime" },
+            "closedOn": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$", "description": "The close-out day on the workspace's calendar, as the worksheet prints it." }
+          }
+        },
+        "downloads": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["pdf", "at", "status", "engine"],
+            "additionalProperties": false,
+            "properties": {
+              "pdf": { "$ref": "#/$defs/slug" },
+              "at": { "$ref": "#/$defs/dateTime" },
+              "status": { "type": "integer", "minimum": 100 },
+              "engine": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "costEntryCount": { "$ref": "#/$defs/count" },
+        "screenReadings": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["screen", "at", "figures"],
+            "additionalProperties": false,
+            "properties": {
+              "screen": { "$ref": "#/$defs/slug" },
+              "at": { "$ref": "#/$defs/dateTime" },
+              "figures": {
+                "type": "object",
+                "description": "Each figure as the screen printed it, keyed by the definition's figure name.",
+                "additionalProperties": false,
+                "properties": {
+                  "ceiling": { "type": "string", "minLength": 1 },
+                  "match": { "type": "string", "minLength": 1 },
+                  "claimedGross": { "type": "string", "minLength": 1 },
+                  "paidNet": { "type": "string", "minLength": 1 },
+                  "outstandingNet": { "type": "string", "minLength": 1 },
+                  "rejectedGross": { "type": "string", "minLength": 1 },
+                  "remaining": { "type": "string", "minLength": 1 },
+                  "awardedWhole": { "type": "string", "minLength": 1 },
+                  "drawnPercent": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        },
+        "memberAccount": {
+          "type": "object",
+          "required": ["confirmed", "ownRequest", "ownStatus"],
+          "additionalProperties": false,
+          "properties": {
+            "confirmed": { "type": "boolean" },
+            "ownRequest": { "$ref": "#/$defs/slug" },
+            "ownStatus": { "type": "integer", "minimum": 100 }
+          }
+        },
+        "refusals": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["account", "action", "status", "code"],
+            "additionalProperties": false,
+            "properties": {
+              "account": { "enum": ["owner", "member"] },
+              "action": { "$ref": "#/$defs/slug" },
+              "status": { "type": "integer", "minimum": 100 },
+              "code": { "type": ["string", "null"], "pattern": "^[a-z0-9_]+$" }
+            }
+          }
+        },
+        "custody": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["account", "target", "status", "code", "rowsChanged", "unchangedOnReadBack"],
+            "additionalProperties": false,
+            "properties": {
+              "account": { "enum": ["owner", "member"] },
+              "target": { "$ref": "#/$defs/slug" },
+              "status": { "type": "integer", "minimum": 100 },
+              "code": { "type": ["string", "null"], "pattern": "^[0-9A-Z]{5}$" },
+              "rowsChanged": { "$ref": "#/$defs/count" },
+              "unchangedOnReadBack": { "type": "boolean" }
+            }
+          }
+        },
+        "pdfs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pdf" } },
+        "screens": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/screen" } }
+      }
+    },
     "pdf": {
       "type": "object",
       "required": ["kind", "path", "sha256", "bytes", "pages", "draftStamp", "items"],
@@ -594,7 +808,8 @@
           }
         },
         "consoleErrors": { "$ref": "#/$defs/count" },
-        "horizontalScroll": { "type": "boolean" }
+        "horizontalScroll": { "type": "boolean" },
+        "paneUnrolled": { "type": "boolean", "description": "Whether the journey unrolled OpenPlan's inner scrolling pane before the accessibility check, so colour contrast was measured below the first screen (KI-2026-11-17-032). Optional: earlier records predate it. Required true by a job whose definition sets screens.paneUnrolledRequired." }
       }
     }
   }
