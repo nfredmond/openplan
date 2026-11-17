@@ -544,7 +544,11 @@ back with Poppler.
   `resubmitsNote`, `costsNone`, `processLine`, `interimNotice`);
   `refusedPhrases.phrases`; `formNames.names`; `screenFigures` (`byScreen`,
   `points`); `member` (`refusedActions`, `statuses`, `control`);
-  `productRefusals.list`; `custody` (`checks`, `statuses`, `codes`, `noRow`).
+  `productRefusals.list`; `custody` (`checks`, `refusals` as status and code
+  pairs, `noRow`).
+- `journeys[].stateFipsNotIn`: states a journey's place may not lie in (the
+  city: states the profile registry gives a profile of its own, tied to the
+  registry by the pin test).
   Each sub-block's `note` says what it means, and
   `award-to-reimbursement-definition-pins.test.ts` ties each fixed value to
   the product's own constant, worksheet output or source text.
@@ -558,9 +562,15 @@ reads it in whole cents.
 Every status, control, time, screen reading, refusal status and database
 answer is the journey's statement. The checker recomputes the money from them
 and holds the worksheets and readings to it, so a record and worksheets
-falsified together to agree are not caught. A payment date is read as words
-within its request row, so the same date in that row's invoice-date cell also
-satisfies it. The tribal area's states are the journey's reading; the
+falsified together to agree are not caught. The record names no actor, so who
+made each move and the close-out is the journey's word (a required limit says
+so). Dates in a request row are read as words, held in place by the count of
+"Not recorded" for the dates the record leaves blank; two of the row's own
+dates exchanged between their cells are not caught. Review 97 (agent-run,
+fresh context) found the copies the first version accepted; amounts outside
+the read rows, unpaired custody answers, early payment dates, invented dates,
+a California city, form titles, seven wordings, a phrase across a page break
+and reading times are now refused. The tribal area's states are the journey's reading; the
 Gazetteer table of tribal areas has no state column. Under the fixed amounts
 (no retention, every claim paid at close) the ceiling minus net paid, minus
 gross paid and minus claimed gross are the same number, so only a changed copy

@@ -78,8 +78,11 @@ async function printPdf(html: string, engine: Engine): Promise<Uint8Array> {
 }
 
 /** The example record with each named journey's worksheets printed by the product and pinned. */
+/** A changed example to print instead of the committed one, set by one test at a time. */
+let EXAMPLE_OVERRIDE: Json = null;
+
 async function recordWithRealPdfs(engine: Engine, roles: string[]): Promise<Json> {
-  const record = structuredClone(EXAMPLE);
+  const record = structuredClone(EXAMPLE_OVERRIDE ?? EXAMPLE);
   // The journeys not printed here keep the example's synthetic files.
   for (const entry of record.journeys.filter((journey: Json) => !roles.includes(journey.role))) {
     for (const pdf of entry.pdfs) {
@@ -124,6 +127,31 @@ describe.skipIf(!POPPLER || !CHROME)("real worksheets printed by Chrome", () => 
     for (const entry of record.journeys) {
       const text = pdftotextPages(path.join(root, entry.pdfs[1].path)).join("\n");
       expect(text).toContain(`Process: ${JOB.award.profiles.byRole[entry.role].profileName}`);
+    }
+  }, 240_000);
+
+  it("accepts the honest variations review 97 printed: long names and notes, earlier payment dates, an invoice dated the day it was paid", async () => {
+    const LABEL = "(Demonstration by an automated OpenPlan proof run)";
+    const record = structuredClone(EXAMPLE);
+    for (const entry of record.journeys) {
+      const name = entry.place.label.split(",")[0];
+      entry.workspaceName = `${name} Public Works Department reimbursement demonstration workspace`;
+      entry.projectName = `${name} Safe Streets and Roads for All comprehensive safety action plan and corridor walking improvements ${LABEL}`;
+      entry.award.title = `${name} Safe Streets and Roads for All Fiscal Year 2026 planning and demonstration grant award ${LABEL}`;
+      const [first, rejected, resubmission] = entry.requests;
+      rejected.rejectionReason = "The progress report for the billing period was missing, and the consultant invoice backup did not match the hours claimed for July through September; please resubmit with both attached.";
+      entry.closeOut.note = "Demonstration by an automated OpenPlan proof run. The planning work finished under the recorded ceiling, the final report was accepted by the program office, and the remaining balance is not claimed by this workspace.";
+      first.invoiceDate = "2026-11-18";
+      first.paidDate = "2026-11-18";
+      resubmission.invoiceDate = "2026-11-19";
+      resubmission.paidDate = "2026-11-19";
+    }
+    EXAMPLE_OVERRIDE = record;
+    try {
+      const printed = await recordWithRealPdfs("chrome", ROLES);
+      expect(() => check(printed)).not.toThrow();
+    } finally {
+      EXAMPLE_OVERRIDE = null;
     }
   }, 240_000);
 

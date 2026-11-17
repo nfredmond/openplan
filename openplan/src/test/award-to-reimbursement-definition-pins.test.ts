@@ -35,7 +35,10 @@ import {
   worksheetCurrencyNote,
 } from "@/lib/invoicing/reimbursement-worksheet";
 import { INTERIM_DEFAULT_RATIONALE, resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
+import { BUILT_IN_REIMBURSEMENT_PROFILE_REGISTRATIONS } from "@/lib/invoicing/reimbursement-profiles";
+import { stateFipsFromUsps } from "@/lib/geographies/state-fips";
 import { BUILTIN_PDF_NOTICE } from "@/lib/reports/pdf";
+import { resubmissionInvoiceNumber } from "@/app/(app)/invoicing/_components/invoicing-page-helpers";
 import { stripSourceComments } from "./helpers/source-text";
 import { profileForPlace, worksheetHtmlAt } from "./fixtures/proven-job-award";
 
@@ -145,6 +148,20 @@ describe("the fourth job's profiles are the product's, in every role", () => {
     expect(unset.kind === "resolved" && unset.binding.selection).not.toBe(RULE.profiles.selection);
   });
 
+  it("bars the city from every state the profile registry gives a profile of its own", () => {
+    const city = JOB.journeys.find((rule: Json) => rule.role === "city");
+    const statesWithProfiles = BUILT_IN_REIMBURSEMENT_PROFILE_REGISTRATIONS.map((profile) => profile.jurisdiction.subdivision)
+      .filter((subdivision): subdivision is string => Boolean(subdivision))
+      .map((subdivision) => stateFipsFromUsps(subdivision));
+    expect([...city.stateFipsNotIn].sort()).toEqual([...statesWithProfiles].sort());
+  });
+
+  it("numbers the resubmission the way the product's Resubmit does", () => {
+    const [, rejected, resubmission] = RULE.fixed.requests;
+    expect(resubmission.resubmits).toBe(rejected.key);
+    expect(resubmissionInvoiceNumber(rejected.number)).toBe(resubmission.number);
+  });
+
   it("refuses the interim sentence the product prints for an unchosen profile", () => {
     const binding = resolveReimbursementProfile({ workspaceJurisdiction: null });
     if (binding.kind !== "resolved") throw new Error("unresolved");
@@ -224,8 +241,12 @@ describe("the fourth job's other fixed values are the product's", () => {
 
   it("refuses with the codes and statuses the database and routes use", () => {
     const migrations = ["20261117000000_award_closure_custody.sql", "20261117000100_reimbursement_request_status_custody.sql"].map((file) => readText(`openplan/supabase/migrations/${file}`)).join("\n");
-    expect(migrations).toContain(`ERRCODE = '${RULE.custody.codes[0]}'`);
-    expect(migrations).toContain(`ERRCODE = '${RULE.custody.codes[1]}'`);
+    // Each refusal is a status and a code together; the custody triggers raise the check-violation code.
+    expect(RULE.custody.refusals).toEqual([{ status: 400, code: "23514" }, { status: 403, code: "42501" }]);
+    expect(migrations).toContain("Award closure changes only through the close-out' USING ERRCODE = '23514'");
+    expect(migrations).toContain("fixed once it leaves draft', OLD.status USING ERRCODE = '23514'");
+    expect(migrations).toContain(`ERRCODE = '${RULE.custody.refusals[1].code}'`);
+    expect(RULE.custody.refusals.map((pair: Json) => pair.status)).not.toContain(401);
     const patch = code("openplan/src/app/api/invoicing/invoices/[invoiceId]/route.ts");
     expect(patch).toContain('if (error?.code === "23514") throw new InvoiceUpdateRefusedError(error.message, 422);');
     expect(RULE.productRefusals.list[0].statuses).toEqual([422]);

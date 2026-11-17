@@ -878,6 +878,10 @@ function checkPlace(place, rule, job, label) {
       refuse(`${label} states the Census states with FIPS ${place.stateFips.join(", ")} for its place; this journey's place must lie in exactly ${rule.statesExactly.join(", ")}`);
     }
   }
+  // A journey whose place may not lie in the listed states (the award job's
+  // city: no state with a reimbursement profile of its own, review 97 L03).
+  const barred = place.stateFips.filter((state) => rule.stateFipsNotIn?.includes(state));
+  if (barred.length > 0) refuse(`${label} is in the state with FIPS ${barred.join(", ")}; this journey's place may not lie in ${rule.stateFipsNotIn.join(", ")}`);
   // A journey whose place must cross states (the award job's tribal area): at
   // least this many different Census states, as the journey read them.
   if (rule.minStates !== undefined && new Set(place.stateFips).size < rule.minStates) {
@@ -2263,6 +2267,12 @@ function recordTime(value, what) {
   return time;
 }
 
+/** Whether a YYYY-MM-DD string names a real calendar day ("2026-02-30" does not). */
+function isCalendarDate(value) {
+  const time = Date.parse(`${value}T00:00:00Z`);
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value)) && !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
+}
+
 /** The calendar days a moment falls on somewhere on Earth (UTC-12 to UTC+14), for a date typed on a workspace's calendar. */
 function daysOfMoment(time) {
   const day = (offsetHours) => new Date(time + offsetHours * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -2410,6 +2420,14 @@ function checkAwardRequests(journey, rule, label) {
   journey.requests.forEach((request, index) => {
     const definition = fixed[index];
     const requestLabel = `${label} request ${request.number}`;
+    // Every date is a real calendar date (review 97 sweeps: "2026-13-45").
+    for (const field of ["periodStart", "periodEnd", "invoiceDate", "dueDate", "paidDate"]) {
+      if (request[field] !== null && !isCalendarDate(request[field])) refuse(`${requestLabel} ${field} ${request[field]} is not a calendar date`);
+    }
+    if (request.periodEnd < request.periodStart) refuse(`${requestLabel} period ends (${request.periodEnd}) before it starts (${request.periodStart})`);
+    if (request.paidDate !== null && request.paidDate < request.invoiceDate) {
+      refuse(`${requestLabel} payment date ${request.paidDate} is before its invoice date ${request.invoiceDate}; a request is not paid before it is invoiced`);
+    }
     if (request.profileId !== profile.profileId) refuse(`${requestLabel} carries the reimbursement profile ${request.profileId}, not the workspace's ${profile.profileId}`);
     let before = created;
     let previous;
@@ -2480,6 +2498,8 @@ function checkAwardCloseOut(journey, rule, label) {
   if (closeOut.responseStatus !== 200) refuse(`${closeLabel} was answered ${closeOut.responseStatus}, not 200`);
   if (!closeOut.note.trim()) refuse(`${closeLabel} has no note; a close with the balance released needs one`);
   const closedAt = recordTime(closeOut.closedAt, closeLabel);
+  if (!isCalendarDate(closeOut.closedOn)) refuse(`${closeLabel} day ${closeOut.closedOn} is not a calendar date`);
+  if (journey.award.obligatedOn !== null && !isCalendarDate(journey.award.obligatedOn)) refuse(`${label} award obligation date ${journey.award.obligatedOn} is not a calendar date`);
   const { earliest, latest } = daysOfMoment(closedAt);
   if (closeOut.closedOn < earliest || closeOut.closedOn > latest) refuse(`${closeLabel} is dated ${closeOut.closedOn}, not the day it was made (${closeOut.closedAt})`);
   for (const request of journey.requests) {
@@ -2555,11 +2575,16 @@ function checkAwardScreenReadings(journey, rule, label) {
   const notRecorded = rule.worksheet.notRecorded;
   const kindOf = (figure) => (figure === "awardedWhole" ? "whole" : figure === "drawnPercent" ? "percent" : "cents");
   const seen = new Set();
+  const created = recordTime(journey.accountCreatedAt, `${label} account`);
+  const ended = recordTime(journey.health.find((entry) => entry.point === "end").checkedAt, `${label} end health readback`);
   for (const reading of journey.screenReadings) {
     const readingLabel = `${label} ${reading.screen} screen reading at ${reading.at}`;
     const required = byScreen[reading.screen];
     if (!required) refuse(`${readingLabel} is of a screen this job does not read`);
-    const position = awardPositionAt(journey, rule, recordTime(reading.at, readingLabel));
+    const time = recordTime(reading.at, readingLabel);
+    // Inside the journey (review 97, S09).
+    if (time < created || time > ended) refuse(`${readingLabel} is outside the journey`);
+    const position = awardPositionAt(journey, rule, time);
     if (position.closed) seen.add(`${reading.screen}|closed`);
     else if (position.outstandingCount > 0) seen.add(`${reading.screen}|open`);
     for (const figure of required) {
@@ -2638,11 +2663,13 @@ function checkAwardCustody(journey, rule, label) {
     if (found.length !== 1) refuse(`${label} needs exactly one ${expected.account} direct write of ${expected.target}, found ${found.length}`);
     const [check] = found;
     if (check.rowsChanged !== 0 || check.unchangedOnReadBack !== true) refuse(`${checkLabel} changed a row; the database must hold the award's facts`);
-    const refusedByDatabase = custody.statuses.includes(check.status) && custody.codes.includes(check.code);
+    // A status and its code together (review 97, F10 and F11): a 401 is a request with no session.
+    const refusedByDatabase = custody.refusals.some((pair) => pair.status === check.status && pair.code === check.code);
     const hidden = custody.noRow.find((entry) => entry.account === check.account && entry.target === check.target);
     const noRow = Boolean(hidden) && hidden.statuses.includes(check.status) && check.code === null;
     if (!refusedByDatabase && !noRow) {
-      refuse(`${checkLabel} answered ${check.status}${check.code ? ` with code ${check.code}` : ""}, which does not show the database refused it; only ${custody.statuses.join(", ")} with ${custody.codes.join(" or ")} counts${hidden ? `, or ${hidden.statuses.join(" or ")} with no row changed for this account` : ""}`);
+      const pairs = custody.refusals.map((pair) => `${pair.status} with ${pair.code}`).join(" or ");
+      refuse(`${checkLabel} answered ${check.status}${check.code ? ` with code ${check.code}` : ""}, which does not show the database refused it; only ${pairs} counts${hidden ? `, or ${hidden.statuses.join(" or ")} with no row changed for this account` : ""}`);
     }
   }
   if (journey.custody.length !== custody.checks.length) refuse(`${label} records direct writes this job does not define`);
@@ -2723,23 +2750,54 @@ function checkWorksheetText(journey, rule, pdfLabel, pages, position) {
   checkWorksheetPosition(journey, rule, pdfLabel, body("position"), position);
   checkWorksheetRequests(rule, pdfLabel, body("invoices"), position);
 
-  // No cost entries were made, so the section says so and prints no amount.
+  // No cost entries were made, so the section says so and prints no amount, with or without cents.
   const costs = body("costs").join("\n");
   if (!pdfTextHasPhrase(costs, sheet.costsNone)) refuse(`${pdfLabel} "${sheet.sections.costs}" does not say "${sheet.costsNone}"`);
-  if (printedAmounts(costs).length > 0) refuse(`${pdfLabel} "${sheet.sections.costs}" prints an amount, but the record enters no cost`);
+  if (/\$\s?-?\d/.test(costs)) refuse(`${pdfLabel} "${sheet.sections.costs}" prints an amount, but the record enters no cost`);
+
+  // Every amount in the worksheet is one a rule read (review 97, M16 to M20): the money
+  // rows due at the download that hold an entry, and three per request row. Any other
+  // amount, anywhere, with or without cents, is a figure nothing checked.
+  const moneyRows = sheet.positionRows.filter((row) => !row.kind && (!row.whenClosed || position.closed) && position[row.figure] !== null).length;
+  const expectedAmounts = moneyRows + 3 * position.requests.length;
+  const foundAmounts = (lines.join("\n").match(/\$\s?-?\d/g) ?? []).length;
+  if (foundAmounts !== expectedAmounts) {
+    refuse(`${pdfLabel} prints ${foundAmounts} dollar amounts; the ${moneyRows} money rows due at the download and its ${position.requests.length} request rows hold ${expectedAmounts}, so an amount no rule read is on the worksheet`);
+  }
 
   // The process is the role's profile, chosen by the workspace's place.
   const processLine = sheet.processLine.replace("{profileName}", rule.profiles.byRole[journey.role].profileName);
   if (!pdfTextHasPhrase(body("process").join("\n"), processLine)) refuse(`${pdfLabel} does not print "${processLine}"`);
   if (printsAnywhere(sheet.interimNotice)) refuse(`${pdfLabel} says "${sheet.interimNotice}"; the workspace's own place must choose its profile`);
 
-  // What the worksheet must not say (the lead's rule 8).
-  const singleSpaced = everywhere.replace(/[ \t]{2,}/g, " ");
-  const printsRefused = (phrase) => printsAnywhere(phrase) || pdfTextHasPhrase(singleSpaced, phrase);
+  // What the worksheet must not say (the lead's rule 8), also read as one flow with each
+  // page's footer, the fixed note above it and the blank lines around them left out, so a
+  // phrase that continues on the next page reads whole (review 97, W25).
+  const preparedNote = bareLine(sheet.preparedNote);
+  const flow = pages
+    .flatMap((page) => {
+      const kept = page.split(/\r?\n/).filter((line) => !footer.test(line));
+      const trimEnd = () => {
+        while (kept.length > 0 && kept[kept.length - 1].trim() === "") kept.pop();
+      };
+      trimEnd();
+      for (let count = 1; count <= 3 && count <= kept.length; count += 1) {
+        if (kept.slice(-count).map(bareLine).join("") === preparedNote) {
+          kept.splice(-count);
+          break;
+        }
+      }
+      trimEnd();
+      while (kept.length > 0 && kept[0].trim() === "") kept.shift();
+      return kept;
+    })
+    .join("\n");
+  const singleSpaced = (text) => text.replace(/[ \t]{2,}/g, " ");
+  const printsRefused = (phrase) => printsAnywhere(phrase) || [singleSpaced(everywhere), flow, singleSpaced(flow)].some((text) => pdfTextHasPhrase(text, phrase));
   for (const phrase of rule.refusedPhrases.phrases) {
     if (printsRefused(phrase)) refuse(`${pdfLabel} prints "${phrase}", which this job refuses anywhere in the worksheet`);
   }
-  checkWorksheetFormNames(rule, pdfLabel, everywhere);
+  checkWorksheetFormNames(rule, pdfLabel, `${everywhere}\n\n${flow}`);
 }
 
 /**
@@ -2860,7 +2918,21 @@ function checkWorksheetRequests(rule, pdfLabel, lines, position) {
       const note = sheet.resubmitsNote.replace("{number}", byId.get(request.resubmitsInvoiceId)?.number ?? "");
       if (!wordsInOrder(text, note)) refuse(`${rowLabel} does not say "${note}"`);
     }
-    if (rule.statuses.paid.includes(status) && !wordsInOrder(text, request.paidDate)) refuse(`${rowLabel} does not print its payment date ${request.paidDate}`);
+    const paid = rule.statuses.paid.includes(status);
+    if (paid && !wordsInOrder(text, request.paidDate)) refuse(`${rowLabel} does not print its payment date ${request.paidDate}`);
+    if (!wordsInOrder(text, request.invoiceDate)) refuse(`${rowLabel} does not print its invoice date ${request.invoiceDate}`);
+    if (request.dueDate !== null && !wordsInOrder(text, request.dueDate)) refuse(`${rowLabel} does not print its due date ${request.dueDate}`);
+    // One not-recorded for each date the record leaves blank, and no more (review 97,
+    // P14, P15, Z07): a date the record does not hold, or one in another date's cell,
+    // changes the count. The words are counted, so a wrapped cell still counts once.
+    const word = wordsOf(sheet.notRecorded).at(-1);
+    const count = (words) => wordsOf(words).filter((candidate) => candidate === word).length;
+    const blank = (request.dueDate === null ? 1 : 0) + (paid ? 0 : 1);
+    const reasonWords = rule.statuses.rejected.includes(status) ? count(request.rejectionReason) : 0;
+    const shown = count(text) - reasonWords;
+    if (shown !== blank) {
+      refuse(`${rowLabel} says "${sheet.notRecorded}" ${shown} time(s); the record leaves ${blank} of its dates blank, so the row prints a date the record does not hold or leaves out one it does`);
+    }
   });
 }
 

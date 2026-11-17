@@ -703,10 +703,12 @@
           "role": "city",
           "placeKind": "city",
           "censusNameRefused": {
-            "note": "An incorporated place, as for the third job: the Gazetteer names a Census designated place with the closing word CDP. The city's state is any state with no reimbursement profile of its own; the profile rule (award.profiles) is what holds it there.",
+            "note": "An incorporated place, as for the third job: the Gazetteer names a Census designated place with the closing word CDP.",
             "pattern": " CDP$",
             "refusal": "is a Census designated place, not an incorporated place"
-          }
+          },
+          "stateFipsNotIn": ["06"],
+          "stateFipsNotInNote": "The lead's rule 1: a city in a state with no reimbursement profile of its own. These are the states the product's profile registry names a profile for (California, the Caltrans LAPM profile), tied to the registry by award-to-reimbursement-definition-pins.test.ts (review 97, L03 and L13)."
         },
         {
           "role": "tribal-area",
@@ -819,7 +821,7 @@
           "engine": "chrome"
         },
         "worksheet": {
-          "note": "What each worksheet must print, read by the checker with Poppler's text (pdftotext -layout) and the shared matcher. No rule reads a value from a fixed line: a figure row runs from its label to the next row's label, wherever the browser wrapped the label, its note or its amount, and the row must hold exactly one amount, the recomputed one, or the notRecorded words and no amount when the record holds no entry. A request row runs from the line that opens with its number and carries an amount to the next such line, and must hold its gross, retention and net and no other amount; its status, rejection reason, resubmission note and payment date are read as words in order, so a column the browser wrapped still reads. Every page carries the footer line with its own page number. The source is openplan/src/lib/invoicing/reimbursement-worksheet.ts (WORKSHEET_DOCUMENT_TITLE, WORKSHEET_PREPARED_NOTE, WORKSHEET_FOOTER_NOTE, ledgerSection, invoiceSection, costSection, profileSection) and openplan/src/lib/reports/pdf.ts (the footer template, BUILTIN_PDF_NOTICE).",
+          "note": "What each worksheet must print, read by the checker with Poppler's text (pdftotext -layout) and the shared matcher. No rule reads a value from a fixed line: a figure row runs from its label to the next row's label, wherever the browser wrapped the label, its note or its amount, and the row must hold exactly one amount, the recomputed one, or the notRecorded words and no amount when the record holds no entry. A request row runs from the line that opens with its number and carries an amount to the next such line, and must hold its gross, retention and net and no other amount; its status, invoice date, due date, rejection reason, resubmission note and payment date are read as words in order, so a column the browser wrapped still reads, and the row must say the notRecorded words exactly once for each date the record leaves blank (the due date, and the payment date of a request not paid at the download), so no date the record does not hold is printed and no date sits in another date's cell (review 97, P14, P15, Z07). The whole worksheet must print exactly as many dollar amounts as the money rows due at the download (closed rows only when closed, a row with no entry none) plus three per request row: any other amount anywhere, with or without cents, is a figure no rule read (review 97, M16 to M20; every honest Chrome worksheet printed 19 before the close-out and 20 after). A journey's typed text (names, the rejection reason, the close-out note) must therefore hold no dollar amount. Every page carries the footer line with its own page number. The source is openplan/src/lib/invoicing/reimbursement-worksheet.ts (WORKSHEET_DOCUMENT_TITLE, WORKSHEET_PREPARED_NOTE, WORKSHEET_FOOTER_NOTE, ledgerSection, invoiceSection, costSection, profileSection) and openplan/src/lib/reports/pdf.ts (the footer template, BUILTIN_PDF_NOTICE).",
           "title": "Reimbursement worksheet",
           "preparedNote": "Prepared by OpenPlan from records this workspace entered. It is not a funder's form and carries no form or revision number. Check it against the exhibit your funding agreement currently requires before you submit.",
           "pageFooter": "^\\s*Reimbursement worksheet prepared by OpenPlan - not a funder's form · Page (\\d+) of (\\d+)\\s*$",
@@ -850,7 +852,7 @@
           "interimNotice": "This process was not chosen for this workspace."
         },
         "refusedPhrases": {
-          "note": "The lead's rule 8: words that would say a cost is allowable, eligible or reimbursable, that a balance is deobligated, or that a payment was received, refused anywhere in either PDF the way the third job refuses its phrases (any case, wrapped, across a page break, or with more than one space between two words). The product's own honest text stays outside the list: \"costs before this date are generally not reimbursable\", \"Approved for payment is a funder's promise, not a deposit\", and the generic profile's checklist line \"costs claimed are true, eligible under the award\". A list cannot catch every wording.",
+          "note": "The lead's rule 8: words that would say a cost is allowable, eligible or reimbursable, that a balance is deobligated, that a payment was received, or that the worksheet is a payment request, refused anywhere in either PDF the way the third job refuses its phrases (any case, wrapped, or with more than one space between two words). A phrase that continues on the next page is read whole: each page's footer line, the fixed note above it and the blank lines around them are left out first (review 97, W25). Review 97 added the last seven wordings. The product's own honest text stays outside the list: \"costs before this date are generally not reimbursable\", \"Approved for payment is a funder's promise, not a deposit\", and the generic profile's checklist line \"costs claimed are true, eligible under the award\". A list cannot catch every wording.",
           "phrases": [
             "is allowable",
             "are allowable",
@@ -882,12 +884,31 @@
             "on behalf of",
             "hereby",
             "official form",
-            "official payment request"
+            "official payment request",
+            "payment request",
+            "eligible costs",
+            "allowable under",
+            "the funder paid",
+            "disbursed",
+            "qualify for reimbursement",
+            "deposited"
           ]
         },
         "formNames": {
           "note": "The lead's rule 8: the worksheet names no form it does not implement. Each name is found in any case, with or without its hyphen or space and across a line break (SF-270, SF 270, SF270). A printing is allowed only right after the word not, with an optional a, an or the (\"not an SF-270\"), so a sentence saying the worksheet is not that form passes and every other printing refuses the record. 2 CFR 200.305(b) names the government-wide payment request forms; Caltrans accepts LAPM Exhibit 5-A (LAPM 5.5, January 2026).",
-          "names": ["SF-270", "SF-271", "SF-425", "Standard Form 270", "Standard Form 271", "Standard Form 425", "LAPM 5-A", "Exhibit 5-A"]
+          "names": [
+            "SF-270",
+            "SF-271",
+            "SF-425",
+            "Standard Form 270",
+            "Standard Form 271",
+            "Standard Form 425",
+            "Request for Advance or Reimbursement",
+            "Outlay Report and Request for Reimbursement for Construction Programs",
+            "Federal Financial Report",
+            "LAPM 5-A",
+            "Exhibit 5-A"
+          ]
         },
         "screenFigures": {
           "note": "The lead's rule 9: what each required screen's reading must hold, each compared with the figure recomputed at the reading's time. Money to the cent reads as the product prints it (\"$105,000.00\"); awardedWhole is the dashboard's whole-dollar award (\"$200,000\"); drawnPercent is the dashboard's share drawn, whole percent (\"53%\"), from the drawn statuses' gross over the ceiling. A figure the record holds no entry for must read notRecorded, never $0.00. Each screen must be read while a request is outstanding and again after the close-out.",
@@ -913,15 +934,17 @@
           ]
         },
         "custody": {
-          "note": "The lead's rule 7: the database holds the award's facts against a direct write. Each journey's owner and member each send a PostgREST PATCH of the award's closure columns and of a paid request's amount. A check counts with one of the statuses and one of the database's codes (23514 from the custody triggers of 20261117000000 and 20261117000100, 42501 for a refused privilege), or, only for an account and target listed in noRow, with 200 or 204 and no row changed, because row security hides the row from that account (a member cannot write requests). Every check must also say no row changed and that the row read back unchanged.",
+          "note": "The lead's rule 7: the database holds the award's facts against a direct write. Each journey's owner and member each send a PostgREST PATCH of the award's closure columns and of a paid request's amount. A check counts with one of the refusals, its status and code together: 400 with 23514, the check-violation code the custody triggers of 20261117000000 and 20261117000100 raise, or 403 with 42501, a refused privilege. A 401 is a request with no session, never the database's refusal, and a status paired with another error's code is not counted (review 97, F10 and F11). Only for an account and target listed in noRow does a check also count with 200 or 204 and no row changed, because row security hides the row from that account (a member cannot write requests). Every check must also say no row changed and that the row read back unchanged.",
           "checks": [
             { "account": "owner", "target": "award-closure-columns" },
             { "account": "member", "target": "award-closure-columns" },
             { "account": "owner", "target": "paid-request-amount" },
             { "account": "member", "target": "paid-request-amount" }
           ],
-          "statuses": [400, 401, 403, 409],
-          "codes": ["23514", "42501"],
+          "refusals": [
+            { "status": 400, "code": "23514" },
+            { "status": 403, "code": "42501" }
+          ],
           "noRow": [{ "account": "member", "target": "paid-request-amount", "statuses": [200, 204] }]
         }
       },
@@ -962,6 +985,7 @@
         "paid-is-what-the-workspace-typed",
         "no-funder-reference",
         "retention-not-exercised",
+        "who-acted-is-the-journeys-word",
         "what-the-journey-leaves-on-the-hosted-site",
         "read-by-the-journey"
       ],
@@ -976,6 +1000,7 @@
         "paid-is-what-the-workspace-typed": "Paid, and each payment date, is what the workspace typed. No funder confirmed a payment.",
         "no-funder-reference": "No funder reference, such as a voucher or payment number, is recorded for any request.",
         "retention-not-exercised": "No retention was entered. A reconciled close-out today releases the ceiling minus net paid, which would count retention the funder holds as released (KI-2026-11-17-031), so the proof does not exercise retention.",
+        "who-acted-is-the-journeys-word": "The record cannot show which account made each status change or the close-out beyond the journey's own statement. It names no actor for any move, and the checker reads none.",
         "what-the-journey-leaves-on-the-hosted-site": "Each journey leaves its accounts, workspace, project, tracked opportunity, award, requests and close-out on the hosted site under the demonstration label, with one unlinked draft request from the refused claim above the ceiling. It publishes nothing and opens no public page.",
         "read-by-the-journey": "The journey read or set these and the checker cannot read them again: each status the routes answered and the control that sent it, every time, the screen readings, the profile each request carried, the statuses the owner, the member and the second account received, the database's answers to each direct write, the accessibility results, console errors and sideways scroll of each screen, how the account was confirmed, the executor, and which build, mode and harness checkout ran.",
         "funding-tab-answers-200-with-not-found-screen": "Another workspace's Funding tab answers HTTP 200 with the not-found screen, because the page streams. The journey read the rendered page: the not-found screen was on it and none of the first account's identifying strings was in its text or HTML. The award history read and the worksheet download were refused."

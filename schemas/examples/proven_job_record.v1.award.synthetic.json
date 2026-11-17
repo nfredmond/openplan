@@ -2346,6 +2346,10 @@
       "text": "No retention was entered. A reconciled close-out today releases the ceiling minus net paid, which would count retention the funder holds as released (KI-2026-11-17-031), so the proof does not exercise retention."
     },
     {
+      "id": "who-acted-is-the-journeys-word",
+      "text": "The record cannot show which account made each status change or the close-out beyond the journey's own statement. It names no actor for any move, and the checker reads none."
+    },
+    {
       "id": "what-the-journey-leaves-on-the-hosted-site",
       "text": "Each journey leaves its accounts, workspace, project, tracked opportunity, award, requests and close-out on the hosted site under the demonstration label, with one unlinked draft request from the refused claim above the ceiling. It publishes nothing and opens no public page."
     },

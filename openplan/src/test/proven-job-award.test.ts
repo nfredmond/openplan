@@ -165,11 +165,13 @@ describe("rule 1: the places and each role's profile", () => {
     refused(record, "county journey must be in the state with FIPS 06");
   });
 
-  it("refuses a city in California, whose worksheet prints the Caltrans process", () => {
+  it("refuses a city in California, a state with a profile of its own, with or without worksheets that agree", () => {
+    // Review 97, L03 and L13: the record kept on the generic profile and its PDFs unchanged.
     const record = proven();
     Object.assign(journey(record, "city").place, { geoid: "0699812", stateFips: ["06"], label: "Synthetic city, CA" });
+    refused(record, "city journey is in the state with FIPS 06; this journey's place may not lie in 06");
     rebuild(record, "city");
-    refused(record, 'city journey worksheet-open PDF does not print "Process: US federal-aid reimbursement (generic)"');
+    refused(record, "city journey is in the state with FIPS 06; this journey's place may not lie in 06");
   });
 
   it("refuses a workspace whose profile is not its role's", () => {
@@ -710,5 +712,161 @@ describe("false records a hostile reviewer would try", () => {
     const record = proven();
     record.limits.find((limit: Json) => limit.id === "no-allowability-statement").text = "Every cost in the worksheets is allowable.";
     refused(record, "record's no-allowability-statement limit does not carry its definition's words");
+  });
+});
+
+describe("review 97: the copies its first version accepted", () => {
+  it("refuses an amount printed outside the rows the checker reads (M16 to M19)", () => {
+    const cases: [string, string, (text: string) => string, number][] = [
+      ["county", "worksheet-open", afterLine("All amounts on this worksheet are in USD.", "Reimbursed to date by the funder $150,000.00"), 20],
+      ["county", "worksheet-open", afterLine("Period: Award to date", "Total paid to date: $150,000.00"), 20],
+      ["city", "worksheet-closed", afterLine("HOW TO READ THESE FIGURES", "$150,000.00 has been paid."), 21],
+      ["tribal-area", "worksheet-closed", afterLine("Process: US federal-aid", "Balance due from the funder: $45,000"), 21],
+    ];
+    for (const [role, kind, change, found] of cases) {
+      const record = proven();
+      editPdf(record, role, kind, change);
+      refused(record, `${role} journey ${kind} PDF prints ${found} dollar amounts; the`);
+    }
+  });
+
+  it("counts every honest worksheet's amounts as 19 before the close-out and 20 after", () => {
+    for (const entry of EXAMPLE.journeys) {
+      for (const pdf of entry.pdfs) {
+        const text = syntheticWorksheetPdfText(entry, pdf.kind);
+        expect((text.match(/\$\s?-?\d/g) ?? []).length, `${entry.role} ${pdf.kind}`).toBe(pdf.kind === "worksheet-open" ? 19 : 20);
+      }
+    }
+  });
+
+  it("refuses a cost with no cents in the cost section (M20)", () => {
+    const record = proven();
+    editPdf(record, "county", "worksheet-closed", afterLine("No cost entries recorded", "Consultant costs $5,000"));
+    refused(record, 'county journey worksheet-closed PDF "Recorded project costs in this period" prints an amount, but the record enters no cost');
+  });
+
+  it("refuses a custody refusal answered 401, or a status paired with another error's code (F10, F11)", () => {
+    const owner = (record: Json, target: string) => journey(record, "county").custody.find((entry: Json) => entry.account === "owner" && entry.target === target);
+    const unsigned = proven();
+    Object.assign(owner(unsigned, "award-closure-columns"), { status: 401, code: "42501" });
+    refused(unsigned, "county journey owner direct write of award-closure-columns answered 401 with code 42501, which does not show the database refused it; only 400 with 23514 or 403 with 42501 counts");
+    const unpaired = proven();
+    Object.assign(owner(unpaired, "paid-request-amount"), { status: 409, code: "23514" });
+    refused(unpaired, "county journey owner direct write of paid-request-amount answered 409 with code 23514");
+    const crossed = proven();
+    Object.assign(owner(crossed, "paid-request-amount"), { status: 403, code: "23514" });
+    refused(crossed, "county journey owner direct write of paid-request-amount answered 403 with code 23514");
+  });
+
+  it("accepts a privilege refusal, 403 with 42501", () => {
+    const record = proven();
+    Object.assign(journey(record, "county").custody.find((entry: Json) => entry.account === "member" && entry.target === "award-closure-columns"), { status: 403, code: "42501" });
+    expect(() => check(record)).not.toThrow();
+  });
+
+  it("refuses a payment date before the request's invoice date (P12, P13)", () => {
+    for (const paidDate of ["2020-01-01", "2026-03-01"]) {
+      const record = proven();
+      request(record, "city", "INV-1").paidDate = paidDate;
+      rebuild(record, "city");
+      refused(record, `city journey request INV-1 payment date ${paidDate} is before its invoice date 2026-07-15`);
+    }
+  });
+
+  it("refuses a payment date printed only in the invoice-date cell (P14)", () => {
+    // INV-2A was invoiced and paid the same day, so a blank paid cell still leaves the date in the row once.
+    const record = proven();
+    editPdf(record, "county", "worksheet-closed", (text) => swap(text, /(INV-2A {12}Paid {21}2026-11-20 {5}Not recorded {5})2026-11-20/, "Not recorded", true));
+    refused(record, 'county journey worksheet-closed PDF request INV-2A says "Not recorded" 2 time(s); the record leaves 1 of its dates blank');
+  });
+
+  it("refuses a due date the record does not hold (Z07)", () => {
+    const record = proven();
+    editPdf(record, "county", "worksheet-closed", (text) => swap(text, /(INV-2 {13}Rejected {17}2026-10-15 {5})Not recorded/, "2026-12-01  ", true));
+    refused(record, 'county journey worksheet-closed PDF request INV-2 says "Not recorded" 1 time(s); the record leaves 2 of its dates blank');
+  });
+
+  it("refuses a period that ends before it starts, and a date that is not on the calendar", () => {
+    const backward = proven();
+    request(backward, "county", "INV-1").periodEnd = "2026-03-31";
+    refused(backward, "county journey request INV-1 period ends (2026-03-31) before it starts (2026-04-01)");
+    const impossible = proven();
+    request(impossible, "county", "INV-2").dueDate = "2026-13-45";
+    refused(impossible, "county journey request INV-2 dueDate 2026-13-45 is not a calendar date");
+  });
+
+  it("refuses a screen reading outside the journey (S09)", () => {
+    const record = proven();
+    journey(record, "city").screenReadings.at(-1).at = "2027-11-20T11:35:00Z";
+    refused(record, "city journey dashboard screen reading at 2027-11-20T11:35:00Z is outside the journey");
+  });
+
+  it("refuses the three forms named by their titles (W09 to W11)", () => {
+    const titles = ["Request for Advance or Reimbursement", "Outlay Report and Request for Reimbursement for Construction Programs", "Federal Financial Report"];
+    for (const title of titles) {
+      const record = proven();
+      editPdf(record, "city", "worksheet-closed", afterLine("Process: US federal-aid", `File this with the ${title} for the period.`));
+      refused(record, `city journey worksheet-closed PDF names the form "${title}"`);
+    }
+  });
+
+  it("refuses the review's seven wordings (W12, W17 to W23)", () => {
+    const wordings: [string, string][] = [
+      ["This worksheet is your payment request.", "payment request"],
+      ["Eligible costs are listed above.", "eligible costs"],
+      ["Every line here allowable under the agreement.", "allowable under"],
+      ["The funder paid both requests.", "the funder paid"],
+      ["Funds disbursed in full.", "disbursed"],
+      ["These requests qualify for reimbursement.", "qualify for reimbursement"],
+      ["Deposited on receipt.", "deposited"],
+    ];
+    for (const [line, phrase] of wordings) {
+      const record = proven();
+      editPdf(record, "tribal-area", "worksheet-closed", afterLine("Process: US federal-aid", line));
+      refused(record, `tribal-area journey worksheet-closed PDF prints "${phrase}", which this job refuses anywhere in the worksheet`);
+    }
+  });
+
+  it("refuses a refused phrase that continues on the next page, past the footer and the fixed note (W25)", () => {
+    const record = proven();
+    editPdf(record, "county", "worksheet-open", (text) =>
+      swap(text, "\n\n\nPrepared by OpenPlan from records", "\n  The final payment was\n\n\nPrepared by OpenPlan from records").replace(
+        "\fINVOICE RECORDS ON THIS AWARD",
+        "\freceived by the agency.\nINVOICE RECORDS ON THIS AWARD",
+      ),
+    );
+    const pdf = journey(record, "county").pdfs[0];
+    expect(readFileSync(join(jobRoot, pdf.path), "utf8")).toContain("\freceived by the agency.");
+    refused(record, 'county journey worksheet-open PDF prints "payment was received"');
+  });
+
+  it("refuses a download outside the journey (kills review 97's mutant MA)", () => {
+    const record = proven();
+    journey(record, "county").downloads[1].at = "2026-11-20T10:46:00Z";
+    refused(record, "county journey worksheet-closed download (2026-11-20T10:46:00Z) is outside the journey");
+  });
+
+  it("refuses a request row whose payment date is not the record's (kills mutant MB)", () => {
+    const record = proven();
+    editPdf(record, "county", "worksheet-closed", (text) => swap(text, /(INV-1 {13}Paid {21}2026-07-15 {5}Not recorded {5})2026-11-20/, "2026-11-19", true));
+    refused(record, "county journey worksheet-closed PDF request INV-1 does not print its payment date 2026-11-20");
+  });
+
+  it("refuses a first page that names another workspace (kills mutant MD)", () => {
+    const record = proven();
+    editPdf(record, "county", "worksheet-open", (text) => swap(text, "\nSynthetic County reimbursement demonstration workspace\n", "\nNeighbouring County planning workspace\n"));
+    refused(record, "county journey worksheet-open PDF page 1 does not print the workspace's name");
+  });
+
+  it("refuses a request row whose status is not the record's (kills mutant ME)", () => {
+    const record = proven();
+    editPdf(record, "city", "worksheet-closed", (text) => swap(text, /(INV-2 {13})Rejected/, "Approved", true));
+    refused(record, 'city journey worksheet-closed PDF request INV-2 does not say "Rejected", its status when the worksheet was downloaded');
+  });
+
+  it("refuses a record that does not say who acted is the journey's word", () => {
+    const record = proven();
+    record.limits = record.limits.filter((limit: Json) => limit.id !== "who-acted-is-the-journeys-word");
+    refused(record, "record does not state the who-acted-is-the-journeys-word limit");
   });
 });

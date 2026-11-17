@@ -15,8 +15,12 @@ acceptance evidence, and this note asks no person for anything.
 `schemas/proven_job_definitions.v1.json`, its record fields are the
 `awardJourney` sub-schema, and `openplan/scripts/ops/capability-evidence.mjs`
 checks a record against it. A synthetic example record is accepted and every
-rule refuses a copy changed against it. No journey script, hosted run or
-record exists. One known defect would refuse an honest record today: with the
+rule refuses a copy changed against it. A fresh-context false-record review
+(review 97) found copies the first version accepted; lane 93 closed them
+(amounts outside the read rows, custody status and code pairs, payment and
+blank dates, a California city, form titles and seven wordings, phrases
+across a page break, reading times) and added the who-acted limit. No journey
+script, hosted run or record exists. One known defect would refuse an honest record today: with the
 inner pane unrolled, the Funding tab shows serious colour-contrast findings
 (KI-2026-11-17-032), and this job's screen rule counts them.
 
@@ -48,9 +52,10 @@ different reimbursement profile.
 Each profile must be bound as `jurisdiction_matched`: the workspace's own
 place chose it. An interim default means the place was not set, and the
 worksheet then says "This process was not chosen for this workspace." Both
-refuse the record. The city's state is held by the profile rule rather than
-a list of states: a city in California resolves the LAPM profile and its
-worksheet prints "Process: Caltrans LAPM reimbursement".
+refuse the record. The city may not lie in a state the profile registry
+gives a profile of its own (today California, FIPS 06; a test ties the list
+to the registry), and a California city's worksheet would also print
+"Process: Caltrans LAPM reimbursement".
 
 The run-through used Plumas County, CA; Klamath Falls, OR; and the Pine Ridge
 Reservation, NE-SD. The definition names no place.
@@ -91,7 +96,12 @@ The lead's eleven rules, as the definition and checker hold them.
    "Mark approved for payment", "Mark paid" with its date, "Mark rejected"
    with its reason, "Resubmit" for INV-2A, and "Close out award". Moves follow
    the request trigger: forward only, rejected only from submitted or
-   approved, paid only from approved.
+   approved, paid only from approved. A payment date is no earlier than the
+   request's invoice date and no later than the day it was marked paid; every
+   date is a calendar date and every period ends on or after it starts. Each
+   worksheet row prints the record's invoice, due and payment dates, and says
+   "Not recorded" once for each date the record leaves blank, so a date the
+   record does not hold, or a date in another date's cell, is refused.
 7. **Refusals, each with its status.** The journey's member account, signed in
    and able to download the worksheet, is refused logging, approving, paying
    and closing out (403; owner and admin only, the lead's decision). A second
@@ -100,19 +110,25 @@ The lead's eleven rules, as the definition and checker hold them.
    screen), beside the owner's 200 for the same reads in the same run. The
    owner and the member each send a direct PostgREST PATCH of the award's
    closure columns and of a paid request's amount; the database must refuse
-   each with code 23514 or 42501, or, for the member's request write only,
-   match no row. The owner is refused a paid move before approval (422) and a
+   each with 400 and code 23514 or 403 and code 42501, the status and code
+   together, or, for the member's request write only, match no row. A 401 is a
+   request with no session and never counts. The owner is refused a paid move before approval (422) and a
    claim above the ceiling with no note (422, `over_award_ceiling`).
 8. **The worksheet's words.** Page 1 carries the note that it is not a
    funder's form, and every page carries the footer that says so with its own
-   page number. It names no SF-270, SF-271, SF-425 or LAPM Exhibit 5-A unless
-   the word "not" comes right before the name. No sentence says a cost is
-   allowable, eligible or reimbursable, that a balance was deobligated, or that
-   a payment was received. The award line and the project line carry the
-   demonstration label. A PDF the built-in writer typeset is refused.
+   page number. It names no SF-270, SF-271, SF-425 or LAPM Exhibit 5-A, by
+   number or by title, unless the word "not" comes right before the name. No
+   sentence says a cost is allowable, eligible or reimbursable, that a balance
+   was deobligated, that a payment was received, or that the worksheet is a
+   payment request, including a phrase that continues on the next page. It
+   prints exactly as many dollar amounts as the rows the checker reads (19
+   before the close-out and 20 after, under the fixed amounts), so no other
+   figure can stand on it, and the journey's typed text holds no amount. The
+   award line and the project line carry the demonstration label. A PDF the
+   built-in writer typeset is refused.
 9. **Screens.** The Funding tab, Grants (Awards), the Invoices register and
    the dashboard, each read while a request is outstanding and again after the
-   close-out, with axe-core 4.11.1 (wcag2a, wcag2aa, wcag21a, wcag21aa) light
+   close-out and inside the journey, with axe-core 4.11.1 (wcag2a, wcag2aa, wcag21a, wcag21aa) light
    and dark at 1440 and 390 px, the inner pane unrolled, no serious or critical
    finding, no console error and no sideways scroll at 390 px. Each reading's
    money equals the recomputed figure; the dashboard's award reads in whole
@@ -120,8 +136,10 @@ The lead's eleven rules, as the definition and checker hold them.
 10. **Limits, in the definition's words.** Not a payment request; no
     allowability statement; not an accounting or audit record; demonstration
     figures only; "Paid" is what the workspace typed; no funder reference;
-    retention not exercised; what the journey leaves on the hosted site; what
-    stays on the journey's word; and the three limits every job states.
+    retention not exercised; who made each status change and the close-out
+    is the journey's word (the record names no actor); what the journey
+    leaves on the hosted site; what stays on the journey's word; and the three
+    limits every job states.
 11. **Review before any hosted run.** A fresh-context false-record review that
     also prints honest outputs in every role, and three local rehearsals of the
     journey, come before the declaration. Lane 93's own tests do the first
@@ -184,9 +202,13 @@ each direct write, the accessibility results, how the account was confirmed,
 the executor, and which build, mode and checkout ran are the journey's
 statements. The checker holds them to each other and to the product's rules,
 and it recomputes the money from them, so a record and worksheets falsified
-together to agree are not caught. A payment date is read as words in order
-within its request row, so the same date printed as the invoice date in that
-row would also satisfy it.
+together to agree are not caught. The record names no actor, so who made each
+move and the close-out is the journey's word, and the record says so. The
+tribal area's states are the journey's reading, because the Gazetteer table of
+tribal areas has no state column. Dates in a request row are read as words in
+order, held in place by the count of "Not recorded" for the dates the record
+leaves blank; two of the row's own dates exchanged between their cells are not
+caught.
 
 ## History: the hand run-through and what followed
 
