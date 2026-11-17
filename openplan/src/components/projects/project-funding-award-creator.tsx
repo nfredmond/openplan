@@ -103,11 +103,15 @@ export function ProjectFundingAwardCreator({
             const parsed = Number(raw);
             // Blank means zero, deliberately — but a value that is NOT a number
             // would also become zero, silently recording a $0 award.
-            if (!Number.isFinite(parsed) || parsed < 0) {
+            if (!Number.isFinite(parsed)) {
               return {
                 field,
                 message: `Give the ${label} as a plain number, with no commas or currency sign.`,
               };
+            }
+            // A minus sign is a plain number too, so the refusal names the real reason (lane 84).
+            if (parsed < 0) {
+              return { field, message: `The ${label} cannot be less than zero.` };
             }
           }
           return null;

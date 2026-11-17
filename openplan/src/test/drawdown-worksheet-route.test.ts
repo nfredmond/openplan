@@ -322,9 +322,9 @@ describe("a failed read never becomes a zero", () => {
     expect(renderReportPdfMock).not.toHaveBeenCalled();
   });
 
-  it("retries WITHOUT paid_date when that column is not deployed yet, and discloses the loss", async () => {
-    // The deploy/migrate window: the column is new, so an older database
-    // answers PostgREST's "does not exist". A setup gap is not a fault.
+  it("retries WITHOUT paid_date when the column does not exist, and says no payment date is recorded", async () => {
+    // No migration adds `paid_date` to this table (lane 84), so every install
+    // answers PostgREST's "does not exist" here. The page says what is true.
     let call = 0;
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -353,7 +353,9 @@ describe("a failed read never becomes a zero", () => {
     expect(response.status).toBe(200);
     expect(selects.billing_invoice_records?.[0]).toContain("paid_date");
     expect(selects.billing_invoice_records?.[1]).not.toContain("paid_date");
-    expect(renderedHtml()).toContain("Payment dates are not available on this deployment yet");
+    expect(renderedHtml()).toContain("OpenPlan does not record a payment date on reimbursement invoice records");
+    // No install has the column (no migration adds it), so the page may not promise a setup step.
+    expect(renderedHtml()).not.toContain("on this deployment yet");
   });
 
   it("does NOT retry a permission failure as if it were a pending migration", async () => {

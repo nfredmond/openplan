@@ -175,12 +175,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const assemblyNotices: string[] = [];
 
-    // The invoice read degrades symmetrically across the deploy/migrate window:
-    // `paid_date` is new, so a deployment whose migration has not run answers
-    // PostgREST's "column does not exist". That is a SETUP gap, not a fault, so
-    // the read is retried without the column and the loss is DISCLOSED on the
-    // page. It is retried only for a pending-schema error — never for a
-    // permission or constraint failure, which would be hiding a real refusal.
+    // The invoice read asks for `paid_date`, and no migration has added that
+    // column to `billing_invoice_records` (lane 84, November 16, 2026), so
+    // PostgREST answers "column does not exist" on every install. The read is
+    // retried without the column and the page says plainly that no payment
+    // date is recorded, rather than implying a setup step will bring one. It
+    // is retried only for a pending-schema error, never for a permission or
+    // constraint failure, which would be hiding a real refusal.
     // One loose result shape for both reads: the two select strings would
     // otherwise infer different structural types, and this codebase's Supabase
     // reads are cast deliberately (the clients are untyped by convention).
@@ -201,7 +202,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       if (!retry.error) {
         invoiceResult = retry;
         assemblyNotices.push(
-          "Payment dates are not available on this deployment yet, so no invoice shows one. Records marked paid are still counted as paid."
+          "OpenPlan does not record a payment date on reimbursement invoice records, so no invoice shows one. Records marked paid are still counted as paid."
         );
       }
     }

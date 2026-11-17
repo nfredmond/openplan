@@ -235,7 +235,7 @@ export function ProjectEstimatedCostEditor({
 
       {canWrite ? (
         <>
-          <section className="mt-5 min-w-0 rounded-lg border bg-muted/20 p-4" aria-labelledby="csv-project-candidate-heading">
+          <section className="mt-5 min-w-0 rounded-lg border bg-secondary p-4" aria-labelledby="csv-project-candidate-heading">
             <h3 id="csv-project-candidate-heading" className="font-semibold">Bring in a project candidate from CSV</h3>
             <p className="mt-1 text-sm text-muted-foreground">
               OpenPlan stores and indexes the file, then lets you review one row before it changes this project.
