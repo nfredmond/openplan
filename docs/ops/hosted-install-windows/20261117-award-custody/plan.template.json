@@ -1,0 +1,37 @@
+{
+  "window": "FILL-window-id",
+  "purpose": "window",
+  "capture": "FILL-capture-stamp",
+  "history": {
+    "count": 455,
+    "newest": "20261102140000"
+  },
+  "historyStatements": "FILL-from-prechecks/10-award-custody.sql",
+  "postchecks": "postchecks.sql",
+  "files": [
+    {
+      "version": "20261117000000",
+      "name": "award_closure_custody",
+      "path": "openplan/supabase/migrations/20261117000000_award_closure_custody.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "789c7f12bd0633a950f330f7e2bf65bcdb8a66a9ff3ad09f5b450b608783618d",
+      "selfWrapped": false
+    },
+    {
+      "version": "20261117000100",
+      "name": "reimbursement_request_status_custody",
+      "path": "openplan/supabase/migrations/20261117000100_reimbursement_request_status_custody.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "e8b9d0b72a347dee5cd166276530f54c7e3ba9005b98085242de492f209643c8",
+      "selfWrapped": false
+    },
+    {
+      "version": "20261117000200",
+      "name": "reimbursement_dates_and_numbers",
+      "path": "openplan/supabase/migrations/20261117000200_reimbursement_dates_and_numbers.sql",
+      "commit": "FILL-40-character-integration-head",
+      "sha256": "8f037787c2cd570dd0a569ce8f103deb622ce2416cba6d2a0f8f5175c14e3d61",
+      "selfWrapped": false
+    }
+  ]
+}

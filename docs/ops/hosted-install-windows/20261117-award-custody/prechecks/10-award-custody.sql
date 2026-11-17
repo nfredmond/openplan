@@ -108,3 +108,26 @@ SELECT
   (SELECT pg_catalog.count(*) FROM public.funding_awards a
     WHERE a.spending_status = 'fully_spent' AND a.latest_handoff_revision_id IS NULL) AS closed_unmanaged,
   (SELECT pg_catalog.count(*) FROM public.funding_awards a WHERE a.spending_status = 'fully_spent') AS closed_all;
+
+-- Informational: the row format of the newest history rows (the November 14
+-- window's seven files). Set the plan's historyStatements to the format these
+-- rows share: whole-file (one element equal to the file text), statements
+-- (the file split into statements, as the Supabase CLI writes them) or empty.
+-- md5_whole_file is the md5 of each committed file's bytes on main.
+SELECT h.version, h.name,
+       coalesce(pg_catalog.array_length(h.statements, 1), 0) AS statement_count,
+       CASE WHEN coalesce(pg_catalog.array_length(h.statements, 1), 0) = 0 THEN 'empty'
+            WHEN pg_catalog.array_length(h.statements, 1) = 1 AND pg_catalog.md5(h.statements[1]) = f.md5_whole_file THEN 'whole-file'
+            ELSE 'statements' END AS history_format
+FROM supabase_migrations.schema_migrations h
+LEFT JOIN (VALUES
+  ('20261102100000', '5eafc3dd11c8aba78f5f830dc9a7b9c2'),
+  ('20261102100100', '95415298a540f19bb9cdbf719e61caa0'),
+  ('20261102110000', '2f3acadea2006516d9c18a5e7795fcf0'),
+  ('20261102110100', '22cf56e0bb44fb390613685baca2ceec'),
+  ('20261102120000', '038228278b762d1da2014fcee700c505'),
+  ('20261102130000', '78f629bec71721be848d9ba5656a9f1b'),
+  ('20261102140000', 'eccb9e917a6fad8a037bdd0c583fd868')
+) AS f(version, md5_whole_file) ON f.version = h.version
+WHERE h.version >= '20261102100000'
+ORDER BY h.version;
