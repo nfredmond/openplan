@@ -77,6 +77,8 @@ export function GrantsAwardsReimbursementSection({
   committedAwardAmount,
   trackedMatchAmount,
   uninvoicedCommittedAmount,
+  overClaimedAwardAmount = 0,
+  overClaimedAwardCount = 0,
   awardWatchCount,
   linkedInvoiceSummary,
   reimbursementNotStartedCount,
@@ -94,6 +96,9 @@ export function GrantsAwardsReimbursementSection({
   committedAwardAmount: number;
   trackedMatchAmount: number;
   uninvoicedCommittedAmount: number;
+  /** Claimed gross above each award's ceiling, summed award by award; never netted into Uninvoiced. */
+  overClaimedAwardAmount?: number;
+  overClaimedAwardCount?: number;
   awardWatchCount: number;
   /**
    * `claimedNetAmount`, not `totalNetAmount`. The register total includes
@@ -185,8 +190,17 @@ export function GrantsAwardsReimbursementSection({
         <div className="module-summary-card">
           <p className="module-summary-label">Uninvoiced</p>
           <p className="module-summary-value text-base leading-tight">{formatCurrency(uninvoicedCommittedAmount)}</p>
-          <p className="module-summary-detail">Committed award dollars not yet claimed from a funder. A rejected claim leaves its dollars here, still available to re-invoice.</p>
+          <p className="module-summary-detail">Committed award dollars not yet claimed from a funder, summed award by award. A rejected claim leaves its dollars here, still available to re-invoice.</p>
         </div>
+        {overClaimedAwardAmount > 0 ? (
+          <div className="module-summary-card">
+            <p className="module-summary-label">Claimed above awards</p>
+            <p className="module-summary-value text-base leading-tight">{formatCurrency(overClaimedAwardAmount)}</p>
+            <p className="module-summary-detail">
+              Claims above the award amount on {overClaimedAwardCount} award{overClaimedAwardCount === 1 ? "" : "s"}. Not subtracted from Uninvoiced.
+            </p>
+          </div>
+        ) : null}
         <div className="module-summary-card">
           <p className="module-summary-label">Award risk</p>
           <p className="module-summary-value">{awardWatchCount}</p>

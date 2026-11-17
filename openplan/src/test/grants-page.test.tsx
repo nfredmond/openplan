@@ -878,4 +878,41 @@ it("keeps a prepared unassessed grant packet visible in triage and monitor advic
   } finally { spy.mockRestore(); }
 });
 
+it("sums Uninvoiced award by award and shows an over-claim as its own figure (KI-2026-11-16-133)", async () => {
+  // Two awards on one project. By hand:
+  //   award A ceiling 200,000; claimed 60,000 paid + 45,000 submitted = 105,000; uninvoiced 95,000
+  //   award B ceiling  10,000; claimed 251,300 paid; over by 241,300; uninvoiced 0
+  //   netted (the defect): max(0, 210,000 - 356,300) = 0
+  const award = (id: string, title: string, awarded_amount: number) => ({
+    id, funding_opportunity_id: null, project_id: "project-1", program_id: null, title,
+    latest_handoff_revision_id: null, current_handoff_revision_id: null, currency_code: null, has_source_backed_issuance: false,
+    awarded_amount, match_amount: 0, obligation_due_at: null, spending_status: "active", risk_flag: "none", notes: null,
+    updated_at: "2026-04-14T18:00:00.000Z", created_at: "2026-04-01T18:00:00.000Z",
+    funding_opportunities: null, programs: null, projects: { id: "project-1", name: "Main Street Safety" },
+  });
+  fundingAwardsOrderMock.mockResolvedValue({ data: [award("award-a", "Corridor award", 200000), award("award-b", "Small award", 10000)], error: null });
+  const invoice = (id: string, funding_award_id: string, status: string, amount: number) => ({
+    id, project_id: "project-1", funding_award_id, invoice_number: id, status, due_date: null, amount,
+    retention_percent: 0, retention_amount: 0, net_amount: amount,
+    award_handoff_revision_id: null, currency_code: null, handoff_applicable_revision_id: null,
+  });
+  invoiceRecordsOrderMock.mockResolvedValue({
+    data: [
+      invoice("INV-1", "award-a", "paid", 60000),
+      invoice("INV-2A", "award-a", "submitted", 45000),
+      invoice("INV-2", "award-a", "rejected", 45000),
+      invoice("E-1", "award-b", "paid", 251300),
+    ],
+    error: null,
+  });
+
+  await renderPage({ tab: "awards" });
+
+  const card = (label: string) => screen.getByText(label, { selector: "p.module-summary-label" }).parentElement!;
+  expect(card("Uninvoiced").querySelector(".module-summary-value")?.textContent).toBe("$95,000.00");
+  expect(card("Claimed above awards").querySelector(".module-summary-value")?.textContent).toBe("$241,300.00");
+  expect(card("Claimed above awards").textContent).toContain("on 1 award.");
+  expect(screen.getByText("Uninvoiced $95,000.00")).toBeInTheDocument();
+});
+
 });
